@@ -1,0 +1,7 @@
+addAssignees: true
+
+# The list of users to assign to new issues.
+# If empty or not provided, the repository owner is assigned
+assignees:
+  - alan-churley
+  - saragerion

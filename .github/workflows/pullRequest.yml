@@ -1,6 +1,6 @@
 name: Test
 on:
-  push:
+  pull_request:
     branches: [ main ]
 
 jobs:
@@ -14,3 +14,8 @@ jobs:
         run: npm run lint
       - name: Run tests
         run: npm run test
+      - name: Report Coverage
+        uses: romeovs/lcov-reporter-action@v0.2.11
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info

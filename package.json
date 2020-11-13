@@ -6,10 +6,14 @@
   "types": "lib/",
   "scripts": {
     "commit": "commit",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
-    "version": "npm run format && git add -A src",
+    "test": "lerna exec -- jest --coverage  --detectOpenHandles",
+    "build": "lerna exec -- tsc",
+    "lint": "lerna exec -- eslint \"./{src,tests}/**/*.ts\"",
+    "format": "lerna exec -- eslint --fix \"./{src,tests}/**/*.ts\"",
+    "prepare": "lerna exec -- npm run build",
+    "prepublishOnly": "lerna exec -- npm test && lerna exec -- npm run lint",
+    "preversion": "lerna exec -- npm run lint",
+    "version": "lerna exec -- npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
   "repository": {

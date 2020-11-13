@@ -10,12 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install modules
-        run: npm install
+      - name: Install Lerna
+        run: npm install -g lerna@3.22.1
+      - name: Install packages
+        run: lerna exec -- npm install
       - name: Run lint
-        run: npm run lint
+        run: lerna exec -- npm run lint
       - name: Run tests
-        run: npm run test
+        run: lerna exec -- npm run test
       - name: Report Coverage
         if: ${{ github.event_name == 'pull_request' }}
         uses: romeovs/lcov-reporter-action@v0.2.11

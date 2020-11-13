@@ -1,6 +1,6 @@
 {
   "name": "aws-lambda-powertools-typescript",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "TODO: Fill this README out!",
   "main": "index.js",
   "scripts": {
@@ -28,6 +28,7 @@
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
   "devDependencies": {
     "@types/jest": "^26.0.15",
+    "commitizen": "^4.2.2",
     "jest": "26.6.1",
     "prettier": "^2.1.2",
     "ts-jest": "26.4.3",
@@ -37,5 +38,13 @@
   },
   "files": [
     "lib/**/*"
-  ]
+  ],
+  "dependencies": {
+    "lerna": "^3.22.1"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
 }

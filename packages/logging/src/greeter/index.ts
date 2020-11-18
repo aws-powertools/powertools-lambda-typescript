@@ -1,1 +1,0 @@
-export const Hello = (name: string = 'unknown person'): string => `Hello ${name}`;

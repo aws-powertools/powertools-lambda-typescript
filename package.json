@@ -6,6 +6,7 @@
   "types": "lib/",
   "scripts": {
     "commit": "commit",
+    "ci": "lerna exec -- npm ci",
     "test": "lerna exec -- jest --coverage  --detectOpenHandles",
     "build": "lerna exec -- tsc",
     "lint": "lerna exec -- eslint \"./{src,tests}/**/*.ts\"",

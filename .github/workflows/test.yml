@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install Lerna
+        run: npm install -g lerna
       - name: Install packages
-        run: npm install --ignore-scripts
+        run: npm install
       - name: Run lint
         run: npm run lint
       - name: Run tests

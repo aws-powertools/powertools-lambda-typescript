@@ -16,7 +16,7 @@
     "preversion": "lerna exec -- npm run lint",
     "version": "lerna exec -- npm run format && git add -A src",
     "postversion": "git push && git push --tags",
-    "preinstall": "scripts/preinstall.sh"
+    "preinstall": "lerna -v || echo 'Please install Lerna globally before continuting, eg npm i -g lerna'"
   },
   "repository": {
     "type": "git",

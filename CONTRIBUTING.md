@@ -19,6 +19,15 @@ reported the issue. Please try to include as much information as you can. Detail
 * Any modifications you've made relevant to the bug
 * Anything unusual about your environment or deployment
 
+## Running Locally
+Inorder to contribute you must ensure that you can run the codebase/ tests locally. 
+To get setup there are a few prerequisites that must be fulfilled.
+
+1. You have node/npm installed
+2. You have installed lerna globally
+    `npm i -g lerna`
+3. You can then install project dependencies with npm install
+
 
 ## Contributing via Pull Requests
 Contributions via pull requests are much appreciated. Before sending us a pull request, please ensure that:

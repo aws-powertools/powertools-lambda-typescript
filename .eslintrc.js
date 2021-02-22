@@ -37,6 +37,7 @@ module.exports = {
     '@typescript-eslint/no-inferrable-types': ['off'],
     '@typescript-eslint/no-unused-vars': [ 'error', { 'argsIgnorePattern': '^_' } ],
     '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/explicit-member-accessibility': 'error'
+    '@typescript-eslint/explicit-member-accessibility': 'error',
+    '@typescript-eslint/member-ordering': 'error'
   }
 };

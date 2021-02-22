@@ -1,11 +1,11 @@
-# `logging`
+# `logger`
 
 > TODO: description
 
 ## Usage
 
 ```
-import { foo } from "@aws-lambda-powertools/logging"
+import { foo } from "@aws-lambda-powertools/logger"
 
 // TODO: DEMONSTRATE API
 ```

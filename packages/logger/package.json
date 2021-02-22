@@ -1,5 +1,5 @@
 {
-  "name": "@aws-lambda-powertools/logging",
+  "name": "@aws-lambda-powertools/logger",
   "version": "0.0.0",
   "description": "The logging package for the AWS Lambda powertools (TypeScript) library",
   "author": {

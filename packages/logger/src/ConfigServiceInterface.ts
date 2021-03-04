@@ -12,9 +12,9 @@ interface ConfigServiceInterface {
 
   getServiceName(): string
 
-  getLogEvent(): boolean
+  getLogEventEnabled(): boolean
 
-  getSampleRate(): string
+  getSampleRateValue(): string
 
 }
 

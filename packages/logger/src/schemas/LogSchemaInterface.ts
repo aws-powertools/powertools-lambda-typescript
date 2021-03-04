@@ -8,9 +8,9 @@ interface LogSchemaInterface {
 
   getServiceNameKey(): string
 
-  getSampleRateKey(): string
+  getSampleRateValueKey(): string
 
-  getSampleRateKey(): string
+  getSampleRateValueKey(): string
 
   getMessageKey(): string
 

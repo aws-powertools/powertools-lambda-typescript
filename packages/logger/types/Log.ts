@@ -114,8 +114,8 @@ type PowertoolLog = LogAttributes & {
 type LoggerOptions = {
   logLevel?: LogLevel
   serviceName?: string
-  sampleRate?: number
-  logEvent?: boolean
+  sampleRateValue?: number
+  logEventEnabled?: boolean
   logSchema?: LogSchemaInterface
   config?: ConfigServiceInterface
   defaultAttributes?: LogAttributes

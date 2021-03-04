@@ -11,8 +11,8 @@ class EnvironmentConfigService implements ConfigServiceInterface {
   // Custom environment variables
   public readonly logLevelVariable = 'LOG_LEVEL';
   public readonly serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
-  public readonly logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
-  public readonly sampleRateVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
+  public readonly logEventEnabledVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
+  public readonly sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
 
   public getXrayTraceId(): string {
     return this.get(this.traceIdVariable);
@@ -38,12 +38,12 @@ class EnvironmentConfigService implements ConfigServiceInterface {
     return this.get(this.serviceNameVariable);
   }
 
-  public getSampleRate(): string {
-    return this.get(this.sampleRateVariable);
+  public getSampleRateValue(): string {
+    return this.get(this.sampleRateValueVariable);
   }
 
-  public getLogEvent(): boolean {
-    return [ '1', 'TRUE', 'ON' ].includes(this.get(this.logEventVariable).toUpperCase());
+  public getLogEventEnabled(): boolean {
+    return [ '1', 'TRUE', 'ON' ].includes(this.get(this.logEventEnabledVariable).toUpperCase());
   }
 
   protected get(name: string): string {

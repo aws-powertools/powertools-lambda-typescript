@@ -40,7 +40,7 @@ class PowertoolLogSchema implements LogSchemaInterface {
    * Description: The value of the logging sampling rate in percentage.
    * Example: 0.1
    */
-  protected sampleRate: string = 'sampling_rate';
+  protected sampleRateValue: string = 'sampling_rate';
 
   /**
    * message
@@ -114,8 +114,8 @@ class PowertoolLogSchema implements LogSchemaInterface {
     return this.serviceName;
   }
 
-  public getSampleRateKey(): string {
-    return this.sampleRate;
+  public getSampleRateValueKey(): string {
+    return this.sampleRateValue;
   }
 
   public getMessageKey(): string {

@@ -9,31 +9,31 @@ import { PowertoolLogSchema } from './schemas/PowertoolLogSchema';
 class Logger implements LoggerInterface {
 
   private configService: ConfigServiceInterface;
+  private logSchema: LogSchemaInterface;
 
   private defaultLogAttributes: LogAttributes;
 
   private readonly serviceName: string;
-  private readonly sampleRate: number;
+  private readonly sampleRateValue: number;
   private readonly logLevel: LogLevel;
-  private logEvent: boolean;
-  private logSchema: LogSchemaInterface;
+  private logEventEnabled: boolean;
 
   public constructor(options: LoggerOptions = {}) {
-    const { logLevel, serviceName, sampleRate, logEvent, logSchema, config, defaultAttributes } = options;
+    const { logLevel, serviceName, sampleRateValue, logEventEnabled, logSchema, config, defaultAttributes } = options;
 
     this.configService = config || new EnvironmentConfigService();
 
     this.logLevel = logLevel || this.configService.getLogLevel() as LogLevel;
     this.serviceName = serviceName || this.configService.getServiceName();
-    this.sampleRate = sampleRate || Number(this.configService.getSampleRate()) || 1;
-    this.logEvent = logEvent || this.configService.getLogEvent();
+    this.sampleRateValue = sampleRateValue || Number(this.configService.getSampleRateValue()) || 1;
+    this.logEventEnabled = logEventEnabled || this.configService.getLogEventEnabled();
 
     this.logSchema = logSchema || new PowertoolLogSchema();
 
     this.defaultLogAttributes = {
       [this.logSchema.getLogLevelKey()]: this.logLevel,
       [this.logSchema.getServiceNameKey()]: this.serviceName,
-      [this.logSchema.getSampleRateKey()]: this.sampleRate,
+      [this.logSchema.getSampleRateValueKey()]: this.sampleRateValue,
       [this.logSchema.getXrayTraceIdKey()]: this.configService.getXrayTraceId(),
       [this.logSchema.getFunctionNameKey()]: this.configService.getFunctionName(),
       [this.logSchema.getFunctionMemorySizeKey()]: this.configService.getFunctionMemory(),

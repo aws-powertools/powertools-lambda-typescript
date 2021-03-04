@@ -1,17 +1,6 @@
-import { LogSchemaInterface } from '../src/schemas/LogSchemaInterface';
-import { ConfigServiceInterface } from '../src/ConfigServiceInterface';
+import { LogSchemaInterface } from './LogSchemaInterface';
 
-type LogLevelDebug = 'DEBUG';
-type LogLevelInfo = 'INFO';
-type LogLevelWarn = 'WARN';
-type LogLevelError = 'ERROR';
-
-type LogLevel = LogLevelDebug | LogLevelInfo | LogLevelWarn | LogLevelError;
-
-type LogAttributeValue = string | number | boolean | null | LogAttributeValue[] | { [key: string]: LogAttributeValue };
-type LogAttributes = { [key: string]: LogAttributeValue };
-
-type PowertoolLog = LogAttributes & {
+class PowertoolLogSchema implements LogSchemaInterface {
 
   /**
    * timestamp
@@ -19,7 +8,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Timestamp of actual log statement.
    * Example: "2020-05-24 18:17:33,774"
    */
-  timestamp: string
+  protected timestamp: string = 'timestamp';
 
   /**
    * level
@@ -27,7 +16,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Logging level
    * Example: "INFO"
    */
-  level: LogLevel
+  protected logLevel: string = 'level';
 
   /**
    * location
@@ -35,7 +24,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Source code location where statement was executed.
    * Example: "collect.handler:1"
    */
-  location: string
+  protected sourceCodeLocation: string = 'location';
 
   /**
    * service
@@ -43,7 +32,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Service name defined.
    * Example: "payment"
    */
-  service: string
+  protected serviceName: string = 'service';
 
   /**
    * sampling_rate
@@ -51,7 +40,7 @@ type PowertoolLog = LogAttributes & {
    * Description: The value of the logging sampling rate in percentage.
    * Example: 0.1
    */
-  sampling_rate: number
+  protected sampleRate: string = 'sampling_rate';
 
   /**
    * message
@@ -59,7 +48,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Log statement value. Unserializable JSON values will be casted to string.
    * Example: "Collecting payment"
    */
-  message: string
+  protected message: string = 'message';
 
   /**
    * xray_trace_id
@@ -67,7 +56,7 @@ type PowertoolLog = LogAttributes & {
    * Description: X-Ray Trace ID when Lambda function has enabled Tracing.
    * Example: "1-5759e988-bd862e3fe1be46a994272793"
    */
-  xray_trace_id?: string
+  protected xrayTraceId: string = 'xray_trace_id';
 
   /**
    * cold_start
@@ -75,7 +64,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Indicates whether the current execution experienced a cold start.
    * Example: false
    */
-  cold_start?: boolean
+  protected coldStart: string = 'cold_start';
 
   /**
    * lambda_function_name
@@ -83,7 +72,7 @@ type PowertoolLog = LogAttributes & {
    * Description: The name of the Lambda function.
    * Example: "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
    */
-  lambda_function_name?: string
+  protected functionName: string = 'lambda_function_name';
 
   /**
    * lambda_function_memory_size
@@ -91,7 +80,7 @@ type PowertoolLog = LogAttributes & {
    * Description: The memory size of the Lambda function.
    * Example: 128
    */
-  lambda_function_memory_size?: number
+  protected functionMemorySize: string = 'lambda_function_memory_size';
 
   /**
    * lambda_function_arn
@@ -99,7 +88,7 @@ type PowertoolLog = LogAttributes & {
    * Description: The ARN of the Lambda function.
    * Example: "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
    */
-  lambda_function_arn?: string
+  protected functionArn: string = 'lambda_function_arn';
 
   /**
    * lambda_request_id
@@ -107,23 +96,58 @@ type PowertoolLog = LogAttributes & {
    * Description: The request ID of the current invocation.
    * Example: "899856cb-83d1-40d7-8611-9e78f15f32f4"
    */
-  lambda_request_id?: string
+  protected functionRequestId: string = 'lambda_request_id';
 
-};
+  public getTimestampKey(): string {
+    return this.timestamp;
+  }
 
-type LoggerOptions = {
-  logLevel?: LogLevel
-  serviceName?: string
-  sampleRate?: number
-  logEvent?: boolean
-  logSchema?: LogSchemaInterface
-  config?: ConfigServiceInterface
-  defaultAttributes?: LogAttributes
-};
+  public getLogLevelKey(): string {
+    return this.logLevel;
+  }
+
+  public getSourceCodeLocationKey(): string {
+    return this.sourceCodeLocation;
+  }
+
+  public getServiceNameKey(): string {
+    return this.serviceName;
+  }
+
+  public getSampleRateKey(): string {
+    return this.sampleRate;
+  }
+
+  public getMessageKey(): string {
+    return this.message;
+  }
+
+  public getXrayTraceIdKey(): string {
+    return this.xrayTraceId;
+  }
+
+  public getColdStartKey(): string {
+    return this.coldStart;
+  }
+
+  public getFunctionNameKey(): string {
+    return this.functionName;
+  }
+
+  public getFunctionMemorySizeKey(): string {
+    return this.functionMemorySize;
+  }
+
+  public getFunctionArnKey(): string {
+    return this.functionArn;
+  }
+
+  public getFunctionRequestIdKey(): string {
+    return this.functionRequestId;
+  }
+  
+}
 
 export {
-  LoggerOptions,
-  LogAttributes,
-  LogLevel,
-  PowertoolLog
+  PowertoolLogSchema
 };

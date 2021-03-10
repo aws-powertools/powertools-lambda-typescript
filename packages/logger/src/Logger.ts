@@ -10,7 +10,7 @@ import {
   LogAttributes,
   LoggerOptions,
   LogLevel,
-  LogLevelThresholds,
+  LogLevelThresholds, UnformattedAttributes,
 } from '../types';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
@@ -107,7 +107,7 @@ class Logger implements LoggerInterface {
   private createLogItem(logLevel: LogLevel, message: string, customAttributes: LogAttributes = {}): LogItem {
     this.addToDefaultLoggerAttributes({ logLevel, message, timestamp: new Date() });
     
-    return new LogItem().addAttributes(this.getLogFormatter().format(this.getDefaultLoggerAttributes()))
+    return new LogItem().addAttributes(this.getLogFormatter().format(this.getDefaultLoggerAttributes() as UnformattedAttributes))
       .addAttributes(customAttributes);
   }
 
@@ -150,7 +150,7 @@ class Logger implements LoggerInterface {
   private populateDefaultLoggerAttributes(serviceName?: string, environment?: Environment, customAttributes: LogAttributes = {}): void {
     this.addToDefaultLoggerAttributes({
       awsRegion: this.getEnvVarsService().getAwsRegion(),
-      env: environment || this.getCustomConfigService()?.getCurrentEnvironment() || this.getEnvVarsService().getCurrentEnvironment(),
+      environment: environment || this.getCustomConfigService()?.getCurrentEnvironment() || this.getEnvVarsService().getCurrentEnvironment(),
       functionName: this.getEnvVarsService().getFunctionName(),
       functionVersion: this.getEnvVarsService().getFunctionVersion(),
       logLevel: this.getLogLevel(),

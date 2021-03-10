@@ -42,3 +42,35 @@ const lambdaHandler: Handler = async (event, context) => {
 };
 
 lambdaHandler(dummyEvent, dummyContext, () => {});
+
+/**
+ * Sample output:
+ *
+ * {
+ *   message: 'This is an ERROR log',
+ *   service: 'foo-bar',
+ *   environment: 'prod',
+ *   awsRegion: 'eu-central-1',
+ *   correlationIds: {
+ *     awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+ *     xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+ *     myCustomCorrelationId: 'foo-bar-baz'
+ *   },
+ *   lambdaFunction: {
+ *     name: 'foo-bar-function',
+ *     arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+ *     memoryLimitInMB: 128,
+ *     version: '$LATEST',
+ *     coldStart: undefined
+ *   },
+ *   logLevel: 'ERROR',
+ *   timestamp: '2021-03-10T18:47:04.724Z',
+ *   logger: {
+ *     name: '@aws-lambda-powertools/logger',
+ *     version: '0.0.0',
+ *     level: 'ERROR',
+ *     sampleRateValue: 0.00001
+ *   }
+ * }
+ *
+ **/

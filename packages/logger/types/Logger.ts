@@ -30,7 +30,7 @@ type DefaultLoggerAttributes = LogAttributes | {[key in keyof Context]: Context[
   message?: string
 };
 
-type UnformattedAttributes = DefaultLoggerAttributes & {
+type UnformattedAttributes = LogAttributes & DefaultLoggerAttributes & {
   awsRequestId?: string
   environment?: Environment
   serviceName: string

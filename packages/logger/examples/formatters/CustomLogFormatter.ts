@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys */
+import * as powertool from '../../package.json';
 import { LogFormatter } from '../../src/formatter';
 import { LogAttributes, UnformattedAttributes } from '../../types';
 
@@ -9,15 +9,9 @@ class CustomLogFormatter extends LogFormatter {
   public format(attributes: UnformattedAttributes): MyCompanyLog {
     return {
       message: attributes.message,
-      timestamp: this.formatTimestamp(attributes.timestamp),
-      logLevel: attributes.logLevel,
       service: attributes.serviceName,
-      env: attributes.environment,
+      environment: attributes.environment,
       awsRegion: attributes.awsRegion,
-      logger: {
-        level: attributes.logLevel,
-        sampleRateValue: attributes.sampleRateValue,
-      },
       correlationIds: {
         awsRequestId: attributes.awsRequestId,
         xRayTraceId: attributes.xRayTraceId
@@ -28,6 +22,14 @@ class CustomLogFormatter extends LogFormatter {
         memoryLimitInMB: Number(attributes.memoryLimitInMB),
         version: attributes.functionVersion,
         coldStart: attributes.coldStart,
+      },
+      logLevel: attributes.logLevel,
+      timestamp: this.formatTimestamp(attributes.timestamp),
+      logger: {
+        name: powertool.name,
+        version: powertool.version,
+        level: attributes.logLevel,
+        sampleRateValue: attributes.sampleRateValue,
       },
     };
   }

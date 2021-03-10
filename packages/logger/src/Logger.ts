@@ -37,7 +37,7 @@ class Logger implements LoggerInterface {
   }
 
   public addContext(context: Context): void {
-    this.defaultLogAttributes = merge(this.getDefaultLogAttributes, this.getLogFormatter().formatContext(context, Logger.isColdStart()));
+    this.defaultLogAttributes = merge(this.getDefaultLogAttributes(), this.getLogFormatter().formatContext(context, Logger.isColdStart()));
   }
 
   public createChild(options: LoggerOptions = {}): Logger {
@@ -152,6 +152,7 @@ class Logger implements LoggerInterface {
 
   private setDefaultLogAttributes(serviceName?: string, environment?: Environment, customAttributes?: LogAttributes): void {
     this.defaultLogAttributes = merge(
+      this.getDefaultLogAttributes(),
       this.getLogFormatter().formatDefault({
         awsRegion: this.getEnvVarsService().getAwsRegion(),
         env: environment || this.getCustomConfigService()?.getCurrentEnvironment() || this.getEnvVarsService().getCurrentEnvironment(),
@@ -162,8 +163,9 @@ class Logger implements LoggerInterface {
         sampleRateValue: this.getSampleRateValue(),
         serviceName: serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
         xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
-      }),
-      customAttributes);
+      }));
+
+    this.defaultLogAttributes = merge(this.getDefaultLogAttributes(), customAttributes);
   }
 
   private setEnvVarsService(): void {

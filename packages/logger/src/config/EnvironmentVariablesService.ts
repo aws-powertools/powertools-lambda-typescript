@@ -9,10 +9,6 @@ class EnvironmentVariablesService extends ConfigService {
   private memoryLimitInMBVariable = 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE';
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
 
-  public constructor() {
-    super();
-  }
-
   public get(name: string): string {
     return process.env[name] || '';
   }

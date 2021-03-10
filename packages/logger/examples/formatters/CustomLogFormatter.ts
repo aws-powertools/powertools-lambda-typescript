@@ -1,45 +1,34 @@
 /* eslint-disable sort-keys */
-import { Context } from 'aws-lambda';
 import { LogFormatter } from '../../src/formatter';
-import { ExtraAttributes, LogAttributes, LoggerAttributes } from '../../types';
+import { LogAttributes, UnformattedAttributes } from '../../types';
+
+type MyCompanyLog = LogAttributes;
 
 class CustomLogFormatter extends LogFormatter {
 
-  public formatContext(context: Context, isColdStart: boolean): LogAttributes {
-    return {
-      lambdaFunction: {
-        name: context.functionName,
-        arn: context.invokedFunctionArn,
-        memoryLimitInMB: Number(context.memoryLimitInMB),
-        version: context.functionVersion,
-        coldStart: isColdStart,
-      },
-      correlationIds: {
-        awsRequestId: context.awsRequestId,
-      },
-    };
-  }
-
-  public formatDefault(baseAttributes: LoggerAttributes): LogAttributes {
-    return {
-      service: baseAttributes.serviceName,
-      env: baseAttributes.env,
-      awsRegion: baseAttributes.awsRegion,
-      logger: {
-        level: baseAttributes.logLevel,
-        sampleRateValue: baseAttributes.sampleRateValue,
-      },
-      correlationIds: {
-        xRayTraceId: baseAttributes.xRayTraceId
-      }
-    };
-  }
-
-  public formatExtraAttributes(attributes: ExtraAttributes): LogAttributes {
+  public format(attributes: UnformattedAttributes): MyCompanyLog {
     return {
       message: attributes.message,
       timestamp: this.formatTimestamp(attributes.timestamp),
-      logLevel: attributes.logLevel
+      logLevel: attributes.logLevel,
+      service: attributes.serviceName,
+      env: attributes.environment,
+      awsRegion: attributes.awsRegion,
+      logger: {
+        level: attributes.logLevel,
+        sampleRateValue: attributes.sampleRateValue,
+      },
+      correlationIds: {
+        awsRequestId: attributes.awsRequestId,
+        xRayTraceId: attributes.xRayTraceId
+      },
+      lambdaFunction: {
+        name: attributes.functionName,
+        arn: attributes.invokedFunctionArn,
+        memoryLimitInMB: Number(attributes.memoryLimitInMB),
+        version: attributes.functionVersion,
+        coldStart: attributes.coldStart,
+      },
     };
   }
 

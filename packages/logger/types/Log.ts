@@ -21,6 +21,7 @@ type ExtraAttributes = {
 };
 
 export {
+  LogAttributeValue,
   Environment,
   LogLevelThresholds,
   ExtraAttributes,

@@ -1,13 +1,8 @@
-import { Context } from 'aws-lambda';
-import { ExtraAttributes, LogAttributes } from '../../types';
+import { DefaultLoggerAttributes, LogAttributes } from '../../types';
 
 interface LogFormatterInterface {
 
-  formatContext(context: Context, isColdStart: boolean): LogAttributes
-
-  formatDefault(attributes: LogAttributes): LogAttributes
-
-  formatExtraAttributes(attributes: ExtraAttributes): LogAttributes
+  format(attributes: DefaultLoggerAttributes): LogAttributes
 
 }
 

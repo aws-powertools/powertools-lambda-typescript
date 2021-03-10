@@ -4,7 +4,14 @@ import { LogItem } from './log';
 
 import { cloneDeep, merge } from 'lodash/fp';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { Environment, LogAttributes, LoggerOptions, LogLevel, LogLevelThresholds } from '../types';
+import {
+  DefaultLoggerAttributes,
+  Environment,
+  LogAttributes,
+  LoggerOptions,
+  LogLevel,
+  LogLevelThresholds,
+} from '../types';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
 class Logger implements LoggerInterface {
@@ -13,7 +20,7 @@ class Logger implements LoggerInterface {
 
   private customConfigService?: ConfigServiceInterface;
 
-  private defaultLogAttributes: LogAttributes = {};
+  private defaultLoggerAttributes: DefaultLoggerAttributes = {};
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
 
@@ -37,7 +44,7 @@ class Logger implements LoggerInterface {
   }
 
   public addContext(context: Context): void {
-    this.defaultLogAttributes = merge(this.getDefaultLogAttributes(), this.getLogFormatter().formatContext(context, Logger.isColdStart()));
+    this.addToDefaultLoggerAttributes(context, { isColdStart: Logger.isColdStart() });
   }
 
   public createChild(options: LoggerOptions = {}): Logger {
@@ -70,6 +77,12 @@ class Logger implements LoggerInterface {
     this.printLog('WARN', this.createLogItem('WARN', message, attributes).getAttributes());
   }
 
+  private addToDefaultLoggerAttributes(...attributesArray: Array<DefaultLoggerAttributes>): void {
+    attributesArray.forEach((attributes: DefaultLoggerAttributes) => {
+      this.defaultLoggerAttributes = merge(this.getDefaultLoggerAttributes(), attributes);
+    });
+  }
+
   private applyOptions(options: LoggerOptions = {}): Logger {
     const {
       logLevel,
@@ -86,26 +99,24 @@ class Logger implements LoggerInterface {
     this.setLogLevel(logLevel);
     this.setSampleRateValue(sampleRateValue);
     this.setLogFormatter(logFormatter);
-    this.setDefaultLogAttributes(serviceName, environment, customAttributes);
+    this.populateDefaultLoggerAttributes(serviceName, environment, customAttributes);
 
     return this;
   }
 
   private createLogItem(logLevel: LogLevel, message: string, customAttributes: LogAttributes = {}): LogItem {
-    return new LogItem(this.getDefaultLogAttributes())
-      .addAttributes(
-        merge(
-          this.getLogFormatter().formatExtraAttributes({ logLevel, message, timestamp: new Date() }),
-          customAttributes
-        ));
+    this.addToDefaultLoggerAttributes({ logLevel, message, timestamp: new Date() });
+    
+    return new LogItem().addAttributes(this.getLogFormatter().format(this.getDefaultLoggerAttributes()))
+      .addAttributes(customAttributes);
   }
 
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;
   }
 
-  private getDefaultLogAttributes(): LogAttributes {
-    return this.defaultLogAttributes;
+  private getDefaultLoggerAttributes(): DefaultLoggerAttributes {
+    return this.defaultLoggerAttributes;
   }
 
   private getEnvVarsService(): EnvironmentVariablesService {
@@ -136,6 +147,20 @@ class Logger implements LoggerInterface {
     return this.sampleRateValue;
   }
 
+  private populateDefaultLoggerAttributes(serviceName?: string, environment?: Environment, customAttributes: LogAttributes = {}): void {
+    this.addToDefaultLoggerAttributes({
+      awsRegion: this.getEnvVarsService().getAwsRegion(),
+      env: environment || this.getCustomConfigService()?.getCurrentEnvironment() || this.getEnvVarsService().getCurrentEnvironment(),
+      functionName: this.getEnvVarsService().getFunctionName(),
+      functionVersion: this.getEnvVarsService().getFunctionVersion(),
+      logLevel: this.getLogLevel(),
+      memoryLimitInMB: this.getEnvVarsService().getFunctionMemory(),
+      sampleRateValue: this.getSampleRateValue(),
+      serviceName: serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
+      xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
+    }, customAttributes );
+  }
+
   private printLog(logLevel: LogLevel, log: LogAttributes): void {
     if (!this.shouldPrint(logLevel)) {
       return;
@@ -148,24 +173,6 @@ class Logger implements LoggerInterface {
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
     this.customConfigService = customConfigService? customConfigService : undefined;
-  }
-
-  private setDefaultLogAttributes(serviceName?: string, environment?: Environment, customAttributes?: LogAttributes): void {
-    this.defaultLogAttributes = merge(
-      this.getDefaultLogAttributes(),
-      this.getLogFormatter().formatDefault({
-        awsRegion: this.getEnvVarsService().getAwsRegion(),
-        env: environment || this.getCustomConfigService()?.getCurrentEnvironment() || this.getEnvVarsService().getCurrentEnvironment(),
-        functionName: this.getEnvVarsService().getFunctionName(),
-        functionVersion: this.getEnvVarsService().getFunctionVersion(),
-        logLevel: this.getLogLevel(),
-        memoryLimitInMB: this.getEnvVarsService().getFunctionMemory(),
-        sampleRateValue: this.getSampleRateValue(),
-        serviceName: serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
-        xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
-      }));
-
-    this.defaultLogAttributes = merge(this.getDefaultLogAttributes(), customAttributes);
   }
 
   private setEnvVarsService(): void {

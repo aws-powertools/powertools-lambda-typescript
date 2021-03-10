@@ -28,12 +28,14 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
+      lambda_function_memory_size: 0,
       message: 'foo',
       level: 'INFO',
       timestamp: '2016-06-20T12:08:10.000Z'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
+      lambda_function_memory_size: 0,
       level: 'INFO',
       message: 'foo',
       timestamp: '2016-06-20T12:08:10.000Z'
@@ -47,12 +49,14 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
+      lambda_function_memory_size: 0,
       timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
       level: 'ERROR',
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
+      lambda_function_memory_size: 0,
       level: 'ERROR',
       message: 'foo',
       timestamp: '2016-06-20T12:08:10.000Z',
@@ -65,12 +69,14 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
+      lambda_function_memory_size: 0,
       timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
       level: 'DEBUG',
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
+      lambda_function_memory_size: 0,
       level: 'DEBUG',
       message: 'foo',
       timestamp: '2016-06-20T12:08:10.000Z',
@@ -83,12 +89,14 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
+      lambda_function_memory_size: 0,
       timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
       level: 'WARN',
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
+      lambda_function_memory_size: 0,
       level: 'WARN',
       message: 'foo',
       timestamp: '2016-06-20T12:08:10.000Z',

@@ -1,8 +1,8 @@
-import { DefaultLoggerAttributes, LogAttributes } from '../../types';
+import { LogAttributes, UnformattedAttributes } from '../../types';
 
 interface LogFormatterInterface {
 
-  format(attributes: DefaultLoggerAttributes): LogAttributes
+  format(attributes: UnformattedAttributes): LogAttributes
 
 }
 

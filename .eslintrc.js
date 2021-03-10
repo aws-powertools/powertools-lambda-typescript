@@ -58,7 +58,6 @@ module.exports = {
       'ignoreDeclarationSort': false,
       'ignoreMemberSort': true,
       'memberSyntaxSortOrder': [ 'all', 'single', 'multiple', 'none' ]
-    } ],
-    'sort-keys': [ 'error', 'asc', { 'caseSensitive': true, 'minKeys': 5, 'natural': true } ]
+    } ]
   }
 };

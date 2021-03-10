@@ -1,4 +1,3 @@
-/* eslint-disable sort-keys */
 process.env._X_AMZN_TRACE_ID = 'abcdef123456abcdef123456abcdef123456';
 process.env.AWS_LAMBDA_FUNCTION_NAME = 'my-lambda-function';
 process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE = '128';
@@ -6,6 +5,7 @@ process.env.AWS_REGION = 'eu-central-1';
 process.env.CUSTOM_ENV = 'prod';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
+import * as powertool from '../../../package.json';
 import { CustomConfigService } from './config/CustomConfigService';
 import { CustomLogFormatter } from './formatters/CustomLogFormatter';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
@@ -21,8 +21,8 @@ const logger = new Logger({
   customAttributes: {
     awsAccountId: '123456789012',
     logger: {
-      name: 'aws-lambda-powertools-typescript',
-      version: 'v0.1.3'
+      name: powertool.name,
+      version: powertool.version,
     }
   }
 });

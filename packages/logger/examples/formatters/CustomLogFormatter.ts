@@ -1,4 +1,3 @@
-import * as powertool from '../../package.json';
 import { LogFormatter } from '../../src/formatter';
 import { LogAttributes, UnformattedAttributes } from '../../types';
 
@@ -26,8 +25,6 @@ class CustomLogFormatter extends LogFormatter {
       logLevel: attributes.logLevel,
       timestamp: this.formatTimestamp(attributes.timestamp),
       logger: {
-        name: powertool.name,
-        version: powertool.version,
         level: attributes.logLevel,
         sampleRateValue: attributes.sampleRateValue,
       },

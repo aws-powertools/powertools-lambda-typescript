@@ -14,7 +14,7 @@
         "baseUrl": "src/",
         "rootDirs": [ "src/" ]
     },
-    "include": [ "src/**/*" ],
+    "include": [ "src/**/*", "examples/**/*" ],
     "exclude": [ "./node_modules", "**/tests/*"],
     "watchOptions": {
         "watchFile": "useFsEvents",

@@ -83,8 +83,8 @@ class Logger implements LoggerInterface {
 
     this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
-    this.setLogLevel(logLevel, customConfigService);
-    this.setSampleRateValue(sampleRateValue, customConfigService);
+    this.setLogLevel(logLevel);
+    this.setSampleRateValue(sampleRateValue);
     this.setLogFormatter(logFormatter);
     this.setDefaultLogAttributes(serviceName, environment, customAttributes);
 
@@ -176,12 +176,12 @@ class Logger implements LoggerInterface {
     this.logFormatter = logFormatter || new PowertoolLogFormatter();
   }
 
-  private setLogLevel(logLevel?: LogLevel, customConfigService?: ConfigServiceInterface): void {
-    this.logLevel = (logLevel || customConfigService?.getLogLevel() || this.getEnvVarsService().getLogLevel() || Logger.defaultLogLevel) as LogLevel;
+  private setLogLevel(logLevel?: LogLevel): void {
+    this.logLevel = (logLevel || this.getCustomConfigService()?.getLogLevel() || this.getEnvVarsService().getLogLevel() || Logger.defaultLogLevel) as LogLevel;
   }
 
-  private setSampleRateValue(sampleRateValue?: number, customConfigService?: ConfigServiceInterface): void {
-    this.sampleRateValue = sampleRateValue || customConfigService?.getSampleRateValue() || this.getEnvVarsService().getSampleRateValue();
+  private setSampleRateValue(sampleRateValue?: number): void {
+    this.sampleRateValue = sampleRateValue || this.getCustomConfigService()?.getSampleRateValue() || this.getEnvVarsService().getSampleRateValue();
   }
 
   private shouldPrint(logLevel: LogLevel): boolean {

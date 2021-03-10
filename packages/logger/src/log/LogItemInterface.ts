@@ -1,6 +1,6 @@
-import { LogAttributes } from '../types/Log';
+import { LogAttributes } from '../../types/Log';
 
-interface LogDataInterface {
+interface LogItemInterface {
 
   addAttributes(attributes: LogAttributes): void
 
@@ -11,5 +11,5 @@ interface LogDataInterface {
 }
 
 export {
-  LogDataInterface
+  LogItemInterface
 };

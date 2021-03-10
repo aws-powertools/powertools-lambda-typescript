@@ -1,7 +1,7 @@
-import { LogAttributes } from '../types/Log';
-import { LogDataInterface } from './LogDataInterface';
+import { LogAttributes } from '../../types';
+import { LogItemInterface } from '.';
 
-class LogData implements LogDataInterface {
+class LogItem implements LogItemInterface {
 
   private attributes: LogAttributes = {};
 
@@ -11,7 +11,7 @@ class LogData implements LogDataInterface {
     return this;
   }
 
-  public addAttributes(attributes: LogAttributes): LogData {
+  public addAttributes(attributes: LogAttributes): LogItem {
     this.attributes = {
       ...this.attributes,
       ...attributes
@@ -31,5 +31,5 @@ class LogData implements LogDataInterface {
 }
 
 export {
-  LogData
+  LogItem
 };

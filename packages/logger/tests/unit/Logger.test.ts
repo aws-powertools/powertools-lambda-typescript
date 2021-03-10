@@ -1,13 +1,24 @@
 import { Logger } from '../../src';
 
+const mockDate = new Date(1466424490000);
+const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
+
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
 describe('Logger', () => {
 
-  const logger = new Logger();
+  const logger = new Logger({
+    logLevel: 'DEBUG'
+  });
 
   beforeEach(() => {
     consoleSpy.mockClear();
+    dateSpy.mockClear();
+  });
+
+  afterAll(() => {
+    consoleSpy.mockClear();
+    dateSpy.mockClear();
   });
 
   test('should return a valid INFO log', () => {
@@ -17,23 +28,15 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      timestamp: '2020-05-24 18:17:33,774',
       message: 'foo',
       level: 'INFO',
-      location: 'foo',
-      service: 'bar',
-      sampling_rate: 1,
-      xray_trace_id: '1234'
+      timestamp: '2016-06-20T12:08:10.000Z'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
-      timestamp: '2020-05-24 18:17:33,774',
-      message: 'foo',
       bar: 'baz',
       level: 'INFO',
-      location: 'foo',
-      service: 'bar',
-      sampling_rate: 1,
-      xray_trace_id: '1234'
+      message: 'foo',
+      timestamp: '2016-06-20T12:08:10.000Z'
     });
 
   });
@@ -44,23 +47,15 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      timestamp: '2020-05-24 18:17:33,774',
+      timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
       level: 'ERROR',
-      location: 'foo',
-      service: 'bar',
-      sampling_rate: 1,
-      xray_trace_id: '1234'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
-      timestamp: '2020-05-24 18:17:33,774',
-      message: 'foo',
       bar: 'baz',
       level: 'ERROR',
-      location: 'foo',
-      service: 'bar',
-      sampling_rate: 1,
-      xray_trace_id: '1234'
+      message: 'foo',
+      timestamp: '2016-06-20T12:08:10.000Z',
     });
   });
 
@@ -70,23 +65,15 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      timestamp: '2020-05-24 18:17:33,774',
+      timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
       level: 'DEBUG',
-      location: 'foo',
-      service: 'bar',
-      sampling_rate: 1,
-      xray_trace_id: '1234'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
-      timestamp: '2020-05-24 18:17:33,774',
-      message: 'foo',
       bar: 'baz',
       level: 'DEBUG',
-      location: 'foo',
-      service: 'bar',
-      sampling_rate: 1,
-      xray_trace_id: '1234'
+      message: 'foo',
+      timestamp: '2016-06-20T12:08:10.000Z',
     });
   });
 
@@ -96,23 +83,15 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      timestamp: '2020-05-24 18:17:33,774',
+      timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
       level: 'WARN',
-      location: 'foo',
-      service: 'bar',
-      sampling_rate: 1,
-      xray_trace_id: '1234'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
-      timestamp: '2020-05-24 18:17:33,774',
-      message: 'foo',
       bar: 'baz',
       level: 'WARN',
-      location: 'foo',
-      service: 'bar',
-      sampling_rate: 1,
-      xray_trace_id: '1234'
+      message: 'foo',
+      timestamp: '2016-06-20T12:08:10.000Z',
     });
 
   });

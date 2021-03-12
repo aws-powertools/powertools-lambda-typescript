@@ -14,7 +14,7 @@ jobs:
         run: npm ci
       - uses: actions/checkout@v2
       - name: Install node modules of packages
-        run: ./node_modules/.bin/lerna run c
+        run: ./node_modules/.bin/lerna exec -- npm ci
       - name: Run lint
         run: npm run lint
       - name: Run tests

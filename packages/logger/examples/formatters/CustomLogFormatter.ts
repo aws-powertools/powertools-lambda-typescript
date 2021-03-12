@@ -12,15 +12,15 @@ class CustomLogFormatter extends LogFormatter {
       environment: attributes.environment,
       awsRegion: attributes.awsRegion,
       correlationIds: {
-        awsRequestId: attributes.awsRequestId,
+        awsRequestId: attributes.lambdaContext?.awsRequestId,
         xRayTraceId: attributes.xRayTraceId
       },
       lambdaFunction: {
-        name: attributes.functionName,
-        arn: attributes.invokedFunctionArn,
-        memoryLimitInMB: Number(attributes.memoryLimitInMB),
-        version: attributes.functionVersion,
-        coldStart: attributes.coldStart,
+        name: attributes.lambdaContext?.name,
+        arn: attributes.lambdaContext?.arn,
+        memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
+        version: attributes.lambdaContext?.version,
+        coldStart: attributes.lambdaContext?.coldStart,
       },
       logLevel: attributes.logLevel,
       timestamp: this.formatTimestamp(attributes.timestamp),

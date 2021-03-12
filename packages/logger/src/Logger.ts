@@ -5,12 +5,13 @@ import { LogItem } from './log';
 import { cloneDeep, merge } from 'lodash/fp';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
-  DefaultLoggerAttributes,
   Environment,
+  LoggerData,
   LogAttributes,
   LoggerOptions,
   LogLevel,
-  LogLevelThresholds, UnformattedAttributes,
+  LogLevelThresholds,
+  UnformattedAttributes, LambdaFunctionContext,
 } from '../types';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
@@ -20,9 +21,9 @@ class Logger implements LoggerInterface {
 
   private customConfigService?: ConfigServiceInterface;
 
-  private defaultLoggerAttributes: DefaultLoggerAttributes = {};
-
   private static readonly defaultLogLevel: LogLevel = 'INFO';
+
+  private static readonly defaultSampleRate: number = 1;
 
   private envVarsService?: EnvironmentVariablesService;
 
@@ -37,14 +38,30 @@ class Logger implements LoggerInterface {
     'ERROR': 20
   };
 
-  private sampleRateValue?: number;
+  private loggerData: LoggerData = <LoggerData>{};
 
   public constructor(options: LoggerOptions = {}) {
     this.applyOptions(options);
   }
 
   public addContext(context: Context): void {
-    this.addToDefaultLoggerAttributes(context, { isColdStart: Logger.isColdStart() });
+    if (!this.isContextEnabled()) {
+      return;
+    }
+
+    const lambdaContext: LambdaFunctionContext = {
+      arn: context.invokedFunctionArn,
+      awsRequestId: context.awsRequestId,
+      coldStart: Logger.isColdStart(),
+      memoryLimitInMB: Number(context.memoryLimitInMB),
+      name: context.functionName,
+      version: context.functionVersion,
+    };
+
+    this.addToLoggerData({
+      lambdaContext
+    });
+
   }
 
   public createChild(options: LoggerOptions = {}): Logger {
@@ -77,9 +94,9 @@ class Logger implements LoggerInterface {
     this.printLog('WARN', this.createLogItem('WARN', message, attributes).getAttributes());
   }
 
-  private addToDefaultLoggerAttributes(...attributesArray: Array<DefaultLoggerAttributes>): void {
-    attributesArray.forEach((attributes: DefaultLoggerAttributes) => {
-      this.defaultLoggerAttributes = merge(this.getDefaultLoggerAttributes(), attributes);
+  private addToLoggerData(...attributesArray: Array<Partial<LoggerData>>): void {
+    attributesArray.forEach((attributes: Partial<LoggerData>) => {
+      this.loggerData = merge(this.getLoggerData(), attributes);
     });
   }
 
@@ -99,24 +116,21 @@ class Logger implements LoggerInterface {
     this.setLogLevel(logLevel);
     this.setSampleRateValue(sampleRateValue);
     this.setLogFormatter(logFormatter);
-    this.populateDefaultLoggerAttributes(serviceName, environment, customAttributes);
+    this.populateLoggerData(serviceName, environment, customAttributes);
 
     return this;
   }
 
   private createLogItem(logLevel: LogLevel, message: string, customAttributes: LogAttributes = {}): LogItem {
-    this.addToDefaultLoggerAttributes({ logLevel, message, timestamp: new Date() });
+    const unformattedAttributes: UnformattedAttributes = merge({ logLevel, message, timestamp: new Date() }, this.getLoggerData());
     
-    return new LogItem().addAttributes(this.getLogFormatter().format(this.getDefaultLoggerAttributes() as UnformattedAttributes))
+    return new LogItem()
+      .addAttributes(this.getLogFormatter().format(unformattedAttributes))
       .addAttributes(customAttributes);
   }
 
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;
-  }
-
-  private getDefaultLoggerAttributes(): DefaultLoggerAttributes {
-    return this.defaultLoggerAttributes;
   }
 
   private getEnvVarsService(): EnvironmentVariablesService {
@@ -136,25 +150,45 @@ class Logger implements LoggerInterface {
   }
 
   private getLogLevel(): LogLevel {
-    if (!this.logLevel) {
+    if (this.loggerData?.logLevel) {
       this.setLogLevel();
     }
 
     return <LogLevel> this.logLevel;
   }
 
-  private getSampleRateValue(): number | undefined {
-    return this.sampleRateValue;
+  private getLoggerData(): LoggerData {
+    return this.loggerData;
   }
 
-  private populateDefaultLoggerAttributes(serviceName?: string, environment?: Environment, customAttributes: LogAttributes = {}): void {
-    this.addToDefaultLoggerAttributes({
+  private getSampleRateValue(): number {
+    if (!this.loggerData?.sampleRateValue) {
+      this.setSampleRateValue();
+    }
+
+    return <number> this.loggerData?.sampleRateValue;
+  }
+
+  private isContextEnabled(): boolean {
+    return this.getCustomConfigService()?.getIsContextEnabled() === true || this.getEnvVarsService().getIsContextEnabled() === true;
+  }
+
+  private populateLoggerData(serviceName?: string, environment?: Environment, customAttributes: LogAttributes = {}): void {
+
+    if (this.isContextEnabled()) {
+      this.addToLoggerData( {
+        lambdaContext: {
+          coldStart: Logger.isColdStart(),
+          memoryLimitInMB: this.getEnvVarsService().getFunctionMemory(),
+          name: this.getEnvVarsService().getFunctionName(),
+          version:this.getEnvVarsService().getFunctionVersion(),
+        }
+      });
+    }
+
+    this.addToLoggerData({
       awsRegion: this.getEnvVarsService().getAwsRegion(),
       environment: environment || this.getCustomConfigService()?.getCurrentEnvironment() || this.getEnvVarsService().getCurrentEnvironment(),
-      functionName: this.getEnvVarsService().getFunctionName(),
-      functionVersion: this.getEnvVarsService().getFunctionVersion(),
-      logLevel: this.getLogLevel(),
-      memoryLimitInMB: this.getEnvVarsService().getFunctionMemory(),
       sampleRateValue: this.getSampleRateValue(),
       serviceName: serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
       xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
@@ -184,11 +218,13 @@ class Logger implements LoggerInterface {
   }
 
   private setLogLevel(logLevel?: LogLevel): void {
-    this.logLevel = (logLevel || this.getCustomConfigService()?.getLogLevel() || this.getEnvVarsService().getLogLevel() || Logger.defaultLogLevel) as LogLevel;
+    this.logLevel = (logLevel || this.getCustomConfigService()?.getLogLevel() || this.getEnvVarsService().getLogLevel()
+      || Logger.defaultLogLevel) as LogLevel;
   }
 
   private setSampleRateValue(sampleRateValue?: number): void {
-    this.sampleRateValue = sampleRateValue || this.getCustomConfigService()?.getSampleRateValue() || this.getEnvVarsService().getSampleRateValue();
+    this.loggerData.sampleRateValue = sampleRateValue || this.getCustomConfigService()?.getSampleRateValue()
+      || this.getEnvVarsService().getSampleRateValue() || Logger.defaultSampleRate;
   }
 
   private shouldPrint(logLevel: LogLevel): boolean {

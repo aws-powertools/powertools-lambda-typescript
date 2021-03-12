@@ -1,7 +1,6 @@
-import { LogFormatterInterface } from '../src/formatter';
 import { ConfigServiceInterface } from '../src/config';
+import { LogFormatterInterface } from '../src/formatter';
 import { Environment, LogAttributes, LogLevel } from './Log';
-import { Context } from 'aws-lambda';
 
 type LoggerOptions = {
   logLevel?: LogLevel
@@ -13,42 +12,39 @@ type LoggerOptions = {
   environment?: Environment
 };
 
-type DefaultLoggerAttributes = LogAttributes | {[key in keyof Context]: Context[key]} | {
-  awsRequestId?: string
-  environment?: Environment
-  serviceName?: string
-  sampleRateValue?: number
-  functionName?: string
-  xRayTraceId?: string
-  memoryLimitInMB?: number
-  coldStart?: boolean
-  awsRegion?: string
-  functionVersion?: string
-  invokedFunctionArn?: string
-  logLevel?: LogLevel
-  timestamp?: Date
-  message?: string
+type LambdaFunctionContext = {
+  name: string
+  memoryLimitInMB: number
+  version: string
+  coldStart: boolean
+  arn: string
+  awsRequestId: string
 };
 
-type UnformattedAttributes = LogAttributes & DefaultLoggerAttributes & {
-  awsRequestId?: string
+type LoggerData = LogAttributes & {
   environment?: Environment
   serviceName: string
-  sampleRateValue?: number
-  functionName: string
+  sampleRateValue: number
+  lambdaFunctionContext: LambdaFunctionContext
   xRayTraceId?: string
-  memoryLimitInMB?: number
-  invokedFunctionArn?: string
   awsRegion: string
-  coldStart: boolean
-  functionVersion: string
+};
+
+type UnformattedAttributes = LoggerData & {
+  environment?: Environment
+  serviceName: string
+  sampleRateValue: number
+  lambdaContext?: LambdaFunctionContext
+  xRayTraceId?: string
+  awsRegion: string
   logLevel: LogLevel
   timestamp: Date
   message: string
 };
 
 export {
+  LambdaFunctionContext,
   UnformattedAttributes,
-  DefaultLoggerAttributes,
+  LoggerData,
   LoggerOptions
 };

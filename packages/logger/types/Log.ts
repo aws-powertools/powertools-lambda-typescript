@@ -14,17 +14,10 @@ type LogAttributes = { [key: string]: LogAttributeValue };
 
 type Environment = 'dev' | 'local' | 'staging' | 'prod' | string;
 
-type ExtraAttributes = {
-  message: string
-  timestamp: Date
-  logLevel: LogLevel
-};
-
 export {
   LogAttributeValue,
   Environment,
   LogLevelThresholds,
-  ExtraAttributes,
   LogAttributes,
   LogLevel
 };

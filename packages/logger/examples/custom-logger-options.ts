@@ -1,8 +1,10 @@
-process.env._X_AMZN_TRACE_ID = 'abcdef123456abcdef123456abcdef123456';
-process.env.AWS_LAMBDA_FUNCTION_NAME = 'my-lambda-function';
-process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE = '128';
-process.env.AWS_REGION = 'eu-central-1';
+import { populateEnvironmentVariables } from '../tests/helpers';
+
+// Populate runtime
+populateEnvironmentVariables();
+// Additional runtime variables
 process.env.CUSTOM_ENV = 'prod';
+process.env.POWERTOOLS_CONTEXT_ENABLED = 'TRUE';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import * as powertool from '../../../package.json';
@@ -41,36 +43,4 @@ const lambdaHandler: Handler = async (event, context) => {
 
 };
 
-lambdaHandler(dummyEvent, dummyContext, () => {});
-
-/**
- * Sample output:
- *
- * {
- *   message: 'This is an ERROR log',
- *   service: 'foo-bar',
- *   environment: 'prod',
- *   awsRegion: 'eu-central-1',
- *   correlationIds: {
- *     awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
- *     xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
- *     myCustomCorrelationId: 'foo-bar-baz'
- *   },
- *   lambdaFunction: {
- *     name: 'foo-bar-function',
- *     arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
- *     memoryLimitInMB: 128,
- *     version: '$LATEST',
- *     coldStart: undefined
- *   },
- *   logLevel: 'ERROR',
- *   timestamp: '2021-03-10T18:47:04.724Z',
- *   logger: {
- *     name: '@aws-lambda-powertools/logger',
- *     version: '0.0.0',
- *     level: 'ERROR',
- *     sampleRateValue: 0.00001
- *   }
- * }
- *
- **/
+lambdaHandler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));

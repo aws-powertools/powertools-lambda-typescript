@@ -10,7 +10,7 @@ class EnvironmentVariablesService extends ConfigService {
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
 
   public get(name: string): string {
-    return process.env[name] || '';
+    return process.env[name]?.trim() || '';
   }
 
   public getAwsRegion(): string {
@@ -21,8 +21,10 @@ class EnvironmentVariablesService extends ConfigService {
     return this.get(this.currentEnvironmentVariable);
   }
 
-  public getFunctionMemory(): string {
-    return this.get(this.memoryLimitInMBVariable);
+  public getFunctionMemory(): number {
+    const value = this.get(this.memoryLimitInMBVariable);
+
+    return Number(value);
   }
 
   public getFunctionName(): string {
@@ -31,6 +33,10 @@ class EnvironmentVariablesService extends ConfigService {
 
   public getFunctionVersion(): string {
     return this.get(this.functionVersionVariable);
+  }
+
+  public getIsContextEnabled(): boolean {
+    return [ '1', 'TRUE', 'ON' ].includes(this.get(this.contextEnabledVariable).toUpperCase());
   }
 
   public getLogLevel(): string {

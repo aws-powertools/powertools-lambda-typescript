@@ -3,6 +3,7 @@ import { ConfigServiceInterface } from '.';
 abstract class ConfigService implements ConfigServiceInterface {
 
   // Custom environment variables
+  protected contextEnabledVariable = 'POWERTOOLS_CONTEXT_ENABLED';
   protected currentEnvironmentVariable = 'ENVIRONMENT';
   protected logLevelVariable = 'LOG_LEVEL';
   protected sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
@@ -11,6 +12,8 @@ abstract class ConfigService implements ConfigServiceInterface {
   abstract get(name: string): string;
 
   abstract getCurrentEnvironment(): string;
+
+  abstract getIsContextEnabled(): boolean;
 
   abstract getLogLevel(): string;
 

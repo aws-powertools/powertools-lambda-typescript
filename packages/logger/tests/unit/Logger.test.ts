@@ -1,4 +1,5 @@
 import { Logger } from '../../src';
+import { populateEnvironmentVariables } from '../helpers';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
@@ -7,8 +8,10 @@ const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
 describe('Logger', () => {
 
-  const logger = new Logger({
-    logLevel: 'DEBUG'
+  const originalEnvironmentVariables = process.env;
+
+  beforeAll(() => {
+    populateEnvironmentVariables();
   });
 
   beforeEach(() => {
@@ -17,89 +20,115 @@ describe('Logger', () => {
   });
 
   afterAll(() => {
-    consoleSpy.mockClear();
-    dateSpy.mockClear();
+    process.env = originalEnvironmentVariables;
   });
 
   test('should return a valid INFO log', () => {
+
+    const logger = new Logger();
 
     logger.info('foo');
     logger.info('foo', { bar: 'baz' });
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      lambda_function_memory_size: 0,
       message: 'foo',
+      sampling_rate: 1,
+      service: 'hello-world',
       level: 'INFO',
-      timestamp: '2016-06-20T12:08:10.000Z'
+      timestamp: '2016-06-20T12:08:10.000Z',
+      xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
-      lambda_function_memory_size: 0,
-      level: 'INFO',
       message: 'foo',
-      timestamp: '2016-06-20T12:08:10.000Z'
+      sampling_rate: 1,
+      service: 'hello-world',
+      level: 'INFO',
+      timestamp: '2016-06-20T12:08:10.000Z',
+      xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
     });
 
   });
 
   test('should return a valid ERROR log', () => {
+
+    const logger = new Logger();
+
     logger.error('foo');
     logger.error('foo', { bar: 'baz' });
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      lambda_function_memory_size: 0,
-      timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
+      sampling_rate: 1,
+      service: 'hello-world',
       level: 'ERROR',
+      timestamp: '2016-06-20T12:08:10.000Z',
+      xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
-      lambda_function_memory_size: 0,
-      level: 'ERROR',
       message: 'foo',
+      sampling_rate: 1,
+      service: 'hello-world',
+      level: 'ERROR',
       timestamp: '2016-06-20T12:08:10.000Z',
+      xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
     });
   });
 
   test('should return a valid DEBUG log', () => {
+
+    const logger = new Logger();
+
     logger.debug('foo');
     logger.debug('foo', { bar: 'baz' });
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      lambda_function_memory_size: 0,
-      timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
+      sampling_rate: 1,
+      service: 'hello-world',
       level: 'DEBUG',
+      timestamp: '2016-06-20T12:08:10.000Z',
+      xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
-      lambda_function_memory_size: 0,
-      level: 'DEBUG',
       message: 'foo',
+      sampling_rate: 1,
+      service: 'hello-world',
+      level: 'DEBUG',
       timestamp: '2016-06-20T12:08:10.000Z',
+      xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
     });
   });
 
   test('should return a valid WARN log', () => {
+
+    const logger = new Logger();
+
     logger.warn('foo');
     logger.warn('foo', { bar: 'baz' });
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      lambda_function_memory_size: 0,
+      sampling_rate: 1,
       timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
       level: 'WARN',
+      service: 'hello-world',
+      xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
-      lambda_function_memory_size: 0,
       level: 'WARN',
       message: 'foo',
+      sampling_rate: 1,
+      service: 'hello-world',
       timestamp: '2016-06-20T12:08:10.000Z',
+      xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
     });
 
   });

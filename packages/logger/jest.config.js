@@ -25,7 +25,7 @@ module.exports = {
       'statements': 70,
       'branches': 60,
       'functions': 70,
-      'lines': 80,
+      'lines': 70,
     },
   },
   'coverageReporters': [

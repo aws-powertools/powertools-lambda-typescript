@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install node modules of root dir
-        run: npm ci
-      - uses: actions/checkout@v2
-      - name: Install node modules of packages
-        run: ./node_modules/.bin/lerna exec -- npm ci
+      - name: Install packages
+        run: |
+        export NODE_ENV=dev
+        npm ci
+        npm run lerna-ci
       - name: Run lint
-        run: npm run lint
+        run: npm run lerna-lint
       - name: Run tests
-        run: npm run test
+        run: npm run lerna-test
       - name: Report Coverage
         if: ${{ github.event_name == 'pull_request' }}
         uses: romeovs/lcov-reporter-action@v0.2.11

@@ -10,8 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install packages
+      - name: Install node modules of root dir
         run: npm ci
+      - uses: actions/checkout@v2
+      - name: Install node modules of packages
+        run: ./node_modules/.bin/lerna run c
       - name: Run lint
         run: npm run lint
       - name: Run tests

@@ -12,22 +12,17 @@ import { Logger } from '../src';
 
 const parentLogger = new Logger();
 
-const lambdaHandler: Handler = async (event, context) => {
-  parentLogger.addContext(context);
+const childLogger = parentLogger.createChild({
+  logLevel: 'ERROR'
+});
 
-  parentLogger.debug('This is a DEBUG log, from the parent logger', { logger: 'parent' });
-  parentLogger.info('This is an INFO log, from the parent logger', { logger: 'parent' });
-  parentLogger.warn('This is a WARN log, from the parent logger', { logger: 'parent' });
-  parentLogger.error('This is an ERROR log, from the parent logger', { logger: 'parent' });
+const lambdaHandler: Handler = async () => {
 
-  const childLogger = parentLogger.createChild({
-    logLevel: 'ERROR'
-  });
+  parentLogger.info('This is an INFO log, from the parent logger');
+  parentLogger.error('This is an ERROR log, from the parent logger');
 
-  childLogger.debug('This is a DEBUG log, from the child logger', { logger: 'child' });
-  childLogger.info('This is an INFO log, from the child logger', { logger: 'child' });
-  childLogger.warn('This is a WARN log, from the child logger', { logger: 'child' });
-  childLogger.error('This is an ERROR log, from the child logger', { logger: 'child' });
+  childLogger.info('This is an INFO log, from the child logger');
+  childLogger.error('This is an ERROR log, from the child logger');
 
   return {
     foo: 'bar'

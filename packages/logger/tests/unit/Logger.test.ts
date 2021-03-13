@@ -33,7 +33,6 @@ describe('Logger', () => {
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
       message: 'foo',
-      sampling_rate: 1,
       service: 'hello-world',
       level: 'INFO',
       timestamp: '2016-06-20T12:08:10.000Z',
@@ -42,7 +41,6 @@ describe('Logger', () => {
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
       message: 'foo',
-      sampling_rate: 1,
       service: 'hello-world',
       level: 'INFO',
       timestamp: '2016-06-20T12:08:10.000Z',
@@ -61,7 +59,6 @@ describe('Logger', () => {
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
       message: 'foo',
-      sampling_rate: 1,
       service: 'hello-world',
       level: 'ERROR',
       timestamp: '2016-06-20T12:08:10.000Z',
@@ -70,7 +67,6 @@ describe('Logger', () => {
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
       message: 'foo',
-      sampling_rate: 1,
       service: 'hello-world',
       level: 'ERROR',
       timestamp: '2016-06-20T12:08:10.000Z',
@@ -88,7 +84,6 @@ describe('Logger', () => {
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
       message: 'foo',
-      sampling_rate: 1,
       service: 'hello-world',
       level: 'DEBUG',
       timestamp: '2016-06-20T12:08:10.000Z',
@@ -97,7 +92,6 @@ describe('Logger', () => {
     expect(console.log).toHaveBeenNthCalledWith(2, {
       bar: 'baz',
       message: 'foo',
-      sampling_rate: 1,
       service: 'hello-world',
       level: 'DEBUG',
       timestamp: '2016-06-20T12:08:10.000Z',
@@ -110,11 +104,10 @@ describe('Logger', () => {
     const logger = new Logger();
 
     logger.warn('foo');
-    logger.warn('foo', { bar: 'baz' });
+    logger.warn( { message: 'foo', bar: 'baz' });
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      sampling_rate: 1,
       timestamp: '2016-06-20T12:08:10.000Z',
       message: 'foo',
       level: 'WARN',
@@ -125,7 +118,6 @@ describe('Logger', () => {
       bar: 'baz',
       level: 'WARN',
       message: 'foo',
-      sampling_rate: 1,
       service: 'hello-world',
       timestamp: '2016-06-20T12:08:10.000Z',
       xray_trace_id: 'abcdef123456abcdef123456abcdef123456'

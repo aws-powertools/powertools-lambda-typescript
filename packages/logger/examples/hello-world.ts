@@ -15,10 +15,10 @@ const logger = new Logger();
 
 const lambdaHandler: Handler = async () => {
 
-  logger.debug('This is a DEBUG log', { bar: 'baz' });
-  logger.info('This is an INFO log', { bar: 'baz' });
-  logger.warn('This is a WARN log', { bar: 'baz' });
-  logger.error('This is an ERROR log', { bar: 'baz' });
+  logger.debug('This is a DEBUG log');
+  logger.info('This is an INFO log');
+  logger.warn('This is a WARN log');
+  logger.error('This is an ERROR log');
 
   return {
     foo: 'bar'

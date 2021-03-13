@@ -21,7 +21,9 @@
     "example:hello-world": "ts-node examples/hello-world.ts",
     "example:hello-world-with-context": "ts-node examples/hello-world-with-context.ts",
     "example:custom-logger-options": "ts-node examples/custom-logger-options.ts",
-    "example:child-logger": "ts-node examples/child-logger.ts"
+    "example:child-logger": "ts-node examples/child-logger.ts",
+    "example:additional-keys": "ts-node examples/additional-keys.ts",
+    "example:sample-rate": "ts-node examples/sample-rate.ts"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/logging#readme",
   "license": "MIT",

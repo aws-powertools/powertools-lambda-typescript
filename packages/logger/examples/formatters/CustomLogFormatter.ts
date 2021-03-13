@@ -25,7 +25,6 @@ class CustomLogFormatter extends LogFormatter {
       logLevel: attributes.logLevel,
       timestamp: this.formatTimestamp(attributes.timestamp),
       logger: {
-        level: attributes.logLevel,
         sampleRateValue: attributes.sampleRateValue,
       },
     };

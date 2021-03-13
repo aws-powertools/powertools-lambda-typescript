@@ -1,6 +1,6 @@
 import { ConfigServiceInterface } from '../src/config';
 import { LogFormatterInterface } from '../src/formatter';
-import { Environment, LogAttributes, LogLevel } from './Log';
+import { Environment, LogAttributes, LogAttributesWithMessage, LogLevel } from './Log';
 
 type LoggerOptions = {
   logLevel?: LogLevel
@@ -21,19 +21,20 @@ type LambdaFunctionContext = {
   awsRequestId: string
 };
 
-type LoggerData = LogAttributes & {
+type PowertoolAttributes = LogAttributes & {
   environment?: Environment
   serviceName: string
-  sampleRateValue: number
+  sampleRateValue?: number
   lambdaFunctionContext: LambdaFunctionContext
   xRayTraceId?: string
   awsRegion: string
 };
 
-type UnformattedAttributes = LoggerData & {
+type UnformattedAttributes = PowertoolAttributes & {
   environment?: Environment
+  error?: Error
   serviceName: string
-  sampleRateValue: number
+  sampleRateValue?: number
   lambdaContext?: LambdaFunctionContext
   xRayTraceId?: string
   awsRegion: string
@@ -42,9 +43,14 @@ type UnformattedAttributes = LoggerData & {
   message: string
 };
 
+type LoggerInput = string | LogAttributesWithMessage;
+type LoggerExtraInput = Array<Error | LogAttributes>;
+
 export {
+  LoggerInput,
+  LoggerExtraInput,
   LambdaFunctionContext,
   UnformattedAttributes,
-  LoggerData,
+  PowertoolAttributes,
   LoggerOptions
 };

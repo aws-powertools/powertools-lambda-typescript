@@ -1,14 +1,14 @@
-import { LogAttributes } from '../types';
+import { LoggerExtraInput, LoggerInput } from '../types';
 
 interface LoggerInterface {
 
-  debug(message: string, attributes?: LogAttributes): void
+  debug(input: LoggerInput, ...extraInput: LoggerExtraInput): void
 
-  error(message: string, attributes?: LogAttributes): void
+  error(input: LoggerInput, ...extraInput: LoggerExtraInput): void
 
-  info(message: string, attributes?: LogAttributes): void
+  info(input: LoggerInput, ...extraInput: LoggerExtraInput): void
 
-  warn(message: string, attributes?: LogAttributes): void
+  warn(input: LoggerInput, ...extraInput: LoggerExtraInput): void
 
 }
 

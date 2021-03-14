@@ -6,15 +6,15 @@
   "types": "lib/",
   "scripts": {
     "commit": "commit",
-    "ci": "lerna exec -- npm ci",
-    "test": "lerna exec -- jest --coverage  --detectOpenHandles",
-    "build": "lerna exec -- tsc",
-    "lint": "lerna exec -- eslint \"./{src,tests}/**/*.ts\"",
-    "format": "lerna exec -- eslint --fix \"./{src,tests}/**/*.ts\"",
-    "prepare": "lerna exec -- npm run build",
-    "prepublishOnly": "lerna exec -- npm test && lerna exec -- npm run lint",
-    "preversion": "lerna exec -- npm run lint",
-    "version": "lerna exec -- npm run format && git add -A src",
+    "lerna-ci": "lerna exec -- npm ci",
+    "lerna-test": "lerna exec -- jest --coverage  --detectOpenHandles",
+    "lerna-build": "lerna exec -- tsc",
+    "lerna-lint": "lerna exec -- eslint \"./{src,tests}/**/*.ts\"",
+    "lerna-format": "lerna exec -- eslint --fix \"./{src,tests}/**/*.ts\"",
+    "lerna-prepare": "lerna exec -- npm run build",
+    "lerna-prepublishOnly": "lerna exec -- npm test && lerna exec -- npm run lint",
+    "lerna-preversion": "lerna exec -- npm run lint",
+    "lerna-version": "lerna exec -- npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
   "repository": {
@@ -34,6 +34,7 @@
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
+    "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^26.0.19",
     "@types/node": "^14.14.16",
     "@typescript-eslint/eslint-plugin": "^4.11.1",

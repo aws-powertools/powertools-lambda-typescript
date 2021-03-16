@@ -10,6 +10,7 @@ type LoggerOptions = {
   customConfigService?: ConfigServiceInterface
   customAttributes?: LogAttributes
   environment?: Environment
+  isContextEnabled?: boolean
 };
 
 type LambdaFunctionContext = {
@@ -21,7 +22,7 @@ type LambdaFunctionContext = {
   awsRequestId: string
 };
 
-type PowertoolAttributes = LogAttributes & {
+type PowertoolLogAttributes = LogAttributes & {
   environment?: Environment
   serviceName: string
   sampleRateValue?: number
@@ -30,7 +31,7 @@ type PowertoolAttributes = LogAttributes & {
   awsRegion: string
 };
 
-type UnformattedAttributes = PowertoolAttributes & {
+type UnformattedAttributes = PowertoolLogAttributes & {
   environment?: Environment
   error?: Error
   serviceName: string
@@ -51,6 +52,6 @@ export {
   LoggerExtraInput,
   LambdaFunctionContext,
   UnformattedAttributes,
-  PowertoolAttributes,
+  PowertoolLogAttributes,
   LoggerOptions
 };

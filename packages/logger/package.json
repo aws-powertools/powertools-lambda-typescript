@@ -8,7 +8,7 @@
   },
   "scripts": {
     "commit": "commit",
-    "test": "jest --coverage  --detectOpenHandles",
+    "test": "jest  --detectOpenHandles",
     "watch": "jest --watch",
     "build": "tsc",
     "lint": "eslint \"./{src,tests}/**/*.ts\"",
@@ -20,6 +20,7 @@
     "postversion": "git push && git push --tags",
     "example:hello-world": "ts-node examples/hello-world.ts",
     "example:hello-world-with-context": "ts-node examples/hello-world-with-context.ts",
+    "example:hello-world-with-context-decorators": "ts-node examples/hello-world-with-context-decorators.ts",
     "example:custom-logger-options": "ts-node examples/custom-logger-options.ts",
     "example:child-logger": "ts-node examples/child-logger.ts",
     "example:additional-keys": "ts-node examples/additional-keys.ts",

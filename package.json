@@ -7,7 +7,7 @@
   "scripts": {
     "commit": "commit",
     "lerna-ci": "lerna exec -- npm ci",
-    "lerna-test": "lerna exec -- jest --coverage  --detectOpenHandles",
+    "lerna-test": "lerna exec -- npm run test",
     "lerna-build": "lerna exec -- tsc",
     "lerna-lint": "lerna exec -- eslint \"./{src,tests}/**/*.ts\"",
     "lerna-format": "lerna exec -- eslint --fix \"./{src,tests}/**/*.ts\"",

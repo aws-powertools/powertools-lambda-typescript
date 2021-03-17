@@ -1,4 +1,6 @@
 import { ConfigServiceInterface } from '../src/config';
+import { Handler } from 'aws-lambda';
+import { LambdaInterface } from '../src/lambda';
 import { LogFormatterInterface } from '../src/formatter';
 import { Environment, LogAttributes, LogAttributesWithMessage, LogLevel } from './Log';
 
@@ -47,7 +49,10 @@ type UnformattedAttributes = PowertoolLogAttributes & {
 type LoggerInput = string | LogAttributesWithMessage;
 type LoggerExtraInput = Array<Error | LogAttributes>;
 
+type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
+
 export {
+  HandlerMethodDecorator,
   LoggerInput,
   LoggerExtraInput,
   LambdaFunctionContext,

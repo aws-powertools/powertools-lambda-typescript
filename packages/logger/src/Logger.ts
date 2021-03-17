@@ -13,7 +13,8 @@ import {
   LogLevelThresholds,
   LambdaFunctionContext,
   LoggerInput,
-  LoggerExtraInput
+  LoggerExtraInput,
+  HandlerMethodDecorator
 } from '../types';
 
 class Logger implements LoggerInterface {
@@ -26,7 +27,7 @@ class Logger implements LoggerInterface {
 
   private static readonly defaultLogLevelThreshold: LogLevel = 'INFO';
 
-  private envVarsService: EnvironmentVariablesService;
+  private readonly envVarsService: EnvironmentVariablesService;
 
   private static isColdStart: boolean = true;
 
@@ -106,17 +107,11 @@ class Logger implements LoggerInterface {
   }
 
   public debug(input: LoggerInput, ...extraInput: LoggerExtraInput): void {
-    if (!this.shouldPrint('DEBUG')) {
-      return;
-    }
-    this.printLog(this.createLogItem('DEBUG', input, extraInput).getAttributes());
+    this.processLogInputData('DEBUG', input, extraInput);
   }
 
   public error(input: LoggerInput, ...extraInput: LoggerExtraInput): void {
-    if (!this.shouldPrint('ERROR')) {
-      return;
-    }
-    this.printLog(this.createLogItem('ERROR', input, extraInput).getAttributes());
+    this.processLogInputData('ERROR', input, extraInput);
   }
 
   public static getIsColdStart(): boolean {
@@ -130,17 +125,25 @@ class Logger implements LoggerInterface {
   }
 
   public info(input: LoggerInput, ...extraInput: LoggerExtraInput): void {
-    if (!this.shouldPrint('INFO')) {
-      return;
-    }
-    this.printLog(this.createLogItem('INFO', input, extraInput).getAttributes());
+    this.processLogInputData('INFO', input, extraInput);
+  }
+
+  public injectLambdaContext(enableContext: boolean = true): HandlerMethodDecorator {
+    return (target, propertyKey, descriptor ) => {
+      const originalMethod = descriptor.value;
+
+      descriptor.value = (event, context, callback) => {
+        this.setIsContextEnabled(enableContext);
+        this.addContext(context);
+        const result = originalMethod?.apply(this, [ event, context, callback ]);
+
+        return result;
+      };
+    };
   }
 
   public warn(input: LoggerInput, ...extraInput: LoggerExtraInput): void {
-    if (!this.shouldPrint('WARN')) {
-      return;
-    }
-    this.printLog(this.createLogItem('WARN', input, extraInput).getAttributes());
+    this.processLogInputData('WARN', input, extraInput);
   }
 
   private addToPowertoolLogAttributes(...attributesArray: Array<Partial<PowertoolLogAttributes>>): void {
@@ -290,6 +293,13 @@ class Logger implements LoggerInterface {
     Object.keys(log).forEach(key => (log[key] === undefined || log[key] === '' || log[key] === null) && delete log[key]);
 
     console.log(log);
+  }
+
+  private processLogInputData(logLevel: LogLevel, input: LoggerInput, extraInput: LoggerExtraInput): void {
+    if (!this.shouldPrint(logLevel)) {
+      return;
+    }
+    this.printLog(this.createLogItem(logLevel, input, extraInput).getAttributes());
   }
 
   private setCustomAttributes(attributes: LogAttributes): void {

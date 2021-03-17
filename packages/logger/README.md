@@ -9,7 +9,7 @@
 import { Logger } from '../src';
 // When going public, it will be something like: import { Logger } from '@aws-lambda-powertools/logger';
 
-// Environment variables set for the lambda
+// Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 
@@ -53,7 +53,7 @@ logger.error('This is an ERROR log');
 Without decorators:
 
 ```typescript
-// Environment variables set for the lambda
+// Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 process.env.POWERTOOLS_CONTEXT_ENABLED = 'TRUE';
@@ -113,7 +113,7 @@ const lambdaHandler: Handler = async (event, context) => {
 With decorators:
 
 ```typescript
-// Environment variables set for the lambda
+// Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'INFO';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 
@@ -159,7 +159,7 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 
 ```typescript
 
-// Environment variables set for the lambda
+// Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 
@@ -222,7 +222,7 @@ const lambdaHandler: Handler = async () => {
 ### Reusing Logger across your code
 
 ```typescript
-// Environment variables set for the lambda
+// Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'INFO';
 
 const parentLogger = new Logger();
@@ -282,7 +282,7 @@ const lambdaHandler: Handler = async () => {
 
 ```typescript
 
-// Environment variables set for the lambda
+// Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 

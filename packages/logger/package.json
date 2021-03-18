@@ -8,7 +8,7 @@
   },
   "scripts": {
     "commit": "commit",
-    "test": "jest --coverage  --detectOpenHandles",
+    "test": "jest  --detectOpenHandles",
     "watch": "jest --watch",
     "build": "tsc",
     "lint": "eslint \"./{src,tests}/**/*.ts\"",

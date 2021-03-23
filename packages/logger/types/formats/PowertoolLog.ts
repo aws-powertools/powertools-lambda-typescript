@@ -1,4 +1,4 @@
-import { LogAttributes, LogLevel } from '..';
+import { LogAttributes, LogLevel } from '../Log';
 
 type PowertoolLog = LogAttributes & {
 

@@ -10,21 +10,20 @@ type LoggerOptions = {
   sampleRateValue?: number
   logFormatter?: LogFormatterInterface
   customConfigService?: ConfigServiceInterface
-  customAttributes?: LogAttributes
+  persistentLogAttributes?: LogAttributes
   environment?: Environment
-  isContextEnabled?: boolean
 };
 
 type LambdaFunctionContext = {
-  name: string
+  functionName: string
   memoryLimitInMB: number
-  version: string
+  functionVersion: string
   coldStart: boolean
-  arn: string
+  invokedFunctionArn: string
   awsRequestId: string
 };
 
-type PowertoolLogAttributes = LogAttributes & {
+type PowertoolLogData = LogAttributes & {
   environment?: Environment
   serviceName: string
   sampleRateValue?: number
@@ -33,7 +32,7 @@ type PowertoolLogAttributes = LogAttributes & {
   awsRegion: string
 };
 
-type UnformattedAttributes = PowertoolLogAttributes & {
+type UnformattedAttributes = {
   environment?: Environment
   error?: Error
   serviceName: string
@@ -46,17 +45,17 @@ type UnformattedAttributes = PowertoolLogAttributes & {
   message: string
 };
 
-type LoggerInput = string | LogAttributesWithMessage;
-type LoggerExtraInput = Array<Error | LogAttributes>;
+type LogItemMessage = string | LogAttributesWithMessage;
+type LogItemExtraInput = Array<Error | LogAttributes>;
 
 type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
 
 export {
+  LogItemMessage,
+  LogItemExtraInput,
   HandlerMethodDecorator,
-  LoggerInput,
-  LoggerExtraInput,
   LambdaFunctionContext,
   UnformattedAttributes,
-  PowertoolLogAttributes,
+  PowertoolLogData,
   LoggerOptions
 };

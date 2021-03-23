@@ -56,7 +56,6 @@ Without decorators:
 // Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
-process.env.POWERTOOLS_CONTEXT_ENABLED = 'TRUE';
 
 const logger = new Logger();
 
@@ -333,9 +332,7 @@ const lambdaHandler: Handler = async () => {
 ## Custom logger options: log level, service name, sample rate value, log attributes, variables source, log format
 
 ```typescript
-
 process.env.CUSTOM_ENV = 'prod';
-process.env.POWERTOOLS_CONTEXT_ENABLED = 'TRUE';
 
 // Custom configuration service for variables, and custom formatter to comply to different log JSON schema
 import { CustomConfigService } from './config/CustomConfigService';

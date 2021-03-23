@@ -6,8 +6,6 @@ interface LogItemInterface {
 
   getAttributes(): LogAttributes
 
-  toJSON(): string
-
 }
 
 export {

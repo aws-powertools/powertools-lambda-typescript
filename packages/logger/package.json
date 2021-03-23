@@ -19,12 +19,14 @@
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
     "example:hello-world": "ts-node examples/hello-world.ts",
-    "example:hello-world-with-context": "ts-node examples/hello-world-with-context.ts",
-    "example:hello-world-with-context-decorators": "ts-node examples/hello-world-with-context-decorators.ts",
+    "example:hello-world-with-context": "ts-node examples/inject-context.ts",
+    "example:hello-world-errors": "ts-node examples/errors.ts",
     "example:custom-logger-options": "ts-node examples/custom-logger-options.ts",
     "example:child-logger": "ts-node examples/child-logger.ts",
     "example:additional-keys": "ts-node examples/additional-keys.ts",
-    "example:sample-rate": "ts-node examples/sample-rate.ts"
+    "example:sample-rate": "ts-node examples/sample-rate.ts",
+    "example:persistent-attributes": "ts-node examples/persistent-attributes.ts",
+    "example:ephemeral-attributes": "ts-node examples/ephemeral-attributes.ts"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/logging#readme",
   "license": "MIT",

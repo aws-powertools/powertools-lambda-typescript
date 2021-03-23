@@ -4,8 +4,6 @@ interface ConfigServiceInterface {
 
   getCurrentEnvironment(): string
 
-  getIsContextEnabled(): boolean
-
   getLogLevel(): string
 
   getSampleRateValue(): number | undefined

@@ -3,7 +3,7 @@ type LogLevelInfo = 'INFO';
 type LogLevelWarn = 'WARN';
 type LogLevelError = 'ERROR';
 
-type LogLevel = LogLevelDebug | LogLevelInfo | LogLevelWarn | LogLevelError | string;
+type LogLevel = LogLevelDebug | LogLevelInfo | LogLevelWarn | LogLevelError;
 
 type LogLevelThresholds = {
   [key in LogLevel]: number;

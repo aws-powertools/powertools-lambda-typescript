@@ -5,7 +5,6 @@ populateEnvironmentVariables();
 // Additional runtime variables
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
-process.env.POWERTOOLS_CONTEXT_ENABLED = 'TRUE';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';

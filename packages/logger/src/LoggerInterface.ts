@@ -1,14 +1,14 @@
-import { LoggerExtraInput, LoggerInput } from '../types';
+import { LogItemExtraInput, LogItemMessage } from '../types';
 
 interface LoggerInterface {
 
-  debug(input: LoggerInput, ...extraInput: LoggerExtraInput): void
+  debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void
 
-  error(input: LoggerInput, ...extraInput: LoggerExtraInput): void
+  error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void
 
-  info(input: LoggerInput, ...extraInput: LoggerExtraInput): void
+  info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void
 
-  warn(input: LoggerInput, ...extraInput: LoggerExtraInput): void
+  warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void
 
 }
 

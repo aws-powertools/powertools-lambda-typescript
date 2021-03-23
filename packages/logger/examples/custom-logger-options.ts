@@ -4,7 +4,6 @@ import { populateEnvironmentVariables } from '../tests/helpers';
 populateEnvironmentVariables();
 // Additional runtime variables
 process.env.CUSTOM_ENV = 'prod';
-process.env.POWERTOOLS_CONTEXT_ENABLED = 'TRUE';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import * as powertool from '../../../package.json';
@@ -18,7 +17,7 @@ const logger = new Logger({
   logLevel: 'INFO', // Override options
   serviceName: 'foo-bar',
   sampleRateValue: 0.00001,
-  customAttributes: { // Custom attributes that will be added in every log
+  persistentLogAttributes: { // Custom attributes that will be added in every log
     awsAccountId: '123456789012',
     logger: {
       name: powertool.name,

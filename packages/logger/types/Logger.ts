@@ -8,20 +8,20 @@ type LoggerOptions = {
   sampleRateValue?: number
   logFormatter?: LogFormatterInterface
   customConfigService?: ConfigServiceInterface
-  customAttributes?: LogAttributes
+  persistentLogAttributes?: LogAttributes
   environment?: Environment
 };
 
 type LambdaFunctionContext = {
-  name: string
+  functionName: string
   memoryLimitInMB: number
-  version: string
+  functionVersion: string
   coldStart: boolean
-  arn: string
+  invokedFunctionArn: string
   awsRequestId: string
 };
 
-type PowertoolAttributes = LogAttributes & {
+type PowertoolLogData = LogAttributes & {
   environment?: Environment
   serviceName: string
   sampleRateValue?: number
@@ -30,7 +30,7 @@ type PowertoolAttributes = LogAttributes & {
   awsRegion: string
 };
 
-type UnformattedAttributes = PowertoolAttributes & {
+type UnformattedAttributes = {
   environment?: Environment
   error?: Error
   serviceName: string
@@ -43,14 +43,14 @@ type UnformattedAttributes = PowertoolAttributes & {
   message: string
 };
 
-type LoggerInput = string | LogAttributesWithMessage;
-type LoggerExtraInput = Array<Error | LogAttributes>;
+type LogItemMessage = string | LogAttributesWithMessage;
+type LogItemExtraInput = Array<Error | LogAttributes>;
 
 export {
-  LoggerInput,
-  LoggerExtraInput,
+  LogItemMessage,
+  LogItemExtraInput,
   LambdaFunctionContext,
   UnformattedAttributes,
-  PowertoolAttributes,
+  PowertoolLogData,
   LoggerOptions
 };

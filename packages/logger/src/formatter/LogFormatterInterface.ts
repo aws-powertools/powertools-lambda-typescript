@@ -2,7 +2,9 @@ import { LogAttributes, UnformattedAttributes } from '../../types';
 
 interface LogFormatterInterface {
 
-  format(attributes: UnformattedAttributes): LogAttributes
+  formatAttributes(attributes: UnformattedAttributes): LogAttributes
+
+  formatError(error: Error): LogAttributes
 
 }
 

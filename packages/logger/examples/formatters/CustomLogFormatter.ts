@@ -5,7 +5,7 @@ type MyCompanyLog = LogAttributes;
 
 class CustomLogFormatter extends LogFormatter {
 
-  public format(attributes: UnformattedAttributes): MyCompanyLog {
+  public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
     return {
       message: attributes.message,
       service: attributes.serviceName,
@@ -16,10 +16,10 @@ class CustomLogFormatter extends LogFormatter {
         xRayTraceId: attributes.xRayTraceId
       },
       lambdaFunction: {
-        name: attributes.lambdaContext?.name,
-        arn: attributes.lambdaContext?.arn,
+        name: attributes.lambdaContext?.functionName,
+        arn: attributes.lambdaContext?.invokedFunctionArn,
         memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
-        version: attributes.lambdaContext?.version,
+        version: attributes.lambdaContext?.functionVersion,
         coldStart: attributes.lambdaContext?.coldStart,
       },
       logLevel: attributes.logLevel,

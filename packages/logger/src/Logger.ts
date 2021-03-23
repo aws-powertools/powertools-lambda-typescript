@@ -6,22 +6,20 @@ import { cloneDeep, merge } from 'lodash/fp';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
   Environment,
-  PowertoolAttributes,
+  PowertoolLogData,
   LogAttributes,
   LoggerOptions,
   LogLevel,
   LogLevelThresholds,
   LambdaFunctionContext,
-  LoggerInput,
-  LoggerExtraInput
+  LogItemMessage,
+  LogItemExtraInput
 } from '../types';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
 class Logger implements LoggerInterface {
 
   private static coldStart: boolean = true;
-
-  private customAttributes?: LogAttributes = {};
 
   private customConfigService?: ConfigServiceInterface;
 
@@ -40,54 +38,62 @@ class Logger implements LoggerInterface {
     'ERROR': 20
   };
 
-  private powertoolAttributes: PowertoolAttributes = <PowertoolAttributes>{};
+  private logsSampled: boolean = false;
+
+  private persistentLogAttributes?: LogAttributes = {};
+
+  private powertoolLogData: PowertoolLogData = <PowertoolLogData>{};
 
   public constructor(options: LoggerOptions = {}) {
     this.setOptions(options);
   }
 
   public addContext(context: Context): void {
-    if (!this.isContextEnabled()) {
-      return;
-    }
-
     const lambdaContext: Partial<LambdaFunctionContext> = {
-      arn: context.invokedFunctionArn,
+      invokedFunctionArn: context.invokedFunctionArn,
+      coldStart: Logger.isColdStart(),
       awsRequestId: context.awsRequestId,
       memoryLimitInMB: Number(context.memoryLimitInMB),
-      name: context.functionName,
-      version: context.functionVersion,
+      functionName: context.functionName,
+      functionVersion: context.functionVersion,
     };
 
-    this.addToPowertoolAttributes({
+    this.addToPowertoolLogData({
       lambdaContext
     });
+  }
 
+  public addPersistentLogAttributes(attributes?: LogAttributes): void {
+    this.persistentLogAttributes = merge(this.getPersistentLogAttributes(), attributes);
+  }
+
+  public appendKeys(attributes?: LogAttributes): void {
+    this.addPersistentLogAttributes(attributes);
   }
 
   public createChild(options: LoggerOptions = {}): Logger {
     return cloneDeep(this).setOptions(options);
   }
 
-  public debug(input: LoggerInput, ...extraInput: LoggerExtraInput): void {
+  public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     if (!this.shouldPrint('DEBUG')) {
       return;
     }
-    this.printLog('DEBUG', this.createLogItem('DEBUG', input, extraInput).getAttributes());
+    this.printLog(this.createAndPopulateLogItem('DEBUG', input, extraInput));
   }
 
-  public error(input: LoggerInput, ...extraInput: LoggerExtraInput): void {
+  public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     if (!this.shouldPrint('ERROR')) {
       return;
     }
-    this.printLog('ERROR', this.createLogItem('ERROR', input, extraInput).getAttributes());
+    this.printLog(this.createAndPopulateLogItem('ERROR', input, extraInput));
   }
 
-  public info(input: LoggerInput, ...extraInput: LoggerExtraInput): void {
+  public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     if (!this.shouldPrint('INFO')) {
       return;
     }
-    this.printLog('INFO', this.createLogItem('INFO', input, extraInput).getAttributes());
+    this.printLog(this.createAndPopulateLogItem('INFO', input, extraInput));
   }
 
   public static isColdStart(): boolean {
@@ -100,52 +106,53 @@ class Logger implements LoggerInterface {
     return false;
   }
 
-  public warn(input: LoggerInput, ...extraInput: LoggerExtraInput): void {
+  public refreshSampleRateCalculation(): void {
+    this.setLogsSampled();
+  }
+
+  public setSampleRateValue(sampleRateValue?: number): void {
+    this.powertoolLogData.sampleRateValue = sampleRateValue || this.getCustomConfigService()?.getSampleRateValue()
+      || this.getEnvVarsService().getSampleRateValue();
+  }
+
+  public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     if (!this.shouldPrint('WARN')) {
       return;
     }
-    this.printLog('WARN', this.createLogItem('WARN', input, extraInput).getAttributes());
+    this.printLog(this.createAndPopulateLogItem('WARN', input, extraInput));
   }
 
-  private addToPowertoolAttributes(...attributesArray: Array<Partial<PowertoolAttributes>>): void {
-    attributesArray.forEach((attributes: Partial<PowertoolAttributes>) => {
-      this.powertoolAttributes = merge(this.getPowertoolAttributes(), attributes);
+  private addToPowertoolLogData(...attributesArray: Array<Partial<PowertoolLogData>>): void {
+    attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
+      this.powertoolLogData = merge(this.getPowertoolLogData(), attributes);
     });
   }
 
-  private createLogItem(logLevel: LogLevel, input: LoggerInput, extraInput: LoggerExtraInput): LogItem {
+  private createAndPopulateLogItem(logLevel: LogLevel, input: LogItemMessage, extraInput: LogItemExtraInput): LogItem {
 
-    const logItem = new LogItem().addAttributes(
-      this.getLogFormatter().format(
-        merge({
-          logLevel,
-          timestamp: new Date(),
-          message: (typeof input === 'string') ? input : input.message
-        },
-        this.getPowertoolAttributes())
-      )
-    ).addAttributes(this.getCustomAttributes());
+    const unformattedBaseAttributes = merge(
+      this.getPowertoolLogData(),
+      {
+        logLevel,
+        timestamp: new Date(),
+        message: (typeof input === 'string') ? input : input.message
+      });
 
+    const logItem = new LogItem({
+      baseAttributes: this.getLogFormatter().formatAttributes(unformattedBaseAttributes),
+      persistentAttributes: this.getPersistentLogAttributes()
+    });
+
+    // Add ephemeral attributes
     if (typeof input !== 'string') {
       logItem.addAttributes(input);
     }
-    
     extraInput.forEach((item: Error | LogAttributes) => {
-      const attributes = (item instanceof Error) ? {
-        error: {
-          name: item.name,
-          message: item.message,
-          stack: item.stack,
-        }
-      } : item;
+      const attributes = (item instanceof Error) ? { error: item } : item;
       logItem.addAttributes(attributes);
     });
     
     return logItem;
-  }
-
-  private getCustomAttributes(): LogAttributes {
-    return this.customAttributes || {};
   }
 
   private getCustomConfigService(): ConfigServiceInterface | undefined {
@@ -169,37 +176,56 @@ class Logger implements LoggerInterface {
   }
 
   private getLogLevel(): LogLevel {
-    if (this.powertoolAttributes?.logLevel) {
+    if (this.powertoolLogData?.logLevel) {
       this.setLogLevel();
     }
 
     return <LogLevel> this.logLevel;
   }
 
-  private getPowertoolAttributes(): PowertoolAttributes {
-    return this.powertoolAttributes || {};
+  private getLogsSampled(): boolean {
+    return this.logsSampled;
+  }
+
+  private getPersistentLogAttributes(): LogAttributes {
+    return this.persistentLogAttributes || {};
+  }
+
+  private getPowertoolLogData(): PowertoolLogData {
+    return this.powertoolLogData || {};
   }
 
   private getSampleRateValue(): number {
-    if (!this.powertoolAttributes?.sampleRateValue) {
+    if (!this.powertoolLogData?.sampleRateValue) {
       this.setSampleRateValue();
     }
 
-    return <number> this.powertoolAttributes?.sampleRateValue;
+    return <number> this.powertoolLogData?.sampleRateValue;
   }
 
-  private isContextEnabled(): boolean {
-    return this.getCustomConfigService()?.getIsContextEnabled() === true || this.getEnvVarsService().getIsContextEnabled() === true;
-  }
+  private printLog(log: LogItem): void {
+    log.prepareForPrint();
 
-  private printLog(logLevel: LogLevel, log: LogAttributes): void {
-    Object.keys(log).forEach(key => (log[key] === undefined || log[key] === '' || log[key] === null) && delete log[key]);
+    const references = new WeakSet();
 
-    console.log(log);
-  }
+    try {
+      console.log(JSON.parse(JSON.stringify(log.getAttributes(), (key: string, value: LogAttributes) => {
+        let item = value;
+        if (item instanceof Error) {
+          item = this.getLogFormatter().formatError(item);
+        }
+        if (typeof item === 'object' && value !== null) {
+          if (references.has(item)) {
+            return;
+          }
+          references.add(item);
+        }
 
-  private setCustomAttributes(attributes?: LogAttributes): void {
-    this.customAttributes = attributes;
+        return item;
+      })));
+    } catch (err) {
+      console.log('Unexpected error occurred trying to print the log', err);
+    }
   }
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
@@ -219,6 +245,12 @@ class Logger implements LoggerInterface {
       || Logger.defaultLogLevel) as LogLevel;
   }
 
+  private setLogsSampled(): void {
+    const sampleRateValue = this.getSampleRateValue();
+    // TODO: revisit Math.random() as it's not a real randomization
+    this.logsSampled = sampleRateValue !== undefined && (sampleRateValue === 1 || Math.random() < sampleRateValue);
+  }
+
   private setOptions(options: LoggerOptions = {}): Logger {
     const {
       logLevel,
@@ -226,7 +258,7 @@ class Logger implements LoggerInterface {
       sampleRateValue,
       logFormatter,
       customConfigService,
-      customAttributes,
+      persistentLogAttributes,
       environment
     } = options;
 
@@ -234,38 +266,23 @@ class Logger implements LoggerInterface {
     this.setCustomConfigService(customConfigService);
     this.setLogLevel(logLevel);
     this.setSampleRateValue(sampleRateValue);
+    this.setLogsSampled();
     this.setLogFormatter(logFormatter);
-    this.setPowertoolAttributes(serviceName, environment);
-    this.setCustomAttributes(customAttributes);
+    this.setPowertoolLogData(serviceName, environment);
+
+    this.addPersistentLogAttributes(persistentLogAttributes);
 
     return this;
   }
 
-  private setPowertoolAttributes(serviceName?: string, environment?: Environment, customAttributes: LogAttributes = {}): void {
-
-    if (this.isContextEnabled()) {
-      this.addToPowertoolAttributes( {
-        lambdaContext: {
-          coldStart: Logger.isColdStart(),
-          memoryLimitInMB: this.getEnvVarsService().getFunctionMemory(),
-          name: this.getEnvVarsService().getFunctionName(),
-          version:this.getEnvVarsService().getFunctionVersion(),
-        }
-      });
-    }
-
-    this.addToPowertoolAttributes({
+  private setPowertoolLogData(serviceName?: string, environment?: Environment, persistentLogAttributes: LogAttributes = {}): void {
+    this.addToPowertoolLogData({
       awsRegion: this.getEnvVarsService().getAwsRegion(),
       environment: environment || this.getCustomConfigService()?.getCurrentEnvironment() || this.getEnvVarsService().getCurrentEnvironment(),
       sampleRateValue: this.getSampleRateValue(),
       serviceName: serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
       xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
-    }, customAttributes );
-  }
-
-  private setSampleRateValue(sampleRateValue?: number): void {
-    this.powertoolAttributes.sampleRateValue = sampleRateValue || this.getCustomConfigService()?.getSampleRateValue()
-      || this.getEnvVarsService().getSampleRateValue();
+    }, persistentLogAttributes );
   }
 
   private shouldPrint(logLevel: LogLevel): boolean {
@@ -273,13 +290,7 @@ class Logger implements LoggerInterface {
       return true;
     }
 
-    // TODO: refactor this logic (Math.random() does not provide cryptographically secure random numbers)
-    const sampleRateValue = this.getSampleRateValue();
-    if (sampleRateValue && (sampleRateValue === 1 || Math.random() < sampleRateValue)) {
-      return true;
-    }
-
-    return false;
+    return this.getLogsSampled();
   }
 
 }

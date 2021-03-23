@@ -30,4 +30,4 @@ const lambdaHandler: Handler = async () => {
 
 };
 
-lambdaHandler(dummyEvent, dummyContext, () => {});
+lambdaHandler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));

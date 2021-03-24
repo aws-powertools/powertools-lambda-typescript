@@ -50,6 +50,8 @@ logger.error('This is an ERROR log');
 
 ### Capturing Lambda context info
 
+Without decorators:
+
 ```typescript
 // Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'WARN';
@@ -101,6 +103,51 @@ const lambdaHandler: Handler = async (event, context) => {
   message: 'This is an ERROR log',
   service: 'hello-world',
   timestamp: '2021-03-13T18:11:46.921Z',
+  xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+}
+
+```
+</details>
+
+
+With decorators:
+
+```typescript
+// Environment variables set for the Lambda
+process.env.LOG_LEVEL = 'INFO';
+process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
+
+const logger = new Logger();
+
+class Lambda implements LambdaInterface {
+
+  @logger.injectLambdaContext()
+  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+
+    logger.info('This is an INFO log with some context');
+
+  }
+
+}
+
+new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+
+```
+
+<details>
+ <summary>Click to expand and see the logs outputs</summary>
+
+```bash
+
+{
+  aws_request_id: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+  lambda_function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+  lambda_function_memory_size: 128,
+  lambda_function_name: 'foo-bar-function',
+  level: 'INFO',
+  message: 'This is an INFO log with some context',
+  service: 'hello-world',
+  timestamp: '2021-03-17T08:25:41.198Z',
   xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
 }
 

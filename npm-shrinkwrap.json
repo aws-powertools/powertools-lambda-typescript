@@ -12,6 +12,7 @@
         "@commitlint/config-conventional": "^11.0.0",
         "@types/aws-lambda": "^8.10.72",
         "@types/jest": "^26.0.19",
+        "@types/lodash": "^4.14.168",
         "@types/node": "^14.14.16",
         "@typescript-eslint/eslint-plugin": "^4.11.1",
         "@typescript-eslint/parser": "^4.11.1",
@@ -4465,6 +4466,12 @@
       "version": "7.0.6",
       "resolved": "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.6.tgz",
       "integrity": "sha512-3c+yGKvVP5Y9TYBEibGNR+kLtijnj7mYrXRg+WpFb2X9xm04g/DXYkfg4hmzJQosc9snFNUPkbYIhu+KAm6jJw==",
+      "dev": true
+    },
+    "node_modules/@types/lodash": {
+      "version": "4.14.168",
+      "resolved": "https://amazon-149122183214.d.codeartifact.us-west-2.amazonaws.com:443/npm/shared/@types/lodash/-/lodash-4.14.168.tgz",
+      "integrity": "sha512-oVfRvqHV/V6D1yifJbVRU3TMp8OT6o6BG+U9MkwuJ3U8/CsDHvalRpsxBqivn71ztOFZBTfJMvETbqHiaNSj7Q==",
       "dev": true
     },
     "node_modules/@types/minimatch": {
@@ -19921,6 +19928,12 @@
       "version": "7.0.6",
       "resolved": "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.6.tgz",
       "integrity": "sha512-3c+yGKvVP5Y9TYBEibGNR+kLtijnj7mYrXRg+WpFb2X9xm04g/DXYkfg4hmzJQosc9snFNUPkbYIhu+KAm6jJw==",
+      "dev": true
+    },
+    "@types/lodash": {
+      "version": "4.14.168",
+      "resolved": "https://amazon-149122183214.d.codeartifact.us-west-2.amazonaws.com:443/npm/shared/@types/lodash/-/lodash-4.14.168.tgz",
+      "integrity": "sha512-oVfRvqHV/V6D1yifJbVRU3TMp8OT6o6BG+U9MkwuJ3U8/CsDHvalRpsxBqivn71ztOFZBTfJMvETbqHiaNSj7Q==",
       "dev": true
     },
     "@types/minimatch": {

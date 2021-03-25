@@ -4,9 +4,9 @@ import { LogItem } from './log';
 
 import { cloneDeep, merge } from 'lodash/fp';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import {
   Environment,
+  HandlerMethodDecorator,
   PowertoolLogData,
   LogAttributes,
   LoggerOptions,
@@ -15,8 +15,8 @@ import {
   LambdaFunctionContext,
   LogItemMessage,
   LogItemExtraInput,
-  HandlerMethodDecorator
 } from '../types';
+import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
 class Logger implements LoggerInterface {
 
@@ -95,6 +95,19 @@ class Logger implements LoggerInterface {
       return;
     }
     this.printLog(this.createAndPopulateLogItem('INFO', input, extraInput));
+  }
+
+  public injectLambdaContext(): HandlerMethodDecorator {
+    return (target, propertyKey, descriptor ) => {
+      const originalMethod = descriptor.value;
+
+      descriptor.value = (event, context, callback) => {
+        this.addContext(context);
+        const result = originalMethod?.apply(this, [ event, context, callback ]);
+
+        return result;
+      };
+    };
   }
 
   public static isColdStart(): boolean {

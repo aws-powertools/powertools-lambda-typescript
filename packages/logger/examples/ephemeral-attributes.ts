@@ -3,7 +3,7 @@ import { populateEnvironmentVariables } from '../tests/helpers';
 // Populate runtime
 populateEnvironmentVariables();
 // Additional runtime variables
-process.env.LOG_LEVEL = 'WARN';
+process.env.LOG_LEVEL = 'INFO';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
@@ -15,19 +15,23 @@ const logger = new Logger();
 
 const lambdaHandler: Handler = async () => {
 
-  // Example of use case:
-  // Log an error with a message (informative string) and
-  // some extra ephemeral custom attributes to help debugging (like a correlation ID)
+  const myImportantVariable = {
+    foo: 'bar'
+  };
 
-  // Logs below will result in the same JSON output
+  // Pass a variable
+  logger.info('This is a log with an extra variable', { data: { myImportantVariable } });
 
-  const error = new Error('Something bad happened!');
+  // Pass a variable
+  const myOtherImportantVariable = {
+    biz: 'baz'
+  };
 
-  // You can add ephemeral extra custom attributes like this:
-  logger.error('This is an ERROR log', error, { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
-
-  // Or you can also add them like this (same log output):
-  logger.error({ message: 'This is an ERROR log', correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } }, error);
+  // Pass multiple variables
+  logger.info('This is a log with 2 extra variables', {
+    data: { myOtherImportantVariable },
+    correlationIds: { myCustomCorrelationId: 'foo-bar-baz' }
+  });
 
   return {
     foo: 'bar'

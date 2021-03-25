@@ -6,11 +6,11 @@ class PowertoolLogFormatter extends LogFormatter {
 
   public formatAttributes(attributes: UnformattedAttributes): PowertoolLog {
     return {
-      aws_request_id: attributes.lambdaContext?.awsRequestId,
       cold_start: attributes.lambdaContext?.coldStart,
-      lambda_function_arn: attributes.lambdaContext?.invokedFunctionArn,
-      lambda_function_memory_size: attributes.lambdaContext?.memoryLimitInMB,
-      lambda_function_name: attributes.lambdaContext?.functionName,
+      function_arn: attributes.lambdaContext?.invokedFunctionArn,
+      function_memory_size: attributes.lambdaContext?.memoryLimitInMB,
+      function_request_id: attributes.lambdaContext?.awsRequestId,
+      function_name: attributes.lambdaContext?.functionName,
       level: attributes.logLevel,
       message: attributes.message,
       sampling_rate: attributes.sampleRateValue,

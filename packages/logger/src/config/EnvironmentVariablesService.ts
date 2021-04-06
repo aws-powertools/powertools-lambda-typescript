@@ -35,10 +35,6 @@ class EnvironmentVariablesService extends ConfigService {
     return this.get(this.functionVersionVariable);
   }
 
-  public getIsContextEnabled(): boolean {
-    return [ '1', 'TRUE', 'ON' ].includes(this.get(this.contextEnabledVariable).toUpperCase());
-  }
-
   public getLogLevel(): string {
     return this.get(this.logLevelVariable);
   }

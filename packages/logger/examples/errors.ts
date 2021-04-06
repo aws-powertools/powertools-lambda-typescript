@@ -5,7 +5,6 @@ populateEnvironmentVariables();
 // Additional runtime variables
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
-process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '0.5';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
@@ -16,13 +15,17 @@ const logger = new Logger();
 
 const lambdaHandler: Handler = async () => {
 
-  logger.info('This is INFO log #1');
-  logger.info('This is INFO log #2');
-  logger.info('This is INFO log #3');
-  logger.info('This is INFO log #4');
+  try {
+    throw new Error('Unexpected error #1');
+  } catch (error) {
+    logger.error('This is an ERROR log #1', error);
+  }
 
-  // Refresh sample rate calculation on runtime
-  logger.refreshSampleRateCalculation();
+  try {
+    throw new Error('Unexpected error #2');
+  } catch (error) {
+    logger.error('This is an ERROR log #2', { myCustomErrorKey: error } );
+  }
 
   return {
     foo: 'bar'
@@ -30,4 +33,4 @@ const lambdaHandler: Handler = async () => {
 
 };
 
-lambdaHandler(dummyEvent, dummyContext, () => console.log('lambda invoked!'));
+lambdaHandler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));

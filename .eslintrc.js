@@ -48,6 +48,7 @@ module.exports = {
     'no-console': 0,
     'no-multi-spaces': [ 'error', { 'ignoreEOLComments': false } ],
     'no-multiple-empty-lines': [ 'error', { 'max': 1, 'maxBOF': 0 } ],
+    'no-throw-literal': 'error',
     'object-curly-spacing': [ 'error', 'always' ],
     'prefer-arrow-callback': 'error',
     'quotes': [ 'error', 'single', { 'allowTemplateLiterals': true } ],

@@ -59,7 +59,6 @@ describe('Logger', () => {
     logger.error({ bar: 'baz', message: 'foo' });
 
     const error = new Error('Something happened!');
-    error.stack = 'A custom stack trace';
     logger.error('foo', { bar: 'baz' }, error);
 
     expect(console.log).toBeCalledTimes(4);
@@ -89,9 +88,10 @@ describe('Logger', () => {
     expect(console.log).toHaveBeenNthCalledWith(4, {
       bar: 'baz',
       error: {
+        location: expect.stringMatching(/Logger.test.ts:[1-9]+$/),
         message: 'Something happened!',
         name: 'Error',
-        stack: 'A custom stack trace',
+        stack: expect.stringMatching(/Logger.test.ts:[1-9]+:[1-9]+/),
       },
       message: 'foo',
       service: 'hello-world',
@@ -154,9 +154,7 @@ describe('Logger', () => {
 
   test('should return a valid INFO log with context enabled', () => {
 
-    const logger = new Logger({
-      isContextEnabled: true
-    });
+    const logger = new Logger();
     logger.addContext(dummyContext);
 
     logger.info('foo');
@@ -164,11 +162,11 @@ describe('Logger', () => {
 
     expect(console.log).toBeCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, {
-      'aws_request_id': 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
       'cold_start': true,
-      'lambda_function_arn': 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-      'lambda_function_memory_size': 128,
-      'lambda_function_name': 'foo-bar-function',
+      'function_arn': 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+      'function_memory_size': 128,
+      'function_name': 'foo-bar-function',
+      'function_request_id': 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
       'level': 'INFO',
       'message': 'foo',
       'service': 'hello-world',
@@ -176,12 +174,12 @@ describe('Logger', () => {
       'xray_trace_id': 'abcdef123456abcdef123456abcdef123456'
     });
     expect(console.log).toHaveBeenNthCalledWith(2, {
-      'aws_request_id': 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
       'bar': 'baz',
       'cold_start': true,
-      'lambda_function_arn': 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-      'lambda_function_memory_size': 128,
-      'lambda_function_name': 'foo-bar-function',
+      'function_arn': 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+      'function_memory_size': 128,
+      'function_name': 'foo-bar-function',
+      'function_request_id': 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
       'level': 'INFO',
       'message': 'foo',
       'service': 'hello-world',

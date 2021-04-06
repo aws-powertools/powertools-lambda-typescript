@@ -1,10 +1,19 @@
 import { LogAttributes } from '../../types';
 import { LogItemInterface } from '.';
-import { merge } from 'lodash/fp';
+import { pickBy, merge } from 'lodash';
 
 class LogItem implements LogItemInterface {
 
   private attributes: LogAttributes = {};
+
+  public constructor(params: { baseAttributes: LogAttributes; persistentAttributes: LogAttributes }) {
+    // Add attributes in the log item in this order:
+    // - Base attributes supported by the Powertool by default
+    // - Persistent attributes provided by developer, not formatted
+    // - Ephemeral attributes provided as parameters for a single log item (done later)
+    this.addAttributes(params.baseAttributes);
+    this.addAttributes(params.persistentAttributes);
+  }
 
   public addAttributes(attributes: LogAttributes): LogItem {
     this.attributes = merge(this.attributes, attributes);
@@ -16,8 +25,16 @@ class LogItem implements LogItemInterface {
     return this.attributes;
   }
 
-  public toJSON(): string {
-    return JSON.stringify(this.getAttributes());
+  public prepareForPrint(): void {
+    this.setAttributes(this.removeEmptyKeys(this.getAttributes()));
+  }
+
+  public removeEmptyKeys(attributes: LogAttributes): LogAttributes {
+    return pickBy(attributes, (value) => value !== undefined && value !== '' && value !== null);
+  }
+
+  public setAttributes(attributes: LogAttributes): void {
+    this.attributes = attributes;
   }
 
 }

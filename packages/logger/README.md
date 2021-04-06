@@ -1,6 +1,26 @@
 # `logger`
 
+
 ##  Usage
+
+```bash
+
+npm run test
+
+npm run example:hello-world
+npm run example:inject-context
+npm run example:inject-context-decorator
+npm run example:errors
+npm run example:constructor-options
+npm run example:custom-log-formatter
+npm run example:child-logger
+npm run example:additional-keys
+npm run example:sample-rate
+npm run example:persistent-attributes
+npm run example:ephemeral-attributes
+
+```
+
 
 ### Getting started
 
@@ -54,19 +74,16 @@ Without decorators:
 
 ```typescript
 // Environment variables set for the Lambda
-process.env.LOG_LEVEL = 'WARN';
+process.env.LOG_LEVEL = 'INFO';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
-process.env.POWERTOOLS_CONTEXT_ENABLED = 'TRUE';
 
 const logger = new Logger();
 
-const lambdaHandler: Handler = async (event, context) => {
-  logger.addContext(context); // This should be in a custom Middy middleware https://github.com/middyjs/middy
+const lambdaHandler: Handler = async () => {
 
-  logger.debug('This is a DEBUG log');
+  logger.addContext(context);
+
   logger.info('This is an INFO log');
-  logger.warn('This is a WARN log');
-  logger.error('This is an ERROR log');
 
   return {
     foo: 'bar'
@@ -141,13 +158,14 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 
 {
   aws_request_id: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+  cold_start: true,
   lambda_function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
   lambda_function_memory_size: 128,
   lambda_function_name: 'foo-bar-function',
   level: 'INFO',
   message: 'This is an INFO log with some context',
   service: 'hello-world',
-  timestamp: '2021-03-17T08:25:41.198Z',
+  timestamp: '2021-03-25T11:00:01.400Z',
   xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
 }
 
@@ -155,7 +173,73 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 </details>
 
 
-### Appending additional keys
+### Appending additional ephemeral keys
+
+```typescript
+
+// Environment variables set for the Lambda
+process.env.LOG_LEVEL = 'INFO';
+process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
+
+const logger = new Logger();
+
+const lambdaHandler: Handler = async () => {
+
+  const myImportantVariable = {
+    foo: 'bar'
+  };
+
+  // Pass a variable
+  logger.info('This is a log with an extra variable', { data: { myImportantVariable } });
+
+  // Pass a variable
+  const myOtherImportantVariable = {
+    biz: 'baz'
+  };
+
+  // Pass multiple variables
+  logger.info('This is a log with 2 extra variables', {
+    data: { myOtherImportantVariable },
+    correlationIds: { myCustomCorrelationId: 'foo-bar-baz' }
+  });
+
+  return {
+    foo: 'bar'
+  };
+
+};
+
+
+```
+
+<details>
+ <summary>Click to expand and see the logs outputs</summary>
+
+```bash
+
+{
+  level: 'INFO',
+  message: 'This is a log with an extra variable',
+  service: 'hello-world',
+  timestamp: '2021-03-25T09:30:55.097Z',
+  xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+  data: { myImportantVariable: { foo: 'bar' } }
+}
+{
+  level: 'INFO',
+  message: 'This is a log with 2 extra variables',
+  service: 'hello-world',
+  timestamp: '2021-03-25T09:30:55.102Z',
+  xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+  data: { myOtherImportantVariable: { biz: 'baz' } },
+  correlationIds: { myCustomCorrelationId: 'foo-bar-baz' }
+}
+
+```
+</details>
+
+
+### Log errors
 
 ```typescript
 
@@ -167,11 +251,17 @@ const logger = new Logger();
 
 const lambdaHandler: Handler = async () => {
 
-  // Pass a custom correlation ID
-  logger.warn('This is a WARN log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
+  try {
+    throw new Error('Unexpected error #1');
+  } catch (error) {
+    logger.error('This is an ERROR log #1', error);
+  }
 
-  // Pass an error that occurred
-  logger.error('This is an ERROR log', new Error('Something bad happened!'));
+  try {
+    throw new Error('Unexpected error #2');
+  } catch (error) {
+    logger.error('This is an ERROR log #2', { myCustomErrorKey: error } );
+  }
 
   return {
     foo: 'bar'
@@ -187,37 +277,55 @@ const lambdaHandler: Handler = async () => {
 ```bash
 
 {
-  level: 'WARN',
-  message: 'This is a WARN log',
-  service: 'hello-world',
-  timestamp: '2021-03-13T20:21:28.423Z',
-  xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-  correlationIds: { myCustomCorrelationId: 'foo-bar-baz' }
-}
-{
   level: 'ERROR',
-  message: 'This is an ERROR log',
+  message: 'This is an ERROR log #1',
   service: 'hello-world',
-  timestamp: '2021-03-13T20:21:28.426Z',
+  timestamp: '2021-03-25T10:55:46.590Z',
   xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
   error: {
     name: 'Error',
-    message: 'Something bad happened!',
-    stack: 'Error: Something bad happened!\n' +
-      '    at lambdaHandler (/Users/username/Workspace/projects/aws-lambda-powertools-typescript/packages/logger/examples/additional-keys.ts:22:40)\n' +
-      '    at Object.<anonymous> (/Users/username/Workspace/projects/aws-lambda-powertools-typescript/packages/logger/examples/additional-keys.ts:30:1)\n' +
+    location: '/projects/aws-lambda-powertools-typescript/packages/logger/examples/errors.ts:19',
+    message: 'Unexpected error #1',
+    stack: 'Error: Unexpected error #1\n' +
+      '    at lambdaHandler (/projects/aws-lambda-powertools-typescript/packages/logger/examples/errors.ts:19:11)\n' +
+      '    at Object.<anonymous> (/projects/aws-lambda-powertools-typescript/packages/logger/examples/errors.ts:36:1)\n' +
       '    at Module._compile (node:internal/modules/cjs/loader:1108:14)\n' +
-      '    at Module.m._compile (/Users/username/Workspace/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/index.ts:1056:23)\n' +
+      '    at Module.m._compile (/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/index.ts:1056:23)\n' +
       '    at Module._extensions..js (node:internal/modules/cjs/loader:1137:10)\n' +
-      '    at Object.require.extensions.<computed> [as .ts] (/Users/username/Workspace/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/index.ts:1059:12)\n' +
+      '    at Object.require.extensions.<computed> [as .ts] (/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/index.ts:1059:12)\n' +
       '    at Module.load (node:internal/modules/cjs/loader:973:32)\n' +
       '    at Function.Module._load (node:internal/modules/cjs/loader:813:14)\n' +
       '    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)\n' +
-      '    at main (/Users/username/Workspace/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/bin.ts:198:14)'
+      '    at main (/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/bin.ts:198:14)'
   }
 }
+{
+  level: 'ERROR',
+  message: 'This is an ERROR log #2',
+  service: 'hello-world',
+  timestamp: '2021-03-25T10:55:46.624Z',
+  xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+  myCustomErrorKey: {
+    name: 'Error',
+    location: '/projects/aws-lambda-powertools-typescript/packages/logger/examples/errors.ts:25',
+    message: 'Unexpected error #2',
+    stack: 'Error: Unexpected error #2\n' +
+      '    at lambdaHandler (/projects/aws-lambda-powertools-typescript/packages/logger/examples/errors.ts:25:11)\n' +
+      '    at Object.<anonymous> (/projects/aws-lambda-powertools-typescript/packages/logger/examples/errors.ts:36:1)\n' +
+      '    at Module._compile (node:internal/modules/cjs/loader:1108:14)\n' +
+      '    at Module.m._compile (/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/index.ts:1056:23)\n' +
+      '    at Module._extensions..js (node:internal/modules/cjs/loader:1137:10)\n' +
+      '    at Object.require.extensions.<computed> [as .ts] (/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/index.ts:1059:12)\n' +
+      '    at Module.load (node:internal/modules/cjs/loader:973:32)\n' +
+      '    at Function.Module._load (node:internal/modules/cjs/loader:813:14)\n' +
+      '    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)\n' +
+      '    at main (/projects/aws-lambda-powertools-typescript/packages/logger/node_modules/ts-node/src/bin.ts:198:14)'
+  }
+}
+
 ```
 </details>
+
 
 ### Reusing Logger across your code
 
@@ -256,21 +364,21 @@ const lambdaHandler: Handler = async () => {
   level: 'INFO',
   message: 'This is an INFO log, from the parent logger',
   service: 'hello-world',
-  timestamp: '2021-03-13T20:33:41.128Z',
+  timestamp: '2021-03-25T09:34:06.652Z',
   xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
 }
 {
   level: 'ERROR',
   message: 'This is an ERROR log, from the parent logger',
   service: 'hello-world',
-  timestamp: '2021-03-13T20:33:41.130Z',
+  timestamp: '2021-03-25T09:34:06.656Z',
   xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
 }
 {
   level: 'ERROR',
   message: 'This is an ERROR log, from the child logger',
   service: 'hello-world',
-  timestamp: '2021-03-13T20:33:41.131Z',
+  timestamp: '2021-03-25T09:34:06.656Z',
   xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
 }
 
@@ -285,6 +393,7 @@ const lambdaHandler: Handler = async () => {
 // Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
+process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '0.5';
 
 const logger = new Logger();
 
@@ -304,6 +413,35 @@ const lambdaHandler: Handler = async () => {
 
 ```
 
+
+## Constructor options
+
+```typescript
+
+const logger = new Logger({
+  logLevel: 'DEBUG',
+  serviceName: 'hello-world',
+  sampleRateValue: 0.5,
+  persistentLogAttributes: { // Custom attributes that will be added in every log item
+    awsAccountId: process.env.AWS_ACCOUNT_ID || '123456789012',
+    logger: {
+      name: powertool.name,
+      version: powertool.version,
+    }
+  },
+});
+
+const lambdaHandler: Handler = async () => {
+
+  logger.info('This is an INFO log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
+
+  return {
+    foo: 'bar'
+  };
+};
+
+```
+
 <details>
  <summary>Click to expand and see the logs outputs</summary>
 
@@ -311,49 +449,69 @@ const lambdaHandler: Handler = async () => {
 
 {
   level: 'INFO',
-  message: 'This is INFO log #2',
+  message: 'This is an INFO log',
   sampling_rate: 0.5,
   service: 'hello-world',
-  timestamp: '2021-03-13T20:45:06.093Z',
-  xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
-}
-{
-  level: 'INFO',
-  message: 'This is INFO log #4',
-  sampling_rate: 0.5,
-  service: 'hello-world',
-  timestamp: '2021-03-13T20:45:06.096Z',
-  xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+  timestamp: '2021-03-25T09:59:31.252Z',
+  xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+  awsAccountId: '123456789012',
+  logger: { name: 'aws-lambda-powertools-typescript', version: '0.0.1' },
+  correlationIds: { myCustomCorrelationId: 'foo-bar-baz' }
 }
 
 ```
 
 </details>
 
-## Custom logger options: log level, service name, sample rate value, log attributes, variables source, log format
+## Custom log formatter
 
 ```typescript
 
-process.env.CUSTOM_ENV = 'prod';
-process.env.POWERTOOLS_CONTEXT_ENABLED = 'TRUE';
+class MyCompanyLogFormatter extends LogFormatter {
 
-// Custom configuration service for variables, and custom formatter to comply to different log JSON schema
-import { CustomConfigService } from './config/CustomConfigService';
-import { CustomLogFormatter } from './formatters/CustomLogFormatter';
+  public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
+    return {
+      message: attributes.message,
+      service: attributes.serviceName,
+      environment: attributes.environment,
+      awsRegion: attributes.awsRegion,
+      correlationIds: {
+        awsRequestId: attributes.lambdaContext?.awsRequestId,
+        xRayTraceId: attributes.xRayTraceId
+      },
+      lambdaFunction: {
+        name: attributes.lambdaContext?.functionName,
+        arn: attributes.lambdaContext?.invokedFunctionArn,
+        memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
+        version: attributes.lambdaContext?.functionVersion,
+        coldStart: attributes.lambdaContext?.coldStart,
+      },
+      logLevel: attributes.logLevel,
+      timestamp: this.formatTimestamp(attributes.timestamp),
+      logger: {
+        sampleRateValue: attributes.sampleRateValue,
+      },
+    };
+  }
+
+}
+
+```
+
+```typescript
 
 const logger = new Logger({
-  logLevel: 'INFO',                               // Override options
-  serviceName: 'foo-bar',
-  sampleRateValue: 0.00001,
-  customAttributes: {                             // Custom attributes that will be added in every log
-    awsAccountId: '123456789012',
+  logFormatter: new MyCompanyLogFormatter(), // Custom log formatter to print the log in a custom structure
+  logLevel: 'DEBUG',
+  serviceName: 'hello-world',
+  sampleRateValue: 0.5,
+  persistentLogAttributes: { // Custom attributes that will be added in every log item
+    awsAccountId: process.env.AWS_ACCOUNT_ID || '123456789012',
     logger: {
       name: powertool.name,
       version: powertool.version,
     }
   },
-  logFormatter: new CustomLogFormatter(),        // Custom log formatter to print the log in a custom format (JSON schema)
-  customConfigService: new CustomConfigService() // Custom config service, that could be used for AppConfig for example
 });
 
 const lambdaHandler: Handler = async (event, context) => {
@@ -366,7 +524,6 @@ const lambdaHandler: Handler = async (event, context) => {
   };
 };
 
-
 ```
 
 <details>
@@ -376,8 +533,7 @@ const lambdaHandler: Handler = async (event, context) => {
 
 {
   message: 'This is an INFO log',
-  service: 'foo-bar',
-  environment: 'prod',
+  service: 'hello-world',
   awsRegion: 'eu-central-1',
   correlationIds: {
     awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
@@ -392,9 +548,9 @@ const lambdaHandler: Handler = async (event, context) => {
     coldStart: true
   },
   logLevel: 'INFO',
-  timestamp: '2021-03-13T21:43:47.759Z',
+  timestamp: '2021-03-25T10:00:37.194Z',
   logger: {
-    sampleRateValue: 0.00001,
+    sampleRateValue: 0.5,
     name: 'aws-lambda-powertools-typescript',
     version: '0.0.1'
   },
@@ -404,16 +560,3 @@ const lambdaHandler: Handler = async (event, context) => {
 ```
 
 </details>
-
-##  Test locally
-
-```bash
-
-npm run test
-
-npm run example:hello-world
-npm run example:hello-world-with-context
-npm run example:custom-logger-options
-npm run example:child-logger
-
-```

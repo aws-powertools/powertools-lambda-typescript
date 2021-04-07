@@ -1,0 +1,21 @@
+name: on-release-event
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          export NODE_ENV=dev
+          npm ci
+          npm run lerna-ci
+      - name: Run lint
+        run: npm run lerna-lint
+      - name: Run tests
+        run: npm run lerna-test
+  # TODO: add publish step

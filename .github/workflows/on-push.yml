@@ -1,12 +1,9 @@
-name: Test
+name: on-push-event
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  push
 
 jobs:
-  test:
+  on_push:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

@@ -17,7 +17,8 @@ assignees: saragerion, alan-churley
 
 **Summary of the feature**
 <!--- Include here a summary of the proposal, including relevant motivation and context. -->
-<!--- A clear description of what you want to achieve. -->
+
+<!--- Please add clear description of what you want to achieve. -->
 
 **Code examples**
 <!-- Share how the developer experience would look like, also with relevant code examples. -->

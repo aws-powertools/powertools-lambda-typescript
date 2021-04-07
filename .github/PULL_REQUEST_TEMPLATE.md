@@ -4,8 +4,11 @@
 ## Description of your changes
 
 <!--- Include here a summary of the change. -->
-<!--- Also include relevant motivation and context. -->
+
+<!--- Please include also relevant motivation and context. -->
+
 <!--- List any dependencies that are required for this change. -->
+
 <!--- If this PR is part of a sequence of related PRs or TODOs, list the high level TODO items. -->
 
 ### How to verify this change

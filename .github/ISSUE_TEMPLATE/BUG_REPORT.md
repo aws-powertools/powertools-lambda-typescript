@@ -4,6 +4,7 @@ about: Create a report to help us improve
 title: "(module name): short issue description"
 labels: bug, triage
 assignees: saragerion, alan-churley
+
 ---
 
 <!--- Before you start, make sure that the bug hasn't been reported already https://github.com/awslabs/aws-lambda-powertools-typescript/issues -->
@@ -14,23 +15,20 @@ assignees: saragerion, alan-churley
 ## Bug description
 
 <!--- Provide a summary of the bug here. -->
+
 <!--- What were you trying to accomplish? -->
-Add text here.
 
 ### Expected Behavior
 
 <!--- Tell us what should happen. -->
-Add text here.
 
 ### Current Behavior
 
 <!--- Tell us what happens instead of the expected behavior. -->
-Add text here.
 
 ### Possible Solution
 
 <!--- Not obligatory, but suggest a fix/solutions/implementation for the bug. -->
-Add text here.
 
 ### Steps to Reproduce
 
@@ -46,10 +44,10 @@ Add text here.
 * **Powertools version used**:
 * **Packaging format (Layers, npm)**:
 * **AWS Lambda function runtime:**
-* **Debugging logs**
+* **Debugging logs:**
 
 ### Related issues, RFCs
 
 <!--- Add here the link to one or more Github Issues or RFCs that are related to this PR. -->
-[#XXXXX](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/XXXXX)  
-[#ZZZZZ](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/ZZZZZ)
+<!--- [#XXXXX](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/XXXXX) -->
+<!--- [#ZZZZZ](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/ZZZZZ) -->

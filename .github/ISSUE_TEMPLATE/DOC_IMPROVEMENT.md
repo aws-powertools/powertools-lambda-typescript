@@ -29,8 +29,8 @@ assignees: saragerion, alan-churley
 
 <!--- Is your suggestion related to an existing part of the documentation?  -->
 <!--- Please add one of more here here. -->
-[#Link 1](#)  
-[#Link 2](#)
+<!--- [#Link 1](#) -->
+<!--- [#Link 2](#) -->
 
 
 ### Related issues, RFCs

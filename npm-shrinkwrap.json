@@ -11224,12 +11224,6 @@
       "integrity": "sha1-dWy1FQyjum8RCFp4hJZF8Yj4Xzc=",
       "dev": true
     },
-    "node_modules/lodash.memoize": {
-      "version": "4.1.2",
-      "resolved": "https://registry.npmjs.org/lodash.memoize/-/lodash.memoize-4.1.2.tgz",
-      "integrity": "sha1-vMbEmkKihA7Zl/Mj6tpezRguC/4=",
-      "dev": true
-    },
     "node_modules/lodash.set": {
       "version": "4.3.2",
       "resolved": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
@@ -15292,18 +15286,17 @@
       }
     },
     "node_modules/ts-jest": {
-      "version": "26.4.4",
-      "resolved": "https://registry.npmjs.org/ts-jest/-/ts-jest-26.4.4.tgz",
-      "integrity": "sha512-3lFWKbLxJm34QxyVNNCgXX1u4o/RV0myvA2y2Bxm46iGIjKlaY0own9gIckbjZJPn+WaJEnfPPJ20HHGpoq4yg==",
+      "version": "26.5.4",
+      "resolved": "https://registry.npmjs.org/ts-jest/-/ts-jest-26.5.4.tgz",
+      "integrity": "sha512-I5Qsddo+VTm94SukBJ4cPimOoFZsYTeElR2xy6H2TOVs+NsvgYglW8KuQgKoApOKuaU/Ix/vrF9ebFZlb5D2Pg==",
       "dev": true,
       "dependencies": {
-        "@types/jest": "26.x",
         "bs-logger": "0.x",
         "buffer-from": "1.x",
         "fast-json-stable-stringify": "2.x",
         "jest-util": "^26.1.0",
         "json5": "2.x",
-        "lodash.memoize": "4.x",
+        "lodash": "4.x",
         "make-error": "1.x",
         "mkdirp": "1.x",
         "semver": "7.x",
@@ -25384,12 +25377,6 @@
       "integrity": "sha1-dWy1FQyjum8RCFp4hJZF8Yj4Xzc=",
       "dev": true
     },
-    "lodash.memoize": {
-      "version": "4.1.2",
-      "resolved": "https://registry.npmjs.org/lodash.memoize/-/lodash.memoize-4.1.2.tgz",
-      "integrity": "sha1-vMbEmkKihA7Zl/Mj6tpezRguC/4=",
-      "dev": true
-    },
     "lodash.set": {
       "version": "4.3.2",
       "resolved": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
@@ -28640,18 +28627,17 @@
       "dev": true
     },
     "ts-jest": {
-      "version": "26.4.4",
-      "resolved": "https://registry.npmjs.org/ts-jest/-/ts-jest-26.4.4.tgz",
-      "integrity": "sha512-3lFWKbLxJm34QxyVNNCgXX1u4o/RV0myvA2y2Bxm46iGIjKlaY0own9gIckbjZJPn+WaJEnfPPJ20HHGpoq4yg==",
+      "version": "26.5.4",
+      "resolved": "https://registry.npmjs.org/ts-jest/-/ts-jest-26.5.4.tgz",
+      "integrity": "sha512-I5Qsddo+VTm94SukBJ4cPimOoFZsYTeElR2xy6H2TOVs+NsvgYglW8KuQgKoApOKuaU/Ix/vrF9ebFZlb5D2Pg==",
       "dev": true,
       "requires": {
-        "@types/jest": "26.x",
         "bs-logger": "0.x",
         "buffer-from": "1.x",
         "fast-json-stable-stringify": "2.x",
         "jest-util": "^26.1.0",
         "json5": "2.x",
-        "lodash.memoize": "4.x",
+        "lodash": "4.x",
         "make-error": "1.x",
         "mkdirp": "1.x",
         "semver": "7.x",

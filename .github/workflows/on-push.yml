@@ -18,7 +18,7 @@ jobs:
         run: npm run lerna-test
       - name: Report Coverage
         if: ${{ github.event_name == 'pull_request' }}
-        uses: romeovs/lcov-reporter-action@v0.2.11
+        uses: romeovs/lcov-reporter-action@v0.2.21
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./packages/logger/coverage/lcov.info

@@ -5679,9 +5679,9 @@
       }
     },
     "node_modules/node-releases": {
-      "version": "1.1.71",
-      "resolved": "https://registry.npmjs.org/node-releases/-/node-releases-1.1.71.tgz",
-      "integrity": "sha512-zR6HoT6LrLCRBwukmrVbHv0EpEQjksO6GmFcZQQuCAy139BEsoVKPYnf3jongYW83fAa1torLGYwxxky/p28sg==",
+      "version": "1.1.72",
+      "resolved": "https://registry.npmjs.org/node-releases/-/node-releases-1.1.72.tgz",
+      "integrity": "sha512-LLUo+PpH3dU6XizX3iVoubUNheF/owjXCZZ5yACDxNnPtgFuludV1ZL3ayK1kVep42Rmm0+R9/Y60NQbZ2bifw==",
       "dev": true
     },
     "node_modules/normalize-package-data": {
@@ -12978,9 +12978,9 @@
       }
     },
     "node-releases": {
-      "version": "1.1.71",
-      "resolved": "https://registry.npmjs.org/node-releases/-/node-releases-1.1.71.tgz",
-      "integrity": "sha512-zR6HoT6LrLCRBwukmrVbHv0EpEQjksO6GmFcZQQuCAy139BEsoVKPYnf3jongYW83fAa1torLGYwxxky/p28sg==",
+      "version": "1.1.72",
+      "resolved": "https://registry.npmjs.org/node-releases/-/node-releases-1.1.72.tgz",
+      "integrity": "sha512-LLUo+PpH3dU6XizX3iVoubUNheF/owjXCZZ5yACDxNnPtgFuludV1ZL3ayK1kVep42Rmm0+R9/Y60NQbZ2bifw==",
       "dev": true
     },
     "normalize-package-data": {

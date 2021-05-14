@@ -1,7 +1,5 @@
-import { populateEnvironmentVariables } from '../tests/helpers';
-
 // Populate runtime
-populateEnvironmentVariables();
+require('./../tests/helpers/populateEnvironmentVariables');
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import * as powertool from '../../../package.json';

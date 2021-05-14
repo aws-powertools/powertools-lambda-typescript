@@ -1,7 +1,6 @@
-import { populateEnvironmentVariables } from '../tests/helpers';
-
 // Populate runtime
-populateEnvironmentVariables();
+require('./../tests/helpers/populateEnvironmentVariables');
+
 // Additional runtime variables
 process.env.LOG_LEVEL = 'WARN';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';

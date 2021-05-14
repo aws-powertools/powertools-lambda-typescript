@@ -20,7 +20,7 @@ import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
 class Logger implements LoggerInterface {
 
-  private static coldStart: boolean = true;
+  public static coldStart: boolean = true;
 
   private customConfigService?: ConfigServiceInterface;
 

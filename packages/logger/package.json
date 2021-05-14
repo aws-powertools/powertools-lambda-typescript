@@ -35,8 +35,8 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {
-    "@commitlint/cli": "^12.1.1",
-    "@commitlint/config-conventional": "^12.1.1",
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^26.0.19",
     "@types/lodash": "^4.14.168",

@@ -32,8 +32,8 @@
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
   "devDependencies": {
-    "@commitlint/cli": "^12.1.1",
-    "@commitlint/config-conventional": "^12.1.1",
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^26.0.19",
     "@types/lodash": "^4.14.168",
@@ -57,5 +57,8 @@
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
+  },
+  "dependencies": {
+    "hosted-git-info": "^4.0.2"
   }
 }

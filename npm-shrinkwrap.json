@@ -7,9 +7,12 @@
     "": {
       "version": "0.0.1",
       "license": "MIT",
+      "dependencies": {
+        "hosted-git-info": "^4.0.2"
+      },
       "devDependencies": {
-        "@commitlint/cli": "^12.1.1",
-        "@commitlint/config-conventional": "^12.1.1",
+        "@commitlint/cli": "^12.1.4",
+        "@commitlint/config-conventional": "^12.1.4",
         "@types/aws-lambda": "^8.10.72",
         "@types/jest": "^26.0.19",
         "@types/lodash": "^4.14.168",
@@ -5791,6 +5794,12 @@
         "node": ">=0.10.0"
       }
     },
+    "node_modules/get-pkg-repo/node_modules/hosted-git-info": {
+      "version": "2.8.9",
+      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
+      "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
+      "dev": true
+    },
     "node_modules/get-pkg-repo/node_modules/indent-string": {
       "version": "2.1.0",
       "resolved": "https://registry.npmjs.org/indent-string/-/indent-string-2.1.0.tgz",
@@ -6441,10 +6450,15 @@
       }
     },
     "node_modules/hosted-git-info": {
-      "version": "2.8.9",
-      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
-      "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
-      "dev": true
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.0.2.tgz",
+      "integrity": "sha512-c9OGXbZ3guC/xOlCg1Ci/VgWlwsqDv1yMQL1CWqXDL0hDjXuNcq0zuR4xqPSuasI3kqFDhqSyTjREz5gzq0fXg==",
+      "dependencies": {
+        "lru-cache": "^6.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      }
     },
     "node_modules/html-encoding-sniffer": {
       "version": "2.0.1",
@@ -8441,7 +8455,6 @@
       "version": "6.0.0",
       "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-6.0.0.tgz",
       "integrity": "sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==",
-      "dev": true,
       "dependencies": {
         "yallist": "^4.0.0"
       },
@@ -9112,18 +9125,6 @@
         "node": ">=10"
       }
     },
-    "node_modules/normalize-package-data/node_modules/hosted-git-info": {
-      "version": "4.0.2",
-      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.0.2.tgz",
-      "integrity": "sha512-c9OGXbZ3guC/xOlCg1Ci/VgWlwsqDv1yMQL1CWqXDL0hDjXuNcq0zuR4xqPSuasI3kqFDhqSyTjREz5gzq0fXg==",
-      "dev": true,
-      "dependencies": {
-        "lru-cache": "^6.0.0"
-      },
-      "engines": {
-        "node": ">=10"
-      }
-    },
     "node_modules/normalize-path": {
       "version": "3.0.0",
       "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz",
@@ -9215,18 +9216,6 @@
         "hosted-git-info": "^4.0.1",
         "semver": "^7.3.4",
         "validate-npm-package-name": "^3.0.0"
-      },
-      "engines": {
-        "node": ">=10"
-      }
-    },
-    "node_modules/npm-package-arg/node_modules/hosted-git-info": {
-      "version": "4.0.2",
-      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.0.2.tgz",
-      "integrity": "sha512-c9OGXbZ3guC/xOlCg1Ci/VgWlwsqDv1yMQL1CWqXDL0hDjXuNcq0zuR4xqPSuasI3kqFDhqSyTjREz5gzq0fXg==",
-      "dev": true,
-      "dependencies": {
-        "lru-cache": "^6.0.0"
       },
       "engines": {
         "node": ">=10"
@@ -10273,6 +10262,12 @@
         "util-promisify": "^2.1.0"
       }
     },
+    "node_modules/read-package-tree/node_modules/hosted-git-info": {
+      "version": "2.8.9",
+      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
+      "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
+      "dev": true
+    },
     "node_modules/read-package-tree/node_modules/normalize-package-data": {
       "version": "2.5.0",
       "resolved": "https://registry.npmjs.org/normalize-package-data/-/normalize-package-data-2.5.0.tgz",
@@ -10349,6 +10344,12 @@
       "engines": {
         "node": ">=8"
       }
+    },
+    "node_modules/read-pkg-up/node_modules/hosted-git-info": {
+      "version": "2.8.9",
+      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
+      "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
+      "dev": true
     },
     "node_modules/read-pkg-up/node_modules/locate-path": {
       "version": "5.0.0",
@@ -10442,6 +10443,12 @@
       "engines": {
         "node": ">=8"
       }
+    },
+    "node_modules/read-pkg/node_modules/hosted-git-info": {
+      "version": "2.8.9",
+      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
+      "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
+      "dev": true
     },
     "node_modules/read-pkg/node_modules/load-json-file": {
       "version": "4.0.0",
@@ -13266,8 +13273,7 @@
     "node_modules/yallist": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/yallist/-/yallist-4.0.0.tgz",
-      "integrity": "sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==",
-      "dev": true
+      "integrity": "sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A=="
     },
     "node_modules/yaml": {
       "version": "1.10.2",
@@ -17949,6 +17955,12 @@
             "pinkie-promise": "^2.0.0"
           }
         },
+        "hosted-git-info": {
+          "version": "2.8.9",
+          "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
+          "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
+          "dev": true
+        },
         "indent-string": {
           "version": "2.1.0",
           "resolved": "https://registry.npmjs.org/indent-string/-/indent-string-2.1.0.tgz",
@@ -18449,10 +18461,12 @@
       }
     },
     "hosted-git-info": {
-      "version": "2.8.9",
-      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
-      "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
-      "dev": true
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.0.2.tgz",
+      "integrity": "sha512-c9OGXbZ3guC/xOlCg1Ci/VgWlwsqDv1yMQL1CWqXDL0hDjXuNcq0zuR4xqPSuasI3kqFDhqSyTjREz5gzq0fXg==",
+      "requires": {
+        "lru-cache": "^6.0.0"
+      }
     },
     "html-encoding-sniffer": {
       "version": "2.0.1",
@@ -20012,7 +20026,6 @@
       "version": "6.0.0",
       "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-6.0.0.tgz",
       "integrity": "sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==",
-      "dev": true,
       "requires": {
         "yallist": "^4.0.0"
       }
@@ -20543,17 +20556,6 @@
         "resolve": "^1.20.0",
         "semver": "^7.3.4",
         "validate-npm-package-license": "^3.0.1"
-      },
-      "dependencies": {
-        "hosted-git-info": {
-          "version": "4.0.2",
-          "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.0.2.tgz",
-          "integrity": "sha512-c9OGXbZ3guC/xOlCg1Ci/VgWlwsqDv1yMQL1CWqXDL0hDjXuNcq0zuR4xqPSuasI3kqFDhqSyTjREz5gzq0fXg==",
-          "dev": true,
-          "requires": {
-            "lru-cache": "^6.0.0"
-          }
-        }
       }
     },
     "normalize-path": {
@@ -20634,17 +20636,6 @@
         "hosted-git-info": "^4.0.1",
         "semver": "^7.3.4",
         "validate-npm-package-name": "^3.0.0"
-      },
-      "dependencies": {
-        "hosted-git-info": {
-          "version": "4.0.2",
-          "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.0.2.tgz",
-          "integrity": "sha512-c9OGXbZ3guC/xOlCg1Ci/VgWlwsqDv1yMQL1CWqXDL0hDjXuNcq0zuR4xqPSuasI3kqFDhqSyTjREz5gzq0fXg==",
-          "dev": true,
-          "requires": {
-            "lru-cache": "^6.0.0"
-          }
-        }
       }
     },
     "npm-packlist": {
@@ -21423,6 +21414,12 @@
         "util-promisify": "^2.1.0"
       },
       "dependencies": {
+        "hosted-git-info": {
+          "version": "2.8.9",
+          "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
+          "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
+          "dev": true
+        },
         "normalize-package-data": {
           "version": "2.5.0",
           "resolved": "https://registry.npmjs.org/normalize-package-data/-/normalize-package-data-2.5.0.tgz",
@@ -21466,6 +21463,12 @@
         "path-type": "^3.0.0"
       },
       "dependencies": {
+        "hosted-git-info": {
+          "version": "2.8.9",
+          "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
+          "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
+          "dev": true
+        },
         "load-json-file": {
           "version": "4.0.0",
           "resolved": "https://registry.npmjs.org/load-json-file/-/load-json-file-4.0.0.tgz",
@@ -21549,6 +21552,12 @@
             "locate-path": "^5.0.0",
             "path-exists": "^4.0.0"
           }
+        },
+        "hosted-git-info": {
+          "version": "2.8.9",
+          "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.9.tgz",
+          "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",
+          "dev": true
         },
         "locate-path": {
           "version": "5.0.0",
@@ -23766,8 +23775,7 @@
     "yallist": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/yallist/-/yallist-4.0.0.tgz",
-      "integrity": "sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==",
-      "dev": true
+      "integrity": "sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A=="
     },
     "yaml": {
       "version": "1.10.2",

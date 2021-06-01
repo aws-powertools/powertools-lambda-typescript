@@ -1,22 +1,22 @@
-import { Context } from 'aws-lambda';
-import { LoggerInterface } from '.';
-import { LogItem } from './log';
+import {Context} from 'aws-lambda';
+import {LoggerInterface} from '.';
+import {LogItem} from './log';
 
-import { cloneDeep, merge } from 'lodash/fp';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import {cloneDeep, merge} from 'lodash/fp';
+import {ConfigServiceInterface, EnvironmentVariablesService} from './config';
 import {
   Environment,
   HandlerMethodDecorator,
-  PowertoolLogData,
+  LambdaFunctionContext,
   LogAttributes,
   LoggerOptions,
+  LogItemExtraInput,
+  LogItemMessage,
   LogLevel,
   LogLevelThresholds,
-  LambdaFunctionContext,
-  LogItemMessage,
-  LogItemExtraInput,
+  PowertoolLogData,
 } from '../types';
-import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
+import {LogFormatterInterface, PowertoolLogFormatter} from './formatter';
 
 class Logger implements LoggerInterface {
 

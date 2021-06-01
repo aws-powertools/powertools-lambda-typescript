@@ -1,7 +1,7 @@
 {
-  "name": "@aws-lambda-powertools/logger",
+  "name": "@aws-lambda-powertools/metrics",
   "version": "0.0.0",
-  "description": "The logging package for the AWS Lambda powertools (TypeScript) library",
+  "description": "The metrics package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -30,7 +30,7 @@
     "example:persistent-attributes": "ts-node examples/persistent-attributes.ts",
     "example:ephemeral-attributes": "ts-node examples/ephemeral-attributes.ts"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/logging#readme",
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/metrics#readme",
   "license": "MIT",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",

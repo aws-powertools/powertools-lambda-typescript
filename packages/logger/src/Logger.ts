@@ -1,9 +1,9 @@
-import {Context} from 'aws-lambda';
-import {LoggerInterface} from '.';
-import {LogItem} from './log';
+import { Context } from 'aws-lambda';
+import { LoggerInterface } from '.';
+import { LogItem } from './log';
 
-import {cloneDeep, merge} from 'lodash/fp';
-import {ConfigServiceInterface, EnvironmentVariablesService} from './config';
+import { cloneDeep, merge } from 'lodash/fp';
+import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
   Environment,
   HandlerMethodDecorator,
@@ -16,7 +16,7 @@ import {
   LogLevelThresholds,
   PowertoolLogData,
 } from '../types';
-import {LogFormatterInterface, PowertoolLogFormatter} from './formatter';
+import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
 class Logger implements LoggerInterface {
 
@@ -33,7 +33,7 @@ class Logger implements LoggerInterface {
   private logLevel?: LogLevel;
 
   private readonly logLevelThresholds: LogLevelThresholds = {
-    'DEBUG' : 8,
+    'DEBUG': 8,
     'INFO': 12,
     'WARN': 16,
     'ERROR': 20
@@ -98,7 +98,7 @@ class Logger implements LoggerInterface {
   }
 
   public injectLambdaContext(): HandlerMethodDecorator {
-    return (target, propertyKey, descriptor ) => {
+    return (target, propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
 
       descriptor.value = (event, context, callback) => {
@@ -165,7 +165,7 @@ class Logger implements LoggerInterface {
       const attributes = (item instanceof Error) ? { error: item } : item;
       logItem.addAttributes(attributes);
     });
-    
+
     return logItem;
   }
 
@@ -243,7 +243,7 @@ class Logger implements LoggerInterface {
   }
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
-    this.customConfigService = customConfigService? customConfigService : undefined;
+    this.customConfigService = customConfigService ? customConfigService : undefined;
   }
 
   private setEnvVarsService(): void {
@@ -296,7 +296,7 @@ class Logger implements LoggerInterface {
       sampleRateValue: this.getSampleRateValue(),
       serviceName: serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
       xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
-    }, persistentLogAttributes );
+    }, persistentLogAttributes);
   }
 
   private shouldPrint(logLevel: LogLevel): boolean {

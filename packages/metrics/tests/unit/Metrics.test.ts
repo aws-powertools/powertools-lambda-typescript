@@ -1,9 +1,9 @@
-import {populateEnvironmentVariables} from "../helpers";
-import { Metrics } from "../../src/"
+import { populateEnvironmentVariables } from "../helpers";
+import { Metrics } from "../../src/";
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-describe('Logger', () => {
+describe('Metrics', () => {
 
   const originalEnvironmentVariables = process.env;
 
@@ -19,8 +19,11 @@ describe('Logger', () => {
     process.env = originalEnvironmentVariables;
   });
 
-  test('should fail', () => {
-    new Metrics({ namespace: 'test' });
+  test('should log service dimension', () => {
+    const metrics = new Metrics({ namespace: 'test', service: 'testing' });
+    metrics.addMetric('test_name', 'Seconds', 14);
+    metrics.logMetrics();
+    expect(console.log).toBeCalledWith({});
 
   });
 });

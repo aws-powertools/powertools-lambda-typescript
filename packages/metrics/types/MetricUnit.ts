@@ -54,31 +54,5 @@ type MetricUnit =
     | MetricUnitCountPerSecond;
 
 export {
-  MetricUnit,
-  MetricUnitSeconds,
-  MetricUnitMicroseconds,
-  MetricUnitMilliseconds,
-  MetricUnitBytes,
-  MetricUnitKilobytes,
-  MetricUnitMegabytes,
-  MetricUnitGigabytes,
-  MetricUnitTerabytes,
-  MetricUnitBits,
-  MetricUnitKilobits,
-  MetricUnitMegabits,
-  MetricUnitGigabits,
-  MetricUnitTerabits,
-  MetricUnitPercent,
-  MetricUnitCount,
-  MetricUnitBitsPerSecond,
-  MetricUnitBytesPerSecond,
-  MetricUnitKilobytesPerSecond,
-  MetricUnitMegabytesPerSecond,
-  MetricUnitGigabytesPerSecond,
-  MetricUnitTerabytesPerSecond,
-  MetricUnitKilobitsPerSecond,
-  MetricUnitMegabitsPerSecond,
-  MetricUnitGigabitsPerSecond,
-  MetricUnitTerabitsPerSecond,
-  MetricUnitCountPerSecond,
+  MetricUnit
 };

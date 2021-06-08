@@ -3,7 +3,8 @@
 import { MetricUnit } from '../types';
 
 interface MetricsInterface {
-  addMetric(name: string, unit:MetricUnit, value:unknown): void
+  addMetric(name: string, unit:MetricUnit, value:number): void
+  logMetrics(): void
 }
 
 export {

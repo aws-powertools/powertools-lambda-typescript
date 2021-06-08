@@ -1,5 +1,5 @@
 import { Metrics } from '../../src/';
-import { MetricUnits } from '../../txypes';
+import { MetricUnits } from '../../types';
 import { populateEnvironmentVariables } from '../helpers';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();

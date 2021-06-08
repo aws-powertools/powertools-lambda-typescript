@@ -8,7 +8,7 @@ type MetricsOptions = {
 };
 
 type EmfOutput = {
-  _aws: {
+  [key: string]: string | number | {
     Timestamp: number
     CloudWatchMetrics: {
       Namespace: string

@@ -116,7 +116,7 @@ class Metrics implements MetricsInterface {
 
   private setService(service: string | undefined): void {
     const targetService = (service || this.getCustomConfigService()?.getService() || this.getEnvVarsService().getService()) as string;
-    if (service) {
+    if (targetService) {
       this.addDimension('service', targetService);
     }
   }

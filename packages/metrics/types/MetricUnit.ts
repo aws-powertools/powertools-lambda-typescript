@@ -1,29 +1,58 @@
-type MetricUnitSeconds = 'Seconds';
-type MetricUnitMicroseconds = 'Microseconds';
-type MetricUnitMilliseconds = 'Milliseconds';
-type MetricUnitBytes = 'Bytes';
-type MetricUnitKilobytes = 'Kilobytes';
-type MetricUnitMegabytes = 'Megabytes';
-type MetricUnitGigabytes = 'Gigabytes';
-type MetricUnitTerabytes = 'Terabytes';
-type MetricUnitBits = 'Bits';
-type MetricUnitKilobits = 'Kilobits';
-type MetricUnitMegabits = 'Megabits';
-type MetricUnitGigabits = 'Gigabits';
-type MetricUnitTerabits = 'Terabits';
-type MetricUnitPercent = 'Percent';
-type MetricUnitCount = 'Count';
-type MetricUnitBytesPerSecond = 'Bytes/Second';
-type MetricUnitKilobytesPerSecond = 'Kilobytes/Second';
-type MetricUnitMegabytesPerSecond = 'Megabytes/Second';
-type MetricUnitGigabytesPerSecond = 'Gigabytes/Second';
-type MetricUnitTerabytesPerSecond = 'Terabytes/Second';
-type MetricUnitBitsPerSecond = 'Bits/Second';
-type MetricUnitKilobitsPerSecond = 'Kilobits/Second';
-type MetricUnitMegabitsPerSecond = 'Megabits/Second';
-type MetricUnitGigabitsPerSecond = 'Gigabits/Second';
-type MetricUnitTerabitsPerSecond = 'Terabits/Second';
-type MetricUnitCountPerSecond = 'Count/Second';
+enum MetricUnits {
+  Seconds = 'Seconds',
+  Microseconds = 'Microseconds',
+  Milliseconds = 'Milliseconds',
+  Bytes = 'Bytes',
+  Kilobytes = 'Kilobytes',
+  Megabytes = 'Megabytes',
+  Gigabytes = 'Gigabytes',
+  Terabytes = 'Terabytes',
+  Bits = 'Bits',
+  Kilobits = 'Kilobits',
+  Megabits = 'Megabits',
+  Gigabits = 'Gigabits',
+  Terabits = 'Terabits',
+  Percent = 'Percent',
+  Count = 'Count',
+  BytesPerSecond = 'Bytes/Second',
+  KilobytesPerSecond = 'Kilobytes/Second',
+  MegabytesPerSecond = 'Megabytes/Second',
+  GigabytesPerSecond = 'Gigabytes/Second',
+  TerabytesPerSecond = 'Terabytes/Second',
+  BitsPerSecond = 'Bits/Second',
+  KilobitsPerSecond = 'Kilobits/Second',
+  MegabitsPerSecond = 'Megabits/Second',
+  GigabitsPerSecond = 'Gigabits/Second',
+  TerabitsPerSecond = 'Terabits/Second',
+  CountPerSecond = 'Count/Second',
+}
+
+type MetricUnitSeconds = MetricUnits.Seconds;
+type MetricUnitMicroseconds = MetricUnits.Microseconds;
+type MetricUnitMilliseconds = MetricUnits.Milliseconds;
+type MetricUnitBytes = MetricUnits.Bytes;
+type MetricUnitKilobytes = MetricUnits.Kilobytes;
+type MetricUnitMegabytes = MetricUnits.Megabytes;
+type MetricUnitGigabytes = MetricUnits.Gigabytes;
+type MetricUnitTerabytes = MetricUnits.Terabytes;
+type MetricUnitBits = MetricUnits.Bits;
+type MetricUnitKilobits = MetricUnits.Kilobits;
+type MetricUnitMegabits = MetricUnits.Megabits;
+type MetricUnitGigabits = MetricUnits.Gigabits;
+type MetricUnitTerabits = MetricUnits.Terabits;
+type MetricUnitPercent = MetricUnits.Percent;
+type MetricUnitCount = MetricUnits.Count;
+type MetricUnitBytesPerSecond = MetricUnits.BytesPerSecond;
+type MetricUnitKilobytesPerSecond = MetricUnits.KilobytesPerSecond;
+type MetricUnitMegabytesPerSecond = MetricUnits.MegabytesPerSecond;
+type MetricUnitGigabytesPerSecond = MetricUnits.GigabytesPerSecond;
+type MetricUnitTerabytesPerSecond = MetricUnits.TerabytesPerSecond;
+type MetricUnitBitsPerSecond = MetricUnits.BitsPerSecond;
+type MetricUnitKilobitsPerSecond = MetricUnits.KilobitsPerSecond;
+type MetricUnitMegabitsPerSecond = MetricUnits.MegabitsPerSecond;
+type MetricUnitGigabitsPerSecond = MetricUnits.GigabitsPerSecond;
+type MetricUnitTerabitsPerSecond = MetricUnits.TerabitsPerSecond;
+type MetricUnitCountPerSecond = MetricUnits.CountPerSecond;
 
 type MetricUnit =
     MetricUnitSeconds
@@ -54,5 +83,6 @@ type MetricUnit =
     | MetricUnitCountPerSecond;
 
 export {
-  MetricUnit
+  MetricUnit,
+  MetricUnits,
 };

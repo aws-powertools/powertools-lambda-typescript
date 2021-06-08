@@ -16,15 +16,7 @@ class Metrics implements MetricsInterface {
     this.setOptions(options);
   }
 
-  public addMetric(name: string, unit: MetricUnit, value: number): void {
-    this.storeMetric(name, unit, value);
-  }
-
-  public logMetrics(): void {
-    this.purgeStoredMetrics();
-  }
-
-  private addDimension(name: string, value: string): void {
+  public addDimension(name: string, value: string): void {
     if (MAX_DIMENSION_COUNT <= this.dimensions.length) {
       throw new Error('Max dimension count hit');
     }
@@ -33,6 +25,15 @@ class Metrics implements MetricsInterface {
       value
     });
   }
+
+  public addMetric(name: string, unit: MetricUnit, value: number): void {
+    this.storeMetric(name, unit, value);
+  }
+
+  public logMetrics(): void {
+    this.purgeStoredMetrics();
+  }
+
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;
   }
@@ -52,9 +53,9 @@ class Metrics implements MetricsInterface {
   }
 
   private serializeMetrics(): EmfOutput {
-    const metricDefinitions = Object.values(this.storedMetrics).map((metricDefention) => ({
-      Name: metricDefention.name,
-      Unit: metricDefention.unit
+    const metricDefinitions = Object.values(this.storedMetrics).map((metricDefinition) => ({
+      Name: metricDefinition.name,
+      Unit: metricDefinition.unit
     }));
     if (metricDefinitions.length === 0) throw new Error('Must contain at least one metric');
     if (!this.namespace) throw new Error('Namespace must be defined');

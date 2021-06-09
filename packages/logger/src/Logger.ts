@@ -1,5 +1,4 @@
 import { Context } from 'aws-lambda';
-import { LoggerInterface } from '.';
 import { LogItem } from './log';
 
 import { cloneDeep, merge } from 'lodash/fp';
@@ -9,6 +8,7 @@ import {
   HandlerMethodDecorator,
   PowertoolLogData,
   LogAttributes,
+  ClassThatLogs,
   LoggerOptions,
   LogLevel,
   LogLevelThresholds,
@@ -18,9 +18,9 @@ import {
 } from '../types';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
-class Logger implements LoggerInterface {
+class Logger implements ClassThatLogs {
 
-  private static coldStart: boolean = true;
+  public static coldStart: boolean = true;
 
   private customConfigService?: ConfigServiceInterface;
 
@@ -84,10 +84,11 @@ class Logger implements LoggerInterface {
   }
 
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (!this.shouldPrint('ERROR')) {
-      return;
-    }
     this.printLog(this.createAndPopulateLogItem('ERROR', input, extraInput));
+  }
+
+  public getLogsSampled(): boolean {
+    return this.logsSampled;
   }
 
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -174,39 +175,23 @@ class Logger implements LoggerInterface {
   }
 
   private getEnvVarsService(): EnvironmentVariablesService {
-    if (!this.envVarsService) {
-      this.setEnvVarsService();
-    }
-
     return <EnvironmentVariablesService> this.envVarsService;
   }
 
   private getLogFormatter(): LogFormatterInterface {
-    if (!this.logFormatter) {
-      this.setLogFormatter();
-    }
-
     return <LogFormatterInterface> this.logFormatter;
   }
 
   private getLogLevel(): LogLevel {
-    if (this.powertoolLogData?.logLevel) {
-      this.setLogLevel();
-    }
-
     return <LogLevel> this.logLevel;
   }
 
-  private getLogsSampled(): boolean {
-    return this.logsSampled;
-  }
-
   private getPersistentLogAttributes(): LogAttributes {
-    return this.persistentLogAttributes || {};
+    return <LogAttributes> this.persistentLogAttributes;
   }
 
   private getPowertoolLogData(): PowertoolLogData {
-    return this.powertoolLogData || {};
+    return this.powertoolLogData;
   }
 
   private getSampleRateValue(): number {
@@ -217,29 +202,29 @@ class Logger implements LoggerInterface {
     return <number> this.powertoolLogData?.sampleRateValue;
   }
 
+  private isValidLogLevel(logLevel?: LogLevel): boolean {
+    return typeof logLevel === 'string' && logLevel.toUpperCase() in this.logLevelThresholds;
+  }
+
   private printLog(log: LogItem): void {
     log.prepareForPrint();
 
     const references = new WeakSet();
-
-    try {
-      console.log(JSON.parse(JSON.stringify(log.getAttributes(), (key: string, value: LogAttributes) => {
-        let item = value;
-        if (item instanceof Error) {
-          item = this.getLogFormatter().formatError(item);
+    
+    console.log(JSON.parse(JSON.stringify(log.getAttributes(), (key: string, value: LogAttributes) => {
+      let item = value;
+      if (item instanceof Error) {
+        item = this.getLogFormatter().formatError(item);
+      }
+      if (typeof item === 'object' && value !== null) {
+        if (references.has(item)) {
+          return;
         }
-        if (typeof item === 'object' && value !== null) {
-          if (references.has(item)) {
-            return;
-          }
-          references.add(item);
-        }
+        references.add(item);
+      }
 
-        return item;
-      })));
-    } catch (err) {
-      console.log('Unexpected error occurred trying to print the log', err);
-    }
+      return item;
+    })));
   }
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
@@ -255,8 +240,25 @@ class Logger implements LoggerInterface {
   }
 
   private setLogLevel(logLevel?: LogLevel): void {
-    this.logLevel = (logLevel || this.getCustomConfigService()?.getLogLevel() || this.getEnvVarsService().getLogLevel()
-      || Logger.defaultLogLevel) as LogLevel;
+    if (this.isValidLogLevel(logLevel)) {
+      this.logLevel = (<LogLevel>logLevel).toUpperCase();
+      
+      return;
+    }
+    const customConfigValue = this.getCustomConfigService()?.getLogLevel();
+    if (this.isValidLogLevel(customConfigValue)) {
+      this.logLevel = (<LogLevel>customConfigValue).toUpperCase();
+
+      return;
+    }
+    const envVarsValue = this.getEnvVarsService().getLogLevel();
+    if (this.isValidLogLevel(envVarsValue)) {
+      this.logLevel = (<LogLevel>envVarsValue).toUpperCase();
+
+      return;
+    }
+
+    this.logLevel = Logger.defaultLogLevel;
   }
 
   private setLogsSampled(): void {
@@ -265,7 +267,7 @@ class Logger implements LoggerInterface {
     this.logsSampled = sampleRateValue !== undefined && (sampleRateValue === 1 || Math.random() < sampleRateValue);
   }
 
-  private setOptions(options: LoggerOptions = {}): Logger {
+  private setOptions(options: LoggerOptions): Logger {
     const {
       logLevel,
       serviceName,

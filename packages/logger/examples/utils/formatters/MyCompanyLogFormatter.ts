@@ -1,9 +1,9 @@
-import { LogFormatter } from '../../src/formatter';
-import { LogAttributes, UnformattedAttributes } from '../../types';
+import { LogFormatter } from '../../../src/formatter';
+import { LogAttributes, UnformattedAttributes } from '../../../types';
 
 type MyCompanyLog = LogAttributes;
 
-class CustomLogFormatter extends LogFormatter {
+class MyCompanyLogFormatter extends LogFormatter {
 
   public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
     return {
@@ -33,5 +33,5 @@ class CustomLogFormatter extends LogFormatter {
 }
 
 export {
-  CustomLogFormatter
+  MyCompanyLogFormatter
 };

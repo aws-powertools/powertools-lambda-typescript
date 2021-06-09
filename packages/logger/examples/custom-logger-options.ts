@@ -6,8 +6,8 @@ process.env.CUSTOM_ENV = 'prod';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import * as powertool from '../../../package.json';
-import { CustomConfigService } from './config/CustomConfigService';
-import { CustomLogFormatter } from './formatters/CustomLogFormatter';
+import { CustomConfigService } from './utils/config/CustomConfigService';
+import { CustomLogFormatter } from './utils/formatters/CustomLogFormatter';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
 import { Handler } from 'aws-lambda';
 import { Logger } from '../src';

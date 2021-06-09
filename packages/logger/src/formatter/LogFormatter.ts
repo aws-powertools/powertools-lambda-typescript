@@ -11,7 +11,6 @@ abstract class LogFormatter implements LogFormatterInterface {
       location: this.getCodeLocation(error.stack),
       message: error.message,
       stack: error.stack,
-      
     };
   }
 

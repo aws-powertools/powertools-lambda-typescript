@@ -7,27 +7,42 @@ const MAX_DIMENSION_COUNT = 9;
 
 class Metrics implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;
-  private dimensions: {name: string; value: string}[] = [];
+  private dimensions: {[key: string]: string} = {};
   private envVarsService?: EnvironmentVariablesService;
+  private metadata: { [key: string]: string } = {};
   private namespace?: string;
   private storedMetrics:{ [key: string]: { name: string; unit: MetricUnit; value: number } } = {};
 
   public constructor(options: MetricsOptions = {}) {
+    this.dimensions = {};
     this.setOptions(options);
   }
 
   public addDimension(name: string, value: string): void {
-    if (MAX_DIMENSION_COUNT <= this.dimensions.length) {
+    if (MAX_DIMENSION_COUNT <= Object.keys(this.dimensions).length) {
       throw new Error('Max dimension count hit');
     }
-    this.dimensions.push({
-      name,
-      value
-    });
+    this.dimensions[name] = value;
+  }
+
+  public addMetadata(key: string, value: string): void {
+    this.metadata[key] = value;
   }
 
   public addMetric(name: string, unit: MetricUnit, value: number): void {
     this.storeMetric(name, unit, value);
+  }
+
+  public clearDimensions():void {
+    this.dimensions={};
+  }
+
+  public clearMetadata(): void {
+    this.metadata = {};
+  }
+
+  public clearMetrics(): void {
+    this.storedMetrics={};
   }
 
   public logMetrics(): void {
@@ -66,12 +81,7 @@ class Metrics implements MetricsInterface {
       return result;
     }, {});
 
-    const dimensionNames: string[] | undefined = this.dimensions.map(dimension => dimension.name);
-    const dimensionValues = this.dimensions.reduce((result: { [key: string]: string }, { name, value }: { name: string; value: string }) => {
-      result[name] = value;
-
-      return result;
-    }, {});
+    const dimensionNames = Object.keys(this.dimensions);
 
     return {
       _aws: {
@@ -84,8 +94,9 @@ class Metrics implements MetricsInterface {
           }
         ]
       },
-      ...dimensionValues,
-      ...metricValues
+      ...this.dimensions,
+      ...metricValues,
+      ...this.metadata,
     };
   }
 
@@ -123,7 +134,7 @@ class Metrics implements MetricsInterface {
   }
 
   private storeMetric(name: string, unit: MetricUnit, value: number): void {
-    this.storedMetrics = this.storedMetrics || [];
+    this.storedMetrics = this.storedMetrics || {};
     if (Object.keys(this.storedMetrics).length > MAX_METRICS_SIZE) {
       this.purgeStoredMetrics();
     }

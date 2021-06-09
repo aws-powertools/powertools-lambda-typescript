@@ -54,4 +54,15 @@ describe('Metrics', () => {
     expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
   });
 
+  test('Metadata should be added correctly', () => {
+    const metadataItem = { name: 'metaName', value: 'metaValue' };
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addMetric('test_name', MetricUnits.Seconds, 10);
+    metrics.addMetadata(metadataItem.name, metadataItem.value);
+    metrics.logMetrics();
+    expect(console.log).toBeCalledTimes(1);
+    const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
+    expect(loggedData[metadataItem.name]).toEqual(metadataItem.value);
+  });
+
 });

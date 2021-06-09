@@ -1,5 +1,5 @@
 import { ConfigServiceInterface } from '../src/config';
-import {MetricUnit} from "./MetricUnit";
+import { MetricUnit } from './MetricUnit';
 
 type MetricsOptions = {
   customConfigService?: ConfigServiceInterface

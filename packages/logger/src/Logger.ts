@@ -1,5 +1,4 @@
 import { Context } from 'aws-lambda';
-import { LoggerInterface } from '.';
 import { LogItem } from './log';
 
 import { cloneDeep, merge } from 'lodash/fp';
@@ -9,6 +8,7 @@ import {
   HandlerMethodDecorator,
   PowertoolLogData,
   LogAttributes,
+  ClassThatLogs,
   LoggerOptions,
   LogLevel,
   LogLevelThresholds,
@@ -17,9 +17,8 @@ import {
   LogItemExtraInput,
 } from '../types';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
-import { log } from 'util';
 
-class Logger implements LoggerInterface {
+class Logger implements ClassThatLogs {
 
   public static coldStart: boolean = true;
 
@@ -268,7 +267,7 @@ class Logger implements LoggerInterface {
     this.logsSampled = sampleRateValue !== undefined && (sampleRateValue === 1 || Math.random() < sampleRateValue);
   }
 
-  private setOptions(options: LoggerOptions = {}): Logger {
+  private setOptions(options: LoggerOptions): Logger {
     const {
       logLevel,
       serviceName,

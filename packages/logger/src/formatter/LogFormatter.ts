@@ -23,14 +23,20 @@ abstract class LogFormatter implements LogFormatterInterface {
       return '';
     }
 
-    const regex = /\((.*):(\d+):(\d+)\)$/;
-    const match = regex.exec(stack.split('\n')[1]);
+    const stackLines = stack.split('\n');
+    const regex = /\((.*):(\d+):(\d+)\)\\?$/;
 
-    if (!Array.isArray(match)) {
-      return '';
+    let i;
+    for (i = 0; i < stackLines.length; i++) {
+      const match = regex.exec(stackLines[i]);
+
+      if (Array.isArray(match)) {
+        return `${match[1]}:${Number(match[2])}`;
+      }
+
     }
 
-    return `${match[1]}:${Number(match[2])}`;
+    return '';
   }
 }
 

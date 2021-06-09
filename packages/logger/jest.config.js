@@ -1,4 +1,8 @@
 module.exports = {
+  displayName: {
+    name: 'AWS Lambda Powertools utility: LOGGER',
+    color: 'cyan',
+  },
   'preset': 'ts-jest',
   'transform': {
     '^.+\\.ts?$': 'ts-jest',

@@ -1,4 +1,4 @@
-import { EnvironmentVariablesService } from '../../src/config';
+import { EnvironmentVariablesService } from '../../../src/config';
 
 class CustomConfigService extends EnvironmentVariablesService {
 

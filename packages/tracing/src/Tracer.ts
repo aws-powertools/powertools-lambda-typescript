@@ -81,6 +81,42 @@ class Tracer implements ClassThatTraces {
         };
     }
 
+    // TODO: check if the already imported AWS package can be passed as reference i.e. const AWS = require('aws-sdk') -> can we accept that AWS reference?
+    // TODO: change return type to AWS in captureAWS() fn
+    public captureAWS(): void {
+        if (this.tracingDisabled) {
+            console.debug("Tracing has been disabled, aborting patch")
+            return;
+        }
+
+        // TODO: return captureAWS class
+        // return AWSXRay.captureAWS(require('aws-sdk'));
+    }
+
+    // TODO: change return type to service class in captureAWSv3Client() fn
+    // TODO: try to scope down service parameter type in captureAWSv3Client() fn
+    public captureAWSv3Client(service: any): void {
+        if (this.tracingDisabled) {
+            console.debug("Tracing has been disabled, aborting patch")
+            return;
+        }
+
+        // TODO: return instance of AWS service class
+        // return AWSXRay.captureAWSv3Client(service);
+    }
+
+    // TODO: change return type to service class in captureAWSClient() fn
+    // TODO: try to scope down service parameter type in captureAWSClient() fn
+    public captureAWSClient(service: any): void {
+        if (this.tracingDisabled) {
+            console.debug("Tracing has been disabled, aborting patch")
+            return;
+        }
+
+        // TODO: return instance of AWS service class
+        // return AWSXRay.captureAWSClient(service);
+    }
+
     // TODO: fix type of subsegment param of fn annotateColdStart()
     private annotateColdStart(subsegment: any): void {
         if (Tracer.isColdStart()) {

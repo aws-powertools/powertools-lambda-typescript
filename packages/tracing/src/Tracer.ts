@@ -161,11 +161,11 @@ class Tracer implements ClassThatTraces {
     }
 
     private isLambdaSamCli(): boolean {
-        return this.getEnvVarsService()?.getSamLocal() !== undefined;
+        return this.getEnvVarsService()?.getSamLocal() !== '';
     }
 
     private isChaliceCli(): boolean {
-        return this.getEnvVarsService()?.getChaliceLocal() !== undefined;
+        return this.getEnvVarsService()?.getChaliceLocal() !== '';
     }
 
     private setTracingDisabled(disabled?: boolean): void {

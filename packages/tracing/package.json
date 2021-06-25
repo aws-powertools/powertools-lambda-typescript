@@ -27,7 +27,6 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^26.0.19",
-    "@types/lodash": "^4.14.168",
     "@types/node": "^15.0.3",
     "@typescript-eslint/eslint-plugin": "^4.11.1",
     "@typescript-eslint/parser": "^4.11.1",
@@ -47,7 +46,5 @@
   "bugs": {
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
-  "dependencies": {
-    "lodash": "^4.17.21"
-  }
+  "dependencies": {}
 }

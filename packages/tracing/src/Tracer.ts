@@ -1,6 +1,7 @@
-import { ClassThatTraces, HandlerMethodDecorator, TracerOptions } from "../types"
-
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { ProviderService, ProviderServiceInterface } from './provider';
+import { Segment, Subsegment } from 'aws-xray-sdk-core'
+import { ClassThatTraces, HandlerMethodDecorator, TracerOptions } from "../types"
 
 class Tracer implements ClassThatTraces {
     public static coldStart: boolean = true;
@@ -17,8 +18,11 @@ class Tracer implements ClassThatTraces {
 
     private customConfigService?: ConfigServiceInterface;
 
+    public provider: ProviderServiceInterface;
+
     public constructor(options: TracerOptions = {}) {
         this.setOptions(options);
+        this.provider = new ProviderService();
     }
 
     public static isColdStart(): boolean {
@@ -31,6 +35,14 @@ class Tracer implements ClassThatTraces {
         return false;
     }
 
+    public getSegment(): Segment | Subsegment | undefined {
+        return this.provider.getSegment();
+    }
+
+    public setSegment(segment: Segment | Subsegment): void {
+        return this.provider.setSegment(segment);
+    }
+
     public putAnnotation(key: string, value: string | number | boolean): void {
         if (this.tracingDisabled) {
             console.debug("Tracing has been disabled, aborting putAnnotation")
@@ -38,8 +50,8 @@ class Tracer implements ClassThatTraces {
         }
 
         console.debug(`Annotating on key ${key} with ${value}`);
-        // TODO: forward key, value to x-ray client
-        // self.provider.put_annotation(key=key, value=value)
+        let document = this.getSegment();
+        document?.addAnnotation(key, value);
     }
 
     public putMetadata(key: string, value: any, namespace?: string | undefined): void {
@@ -50,8 +62,8 @@ class Tracer implements ClassThatTraces {
 
         namespace = namespace || this.serviceName;
         console.debug(`Adding metadata on key ${key} with ${value} at namespace ${namespace}`);
-        // TODO: forward key, value, namespace to x-ray client
-        // self.provider.put_metadata(key=key, value=value, namespace=namespace)
+        let document = this.getSegment();
+        document?.addMetadata(key, value, namespace);
     }
 
     public captureLambdaHanlder(): HandlerMethodDecorator {
@@ -60,21 +72,20 @@ class Tracer implements ClassThatTraces {
             const originalMethod = descriptor.value;
 
             descriptor.value = (event, context, callback) => {
-                // TODO: put/get (?) sub segment `## ${context.functionName}`
-                // with self.provider.in_subsegment(name=f"## {lambda_handler_name}") as subsegment
-                // TODO: fix subsegment var below
-                let subsegment;
-                this.annotateColdStart(subsegment);
+                let subsegment = new Subsegment(`## ${context.functionName}`);
+                this.setSegment(subsegment);
+
+                this.annotateColdStart();
                 try {
                     console.debug('Calling lambda handler');
                     const result = originalMethod?.apply(this, [event, context, callback]);
                     console.debug('Successfully received lambda handler response');
-                    this.addResponseAsMetadata(result, context.functionName, subsegment);
+                    this.addResponseAsMetadata(result, context.functionName);
 
                     return result
                 } catch (error) {
-                    console.exception(`Exception received from ${context.functionName}`)
-                    this.addFullErrorAsMetadata(error, context.functionName, subsegment);
+                    console.error(`Exception received from ${context.functionName}`)
+                    this.addFullErrorAsMetadata(error, context.functionName);
                     throw error;
                 }
             };
@@ -117,35 +128,29 @@ class Tracer implements ClassThatTraces {
         // return AWSXRay.captureAWSClient(service);
     }
 
-    // TODO: fix type of subsegment param of fn annotateColdStart()
-    private annotateColdStart(subsegment: any): void {
+    private annotateColdStart(): void {
         if (Tracer.isColdStart()) {
-            // TODO: put annotation on subsegment for ColdStart
-            // subsegment.put_annotation(key="ColdStart", value=True)
-            // TODO: remove this console.log
-            console.log('Annotating cold start');
+            console.debug('Annotating cold start');
+            this.putAnnotation('ColdStart', true);
         }
     }
 
-    // TODO: fix type of subsegment param of fn addResponseAsMetadata()
-    private addResponseAsMetadata(data?: any, methodName?: string, subsegment?: any): void {
-        if (data === undefined || this.captureResponse === false || subsegment === undefined) {
+    private addResponseAsMetadata(data?: any, methodName?: string): void {
+        if (data === undefined || this.captureResponse === false) {
             return;
         }
 
-        // TODO: put metadata with response under subsegment
-        // subsegment.put_metadata(key=f"{method_name} response", value=data, namespace=self._config["service"])
+        this.putMetadata(`${methodName} response`, data);
     }
 
-    // TODO: fix type of subsegment param of fn addFullErrorAsMetadata()
     // TODO: fix type of error param of fn addFullErrorAsMetadata()
-    private addFullErrorAsMetadata(error: Error, methodName?: string, subsegment?: any): void {
+    private addFullErrorAsMetadata(error: Error, methodName?: string): void {
+        let subsegment = this.getSegment();
         if (this.captureError === false) {
             return;
         }
 
-        // TODO: put metadata with error under subsegment
-        // subsegment.put_metadata(key=f"{method_name} error", value=error, namespace=self._config["service"])
+        this.putMetadata(`${methodName} error`, error);
     }
 
     private getCustomConfigService(): ConfigServiceInterface | undefined {

@@ -46,5 +46,7 @@
   "bugs": {
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
-  "dependencies": {}
+  "dependencies": {
+    "aws-xray-sdk-core": "^3.3.3"
+  }
 }

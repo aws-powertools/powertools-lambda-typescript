@@ -1,4 +1,3 @@
-import { context } from "../../../tests/resources/contexts/hello-world";
 import { ClassThatTraces, HandlerMethodDecorator, TracerOptions } from "../types"
 
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
@@ -8,10 +7,8 @@ class Tracer implements ClassThatTraces {
 
     private tracingDisabled: boolean = false;
 
-    // TODO: check default value for captureResponse in original version
     private captureResponse: boolean = true;
 
-    // TODO: check default value for captureError in original version
     private captureError: boolean = true;
 
     private serviceName: string = 'serviceUndefined';
@@ -22,6 +19,16 @@ class Tracer implements ClassThatTraces {
 
     public constructor(options: TracerOptions = {}) {
         this.setOptions(options);
+    }
+
+    public static isColdStart(): boolean {
+        if (Tracer.coldStart === true) {
+            Tracer.coldStart = false;
+
+            return true;
+        }
+
+        return false;
     }
 
     public putAnnotation(key: string, value: string | number | boolean): void {
@@ -47,16 +54,6 @@ class Tracer implements ClassThatTraces {
         // self.provider.put_metadata(key=key, value=value, namespace=namespace)
     }
 
-    public static isColdStart(): boolean {
-        if (Tracer.coldStart === true) {
-            Tracer.coldStart = false;
-
-            return true;
-        }
-
-        return false;
-    }
-
     public captureLambdaHanlder(): HandlerMethodDecorator {
         // TODO: check if this is needed here https://github.com/awslabs/aws-lambda-powertools-python/blob/87907c2d5578692829125ae2cd81b719af532c1f/aws_lambda_powertools/tracing/tracer.py#L288-L292
         return (target, propertyKey, descriptor) => {
@@ -69,16 +66,50 @@ class Tracer implements ClassThatTraces {
                 let subsegment;
                 this.annotateColdStart(subsegment);
                 try {
+                    console.debug('Calling lambda handler');
                     const result = originalMethod?.apply(this, [event, context, callback]);
-                    this.addResponseAsMetadata(context.functionName, result, subsegment);
+                    console.debug('Successfully received lambda handler response');
+                    this.addResponseAsMetadata(result, context.functionName, subsegment);
 
                     return result
                 } catch (error) {
-                    this.addFullErrorAsMetadata(context.functionName, error, subsegment);
+                    console.exception(`Exception received from ${context.functionName}`)
+                    this.addFullErrorAsMetadata(error, context.functionName, subsegment);
                     throw error;
                 }
             };
         };
+    }
+
+    // TODO: fix type of subsegment param of fn annotateColdStart()
+    private annotateColdStart(subsegment: any): void {
+        if (Tracer.isColdStart()) {
+            // TODO: put annotation on subsegment for ColdStart
+            // subsegment.put_annotation(key="ColdStart", value=True)
+            // TODO: remove this console.log
+            console.log('Annotating cold start');
+        }
+    }
+
+    // TODO: fix type of subsegment param of fn addResponseAsMetadata()
+    private addResponseAsMetadata(data?: any, methodName?: string, subsegment?: any): void {
+        if (data === undefined || this.captureResponse === false || subsegment === undefined) {
+            return;
+        }
+
+        // TODO: put metadata with response under subsegment
+        // subsegment.put_metadata(key=f"{method_name} response", value=data, namespace=self._config["service"])
+    }
+
+    // TODO: fix type of subsegment param of fn addFullErrorAsMetadata()
+    // TODO: fix type of error param of fn addFullErrorAsMetadata()
+    private addFullErrorAsMetadata(error: Error, methodName?: string, subsegment?: any): void {
+        if (this.captureError === false) {
+            return;
+        }
+
+        // TODO: put metadata with error under subsegment
+        // subsegment.put_metadata(key=f"{method_name} error", value=error, namespace=self._config["service"])
     }
 
     private getCustomConfigService(): ConfigServiceInterface | undefined {
@@ -205,37 +236,6 @@ class Tracer implements ClassThatTraces {
         this.setServiceName(serviceName);
 
         return this;
-    }
-
-    // TODO: fix type of subsegment param of fn annotateColdStart()
-    private annotateColdStart(subsegment: any): void {
-        if (Tracer.isColdStart()) {
-            // TODO: put annotation on subsegment for ColdStart
-            // subsegment.put_annotation(key="ColdStart", value=True)
-            // TODO: remove this console.log
-            console.log('Annotating cold start');
-        }
-    }
-
-    // TODO: fix type of subsegment param of fn addResponseAsMetadata()
-    private addResponseAsMetadata(methodName?: string, data?: any, subsegment?: any): void {
-        if (data === undefined || this.captureResponse === false || subsegment === undefined) {
-            return;
-        }
-
-        // TODO: put metadata with response under subsegment
-        // subsegment.put_metadata(key=f"{method_name} response", value=data, namespace=self._config["service"])
-    }
-
-    // TODO: fix type of subsegment param of fn addFullErrorAsMetadata()
-    // TODO: fix type of error param of fn addFullErrorAsMetadata()
-    private addFullErrorAsMetadata(methodName?: string, error: Error, subsegment?: any): void {
-        if (this.captureError === false) {
-            return;
-        }
-
-        // TODO: put metadata with error under subsegment
-        // subsegment.put_metadata(key=f"{method_name} error", value=error, namespace=self._config["service"])
     }
 }
 

@@ -1,4 +1,4 @@
-import { captureAWS, captureAWSClient, captureAWSv3Client, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger } from 'aws-xray-sdk-core';
+import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, captureCallbackFunc, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger } from 'aws-xray-sdk-core';
 import { ProviderServiceInterface } from '.';
 
 class ProviderService implements ProviderServiceInterface {
@@ -38,6 +38,14 @@ class ProviderService implements ProviderServiceInterface {
     public captureAWSv3Client<T>(service: T): T {
         // Type must be aliased as any because of this https://github.com/aws/aws-xray-sdk-node/issues/439#issuecomment-859715660
         return captureAWSv3Client(service as any);
+    }
+
+    public captureFunc(name: string, fcn: (subsegment?: Subsegment) => any, parent?: Segment | Subsegment): any{
+        return captureFunc(name, fcn);
+    }
+
+    public captureAsyncFunc(name: string, fcn: (subsegment?: Subsegment) => any, parent?: Segment | Subsegment): any {
+        return captureAsyncFunc(name, fcn);
     }
 
 }

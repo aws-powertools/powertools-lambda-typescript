@@ -8,24 +8,24 @@ process.env.AWS_XRAY_DEBUG_MODE = 'TRUE';
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
 import { TracingNamespace as dummyTracingNamespace } from './utils/namespaces/hello-world';
-import { Handler } from 'aws-lambda';
+import { LambdaInterface } from './utils/lambda/LambdaInterface';
+import { Callback, Context } from 'aws-lambda/handler';
 import { Tracer } from '../src';
 
 const tracer = new Tracer();
 
-const lambdaHandler: Handler = async () => {
+class Lambda implements LambdaInterface {
+
+  @tracer.captureLambdaHanlder()
+  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+
     tracer.putAnnotation("StringAnnotation", "AnnotationValue");
-    tracer.putAnnotation("NumberAnnotation", 1234);
-    tracer.putAnnotation("BooleanAnnotationKey", true);
-    tracer.putMetadata("MetadataKey", {});
-    tracer.putMetadata("MetadataKey", {}, 'SomeNameSpace');
 
-    return {
-        foo: 'bar'
-    };
+    throw new Error('foo bar')
+  }
 
-};
+}
 
 dummyTracingNamespace(tracer, () => {
-    lambdaHandler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'))
+    new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
 });

@@ -72,22 +72,23 @@ class Tracer implements ClassThatTraces {
             const originalMethod = descriptor.value;
 
             descriptor.value = (event, context, callback) => {
-                let subsegment = new Subsegment(`## ${context.functionName}`);
-                this.setSegment(subsegment);
-
-                this.annotateColdStart();
-                try {
-                    console.debug('Calling lambda handler');
-                    const result = originalMethod?.apply(this, [event, context, callback]);
-                    console.debug('Successfully received lambda handler response');
-                    this.addResponseAsMetadata(result, context.functionName);
-
-                    return result
-                } catch (error) {
-                    console.error(`Exception received from ${context.functionName}`)
-                    this.addFullErrorAsMetadata(error, context.functionName);
-                    throw error;
-                }
+                this.provider.captureAsyncFunc(`## ${context.functionName}`, async subsegment => {
+                    this.annotateColdStart();
+                    let result;
+                    try {
+                        console.debug('Calling lambda handler');
+                        result = await originalMethod?.apply(this, [event, context, callback]);
+                        console.debug('Successfully received lambda handler response');
+                        this.addResponseAsMetadata(result, context.functionName);
+                    } catch (error) {
+                        console.error(`Exception received from ${context.functionName}`)
+                        this.addErrorAsMetadata(error);
+                        throw error;
+                    } finally {
+                        subsegment?.close();
+                    }
+                    return result;
+                })
             };
         };
     }
@@ -143,14 +144,13 @@ class Tracer implements ClassThatTraces {
         this.putMetadata(`${methodName} response`, data);
     }
 
-    // TODO: fix type of error param of fn addFullErrorAsMetadata()
-    private addFullErrorAsMetadata(error: Error, methodName?: string): void {
+    private addErrorAsMetadata(error: Error): void {
         let subsegment = this.getSegment();
-        if (this.captureError === false) {
+        if (this.captureError === false || subsegment === undefined || this.tracingDisabled) {
             return;
         }
 
-        this.putMetadata(`${methodName} error`, error);
+        subsegment.addError(error, false);
     }
 
     private getCustomConfigService(): ConfigServiceInterface | undefined {

@@ -19,6 +19,9 @@ interface ProviderServiceInterface {
 
     captureAWSv3Client<T>(awsservice: T): T;
 
+    captureFunc(name: string, fcn: (subsegment?: Subsegment) => any, parent?: Segment | Subsegment): any;
+
+    captureAsyncFunc(name: string, fcn: (subsegment?: Subsegment) => any, parent?: Segment | Subsegment): any;
 }
 
 export {

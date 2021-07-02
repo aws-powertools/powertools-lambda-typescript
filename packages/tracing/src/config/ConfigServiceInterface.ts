@@ -1,16 +1,16 @@
 interface ConfigServiceInterface {
 
-    get(name: string): string
+  get(name: string): string
 
-    getTracingDisabled(): boolean
+  getTracingDisabled(): string
 
-    getServiceName(): string
+  getServiceName(): string
 
-    getTracingCaptureResponse(): boolean;
+  getTracingCaptureResponse(): string
 
-    getTracingCaptureError(): boolean;
+  getTracingCaptureError(): string
 }
 
 export {
-    ConfigServiceInterface
+  ConfigServiceInterface
 };

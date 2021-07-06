@@ -1,6 +1,6 @@
 const populateEnvironmentVariables = (): void => {
 
-  process.env.POWERTOOLS_METRICS_SERVICE = 'hello-world';
+  process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 
 };
 

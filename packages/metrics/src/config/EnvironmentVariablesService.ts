@@ -3,7 +3,7 @@ import { ConfigService } from '.';
 class EnvironmentVariablesService extends ConfigService {
 
   private namespaceVariable = 'POWERTOOLS_METRICS_NAMESPACE';
-  private serviceVariable = 'POWERTOOLS_METRICS_SERVICE';
+  private serviceVariable = 'POWERTOOLS_SERVICE_NAME';
 
   public get(name: string): string {
     return process.env[name]?.trim() || '';

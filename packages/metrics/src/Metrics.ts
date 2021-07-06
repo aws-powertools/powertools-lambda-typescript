@@ -1,16 +1,29 @@
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { MetricUnit, MetricsOptions, EmfOutput } from '../types';
+import {
+  DecoratorOptions,
+  Dimensions,
+  EmfOutput,
+  HandlerMethodDecorator,
+  MetricsOptions,
+  MetricUnit,
+  MetricUnits
+} from '../types';
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 9;
 
 class Metrics implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;
-  private dimensions: {[key: string]: string} = {};
+  private default_dimensions: Dimensions = {};
+  private dimensions: Dimensions = {};
   private envVarsService?: EnvironmentVariablesService;
+  private functionName?:string;
+  private isColdStart: boolean = true;
+  private isSingleMetric: boolean = false;
   private metadata: { [key: string]: string } = {};
   private namespace?: string;
+  private raiseOnEmptyMetrics: boolean = false;
   private storedMetrics:{ [key: string]: { name: string; unit: MetricUnit; value: number } } = {};
 
   public constructor(options: MetricsOptions = {}) {
@@ -19,7 +32,7 @@ class Metrics implements MetricsInterface {
   }
 
   public addDimension(name: string, value: string): void {
-    if (MAX_DIMENSION_COUNT <= Object.keys(this.dimensions).length) {
+    if (MAX_DIMENSION_COUNT <= (Object.keys(this.dimensions).length + Object.keys(this.default_dimensions).length)) {
       throw new Error('Max dimension count hit');
     }
     this.dimensions[name] = value;
@@ -31,6 +44,11 @@ class Metrics implements MetricsInterface {
 
   public addMetric(name: string, unit: MetricUnit, value: number): void {
     this.storeMetric(name, unit, value);
+    if (this.isSingleMetric) this.purgeStoredMetrics();
+  }
+
+  public clearDefaultDimensions():void {
+    this.default_dimensions={};
   }
 
   public clearDimensions():void {
@@ -45,8 +63,100 @@ class Metrics implements MetricsInterface {
     this.storedMetrics={};
   }
 
-  public logMetrics(): void {
-    this.purgeStoredMetrics();
+  public logMetrics(options: DecoratorOptions = {}): HandlerMethodDecorator {
+    const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
+    this.raiseOnEmptyMetrics = raiseOnEmptyMetrics || false;
+    if (defaultDimensions) {
+      this.setDefaultDimensions(defaultDimensions);
+    }
+
+    return (target, propertyKey, descriptor) => {
+      const originalMethod = descriptor.value;
+      descriptor.value = (event, context, callback) => {
+        this.functionName = context.functionName;
+
+        if (captureColdStartMetric) this.captureColdStart();
+        const result = originalMethod?.apply(this, [ event, context, callback ]);
+        this.purgeStoredMetrics();
+
+        return result;
+      };
+    };
+  }
+
+  public serializeMetrics(): EmfOutput {
+    const metricDefinitions = Object.values(this.storedMetrics).map((metricDefinition) => ({
+      Name: metricDefinition.name,
+      Unit: metricDefinition.unit
+    }));
+    if (metricDefinitions.length === 0) {
+      if (this.raiseOnEmptyMetrics) {
+        throw new Error('Must contain at least one metric');
+      }
+    }
+    if (!this.namespace) throw new Error('Namespace must be defined');
+
+    const metricValues = Object.values(this.storedMetrics).reduce((result: { [key: string]: number }, { name, value }: { name: string; value: number }) => {
+      result[name] = value;
+
+      return result;
+    }, {});
+
+    const dimensionNames = [ ...Object.keys(this.dimensions), ...Object.keys(this.default_dimensions) ];
+
+    return {
+      _aws: {
+        Timestamp: new Date().getTime(),
+        CloudWatchMetrics: [
+          {
+            Namespace: this.namespace,
+            Dimensions: [dimensionNames],
+            Metrics: metricDefinitions,
+          }
+        ]
+      },
+      ...this.default_dimensions,
+      ...this.dimensions,
+      ...metricValues,
+      ...this.metadata,
+    };
+  }
+
+  public setDefaultDimensions(dimensions: Dimensions): void {
+    if (Object.keys(this.dimensions).length > 0) {
+      throw new Error('Default dimensions must be set before dynamic dimensions are added');
+    }
+    const targetDimensions = {
+      ...this.default_dimensions,
+      ...dimensions
+    };
+    if (MAX_DIMENSION_COUNT <= Object.keys(targetDimensions).length) {
+      throw new Error('Max dimension count hit');
+
+      return;
+    }
+    this.default_dimensions=targetDimensions;
+  }
+
+  public singleMetric(): Metrics {
+    return new Metrics({
+      namespace: this.namespace,
+      service: this.dimensions['service'],
+      singleMetric: true
+    });
+  }
+
+  private captureColdStart(): void {
+    if (!this.isColdStart) return;
+    this.isColdStart = false;
+    const singleMetric = this.singleMetric();
+    if (this.dimensions.service) {
+      singleMetric.addDimension('service', this.dimensions.service);
+    }
+    if (this.functionName != null) {
+      singleMetric.addDimension('function_name', this.functionName);
+    }
+    singleMetric.addMetric('ColdStart', MetricUnits.Count, 1);
   }
 
   private getCustomConfigService(): ConfigServiceInterface | undefined {
@@ -67,39 +177,6 @@ class Metrics implements MetricsInterface {
     this.storedMetrics = {};
   }
 
-  private serializeMetrics(): EmfOutput {
-    const metricDefinitions = Object.values(this.storedMetrics).map((metricDefinition) => ({
-      Name: metricDefinition.name,
-      Unit: metricDefinition.unit
-    }));
-    if (metricDefinitions.length === 0) throw new Error('Must contain at least one metric');
-    if (!this.namespace) throw new Error('Namespace must be defined');
-
-    const metricValues = Object.values(this.storedMetrics).reduce((result: { [key: string]: number }, { name, value }: { name: string; value: number }) => {
-      result[name] = value;
-
-      return result;
-    }, {});
-
-    const dimensionNames = Object.keys(this.dimensions);
-
-    return {
-      _aws: {
-        Timestamp: new Date().getTime(),
-        CloudWatchMetrics: [
-          {
-            Namespace: this.namespace,
-            Dimensions: [dimensionNames],
-            Metrics: metricDefinitions,
-          }
-        ]
-      },
-      ...this.dimensions,
-      ...metricValues,
-      ...this.metadata,
-    };
-  }
-
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
     this.customConfigService = customConfigService? customConfigService : undefined;
   }
@@ -117,11 +194,13 @@ class Metrics implements MetricsInterface {
       customConfigService,
       namespace,
       service,
+      singleMetric
     } = options;
     this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
     this.setNamespace(namespace);
     this.setService(service);
+    this.isSingleMetric = singleMetric || false;
 
     return this;
   }
@@ -148,5 +227,6 @@ class Metrics implements MetricsInterface {
 }
 
 export {
-  Metrics
+  Metrics,
+  MetricUnits
 };

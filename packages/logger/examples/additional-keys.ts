@@ -1,5 +1,5 @@
 // Populate runtime
-require('./../tests/helpers/populateEnvironmentVariables');
+require('../tests/helpers/populateEnvironmentVariables');
 
 // Additional runtime variables
 process.env.LOG_LEVEL = 'WARN';
@@ -14,10 +14,11 @@ const logger = new Logger();
 
 const lambdaHandler: Handler = async () => {
 
-  logger.debug('This is a DEBUG log');
-  logger.info('This is an INFO log');
-  logger.warn('This is a WARN log');
-  logger.error('This is an ERROR log');
+  // Pass a custom correlation ID
+  logger.warn('This is a WARN log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
+
+  // Pass an error that occurred
+  logger.error('This is an ERROR log', new Error('Something bad happened!'));
 
   return {
     foo: 'bar'

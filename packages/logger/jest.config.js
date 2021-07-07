@@ -1,4 +1,8 @@
 module.exports = {
+  displayName: {
+    name: 'AWS Lambda Powertools utility: LOGGER',
+    color: 'cyan',
+  },
   'preset': 'ts-jest',
   'transform': {
     '^.+\\.ts?$': 'ts-jest',
@@ -31,5 +35,9 @@ module.exports = {
   'coverageReporters': [
     'json-summary',
     'text',
-    'lcov' ],
+    'lcov'
+  ],
+  'setupFiles': [
+    '<rootDir>/tests/helpers/populateEnvironmentVariables.ts'
+  ]
 };

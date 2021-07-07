@@ -1,14 +1,13 @@
-import { populateEnvironmentVariables } from '../tests/helpers';
-
 // Populate runtime
-populateEnvironmentVariables();
+require('./../tests/helpers/populateEnvironmentVariables');
+
 // Additional runtime variables
 process.env.LOG_LEVEL = 'INFO';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
-import { LambdaInterface } from '../src/lambda/LambdaInterface';
+import { LambdaInterface } from './utils/lambda/LambdaInterface';
 import { Logger } from '../src';
 import { Callback, Context } from 'aws-lambda/handler';
 

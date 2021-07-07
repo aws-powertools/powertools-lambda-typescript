@@ -18,6 +18,13 @@ npm run example:cold-start
 
 ### Getting started
 
+Metrics has two global settings that will be used across all metrics emitted:
+
+|Setting|Description|Environment Variable|Constructor Parameter|
+|---|---|---|---|
+|Metric namespace|Logical container where all metrics will be placed e.g. ServerlessAirline|POWERTOOLS_METRICS_NAMESPACE|namespace|
+|Service|Optionally, sets service metric dimension across all metrics e.g. payment|POWERTOOLS_SERVICE_NAME|service|
+
 ```typescript
 // Import the library
 import { Metrics, MetricUnits } from '../src';
@@ -174,3 +181,9 @@ class Lambda implements LambdaInterface {
 
 ```
 </details>
+If it's a cold start invocation, this feature will:
+
+- Create a separate EMF blob solely containing a metric named ColdStart
+- Add function_name and service dimensions
+
+This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.

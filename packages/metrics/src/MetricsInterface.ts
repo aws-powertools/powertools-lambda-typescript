@@ -1,7 +1,5 @@
-// import { MetricUnit, LogItemMessage } from '../types';
-
-import { MetricUnit, EmfOutput, HandlerMethodDecorator, Dimensions, DecoratorOptions } from '../types';
 import { Metrics } from './Metrics';
+import { MetricUnit, EmfOutput, HandlerMethodDecorator, Dimensions, DecoratorOptions } from '../types';
 
 interface MetricsInterface {
   addMetric(name: string, unit:MetricUnit, value:number): void

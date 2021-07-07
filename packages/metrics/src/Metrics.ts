@@ -102,7 +102,7 @@ class Metrics implements MetricsInterface {
       return result;
     }, {});
 
-    const dimensionNames = [ ...Object.keys(this.dimensions), ...Object.keys(this.default_dimensions) ];
+    const dimensionNames = [ ...Object.keys(this.default_dimensions), ...Object.keys(this.dimensions) ];
 
     return {
       _aws: {

@@ -13,11 +13,13 @@ type MetricsOptions = {
 };
 
 type EmfOutput = {
-  [key: string]: string | number | {
+
+  [key: string]: string | number | object
+  '_aws': {
     Timestamp: number
     CloudWatchMetrics: {
       Namespace: string
-      Dimensions: [string[] | undefined]
+      Dimensions: [string[]]
       Metrics: { Name: string; Unit:MetricUnit }[]
     }[]
   }

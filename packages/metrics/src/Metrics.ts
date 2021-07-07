@@ -66,7 +66,7 @@ class Metrics implements MetricsInterface {
   public logMetrics(options: DecoratorOptions = {}): HandlerMethodDecorator {
     const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
     this.raiseOnEmptyMetrics = raiseOnEmptyMetrics || false;
-    if (defaultDimensions) {
+    if (defaultDimensions !== undefined) {
       this.setDefaultDimensions(defaultDimensions);
     }
 
@@ -123,17 +123,12 @@ class Metrics implements MetricsInterface {
   }
 
   public setDefaultDimensions(dimensions: Dimensions): void {
-    if (Object.keys(this.dimensions).length > 0) {
-      throw new Error('Default dimensions must be set before dynamic dimensions are added');
-    }
     const targetDimensions = {
       ...this.default_dimensions,
       ...dimensions
     };
     if (MAX_DIMENSION_COUNT <= Object.keys(targetDimensions).length) {
       throw new Error('Max dimension count hit');
-
-      return;
     }
     this.default_dimensions=targetDimensions;
   }
@@ -164,10 +159,6 @@ class Metrics implements MetricsInterface {
   }
 
   private getEnvVarsService(): EnvironmentVariablesService {
-    if (!this.envVarsService) {
-      this.setEnvVarsService();
-    }
-
     return <EnvironmentVariablesService> this.envVarsService;
   }
 
@@ -189,7 +180,7 @@ class Metrics implements MetricsInterface {
     this.namespace = (namespace || this.getCustomConfigService()?.getNamespace() || this.getEnvVarsService().getNamespace()) as string;
   }
 
-  private setOptions(options: MetricsOptions = {}): Metrics {
+  private setOptions(options: MetricsOptions): Metrics {
     const {
       customConfigService,
       namespace,
@@ -207,14 +198,13 @@ class Metrics implements MetricsInterface {
 
   private setService(service: string | undefined): void {
     const targetService = (service || this.getCustomConfigService()?.getService() || this.getEnvVarsService().getService()) as string;
-    if (targetService) {
+    if (targetService.length > 0) {
       this.addDimension('service', targetService);
     }
   }
 
   private storeMetric(name: string, unit: MetricUnit, value: number): void {
-    this.storedMetrics = this.storedMetrics || {};
-    if (Object.keys(this.storedMetrics).length > MAX_METRICS_SIZE) {
+    if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.purgeStoredMetrics();
     }
     this.storedMetrics[name] = {

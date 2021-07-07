@@ -1,6 +1,6 @@
 interface ConfigServiceInterface {
 
-  get(name: string): string
+  get?(name: string): string
   getNamespace(): string
   getService(): string
 

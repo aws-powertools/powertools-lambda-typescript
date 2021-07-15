@@ -1072,9 +1072,9 @@
       "dev": true
     },
     "node_modules/@types/aws-lambda": {
-      "version": "8.10.78",
-      "resolved": "https://registry.npmjs.org/@types/aws-lambda/-/aws-lambda-8.10.78.tgz",
-      "integrity": "sha512-+lZ8NuHT0qKEEpiZR4bF1G24SLrLwzdu0i9Cjdc3BGq6XJU6gBBYS5I0RJ8RdDCtgqgGdW8sOwsiZGHrC6mp0Q==",
+      "version": "8.10.79",
+      "resolved": "https://registry.npmjs.org/@types/aws-lambda/-/aws-lambda-8.10.79.tgz",
+      "integrity": "sha512-YgpllvHcDrPfzyf8/a2+ScRoEtJQjAP0pSgIneWcVpfqHGmiAaS2oMO3e4y3InJMgrMyuxGPde72CBZS/X8vJA==",
       "dev": true
     },
     "node_modules/@types/babel__core": {
@@ -6403,9 +6403,9 @@
       "dev": true
     },
     "@types/aws-lambda": {
-      "version": "8.10.78",
-      "resolved": "https://registry.npmjs.org/@types/aws-lambda/-/aws-lambda-8.10.78.tgz",
-      "integrity": "sha512-+lZ8NuHT0qKEEpiZR4bF1G24SLrLwzdu0i9Cjdc3BGq6XJU6gBBYS5I0RJ8RdDCtgqgGdW8sOwsiZGHrC6mp0Q==",
+      "version": "8.10.79",
+      "resolved": "https://registry.npmjs.org/@types/aws-lambda/-/aws-lambda-8.10.79.tgz",
+      "integrity": "sha512-YgpllvHcDrPfzyf8/a2+ScRoEtJQjAP0pSgIneWcVpfqHGmiAaS2oMO3e4y3InJMgrMyuxGPde72CBZS/X8vJA==",
       "dev": true
     },
     "@types/babel__core": {

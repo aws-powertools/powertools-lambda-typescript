@@ -6,11 +6,16 @@ jobs:
   on_push:
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request' }}
+    env:
+      NODE_ENV: dev
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       - name: Install packages
         run: |
-          export NODE_ENV=dev
           npm ci
           npm run lerna-ci
       - name: Run lint

@@ -34,7 +34,7 @@ process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
 
 // Instantiate the Logger with default configuration
-const metrics = new metrics();
+const metrics = new Metrics();
 
 // Add an example Metric
 metrics.addMetric('test-metric', MetricUnits.Count, 10);
@@ -86,7 +86,7 @@ process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
 
 // Instantiate the Logger with default configuration
-const metrics = new metrics();
+const metrics = new Metrics();
 
 class Lambda implements LambdaInterface {
 
@@ -114,7 +114,7 @@ process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
 
 // Instantiate the Logger with default configuration
-const metrics = new metrics();
+const metrics = new Metrics();
 
 class Lambda implements LambdaInterface {
 

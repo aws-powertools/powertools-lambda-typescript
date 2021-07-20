@@ -3,7 +3,7 @@ on:
   pull_request
 
 jobs:
-  on_push:
+  on_pr:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,6 +17,7 @@ jobs:
       - name: Run tests
         run: npm run lerna-test
       - name: Report Coverage
+        #Dependabot user will only have read-only perms, so don't try to report coverage
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: romeovs/lcov-reporter-action@v0.2.21
         with:

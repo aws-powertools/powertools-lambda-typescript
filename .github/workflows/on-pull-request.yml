@@ -1,0 +1,39 @@
+name: on-pull-request
+on:
+  pull_request
+
+jobs:
+  on_pr:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install packages
+        run: |
+          npm ci
+          npm run lerna-ci
+      - name: Run lint
+        run: npm run lerna-lint
+      - name: Run tests
+        run: npm run lerna-test
+      - name: Collate Coverage Reports
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        run: |
+          mkdir -p coverage
+          for d in ./packages/*/ ; do
+              filename="$d""coverage/lcov.info"
+              targetSource="SF:""$d""src"
+              sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
+          done
+      - name: Report Coverage
+        #Dependabot user will only have read-only perms, so don't try to report coverage
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        uses: romeovs/lcov-reporter-action@v0.2.21
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info

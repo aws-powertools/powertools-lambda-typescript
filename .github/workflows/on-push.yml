@@ -5,20 +5,20 @@ on:
 jobs:
   on_push:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' }}
+    env:
+      NODE_ENV: dev
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       - name: Install packages
         run: |
-          export NODE_ENV=dev
           npm ci
           npm run lerna-ci
       - name: Run lint
         run: npm run lerna-lint
       - name: Run tests
         run: npm run lerna-test
-      - name: Report Coverage
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: romeovs/lcov-reporter-action@v0.2.21
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ./packages/logger/coverage/lcov.info

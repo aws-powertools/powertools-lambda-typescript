@@ -15,7 +15,7 @@ const MAX_DIMENSION_COUNT = 9;
 
 class Metrics implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;
-  private default_dimensions: Dimensions = {};
+  private defaultDimensions: Dimensions = {};
   private dimensions: Dimensions = {};
   private envVarsService?: EnvironmentVariablesService;
   private functionName?:string;
@@ -32,8 +32,8 @@ class Metrics implements MetricsInterface {
   }
 
   public addDimension(name: string, value: string): void {
-    if (MAX_DIMENSION_COUNT <= (Object.keys(this.dimensions).length + Object.keys(this.default_dimensions).length)) {
-      throw new Error('Max dimension count hit');
+    if (MAX_DIMENSION_COUNT <= (Object.keys(this.dimensions).length + Object.keys(this.defaultDimensions).length)) {
+      throw new Error(`Max dimension count of ${MAX_DIMENSION_COUNT} hit`);
     }
     this.dimensions[name] = value;
   }
@@ -48,7 +48,7 @@ class Metrics implements MetricsInterface {
   }
 
   public clearDefaultDimensions():void {
-    this.default_dimensions={};
+    this.defaultDimensions={};
   }
 
   public clearDimensions():void {
@@ -102,7 +102,7 @@ class Metrics implements MetricsInterface {
       return result;
     }, {});
 
-    const dimensionNames = [ ...Object.keys(this.default_dimensions), ...Object.keys(this.dimensions) ];
+    const dimensionNames = [ ...Object.keys(this.defaultDimensions), ...Object.keys(this.dimensions) ];
 
     return {
       _aws: {
@@ -115,7 +115,7 @@ class Metrics implements MetricsInterface {
           }
         ]
       },
-      ...this.default_dimensions,
+      ...this.defaultDimensions,
       ...this.dimensions,
       ...metricValues,
       ...this.metadata,
@@ -124,13 +124,13 @@ class Metrics implements MetricsInterface {
 
   public setDefaultDimensions(dimensions: Dimensions): void {
     const targetDimensions = {
-      ...this.default_dimensions,
+      ...this.defaultDimensions,
       ...dimensions
     };
     if (MAX_DIMENSION_COUNT <= Object.keys(targetDimensions).length) {
       throw new Error('Max dimension count hit');
     }
-    this.default_dimensions=targetDimensions;
+    this.defaultDimensions=targetDimensions;
   }
 
   public singleMetric(): Metrics {

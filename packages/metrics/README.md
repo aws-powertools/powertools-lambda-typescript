@@ -7,7 +7,6 @@
 npm run test
 
 npm run example:hello-world
-npm run example:hello-world
 npm run example:manual-flushing
 npm run example:dimensions
 npm run example:default-dimensions

@@ -32,10 +32,21 @@ class Metrics implements MetricsInterface {
   }
 
   public addDimension(name: string, value: string): void {
-    if (MAX_DIMENSION_COUNT <= (Object.keys(this.dimensions).length + Object.keys(this.defaultDimensions).length)) {
+    if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount()) {
       throw new Error(`Max dimension count of ${MAX_DIMENSION_COUNT} hit`);
     }
     this.dimensions[name] = value;
+  }
+
+  public addDimensions(dimensions: {[key: string]: string}): void {
+    const newDimensions = { ...this.dimensions };
+    Object.keys(dimensions).forEach((dimensionName) => {
+      newDimensions[dimensionName] = dimensions[dimensionName];
+    });
+    if (Object.keys(newDimensions).length > MAX_DIMENSION_COUNT) {
+      throw new Error(`Adding ${Object.keys(dimensions).length} dimensions would exceed max dimension count of ${MAX_DIMENSION_COUNT}`);
+    }
+    this.dimensions = newDimensions;
   }
 
   public addMetadata(key: string, value: string): void {
@@ -152,6 +163,10 @@ class Metrics implements MetricsInterface {
       singleMetric.addDimension('function_name', this.functionName);
     }
     singleMetric.addMetric('ColdStart', MetricUnits.Count, 1);
+  }
+
+  private getCurrentDimensionsCount(): number {
+    return Object.keys(this.dimensions).length + Object.keys(this.defaultDimensions).length;
   }
 
   private getCustomConfigService(): ConfigServiceInterface | undefined {

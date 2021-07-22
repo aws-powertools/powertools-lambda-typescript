@@ -6,6 +6,7 @@ interface MetricsInterface {
   clearMetrics(): void
   logMetrics(options?: DecoratorOptions): HandlerMethodDecorator
   addDimension(name: string, value: string): void
+  addDimensions(dimensions: {[key: string]: string}): void
   addMetadata(key: string, value: string): void
   clearMetadata(): void
   clearDimensions(): void

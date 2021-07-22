@@ -9,6 +9,10 @@ const MAX_DIMENSION_COUNT = 9;
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
+interface LooseObject {
+  [key: string]: string
+}
+
 describe('Class: Metrics', () => {
 
   const originalEnvironmentVariables = process.env;
@@ -75,6 +79,39 @@ describe('Class: Metrics', () => {
         expect(e.message).toBe(`Max dimension count of ${MAX_DIMENSION_COUNT} hit`);
       }
     });
+
+    test('Additional bulk dimensions should be added correctly', () => {
+      const additionalDimensions: LooseObject = { 'dimension2': 'dimension2Value', 'dimension3': 'dimension3Value' };
+      const metrics = new Metrics({ namespace: 'test' });
+
+      metrics.addMetric('test_name', MetricUnits.Seconds, 10);
+      metrics.addDimensions(additionalDimensions);
+      const loggedData = metrics.serializeMetrics();
+
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+      Object.keys(additionalDimensions).forEach((key) => {
+
+        expect(loggedData[key]).toEqual(additionalDimensions[key]);
+      });
+    });
+
+    test('Bulk Adding more than max dimensions should throw error', () => {
+      expect.assertions(1);
+      const metrics = new Metrics();
+      const additionalDimensions: LooseObject = {};
+
+      metrics.addDimension(`Dimension-Initial`, `Dimension-InitialValue`);
+      for (let x =0; x < MAX_DIMENSION_COUNT ; x++) {
+        additionalDimensions[`dimension${x}`] = `dimension${x}Value`;
+      }
+
+      try {
+        metrics.addDimensions(additionalDimensions);
+      }
+      catch (e) {
+        expect(e.message).toBe(`Adding ${Object.keys(additionalDimensions).length} dimensions would exceed max dimension count of ${MAX_DIMENSION_COUNT}`);
+      }
+    });
   });
 
   describe('Feature: Metadata', () => {
@@ -99,10 +136,6 @@ describe('Class: Metrics', () => {
 
     test('Adding more than max default dimensions should throw error', () => {
       expect.assertions(1);
-
-      interface LooseObject {
-        [key: string]: string
-      }
 
       const defaultDimensions: LooseObject = {};
       for (let x = 0; x < MAX_DIMENSION_COUNT + 1; x ++) {

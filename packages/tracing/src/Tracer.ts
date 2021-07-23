@@ -45,10 +45,7 @@ class Tracer implements ClassThatTraces {
       return;
     }
 
-    console.warn('Not implemented');
-
-    // TODO: return this.provider.captureAWSClient(service);
-    return service;
+    return this.provider.captureAWSClient(service);
   }
 
   public captureAWSv3Client<T>(service: T): void | T {
@@ -60,8 +57,7 @@ class Tracer implements ClassThatTraces {
 
     console.warn('Not implemented');
 
-    // TODO: return this.provider.captureAWSv3Client(service);
-    return service;
+    return this.provider.captureAWSv3Client(service);
   }
 
   public captureLambdaHanlder(): HandlerMethodDecorator {

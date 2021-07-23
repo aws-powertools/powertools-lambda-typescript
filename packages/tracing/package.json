@@ -20,7 +20,8 @@
     "postversion": "git push && git push --tags",
     "example:hello-world": "ts-node examples/hello-world.ts",
     "example:capture-lambda-handler-response-decorator": "ts-node examples/capture-lambda-handler-response-decorator.ts",
-    "example:capture-lambda-handler-error-decorator": "ts-node examples/capture-lambda-handler-error-decorator.ts"
+    "example:capture-lambda-handler-error-decorator": "ts-node examples/capture-lambda-handler-error-decorator.ts",
+    "example:capture-clients": "ts-node examples/capture-clients.ts"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
   "license": "MIT",

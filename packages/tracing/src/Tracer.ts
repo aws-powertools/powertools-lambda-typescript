@@ -147,6 +147,8 @@ class Tracer implements ClassThatTraces {
   private addErrorAsMetadata(error: Error): void {
     const subsegment = this.getSegment();
     if (this.captureError === false || subsegment === undefined || this.tracingDisabled) {
+      console.debug('Tracing has been disabled, aborting addErrorAsMetadata');
+
       return;
     }
 
@@ -155,6 +157,8 @@ class Tracer implements ClassThatTraces {
 
   private addResponseAsMetadata(data?: unknown, methodName?: string): void {
     if (data === undefined || this.captureResponse === false) {
+      console.debug('Tracing has been disabled, aborting addResponseAsMetadata');
+
       return;
     }
 

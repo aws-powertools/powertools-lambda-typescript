@@ -14,18 +14,18 @@ import { Tracer } from '../src';
 const tracer = new Tracer();
 
 const lambdaHandler: Handler = async () => {
-    tracer.putAnnotation("StringAnnotation", "AnnotationValue");
-    tracer.putAnnotation("NumberAnnotation", 1234);
-    tracer.putAnnotation("BooleanAnnotationKey", true);
-    tracer.putMetadata("MetadataKey", {});
-    tracer.putMetadata("MetadataKey", {}, 'SomeNameSpace');
+  tracer.putAnnotation('StringAnnotation', 'AnnotationValue');
+  tracer.putAnnotation('NumberAnnotation', 1234);
+  tracer.putAnnotation('BooleanAnnotationKey', true);
+  tracer.putMetadata('MetadataKey', {});
+  tracer.putMetadata('MetadataKey', {}, 'SomeNameSpace');
 
-    return {
-        foo: 'bar'
-    };
+  return {
+    foo: 'bar'
+  };
 
 };
 
 dummyTracingNamespace(tracer, () => {
-    lambdaHandler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'))
+  lambdaHandler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
 });

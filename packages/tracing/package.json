@@ -24,7 +24,7 @@
     "example:capture-clients": "ts-node examples/capture-clients.ts"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
-  "license": "MIT",
+  "license": "MIT-0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {

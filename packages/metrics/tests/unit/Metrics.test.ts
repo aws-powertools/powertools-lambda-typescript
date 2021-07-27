@@ -377,6 +377,28 @@ describe('Class: Metrics', () => {
 
       new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
     });
+
+    test('Purge Stored Metrics should log and clear', () => {
+      const metrics = new Metrics({ namespace: 'test' });
+      const extraCount = 10;
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          metrics.addMetric(`test_name_1`, MetricUnits.Count, 1);
+          metrics.purgeStoredMetrics();
+        }
+      }
+
+      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
+
+      expect(console.log).toBeCalledTimes(2);
+      expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      expect(loggedData[1]._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
+    });
+
   });
 
   describe('Feature: Custom Config Service', () => {

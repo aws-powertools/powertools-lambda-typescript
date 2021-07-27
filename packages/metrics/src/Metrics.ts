@@ -95,6 +95,12 @@ class Metrics implements MetricsInterface {
     };
   }
 
+  public purgeStoredMetrics(): void {
+    const target = this.serializeMetrics();
+    console.log(JSON.stringify(target));
+    this.storedMetrics = {};
+  }
+
   public serializeMetrics(): EmfOutput {
     const metricDefinitions = Object.values(this.storedMetrics).map((metricDefinition) => ({
       Name: metricDefinition.name,
@@ -175,12 +181,6 @@ class Metrics implements MetricsInterface {
 
   private getEnvVarsService(): EnvironmentVariablesService {
     return <EnvironmentVariablesService> this.envVarsService;
-  }
-
-  private purgeStoredMetrics(): void {
-    const target = this.serializeMetrics();
-    console.log(JSON.stringify(target));
-    this.storedMetrics = {};
   }
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {

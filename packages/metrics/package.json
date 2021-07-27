@@ -54,6 +54,5 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
   }
 }

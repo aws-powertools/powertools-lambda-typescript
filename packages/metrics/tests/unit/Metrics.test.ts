@@ -380,7 +380,6 @@ describe('Class: Metrics', () => {
 
     test('Purge Stored Metrics should log and clear', () => {
       const metrics = new Metrics({ namespace: 'test' });
-      const extraCount = 10;
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

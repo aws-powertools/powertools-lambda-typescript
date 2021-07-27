@@ -11,7 +11,7 @@ jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);
 jest.spyOn(console, 'error').mockImplementation(() => null);
 
-describe('Class: Logger', () => {
+describe('Class: Tracer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
@@ -253,7 +253,7 @@ describe('Class: Logger', () => {
       // Assess
       expect('metadata' in newSubsegment).toBe(true);
       expect(addMetadataSpy).toBeCalledTimes(1);
-      expect(addMetadataSpy).toBeCalledWith('foo', 'bar');
+      expect(addMetadataSpy).toBeCalledWith('foo', 'bar', 'hello-world');
       expect(newSubsegment).toEqual(expect.objectContaining({
         'metadata': {
           'hello-world': {
@@ -554,6 +554,8 @@ describe('Class: Logger', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer({ disabled: true });
+      const captureAWSSpy = jest.spyOn(tracer.provider, 'captureAWS')
+        .mockImplementation(() => null);
 
       // Act
       tracer.captureAWS({});
@@ -561,21 +563,23 @@ describe('Class: Logger', () => {
       // Assess
       expect(console.debug).toBeCalledTimes(1);
       expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting captureAWS');
+      expect(captureAWSSpy).toBeCalledTimes(0);
 
     });
 
-    test('when called it emits a \'Not Implemented\' warning and does nothing', () => {
+    test('when called it returns the decorated object that was passed to it', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer();
+      const captureAWSSpy = jest.spyOn(tracer.provider, 'captureAWS')
+        .mockImplementation(() => null);
 
       // Act
       tracer.captureAWS({});
 
       // Assess
-      // Assess
-      expect(console.warn).toBeCalledTimes(1);
-      expect(console.warn).toHaveBeenNthCalledWith(1, 'Not implemented');
+      expect(captureAWSSpy).toBeCalledTimes(1);
+      expect(captureAWSSpy).toBeCalledWith({});
 
     });
 
@@ -586,6 +590,8 @@ describe('Class: Logger', () => {
     test('when called while tracing is disabled, it does nothing', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ disabled: true });
+      const captureAWSv3ClientSpy = jest.spyOn(tracer.provider, 'captureAWSv3Client')
+        .mockImplementation(() => null);
 
       // Act
       tracer.captureAWSv3Client({});
@@ -593,20 +599,23 @@ describe('Class: Logger', () => {
       // Assess
       expect(console.debug).toBeCalledTimes(1);
       expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting captureAWSv3Client');
+      expect(captureAWSv3ClientSpy).toBeCalledTimes(0);
     
     });
 
-    test('when called it emits a \'Not Implemented\' warning and does nothing', () => {
+    test('when called it returns the decorated object that was passed to it', () => {
     
       // Prepare
       const tracer: Tracer = new Tracer();
+      const captureAWSv3ClientSpy = jest.spyOn(tracer.provider, 'captureAWSv3Client')
+        .mockImplementation(() => null);
 
       // Act
       tracer.captureAWSv3Client({});
 
       // Assess
-      expect(console.warn).toBeCalledTimes(1);
-      expect(console.warn).toHaveBeenNthCalledWith(1, 'Not implemented');
+      expect(captureAWSv3ClientSpy).toBeCalledTimes(1);
+      expect(captureAWSv3ClientSpy).toBeCalledWith({});
     
     });
 
@@ -618,6 +627,8 @@ describe('Class: Logger', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer({ disabled: true });
+      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient')
+        .mockImplementation(() => null);
 
       // Act
       tracer.captureAWSClient({});
@@ -625,20 +636,23 @@ describe('Class: Logger', () => {
       // Assess
       expect(console.debug).toBeCalledTimes(1);
       expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting captureAWSClient');
+      expect(captureAWSClientSpy).toBeCalledTimes(0);
     
     });
 
-    test('when called it emits a \'Not Implemented\' warning and does nothing', () => {
+    test('when called it returns the decorated object that was passed to it', () => {
     
       // Prepare
       const tracer: Tracer = new Tracer();
+      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient')
+        .mockImplementation(() => null);
 
       // Act
       tracer.captureAWSClient({});
 
       // Assess
-      expect(console.warn).toBeCalledTimes(1);
-      expect(console.warn).toHaveBeenNthCalledWith(1, 'Not implemented');
+      expect(captureAWSClientSpy).toBeCalledTimes(1);
+      expect(captureAWSClientSpy).toBeCalledWith({});
     
     });
 

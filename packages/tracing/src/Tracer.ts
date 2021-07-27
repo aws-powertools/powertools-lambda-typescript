@@ -32,10 +32,7 @@ class Tracer implements ClassThatTraces {
       return;
     }
 
-    console.warn('Not implemented');
-    
-    // TODO: return this.provider.captureAWS(aws);
-    return aws;
+    return this.provider.captureAWS(aws);
   }
 
   public captureAWSClient<T>(service: T): void | T {
@@ -54,8 +51,6 @@ class Tracer implements ClassThatTraces {
       
       return;
     }
-
-    console.warn('Not implemented');
 
     return this.provider.captureAWSv3Client(service);
   }
@@ -250,7 +245,6 @@ class Tracer implements ClassThatTraces {
   }
 
   private setServiceName(serviceName?: string): void {
-    // TODO: check why TS doesn't like this serviceName !== undefined in the this.isValidServiceName fn  
     if (serviceName !== undefined && this.isValidServiceName(serviceName)) {
       this.serviceName = serviceName;
 

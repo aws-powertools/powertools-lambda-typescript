@@ -199,6 +199,20 @@ describe('Helper: createLogger function', () => {
       delete process.env.POWERTOOLS_SERVICE_NAME;
     });
 
+    test('when POWERTOOLS_SERVICE_NAME environment variable is set to invalid value, a tracer default serviceName is returned', () => {
+      // Prepare
+      process.env.POWERTOOLS_SERVICE_NAME = '';
+
+      // Act
+      const tracer = createTracer();
+
+      // Assess
+      expect(tracer).toEqual(expect.objectContaining({
+        serviceName: 'serviceUndefined'
+      }));
+      delete process.env.POWERTOOLS_SERVICE_NAME;
+    });
+
     test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set, a tracer with captureResponse disabled is returned', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';

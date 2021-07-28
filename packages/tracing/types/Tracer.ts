@@ -23,8 +23,12 @@ type TracerOptions = {
 
 type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
 
+// TODO: Revisit these types that don't work.
+type MethodDecorator = <T>(target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T> | void;
+
 export {
   ClassThatTraces,
   TracerOptions,
-  HandlerMethodDecorator
+  HandlerMethodDecorator,
+  MethodDecorator
 };

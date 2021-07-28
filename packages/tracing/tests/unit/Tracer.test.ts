@@ -548,6 +548,37 @@ describe('Class: Tracer', () => {
 
   });
 
+  describe('Method: captureMethod', () => {
+
+    test('when called while tracing is disable, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ disabled: true });
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureMethod()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public dummyMethod(): boolean {
+          return true;
+        }
+
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return new Promise((resolve, _reject) => resolve({} as unknown as TResult));
+        }
+
+      }
+
+      // Act
+      new Lambda().dummyMethod();
+
+      // Assess
+      expect(console.debug).toBeCalledTimes(1);
+
+    });
+
+  });
+
   describe('Method: captureAWS', () => {
         
     test('when called while tracing is disabled, it does nothing', () => {

@@ -1,4 +1,4 @@
-import { ClassThatTraces, HandlerMethodDecorator, TracerOptions } from '../types';
+import { ClassThatTraces, HandlerMethodDecorator, TracerOptions, MethodDecorator } from '../types';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
@@ -85,6 +85,21 @@ class Tracer implements ClassThatTraces {
           return result;
         });
       };
+    };
+  }
+
+  // TODO: Finish implementation, type definition is wrong & it doesn't work. Need help.
+  public captureMethod(): MethodDecorator {
+    return (_target, _propertyKey, descriptor) => {
+      const originalMethod = descriptor.value;
+      console.debug(originalMethod);
+      /* descriptor.value = () => {
+        if (this.tracingDisabled) {
+          console.debug('Tracing has been disabled, aborting captureMethod');
+          
+          return originalMethod?.apply(this, [ ]);
+        }
+      }; */
     };
   }
   

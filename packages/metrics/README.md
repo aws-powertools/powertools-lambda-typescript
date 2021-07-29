@@ -251,7 +251,7 @@ class Lambda implements LambdaInterface {
 ```
 </details>
 
-> ### Autocomplete Metic Units
+> ### Autocomplete Metric Units
 > MetricUnits will facilitate finding a supported metric unit by CloudWatch. Alternatively, you can pass the value as a string if you already know them e.g. "Count".
 
 > ### Metrics Overflow

@@ -10,6 +10,7 @@ type MetricsOptions = {
   namespace?: string
   service?: string
   singleMetric?: boolean
+  defaultDimensions?: Dimensions
 };
 
 type EmfOutput = {

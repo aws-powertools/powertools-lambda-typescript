@@ -139,7 +139,7 @@ class Metrics implements MetricsInterface {
     };
   }
 
-  public setDefaultDimensions(dimensions: Dimensions): void {
+  public setDefaultDimensions(dimensions: Dimensions | undefined): void {
     const targetDimensions = {
       ...this.defaultDimensions,
       ...dimensions
@@ -162,6 +162,7 @@ class Metrics implements MetricsInterface {
     if (!this.isColdStart) return;
     this.isColdStart = false;
     const singleMetric = this.singleMetric();
+
     if (this.dimensions.service) {
       singleMetric.addDimension('service', this.dimensions.service);
     }
@@ -200,12 +201,15 @@ class Metrics implements MetricsInterface {
       customConfigService,
       namespace,
       service,
-      singleMetric
+      singleMetric,
+      defaultDimensions
     } = options;
+
     this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
     this.setNamespace(namespace);
     this.setService(service);
+    this.setDefaultDimensions(defaultDimensions);
     this.isSingleMetric = singleMetric || false;
 
     return this;

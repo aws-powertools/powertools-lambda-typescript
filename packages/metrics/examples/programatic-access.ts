@@ -15,8 +15,9 @@ const metrics = new Metrics();
 const lambdaHandler: Handler = async () => {
 
   metrics.addMetric('test-metric', MetricUnits.Count, 10);
-  metrics.purgeStoredMetrics();
-  //Metrics will be logged and cleared
+  const metricsObject = metrics.serializeMetrics();
+  metrics.clearMetrics();
+  console.log(JSON.stringify(metricsObject));
 
   return {
     foo: 'bar'

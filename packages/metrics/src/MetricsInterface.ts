@@ -13,7 +13,7 @@ interface MetricsInterface {
   logMetrics(options?: DecoratorOptions): HandlerMethodDecorator
   purgeStoredMetrics(): void
   serializeMetrics(): EmfOutput
-  setDefaultDimensions(dimensions: Dimensions): void
+  setDefaultDimensions(dimensions: Dimensions | undefined): void
   singleMetric(): Metrics
 }
 

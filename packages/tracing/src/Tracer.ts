@@ -77,7 +77,8 @@ class Tracer implements ClassThatTraces {
           } catch (error) {
             console.error(`Exception received from ${context.functionName}`);
             this.addErrorAsMetadata(error);
-            throw error;
+            // TODO: should this error be thrown?? If thrown we get a ERR_UNHANDLED_REJECTION. If not aren't we are basically catching a Customer error?
+            // throw error;
           } finally {
             subsegment?.close();
           }

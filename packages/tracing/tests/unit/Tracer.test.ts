@@ -113,7 +113,7 @@ describe('Class: Tracer', () => {
     test('when called while tracing is disabled, it does nothing', () => {
 
       // Prepare
-      const tracer: Tracer = new Tracer({ disabled: true });
+      const tracer: Tracer = new Tracer({ enabled: false });
       const facadeSegment = new Segment('facade', process.env._X_AMZN_TRACE_ID || null);
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => facadeSegment);
       const addAnnotationSpy = jest.spyOn(facadeSegment, 'addAnnotation');
@@ -191,7 +191,7 @@ describe('Class: Tracer', () => {
     test('when called while tracing is disabled, it does nothing', () => {
   
       // Prepare
-      const tracer: Tracer = new Tracer({ disabled: true });
+      const tracer: Tracer = new Tracer({ enabled: false });
       const facadeSegment = new Segment('facade', process.env._X_AMZN_TRACE_ID || null);
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => facadeSegment);
       const addMetadataSpy = jest.spyOn(facadeSegment, 'addMetadata');
@@ -322,7 +322,7 @@ describe('Class: Tracer', () => {
     test('when used as decorator while tracing is disabled, it does nothing', async () => {
      
       // Prepare
-      const tracer: Tracer = new Tracer({ disabled: true });
+      const tracer: Tracer = new Tracer({ enabled: false });
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => new Segment('facade', process.env._X_AMZN_TRACE_ID || null));
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
@@ -553,7 +553,7 @@ describe('Class: Tracer', () => {
     test('when called while tracing is disable, it does nothing', () => {
 
       // Prepare
-      const tracer: Tracer = new Tracer({ disabled: true });
+      const tracer: Tracer = new Tracer({ enabled: false });
       class Lambda implements LambdaInterface {
 
         @tracer.captureMethod()
@@ -584,7 +584,7 @@ describe('Class: Tracer', () => {
     test('when called while tracing is disabled, it does nothing', () => {
 
       // Prepare
-      const tracer: Tracer = new Tracer({ disabled: true });
+      const tracer: Tracer = new Tracer({ enabled: false });
       const captureAWSSpy = jest.spyOn(tracer.provider, 'captureAWS')
         .mockImplementation(() => null);
 
@@ -620,7 +620,7 @@ describe('Class: Tracer', () => {
         
     test('when called while tracing is disabled, it does nothing', () => {
       // Prepare
-      const tracer: Tracer = new Tracer({ disabled: true });
+      const tracer: Tracer = new Tracer({ enabled: false });
       const captureAWSv3ClientSpy = jest.spyOn(tracer.provider, 'captureAWSv3Client')
         .mockImplementation(() => null);
 
@@ -657,7 +657,7 @@ describe('Class: Tracer', () => {
     test('when called while tracing is disabled, it does nothing', () => {
       
       // Prepare
-      const tracer: Tracer = new Tracer({ disabled: true });
+      const tracer: Tracer = new Tracer({ enabled: false });
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient')
         .mockImplementation(() => null);
 

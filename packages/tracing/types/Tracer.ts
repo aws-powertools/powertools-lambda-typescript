@@ -16,7 +16,7 @@ type ClassThatTraces = {
 };
 
 type TracerOptions = {
-  disabled?: boolean
+  enabled?: boolean
   serviceName?: string
   customConfigService?: ConfigServiceInterface
 };

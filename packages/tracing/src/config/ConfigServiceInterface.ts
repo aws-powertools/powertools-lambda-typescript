@@ -2,7 +2,7 @@ interface ConfigServiceInterface {
 
   get(name: string): string
 
-  getTracingDisabled(): string
+  getTracingEnabled(): string
 
   getServiceName(): string
 

@@ -6,7 +6,7 @@ abstract class ConfigService implements ConfigServiceInterface {
   protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
   protected tracerCaptureErrorVariable = 'POWERTOOLS_TRACER_CAPTURE_ERROR';
   protected tracerCaptureResponseVariable = 'POWERTOOLS_TRACER_CAPTURE_RESPONSE';
-  protected tracingDisabledVariable = 'POWERTOOLS_TRACE_DISABLED';
+  protected tracingEnabledVariable = 'POWERTOOLS_TRACE_ENABLED';
 
   abstract get(name: string): string;
 
@@ -16,7 +16,7 @@ abstract class ConfigService implements ConfigServiceInterface {
   
   abstract getTracingCaptureResponse(): string;
   
-  abstract getTracingDisabled(): string;
+  abstract getTracingEnabled(): string;
 
 }
 

@@ -25,7 +25,7 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
       expect(tracer).toEqual(expect.objectContaining({
-        tracingDisabled: false,
+        tracingEnabled: true,
         serviceName: 'hello-world'
       }));
             
@@ -35,7 +35,7 @@ describe('Helper: createLogger function', () => {
 
       // Prepare
       const tracerOptions = {
-        disabled: true,
+        enabled: false,
         serviceName: 'my-lambda-service'
       };
 
@@ -45,7 +45,7 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
       expect(tracer).toEqual(expect.objectContaining({
-        tracingDisabled: true,
+        tracingEnabled: false,
         serviceName: 'my-lambda-service'
       }));
     });
@@ -63,7 +63,7 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
       expect(tracer).toEqual(expect.objectContaining({
-        tracingDisabled: false,
+        tracingEnabled: true,
         serviceName: 'my-lambda-service'
       }));
     });
@@ -81,7 +81,7 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
       expect(tracer).toEqual(expect.objectContaining({
-        tracingDisabled: false,
+        tracingEnabled: true,
         serviceName: 'hello-world'
       }));
     });
@@ -90,7 +90,7 @@ describe('Helper: createLogger function', () => {
 
       // Prepare
       const tracerOptions = {
-        disabled: true
+        enabled: true
       };
 
       // Act
@@ -99,7 +99,7 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
       expect(tracer).toEqual(expect.objectContaining({
-        tracingDisabled: true,
+        tracingEnabled: true,
         serviceName: 'hello-world'
       }));
     });
@@ -110,8 +110,8 @@ describe('Helper: createLogger function', () => {
         get(name: string): string {
           return `a-string-from-${name}`;
         },
-        getTracingDisabled(): string {
-          return 'true';
+        getTracingEnabled(): string {
+          return 'false';
         },
         getTracingCaptureResponse(): string {
           return 'false';
@@ -135,7 +135,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toBeInstanceOf(Tracer);
       expect(tracer).toEqual(expect.objectContaining({
         customConfigService: configService,
-        tracingDisabled: true,
+        tracingEnabled: false,
         serviceName: 'my-backend-service'
       }));
     });
@@ -152,7 +152,7 @@ describe('Helper: createLogger function', () => {
 
       // Assess
       expect(tracer).toEqual(expect.objectContaining({
-        tracingDisabled: true,
+        tracingEnabled: false,
       }));
       delete process.env.AWS_SAM_LOCAL;
     });
@@ -166,23 +166,50 @@ describe('Helper: createLogger function', () => {
 
       // Assess
       expect(tracer).toEqual(expect.objectContaining({
-        tracingDisabled: true,
+        tracingEnabled: false,
       }));
       delete process.env.AWS_CHALICE_CLI_MODE;
     });
 
-    test('when POWERTOOLS_TRACE_DISABLED environment variable is set, a tracer with tracing disabled is returned', () => {
+    test('when AWS_EXECUTION_ENV environment variable is set, tracing is enabled', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACE_DISABLED = 'true';
+      process.env.AWS_EXECUTION_ENV = 'nodejs14.x';
 
       // Act
       const tracer = createTracer();
 
       // Assess
       expect(tracer).toEqual(expect.objectContaining({
-        tracingDisabled: true,
+        tracingEnabled: true,
       }));
-      delete process.env.POWERTOOLS_TRACE_DISABLED;
+      delete process.env.AWS_EXECUTION_ENV;
+    });
+
+    test('when AWS_EXECUTION_ENV environment variable is NOT set, tracing is disabled', () => {
+      // Prepare
+      delete process.env.AWS_EXECUTION_ENV;
+
+      // Act
+      const tracer = createTracer();
+
+      // Assess
+      expect(tracer).toEqual(expect.objectContaining({
+        tracingEnabled: false,
+      }));
+    });
+
+    test('when POWERTOOLS_TRACE_ENABLED environment variable is set, a tracer with tracing disabled is returned', () => {
+      // Prepare
+      process.env.POWERTOOLS_TRACE_ENABLED = 'false';
+
+      // Act
+      const tracer = createTracer();
+
+      // Assess
+      expect(tracer).toEqual(expect.objectContaining({
+        tracingEnabled: false,
+      }));
+      delete process.env.POWERTOOLS_TRACE_ENABLED;
     });
 
     test('when POWERTOOLS_SERVICE_NAME environment variable is set, a tracer with the correct serviceName is returned', () => {

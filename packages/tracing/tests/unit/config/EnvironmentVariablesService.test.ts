@@ -45,19 +45,19 @@ describe('Class: EnvironmentVariablesService', () => {
 
   });
 
-  describe('Method: getTracingDisabled', () => {
+  describe('Method: getTracingEnabled', () => {
 
-    test('It returns the value of the environment variable POWERTOOLS_TRACE_DISABLED', () => {
+    test('It returns the value of the environment variable POWERTOOLS_TRACE_ENABLED', () => {
 
       // Prepare
-      process.env.POWERTOOLS_TRACE_DISABLED = 'true';
+      process.env.POWERTOOLS_TRACE_ENABLED = 'false';
       const service = new EnvironmentVariablesService();
 
       // Act
-      const value = service.getTracingDisabled();
+      const value = service.getTracingEnabled();
 
       // Assess
-      expect(value).toEqual('true');
+      expect(value).toEqual('false');
     });
 
   });
@@ -160,6 +160,23 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('true');
+    });
+
+  });
+
+  describe('Method: getAwsExecutionEnv', () => {
+
+    test('It returns the value of the environment variable AWS_EXECUTION_ENV', () => {
+
+      // Prepare
+      process.env.AWS_EXECUTION_ENV = 'nodejs14.x';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getAwsExecutionEnv();
+
+      // Assess
+      expect(value).toEqual('nodejs14.x');
     });
 
   });

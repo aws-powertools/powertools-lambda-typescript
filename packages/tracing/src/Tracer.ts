@@ -18,7 +18,7 @@ class Tracer implements ClassThatTraces {
   
   private serviceName: string = 'serviceUndefined';
   
-  private tracingDisabled: boolean = false;
+  private tracingEnabled: boolean = true;
 
   public constructor(options: TracerOptions = {}) {
     this.setOptions(options);
@@ -26,7 +26,7 @@ class Tracer implements ClassThatTraces {
   }
 
   public captureAWS<T>(aws: T): void | T {
-    if (this.tracingDisabled) {
+    if (this.tracingEnabled === false) {
       console.debug('Tracing has been disabled, aborting captureAWS');
       
       return;
@@ -36,7 +36,7 @@ class Tracer implements ClassThatTraces {
   }
 
   public captureAWSClient<T>(service: T): void | T {
-    if (this.tracingDisabled) {
+    if (this.tracingEnabled === false) {
       console.debug('Tracing has been disabled, aborting captureAWSClient');
       
       return;
@@ -46,7 +46,7 @@ class Tracer implements ClassThatTraces {
   }
 
   public captureAWSv3Client<T>(service: T): void | T {
-    if (this.tracingDisabled) {
+    if (this.tracingEnabled === false) {
       console.debug('Tracing has been disabled, aborting captureAWSv3Client');
       
       return;
@@ -60,7 +60,7 @@ class Tracer implements ClassThatTraces {
       const originalMethod = descriptor.value;
 
       descriptor.value = (event, context, callback) => {
-        if (this.tracingDisabled) {
+        if (this.tracingEnabled === false) {
           console.debug('Tracing has been disabled, aborting captureLambdaHanlder');
           
           return originalMethod?.apply(this, [ event, context, callback ]);
@@ -94,7 +94,7 @@ class Tracer implements ClassThatTraces {
       const originalMethod = descriptor.value;
       console.debug(originalMethod);
       /* descriptor.value = () => {
-        if (this.tracingDisabled) {
+        if (this.tracingEnabled === false) {
           console.debug('Tracing has been disabled, aborting captureMethod');
           
           return originalMethod?.apply(this, [ ]);
@@ -118,7 +118,7 @@ class Tracer implements ClassThatTraces {
   }
 
   public putAnnotation(key: string, value: string | number | boolean): void {
-    if (this.tracingDisabled) {
+    if (this.tracingEnabled === false) {
       console.debug('Tracing has been disabled, aborting putAnnotation');
       
       return;
@@ -133,7 +133,7 @@ class Tracer implements ClassThatTraces {
   }
   
   public putMetadata(key: string, value: unknown, namespace?: string | undefined): void {
-    if (this.tracingDisabled) {
+    if (this.tracingEnabled === false) {
       console.debug('Tracing has been disabled, aborting putMetadata');
       
       return;
@@ -156,7 +156,7 @@ class Tracer implements ClassThatTraces {
 
   private addErrorAsMetadata(error: Error): void {
     const subsegment = this.getSegment();
-    if (this.captureError === false || subsegment === undefined || this.tracingDisabled) {
+    if (this.captureError === false || subsegment === undefined || this.tracingEnabled === false) {
       console.debug('Tracing has been disabled, aborting addErrorAsMetadata');
 
       return;
@@ -166,7 +166,7 @@ class Tracer implements ClassThatTraces {
   }
 
   private addResponseAsMetadata(data?: unknown, methodName?: string): void {
-    if (data === undefined || this.captureResponse === false) {
+    if (data === undefined || this.captureResponse === false || this.tracingEnabled === false) {
       console.debug('Tracing has been disabled, aborting addResponseAsMetadata');
 
       return;
@@ -193,7 +193,11 @@ class Tracer implements ClassThatTraces {
   private isChaliceCli(): boolean {
     return this.getEnvVarsService()?.getChaliceLocal() !== '';
   }
-
+  
+  private isLambdaExecutionEnv(): boolean {
+    return this.getEnvVarsService()?.getAwsExecutionEnv() !== '';
+  }
+  
   private isLambdaSamCli(): boolean {
     return this.getEnvVarsService()?.getSamLocal() !== '';
   }
@@ -244,14 +248,14 @@ class Tracer implements ClassThatTraces {
 
   private setOptions(options: TracerOptions): Tracer {
     const {
-      disabled,
+      enabled,
       serviceName,
       customConfigService
     } = options;
 
     this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
-    this.setTracingDisabled(disabled);
+    this.setTracingEnabled(enabled);
     this.setCaptureResponse();
     this.setCaptureError();
     this.setServiceName(serviceName);
@@ -281,29 +285,29 @@ class Tracer implements ClassThatTraces {
     }
   }
 
-  private setTracingDisabled(disabled?: boolean): void {
-    if (disabled !== undefined && disabled === true) {
-      this.tracingDisabled = disabled;
+  private setTracingEnabled(enabled?: boolean): void {
+    if (enabled !== undefined && enabled === false) {
+      this.tracingEnabled = enabled;
 
       return;
     }
 
-    const customConfigValue = this.getCustomConfigService()?.getTracingDisabled();
-    if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'true') {
-      this.tracingDisabled = true;
+    const customConfigValue = this.getCustomConfigService()?.getTracingEnabled();
+    if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
+      this.tracingEnabled = false;
 
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService()?.getTracingDisabled();
-    if (envVarsValue.toLowerCase() === 'true') {
-      this.tracingDisabled = true;
+    const envVarsValue = this.getEnvVarsService()?.getTracingEnabled();
+    if (envVarsValue.toLowerCase() === 'false') {
+      this.tracingEnabled = false;
 
       return;
     }
 
-    if (this.isLambdaSamCli() || this.isChaliceCli()) {
-      this.tracingDisabled = true;
+    if (this.isLambdaSamCli() || this.isChaliceCli() || this.isLambdaExecutionEnv() === false) {
+      this.tracingEnabled = false;
     }
   }
 

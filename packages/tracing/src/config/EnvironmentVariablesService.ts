@@ -3,12 +3,17 @@ import { ConfigService } from '.';
 class EnvironmentVariablesService extends ConfigService {
 
   // Reserved environment variables
+  private awsExecutionEnv = 'AWS_EXECUTION_ENV';
   private chaliceLocalVariable = 'AWS_CHALICE_CLI_MODE';
   private samLocalVariable = 'AWS_SAM_LOCAL';
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
 
   public get(name: string): string {
     return process.env[name]?.trim() || '';
+  }
+
+  public getAwsExecutionEnv(): string {
+    return this.get(this.awsExecutionEnv);
   }
 
   public getChaliceLocal(): string {
@@ -31,8 +36,8 @@ class EnvironmentVariablesService extends ConfigService {
     return this.get(this.tracerCaptureResponseVariable);
   }
   
-  public getTracingDisabled(): string {
-    return this.get(this.tracingDisabledVariable);
+  public getTracingEnabled(): string {
+    return this.get(this.tracingEnabledVariable);
   }
 
   public getXrayTraceId(): string {

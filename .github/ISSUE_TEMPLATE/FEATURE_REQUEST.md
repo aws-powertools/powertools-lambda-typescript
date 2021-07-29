@@ -3,8 +3,6 @@ name: Feature request
 about: Suggest an idea for this project
 title: "(module name): short issue description"
 labels: feature-request, triage
-assignees: saragerion, alan-churley
-
 ---
 
 <!--- 1. Make sure you follow our Contributing Guidelines: https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/CONTRIBUTING.md -->

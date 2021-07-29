@@ -3,8 +3,6 @@ name: Documentation improvement
 about: Suggest a documentation update, improvement
 title: "(module name): short issue description"
 labels: documentation
-assignees: saragerion, alan-churley
-
 ---
 
 <!--- 1. Make sure you follow our Contributing Guidelines: https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/CONTRIBUTING.md -->

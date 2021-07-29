@@ -3,8 +3,6 @@ name: Bug report
 about: Create a report to help us improve
 title: "(module name): short issue description"
 labels: bug, triage
-assignees: saragerion, alan-churley
-
 ---
 
 <!--- Before you start, make sure that the bug hasn't been reported already https://github.com/awslabs/aws-lambda-powertools-typescript/issues -->

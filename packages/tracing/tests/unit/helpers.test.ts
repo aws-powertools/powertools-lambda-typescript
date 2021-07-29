@@ -154,7 +154,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         tracingEnabled: false,
       }));
-      delete process.env.AWS_SAM_LOCAL;
+
     });
 
     test('when AWS_CHALICE_CLI_MODE environment variable is set, tracing is disabled', () => {
@@ -168,7 +168,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         tracingEnabled: false,
       }));
-      delete process.env.AWS_CHALICE_CLI_MODE;
+
     });
 
     test('when AWS_EXECUTION_ENV environment variable is set, tracing is enabled', () => {
@@ -182,7 +182,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         tracingEnabled: true,
       }));
-      delete process.env.AWS_EXECUTION_ENV;
+
     });
 
     test('when AWS_EXECUTION_ENV environment variable is NOT set, tracing is disabled', () => {
@@ -209,7 +209,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         tracingEnabled: false,
       }));
-      delete process.env.POWERTOOLS_TRACE_ENABLED;
+
     });
 
     test('when POWERTOOLS_SERVICE_NAME environment variable is set, a tracer with the correct serviceName is returned', () => {
@@ -223,7 +223,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         serviceName: 'my-backend-service'
       }));
-      delete process.env.POWERTOOLS_SERVICE_NAME;
+
     });
 
     test('when POWERTOOLS_SERVICE_NAME environment variable is set to invalid value, a tracer default serviceName is returned', () => {
@@ -237,7 +237,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         serviceName: 'serviceUndefined'
       }));
-      delete process.env.POWERTOOLS_SERVICE_NAME;
+
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set, a tracer with captureResponse disabled is returned', () => {
@@ -251,7 +251,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         captureResponse: false
       }));
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
+
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set to invalid value, a tracer with captureResponse enabled is returned', () => {
@@ -265,7 +265,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         captureResponse: true
       }));
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
+
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_ERROR environment variable is set, a tracer with captureError disabled is returned', () => {
@@ -279,7 +279,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         captureError: false
       }));
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_ERROR environment variable is set to invalid value, a tracer with captureError enabled is returned', () => {
@@ -293,7 +293,7 @@ describe('Helper: createLogger function', () => {
       expect(tracer).toEqual(expect.objectContaining({
         captureError: true
       }));
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+
     });
 
   });

@@ -35,7 +35,7 @@ To send us a pull request, please follow these steps:
 
 1. Fork the repository.
 2. Install dependencies: `npm install`
-3. Prepare utilities like commit hooks: `npm run prepare`
+3. Prepare utilities like commit hooks: `npm run init-environment`
 4. Create a new branch to focus on the specific change you are contributing e.g. `git checkout -b improv/logger-debug-sampling`
 5. Run all tests, and code baseline checks: `npm run test`
 6. Commit to your fork using clear commit messages.

@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/",
   "scripts": {
-    "prepare": "husky install",
+    "init-environment": "husky install",
     "test": "npm run lerna-test",
     "commit": "commit",
     "lerna-ci": "lerna exec -- npm ci",

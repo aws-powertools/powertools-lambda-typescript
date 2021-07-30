@@ -30,6 +30,3 @@ coverage
 
 # Visual Studio Code
 .vscode
-
-# Husky
-.husky/_

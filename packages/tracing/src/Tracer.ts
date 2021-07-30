@@ -26,31 +26,19 @@ class Tracer implements ClassThatTraces {
   }
 
   public captureAWS<T>(aws: T): void | T {
-    if (this.tracingEnabled === false) {
-      console.debug('Tracing has been disabled, aborting captureAWS');
-      
-      return;
-    }
+    if (this.tracingEnabled === false) return;
 
     return this.provider.captureAWS(aws);
   }
 
   public captureAWSClient<T>(service: T): void | T {
-    if (this.tracingEnabled === false) {
-      console.debug('Tracing has been disabled, aborting captureAWSClient');
-      
-      return;
-    }
+    if (this.tracingEnabled === false) return;
 
     return this.provider.captureAWSClient(service);
   }
 
   public captureAWSv3Client<T>(service: T): void | T {
-    if (this.tracingEnabled === false) {
-      console.debug('Tracing has been disabled, aborting captureAWSv3Client');
-      
-      return;
-    }
+    if (this.tracingEnabled === false) return;
 
     return this.provider.captureAWSv3Client(service);
   }
@@ -61,8 +49,6 @@ class Tracer implements ClassThatTraces {
 
       descriptor.value = (event, context, callback) => {
         if (this.tracingEnabled === false) {
-          console.debug('Tracing has been disabled, aborting captureLambdaHanlder');
-          
           return originalMethod?.apply(this, [ event, context, callback ]);
         }
 
@@ -70,12 +56,9 @@ class Tracer implements ClassThatTraces {
           this.annotateColdStart();
           let result;
           try {
-            console.debug('Calling lambda handler');
             result = await originalMethod?.apply(this, [ event, context, callback ]);
-            console.debug('Successfully received lambda handler response');
             this.addResponseAsMetadata(result, context.functionName);
           } catch (error) {
-            console.error(`Exception received from ${context.functionName}`);
             this.addErrorAsMetadata(error);
             // TODO: should this error be thrown?? If thrown we get a ERR_UNHANDLED_REJECTION. If not aren't we are basically catching a Customer error?
             // throw error;
@@ -96,8 +79,6 @@ class Tracer implements ClassThatTraces {
       console.debug(originalMethod);
       /* descriptor.value = () => {
         if (this.tracingEnabled === false) {
-          console.debug('Tracing has been disabled, aborting captureMethod');
-          
           return originalMethod?.apply(this, [ ]);
         }
       }; */
@@ -119,14 +100,11 @@ class Tracer implements ClassThatTraces {
   }
 
   public putAnnotation(key: string, value: string | number | boolean): void {
-    if (this.tracingEnabled === false) {
-      console.debug('Tracing has been disabled, aborting putAnnotation');
-      
-      return;
-    }
+    if (this.tracingEnabled === false) return;
+
     const document = this.getSegment();
     if (document instanceof Segment) {
-      console.debug('You cannot annotate the main segment in a Lambda execution environment');
+      console.warn('You cannot annotate the main segment in a Lambda execution environment');
       
       return;
     }
@@ -134,20 +112,16 @@ class Tracer implements ClassThatTraces {
   }
   
   public putMetadata(key: string, value: unknown, namespace?: string | undefined): void {
-    if (this.tracingEnabled === false) {
-      console.debug('Tracing has been disabled, aborting putMetadata');
-      
-      return;
-    }
+    if (this.tracingEnabled === false) return;
+
     const document = this.getSegment();
     if (document instanceof Segment) {
-      console.debug('You cannot add metadata to the main segment in a Lambda execution environment');
+      console.warn('You cannot add metadata to the main segment in a Lambda execution environment');
       
       return;
     }
     
     namespace = namespace || this.serviceName;
-    console.debug(`Adding metadata on key ${key} with ${value} at namespace ${namespace}`);
     document?.addMetadata(key, value, namespace);
   }
   
@@ -158,8 +132,6 @@ class Tracer implements ClassThatTraces {
   private addErrorAsMetadata(error: Error): void {
     const subsegment = this.getSegment();
     if (this.captureError === false || subsegment === undefined || this.tracingEnabled === false) {
-      console.debug('Tracing has been disabled, aborting addErrorAsMetadata');
-
       return;
     }
 
@@ -168,8 +140,6 @@ class Tracer implements ClassThatTraces {
 
   private addResponseAsMetadata(data?: unknown, methodName?: string): void {
     if (data === undefined || this.captureResponse === false || this.tracingEnabled === false) {
-      console.debug('Tracing has been disabled, aborting addResponseAsMetadata');
-
       return;
     }
 
@@ -178,7 +148,6 @@ class Tracer implements ClassThatTraces {
   
   private annotateColdStart(): void {
     if (Tracer.isColdStart()) {
-      console.debug('Annotating cold start');
       this.putAnnotation('ColdStart', true);
     }
   }

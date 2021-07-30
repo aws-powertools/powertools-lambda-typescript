@@ -124,8 +124,6 @@ describe('Class: Tracer', () => {
       // Assess
       expect('annotations' in facadeSegment).toBe(false);
       expect(addAnnotationSpy).toBeCalledTimes(0);
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting putAnnotation');
 
     });
     
@@ -155,8 +153,8 @@ describe('Class: Tracer', () => {
       // Assess
       expect('annotations' in facadeSegment).toBe(false);
       expect(addAnnotationSpy).toBeCalledTimes(0);
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.debug).toHaveBeenNthCalledWith(1, 'You cannot annotate the main segment in a Lambda execution environment');
+      expect(console.warn).toBeCalledTimes(1);
+      expect(console.warn).toHaveBeenNthCalledWith(1, 'You cannot annotate the main segment in a Lambda execution environment');
 
     });
 
@@ -202,8 +200,6 @@ describe('Class: Tracer', () => {
       // Assess
       expect('metadata' in facadeSegment).toBe(false);
       expect(addMetadataSpy).toBeCalledTimes(0);
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting putMetadata');
 
     });
 
@@ -233,8 +229,8 @@ describe('Class: Tracer', () => {
       // Assess
       expect('metadata' in facadeSegment).toBe(false);
       expect(addMetadataSpy).toBeCalledTimes(0);
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.debug).toHaveBeenNthCalledWith(1, 'You cannot add metadata to the main segment in a Lambda execution environment');
+      expect(console.warn).toBeCalledTimes(1);
+      expect(console.warn).toHaveBeenNthCalledWith(1, 'You cannot add metadata to the main segment in a Lambda execution environment');
       
     });
     
@@ -343,8 +339,6 @@ describe('Class: Tracer', () => {
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(0);
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting captureLambdaHanlder');
 
     });
 
@@ -375,8 +369,6 @@ describe('Class: Tracer', () => {
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(console.debug).toBeCalledTimes(4);
-      expect(console.debug).toHaveBeenNthCalledWith(4, 'Tracing has been disabled, aborting addResponseAsMetadata');
       expect('metadata' in newSubsegment).toBe(false);
       delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
     
@@ -454,10 +446,6 @@ describe('Class: Tracer', () => {
         name: '## foo-bar-function',
       }));
       expect('cause' in newSubsegment).toBe(false);
-      expect(console.error).toBeCalledTimes(1);
-      expect(console.error).toHaveBeenNthCalledWith(1, 'Exception received from foo-bar-function');
-      expect(console.debug).toBeCalledTimes(3);
-      expect(console.debug).toHaveBeenNthCalledWith(3, 'Tracing has been disabled, aborting addErrorAsMetadata');
       expect(addErrorSpy).toHaveBeenCalledTimes(0);
 
       delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
@@ -493,8 +481,6 @@ describe('Class: Tracer', () => {
         name: '## foo-bar-function',
       }));
       expect('cause' in newSubsegment).toBe(true);
-      expect(console.error).toBeCalledTimes(1);
-      expect(console.error).toHaveBeenNthCalledWith(1, 'Exception received from foo-bar-function');
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
     
@@ -550,7 +536,7 @@ describe('Class: Tracer', () => {
 
   describe('Method: captureMethod', () => {
 
-    test('when called while tracing is disable, it does nothing', () => {
+    test('when called while tracing is disabled, it does nothing', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
@@ -592,8 +578,6 @@ describe('Class: Tracer', () => {
       tracer.captureAWS({});
 
       // Assess
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting captureAWS');
       expect(captureAWSSpy).toBeCalledTimes(0);
 
     });
@@ -628,8 +612,6 @@ describe('Class: Tracer', () => {
       tracer.captureAWSv3Client({});
 
       // Assess
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting captureAWSv3Client');
       expect(captureAWSv3ClientSpy).toBeCalledTimes(0);
     
     });
@@ -665,8 +647,6 @@ describe('Class: Tracer', () => {
       tracer.captureAWSClient({});
 
       // Assess
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.debug).toHaveBeenNthCalledWith(1, 'Tracing has been disabled, aborting captureAWSClient');
       expect(captureAWSClientSpy).toBeCalledTimes(0);
     
     });

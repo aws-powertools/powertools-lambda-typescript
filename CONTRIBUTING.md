@@ -39,7 +39,7 @@ To send us a pull request, please follow these steps:
 4. Create a new branch to focus on the specific change you are contributing e.g. `git checkout -b improv/logger-debug-sampling`
 5. Run all tests, and code baseline checks: `npm run test`
 6. Commit to your fork using clear commit messages.
-7. Send us a pull request with a [conventional semantic title](https://github.com/awslabs/aws-lambda-powertools-typescript/pull/67), and answering any default questions in the pull request interface.
+7. Send us a pull request with a [conventional semantic title](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/semantic.yml), and answering any default questions in the pull request interface. [Here's an example](https://github.com/awslabs/aws-lambda-powertools-typescript/pull/67).
 8. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
 
 GitHub provides an additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and

@@ -258,7 +258,7 @@ class Lambda implements LambdaInterface {
 > CloudWatch EMF supports a max of 100 metrics per batch. Metrics utility will flush all metrics when adding the 100th metric. Subsequent metrics, e.g. 101th, will be aggregated into a new EMF object, for your convenience.
 
 >### ! Do not create metrics or dimensions outside the handler
-> Metrics or dimensions added in the global scope will only be added during cold start. Disregard if you that's the intended behaviour.
+> Metrics or dimensions added in the global scope will only be added during cold start. Disregard if that's the intended behaviour.
  
 ### Adding default dimensions
 You can use either setDefaultDimensions method or by passing a defaultDimensions object to either the decorator or to the constructor
@@ -346,6 +346,8 @@ If you need to log the metrics from within your code or if you do not wish to us
 
 This will serialize, and flush all your metrics.
 ```typescript
+process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
+process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
 const metrics = new Metrics();
 
 const lambdaHandler: Handler = async () => {
@@ -361,7 +363,35 @@ const lambdaHandler: Handler = async () => {
 
 };
 ```
+<details>
+ <summary>Click to expand and see the logs outputs</summary>
 
+```bash
+
+{
+  "_aws":{
+  "Timestamp":1625587915573,
+  "CloudWatchMetrics":
+    [
+      {
+        "Namespace":"hello-world",
+        "Dimensions":[["service"]],
+        "Metrics":
+          [
+            {
+              "Name":"test-metric",
+              "Unit":"Count"
+            }
+          ]
+      }
+    ]
+  },
+  "service":"hello-world-service",
+  "test-metric":10
+}
+
+```
+</details>
 
 If you just need to clear the metrics manually you can do this by calling the clearMetrics method
 ```typescript
@@ -382,17 +412,48 @@ If you need to get programmatic access to the current stored metrics you can do 
 
 This will not clear any metrics that are currently stored, if you need to do this, you can use the clearMetrics method as described above.
 ```typescript
+process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
+process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
 class Lambda implements LambdaInterface {
-
   @metrics.logMetrics()
   public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
-    const metricsObject = metrics.clearMetrics();
+    metrics.addMetric('test-metric', MetricUnits.Count, 15);
+    const metricsObject = metrics.serializeMetrics();
     console.log(JSON.stringify(metricsObject));
   }
 
 }
 ```
+<details>
+ <summary>Click to expand and see the logs outputs</summary>
+
+```bash
+
+{
+  "_aws":{
+  "Timestamp":1625587915573,
+  "CloudWatchMetrics":
+    [
+      {
+        "Namespace":"hello-world",
+        "Dimensions":[["service"]],
+        "Metrics":
+          [
+            {
+              "Name":"test-metric",
+              "Unit":"Count"
+            }
+          ]
+      }
+    ]
+  },
+  "service":"hello-world-service",
+  "test-metric":15
+}
+
+```
+</details>
+
 ### Raising SchemaValidationError on empty metrics
 
 If you want to ensure that at least one metric is emitted, you can pass raiseOnEmptyMetrics to the logMetrics decorator:

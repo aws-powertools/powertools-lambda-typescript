@@ -33,7 +33,7 @@ class Metrics implements MetricsInterface {
 
   public addDimension(name: string, value: string): void {
     if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount()) {
-      throw new Error(`Max dimension count of ${MAX_DIMENSION_COUNT} hit`);
+      throw new RangeError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
     }
     this.dimensions[name] = value;
   }
@@ -44,7 +44,7 @@ class Metrics implements MetricsInterface {
       newDimensions[dimensionName] = dimensions[dimensionName];
     });
     if (Object.keys(newDimensions).length > MAX_DIMENSION_COUNT) {
-      throw new Error(`Adding ${Object.keys(dimensions).length} dimensions would exceed max dimension count of ${MAX_DIMENSION_COUNT}`);
+      throw new RangeError(`Unable to add ${Object.keys(dimensions).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
     }
     this.dimensions = newDimensions;
   }
@@ -106,10 +106,8 @@ class Metrics implements MetricsInterface {
       Name: metricDefinition.name,
       Unit: metricDefinition.unit
     }));
-    if (metricDefinitions.length === 0) {
-      if (this.raiseOnEmptyMetrics) {
-        throw new Error('Must contain at least one metric');
-      }
+    if (metricDefinitions.length === 0 && this.raiseOnEmptyMetrics) {
+      throw new RangeError('The number of metrics recorded must be higher than zero');
     }
     if (!this.namespace) throw new Error('Namespace must be defined');
 

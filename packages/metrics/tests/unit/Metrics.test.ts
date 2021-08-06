@@ -76,7 +76,7 @@ describe('Class: Metrics', () => {
         metrics.addDimension(`Dimension-${MAX_DIMENSION_COUNT}`, `value-${MAX_DIMENSION_COUNT}`);
       }
       catch (e) {
-        expect(e.message).toBe(`Max dimension count of ${MAX_DIMENSION_COUNT} hit`);
+        expect(e.message).toBe(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       }
     });
 
@@ -109,7 +109,7 @@ describe('Class: Metrics', () => {
         metrics.addDimensions(additionalDimensions);
       }
       catch (e) {
-        expect(e.message).toBe(`Adding ${Object.keys(additionalDimensions).length} dimensions would exceed max dimension count of ${MAX_DIMENSION_COUNT}`);
+        expect(e.message).toBe(`Unable to add ${Object.keys(additionalDimensions).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       }
     });
   });
@@ -313,7 +313,7 @@ describe('Class: Metrics', () => {
         new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
       }
       catch (e) {
-        expect(e.message).toBe('Must contain at least one metric');
+        expect(e.message).toBe('The number of metrics recorded must be higher than zero');
       }
     });
   });

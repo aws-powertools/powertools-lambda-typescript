@@ -14,6 +14,7 @@ import {
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 9;
+const DEFAULT_NAMESPACE = 'default_namespace';
 
 class Metrics implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;
@@ -111,7 +112,9 @@ class Metrics implements MetricsInterface {
     if (metricDefinitions.length === 0 && this.raiseOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
     }
-    if (!this.namespace) throw new Error('Namespace must be defined');
+
+    /* TODO: Potentially a logger.warn users here if default namespace should be used? */
+    /* if (!this.namespace) logger.warn('Namespace should be defined, default used'); */
 
     const metricValues = Object.values(this.storedMetrics).reduce((result: { [key: string]: number }, { name, value }: { name: string; value: number }) => {
       result[name] = value;
@@ -126,7 +129,7 @@ class Metrics implements MetricsInterface {
         Timestamp: new Date().getTime(),
         CloudWatchMetrics: [
           {
-            Namespace: this.namespace,
+            Namespace: this.namespace || DEFAULT_NAMESPACE,
             Dimensions: [dimensionNames],
             Metrics: metricDefinitions,
           }

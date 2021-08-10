@@ -6,6 +6,7 @@ import { Metrics, MetricUnits } from '../../src/';
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 9;
+const DEFAULT_NAMESPACE = 'default_namespace';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
@@ -343,17 +344,14 @@ describe('Class: Metrics', () => {
   });
 
   describe('Feature: Output validation ', () => {
-    test('Should throw error on serialisation if no namepace is set', () => {
+    test('Should use default namespace if no namepace is set', () => {
       delete process.env.POWERTOOLS_METRICS_NAMESPACE;
-      expect.assertions(1);
       const metrics = new Metrics();
+
       metrics.addMetric('test_name', MetricUnits.Seconds, 10);
-      try {
-        metrics.serializeMetrics();
-      }
-      catch (e) {
-        expect(e.message).toBe('Namespace must be defined');
-      }
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Namespace).toBe(DEFAULT_NAMESPACE);
     });
   });
 

@@ -1,10 +1,12 @@
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+
 import {
   DecoratorOptions,
   Dimensions,
   EmfOutput,
   HandlerMethodDecorator,
+  StoredMetrics,
   MetricsOptions,
   MetricUnit,
   MetricUnits
@@ -24,7 +26,7 @@ class Metrics implements MetricsInterface {
   private metadata: { [key: string]: string } = {};
   private namespace?: string;
   private raiseOnEmptyMetrics: boolean = false;
-  private storedMetrics:{ [key: string]: { name: string; unit: MetricUnit; value: number } } = {};
+  private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {
     this.dimensions = {};

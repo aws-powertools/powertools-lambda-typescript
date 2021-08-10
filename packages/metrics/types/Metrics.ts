@@ -34,10 +34,21 @@ type DecoratorOptions = {
   captureColdStartMetric?: boolean
 };
 
+type StoredMetric = {
+  name: string
+  unit: MetricUnit
+  value: number
+};
+
+type StoredMetrics = {
+  [key: string]: StoredMetric
+};
+
 export {
   DecoratorOptions,
   Dimensions,
   EmfOutput,
+  HandlerMethodDecorator,
   MetricsOptions,
-  HandlerMethodDecorator
+  StoredMetrics
 };

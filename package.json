@@ -5,6 +5,8 @@
   "main": "lib/index.js",
   "types": "lib/",
   "scripts": {
+    "init-environment": "husky install",
+    "test": "npm run lerna-test",
     "commit": "commit",
     "lerna-ci": "lerna exec -- npm ci",
     "lerna-test": "lerna exec -- npm run test",
@@ -39,6 +41,7 @@
     "@typescript-eslint/eslint-plugin": "^4.11.1",
     "@typescript-eslint/parser": "^4.11.1",
     "eslint": "^7.16.0",
+    "husky": "^7.0.1",
     "jest": "^27.0.4",
     "lerna": "^4.0.0",
     "ts-jest": "^27.0.3",

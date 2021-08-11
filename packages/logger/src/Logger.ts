@@ -6,15 +6,15 @@ import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
   Environment,
   HandlerMethodDecorator,
-  PowertoolLogData,
+  LambdaFunctionContext,
   LogAttributes,
   ClassThatLogs,
   LoggerOptions,
+  LogItemExtraInput,
+  LogItemMessage,
   LogLevel,
   LogLevelThresholds,
-  LambdaFunctionContext,
-  LogItemMessage,
-  LogItemExtraInput,
+  PowertoolLogData,
 } from '../types';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 
@@ -33,7 +33,7 @@ class Logger implements ClassThatLogs {
   private logLevel?: LogLevel;
 
   private readonly logLevelThresholds: LogLevelThresholds = {
-    'DEBUG' : 8,
+    'DEBUG': 8,
     'INFO': 12,
     'WARN': 16,
     'ERROR': 20
@@ -99,7 +99,7 @@ class Logger implements ClassThatLogs {
   }
 
   public injectLambdaContext(): HandlerMethodDecorator {
-    return (target, propertyKey, descriptor ) => {
+    return (target, propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
 
       descriptor.value = (event, context, callback) => {
@@ -166,7 +166,7 @@ class Logger implements ClassThatLogs {
       const attributes = (item instanceof Error) ? { error: item } : item;
       logItem.addAttributes(attributes);
     });
-    
+
     return logItem;
   }
 
@@ -228,7 +228,7 @@ class Logger implements ClassThatLogs {
   }
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
-    this.customConfigService = customConfigService? customConfigService : undefined;
+    this.customConfigService = customConfigService ? customConfigService : undefined;
   }
 
   private setEnvVarsService(): void {
@@ -298,7 +298,7 @@ class Logger implements ClassThatLogs {
       sampleRateValue: this.getSampleRateValue(),
       serviceName: serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
       xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
-    }, persistentLogAttributes );
+    }, persistentLogAttributes);
   }
 
   private shouldPrint(logLevel: LogLevel): boolean {

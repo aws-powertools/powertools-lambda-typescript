@@ -34,7 +34,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {
-    "@commitlint/cli": "^12.1.4",
+    "@commitlint/cli": "^13.1.0",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
     "@types/node": "^15.0.3",

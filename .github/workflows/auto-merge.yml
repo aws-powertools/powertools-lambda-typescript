@@ -65,4 +65,4 @@ jobs:
               pull_number: pullNumber,
               merge_method: 'squash'
             })
-          github-token: ${{ secrets.AUTOMERGE_DEPENDABOT }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

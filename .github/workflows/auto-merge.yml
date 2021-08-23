@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download PR artifact
-        uses: actions/github-script@v4.0.2
+        uses: actions/github-script@v4.1
         with:
           script: |
             const fs = require('fs');
@@ -44,7 +44,7 @@ jobs:
       - name: Unzip artifact
         run: unzip pr.zip
       - name: Merge PR
-        uses: actions/github-script@v4.0.2
+        uses: actions/github-script@v4.1
         with:
           script: |
             const fs = require('fs');

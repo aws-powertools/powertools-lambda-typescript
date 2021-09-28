@@ -26,9 +26,12 @@ jobs:
         run: |
           for d in ./packages/*/ ; do
               mkdir -p coverage
+              if [[ ! -f coverage/lcov.info ]]
+              then
+                  continue
+              fi
               filename="$d""coverage/lcov.info"
               targetSource="SF:""$d""src"
-              touch coverage/lcov.info
               sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
           done
       - name: Report Coverage

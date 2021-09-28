@@ -44,5 +44,5 @@ jobs:
         #Dependabot user will only have read-only perms, so don't try to report coverage
         if: ${{ github.actor != 'dependabot[bot]' }}
         run: |
-          lerna publish --no-commit-hooks --yes
+          lerna publish from-package --no-commit-hooks --yes
   # TODO: add publish step

@@ -50,7 +50,7 @@ type UnformattedAttributes = {
 };
 
 type LogItemMessage = string | LogAttributesWithMessage;
-type LogItemExtraInput = Array<Error | LogAttributes>;
+type LogItemExtraInput = Array<Error | LogAttributes | unknown>;
 
 type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
 

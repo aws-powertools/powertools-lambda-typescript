@@ -162,9 +162,9 @@ class Logger implements ClassThatLogs {
     if (typeof input !== 'string') {
       logItem.addAttributes(input);
     }
-    extraInput.forEach((item: Error | LogAttributes) => {
+    extraInput.forEach((item: Error | LogAttributes | unknown) => {
       const attributes = (item instanceof Error) ? { error: item } : item;
-      logItem.addAttributes(attributes);
+      logItem.addAttributes(<LogAttributes>attributes);
     });
 
     return logItem;

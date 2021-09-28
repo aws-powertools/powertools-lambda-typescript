@@ -109,7 +109,8 @@ describe('Class: PowertoolLogFormatter', () => {
         shouldThrow();
       } catch (error) {
         // Assess
-        const formattedError = formatter.formatError(error);
+        expect(error).toBeInstanceOf(Error);
+        const formattedError = formatter.formatError(<Error>error);
         expect(formattedError).toEqual({
           location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+$/),
           message: 'Ouch!',
@@ -136,7 +137,8 @@ describe('Class: PowertoolLogFormatter', () => {
         shouldThrow();
       } catch (error) {
         // Assess
-        const formattedReferenceError = formatter.formatError(error);
+        expect(error).toBeInstanceOf(Error);
+        const formattedReferenceError = formatter.formatError(<Error>error);
         expect(formattedReferenceError).toEqual({
           location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+$/),
           message: 'doesNotExist is not defined',
@@ -164,7 +166,8 @@ describe('Class: PowertoolLogFormatter', () => {
         shouldThrow();
       } catch (error) {
         // Assess
-        const formattedAssertionError = formatter.formatError(error);
+        expect(error).toBeInstanceOf(AssertionError);
+        const formattedAssertionError = formatter.formatError(<AssertionError>error);
         expect(formattedAssertionError).toEqual({
           location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
           message: expect.stringMatching(/Expected values to be strictly equal/),
@@ -192,7 +195,8 @@ describe('Class: PowertoolLogFormatter', () => {
         shouldThrow();
       } catch (error) {
         // Assess
-        const formattedRangeError = formatter.formatError(error);
+        expect(error).toBeInstanceOf(RangeError);
+        const formattedRangeError = formatter.formatError(<RangeError>error);
         expect(formattedRangeError).toEqual({
           location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
           message: 'The argument must be between 10 and 20',
@@ -219,7 +223,8 @@ describe('Class: PowertoolLogFormatter', () => {
         shouldThrow();
       } catch (error) {
         // Assess
-        const formattedSyntaxError = formatter.formatError(error);
+        expect(error).toBeInstanceOf(SyntaxError);
+        const formattedSyntaxError = formatter.formatError(<SyntaxError>error);
         expect(formattedSyntaxError).toEqual({
           location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
           message: 'Unexpected identifier',
@@ -247,7 +252,8 @@ describe('Class: PowertoolLogFormatter', () => {
         shouldThrow();
       } catch (error) {
         // Assess
-        const formattedTypeError = formatter.formatError(error);
+        expect(error).toBeInstanceOf(Error);
+        const formattedTypeError = formatter.formatError(<Error>error);
         expect(formattedTypeError).toEqual({
           location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
           message: 'Cannot read property \'foo\' of null',

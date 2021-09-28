@@ -24,8 +24,8 @@ jobs:
       - name: Collate Coverage Reports
         if: ${{ github.actor != 'dependabot[bot]' }}
         run: |
-          mkdir -p coverage
           for d in ./packages/*/ ; do
+              mkdir -p coverage
               filename="$d""coverage/lcov.info"
               targetSource="SF:""$d""src"
               sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info

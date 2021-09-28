@@ -18,4 +18,31 @@ jobs:
         run: npm run lerna-lint
       - name: Run tests
         run: npm run lerna-test
+      - name: Collate Coverage Reports
+          if: ${{ github.actor != 'dependabot[bot]' }}
+          run: |
+            for d in ./packages/*/ ; do
+             mkdir -p coverage
+             if [[ ! -f coverage/lcov.info ]]
+             then
+                 continue
+             fi
+             filename="$d""coverage/lcov.info"
+             targetSource="SF:""$d""src"
+             sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
+            done
+      - name: Report Coverage
+        #Dependabot user will only have read-only perms, so don't try to report coverage
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        uses: romeovs/lcov-reporter-action@v0.2.21
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info
+
+
+      - name: Publish
+        #Dependabot user will only have read-only perms, so don't try to report coverage
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        run: |
+          lerna publish --no-commit-hooks --yes
   # TODO: add publish step

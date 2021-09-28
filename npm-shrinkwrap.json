@@ -19,7 +19,6 @@
         "@typescript-eslint/eslint-plugin": "^4.11.1",
         "@typescript-eslint/parser": "^4.11.1",
         "eslint": "^7.16.0",
-        "husky": "^7.0.1",
         "jest": "^27.0.4",
         "lerna": "^4.0.0",
         "ts-jest": "^27.0.3",
@@ -5454,21 +5453,6 @@
       "dev": true,
       "dependencies": {
         "ms": "^2.0.0"
-      }
-    },
-    "node_modules/husky": {
-      "version": "7.0.2",
-      "resolved": "https://registry.npmjs.org/husky/-/husky-7.0.2.tgz",
-      "integrity": "sha512-8yKEWNX4z2YsofXAMT7KvA1g8p+GxtB1ffV8XtpAEGuXNAbCV5wdNKH+qTpw8SM9fh4aMPDR+yQuKfgnreyZlg==",
-      "dev": true,
-      "bin": {
-        "husky": "lib/bin.js"
-      },
-      "engines": {
-        "node": ">=12"
-      },
-      "funding": {
-        "url": "https://github.com/sponsors/typicode"
       }
     },
     "node_modules/iconv-lite": {
@@ -15199,12 +15183,6 @@
       "requires": {
         "ms": "^2.0.0"
       }
-    },
-    "husky": {
-      "version": "7.0.2",
-      "resolved": "https://registry.npmjs.org/husky/-/husky-7.0.2.tgz",
-      "integrity": "sha512-8yKEWNX4z2YsofXAMT7KvA1g8p+GxtB1ffV8XtpAEGuXNAbCV5wdNKH+qTpw8SM9fh4aMPDR+yQuKfgnreyZlg==",
-      "dev": true
     },
     "iconv-lite": {
       "version": "0.4.24",

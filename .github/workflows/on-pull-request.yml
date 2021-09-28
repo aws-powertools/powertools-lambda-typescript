@@ -28,6 +28,7 @@ jobs:
               mkdir -p coverage
               filename="$d""coverage/lcov.info"
               targetSource="SF:""$d""src"
+              touch coverage/lcov.info
               sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
           done
       - name: Report Coverage

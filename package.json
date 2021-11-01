@@ -40,7 +40,7 @@
     "@types/node": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^4.11.1",
     "@typescript-eslint/parser": "^4.11.1",
-    "eslint": "^7.16.0",
+    "eslint": "^8.1.0",
     "husky": "^7.0.1",
     "jest": "^27.0.4",
     "lerna": "^4.0.0",

@@ -1,6 +1,6 @@
-import { LogAttributes } from '../../types';
-import { LogItemInterface } from '.';
 import { pickBy, merge } from 'lodash';
+import { LogItemInterface } from '.';
+import { LogAttributes } from '../../types';
 
 class LogItem implements LogItemInterface {
 
@@ -40,5 +40,5 @@ class LogItem implements LogItemInterface {
 }
 
 export {
-  LogItem
+  LogItem,
 };

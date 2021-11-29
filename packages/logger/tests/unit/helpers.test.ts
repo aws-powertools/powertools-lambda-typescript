@@ -1,7 +1,7 @@
-import { LoggerOptions } from '../../types';
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
-import { createLogger, Logger } from './../../src';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
+import { LoggerOptions } from '../../types';
+import { createLogger, Logger } from './../../src';
 
 describe('Helper: createLogger function', () => {
 
@@ -36,9 +36,9 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-central-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456'
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
-        envVarsService:  expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'DEBUG',
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -56,9 +56,9 @@ describe('Helper: createLogger function', () => {
         logFormatter: new PowertoolLogFormatter(),
         customConfigService: new EnvironmentVariablesService(),
         persistentLogAttributes: {
-          awsAccountId: '123456789'
+          awsAccountId: '123456789',
         },
-        environment: 'prod'
+        environment: 'prod',
       };
 
       // Act
@@ -67,27 +67,27 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
-        'customConfigService': expect.any(EnvironmentVariablesService),
-        'envVarsService':  expect.any(EnvironmentVariablesService),
-        'logFormatter':  expect.any(PowertoolLogFormatter),
-        'logLevel': 'WARN',
-        'logLevelThresholds':  {
-          'DEBUG': 8,
-          'ERROR': 20,
-          'INFO': 12,
-          'WARN': 16,
+        customConfigService: expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'WARN',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
         },
-        'logsSampled': true,
-        'persistentLogAttributes':   {
-          awsAccountId: '123456789'
+        logsSampled: true,
+        persistentLogAttributes: {
+          awsAccountId: '123456789',
         },
-        'powertoolLogData':  {
-          'awsRegion': 'eu-central-1',
-          'environment': 'prod',
-          'sampleRateValue': 1,
-          'serviceName': 'my-lambda-service',
-          'xRayTraceId': 'abcdef123456abcdef123456abcdef123456'
-        }
+        powertoolLogData: {
+          awsRegion: 'eu-central-1',
+          environment: 'prod',
+          sampleRateValue: 1,
+          serviceName: 'my-lambda-service',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
       });
 
     });
@@ -96,7 +96,7 @@ describe('Helper: createLogger function', () => {
 
       // Prepare
       const loggerOptions:LoggerOptions = {
-        logFormatter: expect.any(LogFormatter)
+        logFormatter: expect.any(LogFormatter),
       };
 
       // Act
@@ -112,9 +112,9 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-central-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456'
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
-        envVarsService:  expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'DEBUG',
         logFormatter: expect.any(LogFormatter),
@@ -125,7 +125,7 @@ describe('Helper: createLogger function', () => {
 
       // Prepare
       const loggerOptions:LoggerOptions = {
-        serviceName: 'my-backend-service'
+        serviceName: 'my-backend-service',
       };
 
       // Act
@@ -141,12 +141,12 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-central-1',
           environment: '',
           serviceName: 'my-backend-service',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456'
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
-        envVarsService:  expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'DEBUG',
-        logFormatter: {}
+        logFormatter: {},
       }));
     });
 
@@ -154,7 +154,7 @@ describe('Helper: createLogger function', () => {
 
       // Prepare
       const loggerOptions:LoggerOptions = {
-        logLevel: 'ERROR'
+        logLevel: 'ERROR',
       };
 
       // Act
@@ -170,9 +170,9 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-central-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456'
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
-        envVarsService:  expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'ERROR',
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -191,25 +191,25 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
-        'customConfigService': undefined,
-        'envVarsService':  expect.any(EnvironmentVariablesService),
-        'logFormatter':  expect.any(PowertoolLogFormatter),
-        'logLevel': 'INFO',
-        'logLevelThresholds':  {
-          'DEBUG': 8,
-          'ERROR': 20,
-          'INFO': 12,
-          'WARN': 16,
+        customConfigService: undefined,
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'INFO',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
         },
-        'logsSampled': false,
-        'persistentLogAttributes': {},
-        'powertoolLogData':  {
-          'awsRegion': 'eu-central-1',
-          'environment': '',
-          'sampleRateValue': undefined,
-          'serviceName': 'hello-world',
-          'xRayTraceId': 'abcdef123456abcdef123456abcdef123456'
-        }
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-central-1',
+          environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
       });
     });
 
@@ -217,7 +217,7 @@ describe('Helper: createLogger function', () => {
 
       // Prepare
       const loggerOptions:LoggerOptions = {
-        sampleRateValue: 1
+        sampleRateValue: 1,
       };
 
       // Act
@@ -233,9 +233,9 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-central-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456'
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
-        envVarsService:  expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'DEBUG',
         logFormatter: {},
@@ -259,12 +259,12 @@ describe('Helper: createLogger function', () => {
         },
         getServiceName(): string {
           return 'my-backend-service';
-        }
+        },
 
       };
       // Prepare
       const loggerOptions:LoggerOptions = {
-        customConfigService: configService
+        customConfigService: configService,
       };
 
       // Act
@@ -280,9 +280,9 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-central-1',
           environment: 'dev',
           serviceName: 'my-backend-service',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456'
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
-        envVarsService:  expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: configService,
         logLevel: 'INFO',
         logFormatter: {},
@@ -299,8 +299,8 @@ describe('Helper: createLogger function', () => {
           logger: {
             name: 'aws-lambda-powertool-typescript',
             version: '0.2.4',
-          }
-        }
+          },
+        },
       };
 
       // Act
@@ -316,16 +316,16 @@ describe('Helper: createLogger function', () => {
           logger: {
             name: 'aws-lambda-powertool-typescript',
             version: '0.2.4',
-          }
+          },
         },
         powertoolLogData: {
           sampleRateValue: undefined,
           awsRegion: 'eu-central-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456'
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
-        envVarsService:  expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'DEBUG',
         logFormatter: {},
@@ -336,7 +336,7 @@ describe('Helper: createLogger function', () => {
 
       // Prepare
       const loggerOptions:LoggerOptions = {
-        environment: 'dev'
+        environment: 'dev',
       };
 
       // Act
@@ -352,9 +352,9 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-central-1',
           environment: 'dev',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456'
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
-        envVarsService:  expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'DEBUG',
         logFormatter: {},

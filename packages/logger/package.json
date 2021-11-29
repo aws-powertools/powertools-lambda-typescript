@@ -11,8 +11,8 @@
     "test": "jest  --detectOpenHandles --coverage --verbose",
     "watch": "jest --watch",
     "build": "tsc",
-    "lint": "eslint \"./{src,tests}/**/*.ts\"",
-    "format": "eslint --fix \"./{src,tests}/**/*.ts\"",
+    "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
+    "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
@@ -35,13 +35,15 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
     "@types/lodash": "^4.14.168",
     "@types/node": "^16.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.11.1",
-    "@typescript-eslint/parser": "^4.11.1",
-    "eslint": "^8.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.3.0",
+    "eslint-import-resolver-node": "^0.3.6",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.3",
     "jest": "^27.0.4",
     "ts-jest": "^27.0.3",
     "ts-node": "^10.0.0",
@@ -58,7 +60,9 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
+    "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
-    "lodash.merge": "^4.6.2"
+    "lodash.merge": "^4.6.2",
+    "@types/aws-lambda": "^8.10.72"
   }
 }

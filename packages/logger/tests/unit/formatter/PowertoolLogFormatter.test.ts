@@ -1,6 +1,6 @@
+import { AssertionError, strictEqual } from 'assert';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { UnformattedAttributes } from '../../../types';
-import { AssertionError, strictEqual } from 'assert';
 
 describe('Class: PowertoolLogFormatter', () => {
 
@@ -25,7 +25,7 @@ describe('Class: PowertoolLogFormatter', () => {
         xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         logLevel: 'WARN',
         timestamp: new Date(),
-        message: 'This is a WARN log'
+        message: 'This is a WARN log',
       };
 
       // Act
@@ -33,17 +33,17 @@ describe('Class: PowertoolLogFormatter', () => {
 
       // Assess
       expect(value).toEqual({
-        'cold_start': undefined,
-        'function_arn': undefined,
-        'function_memory_size': undefined,
-        'function_name': undefined,
-        'function_request_id': undefined,
-        'level': 'WARN',
-        'message': 'This is a WARN log',
-        'sampling_rate': undefined,
-        'service': 'hello-world',
-        'timestamp': '2016-06-20T12:08:10.000Z',
-        'xray_trace_id': 'abcdef123456abcdef123456abcdef123456'
+        cold_start: undefined,
+        function_arn: undefined,
+        function_memory_size: undefined,
+        function_name: undefined,
+        function_request_id: undefined,
+        level: 'WARN',
+        message: 'This is a WARN log',
+        sampling_rate: undefined,
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
       });
     });
 
@@ -67,8 +67,8 @@ describe('Class: PowertoolLogFormatter', () => {
           functionVersion: '1.23.3',
           coldStart: true,
           invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-          awsRequestId: 'abcdefg123456789'
-        }
+          awsRequestId: 'abcdefg123456789',
+        },
       };
 
       // Act
@@ -76,17 +76,17 @@ describe('Class: PowertoolLogFormatter', () => {
 
       // Assess
       expect(value).toEqual({
-        'cold_start': true,
-        'function_arn': 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-        'function_memory_size': 123,
-        'function_name': 'my-lambda-function',
-        'function_request_id': 'abcdefg123456789',
-        'level': 'WARN',
-        'message': 'This is a WARN log',
-        'sampling_rate': 0.25,
-        'service': 'hello-world',
-        'timestamp': '2016-06-20T12:08:10.000Z',
-        'xray_trace_id': 'abcdef123456abcdef123456abcdef123456'
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+        function_memory_size: 123,
+        function_name: 'my-lambda-function',
+        function_request_id: 'abcdefg123456789',
+        level: 'WARN',
+        message: 'This is a WARN log',
+        sampling_rate: 0.25,
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
       });
     });
 

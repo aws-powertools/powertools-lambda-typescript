@@ -1,8 +1,9 @@
-import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
+import { Context, Callback } from 'aws-lambda';
 import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
+import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
 import { LambdaInterface } from '../../examples/utils/lambda/LambdaInterface';
-import { populateEnvironmentVariables } from '../helpers';
 import { Metrics, MetricUnits } from '../../src/';
+import { populateEnvironmentVariables } from '../helpers';
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 9;
@@ -11,11 +12,10 @@ const DEFAULT_NAMESPACE = 'default_namespace';
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
 interface LooseObject {
-  [key: string]: string
+  [key: string]: string;
 }
 
 describe('Class: Metrics', () => {
-
   const originalEnvironmentVariables = process.env;
 
   beforeEach(() => {
@@ -70,19 +70,18 @@ describe('Class: Metrics', () => {
     test('Adding more than max dimensions should throw error', () => {
       expect.assertions(1);
       const metrics = new Metrics();
-      for (let x =0; x < MAX_DIMENSION_COUNT ; x++) {
+      for (let x = 0; x < MAX_DIMENSION_COUNT; x++) {
         metrics.addDimension(`Dimension-${x}`, `value-${x}`);
       }
       try {
         metrics.addDimension(`Dimension-${MAX_DIMENSION_COUNT}`, `value-${MAX_DIMENSION_COUNT}`);
-      }
-      catch (e) {
+      } catch (e) {
         expect((<Error>e).message).toBe(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       }
     });
 
     test('Additional bulk dimensions should be added correctly', () => {
-      const additionalDimensions: LooseObject = { 'dimension2': 'dimension2Value', 'dimension3': 'dimension3Value' };
+      const additionalDimensions: LooseObject = { dimension2: 'dimension2Value', dimension3: 'dimension3Value' };
       const metrics = new Metrics({ namespace: 'test' });
 
       metrics.addMetric('test_name', MetricUnits.Seconds, 10);
@@ -91,7 +90,6 @@ describe('Class: Metrics', () => {
 
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       Object.keys(additionalDimensions).forEach((key) => {
-
         expect(loggedData[key]).toEqual(additionalDimensions[key]);
       });
     });
@@ -101,16 +99,19 @@ describe('Class: Metrics', () => {
       const metrics = new Metrics();
       const additionalDimensions: LooseObject = {};
 
-      metrics.addDimension(`Dimension-Initial`, `Dimension-InitialValue`);
-      for (let x =0; x < MAX_DIMENSION_COUNT ; x++) {
+      metrics.addDimension('Dimension-Initial', 'Dimension-InitialValue');
+      for (let x = 0; x < MAX_DIMENSION_COUNT; x++) {
         additionalDimensions[`dimension${x}`] = `dimension${x}Value`;
       }
 
       try {
         metrics.addDimensions(additionalDimensions);
-      }
-      catch (e) {
-        expect((<Error>e).message).toBe(`Unable to add ${Object.keys(additionalDimensions).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+      } catch (e) {
+        expect((<Error>e).message).toBe(
+          `Unable to add ${
+            Object.keys(additionalDimensions).length
+          } dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`,
+        );
       }
     });
   });
@@ -129,17 +130,15 @@ describe('Class: Metrics', () => {
 
       expect(loggedData[metadataItem.name]).toEqual(metadataItem.value);
       expect(postClearLoggedData[metadataItem.name]).toBeUndefined();
-
     });
   });
 
   describe('Feature: Default Dimensions', () => {
-
-    test('Adding more than max default dimensions should throw error', () => {
+    test('Adding more than max default dimensions should throw error', async () => {
       expect.assertions(1);
 
       const defaultDimensions: LooseObject = {};
-      for (let x = 0; x < MAX_DIMENSION_COUNT + 1; x ++) {
+      for (let x = 0; x < MAX_DIMENSION_COUNT + 1; x++) {
         defaultDimensions[`dimension-${x}`] = `value-${x}`;
       }
 
@@ -150,27 +149,34 @@ describe('Class: Metrics', () => {
           @metrics.logMetrics({ defaultDimensions: defaultDimensions })
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          public handler<TEvent, TResult>(
+            _event: TEvent,
+            _context: Context,
+            _callback: Callback<TResult>,
+          ): void | Promise<TResult> {
             return;
           }
         }
 
-        new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+        await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
       } catch (e) {
         expect((<Error>e).message).toBe('Max dimension count hit');
       }
     });
 
-    test('Clearing dimensions should only remove added dimensions, not default', () => {
+    test('Clearing dimensions should only remove added dimensions, not default', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       const additionalDimension = { name: 'metric2', value: 'metric2Value' };
 
       class LambdaFunction implements LambdaInterface {
-
-        @metrics.logMetrics({ defaultDimensions: { 'default': 'defaultValue' } })
+        @metrics.logMetrics({ defaultDimensions: { default: 'defaultValue' } })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
           metrics.addDimension(additionalDimension.name, additionalDimension.value);
           const loggedData = metrics.serializeMetrics();
@@ -180,7 +186,7 @@ describe('Class: Metrics', () => {
         }
       }
 
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(1);
@@ -189,23 +195,26 @@ describe('Class: Metrics', () => {
       expect(loggedData.default).toContain('defaultValue');
     });
 
-    test('Clearing default dimensions should only remove default dimensions, not added', () => {
+    test('Clearing default dimensions should only remove default dimensions, not added', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       const additionalDimension = { name: 'metric2', value: 'metric2Value' };
 
       class LambdaFunction implements LambdaInterface {
-
-        @metrics.logMetrics({ defaultDimensions: { 'default': 'defaultValue' } })
+        @metrics.logMetrics({ defaultDimensions: { default: 'defaultValue' } })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
           metrics.addDimension(additionalDimension.name, additionalDimension.value);
           metrics.clearDefaultDimensions();
         }
       }
 
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(1);
@@ -214,24 +223,27 @@ describe('Class: Metrics', () => {
       expect(loggedData[additionalDimension.name]).toContain(additionalDimension.value);
     });
   });
-  
+
   describe('Feature: Cold Start', () => {
-    test('Cold start metric should only be written out once', () => {
+    test('Cold start metric should only be written out once', async () => {
       const metrics = new Metrics({ namespace: 'test' });
 
       class LambdaFunction implements LambdaInterface {
-
         @metrics.logMetrics({ captureColdStartMetric: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
         }
       }
 
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked again!'));
-      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked again!'));
+      const loggedData = [JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0])];
 
       expect(console.log).toBeCalledTimes(3);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
@@ -240,20 +252,23 @@ describe('Class: Metrics', () => {
       expect(loggedData[0].ColdStart).toBe(1);
     });
 
-    test('Cold should have service and function name if present', () => {
+    test('Cold should have service and function name if present', async () => {
       const serviceName = 'test-service';
       const metrics = new Metrics({ namespace: 'test', service: serviceName });
 
       class LambdaFunction implements LambdaInterface {
-
         @metrics.logMetrics({ captureColdStartMetric: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
         }
       }
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(2);
@@ -267,7 +282,7 @@ describe('Class: Metrics', () => {
       expect(loggedData.ColdStart).toBe(1);
     });
 
-    test('Cold should still log, without a function name', () => {
+    test('Cold should still log, without a function name', async () => {
       const serviceName = 'test-service';
       const metrics = new Metrics({ namespace: 'test', service: serviceName });
       const newDummyContext = JSON.parse(JSON.stringify(dummyContext));
@@ -276,12 +291,16 @@ describe('Class: Metrics', () => {
         @metrics.logMetrics({ captureColdStartMetric: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
         }
       }
 
-      new LambdaFunction().handler(dummyEvent, newDummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(dummyEvent, newDummyContext, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(2);
@@ -292,50 +311,56 @@ describe('Class: Metrics', () => {
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('service');
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).not.toContain('function_name');
       expect(loggedData.ColdStart).toBe(1);
-
     });
   });
 
   describe('Feature: raiseOnEmptyMetrics', () => {
-    test('Error should be thrown on empty metrics when raiseOnEmptyMetrics is passed', () => {
+    test('Error should be thrown on empty metrics when raiseOnEmptyMetrics is passed', async () => {
       expect.assertions(1);
-      
+
       const metrics = new Metrics({ namespace: 'test' });
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics({ raiseOnEmptyMetrics: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
           return;
         }
       }
-      
+
       try {
-        new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      }
-      catch (e) {
+        await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      } catch (e) {
         expect((<Error>e).message).toBe('The number of metrics recorded must be higher than zero');
       }
     });
   });
-  
+
   describe('Feature: Auto log at limit', () => {
-    test('Logger should write out block when limit is reached', () => {
+    test('Logger should write out block when limit is reached', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       const extraCount = 10;
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-          for (let x =0; x<MAX_METRICS_SIZE + extraCount; x++) {
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
+          for (let x = 0; x < MAX_METRICS_SIZE + extraCount; x++) {
             metrics.addMetric(`test_name_${x}`, MetricUnits.Count, x);
           }
         }
       }
 
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      const loggedData = [JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0])];
 
       expect(console.log).toBeCalledTimes(2);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(100);
@@ -356,13 +381,17 @@ describe('Class: Metrics', () => {
   });
 
   describe('Feature: Clearing Metrics ', () => {
-    test('Clearing metrics should return empty', () => {
+    test('Clearing metrics should return empty', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       class LambdaFunction implements LambdaInterface {
-        @metrics.logMetrics({ defaultDimensions: { 'default': 'defaultValue' } })
+        @metrics.logMetrics({ defaultDimensions: { default: 'defaultValue' } })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
           const loggedData = metrics.serializeMetrics();
           metrics.clearMetrics();
@@ -373,38 +402,41 @@ describe('Class: Metrics', () => {
         }
       }
 
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
     });
 
-    test('Purge Stored Metrics should log and clear', () => {
+    test('Purge Stored Metrics should log and clear', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-          metrics.addMetric(`test_name_1`, MetricUnits.Count, 1);
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
+          metrics.addMetric('test_name_1', MetricUnits.Count, 1);
           metrics.purgeStoredMetrics();
         }
       }
 
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      const loggedData = [JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0])];
 
       expect(console.log).toBeCalledTimes(2);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
       expect(loggedData[1]._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
     });
-
   });
 
   describe('Feature: Custom Config Service', () => {
-    test( 'Custom Config Service should be called for service', () => {
+    test('Custom Config Service should be called for service', () => {
       const serviceName = 'Custom Provider Service Name';
       const namespace = 'Custom Provider namespace';
       const customConfigService = {
         getService: () => serviceName,
-        getNamespace: () => namespace
+        getNamespace: () => namespace,
       };
 
       const metrics = new Metrics({ customConfigService: customConfigService });
@@ -412,8 +444,6 @@ describe('Class: Metrics', () => {
 
       expect(loggedData.service).toEqual(serviceName);
       expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(namespace);
-
     });
   });
-
 });

@@ -1,13 +1,13 @@
+import { Callback, Context } from 'aws-lambda/handler';
 import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
-import { ClassThatLogs } from '../../types';
-import { EnvironmentVariablesService } from '../../src/config';
 import { LambdaInterface } from '../../examples/utils/lambda';
-import { PowertoolLogFormatter } from '../../src/formatter';
-import { Callback, Context } from 'aws-lambda/handler';
 import { createLogger, Logger } from '../../src';
+import { EnvironmentVariablesService } from '../../src/config';
+import { PowertoolLogFormatter } from '../../src/formatter';
+import { ClassThatLogs } from '../../types';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
@@ -23,10 +23,10 @@ describe('Class: Logger', () => {
   });
 
   describe.each([
-    [ 'debug', 'DOES', true, 'DOES NOT', false, 'DOES NOT', false, 'DOES NOT', false ],
-    [ 'info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false ],
-    [ 'warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false ],
-    [ 'error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true ]
+    ['debug', 'DOES', true, 'DOES NOT', false, 'DOES NOT', false, 'DOES NOT', false],
+    ['info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false],
+    ['warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false],
+    ['error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true],
   ])(
     'Method: %p',
     (
@@ -38,7 +38,7 @@ describe('Class: Logger', () => {
       warnAction,
       warnPrints,
       errorAction,
-      errorPrints
+      errorPrints,
     ) => {
 
       describe('Feature: log level', () => {
@@ -47,7 +47,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger: ClassThatLogs = createLogger({
-            logLevel: 'DEBUG'
+            logLevel: 'DEBUG',
           });
 
           // Act
@@ -63,7 +63,7 @@ describe('Class: Logger', () => {
               service: 'hello-world',
               level: method.toUpperCase(),
               timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+              xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             });
           }
 
@@ -73,7 +73,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger: ClassThatLogs = createLogger({
-            logLevel: 'INFO'
+            logLevel: 'INFO',
           });
 
           // Act
@@ -89,7 +89,7 @@ describe('Class: Logger', () => {
               service: 'hello-world',
               level: method.toUpperCase(),
               timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+              xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             });
           }
 
@@ -99,7 +99,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger: ClassThatLogs = createLogger({
-            logLevel: 'WARN'
+            logLevel: 'WARN',
           });
 
           // Act
@@ -115,7 +115,7 @@ describe('Class: Logger', () => {
               service: 'hello-world',
               level: method.toUpperCase(),
               timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+              xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             });
           }
 
@@ -125,7 +125,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger: ClassThatLogs = createLogger({
-            logLevel: 'ERROR'
+            logLevel: 'ERROR',
           });
 
           // Act
@@ -141,7 +141,7 @@ describe('Class: Logger', () => {
               service: 'hello-world',
               level: method.toUpperCase(),
               timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+              xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             });
           }
 
@@ -156,7 +156,7 @@ describe('Class: Logger', () => {
           // Prepare
           const logger: ClassThatLogs = createLogger({
             logLevel: 'ERROR',
-            sampleRateValue: 0
+            sampleRateValue: 0,
           });
 
           // Act
@@ -173,7 +173,7 @@ describe('Class: Logger', () => {
           // Prepare
           const logger: ClassThatLogs = createLogger({
             logLevel: 'ERROR',
-            sampleRateValue: 1
+            sampleRateValue: 1,
           });
 
           // Act
@@ -189,7 +189,7 @@ describe('Class: Logger', () => {
             service: 'hello-world',
             level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
         });
 
@@ -214,7 +214,7 @@ describe('Class: Logger', () => {
             service: 'hello-world',
             level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
         });
 
@@ -222,7 +222,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger: ClassThatLogs & { addContext: (context: Context) => void } = createLogger({
-            logLevel: 'DEBUG'
+            logLevel: 'DEBUG',
           });
           logger.addContext(dummyContext);
 
@@ -234,16 +234,16 @@ describe('Class: Logger', () => {
           // Assess
           expect(console.log).toBeCalledTimes(1);
           expect(console.log).toHaveBeenNthCalledWith(1, {
-            'cold_start': true,
-            'function_arn': 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-            'function_memory_size': 128,
-            'function_name': 'foo-bar-function',
-            'function_request_id': 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
-            'level': method.toUpperCase(),
-            'message': 'foo',
-            'service': 'hello-world',
-            'timestamp': '2016-06-20T12:08:10.000Z',
-            'xray_trace_id': 'abcdef123456abcdef123456abcdef123456'
+            cold_start: true,
+            function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+            function_memory_size: 128,
+            function_name: 'foo-bar-function',
+            function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+            level: method.toUpperCase(),
+            message: 'foo',
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
 
         });
@@ -256,7 +256,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger: ClassThatLogs = createLogger({
-            logLevel: 'DEBUG'
+            logLevel: 'DEBUG',
           });
 
           // Act
@@ -275,7 +275,7 @@ describe('Class: Logger', () => {
             service: 'hello-world',
             level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
           expect(console.log).toHaveBeenNthCalledWith(2, {
             extra: 'parameter',
@@ -283,7 +283,7 @@ describe('Class: Logger', () => {
             service: 'hello-world',
             level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
           expect(console.log).toHaveBeenNthCalledWith(3, {
             message: 'A log item with a string as first parameter, and objects as other parameters',
@@ -292,7 +292,7 @@ describe('Class: Logger', () => {
             parameterOne: 'foo',
             parameterTwo: 'bar',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
           expect(console.log).toHaveBeenNthCalledWith(4, {
             extra: 'parameter',
@@ -300,7 +300,7 @@ describe('Class: Logger', () => {
             service: 'hello-world',
             level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
           expect(console.log).toHaveBeenNthCalledWith(5, {
             error: {
@@ -313,7 +313,7 @@ describe('Class: Logger', () => {
             message: 'A log item with a string as first parameter, and an error as second parameter',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
           expect(console.log).toHaveBeenNthCalledWith(6, {
             level: method.toUpperCase(),
@@ -326,7 +326,7 @@ describe('Class: Logger', () => {
             },
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
         });
       });
@@ -341,7 +341,7 @@ describe('Class: Logger', () => {
             persistentLogAttributes: {
               aws_account_id: '123456789012',
               aws_region: 'eu-central-1',
-            }
+            },
           });
 
           // Act
@@ -358,7 +358,7 @@ describe('Class: Logger', () => {
             service: 'hello-world',
             level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
         });
 
@@ -370,11 +370,11 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger: ClassThatLogs = createLogger({
-            logLevel: 'DEBUG'
+            logLevel: 'DEBUG',
           });
           const circularObject = {
             foo: 'bar',
-            self: {}
+            self: {},
           };
           circularObject.self = circularObject;
           const logCircularReference = (): string => {
@@ -392,13 +392,13 @@ describe('Class: Logger', () => {
           expect(result).toBe('All good!');
           expect(console.log).toHaveBeenNthCalledWith(1, {
             details: {
-              foo: 'bar'
+              foo: 'bar',
             },
             message: 'A log with a circular reference',
             service: 'hello-world',
             level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           });
 
         });
@@ -420,7 +420,7 @@ describe('Class: Logger', () => {
         logger: {
           name: 'aws-lambda-powertool-typescript',
           version: '0.2.4',
-        }
+        },
       });
 
       // Assess
@@ -431,8 +431,8 @@ describe('Class: Logger', () => {
           logger: {
             name: 'aws-lambda-powertool-typescript',
             version: '0.2.4',
-          }
-        }
+          },
+        },
       }));
     });
   });
@@ -446,16 +446,16 @@ describe('Class: Logger', () => {
 
       // Act
       const childLogger = logger.createChild({
-        logLevel: 'ERROR'
+        logLevel: 'ERROR',
       });
 
       // Assess
       expect(logger).toEqual(expect.objectContaining({
-        logLevel: 'DEBUG'
+        logLevel: 'DEBUG',
       }));
       expect(childLogger).toBeInstanceOf(Logger);
       expect(childLogger).toEqual(expect.objectContaining({
-        logLevel: 'ERROR'
+        logLevel: 'ERROR',
       }));
     });
 
@@ -463,7 +463,7 @@ describe('Class: Logger', () => {
 
   describe('Method: injectLambdaContext', () => {
 
-    test('when used as decorator, it returns a function that captures Lambda\'s context information and adds it in the printed logs', () => {
+    test('when used as decorator, it returns a function that captures Lambda\'s context information and adds it in the printed logs', async () => {
 
       // Prepare
       const logger = new Logger();
@@ -479,7 +479,7 @@ describe('Class: Logger', () => {
 
       // Act
       logger.info('An INFO log without context!');
-      new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
 
       // Assess
 
@@ -489,7 +489,7 @@ describe('Class: Logger', () => {
         service: 'hello-world',
         level: 'INFO',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
       });
       expect(console.log).toHaveBeenNthCalledWith(2, {
         cold_start: true,
@@ -501,7 +501,7 @@ describe('Class: Logger', () => {
         service: 'hello-world',
         level: 'INFO',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
       });
 
     });
@@ -529,7 +529,7 @@ describe('Class: Logger', () => {
       // Prepare
       const logger = new Logger({
         logLevel: 'ERROR',
-        sampleRateValue: 0.1 // 10% probability
+        sampleRateValue: 0.1, // 10% probability
       });
       let logsSampledCount = 0;
 
@@ -560,14 +560,14 @@ describe('Class: Logger', () => {
       const childLogger = parentLogger.createChild();
       const childLoggerWithPermanentAttributes = parentLogger.createChild({
         persistentLogAttributes: {
-          extra: 'This is an attribute that will be logged only by the child logger'
-        }
+          extra: 'This is an attribute that will be logged only by the child logger',
+        },
       });
       const childLoggerWithSampleRateEnabled = parentLogger.createChild({
-        sampleRateValue: 1 // 100% probability to make sure that the logs are sampled
+        sampleRateValue: 1, // 100% probability to make sure that the logs are sampled
       });
       const childLoggerWithErrorLogLevel = parentLogger.createChild({
-        logLevel: 'ERROR'
+        logLevel: 'ERROR',
       });
 
       // Assess
@@ -578,93 +578,93 @@ describe('Class: Logger', () => {
       expect(parentLogger === childLoggerWithErrorLogLevel).toBe(false);
 
       expect(parentLogger).toEqual({
-        'customConfigService': undefined,
-        'envVarsService':  expect.any(EnvironmentVariablesService),
-        'logFormatter':  expect.any(PowertoolLogFormatter),
-        'logLevel': 'DEBUG',
-        'logLevelThresholds':  {
-          'DEBUG': 8,
-          'ERROR': 20,
-          'INFO': 12,
-          'WARN': 16,
+        customConfigService: undefined,
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
         },
-        'logsSampled': false,
-        'persistentLogAttributes':  {},
-        'powertoolLogData':  {
-          'awsRegion': 'eu-central-1',
-          'environment': '',
-          'sampleRateValue': undefined,
-          'serviceName': 'hello-world',
-          'xRayTraceId': 'abcdef123456abcdef123456abcdef123456'
-        }
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-central-1',
+          environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
       });
 
       expect(childLoggerWithPermanentAttributes).toEqual({
-        'customConfigService': undefined,
-        'envVarsService':  expect.any(EnvironmentVariablesService),
-        'logFormatter':  expect.any(PowertoolLogFormatter),
-        'logLevel': 'DEBUG',
-        'logLevelThresholds':  {
-          'DEBUG': 8,
-          'ERROR': 20,
-          'INFO': 12,
-          'WARN': 16,
+        customConfigService: undefined,
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
         },
-        'logsSampled': false,
-        'persistentLogAttributes': {
-          'extra': 'This is an attribute that will be logged only by the child logger',
+        logsSampled: false,
+        persistentLogAttributes: {
+          extra: 'This is an attribute that will be logged only by the child logger',
         },
-        'powertoolLogData':  {
-          'awsRegion': 'eu-central-1',
-          'environment': '',
-          'sampleRateValue': undefined,
-          'serviceName': 'hello-world',
-          'xRayTraceId': 'abcdef123456abcdef123456abcdef123456'
-        }
+        powertoolLogData: {
+          awsRegion: 'eu-central-1',
+          environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
       });
 
       expect(childLoggerWithSampleRateEnabled).toEqual({
-        'customConfigService': undefined,
-        'envVarsService':  expect.any(EnvironmentVariablesService),
-        'logFormatter':  expect.any(PowertoolLogFormatter),
-        'logLevel': 'DEBUG',
-        'logLevelThresholds':  {
-          'DEBUG': 8,
-          'ERROR': 20,
-          'INFO': 12,
-          'WARN': 16,
+        customConfigService: undefined,
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
         },
-        'logsSampled': true,
-        'persistentLogAttributes':  {},
-        'powertoolLogData':  {
-          'awsRegion': 'eu-central-1',
-          'environment': '',
-          'sampleRateValue': 1,
-          'serviceName': 'hello-world',
-          'xRayTraceId': 'abcdef123456abcdef123456abcdef123456'
-        }
+        logsSampled: true,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-central-1',
+          environment: '',
+          sampleRateValue: 1,
+          serviceName: 'hello-world',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
       });
 
       expect(childLoggerWithErrorLogLevel).toEqual({
-        'customConfigService': undefined,
-        'envVarsService':  expect.any(EnvironmentVariablesService),
-        'logFormatter':  expect.any(PowertoolLogFormatter),
-        'logLevel': 'ERROR',
-        'logLevelThresholds':  {
-          'DEBUG': 8,
-          'ERROR': 20,
-          'INFO': 12,
-          'WARN': 16,
+        customConfigService: undefined,
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'ERROR',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
         },
-        'logsSampled': false,
-        'persistentLogAttributes':  {},
-        'powertoolLogData':  {
-          'awsRegion': 'eu-central-1',
-          'environment': '',
-          'sampleRateValue': undefined,
-          'serviceName': 'hello-world',
-          'xRayTraceId': 'abcdef123456abcdef123456abcdef123456'
-        }
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-central-1',
+          environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
       });
 
     });

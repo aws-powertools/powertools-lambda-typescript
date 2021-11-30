@@ -9,5 +9,5 @@ abstract class ConfigService implements ConfigServiceInterface {
 }
 
 export {
-  ConfigService
+  ConfigService,
 };

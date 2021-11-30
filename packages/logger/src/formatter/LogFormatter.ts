@@ -41,5 +41,5 @@ abstract class LogFormatter implements LogFormatterInterface {
 }
 
 export {
-  LogFormatter
+  LogFormatter,
 };

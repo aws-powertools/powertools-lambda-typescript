@@ -5,5 +5,5 @@ const populateEnvironmentVariables = (): void => {
 };
 
 export {
-  populateEnvironmentVariables
+  populateEnvironmentVariables,
 };

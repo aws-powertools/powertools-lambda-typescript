@@ -44,6 +44,14 @@ To send us a pull request, please follow these steps:
 GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
+#### Local documentation
+
+You might find useful to run both the documentation website and the API reference locally while contributing:
+
+* **API reference**: :construction:
+* **Docs website**:
+	- `docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
+  - `docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
 
 ### Conventions
 

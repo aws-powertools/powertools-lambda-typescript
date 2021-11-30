@@ -8,6 +8,7 @@ nav:
   - Homepage: index.md
   - Changelog: changelog.md
   - Roadmap: https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1" target="_blank
+  - API reference: api/" target="_blank
   - Core utilities:
       - core/tracer.md
       - core/logger.md
@@ -15,6 +16,8 @@ nav:
 
 theme:
   name: material
+  font:
+    text: Ubuntu
   palette:
     - scheme: default
       primary: deep purple
@@ -45,7 +48,7 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.details
   - pymdownx.snippets:
-      base_path: '.'
+      base_path: "."
       check_paths: true
   - meta
   - toc:
@@ -54,6 +57,7 @@ markdown_extensions:
   - attr_list
   - pymdownx.emoji
   - pymdownx.inlinehilite
+  - attr_list
 
 copyright: Copyright &copy; 2021 Amazon Web Services
 

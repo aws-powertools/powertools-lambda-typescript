@@ -95,7 +95,6 @@ class Metrics implements MetricsInterface {
         if (captureColdStartMetric) this.captureColdStart();
         try {
           const result = originalMethod?.apply(this, [event, context, callback]);
-
           return result;
         } finally {
           this.purgeStoredMetrics();

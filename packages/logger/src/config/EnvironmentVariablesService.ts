@@ -41,7 +41,7 @@ class EnvironmentVariablesService extends ConfigService {
 
   public getSampleRateValue(): number | undefined {
     const value = this.get(this.sampleRateValueVariable);
-    
+
     return (value && value.length > 0) ? Number(value) : undefined;
   }
 

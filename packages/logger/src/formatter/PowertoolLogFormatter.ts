@@ -1,6 +1,6 @@
 import { LogFormatter } from '.';
-import { PowertoolLog } from '../../types/formats';
 import { UnformattedAttributes } from '../../types';
+import { PowertoolLog } from '../../types/formats';
 
 class PowertoolLogFormatter extends LogFormatter {
 
@@ -16,12 +16,12 @@ class PowertoolLogFormatter extends LogFormatter {
       sampling_rate: attributes.sampleRateValue,
       service: attributes.serviceName,
       timestamp: this.formatTimestamp(attributes.timestamp),
-      xray_trace_id: attributes.xRayTraceId
+      xray_trace_id: attributes.xRayTraceId,
     };
   }
-  
+
 }
 
 export {
-  PowertoolLogFormatter
+  PowertoolLogFormatter,
 };

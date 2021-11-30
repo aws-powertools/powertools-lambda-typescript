@@ -1,0 +1,25 @@
+import { populateEnvironmentVariables } from '../tests/helpers';
+
+// Populate runtime
+populateEnvironmentVariables();
+// Additional runtime variables
+process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
+
+import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
+import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
+import { LambdaInterface } from './utils/lambda/LambdaInterface';
+import { Callback, Context } from 'aws-lambda/handler';
+import { Metrics } from '../src';
+
+const metrics = new Metrics();
+
+class Lambda implements LambdaInterface {
+
+  @metrics.logMetrics({ raiseOnEmptyMetrics: true })
+  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+
+  }
+
+}
+
+new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));

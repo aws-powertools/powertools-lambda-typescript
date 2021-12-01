@@ -27,7 +27,7 @@ This project separates core utilities that will be available in other runtimes v
 
 | Utility | Description
 | ------------------------------------------------- | ---------------------------------------------------------------------------------
-[Tracing](./core/tracer.md) | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
+[Tracer](./core/tracer.md) | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
 [Logger](./core/logger.md) | Structured logging made easier, and decorator to enrich structured logging with key Lambda context details
 [Metrics](./core/metrics.md) | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
 

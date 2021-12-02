@@ -428,6 +428,31 @@ describe('Class: Metrics', () => {
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
       expect(loggedData[1]._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
     });
+
+    test('Using decorator should log even if exception thrown', async () => {
+      const metrics = new Metrics({ namespace: 'test' });
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
+          metrics.addMetric('test_name_1', MetricUnits.Count, 1);
+          throw new Error('Test Error');
+        }
+      }
+
+      try {
+        await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      } catch (error) {
+        // DO NOTHING
+      }
+
+      expect(console.log).toBeCalledTimes(1);
+    });
   });
 
   describe('Feature: Custom Config Service', () => {

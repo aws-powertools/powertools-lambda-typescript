@@ -52,8 +52,10 @@ You might find useful to run both the documentation website and the API referenc
 
 * **API reference**: :construction:
 * **Docs website**:
-	- `docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
-  - `docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
+
+You can build and start a local docs website by running these two commands.
+  - `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
+  - `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
 
 ### Conventions
 

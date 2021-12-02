@@ -17,9 +17,7 @@
     "lerna-prepublishOnly": "lerna exec -- npm test && lerna exec -- npm run lint",
     "lerna-preversion": "lerna exec -- npm run lint",
     "lerna-version": "lerna exec -- npm run format && git add -A src",
-    "postversion": "git push && git push --tags",
-    "docs-buildDockerImage": "docker build -t squidfunk/mkdocs-material ./docs/",
-    "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material"
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -40,8 +38,8 @@
     "@types/jest": "^27.0.0",
     "@types/lodash": "^4.14.168",
     "@types/node": "^16.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.11.1",
-    "@typescript-eslint/parser": "^4.11.1",
+    "@typescript-eslint/eslint-plugin": "^5.5.0",
+    "@typescript-eslint/parser": "^5.5.0",
     "eslint": "^8.1.0",
     "husky": "^7.0.1",
     "jest": "^27.0.4",

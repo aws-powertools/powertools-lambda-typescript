@@ -17,6 +17,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
 
 /**
  * Metrics class
+ * 
  */
 class Metrics implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;

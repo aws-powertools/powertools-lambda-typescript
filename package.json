@@ -1,6 +1,6 @@
 {
   "name": "aws-lambda-powertools-typescript",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "TODO: Fill this README out!",
   "main": "lib/index.js",
   "types": "lib/",
@@ -13,6 +13,7 @@
     "lerna-test": "lerna exec -- npm run test",
     "lerna-package": "lerna exec -- npm run package",
     "lerna-build": "lerna exec -- tsc",
+    "release": "standard-version",
     "lerna-lint": "lerna exec -- eslint \"./{src,tests}/**/*.ts ./src/*.ts\"",
     "lerna-format": "lerna exec -- eslint --fix \"./{src,tests}/**/*.ts ./src/*.ts\"",
     "lerna-prepare": "lerna exec -- npm run build",
@@ -46,6 +47,7 @@
     "husky": "^7.0.1",
     "jest": "^27.0.4",
     "lerna": "^4.0.0",
+    "standard-version": "^9.3.2",
     "ts-jest": "^27.0.3",
     "typescript": "^4.1.3"
   },

@@ -1,5 +1,5 @@
 {
-  "name": "@aws-lambda-powertools/logger",
+  "name": "@flochaz/logger",
   "version": "0.1.0-beta.1",
   "description": "The logging package for the AWS Lambda powertools (TypeScript) library",
   "author": {

@@ -1,5 +1,5 @@
 {
-  "name": "@aws-lambda-powertools/metrics",
+  "name": "@flochaz/metrics",
   "version": "0.1.0-beta.4",
   "description": "The metrics package for the AWS Lambda powertools (TypeScript) library",
   "author": {

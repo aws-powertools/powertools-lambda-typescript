@@ -1,5 +1,5 @@
 {
-  "name": "@aws-lambda-powertools/logger",
+  "name": "@flochaz/logger",
   "version": "0.0.0",
   "lockfileVersion": 1,
   "requires": true,

@@ -256,7 +256,7 @@ describe('Class: PowertoolLogFormatter', () => {
         const formattedTypeError = formatter.formatError(<Error>error);
         expect(formattedTypeError).toEqual({
           location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
-          message: 'Cannot read property \'foo\' of null',
+          message: expect.stringMatching(/Cannot read propert/),
           name: 'TypeError',
           stack: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/),
         });

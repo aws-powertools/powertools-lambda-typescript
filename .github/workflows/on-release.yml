@@ -43,7 +43,7 @@ jobs:
           npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --yes
         fi
 
-        npx lerna publish from-git --yes
+        npx lerna publish from-git --no-verify-access --yes
   
   slack:
     name: Publish to slack channel

@@ -25,20 +25,20 @@ class Tracer implements ClassThatTraces {
     this.provider = new ProviderService();
   }
 
-  public captureAWS<T>(aws: T): void | T {
-    if (this.tracingEnabled === false) return;
+  public captureAWS<T>(aws: T): T {
+    if (this.tracingEnabled === false) return aws;
 
     return this.provider.captureAWS(aws);
   }
 
-  public captureAWSClient<T>(service: T): void | T {
-    if (this.tracingEnabled === false) return;
+  public captureAWSClient<T>(service: T): T {
+    if (this.tracingEnabled === false) return service;
 
     return this.provider.captureAWSClient(service);
   }
 
-  public captureAWSv3Client<T>(service: T): void | T {
-    if (this.tracingEnabled === false) return;
+  public captureAWSv3Client<T>(service: T): T {
+    if (this.tracingEnabled === false) return service;
 
     return this.provider.captureAWSv3Client(service);
   }
@@ -59,7 +59,7 @@ class Tracer implements ClassThatTraces {
             result = await originalMethod?.apply(this, [ event, context, callback ]);
             this.addResponseAsMetadata(result, context.functionName);
           } catch (error) {
-            this.addErrorAsMetadata(error);
+            this.addErrorAsMetadata(error as Error);
             // TODO: should this error be thrown?? If thrown we get a ERR_UNHANDLED_REJECTION. If not aren't we are basically catching a Customer error?
             // throw error;
           } finally {
@@ -85,8 +85,13 @@ class Tracer implements ClassThatTraces {
     };
   }
   
-  public getSegment(): Segment | Subsegment | undefined {
-    return this.provider.getSegment();
+  public getSegment(): Segment | Subsegment {
+    const segment = this.provider.getSegment();
+    if (segment === undefined) {
+      throw new Error('Failed to get the current sub/segment from the context.');
+    }
+
+    return segment;
   }
 
   public static isColdStart(): boolean {
@@ -131,7 +136,9 @@ class Tracer implements ClassThatTraces {
 
   private addErrorAsMetadata(error: Error): void {
     const subsegment = this.getSegment();
-    if (this.captureError === false || subsegment === undefined || this.tracingEnabled === false) {
+    if (this.captureError === false) {
+      subsegment.addErrorFlag();
+
       return;
     }
 

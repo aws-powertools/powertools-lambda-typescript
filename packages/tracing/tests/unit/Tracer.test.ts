@@ -52,6 +52,19 @@ describe('Class: Tracer', () => {
       }).toThrow('Failed to get the current sub/segment from the context.');
 
     });
+
+    test('when called outside of a namespace or without parent segment, it throws an error', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => undefined);
+    
+      // Act / Assess
+      expect(() => {
+        tracer.getSegment();
+      }).toThrow('Failed to get the current sub/segment from the context.');
+
+    });
     
     test('when called within a namespace, it returns the parent segment', () => {
 
@@ -426,6 +439,7 @@ describe('Class: Tracer', () => {
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
+      const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
       class Lambda implements LambdaInterface {
 
         @tracer.captureLambdaHanlder()
@@ -446,6 +460,7 @@ describe('Class: Tracer', () => {
         name: '## foo-bar-function',
       }));
       expect('cause' in newSubsegment).toBe(false);
+      expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledTimes(0);
 
       delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
@@ -494,7 +509,7 @@ describe('Class: Tracer', () => {
       const newSubsegmentSecondInvocation: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(() => newSubsegmentFirstInvocation)
-        .mockImplementationOnce(() => newSubsegmentSecondInvocation);
+        .mockImplementation(() => newSubsegmentSecondInvocation);
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       const addAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
@@ -668,5 +683,4 @@ describe('Class: Tracer', () => {
     });
 
   });
-
 });

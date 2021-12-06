@@ -43,10 +43,8 @@ jobs:
           npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --yes
         fi
 
-        npm whoami
-        npm config ls -l
         npx lerna publish from-git --yes
-
+  
   slack:
     name: Publish to slack channel
     needs: 

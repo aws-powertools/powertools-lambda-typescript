@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
 jobs:
   publish:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -25,10 +25,10 @@ jobs:
         npm ci
         npm run lerna-ci
 
-    # - name: "Setup npm"
-    #   run: |
-    #     npm set @xcanchal:registry=https://npm.pkg.github.com/xcanchal
-    #     npm set "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}"
+    - name: "Setup npm"
+      run: |
+        npm set @flochaz:registry=https://registry.npmjs.org/flochaz
+        npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
 
     - name: "Version and publish"
       env:
@@ -43,7 +43,7 @@ jobs:
           npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --yes
         fi
 
-        # npx lerna publish from-git --yes
+        npx lerna publish from-git --yes
 
   slack:
     name: Publish to slack channel

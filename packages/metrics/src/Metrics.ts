@@ -15,6 +15,9 @@ const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 9;
 const DEFAULT_NAMESPACE = 'default_namespace';
 
+/**
+ * Metrics class
+ */
 class Metrics implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;
   private defaultDimensions: Dimensions = {};

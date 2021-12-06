@@ -2,10 +2,10 @@ name: release
 on:
   push:
     branches:
-      - main
+      - chore/releaseFlow
   workflow_dispatch: {}
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,6 +18,12 @@ jobs:
         run: npm run lerna-lint
       - name: Run tests
         run: npm run lerna-test
+      - name: Package
+        run: npx lerna run package
+      - name: Check for new commits
+        id: git_remote
+        run: echo ::set-output name=latest_commit::"$(git ls-remote origin -h ${{
+          github.ref }} | cut -f1)"
   release_github:
     name: Publish to GitHub Releases
     needs: release
@@ -30,7 +36,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: dist
-          path: dist
+          path: packages/**/dist/js
       - name: Release
         run: errout=$(mktemp); gh release create $(cat dist/releasetag.txt) -R
           $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt)
@@ -44,8 +50,7 @@ jobs:
   slack:
     name: Publish to slack channel
     needs: 
-      - release_npm
-      - release_pypi
+      - release_github
     runs-on: ubuntu-latest
     steps:
       - name: publish latest release

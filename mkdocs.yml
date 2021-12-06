@@ -1,0 +1,76 @@
+site_name: Lambda Powertools Typescript
+site_description: AWS Lambda Powertools for Typescript
+site_author: Amazon Web Services
+repo_url: https://github.com/awslabs/aws-lambda-powertools-typescript
+edit_uri: edit/develop/docs
+
+nav:
+  - Homepage: index.md
+  - Changelog: changelog.md
+  - Roadmap: https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1" target="_blank
+  - API reference: api/" target="_blank
+  - Core utilities:
+      - core/tracer.md
+      - core/logger.md
+      - core/metrics.md
+
+theme:
+  name: material
+  font:
+    text: Ubuntu
+  palette:
+    - scheme: default
+      primary: deep purple
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+  icon:
+    repo: fontawesome/brands/github
+  logo: media/aws-logo-light.svg
+  favicon: media/aws-logo-light.svg
+  custom_dir: docs/overrides
+
+markdown_extensions:
+  - admonition
+  - pymdownx.tabbed
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.snippets:
+      base_path: "."
+      check_paths: true
+  - meta
+  - toc:
+      permalink: true
+      toc_depth: 4
+  - attr_list
+  - pymdownx.emoji
+  - pymdownx.inlinehilite
+  - attr_list
+
+copyright: Copyright &copy; 2021 Amazon Web Services
+
+plugins:
+  - git-revision-date
+  - search
+
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  - javascript/aws-amplify.min.js
+  - javascript/extra.js
+
+extra:
+  version:
+    provider: mike

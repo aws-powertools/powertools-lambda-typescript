@@ -30,3 +30,6 @@ coverage
 
 # Visual Studio Code
 .vscode
+
+# Python virtual environments (for running mkdocs locally)
+venv

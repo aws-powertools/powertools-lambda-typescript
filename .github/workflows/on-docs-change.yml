@@ -1,9 +1,9 @@
-name: Auto publish docs "main" branch to version "develop"
+name: Auto publish docs to version "develop"
 
 on:
   push:
     branches:
-      - feat/github-workflow-publish-doc
+      - main
     paths:
       - 'docs/**'
       - 'CHANGELOG.md'

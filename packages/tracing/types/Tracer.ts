@@ -21,10 +21,10 @@ type TracerOptions = {
   customConfigService?: ConfigServiceInterface
 };
 
+// TODO: Revisit type below, it doesn't allow to define async handlers.
 type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
 
-// TODO: Revisit these types that don't work.
-type MethodDecorator = <T>(target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T> | void;
+type MethodDecorator = (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<any>) => any;
 
 export {
   ClassThatTraces,

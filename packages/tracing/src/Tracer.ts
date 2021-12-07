@@ -44,19 +44,19 @@ class Tracer implements ClassThatTraces {
   }
 
   public captureLambdaHanlder(): HandlerMethodDecorator {
-    return (_target, _propertyKey, descriptor) => {
+    return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
 
-      descriptor.value = (event, context, callback) => {
+      descriptor.value = (event, context, callback): any => {
         if (this.tracingEnabled === false) {
-          return originalMethod?.apply(this, [ event, context, callback ]);
+          return originalMethod?.apply(target, [ event, context, callback ]);
         }
 
-        this.provider.captureAsyncFunc(`## ${context.functionName}`, async subsegment => {
+        return this.provider.captureAsyncFunc(`## ${context.functionName}`, async subsegment => {
           this.annotateColdStart();
           let result;
           try {
-            result = await originalMethod?.apply(this, [ event, context, callback ]);
+            result = await originalMethod?.apply(target, [ event, context, callback ]);
             this.addResponseAsMetadata(result, context.functionName);
           } catch (error) {
             this.addErrorAsMetadata(error as Error);
@@ -69,19 +69,38 @@ class Tracer implements ClassThatTraces {
           return result;
         });
       };
+
+      return descriptor;
     };
   }
 
-  // TODO: Finish implementation, type definition is wrong & it doesn't work. Need help.
   public captureMethod(): MethodDecorator {
-    return (_target, _propertyKey, descriptor) => {
+    return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
-      console.debug(originalMethod);
-      /* descriptor.value = () => {
+      
+      descriptor.value = (...args: unknown[]) => {
         if (this.tracingEnabled === false) {
-          return originalMethod?.apply(this, [ ]);
+          return originalMethod?.apply(target, [...args]);
         }
-      }; */
+
+        return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
+          let result;
+          try {
+            result = await originalMethod?.apply(this, [...args]);
+            this.addResponseAsMetadata(result, originalMethod.name);
+          } catch (error) {
+            this.addErrorAsMetadata(error as Error);
+            // TODO: should this error be thrown?? If thrown we get a ERR_UNHANDLED_REJECTION. If not aren't we are basically catching a Customer error?
+            // throw error;
+          } finally {
+            subsegment?.close();
+          }
+          
+          return result;
+        });
+      };
+
+      return descriptor;
     };
   }
   

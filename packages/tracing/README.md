@@ -98,7 +98,7 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
                                     "ColdStart": true
                                 },
                                 "metadata": {
-                                    "my-service": {
+                                    "hello-world": {
                                         "foo-bar-function response": {
                                             "foo": "bar"
                                         }
@@ -217,7 +217,7 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 ```
 </details>
 
-### Add annotation on subsegment
+### Adding annotation on subsegment
 
 ```typescript
 // Environment variables set for the Lambda
@@ -290,7 +290,7 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
                                     "my-annotation": "my-value"
                                 },
                                 "metadata": {
-                                    "my-service": {
+                                    "hello-world": {
                                         "foo-bar-function response": {
                                             "foo": "bar"
                                         }
@@ -309,7 +309,7 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 ```
 </details>
 
-### Add metadata to subsegment
+### Adding metadata to subsegment
 
 ```typescript
 // Environment variables set for the Lambda
@@ -382,7 +382,7 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
                                     "ColdStart": true
                                 },
                                 "metadata": {
-                                    "my-service": {
+                                    "hello-world": {
                                         "foo-bar-function response": {
                                             "foo": "bar"
                                         },
@@ -405,7 +405,110 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 ```
 </details>
 
-### Capture AWS SDK clients
+### Capturing other methods
+
+```typescript
+// Environment variables set for the Lambda
+process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
+
+const tracer = new Tracer();
+
+class Lambda implements LambdaInterface {
+  @tracer.captureMethod()
+  public async dummyMethod(some: string): Promise<string> {
+      // Some async logic
+      return new Promise((resolve, _reject) => setTimeout(() => resolve(some), 3000));
+  }
+
+  public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
+    const result = await this.dummyMethod('bar');
+    
+    return new Promise((resolve, _reject) => resolve({
+      foo: result
+    } as unknown as TResult));
+  }
+
+}
+
+new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+
+```
+
+<details>
+ <summary>Click to expand and see the trace</summary>
+
+```json
+{
+    "Id": "abcdef123456abcdef123456abcdef123456",
+    "Duration": 0.656,
+    "LimitExceeded": false,
+    "Segments": [
+        {
+            "Id": "1234567890abcdef0",
+            "Document": {
+                "id": "1234567890abcdef0",
+                "name": "foo-bar-function",
+                "start_time": 1638792392.764036,
+                "trace_id": "abcdef123456abcdef123456abcdef123456",
+                "end_time": 1638792392.957155,
+                "parent_id": "abcdef01234567890",
+                "aws": {
+                    "account_id": "111122223333",
+                    "function_arn": "arn:aws:lambda:us-east-1:111122223333:function:foo-bar-function",
+                    "resource_names": [
+                        "foo-bar-function"
+                    ]
+                },
+                "origin": "AWS::Lambda::Function",
+                "subsegments": [
+                    // Initialization subsegment (if any)
+                    {
+                        "id": "4be0933d48d5b52f",
+                        "name": "Invocation",
+                        "start_time": 1638792392.7642102,
+                        "end_time": 1638792392.9384046,
+                        "aws": {
+                            "function_arn": "arn:aws:lambda:eu-west-1:111122223333:function:foo-bar-function"
+                        },
+                        "subsegments": [
+                            {
+                                "id": "aae0c94a16d66abd",
+                                "name": "## foo-bar-function",
+                                "start_time": 1638792392.766,
+                                "end_time": 1638792392.836,
+                                "annotations": {
+                                    "ColdStart": true
+                                },
+                                "subsegments": [
+                                    {
+                                        "id": "b1ac78c231577476",
+                                        "name": "### dummyMethod",
+                                        "start_time": 1638845552.777,
+                                        "end_time": 1638845553.459,
+                                        "metadata": {
+                                            "hello-world": {
+                                                "dummyMethod response": "bar"
+                                            }
+                                            // Other metadata (if any)
+                                        }
+                                        // Annotations (if any)
+                                        // Other subsegments (if any)
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    // Overhead subsegment (if any)
+                ]
+            }
+        }
+    ]
+}
+
+```
+</details>
+
+### Capturing AWS SDK clients
 
 **AWS SDK JS v3**
 ```typescript
@@ -639,7 +742,7 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 ```
 </details>
 
-### Disable capture response body
+### Disabling capture response body
 
 ```typescript
 // Environment variables set for the Lambda
@@ -713,7 +816,7 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 ```
 </details>
 
-### Disable capture error
+### Disabling capture error
 
 ```typescript
 // Environment variables set for the Lambda

@@ -18,9 +18,9 @@
     "lerna-preversion": "lerna exec -- npm run lint",
     "lerna-version": "lerna exec -- npm run format && git add -A src",
     "postversion": "git push && git push --tags",
-    "docs-buildDockerImage": "docker build -t squidfunk/mkdocs-material ./docs/",
-    "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material",
-    "docs-build": "npm run docs-buildDockerImage && docker run --rm -v ${PWD}:/docs squidfunk/mkdocs-material build"
+    "docs-buildDockerImage": "docker build -t powertool-typescript/docs ./docs/",
+    "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertool-typescript/docs",
+    "docs-build": "npm run docs-buildDockerImage && docker run --rm -v ${PWD}:/docs powertool-typescript/docs build"
   },
   "repository": {
     "type": "git",

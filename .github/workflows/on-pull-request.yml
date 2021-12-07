@@ -37,7 +37,7 @@ jobs:
       - name: Report Coverage
         #Dependabot user will only have read-only perms, so don't try to report coverage
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: romeovs/lcov-reporter-action@v0.2.21
+        uses: romeovs/lcov-reporter-action@v0.3.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./coverage/lcov.info

@@ -33,7 +33,6 @@ jobs:
         run: |
           VERSION="develop"
           ALIAS="stage"
-          echo "PWD = ${PWD}"
           mkdocs build
           mike deploy --push --update-aliases "$VERSION" "$ALIAS"
       - name: Deploy all docs

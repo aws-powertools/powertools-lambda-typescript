@@ -28,7 +28,8 @@ jobs:
           node-version: '14.18'
       - name: Install dependencies
         run: |
-          pip install --upgrade pip poetry mike
+          pip install --upgrade pip 
+          pip install mike==1.1.2
           npm install
       - name: Setup doc deploy
         run: |
@@ -39,7 +40,7 @@ jobs:
           VERSION="develop"
           ALIAS="stage"
           npm run docs-build
-          poetry run mike deploy --push --update-aliases "$VERSION" "$ALIAS"
+          mike deploy --push --update-aliases "$VERSION" "$ALIAS"
       - name: Deploy all docs
         uses: peaceiris/actions-gh-pages@v3
         with:

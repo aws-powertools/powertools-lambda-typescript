@@ -20,7 +20,7 @@
     "postversion": "git push && git push --tags",
     "docs-buildDockerImage": "docker build -t squidfunk/mkdocs-material ./docs/",
     "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material",
-    "docs-build": "docker run --rm -it -v ${PWD}:/docs squidfunk/mkdocs-material build"
+    "docs-build": "docker run --rm -v ${PWD}:/docs squidfunk/mkdocs-material build"
   },
   "repository": {
     "type": "git",

@@ -18,6 +18,7 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
+    "package": "mkdir -p dist/js && npm pack && mv *.tgz dist/js/",
     "example:hello-world": "ts-node examples/hello-world.ts",
     "example:capture-lambda-handler-response-decorator": "ts-node examples/capture-lambda-handler-response-decorator.ts",
     "example:capture-lambda-handler-error-decorator": "ts-node examples/capture-lambda-handler-error-decorator.ts",

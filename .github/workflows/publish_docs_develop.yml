@@ -36,13 +36,13 @@ jobs:
         run: |
           npm run docs-build
           poetry run mike deploy --push --update-aliases ${develop} ${stage}
-      # - name: Deploy all docs
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./site
-      #     keep_files: true
-      #     destination_dir: develop/api 
+      - name: Deploy all docs
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          keep_files: true
+          destination_dir: develop/api 
       # - name: Create redirect from old docs
       #   run: |
       #     git checkout gh-pages

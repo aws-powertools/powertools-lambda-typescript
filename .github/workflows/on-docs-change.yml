@@ -9,7 +9,7 @@ on:
       - 'CHANGELOG.md'
       - 'mkdocs.yml'
       - 'package.json'
-      - '.github/workflows/on_docs_change.yml'
+      - '.github/workflows/on-docs-change.yml'
 
 jobs:
   docs:

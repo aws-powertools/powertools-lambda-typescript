@@ -1,4 +1,4 @@
-name: Publish new doc on gh-pages branch
+name: Auto publish docs "main" branch to version "develop"
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
       - 'docs/**'
       - 'CHANGELOG.md'
       - 'mkdocs.yml'
-      - 'package.json'
       - '.github/workflows/on-docs-change.yml'
 
 jobs:

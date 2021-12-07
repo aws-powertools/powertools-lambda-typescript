@@ -8,7 +8,7 @@ on:
       - 'docs/**'
       - 'CHANGELOG.md'
       - 'mkdocs.yml'
-      - '.github/workflow/**'
+      - '.github/workflows/**'
 
 jobs:
   docs:

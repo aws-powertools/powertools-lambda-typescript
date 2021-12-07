@@ -35,13 +35,19 @@ jobs:
         run: |
           git config --global user.name Docs deploy
           git config --global user.email docs@dummy.bot.com
+      - name: Build mkdocs image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docs
+          push: false
+          tags: awslabs/aws-lambda-powertool-typescript-docs:build
       - name: Build docs website and (TODO) API reference 
         run: |
           VERSION="develop"
           ALIAS="stage"
           echo "PWD = ${PWD}"
-          docker build -t lambda-powertool-typescript-docs:build ./docs/
-          docker run --rm -v ${PWD}:/docs lambda-powertool-typescript-docs:random build
+          docker build -t  ./docs/
+          docker run --rm -v ${PWD}:/docs awslabs/aws-lambda-powertool-typescript-docs:build build
           mike deploy --push --update-aliases "$VERSION" "$ALIAS"
       - name: Deploy all docs
         uses: peaceiris/actions-gh-pages@v3

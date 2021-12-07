@@ -46,7 +46,6 @@ jobs:
           VERSION="develop"
           ALIAS="stage"
           echo "PWD = ${PWD}"
-          docker build -t  ./docs/
           docker run --rm -v ${PWD}:/docs awslabs/aws-lambda-powertool-typescript-docs:build build
           mike deploy --push --update-aliases "$VERSION" "$ALIAS"
       - name: Deploy all docs

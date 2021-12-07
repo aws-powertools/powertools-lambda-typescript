@@ -40,8 +40,8 @@ jobs:
           VERSION="develop"
           ALIAS="stage"
           echo "PWD = ${PWD}"
-          docker build -t lambda-powertool-typescript-docs ./docs/
-          docker run --rm -v ${PWD}:/docs lambda-powertool-typescript-docs build
+          docker build -t lambda-powertool-typescript-docs:build ./docs/
+          docker run --rm -v ${PWD}:/docs lambda-powertool-typescript-docs:build build
           mike deploy --push --update-aliases "$VERSION" "$ALIAS"
       - name: Deploy all docs
         uses: peaceiris/actions-gh-pages@v3

@@ -1,4 +1,4 @@
-name: Publish doc (develop branch)
+name: Publish doc
 
 on:
   push:
@@ -35,8 +35,10 @@ jobs:
           git config --global user.email docs@dummy.bot.com
       - name: Build docs website and (TODO) API reference 
         run: |
+          VERSION="develop"
+          ALIAS="stage"
           npm run docs-build
-          poetry run mike deploy --push --update-aliases ${develop} ${stage}
+          poetry run mike deploy --push --update-aliases "$VERSION" "$ALIAS"
       - name: Deploy all docs
         uses: peaceiris/actions-gh-pages@v3
         with:

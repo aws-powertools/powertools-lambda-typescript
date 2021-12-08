@@ -1,9 +1,10 @@
-import { ClassThatTraces, HandlerMethodDecorator, TracerOptions, MethodDecorator } from '../types';
+import { TracerInterface } from '.';
+import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from '../types';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
-class Tracer implements ClassThatTraces {
+class Tracer implements TracerInterface {
   public static coldStart: boolean = true;
 
   public provider: ProviderServiceInterface;

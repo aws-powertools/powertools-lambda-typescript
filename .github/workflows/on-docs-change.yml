@@ -38,11 +38,11 @@ jobs:
           ALIAS="stage"
           mkdocs build
           mike deploy --push --update-aliases "$VERSION" "$ALIAS"
-      - name: Build API site 
+      - name: Build API documentation site 
         run: |
           rm -rf api
           npm run docs-generateApiDoc
-      - name: Deploy API docs
+      - name: Deploy API documentation site (copy to "gh-pages" branch inside the version folder)
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

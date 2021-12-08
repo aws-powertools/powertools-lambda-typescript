@@ -4,4 +4,5 @@ module.exports = {
   name: 'aws-lambda-powertools-typescript',
   excludePrivate: true,
   entryPointStrategy: 'packages',
+  readme: "./README.md",
 };

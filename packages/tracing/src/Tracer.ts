@@ -1,3 +1,4 @@
+import { Handler } from 'aws-lambda';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from '../types';
@@ -48,14 +49,14 @@ class Tracer implements TracerInterface {
     return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
 
-      descriptor.value = (event, context, callback): any => {
+      descriptor.value = ((event, context, callback) => {
         if (this.tracingEnabled === false) {
           return originalMethod?.apply(target, [ event, context, callback ]);
         }
 
         return this.provider.captureAsyncFunc(`## ${context.functionName}`, async subsegment => {
           this.annotateColdStart();
-          let result;
+          let result: unknown;
           try {
             result = await originalMethod?.apply(target, [ event, context, callback ]);
             this.addResponseAsMetadata(result, context.functionName);
@@ -69,7 +70,7 @@ class Tracer implements TracerInterface {
           
           return result;
         });
-      };
+      }) as Handler;
 
       return descriptor;
     };

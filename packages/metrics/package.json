@@ -31,8 +31,8 @@
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/metrics#readme",
   "license": "MIT-0",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./lib/packages/metrics/src/index.js",
+  "types": "./lib/packages/metrics/src/index.d.ts",
   "typedocMain": "src/index.ts",
   "devDependencies": {
     "@commitlint/cli": "^15.0.0",

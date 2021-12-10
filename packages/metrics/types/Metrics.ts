@@ -1,6 +1,5 @@
 import { ConfigServiceInterface } from '../src/config';
 import { Handler } from 'aws-lambda';
-import { LambdaInterface } from '../examples/utils/lambda';
 import { MetricUnit } from './MetricUnit';
 
 type Dimensions = {[key: string]: string};
@@ -26,8 +25,27 @@ type EmfOutput = {
   }
 };
 
-type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
+type HandlerMethodDecorator = (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
 
+/**
+ * Options for the metrics decorator
+ * 
+ * Usage:
+ * 
+ * ```typescript
+ * 
+ * const metricsOptions: DecoratorOptions = {
+ *   raiseOnEmptyMetrics: true,
+ *   defaultDimensions: {'environment': 'dev'},
+ *   captureColdStartMetric: true,
+ * }
+ * 
+ * @metrics.logMetric(metricsOptions)
+ * public handler(event: any, context: any, callback: any) {
+ *   // ...
+ * }
+ * ```
+ */
 type DecoratorOptions = {
   raiseOnEmptyMetrics?: boolean
   defaultDimensions?: Dimensions

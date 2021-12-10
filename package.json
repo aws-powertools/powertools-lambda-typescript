@@ -62,6 +62,7 @@
     "node": ">=10"
   },
   "dependencies": {
-    "hosted-git-info": "^4.0.2"
+    "hosted-git-info": "^4.0.2",
+    "typedoc-plugin-missing-exports": "^0.22.6"
   }
 }

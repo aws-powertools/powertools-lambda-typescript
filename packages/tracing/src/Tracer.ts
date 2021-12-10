@@ -1,6 +1,6 @@
 import { TracerInterface } from '.';
-import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from '../types';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from '../types';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 

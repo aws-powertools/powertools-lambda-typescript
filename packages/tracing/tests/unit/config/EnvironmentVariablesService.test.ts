@@ -147,23 +147,6 @@ describe('Class: EnvironmentVariablesService', () => {
 
   });
 
-  describe('Method: getChaliceLocal', () => {
-
-    test('It returns the value of the environment variable AWS_CHALICE_CLI_MODE', () => {
-
-      // Prepare
-      process.env.AWS_CHALICE_CLI_MODE = 'true';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getChaliceLocal();
-
-      // Assess
-      expect(value).toEqual('true');
-    });
-
-  });
-
   describe('Method: getAwsExecutionEnv', () => {
 
     test('It returns the value of the environment variable AWS_EXECUTION_ENV', () => {

@@ -2,9 +2,8 @@ import { ConfigService } from '.';
 
 class EnvironmentVariablesService extends ConfigService {
 
-  // Reserved environment variables
+  // Environment variables
   private awsExecutionEnv = 'AWS_EXECUTION_ENV';
-  private chaliceLocalVariable = 'AWS_CHALICE_CLI_MODE';
   private samLocalVariable = 'AWS_SAM_LOCAL';
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
 
@@ -14,10 +13,6 @@ class EnvironmentVariablesService extends ConfigService {
 
   public getAwsExecutionEnv(): string {
     return this.get(this.awsExecutionEnv);
-  }
-
-  public getChaliceLocal(): string {
-    return this.get(this.chaliceLocalVariable);
   }
 
   public getSamLocal(): string {

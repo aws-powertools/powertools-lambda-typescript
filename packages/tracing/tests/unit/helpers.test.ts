@@ -157,20 +157,6 @@ describe('Helper: createLogger function', () => {
 
     });
 
-    test('when AWS_CHALICE_CLI_MODE environment variable is set, tracing is disabled', () => {
-      // Prepare
-      process.env.AWS_CHALICE_CLI_MODE = 'true';
-
-      // Act
-      const tracer = createTracer();
-
-      // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: false,
-      }));
-
-    });
-
     test('when AWS_EXECUTION_ENV environment variable is set, tracing is enabled', () => {
       // Prepare
       process.env.AWS_EXECUTION_ENV = 'nodejs14.x';

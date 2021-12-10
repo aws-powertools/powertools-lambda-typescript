@@ -186,10 +186,6 @@ class Tracer implements TracerInterface {
   private getEnvVarsService(): EnvironmentVariablesService {
     return <EnvironmentVariablesService> this.envVarsService;
   }
-
-  private isChaliceCli(): boolean {
-    return this.getEnvVarsService()?.getChaliceLocal() !== '';
-  }
   
   private isLambdaExecutionEnv(): boolean {
     return this.getEnvVarsService()?.getAwsExecutionEnv() !== '';
@@ -303,7 +299,7 @@ class Tracer implements TracerInterface {
       return;
     }
 
-    if (this.isLambdaSamCli() || this.isChaliceCli() || this.isLambdaExecutionEnv() === false) {
+    if (this.isLambdaSamCli() || this.isLambdaExecutionEnv() === false) {
       this.tracingEnabled = false;
     }
   }

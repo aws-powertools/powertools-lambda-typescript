@@ -567,6 +567,7 @@ describe('Class: Tracer', () => {
 
         public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
           const result = await this.dummyMethod('foo bar');
+          
           return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
         }
 
@@ -600,6 +601,7 @@ describe('Class: Tracer', () => {
 
         public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
           const result = await this.dummyMethod('foo bar');
+          
           return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
         }
 
@@ -643,6 +645,7 @@ describe('Class: Tracer', () => {
 
         public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
           const result = await this.dummyMethod('foo bar');
+          
           return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
         }
 

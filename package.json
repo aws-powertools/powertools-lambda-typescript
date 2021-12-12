@@ -4,6 +4,9 @@
   "description": "TODO: Fill this README out!",
   "main": "lib/index.js",
   "types": "lib/",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "init-environment": "husky install",
     "test": "npm run lerna-test",
@@ -19,7 +22,9 @@
     "lerna-version": "lerna exec -- npm run format && git add -A src",
     "postversion": "git push && git push --tags",
     "docs-buildDockerImage": "docker build -t powertool-typescript/docs ./docs/",
-    "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertool-typescript/docs"
+    "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertool-typescript/docs",
+    "docs-generateApiDoc": "typedoc .",
+    "docs-runLocalApiDoc": "npx live-server api"
   },
   "repository": {
     "type": "git",
@@ -47,6 +52,7 @@
     "jest": "^27.0.4",
     "lerna": "^4.0.0",
     "ts-jest": "^27.0.3",
+    "typedoc": "0.22.10",
     "typescript": "^4.1.3"
   },
   "files": [

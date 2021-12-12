@@ -55,10 +55,10 @@ Setting | Description | Environment variable | Constructor parameter
 
 [//]:# (START EDITING FROM HERE DOWN)
 
+=== "index.ts"
 
-
-    ```typescript hl_lines="4 6"
-    import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+    ```typescript hl_lines="5 7"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
 
     // Sets metric namespace and service via env var
@@ -76,8 +76,8 @@ You can create metrics using `addMetric`, and you can create dimensions for all 
 === "Metrics"
 
     ```typescript hl_lines="8"
-    import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda'; // npm install @types/aws-lambda 
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context } from 'aws-lambda'; 
 
 
     const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
@@ -89,8 +89,8 @@ You can create metrics using `addMetric`, and you can create dimensions for all 
 === "Metrics with custom dimensions"
 
     ```typescript hl_lines="8-9"
-        import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda'; // npm install @types/aws-lambda 
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context } from 'aws-lambda';
 
 
     const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
@@ -119,8 +119,8 @@ If you'd like to remove them at some point, you can use `clearDefaultDimensions`
 === "setDefaultDimensions method"
 
     ```typescript hl_lines="5"
-    import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda'; // npm install @types/aws-lambda 
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context } from 'aws-lambda'; 
 
     const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
     metrics.setDefaultDimensions({ 'environment': 'prod', 'anotherDimension': 'whatever' });
@@ -133,8 +133,8 @@ If you'd like to remove them at some point, you can use `clearDefaultDimensions`
 === "with logMetrics decorator"
 
     ```typescript hl_lines="6 11"
-    import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
-    import { Context, Callback } from 'aws-lambda'; // npm install @types/aws-lambda 
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context, Callback } from 'aws-lambda'; 
 
 
     const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
@@ -158,21 +158,22 @@ As you finish adding all your metrics, you need to serialize and flush them to s
  You can do that automatically with the `logMetrics` decorator.
 
 !!! warning
-    decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you are more into functional programming check the next section instead. See the [official doc](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
+    Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you are more into functional programming check the next section instead. See the [official doc](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
 
 This decorator also **validates**, **serializes**, and **flushes** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
 
 ```typescript hl_lines="8"
-import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
-import { Context, Callback } from 'aws-lambda'; // npm install @types/aws-lambda 
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+import { Context, Callback } from 'aws-lambda'; 
 
 const metrics = new Metrics({namespace:"ExampleApplication", service:"ExampleService"});
 
 export class MyFunction {
 
-@metrics.logMetrics()
-public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('BookingConfirmation', MetricUnits.Count, 1);
+    @metrics.logMetrics()
+    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        metrics.addMetric('BookingConfirmation', MetricUnits.Count, 1);
+    }
 }
 ```
 
@@ -218,8 +219,8 @@ If you prefer not to use `logMetrics` decorator because you might want to encaps
 !!! warning
     Metrics, dimensions and namespace validation still applies.
 
-```typescript hl_lines="9"
-import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+```typescript hl_lines="8"
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics();
 
@@ -236,7 +237,7 @@ const lambdaHandler: Handler = async () => {
 If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics` to the **logMetrics** decorator:
 
 ```typescript hl_lines="7"
-import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics();
 
@@ -254,7 +255,7 @@ class Lambda implements LambdaInterface {
 You can optionally capture cold start metrics with `logMetrics` decorator via `captureColdStartMetric` param.
 
 ```typescript hl_lines="7"
-import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics();
 
@@ -284,7 +285,7 @@ You can add high-cardinality data as part of your Metrics log with `addMetadata`
     **This will not be available during metrics visualization** - Use **dimensions** for this purpose
 
 ```typescript hl_lines="9"
-import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics();
 

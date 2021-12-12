@@ -55,47 +55,50 @@ Setting | Description | Environment variable | Constructor parameter
 
 [//]:# (START EDITING FROM HERE DOWN)
 
-=== "app.py"
+=== "index.ts"
 
-    ```python hl_lines="4 6"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
+    ```typescript hl_lines="5 7"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
-    metrics = Metrics() # Sets metric namespace and service via env var
-    # OR
-    metrics = Metrics(namespace="ServerlessAirline", service="orders") # Sets metric namespace, and service as a metric dimension
+
+    // Sets metric namespace and service via env var
+    const metrics = new Metrics();
+    // OR Sets metric namespace, and service as a metrics parameters
+    const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
     ```
 
 You can initialize Metrics anywhere in your code - It'll keep track of your aggregate metrics in memory.
 
 ### Creating metrics
 
-You can create metrics using `add_metric`, and you can create dimensions for all your aggregate metrics using `add_dimension` method.
+You can create metrics using `addMetric`, and you can create dimensions for all your aggregate metrics using `addDimension` method.
 
 === "Metrics"
 
-    ```python hl_lines="8"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
+    ```typescript hl_lines="8"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context } from 'aws-lambda'; 
 
-    metrics = Metrics(namespace="ExampleApplication", service="booking")
 
-    @metrics.log_metrics
-    def lambda_handler(evt, ctx):
-        metrics.add_metric(name="SuccessfulBooking", unit=MetricUnit.Count, value=1)
+    const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
+
+    export const handler = async (event: any, context: Context) => {
+        metrics.addMetric('SuccessfulBooking', MetricUnits.Count, 1);
+    }
     ```
 === "Metrics with custom dimensions"
 
-    ```python hl_lines="8-9"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
+    ```typescript hl_lines="8-9"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context } from 'aws-lambda';
 
-    metrics = Metrics(namespace="ExampleApplication", service="booking")
 
-    @metrics.log_metrics
-    def lambda_handler(evt, ctx):
-        metrics.add_dimension(name="environment", value="prod")
-        metrics.add_metric(name="SuccessfulBooking", unit=MetricUnit.Count, value=1)
+    const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
+
+    export const handler = async (event: any, context: Context) => {
+        metrics.addDimension('environment', 'prod');
+        metrics.addMetric('SuccessfulBooking', MetricUnits.Count, 1);
+    }
     ```
 
 !!! tip "Autocomplete Metric Units"
@@ -105,59 +108,75 @@ You can create metrics using `add_metric`, and you can create dimensions for all
     CloudWatch EMF supports a max of 100 metrics per batch. Metrics utility will flush all metrics when adding the 100th metric. Subsequent metrics, e.g. 101th, will be aggregated into a new EMF object, for your convenience.
 
 !!! warning "Do not create metrics or dimensions outside the handler"
-    Metrics or dimensions added in the global scope will only be added during cold start. Disregard if you that's the intended behaviour.
+    Metrics or dimensions added in the global scope will only be added during cold start. Disregard if that's the intended behaviour.
 
 ### Adding default dimensions
 
-You can use either `set_default_dimensions` method or `default_permissions` parameter in `log_metrics` decorator to persist dimensions across Lambda invocations.
+You can use `setDefaultDimensions` method to persist dimensions across Lambda invocations.
 
-If you'd like to remove them at some point, you can use `clear_default_dimensions` method.
+If you'd like to remove them at some point, you can use `clearDefaultDimensions` method.
 
-=== "set_default_dimensions method"
+=== "setDefaultDimensions method"
 
-    ```python hl_lines="5"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
+    ```typescript hl_lines="5"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context } from 'aws-lambda'; 
 
-    metrics = Metrics(namespace="ExampleApplication", service="booking")
-    metrics.set_default_dimensions(environment="prod", another="one")
+    const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
+    metrics.setDefaultDimensions({ 'environment': 'prod', 'anotherDimension': 'whatever' });
 
-    @metrics.log_metrics
-    def lambda_handler(evt, ctx):
-        metrics.add_metric(name="SuccessfulBooking", unit=MetricUnit.Count, value=1)
+    export const handler = async (event: any, context: Context) => {
+        metrics.addMetric('SuccessfulBooking', MetricUnits.Count, 1);
+    }
     ```
-=== "with log_metrics decorator"
 
-    ```python hl_lines="5 7"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
+=== "with logMetrics decorator"
 
-    metrics = Metrics(namespace="ExampleApplication", service="booking")
-    DEFAULT_DIMENSIONS = {"environment": "prod", "another": "one"}
+    ```typescript hl_lines="6 11"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context, Callback } from 'aws-lambda'; 
 
-    @metrics.log_metrics(default_dimensions=DEFAULT_DIMENSIONS)
-    def lambda_handler(evt, ctx):
-        metrics.add_metric(name="SuccessfulBooking", unit=MetricUnit.Count, value=1)
+
+    const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
+    const DEFAULT_DIMENSIONS = {"environment": "prod", "another": "one"};
+
+
+    export class MyFunction {
+
+    @metrics.logMetrics({defaultDimensions: DEFAULT_DIMENSIONS})
+    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        metrics.addMetric('SuccessfulBooking', MetricUnits.Count, 1);
+    }
     ```
 
 ### Flushing metrics
 
-As you finish adding all your metrics, you need to serialize and flush them to standard output. You can do that automatically with the `log_metrics` decorator.
+As you finish adding all your metrics, you need to serialize and flush them to standard output.
+
+#### Using Decorator
+
+ You can do that automatically with the `logMetrics` decorator.
+
+!!! warning
+    Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you are more into functional programming check the next section instead. See the [official doc](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
 
 This decorator also **validates**, **serializes**, and **flushes** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
 
-=== "app.py"
+```typescript hl_lines="8"
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+import { Context, Callback } from 'aws-lambda'; 
 
-    ```python hl_lines="6"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
+const metrics = new Metrics({namespace:"ExampleApplication", service:"ExampleService"});
 
-    metrics = Metrics(namespace="ExampleApplication", service="ExampleService")
+export class MyFunction {
 
-    @metrics.log_metrics
-    def lambda_handler(evt, ctx):
-        metrics.add_metric(name="BookingConfirmation", unit=MetricUnit.Count, value=1)
-    ```
+    @metrics.logMetrics()
+    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        metrics.addMetric('BookingConfirmation', MetricUnits.Count, 1);
+    }
+}
+```
+
 === "Example CloudWatch Logs excerpt"
 
     ```json hl_lines="2 7 10 15 22"
@@ -193,59 +212,59 @@ This decorator also **validates**, **serializes**, and **flushes** all your metr
     * Namespace is set, and no more than one
     * Metric units must be [supported by CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
 
+#### Manually
+
+If you prefer not to use `logMetrics` decorator because you might want to encapsulate additional logic or avoid having to go for classes encapsulation when doing so, you can manually flush with `purgeStoredMetrics` and clear metrics as follows:
+
+!!! warning
+    Metrics, dimensions and namespace validation still applies.
+
+```typescript hl_lines="8"
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+
+const metrics = new Metrics();
+
+const lambdaHandler: Handler = async () => {
+    metrics.addMetric('test-metric', MetricUnits.Count, 10);
+    const metricsObject = metrics.serializeMetrics();
+    metrics.purgeStoredMetrics();
+    console.log(JSON.stringify(metricsObject));
+};
+```
+
 #### Raising SchemaValidationError on empty metrics
 
-If you want to ensure that at least one metric is emitted, you can pass `raise_on_empty_metrics` to the **log_metrics** decorator:
+If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics` to the **logMetrics** decorator:
 
-=== "app.py"
+```typescript hl_lines="7"
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
-    ```python hl_lines="5"
-    from aws_lambda_powertools.metrics import Metrics
+const metrics = new Metrics();
 
-    metrics = Metrics()
+class Lambda implements LambdaInterface {
 
-    @metrics.log_metrics(raise_on_empty_metrics=True)
-    def lambda_handler(evt, ctx):
-        ...
-    ```
-
-!!! tip "Suppressing warning messages on empty metrics"
-    If you expect your function to execute without publishing metrics every time, you can suppress the warning with **`warnings.filterwarnings("ignore", "No metrics to publish*")`**.
-
-#### Nesting multiple middlewares
-
-When using multiple middlewares, use `log_metrics` as your **last decorator** wrapping all subsequent ones to prevent early Metric validations when code hasn't been run yet.
-
-=== "nested_middlewares.py"
-
-    ```python hl_lines="7-8"
-    from aws_lambda_powertools import Metrics, Tracer
-    from aws_lambda_powertools.metrics import MetricUnit
-
-    tracer = Tracer(service="booking")
-    metrics = Metrics(namespace="ExampleApplication", service="booking")
-
-    @metrics.log_metrics
-    @tracer.capture_lambda_handler
-    def lambda_handler(evt, ctx):
-        metrics.add_metric(name="BookingConfirmation", unit=MetricUnit.Count, value=1)
-    ```
+    @metrics.logMetrics({raiseOnEmptyMetrics: true})
+    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        // This will throw an error unless at least one metric is added
+    }
+}
+```
 
 ### Capturing cold start metric
 
-You can optionally capture cold start metrics with `log_metrics` decorator via `capture_cold_start_metric` param.
+You can optionally capture cold start metrics with `logMetrics` decorator via `captureColdStartMetric` param.
 
-=== "app.py"
+```typescript hl_lines="7"
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
-    ```python hl_lines="5"
-    from aws_lambda_powertools import Metrics
+const metrics = new Metrics();
 
-    metrics = Metrics(service="ExampleService")
+class Lambda implements LambdaInterface {
 
-    @metrics.log_metrics(capture_cold_start_metric=True)
-    def lambda_handler(evt, ctx):
+    @metrics.logMetrics({ captureColdStartMetric: true })
+    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
         ...
-    ```
+```
 
 If it's a cold start invocation, this feature will:
 
@@ -254,30 +273,31 @@ If it's a cold start invocation, this feature will:
 
 This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
 
-!!! info "We do not emit 0 as a value for ColdStart metric for cost reasons. [Let us know](https://github.com/awslabs/aws-lambda-powertools-python/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd prefer a flag to override it"
+!!! info "We do not emit 0 as a value for ColdStart metric for cost reasons. [Let us know](https://github.com/awslabs/aws-lambda-powertools-typecsript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd prefer a flag to override it"
 
 ## Advanced
 
 ### Adding metadata
 
-You can add high-cardinality data as part of your Metrics log with `add_metadata` method. This is useful when you want to search highly contextual information along with your metrics in your logs.
+You can add high-cardinality data as part of your Metrics log with `addMetadata` method. This is useful when you want to search highly contextual information along with your metrics in your logs.
 
 !!! info
     **This will not be available during metrics visualization** - Use **dimensions** for this purpose
 
-=== "app.py"
+```typescript hl_lines="9"
+import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
-    ```python hl_lines="9"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
+const metrics = new Metrics();
 
-    metrics = Metrics(namespace="ExampleApplication", service="booking")
+class Lambda implements LambdaInterface {
 
-    @metrics.log_metrics
-    def lambda_handler(evt, ctx):
-        metrics.add_metric(name="SuccessfulBooking", unit=MetricUnit.Count, value=1)
-        metrics.add_metadata(key="booking_id", value="booking_uuid")
-    ```
+    @metrics.logMetrics()
+    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        metrics.addMetadata('booking_id', 'booking_uuid');
+        //Your Logic
+    }
+}
+```
 
 === "Example CloudWatch Logs excerpt"
 
@@ -310,161 +330,25 @@ You can add high-cardinality data as part of your Metrics log with `add_metadata
 
 ### Single metric with a different dimension
 
-CloudWatch EMF uses the same dimensions across all your metrics. Use `single_metric` if you have a metric that should have different dimensions.
+CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetric` if you have a metric that should have different dimensions.
 
 !!! info
     Generally, this would be an edge case since you [pay for unique metric](https://aws.amazon.com/cloudwatch/pricing). Keep the following formula in mind:
 
     **unique metric = (metric_name + dimension_name + dimension_value)**
 
-=== "single_metric.py"
-
-    ```python hl_lines="6-7"
-    from aws_lambda_powertools import single_metric
-    from aws_lambda_powertools.metrics import MetricUnit
 
 
-    def lambda_handler(evt, ctx):
-        with single_metric(name="ColdStart", unit=MetricUnit.Count, value=1, namespace="ExampleApplication") as metric:
-            metric.add_dimension(name="function_context", value="$LATEST")
-            ...
+    ```typescript hl_lines="6-7"
+    class Lambda implements LambdaInterface {
+
+        @metrics.logMetrics()
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+            const singleMetric = metrics.singleMetric();
+            metrics.addDimension('OuterDimension', 'true');
+            singleMetric.addDimension('InnerDimension', 'true');
+            metrics.addMetric('test-metric', MetricUnits.Count, 10);
+            singleMetric.addMetric('single-metric', MetricUnits.Percent, 50);
+        }
+    }
     ```
-
-### Flushing metrics manually
-
-If you prefer not to use `log_metrics` because you might want to encapsulate additional logic when doing so, you can manually flush and clear metrics as follows:
-
-!!! warning
-    Metrics, dimensions and namespace validation still applies.
-
-=== "manual_metric_serialization.py"
-
-    ```python hl_lines="9-11"
-    import json
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
-
-    metrics = Metrics(namespace="ExampleApplication", service="booking")
-
-    def lambda_handler(evt, ctx):
-        metrics.add_metric(name="ColdStart", unit=MetricUnit.Count, value=1)
-        your_metrics_object = metrics.serialize_metric_set()
-        metrics.clear_metrics()
-        print(json.dumps(your_metrics_object))
-    ```
-
-## Testing your code
-
-### Environment variables
-
-Use `POWERTOOLS_METRICS_NAMESPACE` and `POWERTOOLS_SERVICE_NAME` env vars when unit testing your code to ensure metric namespace and dimension objects are created, and your code doesn't fail validation.
-
-=== "shell"
-
-    ```bash
-    POWERTOOLS_SERVICE_NAME="Example" POWERTOOLS_METRICS_NAMESPACE="Application" python -m pytest
-    ```
-
-If you prefer setting environment variable for specific tests, and are using Pytest, you can use [monkeypatch](https://docs.pytest.org/en/latest/monkeypatch.html) fixture:
-
-=== "pytest_env_var.py"
-
-    ```python
-    def test_namespace_env_var(monkeypatch):
-        # Set POWERTOOLS_METRICS_NAMESPACE before initializating Metrics
-        monkeypatch.setenv("POWERTOOLS_METRICS_NAMESPACE", namespace)
-
-        metrics = Metrics()
-        ...
-    ```
-
-> Ignore this, if you are explicitly setting namespace/default dimension via `namespace` and `service` parameters: `metrics = Metrics(namespace=ApplicationName, service=ServiceName)`
-
-### Clearing metrics
-
-`Metrics` keep metrics in memory across multiple instances. If you need to test this behaviour, you can use the following Pytest fixture to ensure metrics are reset incl. cold start:
-
-=== "pytest_metrics_reset_fixture.py"
-
-    ```python
-    @pytest.fixture(scope="function", autouse=True)
-    def reset_metric_set():
-        # Clear out every metric data prior to every test
-        metrics = Metrics()
-        metrics.clear_metrics()
-        metrics_global.is_cold_start = True  # ensure each test has cold start
-        metrics.clear_default_dimensions()   # remove persisted default dimensions, if any
-        yield
-    ```
-
-### Functional testing
-
-As metrics are logged to standard output, you can read standard output and assert whether metrics are present. Here's an example using `pytest` with `capsys` built-in fixture:
-
-=== "Assert single EMF blob with pytest.py"
-
-    ```python hl_lines="6 9-10 23-34"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
-
-    import json
-
-    def test_log_metrics(capsys):
-        # GIVEN Metrics is initialized
-        metrics = Metrics(namespace="ServerlessAirline")
-
-        # WHEN we utilize log_metrics to serialize
-        # and flush all metrics at the end of a function execution
-        @metrics.log_metrics
-        def lambda_handler(evt, ctx):
-            metrics.add_metric(name="SuccessfulBooking", unit=MetricUnit.Count, value=1)
-            metrics.add_dimension(name="environment", value="prod")
-
-        lambda_handler({}, {})
-        log = capsys.readouterr().out.strip()  # remove any extra line
-        metrics_output = json.loads(log)  # deserialize JSON str
-
-        # THEN we should have no exceptions
-        # and a valid EMF object should be flushed correctly
-        assert "SuccessfulBooking" in log  # basic string assertion in JSON str
-        assert "SuccessfulBooking" in metrics_output["_aws"]["CloudWatchMetrics"][0]["Metrics"][0]["Name"]
-    ```
-
-=== "Assert multiple EMF blobs with pytest"
-
-    ```python hl_lines="8-9 11 21-23 25 29-30 32"
-    from aws_lambda_powertools import Metrics
-    from aws_lambda_powertools.metrics import MetricUnit
-
-    from collections import namedtuple
-
-    import json
-
-    def capture_metrics_output_multiple_emf_objects(capsys):
-        return [json.loads(line.strip()) for line in capsys.readouterr().out.split("\n") if line]
-
-    def test_log_metrics(capsys):
-        # GIVEN Metrics is initialized
-        metrics = Metrics(namespace="ServerlessAirline")
-
-        # WHEN log_metrics is used with capture_cold_start_metric
-        @metrics.log_metrics(capture_cold_start_metric=True)
-        def lambda_handler(evt, ctx):
-            metrics.add_metric(name="SuccessfulBooking", unit=MetricUnit.Count, value=1)
-            metrics.add_dimension(name="environment", value="prod")
-
-        # log_metrics uses function_name property from context to add as a dimension for cold start metric
-        LambdaContext = namedtuple("LambdaContext", "function_name")
-        lambda_handler({}, LambdaContext("example_fn")
-
-        cold_start_blob, custom_metrics_blob = capture_metrics_output_multiple_emf_objects(capsys)
-
-        # THEN ColdStart metric and function_name dimension should be logged
-        # in a separate EMF blob than the application metrics
-        assert cold_start_blob["ColdStart"] == [1.0]
-        assert cold_start_blob["function_name"] == "example_fn"
-
-        assert "SuccessfulBooking" in custom_metrics_blob  # as per previous example
-    ```
-
-!!! tip "For more elaborate assertions and comparisons, check out [our functional testing for Metrics utility](https://github.com/awslabs/aws-lambda-powertools-python/blob/develop/tests/functional/test_metrics.py)"

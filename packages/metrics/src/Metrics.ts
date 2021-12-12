@@ -36,15 +36,17 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *   * flush buffered metrics
  *   * raise on empty metrics
  *
- * Usage Example:
+ * @example
  *
  * ```typescript
- * import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+ * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
  * import { Callback, Context } from 'aws-lambda';
  *
  * const metrics = new Metrics({namespace:"MyService", service:"withDecorator"});
  *
  * export class MyFunctionWithDecorator {
+ *
+ *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@metrics* instead of `@metrics.logMetrics`
  *
  *   @metrics.logMetrics({captureColdStartMetric: true, raiseOnEmptyMetrics: true, })
  *   public handler(_event: any, _context: Context, _callback: Callback<any>): void | Promise<any> {
@@ -62,10 +64,10 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *
  * If you are used to functional programming style, you can leverage the different methods provided to create and publish metrics.
  *
- * Usage Example:
+ * @example
  *
  * ```typescript
- * import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+ * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
  *
  * const metrics = new Metrics({namespace: "MyService", service: "MyFunction"});
  *
@@ -74,6 +76,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
  *   metrics.purgeStoredMetrics();
  * };
+ * ```
  */
 class Metrics implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;
@@ -127,7 +130,7 @@ class Metrics implements MetricsInterface {
   }
 
   /**
-   * A high-cardinality data  part of your Metrics log. This is useful when you want to search highly contextual information along with your metrics in your logs.
+   * A high-cardinality data part of your Metrics log. This is useful when you want to search highly contextual information along with your metrics in your logs.
    * @param key
    * @param value
    */
@@ -164,10 +167,11 @@ class Metrics implements MetricsInterface {
 
   /**
    * A decorator automating coldstart capture, raise on empty metrics and publishing metrics on handler exit.
-   * Usage example:
+   *
+   * @example
    *
    * ```typescript
-   * import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Callback, Context } from 'aws-lambda';
    *
    * const metrics = new Metrics({namespace:"CDKExample", service:"withDecorator"});
@@ -210,12 +214,12 @@ class Metrics implements MetricsInterface {
   }
 
   /**
-   * Synchroneous function to actually publish your metrics. (Not needed if using logMetrics decorator).
+   * Synchronous function to actually publish your metrics. (Not needed if using logMetrics decorator).
    *
-   * Usage example:
+   * @example
    *
    * ```typescript
-   * import {Metrics, MetricUnits} from '@aws-lambda-powertools/metrics';
+   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    *
    * const metrics = new Metrics({namespace: "CDKExample", service: "MyFunction"}); // Sets metric namespace, and service as a metric dimension
    *
@@ -292,7 +296,7 @@ class Metrics implements MetricsInterface {
    *
    * You don't need to call purgeStoredMetrics() after calling addMetric for a singleMetrics, they will be flushed directly.
    *
-   * Usage example:
+   * @example
    *
    * ```typescript
    * const singleMetric = metrics.singleMetric();

@@ -33,6 +33,8 @@ class Logger implements ClassThatLogs {
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
 
+  private static readonly defaultServiceName: string = 'service_undefined';
+
   private customConfigService?: ConfigServiceInterface;
 
   private envVarsService?: EnvironmentVariablesService;
@@ -307,7 +309,7 @@ class Logger implements ClassThatLogs {
           this.getEnvVarsService().getCurrentEnvironment(),
         sampleRateValue: this.getSampleRateValue(),
         serviceName:
-          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
+          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || Logger.defaultServiceName,
         xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
       },
       persistentLogAttributes,

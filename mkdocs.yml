@@ -1,5 +1,5 @@
-site_name: Lambda Powertools Typescript
-site_description: AWS Lambda Powertools for Typescript
+site_name: Lambda Powertools TypeScript
+site_description: AWS Lambda Powertools for TypeScript
 site_author: Amazon Web Services
 repo_url: https://github.com/awslabs/aws-lambda-powertools-typescript
 edit_uri: edit/develop/docs

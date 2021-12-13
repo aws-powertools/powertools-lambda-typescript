@@ -9,7 +9,9 @@ import { context as dummyContext } from '../../../tests/resources/contexts/hello
 import { Handler } from 'aws-lambda';
 import { Logger } from '../src';
 
-const parentLogger = new Logger();
+const parentLogger = new Logger({
+  logLevel: 'INFO'
+});
 
 const childLogger = parentLogger.createChild({
   logLevel: 'ERROR'

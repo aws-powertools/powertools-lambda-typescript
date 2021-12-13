@@ -16,9 +16,9 @@ describe('Helper: createLogger function', () => {
     process.env = ENVIRONMENT_VARIABLES;
   });
 
-  describe('LoggerOptions parameters', () => {
+  describe('LoggerOptions constructor parameters', () => {
 
-    test('when no logger options are passed, returns a Logger instance with the correct proprieties', () => {
+    test('when no constructor parameters are set, returns a Logger instance with the options set in the environment variables', () => {
 
       // Prepare
       const loggerOptions = undefined;
@@ -46,7 +46,7 @@ describe('Helper: createLogger function', () => {
 
     });
 
-    test('when all logger options are passed, returns a Logger instance with the correct proprieties', () => {
+    test('when no parameters are set, returns a Logger instance with the correct proprieties', () => {
 
       // Prepare
       const loggerOptions = {
@@ -86,6 +86,42 @@ describe('Helper: createLogger function', () => {
           environment: 'prod',
           sampleRateValue: 1,
           serviceName: 'my-lambda-service',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
+      });
+
+    });
+
+    test('when no constructor parameters and no environment variables are set, returns a Logger instance with the default proprieties', () => {
+
+      // Prepare
+      const loggerOptions = undefined;
+      delete process.env.POWERTOOLS_SERVICE_NAME;
+      delete process.env.LOG_LEVEL;
+
+      // Act
+      const logger = createLogger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual({
+        customConfigService: undefined,
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'INFO',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-central-1',
+          environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'service_undefined',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });

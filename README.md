@@ -1,4 +1,4 @@
-# AWS Lambda Powertools (Typescript)
+# AWS Lambda Powertools (TypeScript)
 ![Tests](https://github.com/awslabs/aws-lambda-powertools-typescript/workflows/Test/badge.svg?branch=main)
 ## Testing
 The repo uses JEST tests, these can be run using

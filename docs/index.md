@@ -1,6 +1,6 @@
 ---
 title: Homepage
-description: AWS Lambda Powertools Typescript
+description: AWS Lambda Powertools TypeScript
 ---
 
 A suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.

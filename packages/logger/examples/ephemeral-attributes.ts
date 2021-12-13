@@ -18,19 +18,16 @@ const lambdaHandler: Handler = async () => {
     foo: 'bar'
   };
 
-  // Pass a variable
-  logger.info('This is a log with an extra variable', { data: { myImportantVariable } });
+  // Pass additional keys and values in single log items
 
-  // Pass a variable
-  const myOtherImportantVariable = {
-    biz: 'baz'
-  };
+  // As second parameter
+  logger.info('This is a log with an extra variable', { data: myImportantVariable });
 
-  // Pass multiple variables
-  logger.info('This is a log with 2 extra variables', {
-    data: { myOtherImportantVariable },
-    correlationIds: { myCustomCorrelationId: 'foo-bar-baz' }
-  });
+  // You can also pass multiple parameters
+  logger.info('This is a log with 2 extra variables',
+    { data: myImportantVariable },
+    { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' }}
+  );
 
   return {
     foo: 'bar'

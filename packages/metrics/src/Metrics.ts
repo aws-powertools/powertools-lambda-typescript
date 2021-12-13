@@ -31,7 +31,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *
  * ### Object oriented way with decorator
  *
- * If you are used to typescript Class usage to encapsulate your lambda handler you can leverage the [@metrics.logMetrics()](./_aws_lambda_powertools_metrics.Metrics.html#logMetrics) decorator to automatically:
+ * If you are used to typescript Class usage to encapsulate your Lambda handler you can leverage the [@metrics.logMetrics()](./_aws_lambda_powertools_metrics.Metrics.html#logMetrics) decorator to automatically:
  *   * create cold start metric
  *   * flush buffered metrics
  *   * raise on empty metrics

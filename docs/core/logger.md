@@ -62,7 +62,7 @@ Key | Example | Note
 **message**: `string` | `Query performed to DynamoDB` | A descriptive, human-readable representation of this log item
 **sampling_rate**: `float` |  `0.1` | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%
 **service**: `string` | `shopping-cart-api` | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`
-**timestamp**: `str` | `2011-10-05T14:48:00.000Z` | Timestamp string in simplified extended ISO format (ISO 8601)
+**timestamp**: `string` | `2011-10-05T14:48:00.000Z` | Timestamp string in simplified extended ISO format (ISO 8601)
 **xray_trace_id**: `str` | `1-5759e988-bd862e3fe1be46a994272793` | When [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"}, it shows X-Ray Trace ID
 **error**: `obj` | `{ name: "Error", location: "/my-project/handler.ts:18", message: "Unexpected error #1", stack: "[stacktrace]"}` | Optional - An object containing information about the Error passed to the logger
 

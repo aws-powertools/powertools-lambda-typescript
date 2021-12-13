@@ -60,9 +60,9 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * export const handler = handlerClass.handler
  * ```
  *
- * ### Functional programming way
+ * ### Standard function
  *
- * If you are used to functional programming style, you can leverage the different methods provided to create and publish metrics.
+ * If you are used to classic JavaScript functions, you can leverage the different methods provided to create and publish metrics.
  *
  * @example
  *

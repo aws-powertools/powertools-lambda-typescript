@@ -8,8 +8,8 @@ Logger provides an opinionated logger with output structured as JSON.
 ## Key features
 
 * Capture key fields from Lambda context, cold start and structures logging output as JSON
-* Log Lambda event when instructed (disabled by default)
-* Log sampling enables DEBUG log level for a percentage of requests (disabled by default)
+* Log Lambda context when instructed (disabled by default)
+* Log sampling prints all logs for a percentage of invocations (disabled by default)
 * Append additional keys to structured log at any point in time
 
 ## Getting started
@@ -18,102 +18,111 @@ Logger requires two settings:
 
 Setting | Description | Environment variable | Constructor parameter
 ------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
-**Logging level** | Sets how verbose Logger should be (INFO, by default) |  `LOG_LEVEL` | `level`
-**Service** | Sets **service** key that will be present across all log statements | `POWERTOOLS_SERVICE_NAME` | `service`
+**Logging level** | Sets how verbose Logger should be (INFO, by default) |  `LOG_LEVEL` | `logLevel`
+**Service name** | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME` | `serviceName`
 
 > Example using AWS Serverless Application Model (SAM)
 
+=== "handler.ts"
+
+    ```typescript hl_lines="1 4"
+    import { Logger } from "@aws-lambda-powertools/logger";
+
+    // Logger parameters fetched from the environment variables (see template.yaml tab)
+    const logger = new Logger();
+
+    // You can also pass the parameters in the constructor
+    // const logger = new Logger({
+    //     logLevel: "INFO",
+    //     serviceName: "shopping-cart-api"
+    // });
+    ```
+
 === "template.yaml"
 
-	```yaml hl_lines="9 10"
+    ```yaml hl_lines="8 9"
     Resources:
-      HelloWorldFunction:
+      ShoppingCartApiFunction:
         Type: AWS::Serverless::Function
         Properties:
           Runtime: nodejs14.x
           Environment:
             Variables:
               LOG_LEVEL: INFO
-              POWERTOOLS_SERVICE_NAME: example
-	```
-=== "index.ts"
-	```typescript hl_lines="3 4"
-	import { Logger } from '@aws-lambda-powertools/logger';
-	
-	const logger = Logger(); // Sets service via env var
-	// OR const logger = Logger({ service: 'example' });
-	```
+              POWERTOOLS_SERVICE_NAME: shopping-cart-api
+    ```
 
 ### Standard structured keys
 
-Your Logger will include the following keys to your structured logging:
+Your Logger will include the following keys to your structured logging (default log formatter):
 
 Key | Example | Note
 ------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------
-**level**: `str` | `INFO` | Logging level
-**location**: `str` | `collect.handler:1` | Source code location where statement was executed
-**message**: `Any` | `Collecting payment` | Unserializable JSON values are casted as `str`
-**timestamp**: `str` | `2021-05-03 10:20:19,650+0200` | Timestamp with milliseconds, by default uses local timezone
-**service**: `str` | `payment` | Service name defined, by default `service_undefined`
-**xray_trace_id**: `str` | `1-5759e988-bd862e3fe1be46a994272793` | When [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"}, it shows X-Ray Trace ID
-**sampling_rate**: `float` |  `0.1` | When enabled, it shows sampling rate in percentage e.g. 10%
-**exception_name**: `str` | `ValueError` | When `logger.exception` is used and there is an exception
-**exception**: `str` | `Traceback (most recent call last)..` | When `logger.exception` is used and there is an exception
-
-[//]:# (START EDITING FROM HERE DOWN)
+**level**: `string` | `INFO` | Logging level set for the Lambda function"s invocation
+**message**: `string` | `Query performed to DynamoDB` | A descriptive, human-readable representation of this log item
+**sampling_rate**: `float` |  `0.1` | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%
+**service**: `string` | `shopping-cart-api` | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`
+**timestamp**: `string` | `2011-10-05T14:48:00.000Z` | Timestamp string in simplified extended ISO format (ISO 8601)
+**xray_trace_id**: `string` | `1-5759e988-bd862e3fe1be46a994272793` | When [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"}, it shows X-Ray Trace ID
+**error**: `Object` | `{ name: "Error", location: "/my-project/handler.ts:18", message: "Unexpected error #1", stack: "[stacktrace]"}` | Optional - An object containing information about the Error passed to the logger
 
 ### Capturing Lambda context info
 
-You can enrich your structured logs with key Lambda context information via `inject_lambda_context`.
+You can enrich your structured logs with key Lambda context information in multiple ways.
 
-=== "collect.py"
+Method 1, using a class decorator:
 
-    ```python hl_lines="5"
-    from aws_lambda_powertools import Logger
+=== "handler.ts"
 
-    logger = Logger(service="payment")
+    ```typescript hl_lines="7"
+    import { Logger } from "@aws-lambda-powertools/logger";
 
-    @logger.inject_lambda_context
-    def handler(event, context):
-        logger.info("Collecting payment")
+    const logger = new Logger();
+    
+    class Lambda {
+    
+        @logger.injectLambdaContext()
+        public handler() {
+            logger.info("This is an INFO log with some context");
+        }
 
-        # You can log entire objects too
-        logger.info({
-        "operation": "collect_payment",
-        "charge_id": event['charge_id']
-        })
-        ...
+    }
     ```
+
+Method 2, calling the `addContext` method:
+
+=== "handler.ts"
+
+    ```typescript hl_lines="7"
+    import { Logger } from "@aws-lambda-powertools/logger";
+
+    const logger = new Logger();
+
+    const lambdaHandler = async () => {
+    
+        logger.addContext(context);
+        
+        logger.info("This is an INFO log with some context");
+
+    };
+    ```
+
+In both case, the printed log will look like this:
 
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="7-11 16-19"
+    ```json hl_lines="2-6"
     {
-        "level": "INFO",
-        "location": "collect.handler:7",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
         "cold_start": true,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
-    },
-    {
+        "function_arn": "arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1",
+        "function_memory_size": 128,
+        "function_request_id": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+        "function_name": "shopping-cart-api-lambda-prod-eu-central-1",
         "level": "INFO",
-        "location": "collect.handler:10",
-        "message": {
-            "operation": "collect_payment",
-            "charge_id": "ch_AZFlk2345C0"
-        },
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "cold_start": true,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
+        "message": "This is an INFO log with some context",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T21:21:08.921Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
 
@@ -122,998 +131,451 @@ When used, this will include the following keys:
 Key | Example
 ------------------------------------------------- | ---------------------------------------------------------------------------------
 **cold_start**: `bool` | `false`
-**function_name** `str` | `example-powertools-HelloWorldFunction-1P1Z6B39FLU73`
+**function_name** `string` | `shopping-cart-api-lambda-prod-eu-central-1`
 **function_memory_size**: `int` | `128`
-**function_arn**: `str` | `arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73`
-**function_request_id**: `str` | `899856cb-83d1-40d7-8611-9e78f15f32f4`
+**function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
+**function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e8deadbeef`
 
-#### Logging incoming event
+### Appending persistent additional log keys and values
 
-When debugging in non-production environments, you can instruct Logger to log the incoming event with `log_event` param or via `POWERTOOLS_LOGGER_LOG_EVENT` env var.
+You can append additional persistent keys and values in the logs generated during a Lambda invocation using either mechanism:
 
-!!! warning
-    This is disabled by default to prevent sensitive info being logged.
+* Via the Logger's `appendKeys` method, for all log items generated after calling this method
+* Passing them in the Logger's constructor
 
-=== "log_handler_event.py"
+=== "handler.ts"
 
-    ```python hl_lines="5"
-    from aws_lambda_powertools import Logger
+    ```typescript hl_lines="5-12 16-23"
+    import { Logger } from "@aws-lambda-powertools/logger";
 
-    logger = Logger(service="payment")
+    // Add persistent log keys via the constructor
+    const logger = new Logger({
+        persistentLogAttributes: { 
+            aws_account_id: "123456789012",
+            aws_region: "eu-central-1",
+            logger: {
+                name: "@aws-lambda-powertools/logger",
+                version: "0.0.1",
+            }
+        }
+    });
 
-    @logger.inject_lambda_context(log_event=True)
-    def handler(event, context):
-       ...
+    // OR add persistent log keys to an existing Logger instance with the appendKeys method:
+    // logger.appendKeys({
+    //     aws_account_id: "123456789012",
+    //     aws_region: "eu-central-1",
+    //     logger: {
+    //         name: "@aws-lambda-powertools/logger",
+    //         version: "0.0.1",
+    //     }
+    // });    
+
+    const lambdaHandler: Handler = async () => {
+    
+        // This info log will print all extra custom attributes added above
+        // Extra attributes: logger object with name and version of the logger library, awsAccountId, awsRegion
+        logger.info("This is an INFO log");
+        logger.info("This is another INFO log");
+        
+        return {
+            foo: "bar"
+        };
+    
+    };
     ```
+=== "Example CloudWatch Logs excerpt"
 
-#### Setting a Correlation ID
-
-You can set a Correlation ID using `correlation_id_path` param by passing a [JMESPath expression](https://jmespath.org/tutorial.html){target="_blank"}.
-
-!!! tip "You can retrieve correlation IDs via `get_correlation_id` method"
-
-=== "collect.py"
-
-    ```python hl_lines="5"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-
-    @logger.inject_lambda_context(correlation_id_path="headers.my_request_id_header")
-    def handler(event, context):
-        logger.debug(f"Correlation ID => {logger.get_correlation_id()}")
-        logger.info("Collecting payment")
-    ```
-
-=== "Example Event"
-
-    ```json hl_lines="3"
+    ```json hl_lines="8-12 21-25"
     {
-        "headers": {
-        "my_request_id_header": "correlation_id_value"
+        "level": "INFO",
+        "message": "This is an INFO log",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T21:49:58.084Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "aws_account_id": "123456789012",
+        "aws_region": "eu-central-1",
+        "logger": { 
+            "name": "@aws-lambda-powertools/logger",
+            "version": "0.0.1"
+        }
+    }
+    {
+        "level": "INFO",
+        "message": "This is another INFO log",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T21:49:58.088Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "aws_account_id": "123456789012",
+        "aws_region": "eu-central-1",
+        "logger": { 
+            "name": "@aws-lambda-powertools/logger",
+            "version": "0.0.1"
         }
     }
     ```
 
+!!! tip "Logger will automatically ignore any key with an `undefined` value"
+
+### Appending additional log keys and values to a single log item
+
+You can append additional keys and values in a single log item passing them as parameters.
+
+
+=== "handler.ts"
+
+    ```typescript hl_lines="14 18-19"
+    import { Logger } from "@aws-lambda-powertools/logger";
+
+    const logger = new Logger();
+    
+    const lambdaHandler = async () => {
+    
+        const myImportantVariable = {
+            foo: "bar"
+        };
+        
+        // Pass additional keys and values in single log items
+        
+        // As second parameter
+        logger.info("This is a log with an extra variable", { data: myImportantVariable });
+        
+        // You can also pass multiple parameters
+        logger.info("This is a log with 2 extra variables",
+            { data: myImportantVariable },
+            { correlationIds: { myCustomCorrelationId: "foo-bar-baz" }}
+        );
+        
+        return {
+            foo: "bar"
+        };
+    
+    };
+    ```
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="12"
+    ```json hl_lines="7 15-16"
     {
         "level": "INFO",
-        "location": "collect.handler:7",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "cold_start": true,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
-        "correlation_id": "correlation_id_value"
+        "message": "This is a log with an extra variable",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:06:17.463Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "data": { foo: "bar" }
+    }
+    {
+        "level": "INFO",
+        "message": "This is a log with 2 extra variables",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:06:17.466Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "data": { "foo": "bar" },
+        "correlationIds": { "myCustomCorrelationId": "foo-bar-baz" }
     }
     ```
 
-We provide [built-in JMESPath expressions](#built-in-correlation-id-expressions) for known event sources, where either a request ID or X-Ray Trace ID are present.
+### Logging errors
 
-=== "collect.py"
+You can log errors by using the `error` method and pass the error object as parameter.
+The error will be logged with default key name `error`, but you can also pass your own custom key name.
 
-    ```python hl_lines="2 6"
-    from aws_lambda_powertools import Logger
-    from aws_lambda_powertools.logging import correlation_paths
+=== "handler.ts"
 
-    logger = Logger(service="payment")
+    ```typescript hl_lines="11 18"
+    import { Logger } from "@aws-lambda-powertools/logger";
 
-    @logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
-    def handler(event, context):
-        logger.debug(f"Correlation ID => {logger.get_correlation_id()}")
-        logger.info("Collecting payment")
-    ```
-
-=== "Example Event"
-
-    ```json hl_lines="3"
-    {
-        "requestContext": {
-        "requestId": "correlation_id_value"
+    const logger = new Logger();
+    
+    const lambdaHandler = async () => {
+    
+        try {
+            throw new Error("Unexpected error #1");
+        } catch (error) {
+            // Log information about the error using the default "error" key
+            logger.error("This is the first error", error);
         }
-    }
-    ```
 
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="12"
-    {
-        "level": "INFO",
-        "location": "collect.handler:8",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "cold_start": true,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
-        "correlation_id": "correlation_id_value"
-    }
-    ```
-
-### Appending additional keys
-
-!!! info "Custom keys are persisted across warm invocations"
-    Always set additional keys as part of your handler to ensure they have the latest value, or explicitly clear them with [`clear_state=True`](#clearing-all-state).
-
-You can append additional keys using either mechanism:
-
-* Persist new keys across all future log messages via `append_keys` method
-* Add additional keys on a per log message basis via `extra` parameter
-
-#### append_keys method
-
-> NOTE: `append_keys` replaces `structure_logs(append=True, **kwargs)` method. Both will continue to work until the next major version.
-
-You can append your own keys to your existing Logger via `append_keys(**additional_key_values)` method.
-
-=== "collect.py"
-
-    ```python hl_lines="9"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-
-    def handler(event, context):
-        order_id = event.get("order_id")
-
-        # this will ensure order_id key always has the latest value before logging
-        logger.append_keys(order_id=order_id)
-
-        logger.info("Collecting payment")
-    ```
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="7"
-    {
-        "level": "INFO",
-        "location": "collect.handler:11",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "order_id": "order_id_value"
-    }
-    ```
-
-!!! tip "Logger will automatically reject any key with a None value"
-    If you conditionally add keys depending on the payload, you can follow the example above.
-
-    This example will add `order_id` if its value is not empty, and in subsequent invocations where `order_id` might not be present it'll remove it from the Logger.
-
-#### extra parameter
-
-Extra parameter is available for all log levels' methods, as implemented in the standard logging library - e.g. `logger.info, logger.warning`.
-
-It accepts any dictionary, and all keyword arguments will be added as part of the root structure of the logs for that log statement.
-
-!!! info "Any keyword argument added using `extra` will not be persisted for subsequent messages."
-
-=== "extra_parameter.py"
-
-    ```python hl_lines="6"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-
-    fields = { "request_id": "1123" }
-    logger.info("Collecting payment", extra=fields)
-    ```
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="7"
-    {
-        "level": "INFO",
-        "location": "collect.handler:6",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "request_id": "1123"
-    }
-    ```
-
-#### set_correlation_id method
-
-You can set a correlation_id to your existing Logger via `set_correlation_id(value)` method by passing any string value.
-
-=== "collect.py"
-
-    ```python hl_lines="6"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-
-    def handler(event, context):
-        logger.set_correlation_id(event["requestContext"]["requestId"])
-        logger.info("Collecting payment")
-    ```
-
-=== "Example Event"
-
-    ```json hl_lines="3"
-    {
-        "requestContext": {
-        "requestId": "correlation_id_value"
+        try {
+            throw new Error("Unexpected error #2");
+        } catch (error) {
+            // Log information about the error using a custom "myCustomErrorKey" key
+            logger.error("This is the second error", { myCustomErrorKey: error } );
         }
-    }
+    
+    };
     ```
 
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="7"
-    {
-        "level": "INFO",
-        "location": "collect.handler:7",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "correlation_id": "correlation_id_value"
-    }
-    ```
-
-Alternatively, you can combine [Data Classes utility](../utilities/data_classes.md) with Logger to use dot notation object:
-
-=== "collect.py"
-
-    ```python hl_lines="2 7-8"
-    from aws_lambda_powertools import Logger
-    from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
-
-    logger = Logger(service="payment")
-
-    def handler(event, context):
-        event = APIGatewayProxyEvent(event)
-        logger.set_correlation_id(event.request_context.request_id)
-        logger.info("Collecting payment")
-    ```
-=== "Example Event"
-
-    ```json hl_lines="3"
-    {
-        "requestContext": {
-        "requestId": "correlation_id_value"
-        }
-    }
-    ```
-
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="7"
-    {
-        "timestamp": "2020-05-24 18:17:33,774",
-        "level": "INFO",
-        "location": "collect.handler:9",
-        "service": "payment",
-        "sampling_rate": 0.0,
-        "correlation_id": "correlation_id_value",
-        "message": "Collecting payment"
-    }
-    ```
-
-### Removing additional keys
-
-You can remove any additional key from Logger state using `remove_keys`.
-
-=== "collect.py"
-
-    ```python hl_lines="9"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-
-    def handler(event, context):
-        logger.append_keys(sample_key="value")
-        logger.info("Collecting payment")
-
-        logger.remove_keys(["sample_key"])
-        logger.info("Collecting payment without sample key")
-    ```
-
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="7"
-    {
-        "level": "INFO",
-        "location": "collect.handler:7",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "sample_key": "value"
-    },
-    {
-        "level": "INFO",
-        "location": "collect.handler:10",
-        "message": "Collecting payment without sample key",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment"
-    }
-    ```
-
-#### Clearing all state
-
-Logger is commonly initialized in the global scope. Due to [Lambda Execution Context reuse](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html), this means that custom keys can be persisted across invocations. If you want all custom keys to be deleted, you can use `clear_state=True` param in `inject_lambda_context` decorator.
-
-!!! info
-    This is useful when you add multiple custom keys conditionally, instead of setting a default `None` value if not present. Any key with `None` value is automatically removed by Logger.
-
-!!! danger "This can have unintended side effects if you use Layers"
-    Lambda Layers code is imported before the Lambda handler.
-
-    This means that `clear_state=True` will instruct Logger to remove any keys previously added before Lambda handler execution proceeds.
-
-    You can either avoid running any code as part of Lambda Layers global scope, or override keys with their latest value as part of handler's execution.
-
-=== "collect.py"
-
-    ```python hl_lines="5 8"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-
-    @logger.inject_lambda_context(clear_state=True)
-    def handler(event, context):
-        if event.get("special_key"):
-            # Should only be available in the first request log
-            # as the second request doesn't contain `special_key`
-            logger.append_keys(debugging_key="value")
-
-        logger.info("Collecting payment")
-    ```
-
-=== "#1 request"
-
-    ```json hl_lines="7"
-    {
-        "level": "INFO",
-        "location": "collect.handler:10",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "special_key": "debug_key",
-        "cold_start": true,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
-    }
-    ```
-
-=== "#2 request"
-
-    ```json hl_lines="7"
-    {
-        "level": "INFO",
-        "location": "collect.handler:10",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "cold_start": false,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
-    }
-    ```
-
-### Logging exceptions
-
-Use `logger.exception` method to log contextual information about exceptions. Logger will include `exception_name` and `exception` keys to aid troubleshooting and error enumeration.
-
-!!! tip
-    You can use your preferred Log Analytics tool to enumerate and visualize exceptions across all your services using `exception_name` key.
-
-=== "collect.py"
-
-    ```python hl_lines="8"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-
-    try:
-        raise ValueError("something went wrong")
-    except Exception:
-        logger.exception("Received an exception")
-    ```
-
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="7-8"
+    ```json hl_lines="7-12 20-25"
     {
         "level": "ERROR",
-        "location": "collect.handler:5",
-        "message": "Received an exception",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "exception_name": "ValueError",
-        "exception": "Traceback (most recent call last):\n  File \"<input>\", line 2, in <module>\nValueError: something went wrong"
+        "message": "This is an ERROR log #1",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:12:39.345Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "error": {
+            "name": "Error",
+            "location": "/path/to/my/source-code/my-service/handler.ts:18",
+            "message": "This is the first error",
+            "stack": "Error: Unexpected error #1    at lambdaHandler (/path/to/my/source-code/my-service/handler.ts:18:11)    at Object.<anonymous> (/path/to/my/source-code/my-service/handler.ts:35:1)    at Module._compile (node:internal/modules/cjs/loader:1108:14)    at Module.m._compile (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1371:23)    at Module._extensions..js (node:internal/modules/cjs/loader:1137:10)    at Object.require.extensions.<computed> [as .ts] (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1374:12)    at Module.load (node:internal/modules/cjs/loader:973:32)    at Function.Module._load (node:internal/modules/cjs/loader:813:14)    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)    at main (/path/to/my/source-code/node_modules/ts-node/src/bin.ts:331:12)"
+        }
+    }
+    {   
+        "level": "ERROR",
+        "message": "This is an ERROR log #2",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:12:39.377Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "myCustomErrorKey": {
+            "name": "Error",
+            "location": "/path/to/my/source-code/my-service/handler.ts:24",
+            "message": "This is the second error",
+            "stack": "Error: Unexpected error #2    at lambdaHandler (/path/to/my/source-code/my-service/handler.ts:24:11)    at Object.<anonymous> (/path/to/my/source-code/my-service/handler.ts:35:1)    at Module._compile (node:internal/modules/cjs/loader:1108:14)    at Module.m._compile (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1371:23)    at Module._extensions..js (node:internal/modules/cjs/loader:1137:10)    at Object.require.extensions.<computed> [as .ts] (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1374:12)    at Module.load (node:internal/modules/cjs/loader:973:32)    at Function.Module._load (node:internal/modules/cjs/loader:813:14)    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)    at main (/path/to/my/source-code/node_modules/ts-node/src/bin.ts:331:12)"
+        }
     }
     ```
 
 ## Advanced
 
-### Reusing Logger across your code
+### Using multiple Logger instances across your code
 
-Logger supports inheritance via `child` parameter. This allows you to create multiple Loggers across your code base, and propagate changes such as new keys to all Loggers.
+Logger supports quick instance cloning via the `createChild` method.
+This can be useful for example if you want to enable multiple Loggers with different logging levels in the same Lambda invocation.
 
-=== "collect.py"
+=== "handler.ts"
 
-    ```python hl_lines="1 7"
-    import shared # Creates a child logger named "payment.shared"
-    from aws_lambda_powertools import Logger
+    ```typescript hl_lines="9-11 18-19"
+    import { Logger } from "@aws-lambda-powertools/logger";
 
-    logger = Logger() # POWERTOOLS_SERVICE_NAME: "payment"
+    // With this logger, all the INFO logs will be printed
+    const logger = new Logger({
+        logLevel: "INFO"
+    });
 
-    def handler(event, context):
-        shared.inject_payment_id(event)
-        ...
+    // With this logger, only the ERROR logs will be printed
+    const childLogger = parentLogger.createChild({
+        logLevel: "ERROR"
+    });
+    
+    const lambdaHandler: Handler = async () => {
+    
+        logger.info("This is an INFO log, from the parent logger");
+        logger.error("This is an ERROR log, from the parent logger");
+        
+        childLogger.info("This is an INFO log, from the child logger");
+        childLogger.error("This is an ERROR log, from the child logger");
+    
+    };
     ```
 
-=== "shared.py"
+=== "Example CloudWatch Logs excerpt"
 
-    ```python hl_lines="6"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(child=True) # POWERTOOLS_SERVICE_NAME: "payment"
-
-    def inject_payment_id(event):
-        logger.structure_logs(append=True, payment_id=event.get("payment_id"))
+    ```json hl_lines="15-21"
+    {
+        "level": "INFO",
+        "message": "This is an INFO log, from the parent logger",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:32:54.667Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    {
+        "level": "ERROR",
+        "message": "This is an ERROR log, from the parent logger",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:32:54.670Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    {
+        "level": "ERROR",
+        "message": "This is an ERROR log, from the child logger",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:32:54.670Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
     ```
 
-In this example, `Logger` will create a parent logger named `payment` and a child logger named `payment.shared`. Changes in either parent or child logger will be propagated bi-directionally.
+### Sampling logs
 
-!!! info "Child loggers will be named after the following convention `{service}.{filename}`"
-    If you forget to use `child` param but the `service` name is the same of the parent, we will return the existing parent `Logger` instead.
+Use sampling when you want to print all the log items generated in your code, based on a **percentage of your concurrent/cold start invocations**.
 
-### Sampling debug logs
+You can do that by setting a "sample rate", a float value ranging from `0.0` (0%) to `1` (100%), by using a `POWERTOOLS_LOGGER_SAMPLE_RATE` env var or passing the `sampleRateValue` parameter in the Logger constructor.
+This number represents the probability that a Lambda invocation will print all the log items regardless of the log level setting.
 
-Use sampling when you want to dynamically change your log level to **DEBUG** based on a **percentage of your concurrent/cold start invocations**.
-
-You can use values ranging from `0.0` to `1` (100%) when setting `POWERTOOLS_LOGGER_SAMPLE_RATE` env var or `sample_rate` parameter in Logger.
+For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda invocations will print all the log items, including the `debug` ones.
 
 !!! tip "When is this useful?"
-    Let's imagine a sudden spike increase in concurrency triggered a transient issue downstream. When looking into the logs you might not have enough information, and while you can adjust log levels it might not happen again.
+In production, to avoid log data pollution and reduce CloudWatch costs, developers are encouraged to use the logger with `logLevel` equal to `ERROR` or `WARN`.
+This means that only errors or warnings will be printed. 
 
-    This feature takes into account transient issues where additional debugging information can be useful.
+However, it might still be useful to print all the logs (including debug ones) of a very small percentage of invocations to have a better understanding of the behaviour of your code in production even when there are no errors.
 
 Sampling decision happens at the Logger initialization. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
 
-!!! note
-    If you want Logger to calculate sampling upon every invocation, please open a [feature request](https://github.com/awslabs/aws-lambda-powertools-python/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=).
+=== "handler.ts"
 
-=== "collect.py"
+    ```typescript hl_lines="5"
+    import { Logger } from "@aws-lambda-powertools/logger";
 
-    ```python hl_lines="4 7"
-    from aws_lambda_powertools import Logger
+    const logger = new Logger({
+        logLevel: "ERROR",
+        sampleRateValue: 0.5
+    });
+    
+    const lambdaHandler = async () => {
+    
+        // 0.5 means that you have 50% chance that these logs will be printed
+        logger.info("This is INFO log #1");
+        logger.info("This is INFO log #2");
+        logger.info("This is INFO log #3");
+        logger.info("This is INFO log #4");
+        
+        // Optional: refresh sample rate calculation on runtime
+        // logger.refreshSampleRateCalculation();
 
-    # Sample 10% of debug logs e.g. 0.1
-    logger = Logger(service="payment", sample_rate=0.1)
-
-    def handler(event, context):
-        logger.debug("Verifying whether order_id is present")
-        logger.info("Collecting payment")
+    };
     ```
 
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="2 4 12 15 25"
-    {
-        "level": "DEBUG",
-        "location": "collect.handler:7",
-        "message": "Verifying whether order_id is present",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "cold_start": true,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
-        "sampling_rate": 0.1
-    },
+    ```json hl_lines="4 12 20 28"
     {
         "level": "INFO",
-        "location": "collect.handler:7",
-        "message": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494+0200",
-        "service": "payment",
-        "cold_start": true,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
-        "sampling_rate": 0.1
+        "message": "This is INFO log #1",
+        "sampling_rate": "0.5",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.334Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
-    ```
-
-### LambdaPowertoolsFormatter
-
-Logger propagates a few formatting configurations to the built-in `LambdaPowertoolsFormatter` logging formatter.
-
-If you prefer configuring it separately, or you'd want to bring this JSON Formatter to another application, these are the supported settings:
-
-Parameter | Description | Default
-------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
-**`json_serializer`** | function to serialize `obj` to a JSON formatted `str` | `json.dumps`
-**`json_deserializer`** | function to deserialize `str`, `bytes`, `bytearray` containing a JSON document to a Python obj | `json.loads`
-**`json_default`** | function to coerce unserializable values, when no custom serializer/deserializer is set | `str`
-**`datefmt`** | string directives (strftime) to format log timestamp | `%Y-%m-%d %H:%M:%S,%F%z`, where `%F` is a custom ms directive
-**`utc`** | set logging timestamp to UTC | `False`
-**`log_record_order`** | set order of log keys when logging | `["level", "location", "message", "timestamp"]`
-**`kwargs`** | key-value to be included in log messages | `None`
-
-=== "LambdaPowertoolsFormatter.py"
-
-    ```python hl_lines="2 4-5"
-    from aws_lambda_powertools import Logger
-    from aws_lambda_powertools.logging.formatter import LambdaPowertoolsFormatter
-
-    formatter = LambdaPowertoolsFormatter(utc=True, log_record_order=["message"])
-    logger = Logger(service="example", logger_formatter=formatter)
-    ```
-
-### Migrating from other Loggers
-
-If you're migrating from other Loggers, there are few key points to be aware of: [Service parameter](#the-service-parameter), [Inheriting Loggers](#inheriting-loggers), [Overriding Log records](#overriding-log-records), and [Logging exceptions](#logging-exceptions).
-
-#### The service parameter
-
-Service is what defines the Logger name, including what the Lambda function is responsible for, or part of (e.g payment service).
-
-For Logger, the `service` is the logging key customers can use to search log operations for one or more functions - For example, **search for all errors, or messages like X, where service is payment**.
-
-#### Inheriting Loggers
-
-> Python Logging hierarchy happens via the dot notation: `service`, `service.child`, `service.child_2`
-
-For inheritance, Logger uses a `child=True` parameter along with `service` being the same value across Loggers.
-
-For child Loggers, we introspect the name of your module where `Logger(child=True, service="name")` is called, and we name your Logger as **{service}.{filename}**.
-
-!!! danger
-    A common issue when migrating from other Loggers is that `service` might be defined in the parent Logger (no child param), and not defined in the child Logger:
-
-=== "incorrect_logger_inheritance.py"
-
-    ```python hl_lines="4 10"
-    import my_module
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-    ...
-
-    # my_module.py
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(child=True)
-    ```
-
-=== "correct_logger_inheritance.py"
-
-    ```python hl_lines="4 10"
-    import my_module
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-    ...
-
-    # my_module.py
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment", child=True)
-    ```
-
-In this case, Logger will register a Logger named `payment`, and a Logger named `service_undefined`. The latter isn't inheriting from the parent, and will have no handler, resulting in no message being logged to standard output.
-
-!!! tip
-    This can be fixed by either ensuring both has the `service` value as `payment`, or simply use the environment variable `POWERTOOLS_SERVICE_NAME` to ensure service value will be the same across all Loggers when not explicitly set.
-
-#### Overriding Log records
-
-You might want to continue to use the same date formatting style, or override `location` to display the `package.function_name:line_number` as you previously had.
-
-Logger allows you to either change the format or suppress the following keys altogether at the initialization: `location`, `timestamp`, `level`, `xray_trace_id`.
-
-=== "lambda_handler.py"
-    > We honour standard [logging library string formats](https://docs.python.org/3/howto/logging.html#displaying-the-date-time-in-messages){target="_blank"}.
-
-    ```python hl_lines="7 10"
-    from aws_lambda_powertools import Logger
-
-    date_format = "%m/%d/%Y %I:%M:%S %p"
-    location_format = "[%(funcName)s] %(module)s"
-
-    # override location and timestamp format
-    logger = Logger(service="payment", location=location_format, datefmt=date_format)
-
-    # suppress the location key with a None value
-    logger_two = Logger(service="payment", location=None)
-
-    logger.info("Collecting payment")
-    ```
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="3 5"
     {
         "level": "INFO",
-        "location": "[<module>] lambda_handler",
-        "message": "Collecting payment",
-        "timestamp": "02/09/2021 09:25:17 AM",
-        "service": "payment"
+        "message": "This is INFO log #2",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.337Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
-    ```
-
-#### Reordering log keys position
-
-You can change the order of [standard Logger keys](#standard-structured-keys) or any keys that will be appended later at runtime via the `log_record_order` parameter.
-
-=== "lambda_handler.py"
-
-    ```python hl_lines="4 7"
-    from aws_lambda_powertools import Logger
-
-    # make message as the first key
-    logger = Logger(service="payment", log_record_order=["message"])
-
-    # make request_id that will be added later as the first key
-    # Logger(service="payment", log_record_order=["request_id"])
-
-    # Default key sorting order when omit
-    # Logger(service="payment", log_record_order=["level","location","message","timestamp"])
-    ```
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="3 5"
-    {
-        "message": "hello world",
-        "level": "INFO",
-        "location": "[<module>]:6",
-        "timestamp": "2021-02-09 09:36:12,280",
-        "service": "service_undefined",
-        "sampling_rate": 0.0
-    }
-    ```
-
-#### Setting timestamp to UTC
-
-By default, this Logger and standard logging library emits records using local time timestamp. You can override this behaviour via `utc` parameter:
-
-=== "app.py"
-
-    ```python hl_lines="6"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-    logger.info("Local time")
-
-    logger_in_utc = Logger(service="payment", utc=True)
-    logger_in_utc.info("GMT time zone")
-    ```
-
-#### Custom function for unserializable values
-
-By default, Logger uses `str` to handle values non-serializable by JSON. You can override this behaviour via `json_default` parameter by passing a Callable:
-
-=== "collect.py"
-
-    ```python hl_lines="3-4 9 12"
-    from aws_lambda_powertools import Logger
-
-    def custom_json_default(value):
-        return f"<non-serializable: {type(value).__name__}>"
-
-    class Unserializable:
-        pass
-
-    logger = Logger(service="payment", json_default=custom_json_default)
-
-    def handler(event, context):
-        logger.info(Unserializable())
-    ```
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="4"
     {
         "level": "INFO",
-        "location": "collect.handler:8",
-        "message": ""<non-serializable: Unserializable>"",
-        "timestamp": "2021-05-03 15:17:23,632+0200",
-        "service": "payment"
+        "message": "This is INFO log #3",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.338Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
-    ```
-
-#### Bring your own handler
-
-By default, Logger uses StreamHandler and logs to standard output. You can override this behaviour via `logger_handler` parameter:
-
-=== "collect.py"
-
-    ```python hl_lines="3-4 9 12"
-    import logging
-    from pathlib import Path
-
-    from aws_lambda_powertools import Logger
-
-    log_file = Path("/tmp/log.json")
-    log_file_handler = logging.FileHandler(filename=log_file)
-    logger = Logger(service="payment", logger_handler=log_file_handler)
-
-    logger.info("Collecting payment")
-    ```
-
-#### Bring your own formatter
-
-By default, Logger uses [LambdaPowertoolsFormatter](#lambdapowertoolsformatter) that persists its custom structure between non-cold start invocations. There could be scenarios where the existing feature set isn't sufficient to your formatting needs.
-
-For **minor changes like remapping keys** after all log record processing has completed, you can override `serialize` method from [LambdaPowertoolsFormatter](#lambdapowertoolsformatter):
-
-=== "custom_formatter.py"
-
-    ```python
-    from aws_lambda_powertools import Logger
-    from aws_lambda_powertools.logging.formatter import LambdaPowertoolsFormatter
-
-    from typing import Dict
-
-    class CustomFormatter(LambdaPowertoolsFormatter):
-        def serialize(self, log: Dict) -> str:
-            """Serialize final structured log dict to JSON str"""
-            log["event"] = log.pop("message")  # rename message key to event
-            return self.json_serializer(log)   # use configured json serializer
-
-    my_formatter = CustomFormatter()
-    logger = Logger(service="example", logger_formatter=my_formatter)
-    logger.info("hello")
-    ```
-
-For **replacing the formatter entirely**, you can subclass `BasePowertoolsFormatter`, implement `append_keys` method, and override `format` standard logging method. This ensures the current feature set of Logger like [injecting Lambda context](#capturing-lambda-context-info) and [sampling](#sampling-debug-logs) will continue to work.
-
-!!! info
-    You might need to implement `remove_keys` method if you make use of the feature too.
-
-=== "collect.py"
-
-    ```python hl_lines="2 4 7 12 16 27"
-    from aws_lambda_powertools import Logger
-    from aws_lambda_powertools.logging.formatter import BasePowertoolsFormatter
-
-    class CustomFormatter(BasePowertoolsFormatter):
-        custom_format = {}  # arbitrary dict to hold our structured keys
-
-        def append_keys(self, **additional_keys):
-            # also used by `inject_lambda_context` decorator
-            self.custom_format.update(additional_keys)
-
-        # Optional unless you make use of this Logger feature
-        def remove_keys(self, keys: Iterable[str]):
-            for key in keys:
-                self.custom_format.pop(key, None)
-
-        def format(self, record: logging.LogRecord) -> str:  # noqa: A003
-            """Format logging record as structured JSON str"""
-            return json.dumps(
-                {
-                    "event": super().format(record),
-                    "timestamp": self.formatTime(record),
-                    "my_default_key": "test",
-                    **self.custom_format,
-                }
-            )
-
-    logger = Logger(service="payment", logger_formatter=CustomFormatter())
-
-    @logger.inject_lambda_context
-    def handler(event, context):
-        logger.info("Collecting payment")
-    ```
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="2-4"
     {
-        "event": "Collecting payment",
-        "timestamp": "2021-05-03 11:47:12,494",
-        "my_default_key": "test",
-        "cold_start": true,
-        "lambda_function_name": "test",
-        "lambda_function_memory_size": 128,
-        "lambda_function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-        "lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
+        "level": "INFO",
+        "message": "This is INFO log #4",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.338Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
 
-#### Bring your own JSON serializer
+### Custom Log formatter (Bring Your Own Formatter)
 
-By default, Logger uses `json.dumps` and `json.loads` as serializer and deserializer respectively. There could be scenarios where you are making use of alternative JSON libraries like [orjson](https://github.com/ijl/orjson){target="_blank"}.
+You can customize the structure (keys and values) of your log items by passing a custom log formatter, an object that extends the `LogFormatter` abstract class.
 
-As parameters don't always translate well between them, you can pass any callable that receives a `Dict` and return a `str`:
+=== "handler.ts"
 
-=== "collect.py"
+    ```typescript hl_lines="2 5"
+    import { Logger } from "@aws-lambda-powertools/logger";
+    import { MyCompanyLogFormatter } from "./utils/formatters/MyCompanyLogFormatter";
 
-    ```python hl_lines="1 5-6 9-10"
-    import orjson
-
-    from aws_lambda_powertools import Logger
-
-    custom_serializer = orjson.dumps
-    custom_deserializer = orjson.loads
-
-    logger = Logger(service="payment",
-                json_serializer=custom_serializer,
-                json_deserializer=custom_deserializer
-    )
-
-    # when using parameters, you can pass a partial
-    # custom_serializer=functools.partial(orjson.dumps, option=orjson.OPT_SERIALIZE_NUMPY)
+    const logger = new Logger({
+        logFormatter: new MyCompanyLogFormatter(),
+        logLevel: "DEBUG",
+        serviceName: "shopping-cart-api",
+        sampleRateValue: 0.5,
+        persistentLogAttributes: {
+            awsAccountId: process.env.AWS_ACCOUNT_ID,
+            logger: {
+                name: "@aws-lambda-powertools/logger",
+                version: "0.0.1"
+            }
+        },
+    });
+    
+    const lambdaHandler: Handler = async (event, context) => {
+        logger.addContext(context);
+        
+        logger.info("This is an INFO log", { correlationIds: { myCustomCorrelationId: "foo-bar-baz" } });
+    };
     ```
 
-## Built-in Correlation ID expressions
+This is how the `MyCompanyLogFormatter` (dummy name) would look like:
 
-You can use any of the following built-in JMESPath expressions as part of [inject_lambda_context decorator](#setting-a-correlation-id).
+=== "utils/formatters/MyCompanyLogFormatter.ts"
 
-!!! note "Escaping necessary for the `-` character"
-    Any object key named with `-` must be escaped, for example **`request.headers."x-amzn-trace-id"`**.
-
-Name | Expression | Description
-------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------
-**API_GATEWAY_REST** | `"requestContext.requestId"` | API Gateway REST API request ID
-**API_GATEWAY_HTTP** | `"requestContext.requestId"` | API Gateway HTTP API request ID
-**APPSYNC_RESOLVER** | `'request.headers."x-amzn-trace-id"'` | AppSync X-Ray Trace ID
-**APPLICATION_LOAD_BALANCER** | `'headers."x-amzn-trace-id"'` | ALB X-Ray Trace ID
-**EVENT_BRIDGE** | `"id"` | EventBridge Event ID
-
-## Testing your code
-
-### Inject Lambda Context
-
-When unit testing your code that makes use of `inject_lambda_context` decorator, you need to pass a dummy Lambda Context, or else Logger will fail.
-
-This is a Pytest sample that provides the minimum information necessary for Logger to succeed:
-
-=== "fake_lambda_context_for_logger.py"
-    Note that dataclasses are available in Python 3.7+ only.
-
-    ```python
-    from dataclasses import dataclass
-
-    import pytest
-
-    @pytest.fixture
-    def lambda_context():
-        @dataclass
-        class LambdaContext:
-            function_name: str = "test"
-            memory_limit_in_mb: int = 128
-            invoked_function_arn: str = "arn:aws:lambda:eu-west-1:809313241:function:test"
-            aws_request_id: str = "52fdfc07-2182-154f-163f-5f0f9a621d72"
-
-        return LambdaContext()
-
-    def test_lambda_handler(lambda_context):
-        test_event = {'test': 'event'}
-        your_lambda_handler(test_event, lambda_context) # this will now have a Context object populated
-    ```
-=== "fake_lambda_context_for_logger_py36.py"
-
-    ```python
-    from collections import namedtuple
-
-    import pytest
-
-    @pytest.fixture
-    def lambda_context():
-        lambda_context = {
-            "function_name": "test",
-            "memory_limit_in_mb": 128,
-            "invoked_function_arn": "arn:aws:lambda:eu-west-1:809313241:function:test",
-            "aws_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
+    ```typescript
+    import { LogFormatter } from "@aws-lambda-powertools/logger";
+    import { LogAttributes, UnformattedAttributes } from "@aws-lambda-powertools/logger/types";
+    
+    // Replace this line with your own type
+    type MyCompanyLog = LogAttributes;
+    
+    class MyCompanyLogFormatter extends LogFormatter {
+    
+        public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
+            return {
+                message: attributes.message,
+                service: attributes.serviceName,
+                environment: attributes.environment,
+                awsRegion: attributes.awsRegion,
+                correlationIds: {
+                    awsRequestId: attributes.lambdaContext?.awsRequestId,
+                    xRayTraceId: attributes.xRayTraceId
+                },
+                lambdaFunction: {
+                    name: attributes.lambdaContext?.functionName,
+                    arn: attributes.lambdaContext?.invokedFunctionArn,
+                    memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
+                    version: attributes.lambdaContext?.functionVersion,
+                    coldStart: attributes.lambdaContext?.coldStart,
+                },
+                logLevel: attributes.logLevel,
+                timestamp: this.formatTimestamp(attributes.timestamp), // You can extend this function
+                logger: {
+                    sampleRateValue: attributes.sampleRateValue,
+                },
+            };
         }
-
-        return namedtuple("LambdaContext", lambda_context.keys())(*lambda_context.values())
-
-    def test_lambda_handler(lambda_context):
-        test_event = {'test': 'event'}
-
-        # this will now have a Context object populated
-        your_lambda_handler(test_event, lambda_context)
+        
+    }
+    
+    export {
+        MyCompanyLogFormatter
+    };
     ```
 
-!!! tip
-    If you're using pytest and are looking to assert plain log messages, do check out the built-in [caplog fixture](https://docs.pytest.org/en/latest/how-to/logging.html){target="_blank"}.
+This is how the printed log would look:
 
-### Pytest live log feature
-
-Pytest Live Log feature duplicates emitted log messages in order to style log statements according to their levels, for this to work use `POWERTOOLS_LOG_DEDUPLICATION_DISABLED` env var.
-
-=== "shell"
-
-    ```bash
-    POWERTOOLS_LOG_DEDUPLICATION_DISABLED="1" pytest -o log_cli=1
-    ```
-
-!!! warning
-    This feature should be used with care, as it explicitly disables our ability to filter propagated messages to the root logger (if configured).
-
-## FAQ
-
-**How can I enable boto3 and botocore library logging?**
-
-You can enable the `botocore` and `boto3` logs by using the `set_stream_logger` method, this method will add a stream handler
-for the given name and level to the logging module. By default, this logs all boto3 messages to stdout.
-
-=== "log_botocore_and_boto3.py"
-
-    ```python hl_lines="6-7"
-    from typing import Dict, List
-    from aws_lambda_powertools.utilities.typing import LambdaContext
-    from aws_lambda_powertools import Logger
-
-    import boto3
-    boto3.set_stream_logger()
-    boto3.set_stream_logger('botocore')
-
-    logger = Logger()
-    client = boto3.client('s3')
-
-
-    def handler(event: Dict, context: LambdaContext) -> List:
-        response = client.list_buckets()
-
-        return response.get("Buckets", [])
-    ```
-
-**What's the difference between `append_keys` and `extra`?**
-
-Keys added with `append_keys` will persist across multiple log messages while keys added via `extra` will only be available in a given log message operation.
-
-Here's an example where we persist `payment_id` not `request_id`. Note that `payment_id` remains in both log messages while `booking_id` is only available in the first message.
-
-=== "lambda_handler.py"
-
-    ```python hl_lines="6 10"
-    from aws_lambda_powertools import Logger
-
-    logger = Logger(service="payment")
-
-    def handler(event, context):
-        logger.append_keys(payment_id="123456789")
-
-        try:
-            booking_id = book_flight()
-            logger.info("Flight booked successfully", extra={ "booking_id": booking_id})
-        except BookingReservationError:
-            ...
-
-        logger.info("goodbye")
-    ```
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="8-9 18"
-    {
-        "level": "INFO",
-        "location": "<module>:10",
-        "message": "Flight booked successfully",
-        "timestamp": "2021-01-12 14:09:10,859",
-        "service": "payment",
-        "sampling_rate": 0.0,
-        "payment_id": "123456789",
-        "booking_id": "75edbad0-0857-4fc9-b547-6180e2f7959b"
-    },
-    {
-        "level": "INFO",
-        "location": "<module>:14",
-        "message": "goodbye",
-        "timestamp": "2021-01-12 14:09:10,860",
-        "service": "payment",
-        "sampling_rate": 0.0,
-        "payment_id": "123456789"
-    }
+    ```json
+        {
+            "message": "This is an INFO log",
+            "service": "shopping-cart-api",
+            "awsRegion": "eu-central-1",
+            "correlationIds": {
+                "awsRequestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+                "xRayTraceId": "abcdef123456abcdef123456abcdef123456",
+                "myCustomCorrelationId": "foo-bar-baz"
+            },
+            "lambdaFunction": {
+                "name": "shopping-cart-api-lambda-prod-eu-central-1",
+                "arn": "arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1",
+                "memoryLimitInMB": 128,
+                "version": "$LATEST",
+                "coldStart": true
+            },
+            "logLevel": "INFO",
+            "timestamp": "2021-12-12T23:13:53.404Z",
+            "logger": {
+                "sampleRateValue": "0.5",
+                "name": "aws-lambda-powertools-typescript",
+                "version": "0.0.1"
+            },
+            "awsAccountId": "123456789012"
+        }
     ```
-
-**How do I aggregate and search Powertools logs across accounts?**
-
-As of now, ElasticSearch (ELK) or 3rd party solutions are best suited to this task.
-
-Please see this discussion for more information: https://github.com/awslabs/aws-lambda-powertools-python/issues/460

@@ -58,7 +58,7 @@ Your Logger will include the following keys to your structured logging (default 
 
 Key | Example | Note
 ------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------
-**level**: `str` | `INFO` | Logging level set for the Lambda function"s invocation
+**level**: `string` | `INFO` | Logging level set for the Lambda function"s invocation
 **message**: `string` | `Query performed to DynamoDB` | A descriptive, human-readable representation of this log item
 **sampling_rate**: `float` |  `0.1` | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%
 **service**: `str` | `shopping-cart-api` | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`

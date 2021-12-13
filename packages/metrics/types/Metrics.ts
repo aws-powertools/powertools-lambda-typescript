@@ -1,6 +1,7 @@
 import { ConfigServiceInterface } from '../src/config';
 import { Handler } from 'aws-lambda';
 import { MetricUnit } from './MetricUnit';
+import { LambdaInterface } from '../examples/utils/lambda';
 
 type Dimensions = {[key: string]: string};
 
@@ -25,7 +26,7 @@ type EmfOutput = {
   }
 };
 
-type HandlerMethodDecorator = (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
+type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
 
 /**
  * Options for the metrics decorator

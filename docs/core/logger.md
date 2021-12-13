@@ -134,7 +134,7 @@ Key | Example
 **function_name** `string` | `shopping-cart-api-lambda-prod-eu-central-1`
 **function_memory_size**: `int` | `128`
 **function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
-**function_request_id**: `str` | `c6af9ac6-7b61-11e6-9a41-93e8deadbeef`
+**function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e8deadbeef`
 
 ### Appending persistent additional log keys and values
 

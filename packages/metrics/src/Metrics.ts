@@ -25,7 +25,7 @@ class Metrics implements MetricsInterface {
   private isSingleMetric: boolean = false;
   private metadata: { [key: string]: string } = {};
   private namespace?: string;
-  private raiseOnEmptyMetrics: boolean = false;
+  private shouldRaiseOnEmptyMetrics: boolean = false;
   private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {
@@ -80,9 +80,19 @@ class Metrics implements MetricsInterface {
     this.storedMetrics = {};
   }
 
+  public captureColdStartMetric(): void {
+    this.captureColdStart();
+  }
+
+  public raiseOnEmptyMetrics(): void {
+    this.shouldRaiseOnEmptyMetrics = true;
+  }
+
   public logMetrics(options: DecoratorOptions = {}): HandlerMethodDecorator {
     const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
-    this.raiseOnEmptyMetrics = raiseOnEmptyMetrics || false;
+    if (raiseOnEmptyMetrics) {
+      this.raiseOnEmptyMetrics();
+    }
     if (defaultDimensions !== undefined) {
       this.setDefaultDimensions(defaultDimensions);
     }
@@ -114,7 +124,7 @@ class Metrics implements MetricsInterface {
       Name: metricDefinition.name,
       Unit: metricDefinition.unit,
     }));
-    if (metricDefinitions.length === 0 && this.raiseOnEmptyMetrics) {
+    if (metricDefinitions.length === 0 && this.shouldRaiseOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
     }
 

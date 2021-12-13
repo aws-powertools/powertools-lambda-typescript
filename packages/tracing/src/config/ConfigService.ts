@@ -8,15 +8,15 @@ abstract class ConfigService implements ConfigServiceInterface {
   protected tracerCaptureResponseVariable = 'POWERTOOLS_TRACER_CAPTURE_RESPONSE';
   protected tracingEnabledVariable = 'POWERTOOLS_TRACE_ENABLED';
 
-  abstract get(name: string): string;
+  public abstract get(name: string): string;
 
-  abstract getServiceName(): string;
+  public abstract getServiceName(): string;
   
-  abstract getTracingCaptureError(): string;
+  public abstract getTracingCaptureError(): string;
   
-  abstract getTracingCaptureResponse(): string;
+  public abstract getTracingCaptureResponse(): string;
   
-  abstract getTracingEnabled(): string;
+  public abstract getTracingEnabled(): string;
 
 }
 

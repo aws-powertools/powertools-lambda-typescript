@@ -558,9 +558,9 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
+        // TODO: revisit return type & make it more specific
         @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         public async dummyMethod(some: string): Promise<any> {
           return new Promise((resolve, _reject) => resolve(some));
         }

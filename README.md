@@ -20,6 +20,11 @@ align them with the style guides. Please run this before creating a PR, and comm
 
 `npm run lerna-format`
 
+## Credits
+
+* Structured logging initial implementation from [aws-lambda-logging](https://gitlab.com/hadrien/aws_lambda_logging)
+* Powertools idea [DAZN Powertools](https://github.com/getndazn/dazn-lambda-powertools/)
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.

@@ -1704,9 +1704,9 @@
       "integrity": "sha1-0WkB0QzOxZUWwZe5zNiTBom4E7Q="
     },
     "node_modules/aws-xray-sdk-core": {
-      "version": "3.3.3",
-      "resolved": "https://registry.npmjs.org/aws-xray-sdk-core/-/aws-xray-sdk-core-3.3.3.tgz",
-      "integrity": "sha512-S8o+ZY12wEnDQolC5RGQ8RHZqezHeV3l/ODqrYOJAlRjT92FDutQkQqTfr+hD1Ia+puIXzL9U7eyVSsKmoI+1w==",
+      "version": "3.3.4",
+      "resolved": "https://registry.npmjs.org/aws-xray-sdk-core/-/aws-xray-sdk-core-3.3.4.tgz",
+      "integrity": "sha512-GGnYAQgtclLHIBReOtsUgbDDCar0LR2TaHCWlQhPrEVVayrSAZQ4y+SlXN5YIadxMec4/f5dbF69wMbug9D5Ww==",
       "dependencies": {
         "@aws-sdk/service-error-classification": "^3.4.1",
         "@aws-sdk/types": "^3.4.1",
@@ -7402,9 +7402,9 @@
       "integrity": "sha1-0WkB0QzOxZUWwZe5zNiTBom4E7Q="
     },
     "aws-xray-sdk-core": {
-      "version": "3.3.3",
-      "resolved": "https://registry.npmjs.org/aws-xray-sdk-core/-/aws-xray-sdk-core-3.3.3.tgz",
-      "integrity": "sha512-S8o+ZY12wEnDQolC5RGQ8RHZqezHeV3l/ODqrYOJAlRjT92FDutQkQqTfr+hD1Ia+puIXzL9U7eyVSsKmoI+1w==",
+      "version": "3.3.4",
+      "resolved": "https://registry.npmjs.org/aws-xray-sdk-core/-/aws-xray-sdk-core-3.3.4.tgz",
+      "integrity": "sha512-GGnYAQgtclLHIBReOtsUgbDDCar0LR2TaHCWlQhPrEVVayrSAZQ4y+SlXN5YIadxMec4/f5dbF69wMbug9D5Ww==",
       "requires": {
         "@aws-sdk/service-error-classification": "^3.4.1",
         "@aws-sdk/types": "^3.4.1",

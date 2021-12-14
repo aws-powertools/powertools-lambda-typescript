@@ -835,9 +835,9 @@
       "dev": true
     },
     "@types/aws-lambda": {
-      "version": "8.10.87",
-      "resolved": "https://registry.npmjs.org/@types/aws-lambda/-/aws-lambda-8.10.87.tgz",
-      "integrity": "sha512-fMYSgnIjFsTM3huCzqNvZm9gH4kFY5yIEOKYj9VtTG13TYd+wwweTbYAAO8OclcTbpezK+VsHNWIyHiAHgVCJg=="
+      "version": "8.10.88",
+      "resolved": "https://registry.npmjs.org/@types/aws-lambda/-/aws-lambda-8.10.88.tgz",
+      "integrity": "sha512-Gbdr5tmGMGV1bgWDEfgNnfqtS9YVKDCkyAgYPmYIeEQFTSjU+VzVoE0Gc1MyrzREdk3Iu5daUCRU9eQL5s+iYQ=="
     },
     "@types/babel__core": {
       "version": "7.1.17",

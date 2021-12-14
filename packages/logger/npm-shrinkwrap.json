@@ -760,6 +760,11 @@
         "chalk": "^4.0.0"
       }
     },
+    "@middy/core": {
+      "version": "2.5.3",
+      "resolved": "https://registry.npmjs.org/@middy/core/-/core-2.5.3.tgz",
+      "integrity": "sha512-hCXlRglDu48sl03IjDGjcJwfwElIPAf0fwBu08kqE80qpnouZ1hGH1lZbkbJjAhz6DkSR+79YArUQKUYaM2k1g=="
+    },
     "@nodelib/fs.scandir": {
       "version": "2.1.5",
       "resolved": "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz",

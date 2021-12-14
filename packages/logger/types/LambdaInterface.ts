@@ -1,4 +1,4 @@
-import { Handler } from 'aws-lambda';
+import type { Handler } from 'aws-lambda';
 
 interface LambdaInterface {
   handler: Handler

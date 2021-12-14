@@ -1,8 +1,7 @@
-import { ConfigServiceInterface } from '../src/config';
-import { Handler } from 'aws-lambda';
-import { LambdaInterface } from '../examples/utils/lambda';
-import { LogFormatterInterface } from '../src/formatter';
-import { Environment, LogAttributes, LogAttributesWithMessage, LogLevel } from './Log';
+import type { ConfigServiceInterface } from '../src/config';
+import type { Handler } from 'aws-lambda';
+import type { LogFormatterInterface } from '../src/formatter';
+import type { Environment, LambdaInterface, LogAttributes, LogAttributesWithMessage, LogLevel } from '.';
 
 type ClassThatLogs = {
   [key in 'debug' | 'error' | 'info' | 'warn' ]: (input: LogItemMessage, ...extraInput: LogItemExtraInput) => void;
@@ -54,7 +53,7 @@ type LogItemExtraInput = Array<Error | LogAttributes | unknown>;
 
 type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
 
-export {
+export type {
   ClassThatLogs,
   LogItemMessage,
   LogItemExtraInput,

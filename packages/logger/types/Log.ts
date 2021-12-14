@@ -18,7 +18,7 @@ type LogAttributesWithMessage = LogAttributes & {
 
 type Environment = 'dev' | 'local' | 'staging' | 'prod' | string;
 
-export {
+export type {
   LogAttributesWithMessage,
   LogAttributeValue,
   Environment,

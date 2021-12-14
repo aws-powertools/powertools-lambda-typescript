@@ -1,7 +1,7 @@
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 
 import { cloneDeep, merge } from 'lodash/fp';
-import {
+import type {
   Environment,
   HandlerMethodDecorator,
   LambdaFunctionContext,
@@ -19,17 +19,8 @@ import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
 
 class Logger implements ClassThatLogs {
-  public static coldStart: boolean = true;
 
-  public static isColdStart(): boolean {
-    if (Logger.coldStart === true) {
-      Logger.coldStart = false;
-
-      return true;
-    }
-
-    return false;
-  }
+  public static coldStart?: boolean;
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
 
@@ -61,9 +52,10 @@ class Logger implements ClassThatLogs {
   }
 
   public addContext(context: Context): void {
+    Logger.evaluateColdStart();
     const lambdaContext: Partial<LambdaFunctionContext> = {
       invokedFunctionArn: context.invokedFunctionArn,
-      coldStart: Logger.isColdStart(),
+      coldStart: Logger.coldStart,
       awsRequestId: context.awsRequestId,
       memoryLimitInMB: Number(context.memoryLimitInMB),
       functionName: context.functionName,
@@ -169,6 +161,26 @@ class Logger implements ClassThatLogs {
 
     return logItem;
   }
+
+  private static evaluateColdStart = (() => {
+    let evaluated = false;
+    return function() {
+      if (!evaluated) {
+        evaluated = true;
+        if(typeof Logger.coldStart === 'undefined') {
+          Logger.coldStart = true;
+          return;
+        }
+        if(Logger.coldStart === true) {
+          Logger.coldStart = false;
+          return;
+        }
+
+        Logger.coldStart = false;
+
+      }
+    };
+  })()
 
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;

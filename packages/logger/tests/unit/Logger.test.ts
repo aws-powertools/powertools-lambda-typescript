@@ -1,13 +1,14 @@
-import { Callback, Context } from 'aws-lambda/handler';
+import { Callback, Context, Handler } from 'aws-lambda/handler';
 import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
-import { LambdaInterface } from '../../examples/utils/lambda';
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
-import { ClassThatLogs } from '../../types';
+import { ClassThatLogs, LambdaInterface } from '../../types';
+import middy from '@middy/core';
+import { injectLambdaContext } from '../../src/middleware/middy';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
@@ -17,7 +18,7 @@ const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 describe('Class: Logger', () => {
 
   beforeEach(() => {
-    Logger.coldStart = true;
+    jest.resetModules();
     consoleSpy.mockClear();
     dateSpy.mockClear();
   });
@@ -510,13 +511,72 @@ describe('Class: Logger', () => {
 
   describe('Method: isColdStart', () => {
 
-    test('when called, it returns false the first time and always true after that', () => {
+    test('when called during an invocation experiencing a cold start, it returns true', async () => {
+
+      // Prepare
+      const logger = new Logger();
+      const handler: Handler = (_event, context: Context): void => {
+        logger.addContext(context);
+        logger.info('This is an INFO log with some context');
+      }
+      const event = { foo: 'bar' };
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+        awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      // Act
+      await handler(event, context, () => console.log('Lambda invoked!'))
+      const coldStartValue = Logger.coldStart;
 
       // Assess
-      expect(Logger.isColdStart()).toBe(true);
-      expect(Logger.isColdStart()).toBe(false);
-      expect(Logger.isColdStart()).toBe(false);
-      expect(Logger.isColdStart()).toBe(false);
+      expect(coldStartValue).toEqual(true);
+
+    });
+
+    test.only('when called during an invocation not experiencing a cold start, it returns false', async () => {
+
+      // Prepare
+      Logger.coldStart = true;
+      const logger = new Logger();
+      const handler: Handler = (_event, context: Context): void => {
+        logger.addContext(context);
+        logger.info('This is an INFO log with some context');
+      }
+
+      const warmStartInvocationEvent = { foo: 'bar' };
+
+      const warmStartInvocationContext = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+        awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      // Act
+      await handler(warmStartInvocationEvent, warmStartInvocationContext, () => console.log('Lambda invoked!'));
+      const warmStartValue = Logger.coldStart;
+
+      // Assess
+      expect(Logger).toEqual(foo);
 
     });
 

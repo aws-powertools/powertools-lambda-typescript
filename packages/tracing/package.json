@@ -1,7 +1,7 @@
 {
-  "name": "@aws-lambda-powertools/logger",
+  "name": "@aws-lambda-powertools/tracer",
   "version": "0.0.0",
-  "description": "The logging package for the AWS Lambda powertools (TypeScript) library",
+  "description": "The tracer package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -18,26 +18,19 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
+    "package": "mkdir -p dist/js && npm pack && mv *.tgz dist/js/",
     "example:hello-world": "ts-node examples/hello-world.ts",
-    "example:inject-context": "ts-node examples/inject-context.ts",
-    "example:inject-context-decorator": "ts-node examples/inject-context-decorator.ts",
-    "example:errors": "ts-node examples/errors.ts",
-    "example:constructor-options": "ts-node examples/constructor-options.ts",
-    "example:custom-log-formatter": "ts-node examples/custom-log-formatter.ts",
-    "example:child-logger": "ts-node examples/child-logger.ts",
-    "example:additional-keys": "ts-node examples/additional-keys.ts",
-    "example:sample-rate": "ts-node examples/sample-rate.ts",
-    "example:persistent-attributes": "ts-node examples/persistent-attributes.ts",
-    "example:ephemeral-attributes": "ts-node examples/ephemeral-attributes.ts"
+    "example:capture-lambda-handler-response-decorator": "ts-node examples/capture-lambda-handler-response-decorator.ts",
+    "example:capture-lambda-handler-error-decorator": "ts-node examples/capture-lambda-handler-error-decorator.ts",
+    "example:capture-clients": "ts-node examples/capture-clients.ts"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/logging#readme",
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
   "license": "MIT",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "typedocMain": "src/index.ts",
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
-    "@types/lodash": "^4.14.168",
     "@types/node": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
@@ -61,9 +54,6 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
-    "lodash.clonedeep": "^4.5.0",
-    "lodash.merge": "^4.6.2",
-    "@types/aws-lambda": "^8.10.72"
+    "aws-xray-sdk-core": "^3.3.3"
   }
 }

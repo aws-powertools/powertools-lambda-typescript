@@ -225,6 +225,25 @@ describe('Class: Metrics', () => {
   });
 
   describe('Feature: Cold Start', () => {
+    test('Cold start metric should only be written out once and flushed automatically', async () => {
+      const metrics = new Metrics({ namespace: 'test' });
+
+      const handler = async (event: any, context: Context) => {
+        // Should generate only one log
+        metrics.captureColdStartMetric();
+      };
+
+      await handler(dummyEvent, dummyContext);
+      await handler(dummyEvent, dummyContext);
+      const loggedData = [JSON.parse(consoleSpy.mock.calls[0][0])];
+
+      expect(console.log).toBeCalledTimes(1);
+      expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics[0].Name).toBe('ColdStart');
+      expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics[0].Unit).toBe('Count');
+      expect(loggedData[0].ColdStart).toBe(1);
+    });
+
     test('Cold start metric should only be written out once', async () => {
       const metrics = new Metrics({ namespace: 'test' });
 
@@ -334,6 +353,23 @@ describe('Class: Metrics', () => {
 
       try {
         await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      } catch (e) {
+        expect((<Error>e).message).toBe('The number of metrics recorded must be higher than zero');
+      }
+    });
+
+    test('Error should be thrown on empty metrics when raiseOnEmptyMetrics() is callse', async () => {
+      expect.assertions(1);
+
+      const metrics = new Metrics({ namespace: 'test' });
+      const handler = async (event: any, context: Context) => {
+        metrics.raiseOnEmptyMetrics();
+        // Logic goes here
+        metrics.purgeStoredMetrics();
+      };
+
+      try {
+        await handler(dummyEvent, dummyContext);
       } catch (e) {
         expect((<Error>e).message).toBe('The number of metrics recorded must be higher than zero');
       }

@@ -158,7 +158,7 @@ As you finish adding all your metrics, you need to serialize and flush them to s
  You can do that automatically with the `logMetrics` decorator.
 
 !!! warning
-    Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you are more into functional programming check the next section instead. See the [official doc](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
+    Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you are more into standard function, check the next section instead. See the [official doc](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
 
 This decorator also **validates**, **serializes**, and **flushes** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
 

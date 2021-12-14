@@ -246,11 +246,12 @@ describe('Class: PowertoolLogFormatter', () => {
       try {
         shouldThrow();
       } catch (error) {
+        // TODO: review message content assertion (see Issue #304)
         // Assess
         const formattedTypeError = formatter.formatError(error);
         expect(formattedTypeError).toEqual({
           location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
-          message: 'Cannot read property \'foo\' of null',
+          message: expect.stringMatching(/Cannot read propert/),
           name: 'TypeError',
           stack: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/),
         });

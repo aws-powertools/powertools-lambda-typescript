@@ -14,9 +14,10 @@
         "resolveJsonModule": true,
         "pretty": true,
         "baseUrl": "src/",
-        "rootDirs": [ "src/" ]
+        "rootDirs": [ "src/" ],
+        "esModuleInterop": true
     },
-    "include": [ "src/**/*", "examples/**/*", "tests/**/*" ],
+    "include": [ "src/**/*", "examples/**/*", "**/tests/**/*" ],
     "exclude": [ "./node_modules"],
     "watchOptions": {
         "watchFile": "useFsEvents",

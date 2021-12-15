@@ -351,6 +351,14 @@ class Tracer implements TracerInterface {
 
     return segment;
   }
+  
+  public isCaptureErrorEnabled(): boolean {
+    return this.captureError;
+  }
+
+  public isCaptureResponseEnabled(): boolean {
+    return this.captureResponse;
+  }
 
   /**
    * Retrieve the current value of `ColdStart`.
@@ -371,6 +379,10 @@ class Tracer implements TracerInterface {
     }
 
     return false;
+  }
+
+  public isTracingEnabled(): boolean {
+    return this.tracingEnabled;
   }
 
   /**

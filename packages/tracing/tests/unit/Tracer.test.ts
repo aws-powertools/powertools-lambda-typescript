@@ -2,7 +2,9 @@ import { context as dummyContext } from '../../../../tests/resources/contexts/he
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
+// import { captureLambdaHandler } from '../../src/middleware/middy';
 import { LambdaInterface } from '../../examples/utils/lambda';
+// import middy from '@middy/core';
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';

@@ -27,7 +27,7 @@
     "import/resolver": {
       "node": {},
       "typescript": {
-        "project": "./tsconfig.json",
+        "project": "./tsconfig.es.json",
         "alwaysTryTypes": true
       }
     }

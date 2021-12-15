@@ -1,7 +1,7 @@
 import { Handler } from 'aws-lambda';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from '../types';
+import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 

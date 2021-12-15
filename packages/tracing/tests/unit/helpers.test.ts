@@ -1,5 +1,5 @@
 import { ConfigServiceInterface } from '../../src/config';
-import { TracerOptions } from '../../types';
+import { TracerOptions } from '../../src/types';
 import { createTracer, Tracer } from './../../src';
 
 describe('Helper: createLogger function', () => {

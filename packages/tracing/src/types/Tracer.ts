@@ -1,6 +1,6 @@
-import { ConfigServiceInterface } from '../src/config';
+import { ConfigServiceInterface } from '../config';
 import { Handler } from 'aws-lambda';
-import { LambdaInterface } from '../examples/utils/lambda';
+import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
 /**
   * Options for the tracer class to be used during initialization.

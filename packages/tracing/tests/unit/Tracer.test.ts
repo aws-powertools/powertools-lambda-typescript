@@ -2,9 +2,7 @@ import { context as dummyContext } from '../../../../tests/resources/contexts/he
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
-// import { captureLambdaHandler } from '../../src/middleware/middy';
 import { LambdaInterface } from '../../examples/utils/lambda';
-// import middy from '@middy/core';
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
@@ -454,18 +452,21 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-
-      // Assess
-      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
-      }));
-      expect('cause' in newSubsegment).toBe(false);
-      expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
-      expect(addErrorSpy).toHaveBeenCalledTimes(0);
+      try {
+        await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      } catch (error) {
+        // Assess
+        expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+        expect(newSubsegment).toEqual(expect.objectContaining({
+          name: '## foo-bar-function',
+        }));
+        expect('cause' in newSubsegment).toBe(false);
+        expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
+        expect(addErrorSpy).toHaveBeenCalledTimes(0);
+      }
 
       delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+
     });
 
     test('when used as decorator and with standard config, it captures the exception correctly', async () => {
@@ -490,16 +491,18 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-
-      // Assess
-      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
-      }));
-      expect('cause' in newSubsegment).toBe(true);
-      expect(addErrorSpy).toHaveBeenCalledTimes(1);
-      expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
+      try {
+        await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      } catch (error) {
+        // Assess
+        expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+        expect(newSubsegment).toEqual(expect.objectContaining({
+          name: '## foo-bar-function',
+        }));
+        expect('cause' in newSubsegment).toBe(true);
+        expect(addErrorSpy).toHaveBeenCalledTimes(1);
+        expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
+      }
     
     });
 

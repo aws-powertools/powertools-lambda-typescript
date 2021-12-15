@@ -242,8 +242,7 @@ class Tracer implements TracerInterface {
             this.addResponseAsMetadata(result, context.functionName);
           } catch (error) {
             this.addErrorAsMetadata(error as Error);
-            // TODO: should this error be thrown?? If thrown we get a ERR_UNHANDLED_REJECTION. If not aren't we are basically catching a Customer error?
-            // throw error;
+            throw error;
           } finally {
             subsegment?.close();
           }

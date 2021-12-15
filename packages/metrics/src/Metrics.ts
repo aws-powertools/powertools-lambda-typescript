@@ -1,4 +1,5 @@
 import { MetricsInterface } from '.';
+import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
   DecoratorOptions,
   Dimensions,
@@ -9,7 +10,6 @@ import {
   MetricUnit,
   MetricUnits,
 } from './types';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 9;

@@ -1,7 +1,7 @@
-import { ConfigServiceInterface } from '../config';
-import { Handler } from 'aws-lambda';
-import { MetricUnit } from './MetricUnit';
 import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import { Handler } from 'aws-lambda';
+import { ConfigServiceInterface } from '../config';
+import { MetricUnit } from './MetricUnit';
 
 type Dimensions = { [key: string]: string };
 

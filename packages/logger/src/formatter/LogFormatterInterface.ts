@@ -1,4 +1,4 @@
-import { LogAttributes, UnformattedAttributes } from '../../types';
+import { LogAttributes, UnformattedAttributes } from '../types';
 
 interface LogFormatterInterface {
 

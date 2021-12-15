@@ -12,7 +12,7 @@
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
-    "project": "./tsconfig.json"
+    "project": "./tsconfig.es.json"
   },
   "extends": [
     "plugin:import/typescript"
@@ -27,7 +27,7 @@
     "import/resolver": {
       "node": {},
       "typescript": {
-        "project": "./tsconfig.json",
+        "project": "./tsconfig.es.json",
         "alwaysTryTypes": true
       }
     }

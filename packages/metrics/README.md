@@ -30,7 +30,7 @@ Metrics has two global settings that will be used across all metrics emitted:
 ```typescript
 // Import the library
 import { Metrics, MetricUnits } from '../src';
-// When going public, it will be something like: import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+// When going public, it will be something like: import { Metrics, MetricUnits } from '@flochaz/metrics';
 
 process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';

@@ -1,5 +1,5 @@
 import { LogFormatterInterface } from '.';
-import { LogAttributes, UnformattedAttributes } from '../../types';
+import { LogAttributes, UnformattedAttributes } from '../types';
 
 abstract class LogFormatter implements LogFormatterInterface {
 

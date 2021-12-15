@@ -1,6 +1,9 @@
 import { Context } from 'aws-lambda';
 
 import { cloneDeep, merge } from 'lodash/fp';
+import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
+import { LogItem } from './log';
 import {
   Environment,
   HandlerMethodDecorator,
@@ -13,10 +16,7 @@ import {
   LogLevel,
   LogLevelThresholds,
   PowertoolLogData,
-} from '../types';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
-import { LogItem } from './log';
+} from './types';
 
 class Logger implements ClassThatLogs {
   public static coldStart: boolean = true;
@@ -32,6 +32,8 @@ class Logger implements ClassThatLogs {
   }
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
+
+  private static readonly defaultServiceName: string = 'service_undefined';
 
   private customConfigService?: ConfigServiceInterface;
 
@@ -307,7 +309,7 @@ class Logger implements ClassThatLogs {
           this.getEnvVarsService().getCurrentEnvironment(),
         sampleRateValue: this.getSampleRateValue(),
         serviceName:
-          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName(),
+          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || Logger.defaultServiceName,
         xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
       },
       persistentLogAttributes,

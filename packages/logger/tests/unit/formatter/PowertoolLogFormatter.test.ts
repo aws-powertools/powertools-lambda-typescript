@@ -1,6 +1,6 @@
 import { AssertionError, strictEqual } from 'assert';
 import { PowertoolLogFormatter } from '../../../src/formatter';
-import { UnformattedAttributes } from '../../../types';
+import { UnformattedAttributes } from '../../../src/types';
 
 describe('Class: PowertoolLogFormatter', () => {
 
@@ -251,6 +251,7 @@ describe('Class: PowertoolLogFormatter', () => {
       try {
         shouldThrow();
       } catch (error) {
+        // TODO: review message content assertion (see Issue #304)
         // Assess
         expect(error).toBeInstanceOf(Error);
         const formattedTypeError = formatter.formatError(<Error>error);

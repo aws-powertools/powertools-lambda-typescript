@@ -1,4 +1,4 @@
-# AWS Lambda Powertools (Typescript)
+# AWS Lambda Powertools (TypeScript)
 ![Tests](https://github.com/awslabs/aws-lambda-powertools-typescript/workflows/Test/badge.svg?branch=main)
 ## Testing
 The repo uses JEST tests, these can be run using
@@ -19,6 +19,11 @@ The repo is setup using  [Prettier](https://prettier.io/). This will automatical
 align them with the style guides. Please run this before creating a PR, and commit the changes.
 
 `npm run lerna-format`
+
+## Credits
+
+* Structured logging initial implementation from [aws-lambda-logging](https://gitlab.com/hadrien/aws_lambda_logging)
+* Powertools idea [DAZN Powertools](https://github.com/getndazn/dazn-lambda-powertools/)
 
 ## Security
 

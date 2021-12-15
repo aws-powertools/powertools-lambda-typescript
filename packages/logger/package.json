@@ -1,6 +1,6 @@
 {
-  "name": "@aws-lambda-powertools/logger",
-  "version": "0.0.0",
+  "name": "@flochaz/logger",
+  "version": "0.1.0-beta.6",
   "description": "The logging package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -19,6 +19,7 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
+    "package": "mkdir -p dist/js && npm pack && mv *.tgz dist/js/",
     "example:hello-world": "ts-node examples/hello-world.ts",
     "example:inject-context": "ts-node examples/inject-context.ts",
     "example:inject-context-decorator": "ts-node examples/inject-context-decorator.ts",

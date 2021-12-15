@@ -1,6 +1,6 @@
 {
-  "name": "@aws-lambda-powertools/metrics",
-  "version": "0.0.0",
+  "name": "@flochaz/metrics",
+  "version": "0.1.0-beta.6",
   "description": "The metrics package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -17,6 +17,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
+    "package": "mkdir -p dist/js && npm pack && mv *.tgz dist/js/",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
     "example:hello-world": "ts-node examples/hello-world.ts",

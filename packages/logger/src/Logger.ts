@@ -1,6 +1,9 @@
 import { Context } from 'aws-lambda';
 
 import { cloneDeep, merge } from 'lodash/fp';
+import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
+import { LogItem } from './log';
 import {
   Environment,
   HandlerMethodDecorator,
@@ -13,10 +16,7 @@ import {
   LogLevel,
   LogLevelThresholds,
   PowertoolLogData,
-} from '../types';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
-import { LogItem } from './log';
+} from './types';
 
 class Logger implements ClassThatLogs {
   public static coldStart: boolean = true;

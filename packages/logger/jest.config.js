@@ -23,6 +23,7 @@ module.exports = {
   'testEnvironment': 'node',
   'coveragePathIgnorePatterns': [
     '/node_modules/',
+    '/types/',
   ],
   'coverageThreshold': {
     'global': {

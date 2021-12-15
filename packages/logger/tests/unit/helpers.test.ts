@@ -1,6 +1,6 @@
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
-import { LoggerOptions } from '../../types';
+import { LoggerOptions } from '../../src/types';
 import { createLogger, Logger } from './../../src';
 
 describe('Helper: createLogger function', () => {

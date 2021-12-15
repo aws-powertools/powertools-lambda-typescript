@@ -4,7 +4,6 @@ on:
     branches:    
           - '**'        # matches every branch
           - '!main' 
-
 jobs:
   on_push:
     runs-on: ubuntu-latest

@@ -19,14 +19,14 @@ jobs:
       with:
         node-version: '14'
   
+    - name: "Setup npm"
+      run: |
+        npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+        
     - name: Install packages
       run: |
         npm ci
         npm run lerna-ci
-
-    - name: "Setup npm"
-      run: |
-        npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
 
     - name: "Version and publish"
       env:

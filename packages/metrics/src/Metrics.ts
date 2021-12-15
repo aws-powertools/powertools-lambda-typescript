@@ -8,7 +8,7 @@ import {
   MetricsOptions,
   MetricUnit,
   MetricUnits,
-} from '../types';
+} from './types';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 
 const MAX_METRICS_SIZE = 100;

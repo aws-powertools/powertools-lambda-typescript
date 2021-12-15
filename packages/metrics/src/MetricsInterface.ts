@@ -1,4 +1,4 @@
-import { MetricUnit, EmfOutput, HandlerMethodDecorator, Dimensions, DecoratorOptions } from '../types';
+import { MetricUnit, EmfOutput, HandlerMethodDecorator, Dimensions, DecoratorOptions } from './types';
 import { Metrics } from './Metrics';
 
 interface MetricsInterface {

@@ -59,7 +59,6 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * import { Segment } from 'aws-xray-sdk-core';
  * 
  * const tracer = new Tracer({ serviceName: 'my-service' });
- * const AWS = tracer.captureAWS(require('aws-sdk'));
  * 
  * export const handler = async (_event: any, context: any) => {
  *   // Create subsegment & set it as active
@@ -417,8 +416,8 @@ class Tracer implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'my-service' });
    * 
    * export const handler = async (_event: any, _context: any) => {
-   *   const res = someLogic()
-   *  tracer.putAnnotation('PaymentResponse', res);
+   *   const res = someLogic();
+   *   tracer.putMetadata('PaymentResponse', res);
    * }
    * ```
    * 

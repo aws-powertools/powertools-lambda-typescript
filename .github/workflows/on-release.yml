@@ -27,7 +27,6 @@ jobs:
 
     - name: "Setup npm"
       run: |
-        npm set @flochaz:registry=https://registry.npmjs.org/flochaz
         npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
 
     - name: "Version and publish"
@@ -43,23 +42,4 @@ jobs:
           npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --yes
         fi
 
-        npx lerna publish from-git --no-verify-access --yes
-  
-  slack:
-    name: Publish to slack channel
-    needs: 
-      - publish
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: "Setup npm"
-        run: |
-          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-      - name: Install packages
-        run: |
-          curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/releases/latest > release.json
-          VERSION=$( jq -r '.name' release.json )
-          CONTENT=$( jq -r '.body' release.json )
-          jq -n --arg version "$VERSION" --arg content "$CONTENT" '{"release-version": $version, "release-content": $content}' > body.json
-          curl --location --request POST $SLACK_WEBHOOK_URL \
-          --header 'Content-Type: application/json' --data @body.json
+        npx lerna publish --no-verify-access from-git --yes

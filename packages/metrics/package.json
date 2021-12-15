@@ -17,7 +17,6 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
-    "package": "mkdir -p dist/js && npm pack && mv *.tgz dist/js/",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
     "example:hello-world": "ts-node examples/hello-world.ts",

@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - main
+      - chore/releaseFlow
   workflow_dispatch: {}
 jobs:
   publish:
@@ -22,7 +22,7 @@ jobs:
     - name: "Setup npm"
       run: |
         npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-
+        
     - name: Install packages
       run: |
         npm ci

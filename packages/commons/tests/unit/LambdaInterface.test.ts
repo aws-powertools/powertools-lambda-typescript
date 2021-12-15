@@ -1,4 +1,4 @@
-import { Callback, Context } from 'aws-lambda';
+import { Callback, Context, Handler } from 'aws-lambda';
 import { ContextExamples, LambdaInterface } from '../../src';
 
 describe('LambdaInterface', () => {
@@ -9,9 +9,12 @@ describe('LambdaInterface', () => {
       public handler<TEvent, TResult>(
         _event: TEvent,
         _context: Context,
-        _callback: Callback<TResult>,
+        _callback: Callback<TResult>
       ): void | Promise<TResult> {
-        return;
+        _context.done();
+        _context.fail(new Error('test Error'));
+        _context.succeed('test succeed');
+        _context.getRemainingTimeInMillis();
       }
     }
 

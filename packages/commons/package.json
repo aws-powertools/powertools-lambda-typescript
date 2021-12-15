@@ -8,7 +8,7 @@
   },
   "scripts": {
     "commit": "commit",
-    "test": "echo No tests defined",
+    "test": "jest  --detectOpenHandles --coverage --verbose",
     "watch": "jest --watch",
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",

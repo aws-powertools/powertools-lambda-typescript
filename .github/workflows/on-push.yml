@@ -1,9 +1,9 @@
-name: on-pull-request
+name: on-push-event
 on:
-  pull_request
+  push
 
 jobs:
-  on_pr:
+  on_push:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev

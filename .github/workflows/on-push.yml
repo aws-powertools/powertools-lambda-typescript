@@ -1,6 +1,9 @@
 name: on-push-event
 on:
-  push
+  push:
+    branches:    
+          - '**'        # matches every branch
+          - '!main' 
 
 jobs:
   on_push:

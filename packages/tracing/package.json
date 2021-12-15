@@ -26,8 +26,8 @@
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
   "license": "MIT",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./lib/packages/tracing/src/index.js",
+  "types": "./lib/packages/tracing/src/index.d.ts",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",

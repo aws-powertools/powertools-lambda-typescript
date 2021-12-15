@@ -8,7 +8,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Timestamp of actual log statement.
    * Example: "2020-05-24 18:17:33,774"
    */
-  timestamp?: string
+  timestamp?: string;
 
   /**
    * level
@@ -16,7 +16,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Logging level
    * Example: "INFO"
    */
-  level?: LogLevel
+  level?: LogLevel;
 
   /**
    * service
@@ -24,7 +24,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Service name defined.
    * Example: "payment"
    */
-  service: string
+  service: string;
 
   /**
    * sampling_rate
@@ -32,7 +32,7 @@ type PowertoolLog = LogAttributes & {
    * Description: The value of the logging sampling rate in percentage.
    * Example: 0.1
    */
-  sampling_rate?: number
+  sampling_rate?: number;
 
   /**
    * message
@@ -40,7 +40,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Log statement value. Unserializable JSON values will be casted to string.
    * Example: "Collecting payment"
    */
-  message?: string
+  message?: string;
 
   /**
    * xray_trace_id
@@ -48,7 +48,7 @@ type PowertoolLog = LogAttributes & {
    * Description: X-Ray Trace ID when Lambda function has enabled Tracing.
    * Example: "1-5759e988-bd862e3fe1be46a994272793"
    */
-  xray_trace_id?: string
+  xray_trace_id?: string;
 
   /**
    * cold_start
@@ -56,7 +56,7 @@ type PowertoolLog = LogAttributes & {
    * Description: Indicates whether the current execution experienced a cold start.
    * Example: false
    */
-  cold_start?: boolean
+  cold_start?: boolean;
 
   /**
    * lambda_function_name
@@ -64,7 +64,7 @@ type PowertoolLog = LogAttributes & {
    * Description: The name of the Lambda function.
    * Example: "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
    */
-  lambda_function_name?: string
+  lambda_function_name?: string;
 
   /**
    * lambda_function_memory_size
@@ -72,7 +72,7 @@ type PowertoolLog = LogAttributes & {
    * Description: The memory size of the Lambda function.
    * Example: 128
    */
-  lambda_function_memory_size?: number
+  lambda_function_memory_size?: number;
 
   /**
    * lambda_function_arn
@@ -80,7 +80,7 @@ type PowertoolLog = LogAttributes & {
    * Description: The ARN of the Lambda function.
    * Example: "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
    */
-  lambda_function_arn?: string
+  lambda_function_arn?: string;
 
   /**
    * lambda_request_id
@@ -88,10 +88,10 @@ type PowertoolLog = LogAttributes & {
    * Description: The request ID of the current invocation.
    * Example: "899856cb-83d1-40d7-8611-9e78f15f32f4"
    */
-  lambda_request_id?: string
+  lambda_request_id?: string;
 
 };
 
 export {
-  PowertoolLog
+  PowertoolLog,
 };

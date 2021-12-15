@@ -9,7 +9,7 @@ describe('LambdaInterface', () => {
       public handler<TEvent, TResult>(
         _event: TEvent,
         _context: Context,
-        _callback: Callback<TResult>
+        _callback: Callback<TResult>,
       ): void | Promise<TResult> {
         _context.done();
         _context.fail(new Error('test Error'));

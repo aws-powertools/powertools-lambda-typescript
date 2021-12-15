@@ -5,6 +5,86 @@ import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from '../types
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
+/**
+ * ## Intro
+ * Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://github.com/aws/aws-xray-sdk-node).
+ * 
+ * Tracing data can be visualized through AWS X-Ray Console.
+ * 
+ * ## Key features
+ *   * Auto capture cold start as annotation, and responses or full exceptions as metadata
+ *   * Auto-disable when not running in AWS Lambda environment
+ *   * Support tracing functions via decorators, middleware, and manual instrumentation
+ *   * Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
+ * 
+ * ## Usage
+ * 
+ * ### Functions usage with middlewares
+ * TBD
+ * 
+ * ### Object oriented usage with decorators
+ * 
+ * If you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHanlder) decorator to automatically:
+ * * handle the subsegment lifecycle 
+ * * add the `ColdStart` annotation
+ * * add the function response as metadata
+ * * add the function error as metadata (if any)
+ * 
+ * @example
+ * ```typescript
+ * import { Tracer } from '@aws-lambda-powertools/tracer';
+ * 
+ * const tracer = new Tracer({ serviceName: 'my-service' });
+ * 
+ * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@tracer* instead of `@tracer.captureLambdaHanlder`
+ * 
+ * class Lambda {
+ *   @tracer.captureLambdaHanlder()
+ *   public handler(event: any, context: any) {
+ *     ...
+ *   }
+ * }
+ * 
+ * export const handlerClass = new Lambda();
+ * export const handler = handlerClass.handler; 
+ * ```
+ * 
+ * ### Functions usage with manual instrumentation
+ * 
+ * If you prefer to manually instrument your Lambda handler you can use the methods in the tracer class directly.
+ *
+ * @example
+ * ```typescript
+ * import { Tracer } from '@aws-lambda-powertools/tracer';
+ * import { Segment } from 'aws-xray-sdk-core';
+ * 
+ * const tracer = new Tracer({ serviceName: 'my-service' });
+ * const AWS = tracer.captureAWS(require('aws-sdk'));
+ * 
+ * export const handler = async (_event: any, context: any) => {
+ *   // Create subsegment & set it as active
+ *   const subsegment = new Subsegment(`## ${context.functionName}`);
+ *   tracer.setSegment(subsegment);
+ *   // Add the ColdStart annotation
+ *   this.putAnnotation('ColdStart', tracer.coldStart);
+ * 
+ *   let res;
+ *   try {
+ *     res = await someLogic(); // Do something
+ *     // Add the response as metadata
+ *     tracer.putMetadata(`${context.functionName} response`, data);
+ *   } catch (err) {
+ *     // Add the error as metadata
+ *     subsegment.addError(err, false);
+ *   }
+ * 
+ *   // Close subsegment
+ *   subsegment.close();
+ *
+ *   return res;
+ * }
+  * ```
+ */
 class Tracer implements TracerInterface {
   public static coldStart: boolean = true;
 
@@ -40,6 +120,10 @@ class Tracer implements TracerInterface {
    * 
    * const tracer = new Tracer({ serviceName: 'my-service' });
    * const AWS = tracer.captureAWS(require('aws-sdk'));
+   * 
+   * export const handler = async (_event: any, _context: any) => {
+   *   ...
+   * }
    * ```
    * 
    * @param aws - AWS SDK v2 import
@@ -66,6 +150,10 @@ class Tracer implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'my-service' });
    * tracer.captureAWS(require('aws-sdk'));
    * const s3 = tracer.captureAWSClient(new S3({ apiVersion: "2006-03-01" }));
+   * 
+   * export const handler = async (_event: any, _context: any) => {
+   *   ...
+   * }
    * ```
    * 
    * @param service - AWS SDK v2 client
@@ -92,6 +180,10 @@ class Tracer implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'my-service' });
    * const client = new S3Client({});
    * tracer.captureAWSv3Client(client);
+   * 
+   * export const handler = async (_event: any, _context: any) => {
+   *   ...
+   * }
    * ```
    * 
    * @param service - AWS SDK v3 client
@@ -103,6 +195,37 @@ class Tracer implements TracerInterface {
     return this.provider.captureAWSv3Client(service);
   }
 
+  /**
+   * A decorator automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
+   * 
+   * Using this decorator on your handler function will automatically:
+   * * handle the subsegment lifecycle 
+   * * add the `ColdStart` annotation
+   * * add the function response as metadata
+   * * add the function error as metadata (if any)
+   * 
+   * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
+   * function syntax, you should use the middleware instead.
+   * 
+   * @example
+   * ```typescript
+   * import { Tracer } from '@aws-lambda-powertools/tracer';
+   * 
+   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * 
+   * class Lambda {
+   *   @tracer.captureLambdaHanlder()
+   *   public handler(event: any, context: any) {
+   *     ...
+   *   }
+   * }
+   * 
+   * export const handlerClass = new Lambda();
+   * export const handler = handlerClass.handler; 
+   * ```
+   * 
+   * @decorator Class
+   */
   public captureLambdaHanlder(): HandlerMethodDecorator {
     return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
@@ -134,6 +257,41 @@ class Tracer implements TracerInterface {
     };
   }
 
+  /**
+   * A decorator automating capture of metadata and annotations on segments or subsegments for an arbitrary function.
+   * 
+   * Using this decorator on your function will automatically:
+   * * handle the subsegment lifecycle 
+   * * add the function response as metadata
+   * * add the function error as metadata (if any)
+   * 
+   * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
+   * function syntax, you should use the middleware instead.
+   * 
+   * @example
+   * ```typescript
+   * import { Tracer } from '@aws-lambda-powertools/tracer';
+   * 
+   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * 
+   * class Lambda {
+   *   @tracer.captureMethod()
+   *   public myMethod(param: any) {
+   *     ...
+   *   }
+   * 
+   *   public handler(event: any, context: any) {
+   *     ...
+   *   }
+   * }
+   * 
+   * export const handlerClass = new Lambda();
+   * export const myMethod = handlerClass.myMethod; 
+   * export const handler = handlerClass.handler; 
+   * ```
+   * 
+   * @decorator Class
+   */
   public captureMethod(): MethodDecorator {
     return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;

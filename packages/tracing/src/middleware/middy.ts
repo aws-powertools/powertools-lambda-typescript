@@ -2,6 +2,30 @@ import middy from '@middy/core';
 import { Subsegment } from 'aws-xray-sdk-core';
 import { Tracer } from '../Tracer';
 
+/**
+ * A middy middleware automating capture of metadata and annotations on segments or subsegments ofr a Lambda Handler.
+ * 
+ * Using this middleware on your handler function will automatically:
+ * * handle the subsegment lifecycle 
+ * * add the `ColdStart` annotation
+ * * add the function response as metadata
+ * * add the function error as metadata (if any)
+ * 
+ * @example
+ * ```typescript
+ * import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+ * import middy from '@middy/core';
+ * 
+ * const tracer = new Tracer({ serviceName: 'my-service' });
+ * 
+ * export const handler = middy(async (_event: any, _context: any) => {
+ *   ...
+ * }).use(captureLambdaHandler(tracer));
+ * ```
+ * 
+ * @param tracer - The Tracer instance to use for tracing
+ * @returns middleware object - The middy middleware object
+ */
 const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
   const captureLambdaHandlerBefore = async (request: middy.Request): Promise<void> => {
     if (target.isTracingEnabled()) {
@@ -34,7 +58,9 @@ const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
         subsegment?.addError(request.error as Error, false);
       }
       // TODO: should this error be thrown?? I.e. should we stop the event flow & return?
-      // throw error;
+      // throw request.error;
+
+      subsegment?.close();
     }
   };
 

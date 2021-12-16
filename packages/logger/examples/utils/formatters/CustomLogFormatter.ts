@@ -1,5 +1,5 @@
 import { LogFormatter } from '../../../src/formatter';
-import { LogAttributes, UnformattedAttributes } from '../../../types';
+import { LogAttributes, UnformattedAttributes } from '../../../src/types';
 
 type MyCompanyLog = LogAttributes;
 

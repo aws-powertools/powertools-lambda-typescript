@@ -1,4 +1,4 @@
-import { HandlerMethodDecorator, MethodDecorator } from '../types';
+import { HandlerMethodDecorator, MethodDecorator } from './types';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
 interface TracerInterface {

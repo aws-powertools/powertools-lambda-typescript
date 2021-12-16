@@ -7,6 +7,7 @@
         "declaration": true,
         "declarationMap": true,
         "outDir": "lib",
+        "removeComments": false,
         "strict": true,
         "inlineSourceMap": true,
         "moduleResolution": "node",
@@ -15,7 +16,7 @@
         "baseUrl": "src/",
         "rootDirs": [ "src/" ]
     },
-    "include": [ "src/**/*" ],
+    "include": [ "src/**/*", "examples/**/*", "tests/**/*" ],
     "exclude": [ "./node_modules"],
     "watchOptions": {
         "watchFile": "useFsEvents",

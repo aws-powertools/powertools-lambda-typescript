@@ -1,6 +1,6 @@
 import { pickBy, merge } from 'lodash';
 import { LogItemInterface } from '.';
-import { LogAttributes } from '../../types';
+import { LogAttributes } from '../types';
 
 class LogItem implements LogItemInterface {
 

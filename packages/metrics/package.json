@@ -13,6 +13,7 @@
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
+    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
@@ -61,6 +62,7 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
+    "@aws-lambda-powertools/commons": "^0.0.2",
     "@types/aws-lambda": "^8.10.72"
   }
 }

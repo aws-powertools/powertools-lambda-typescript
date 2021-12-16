@@ -7,7 +7,7 @@ import { LambdaInterface } from '../../examples/utils/lambda';
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
-import { ClassThatLogs } from '../../types';
+import { ClassThatLogs } from '../../src/types';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);

@@ -1,6 +1,6 @@
 import { LogFormatter } from '.';
-import { UnformattedAttributes } from '../../types';
 import { PowertoolLog } from '../../types/formats';
+import { UnformattedAttributes } from '../../types';
 
 class PowertoolLogFormatter extends LogFormatter {
 

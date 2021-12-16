@@ -1,6 +1,6 @@
-import { AssertionError, strictEqual } from 'assert';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { UnformattedAttributes } from '../../../types';
+import { AssertionError, strictEqual } from 'assert';
 
 describe('Class: PowertoolLogFormatter', () => {
 

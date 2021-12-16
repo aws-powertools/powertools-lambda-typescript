@@ -1,6 +1,8 @@
 import type { Context } from 'aws-lambda';
 
+import { LogItem } from './log';
 import { cloneDeep, merge } from 'lodash/fp';
+import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import type {
   Environment,
   HandlerMethodDecorator,
@@ -14,9 +16,7 @@ import type {
   LogLevelThresholds,
   PowertoolLogData,
 } from '../types';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
-import { LogItem } from './log';
 
 class Logger implements ClassThatLogs {
 
@@ -24,11 +24,11 @@ class Logger implements ClassThatLogs {
 
   private static coldStartEvaluated: boolean = false;
 
+  private customConfigService?: ConfigServiceInterface;
+
   private static readonly defaultLogLevel: LogLevel = 'INFO';
 
   private static readonly defaultServiceName: string = 'service_undefined';
-
-  private customConfigService?: ConfigServiceInterface;
 
   private envVarsService?: EnvironmentVariablesService;
 
@@ -48,22 +48,6 @@ class Logger implements ClassThatLogs {
   private persistentLogAttributes?: LogAttributes = {};
 
   private powertoolLogData: PowertoolLogData = <PowertoolLogData>{};
-
-  public static getColdStartEvaluatedValue(): boolean {
-    return Logger.coldStartEvaluated;
-  }
-
-  public static setColdStartEvaluatedValue(value: boolean) {
-    Logger.coldStartEvaluated = value;
-  }
-
-  public static getColdStartValue(): boolean | undefined {
-    return Logger.coldStart;
-  }
-
-  public static setColdStartValue(value: boolean | undefined) {
-    Logger.coldStart = value;
-  }
 
   public constructor(options: LoggerOptions = {}) {
     this.setOptions(options);
@@ -108,6 +92,20 @@ class Logger implements ClassThatLogs {
     this.printLog(this.createAndPopulateLogItem('ERROR', input, extraInput));
   }
 
+  public static evaluateColdStartOnce(): void {
+    if (Logger.getColdStartEvaluatedValue() === false) {
+      Logger.evaluateColdStart();
+    }
+  }
+
+  public static getColdStartEvaluatedValue(): boolean {
+    return Logger.coldStartEvaluated;
+  }
+
+  public static getColdStartValue(): boolean | undefined {
+    return Logger.coldStart;
+  }
+
   public getLogsSampled(): boolean {
     return this.logsSampled;
   }
@@ -125,7 +123,7 @@ class Logger implements ClassThatLogs {
 
       descriptor.value = (event, context, callback) => {
         this.addContext(context);
-        const result = originalMethod?.apply(this, [event, context, callback]);
+        const result = originalMethod?.apply(this, [ event, context, callback ]);
 
         return result;
       };
@@ -134,6 +132,14 @@ class Logger implements ClassThatLogs {
 
   public refreshSampleRateCalculation(): void {
     this.setLogsSampled();
+  }
+
+  public static setColdStartEvaluatedValue(value: boolean): void {
+    Logger.coldStartEvaluated = value;
+  }
+
+  public static setColdStartValue(value: boolean | undefined): void {
+    Logger.coldStart = value;
   }
 
   public setSampleRateValue(sampleRateValue?: number): void {
@@ -180,17 +186,11 @@ class Logger implements ClassThatLogs {
     return logItem;
   }
 
-  public static evaluateColdStartOnce() {
-    if (Logger.getColdStartEvaluatedValue() === false) {
-      Logger.evaluateColdStart();
-    }
-  }
-
-  protected static evaluateColdStart() {
+  private static evaluateColdStart(): void {
     const coldStartValue = Logger.getColdStartValue();
-    if(typeof coldStartValue === 'undefined') {
+    if (typeof coldStartValue === 'undefined') {
       Logger.setColdStartValue(true);
-    } else if(coldStartValue === true) {
+    } else if (coldStartValue === true) {
       Logger.setColdStartValue(false);
     } else {
       Logger.setColdStartValue(false);

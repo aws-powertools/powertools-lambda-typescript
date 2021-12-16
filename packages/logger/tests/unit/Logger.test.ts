@@ -1,12 +1,12 @@
-import { Callback, Context } from 'aws-lambda/handler';
 import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
-import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
+import { Callback, Context } from 'aws-lambda/handler';
 import { ClassThatLogs, LambdaInterface } from '../../types';
+import { createLogger, Logger } from '../../src';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
@@ -23,10 +23,10 @@ describe('Class: Logger', () => {
   });
 
   describe.each([
-    ['debug', 'DOES', true, 'DOES NOT', false, 'DOES NOT', false, 'DOES NOT', false],
-    ['info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false],
-    ['warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false],
-    ['error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true],
+    [ 'debug', 'DOES', true, 'DOES NOT', false, 'DOES NOT', false, 'DOES NOT', false ],
+    [ 'info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false ],
+    [ 'warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false ],
+    [ 'error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true ],
   ])(
     'Method: %p',
     (
@@ -42,8 +42,6 @@ describe('Class: Logger', () => {
     ) => {
 
       describe('Feature: log level', () => {
-
-        const { createLogger } = require('./../../src');
 
         test('when the Logger\'s log level is DEBUG, it '+ debugAction + ' prints to stdout', () => {
 
@@ -153,8 +151,6 @@ describe('Class: Logger', () => {
 
       describe('Feature: sample rate', () => {
 
-        const { createLogger } = require('./../../src');
-
         test('when the Logger\'s log level is higher and the current Lambda invocation IS NOT sampled for logging, it DOES NOT print to stdout', () => {
 
           // Prepare
@@ -200,8 +196,6 @@ describe('Class: Logger', () => {
       });
 
       describe('Feature: capture Lambda context information and add it in the printed logs', () => {
-
-        const { createLogger } = require('./../../src');
 
         test('when the Lambda context is not captured and a string is passed as log message, it should print a valid '+ method.toUpperCase() + ' log', () => {
 
@@ -257,8 +251,6 @@ describe('Class: Logger', () => {
       });
 
       describe('Feature: ephemeral log attributes', () => {
-
-        const { createLogger } = require('./../../src');
 
         test('when added, they should appear in that log item only', () => {
 
@@ -341,8 +333,6 @@ describe('Class: Logger', () => {
 
       describe('Feature: persistent log attributes', () => {
 
-        const { createLogger } = require('./../../src');
-
         test('when persistent log attributes are added to the Logger instance, they should appear in all logs printed by the instance', () => {
 
           // Prepare
@@ -375,8 +365,6 @@ describe('Class: Logger', () => {
       });
 
       describe('Feature: handle safely unexpected errors', () => {
-
-        const { createLogger } = require('./../../src');
 
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
 
@@ -420,15 +408,13 @@ describe('Class: Logger', () => {
 
   describe('Method: addContext', () => {
 
-    const { Logger } = require('./../../src');
-
     test('when called during a COLD START invocation, it populates the logger\'s PowertoolLogData object with coldstart set to true', () => {
 
       // Prepare
       const logger = new Logger();
 
       // Act
-      logger.addContext(      {
+      logger.addContext( {
         callbackWaitsForEmptyEventLoop: true,
         functionVersion: '$LATEST',
         functionName: 'foo-bar-function-with-cold-start',
@@ -461,11 +447,11 @@ describe('Class: Logger', () => {
           awsRegion: 'eu-central-1',
           environment: '',
           lambdaContext: {
-            awsRequestId: "c6af9ac6-7b61-11e6-9a41-93e812345678",
+            awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
             coldStart: true,
-            functionName: "foo-bar-function-with-cold-start",
-            functionVersion: "$LATEST",
-            invokedFunctionArn: "arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function-with-cold-start",
+            functionName: 'foo-bar-function-with-cold-start',
+            functionVersion: '$LATEST',
+            invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function-with-cold-start',
             memoryLimitInMB: 128,
           },
           sampleRateValue: undefined,
@@ -478,8 +464,6 @@ describe('Class: Logger', () => {
   });
 
   describe('Method: appendKeys', () => {
-
-    const { Logger } = require('./../../src');
 
     test('when called, populates the logger\'s propriety persistentLogAttributes ', () => {
 
@@ -512,8 +496,6 @@ describe('Class: Logger', () => {
 
   describe('Method: createChild', () => {
 
-    const { Logger } = require('./../../src');
-
     test('when called, creates a distinct clone of the original logger instance', () => {
 
       // Prepare
@@ -537,8 +519,6 @@ describe('Class: Logger', () => {
   });
 
   describe('Method: evaluateColdStartOnce', () => {
-
-    const { Logger } = require('./../../src');
 
     test('when called during the first invocation (cold start), it populates the logger\'s PowertoolLogData object with coldstart set to true', () => {
 
@@ -589,9 +569,8 @@ describe('Class: Logger', () => {
 
   describe('Method: injectLambdaContext', () => {
 
-    const { Logger } = require('./../../src');
-
     beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(console, 'log').mockImplementation(() => {});
     });
 
@@ -640,21 +619,7 @@ describe('Class: Logger', () => {
 
   });
 
-  describe('Method: getColdStartValue', () => {
-
-    const { Logger } = require('./../../src');
-
-    test('when called, it returns the value of the static variable coldStart in the same file', async () => {
-      // Assess
-      expect(Logger.getColdStartValue()).toEqual(Logger.coldStart);
-
-    });
-
-  });
-
   describe('Method: setColdStartValue', () => {
-
-    const { Logger } = require('./../../src');
 
     test('when called, it sets the value of the static variable coldStart in the same file', async () => {
 
@@ -678,8 +643,6 @@ describe('Class: Logger', () => {
   });
 
   describe('Method: refreshSampleRateCalculation', () => {
-
-    const { Logger } = require('./../../src');
 
     test('when called, it recalculates whether the current Lambda invocation\'s logs will be printed or not', () => {
 
@@ -707,8 +670,6 @@ describe('Class: Logger', () => {
   });
 
   describe('Method: createChild', () => {
-
-    const { Logger } = require('./../../src');
 
     test('when called, it returns a DISTINCT clone of the logger instance', () => {
 

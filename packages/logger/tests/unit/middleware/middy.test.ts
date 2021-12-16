@@ -1,8 +1,8 @@
 import { EnvironmentVariablesService } from '../../../src/config';
-import { PowertoolLogFormatter } from '../../../src/formatter';
+import { injectLambdaContext } from '../../../src/middleware/middy';
 import { Logger } from './../../../src';
 import middy from '@middy/core';
-import { injectLambdaContext } from '../../../src/middleware/middy';
+import { PowertoolLogFormatter } from '../../../src/formatter';
 
 describe('Middy middleware', () => {
 
@@ -10,6 +10,7 @@ describe('Middy middleware', () => {
 
   beforeEach(() => {
     jest.resetModules();
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     jest.spyOn(console, 'log').mockImplementation(() => {});
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
@@ -20,67 +21,62 @@ describe('Middy middleware', () => {
 
   describe('injectLambdaContext', () => {
 
-      const { Logger } = require('./../../../src');
+    test('when a logger object is passed, it adds the context to the logger instance', async () => {
 
-      test('when a logger object is passed, it adds the context to the logger instance', async () => {
+      // Prepare
+      const logger = new Logger();
+      const lambdaHandler = (): void => {
+        logger.info('This is an INFO log with some context');
+      };
+      const handler = middy(lambdaHandler).use(injectLambdaContext(logger));
+      const event = { foo: 'bar' };
+      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
 
-        // Prepare
-        const logger = new Logger();
-        const lambdaHandler = (): void => {
-          logger.info('This is an INFO log with some context');
-        }
-        const handler = middy(lambdaHandler).use(injectLambdaContext(logger));
-        const event = { foo: 'bar' };
-        const getRandomInt = () => {
-          return Math.floor(Math.random() * 1000000000);
-        }
+      const awsRequestId = getRandomInt().toString();
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        awsRequestId: awsRequestId,
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
 
-        const awsRequestId = getRandomInt().toString();
-        const context = {
-          callbackWaitsForEmptyEventLoop: true,
-          functionVersion: '$LATEST',
-          functionName: 'foo-bar-function',
-          memoryLimitInMB: '128',
-          logGroupName: '/aws/lambda/foo-bar-function',
-          logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-          invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
-          awsRequestId: awsRequestId,
-          getRemainingTimeInMillis: () => 1234,
-          done: () => console.log('Done!'),
-          fail: () => console.log('Failed!'),
-          succeed: () => console.log('Succeeded!'),
-        };
+      // Act
+      await handler(event, context, () => console.log('Lambda invoked!'));
 
-        // Act
-        await handler(event, context, () => console.log('Lambda invoked!'))
-
-        // Assess
-        expect(logger).toEqual(expect.objectContaining({
-          logsSampled: false,
-          persistentLogAttributes: {},
-          powertoolLogData: {
-            sampleRateValue: undefined,
-            awsRegion: 'eu-central-1',
-            environment: '',
-            lambdaContext: {
-              "awsRequestId": awsRequestId,
-              "coldStart": true,
-              "functionName": "foo-bar-function",
-              "functionVersion": "$LATEST",
-              "invokedFunctionArn": "arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function",
-              "memoryLimitInMB": 128
-            },
-            serviceName: 'hello-world',
-            xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+      // Assess
+      expect(logger).toEqual(expect.objectContaining({
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          sampleRateValue: undefined,
+          awsRegion: 'eu-central-1',
+          environment: '',
+          lambdaContext: {
+            awsRequestId: awsRequestId,
+            coldStart: true,
+            functionName: 'foo-bar-function',
+            functionVersion: '$LATEST',
+            invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+            memoryLimitInMB: 128,
           },
-          envVarsService: expect.any(EnvironmentVariablesService),
-          customConfigService: undefined,
-          logLevel: 'DEBUG',
-          logFormatter: expect.any(PowertoolLogFormatter),
-        }));
+          serviceName: 'hello-world',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
+        envVarsService: expect.any(EnvironmentVariablesService),
+        customConfigService: undefined,
+        logLevel: 'DEBUG',
+        logFormatter: expect.any(PowertoolLogFormatter),
+      }));
 
-      });
-
+    });
 
     test('when a logger array is passed, it adds the context to all logger instances', async () => {
 
@@ -90,13 +86,11 @@ describe('Middy middleware', () => {
       const lambdaHandler = (): void => {
         logger.info('This is an INFO log with some context');
         anotherLogger.info('This is an INFO log with some context');
-      }
+      };
       const handler = middy(lambdaHandler).use(injectLambdaContext([ logger, anotherLogger ]));
       const event = { foo: 'bar' };
 
-      const getRandomInt = () => {
-        return Math.floor(Math.random() * 1000000000);
-      }
+      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
 
       const awsRequestId = getRandomInt().toString();
 
@@ -116,7 +110,7 @@ describe('Middy middleware', () => {
       };
 
       // Act
-      await handler(event, context, () => console.log('Lambda invoked!'))
+      await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       const expectation = expect.objectContaining({
@@ -125,21 +119,19 @@ describe('Middy middleware', () => {
           awsRegion: 'eu-central-1',
           environment: '',
           lambdaContext: {
-            "awsRequestId": awsRequestId,
-            "coldStart": true,
-            "functionName": "foo-bar-function",
-            "functionVersion": "$LATEST",
-            "invokedFunctionArn": "arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function",
-            "memoryLimitInMB": 128
+            awsRequestId: awsRequestId,
+            coldStart: true,
+            functionName: 'foo-bar-function',
+            functionVersion: '$LATEST',
+            invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+            memoryLimitInMB: 128,
           },
           serviceName: 'hello-world',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
-        }
+        },
       });
       expect(logger).toEqual(anotherLogger);
       expect(anotherLogger).toEqual(expectation);
-
-
 
     });
 

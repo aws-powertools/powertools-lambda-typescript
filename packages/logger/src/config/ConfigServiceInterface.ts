@@ -1,14 +1,14 @@
 interface ConfigServiceInterface {
 
-  get(name: string): string;
+  get(name: string): string
 
-  getCurrentEnvironment(): string;
+  getCurrentEnvironment(): string
 
-  getLogLevel(): string;
+  getLogLevel(): string
 
-  getSampleRateValue(): number | undefined;
+  getSampleRateValue(): number | undefined
 
-  getServiceName(): string;
+  getServiceName(): string
 
 }
 

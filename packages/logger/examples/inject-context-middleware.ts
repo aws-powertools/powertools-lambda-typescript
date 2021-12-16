@@ -6,9 +6,10 @@ process.env.LOG_LEVEL = 'INFO';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
+import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
 import { Handler } from 'aws-lambda';
 import { Logger } from '../src';
-import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
+
 import { injectLambdaContext } from '../src/middleware/middy';
 import middy from '@middy/core';
 

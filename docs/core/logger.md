@@ -74,9 +74,9 @@ Method 1, using a [Middy](https://github.com/middyjs/middy) middleware:
 
 === "handler.ts"
 
-    ```typescript hl_lines="2 10-11"
-    import { Logger } from "@aws-lambda-powertools/logger";
-    import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware/middy';
+    ```typescript hl_lines="1 9-10"
+    import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
+    import middy from '@middy/core';
 
     const logger = new Logger();
 

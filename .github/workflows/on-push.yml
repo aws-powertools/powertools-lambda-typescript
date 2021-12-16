@@ -16,7 +16,7 @@ jobs:
           node-version: '14'
       - name: Install packages
         run: |
-          npm install
+          npm ci
           npm run lerna-ci
       - name: Run lint
         run: npm run lerna-lint

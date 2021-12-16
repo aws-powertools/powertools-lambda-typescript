@@ -10,6 +10,7 @@ npm run test
 npm run example:hello-world
 npm run example:inject-context
 npm run example:inject-context-decorator
+npm run example:inject-context-middleware
 npm run example:errors
 npm run example:constructor-options
 npm run example:custom-log-formatter
@@ -70,7 +71,66 @@ logger.error('This is an ERROR log');
 
 ### Capturing Lambda context info
 
-Without decorators:
+With the middy middleware `injectLambdaContext`:
+
+```typescript
+// Environment variables set for the Lambda
+process.env.LOG_LEVEL = 'INFO';
+process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
+import { injectLambdaContext } from '../src/middleware/middy';
+import middy from '@middy/core';
+
+const logger = new Logger();
+
+const lambdaHandler: Handler = async () => {
+
+  logger.info('This is an INFO log');
+
+  return {
+    foo: 'bar'
+  };
+
+};
+
+const handlerWithMiddleware = middy(lambdaHandler)
+  .use(injectLambdaContext(logger));
+
+```
+
+<details>
+ <summary>Click to expand and see the logs outputs</summary>
+
+```bash
+
+{
+  aws_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+  cold_start: true,
+  lambda_function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+  lambda_function_memory_size: 128,
+  lambda_function_name: 'foo-bar-function',
+  level: 'WARN',
+  message: 'This is a WARN log',
+  service: 'hello-world',
+  timestamp: '2021-03-13T18:11:46.919Z',
+  xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+}
+{
+  aws_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+  cold_start: true,
+  lambda_function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+  lambda_function_memory_size: 128,
+  lambda_function_name: 'foo-bar-function',
+  level: 'ERROR',
+  message: 'This is an ERROR log',
+  service: 'hello-world',
+  timestamp: '2021-03-13T18:11:46.921Z',
+  xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
+}
+
+```
+</details>
+
+With the `addContext` method:
 
 ```typescript
 // Environment variables set for the Lambda
@@ -99,27 +159,15 @@ const lambdaHandler: Handler = async () => {
 ```bash
 
 {
-  aws_request_id: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
   cold_start: true,
-  lambda_function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-  lambda_function_memory_size: 128,
-  lambda_function_name: 'foo-bar-function',
-  level: 'WARN',
-  message: 'This is a WARN log',
+  function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+  function_memory_size: 128,
+  function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+  function_name: 'foo-bar-function',
+  level: 'INFO',
+  message: 'This is an INFO log',
   service: 'hello-world',
-  timestamp: '2021-03-13T18:11:46.919Z',
-  xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
-}
-{
-  aws_request_id: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
-  cold_start: true,
-  lambda_function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-  lambda_function_memory_size: 128,
-  lambda_function_name: 'foo-bar-function',
-  level: 'ERROR',
-  message: 'This is an ERROR log',
-  service: 'hello-world',
-  timestamp: '2021-03-13T18:11:46.921Z',
+  timestamp: '2021-12-15T23:56:17.773Z',
   xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
 }
 
@@ -157,15 +205,15 @@ new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked
 ```bash
 
 {
-  aws_request_id: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
   cold_start: true,
-  lambda_function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-  lambda_function_memory_size: 128,
-  lambda_function_name: 'foo-bar-function',
+  function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+  function_memory_size: 128,
+  function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+  function_name: 'foo-bar-function',
   level: 'INFO',
   message: 'This is an INFO log with some context',
   service: 'hello-world',
-  timestamp: '2021-03-25T11:00:01.400Z',
+  timestamp: '2021-12-15T23:57:25.749Z',
   xray_trace_id: 'abcdef123456abcdef123456abcdef123456'
 }
 
@@ -536,7 +584,7 @@ const lambdaHandler: Handler = async (event, context) => {
   service: 'hello-world',
   awsRegion: 'eu-central-1',
   correlationIds: {
-    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
     xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
     myCustomCorrelationId: 'foo-bar-baz'
   },

@@ -1,4 +1,4 @@
-import { LogAttributes } from '../../types/Log';
+import { LogAttributes } from '../types/Log';
 
 interface LogItemInterface {
 

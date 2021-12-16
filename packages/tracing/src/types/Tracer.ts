@@ -1,7 +1,23 @@
-import { ConfigServiceInterface } from '../src/config';
+import { ConfigServiceInterface } from '../config';
 import { Handler } from 'aws-lambda';
-import { LambdaInterface } from '../examples/utils/lambda';
+import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
+/**
+  * Options for the tracer class to be used during initialization.
+  * 
+  * Usage:
+  * @example
+  * ```typescript
+  * const customConfigService: ConfigServiceInterface;
+  * const tracerOptions: TracerOptions = {
+  *   enabled?: true,
+  *   serviceName?: 'my-service',
+  *   customConfigService?: customConfigService, // Only needed for advanced uses
+  * };
+  * 
+  * const tracer = new Tracer(tracerOptions);
+  * ```
+  */
 type TracerOptions = {
   enabled?: boolean
   serviceName?: string

@@ -15,8 +15,7 @@ import type {
   LogLevel,
   LogLevelThresholds,
   PowertoolLogData,
-} from '../types';
-import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
+} from './types';
 
 class Logger implements ClassThatLogs {
 

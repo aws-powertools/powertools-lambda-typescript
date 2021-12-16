@@ -1,0 +1,57 @@
+{
+  "name": "@aws-lambda-powertools/commons",
+  "version": "0.0.2",
+  "description": "A shared utility package for AWS Lambda powertools (TypeScript) libraries",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "scripts": {
+    "commit": "commit",
+    "test": "jest  --detectOpenHandles --coverage --verbose",
+    "watch": "jest --watch",
+    "build": "tsc",
+    "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
+    "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
+    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/metrics#readme",
+  "license": "MIT-0",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "typedocMain": "src/index.ts",
+  "devDependencies": {
+    "@commitlint/cli": "^15.0.0",
+    "@types/aws-lambda": "^8.10.72",
+    "@types/jest": "^27.0.0",
+    "@types/node": "^16.6.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.3.0",
+    "eslint-import-resolver-node": "^0.3.6",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.3",
+    "jest": "^27.2.2",
+    "ts-jest": "^27.0.5",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.1.3"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+  },
+  "dependencies": {
+    "@types/aws-lambda": "^8.10.72"
+  }
+}

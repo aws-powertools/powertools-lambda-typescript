@@ -20,7 +20,9 @@ import { LogItem } from './log';
 
 class Logger implements ClassThatLogs {
 
-  public static coldStart?: boolean;
+  private static coldStart?: boolean = undefined;
+
+  private static coldStartEvaluated: boolean = false;
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
 
@@ -47,15 +49,31 @@ class Logger implements ClassThatLogs {
 
   private powertoolLogData: PowertoolLogData = <PowertoolLogData>{};
 
+  public static getColdStartEvaluatedValue(): boolean {
+    return Logger.coldStartEvaluated;
+  }
+
+  public static setColdStartEvaluatedValue(value: boolean) {
+    Logger.coldStartEvaluated = value;
+  }
+
+  public static getColdStartValue(): boolean | undefined {
+    return Logger.coldStart;
+  }
+
+  public static setColdStartValue(value: boolean | undefined) {
+    Logger.coldStart = value;
+  }
+
   public constructor(options: LoggerOptions = {}) {
     this.setOptions(options);
   }
 
   public addContext(context: Context): void {
-    Logger.evaluateColdStart();
+    Logger.evaluateColdStartOnce();
     const lambdaContext: Partial<LambdaFunctionContext> = {
       invokedFunctionArn: context.invokedFunctionArn,
-      coldStart: Logger.coldStart,
+      coldStart: Logger.getColdStartValue(),
       awsRequestId: context.awsRequestId,
       memoryLimitInMB: Number(context.memoryLimitInMB),
       functionName: context.functionName,
@@ -162,25 +180,24 @@ class Logger implements ClassThatLogs {
     return logItem;
   }
 
-  private static evaluateColdStart = (() => {
-    let evaluated = false;
-    return function() {
-      if (!evaluated) {
-        evaluated = true;
-        if(typeof Logger.coldStart === 'undefined') {
-          Logger.coldStart = true;
-          return;
-        }
-        if(Logger.coldStart === true) {
-          Logger.coldStart = false;
-          return;
-        }
+  public static evaluateColdStartOnce() {
+    if (Logger.getColdStartEvaluatedValue() === false) {
+      Logger.evaluateColdStart();
+    }
+  }
 
-        Logger.coldStart = false;
+  protected static evaluateColdStart() {
+    const coldStartValue = Logger.getColdStartValue();
+    if(typeof coldStartValue === 'undefined') {
+      Logger.setColdStartValue(true);
+    } else if(coldStartValue === true) {
+      Logger.setColdStartValue(false);
+    } else {
+      Logger.setColdStartValue(false);
+    }
 
-      }
-    };
-  })()
+    Logger.setColdStartEvaluatedValue(true);
+  }
 
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;

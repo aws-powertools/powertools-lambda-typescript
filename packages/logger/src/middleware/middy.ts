@@ -6,7 +6,6 @@ const injectLambdaContext = (target: Logger | Logger[]): middy.MiddlewareObj => 
     const loggers = target instanceof Array ? target : [ target ];
     loggers.forEach((logger: Logger) => {
       logger.addContext(request.context);
-      console.log('foo', logger);
     })
   };
   return {

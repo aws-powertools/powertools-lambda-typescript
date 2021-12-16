@@ -1,4 +1,4 @@
-import { Callback, Context, Handler } from 'aws-lambda/handler';
+import { Callback, Context } from 'aws-lambda/handler';
 import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -7,8 +7,6 @@ import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
 import { ClassThatLogs, LambdaInterface } from '../../types';
-import middy from '@middy/core';
-import { injectLambdaContext } from '../../src/middleware/middy';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
@@ -18,7 +16,8 @@ const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 describe('Class: Logger', () => {
 
   beforeEach(() => {
-    jest.resetModules();
+    Logger.setColdStartValue(undefined);
+    Logger.setColdStartEvaluatedValue(false);
     consoleSpy.mockClear();
     dateSpy.mockClear();
   });
@@ -43,6 +42,8 @@ describe('Class: Logger', () => {
     ) => {
 
       describe('Feature: log level', () => {
+
+        const { createLogger } = require('./../../src');
 
         test('when the Logger\'s log level is DEBUG, it '+ debugAction + ' prints to stdout', () => {
 
@@ -152,6 +153,8 @@ describe('Class: Logger', () => {
 
       describe('Feature: sample rate', () => {
 
+        const { createLogger } = require('./../../src');
+
         test('when the Logger\'s log level is higher and the current Lambda invocation IS NOT sampled for logging, it DOES NOT print to stdout', () => {
 
           // Prepare
@@ -198,6 +201,8 @@ describe('Class: Logger', () => {
 
       describe('Feature: capture Lambda context information and add it in the printed logs', () => {
 
+        const { createLogger } = require('./../../src');
+
         test('when the Lambda context is not captured and a string is passed as log message, it should print a valid '+ method.toUpperCase() + ' log', () => {
 
           // Prepare
@@ -236,10 +241,10 @@ describe('Class: Logger', () => {
           expect(console.log).toBeCalledTimes(1);
           expect(console.log).toHaveBeenNthCalledWith(1, {
             cold_start: true,
-            function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+            function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
             function_memory_size: 128,
             function_name: 'foo-bar-function',
-            function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+            function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
             level: method.toUpperCase(),
             message: 'foo',
             service: 'hello-world',
@@ -252,6 +257,8 @@ describe('Class: Logger', () => {
       });
 
       describe('Feature: ephemeral log attributes', () => {
+
+        const { createLogger } = require('./../../src');
 
         test('when added, they should appear in that log item only', () => {
 
@@ -334,6 +341,8 @@ describe('Class: Logger', () => {
 
       describe('Feature: persistent log attributes', () => {
 
+        const { createLogger } = require('./../../src');
+
         test('when persistent log attributes are added to the Logger instance, they should appear in all logs printed by the instance', () => {
 
           // Prepare
@@ -366,6 +375,8 @@ describe('Class: Logger', () => {
       });
 
       describe('Feature: handle safely unexpected errors', () => {
+
+        const { createLogger } = require('./../../src');
 
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
 
@@ -407,7 +418,68 @@ describe('Class: Logger', () => {
       });
     });
 
+  describe('Method: addContext', () => {
+
+    const { Logger } = require('./../../src');
+
+    test('when called during a COLD START invocation, it populates the logger\'s PowertoolLogData object with coldstart set to true', () => {
+
+      // Prepare
+      const logger = new Logger();
+
+      // Act
+      logger.addContext(      {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function-with-cold-start',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function-with-cold-start',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function-with-cold-start',
+        awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      });
+
+      // Assess
+      expect(logger).toEqual({
+        customConfigService: undefined,
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-central-1',
+          environment: '',
+          lambdaContext: {
+            awsRequestId: "c6af9ac6-7b61-11e6-9a41-93e812345678",
+            coldStart: true,
+            functionName: "foo-bar-function-with-cold-start",
+            functionVersion: "$LATEST",
+            invokedFunctionArn: "arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function-with-cold-start",
+            memoryLimitInMB: 128,
+          },
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        },
+      });
+    });
+
+  });
+
   describe('Method: appendKeys', () => {
+
+    const { Logger } = require('./../../src');
 
     test('when called, populates the logger\'s propriety persistentLogAttributes ', () => {
 
@@ -440,6 +512,8 @@ describe('Class: Logger', () => {
 
   describe('Method: createChild', () => {
 
+    const { Logger } = require('./../../src');
+
     test('when called, creates a distinct clone of the original logger instance', () => {
 
       // Prepare
@@ -462,7 +536,64 @@ describe('Class: Logger', () => {
 
   });
 
+  describe('Method: evaluateColdStartOnce', () => {
+
+    const { Logger } = require('./../../src');
+
+    test('when called during the first invocation (cold start), it populates the logger\'s PowertoolLogData object with coldstart set to true', () => {
+
+      // Prepare
+      // This value is undefined at the beginning of the first invocation
+      Logger.setColdStartValue(undefined);
+
+      // Act
+      Logger.evaluateColdStartOnce();
+      Logger.evaluateColdStartOnce();
+      Logger.evaluateColdStartOnce();
+
+      // Assess
+      expect(Logger.getColdStartValue()).toEqual(true);
+    });
+
+    test('when called during the SECOND invocation (warm start), it populates the logger\'s PowertoolLogData object with coldstart set to false', () => {
+
+      // Prepare
+      // This value is set to true at the beginning of the second invocation
+      Logger.setColdStartValue(true);
+
+      // Act
+      Logger.evaluateColdStartOnce();
+      Logger.evaluateColdStartOnce();
+      Logger.evaluateColdStartOnce();
+
+      // Assess
+      expect(Logger.getColdStartValue()).toEqual(false);
+    });
+
+    test('when called during the THIRD invocation (warm start), it populates the logger\'s PowertoolLogData object with coldstart set to false', () => {
+
+      // Prepare
+      // This value is set to false at the beginning of the third invocation
+      Logger.setColdStartValue(false);
+
+      // Act
+      Logger.evaluateColdStartOnce();
+      Logger.evaluateColdStartOnce();
+      Logger.evaluateColdStartOnce();
+
+      // Assess
+      expect(Logger.getColdStartValue()).toEqual(false);
+    });
+
+  });
+
   describe('Method: injectLambdaContext', () => {
+
+    const { Logger } = require('./../../src');
+
+    beforeEach(() => {
+      jest.spyOn(console, 'log').mockImplementation(() => {});
+    });
 
     test('when used as decorator, it returns a function that captures Lambda\'s context information and adds it in the printed logs', async () => {
 
@@ -494,10 +625,10 @@ describe('Class: Logger', () => {
       });
       expect(console.log).toHaveBeenNthCalledWith(2, {
         cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
         function_memory_size: 128,
         function_name: 'foo-bar-function',
-        function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+        function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
         message: 'This is an INFO log with some context',
         service: 'hello-world',
         level: 'INFO',
@@ -509,80 +640,46 @@ describe('Class: Logger', () => {
 
   });
 
-  describe('Method: isColdStart', () => {
+  describe('Method: getColdStartValue', () => {
 
-    test('when called during an invocation experiencing a cold start, it returns true', async () => {
+    const { Logger } = require('./../../src');
 
-      // Prepare
-      const logger = new Logger();
-      const handler: Handler = (_event, context: Context): void => {
-        logger.addContext(context);
-        logger.info('This is an INFO log with some context');
-      }
-      const event = { foo: 'bar' };
-      const context = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-        awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-      };
-
-      // Act
-      await handler(event, context, () => console.log('Lambda invoked!'))
-      const coldStartValue = Logger.coldStart;
-
+    test('when called, it returns the value of the static variable coldStart in the same file', async () => {
       // Assess
-      expect(coldStartValue).toEqual(true);
+      expect(Logger.getColdStartValue()).toEqual(Logger.coldStart);
 
     });
 
-    test.only('when called during an invocation not experiencing a cold start, it returns false', async () => {
+  });
 
-      // Prepare
-      Logger.coldStart = true;
-      const logger = new Logger();
-      const handler: Handler = (_event, context: Context): void => {
-        logger.addContext(context);
-        logger.info('This is an INFO log with some context');
-      }
+  describe('Method: setColdStartValue', () => {
 
-      const warmStartInvocationEvent = { foo: 'bar' };
+    const { Logger } = require('./../../src');
 
-      const warmStartInvocationContext = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
-        awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-      };
+    test('when called, it sets the value of the static variable coldStart in the same file', async () => {
 
       // Act
-      await handler(warmStartInvocationEvent, warmStartInvocationContext, () => console.log('Lambda invoked!'));
-      const warmStartValue = Logger.coldStart;
+      Logger.setColdStartValue(undefined);
+      const undefinedValue = Logger.getColdStartValue();
+
+      Logger.setColdStartValue(true);
+      const trueValue = Logger.getColdStartValue();
+
+      Logger.setColdStartValue(false);
+      const falseValue = Logger.getColdStartValue();
 
       // Assess
-      expect(Logger).toEqual(foo);
+      expect(undefinedValue).toBe(undefined);
+      expect(trueValue).toBe(true);
+      expect(falseValue).toBe(false);
 
     });
 
   });
 
   describe('Method: refreshSampleRateCalculation', () => {
+
+    const { Logger } = require('./../../src');
 
     test('when called, it recalculates whether the current Lambda invocation\'s logs will be printed or not', () => {
 
@@ -610,6 +707,8 @@ describe('Class: Logger', () => {
   });
 
   describe('Method: createChild', () => {
+
+    const { Logger } = require('./../../src');
 
     test('when called, it returns a DISTINCT clone of the logger instance', () => {
 

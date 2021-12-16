@@ -1,25 +1,26 @@
 import { EnvironmentVariablesService } from '../../../src/config';
 import { PowertoolLogFormatter } from '../../../src/formatter';
-import type { Context, Handler } from 'aws-lambda/handler';
 import { Logger } from './../../../src';
 import middy from '@middy/core';
-import { Callback } from 'aws-lambda/handler';
 import { injectLambdaContext } from '../../../src/middleware/middy';
 
 describe('Middy middleware', () => {
+
+  const ENVIRONMENT_VARIABLES = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    process.env = { ...ENVIRONMENT_VARIABLES };
+  });
+
+  afterAll(() => {
+    process.env = ENVIRONMENT_VARIABLES;
+  });
+
   describe('injectLambdaContext', () => {
 
-    const ENVIRONMENT_VARIABLES = process.env;
-
-    beforeEach(() => {
-      Logger.coldStart = undefined;
-      jest.resetModules();
-      process.env = { ...ENVIRONMENT_VARIABLES };
-    });
-
-    afterAll(() => {
-      process.env = ENVIRONMENT_VARIABLES;
-    });
+      const { Logger } = require('./../../../src');
 
       test('when a logger object is passed, it adds the context to the logger instance', async () => {
 
@@ -40,9 +41,9 @@ describe('Middy middleware', () => {
           functionVersion: '$LATEST',
           functionName: 'foo-bar-function',
           memoryLimitInMB: '128',
-          logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
+          logGroupName: '/aws/lambda/foo-bar-function',
           logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-          invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+          invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
           awsRequestId: awsRequestId,
           getRemainingTimeInMillis: () => 1234,
           done: () => console.log('Done!'),
@@ -66,7 +67,7 @@ describe('Middy middleware', () => {
               "coldStart": true,
               "functionName": "foo-bar-function",
               "functionVersion": "$LATEST",
-              "invokedFunctionArn": "arn:aws:lambda:eu-central-1:123456789012:function:Example",
+              "invokedFunctionArn": "arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function",
               "memoryLimitInMB": 128
             },
             serviceName: 'hello-world',
@@ -104,9 +105,9 @@ describe('Middy middleware', () => {
         functionVersion: '$LATEST',
         functionName: 'foo-bar-function',
         memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
+        logGroupName: '/aws/lambda/foo-bar-function',
         logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
         awsRequestId: awsRequestId,
         getRemainingTimeInMillis: () => 1234,
         done: () => console.log('Done!'),
@@ -128,7 +129,7 @@ describe('Middy middleware', () => {
             "coldStart": true,
             "functionName": "foo-bar-function",
             "functionVersion": "$LATEST",
-            "invokedFunctionArn": "arn:aws:lambda:eu-central-1:123456789012:function:Example",
+            "invokedFunctionArn": "arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function",
             "memoryLimitInMB": 128
           },
           serviceName: 'hello-world',

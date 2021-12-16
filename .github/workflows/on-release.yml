@@ -12,7 +12,7 @@ jobs:
       - name: Install packages
         run: |
           export NODE_ENV=dev
-          npm ci
+          npm install
           npm run lerna-ci
       - name: Run lint
         run: npm run lerna-lint

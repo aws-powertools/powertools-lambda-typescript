@@ -5,6 +5,7 @@ require('./../tests/helpers/populateEnvironmentVariables');
 process.env.LOG_LEVEL = 'INFO';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 
+// @ts-ignore
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
 import { Handler } from 'aws-lambda';

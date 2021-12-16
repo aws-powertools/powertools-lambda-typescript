@@ -1,5 +1,5 @@
 import type { Context } from 'aws-lambda';
-
+import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
 import { cloneDeep, merge } from 'lodash/fp';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';

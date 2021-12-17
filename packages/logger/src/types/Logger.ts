@@ -9,44 +9,44 @@ type ClassThatLogs = {
 };
 
 type LoggerOptions = {
-  logLevel?: LogLevel;
-  serviceName?: string;
-  sampleRateValue?: number;
-  logFormatter?: LogFormatterInterface;
-  customConfigService?: ConfigServiceInterface;
-  persistentLogAttributes?: LogAttributes;
-  environment?: Environment;
+  logLevel?: LogLevel
+  serviceName?: string
+  sampleRateValue?: number
+  logFormatter?: LogFormatterInterface
+  customConfigService?: ConfigServiceInterface
+  persistentLogAttributes?: LogAttributes
+  environment?: Environment
 };
 
 type LambdaFunctionContext = {
-  functionName: string;
-  memoryLimitInMB: number;
-  functionVersion: string;
-  coldStart: boolean;
-  invokedFunctionArn: string;
-  awsRequestId: string;
+  functionName: string
+  memoryLimitInMB: number
+  functionVersion: string
+  coldStart: boolean
+  invokedFunctionArn: string
+  awsRequestId: string
 };
 
 type PowertoolLogData = LogAttributes & {
-  environment?: Environment;
-  serviceName: string;
-  sampleRateValue?: number;
-  lambdaFunctionContext: LambdaFunctionContext;
-  xRayTraceId?: string;
-  awsRegion: string;
+  environment?: Environment
+  serviceName: string
+  sampleRateValue?: number
+  lambdaFunctionContext: LambdaFunctionContext
+  xRayTraceId?: string
+  awsRegion: string
 };
 
 type UnformattedAttributes = {
-  environment?: Environment;
-  error?: Error;
-  serviceName: string;
-  sampleRateValue?: number;
-  lambdaContext?: LambdaFunctionContext;
-  xRayTraceId?: string;
-  awsRegion: string;
-  logLevel: LogLevel;
-  timestamp: Date;
-  message: string;
+  environment?: Environment
+  error?: Error
+  serviceName: string
+  sampleRateValue?: number
+  lambdaContext?: LambdaFunctionContext
+  xRayTraceId?: string
+  awsRegion: string
+  logLevel: LogLevel
+  timestamp: Date
+  message: string
 };
 
 type LogItemMessage = string | LogAttributesWithMessage;

@@ -1,10 +1,9 @@
-import { Context } from 'aws-lambda';
-
-import { cloneDeep, merge } from 'lodash/fp';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import type { Context } from 'aws-lambda';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
-import {
+import { cloneDeep, merge } from 'lodash/fp';
+import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import type {
   Environment,
   HandlerMethodDecorator,
   LambdaFunctionContext,
@@ -19,23 +18,16 @@ import {
 } from './types';
 
 class Logger implements ClassThatLogs {
-  public static coldStart: boolean = true;
 
-  public static isColdStart(): boolean {
-    if (Logger.coldStart === true) {
-      Logger.coldStart = false;
+  private static coldStart?: boolean = undefined;
 
-      return true;
-    }
+  private static coldStartEvaluated: boolean = false;
 
-    return false;
-  }
+  private customConfigService?: ConfigServiceInterface;
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
 
   private static readonly defaultServiceName: string = 'service_undefined';
-
-  private customConfigService?: ConfigServiceInterface;
 
   private envVarsService?: EnvironmentVariablesService;
 
@@ -61,9 +53,10 @@ class Logger implements ClassThatLogs {
   }
 
   public addContext(context: Context): void {
+    Logger.evaluateColdStartOnce();
     const lambdaContext: Partial<LambdaFunctionContext> = {
       invokedFunctionArn: context.invokedFunctionArn,
-      coldStart: Logger.isColdStart(),
+      coldStart: Logger.getColdStartValue(),
       awsRequestId: context.awsRequestId,
       memoryLimitInMB: Number(context.memoryLimitInMB),
       functionName: context.functionName,
@@ -98,6 +91,20 @@ class Logger implements ClassThatLogs {
     this.printLog(this.createAndPopulateLogItem('ERROR', input, extraInput));
   }
 
+  public static evaluateColdStartOnce(): void {
+    if (Logger.getColdStartEvaluatedValue() === false) {
+      Logger.evaluateColdStart();
+    }
+  }
+
+  public static getColdStartEvaluatedValue(): boolean {
+    return Logger.coldStartEvaluated;
+  }
+
+  public static getColdStartValue(): boolean | undefined {
+    return Logger.coldStart;
+  }
+
   public getLogsSampled(): boolean {
     return this.logsSampled;
   }
@@ -115,7 +122,7 @@ class Logger implements ClassThatLogs {
 
       descriptor.value = (event, context, callback) => {
         this.addContext(context);
-        const result = originalMethod?.apply(this, [event, context, callback]);
+        const result = originalMethod?.apply(this, [ event, context, callback ]);
 
         return result;
       };
@@ -124,6 +131,14 @@ class Logger implements ClassThatLogs {
 
   public refreshSampleRateCalculation(): void {
     this.setLogsSampled();
+  }
+
+  public static setColdStartEvaluatedValue(value: boolean): void {
+    Logger.coldStartEvaluated = value;
+  }
+
+  public static setColdStartValue(value: boolean | undefined): void {
+    Logger.coldStart = value;
   }
 
   public setSampleRateValue(sampleRateValue?: number): void {
@@ -168,6 +183,19 @@ class Logger implements ClassThatLogs {
     });
 
     return logItem;
+  }
+
+  private static evaluateColdStart(): void {
+    const coldStartValue = Logger.getColdStartValue();
+    if (typeof coldStartValue === 'undefined') {
+      Logger.setColdStartValue(true);
+    } else if (coldStartValue === true) {
+      Logger.setColdStartValue(false);
+    } else {
+      Logger.setColdStartValue(false);
+    }
+
+    Logger.setColdStartEvaluatedValue(true);
   }
 
   private getCustomConfigService(): ConfigServiceInterface | undefined {

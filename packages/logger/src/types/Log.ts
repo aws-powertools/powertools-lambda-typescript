@@ -13,12 +13,12 @@ type LogAttributeValue = string | number | boolean | null | undefined | LogAttri
 type LogAttributes = { [key: string]: LogAttributeValue };
 
 type LogAttributesWithMessage = LogAttributes & {
-  message: string;
+  message: string
 };
 
 type Environment = 'dev' | 'local' | 'staging' | 'prod' | string;
 
-export {
+export type {
   LogAttributesWithMessage,
   LogAttributeValue,
   Environment,

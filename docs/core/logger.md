@@ -70,23 +70,22 @@ Key | Example | Note
 
 You can enrich your structured logs with key Lambda context information in multiple ways.
 
-Method 1, using a class decorator:
+Method 1, using a [Middy](https://github.com/middyjs/middy) middleware:
 
 === "handler.ts"
 
-    ```typescript hl_lines="7"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    ```typescript hl_lines="1 9-10"
+    import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
+    import middy from '@middy/core';
 
     const logger = new Logger();
-    
-    class Lambda {
-    
-        @logger.injectLambdaContext()
-        public handler() {
-            logger.info("This is an INFO log with some context");
-        }
 
-    }
+    const lambdaHandler = async () => {
+        logger.info("This is an INFO log with some context");
+    };
+
+    const handler = middy(lambdaHandler)
+        .use(injectLambdaContext(logger));
     ```
 
 Method 2, calling the `addContext` method:
@@ -107,6 +106,25 @@ Method 2, calling the `addContext` method:
     };
     ```
 
+Method 3, using a class decorator:
+
+=== "handler.ts"
+
+    ```typescript hl_lines="7"
+    import { Logger } from "@aws-lambda-powertools/logger";
+
+    const logger = new Logger();
+    
+    class Lambda {
+    
+        @logger.injectLambdaContext()
+        public handler() {
+            logger.info("This is an INFO log with some context");
+        }
+
+    }
+    ```
+
 In both case, the printed log will look like this:
 
 === "Example CloudWatch Logs excerpt"
@@ -116,7 +134,7 @@ In both case, the printed log will look like this:
         "cold_start": true,
         "function_arn": "arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1",
         "function_memory_size": 128,
-        "function_request_id": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+        "function_request_id": "c6af9ac6-7b61-11e6-9a41-93e812345678",
         "function_name": "shopping-cart-api-lambda-prod-eu-central-1",
         "level": "INFO",
         "message": "This is an INFO log with some context",
@@ -134,7 +152,7 @@ Key | Example
 **function_name** `string` | `shopping-cart-api-lambda-prod-eu-central-1`
 **function_memory_size**: `int` | `128`
 **function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
-**function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e8deadbeef`
+**function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
 ### Appending persistent additional log keys and values
 
@@ -558,7 +576,7 @@ This is how the printed log would look:
             "service": "shopping-cart-api",
             "awsRegion": "eu-central-1",
             "correlationIds": {
-                "awsRequestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+                "awsRequestId": "c6af9ac6-7b61-11e6-9a41-93e812345678",
                 "xRayTraceId": "abcdef123456abcdef123456abcdef123456",
                 "myCustomCorrelationId": "foo-bar-baz"
             },

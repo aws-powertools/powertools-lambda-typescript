@@ -32,7 +32,7 @@
     "Host": "1234567890.execute-api.eu-central-1.amazonaws.com",
     "Upgrade-Insecure-Requests": "1",
     "User-Agent": "Custom User Agent String",
-    "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
+    "Via": "1.1 08f32312345678a7af34d5feb414ce27.cloudfront.net (CloudFront)",
     "X-Amz-Cf-Id": "cDehVQoZnx43VYQb9j2-nvCh-9z396Uhbp027Y2JvkCPNLmGJHqlaA==",
     "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
     "X-Forwarded-Port": "443",
@@ -79,7 +79,7 @@
       "Custom User Agent String"
     ],
     "Via": [
-      "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)"
+      "1.1 08f32312345678a7af34d5feb414ce27.cloudfront.net (CloudFront)"
     ],
     "X-Amz-Cf-Id": [
       "cDehVQoZnx43VYQb9j2-nvCh-9z396Uhbp027Y2JvkCPNLmGJHqlaA=="
@@ -98,7 +98,7 @@
     "accountId": "123456789012",
     "resourceId": "123456",
     "stage": "prod",
-    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+    "requestId": "c6af9ac6-7b61-11e6-9a41-93e812345678",
     "requestTime": "09/Apr/2015:12:34:56 +0000",
     "requestTimeEpoch": 1428582896000,
     "identity": {

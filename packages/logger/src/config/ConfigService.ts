@@ -8,15 +8,15 @@ abstract class ConfigService implements ConfigServiceInterface {
   protected sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
   protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
 
-  abstract get(name: string): string;
+  public abstract get(name: string): string;
 
-  abstract getCurrentEnvironment(): string;
+  public abstract getCurrentEnvironment(): string;
 
-  abstract getLogLevel(): string;
+  public abstract getLogLevel(): string;
 
-  abstract getSampleRateValue(): number | undefined;
+  public abstract getSampleRateValue(): number | undefined;
 
-  abstract getServiceName(): string;
+  public abstract getServiceName(): string;
 
 }
 

@@ -24,6 +24,9 @@ jobs:
           python-version: '3.8'
       - name: Set up NodeJS
         uses: actions/setup-node@v2
+      - name: "Setup npm"
+        run: |
+        npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
         with:
           node-version: '17.2'
       - name: Install dependencies

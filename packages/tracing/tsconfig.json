@@ -17,7 +17,7 @@
         "rootDirs": [ "src/" ],
         "esModuleInterop": true
     },
-    "include": [ "src/**/*", "examples/**/*", "**/tests/**/*" ],
+    "include": [ "src/**/*" ],
     "exclude": [ "./node_modules"],
     "watchOptions": {
         "watchFile": "useFsEvents",

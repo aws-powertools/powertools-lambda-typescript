@@ -1,10 +1,10 @@
-import { LogAttributes } from '../../types/Log';
+import { LogAttributes } from '../types/Log';
 
 interface LogItemInterface {
 
-  addAttributes(attributes: LogAttributes): void;
+  addAttributes(attributes: LogAttributes): void
 
-  getAttributes(): LogAttributes;
+  getAttributes(): LogAttributes
 
 }
 

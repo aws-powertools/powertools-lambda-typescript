@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "0.0.0",
+  "version": "0.1.1-beta.0",
   "description": "The tracer package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -18,7 +18,7 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
-    "package": "mkdir -p dist/js && npm pack && mv *.tgz dist/js/",
+    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "example:hello-world": "ts-node examples/hello-world.ts",
     "example:capture-lambda-handler-response-decorator": "ts-node examples/capture-lambda-handler-response-decorator.ts",
     "example:capture-lambda-handler-error-decorator": "ts-node examples/capture-lambda-handler-error-decorator.ts",
@@ -26,8 +26,8 @@
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
   "license": "MIT",
-  "main": "./lib/packages/tracing/src/index.js",
-  "types": "./lib/packages/tracing/src/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@middy/core": "^2.5.3",
+    "@aws-lambda-powertools/commons": "^0.0.2",
     "aws-xray-sdk-core": "^3.3.3"
   }
 }

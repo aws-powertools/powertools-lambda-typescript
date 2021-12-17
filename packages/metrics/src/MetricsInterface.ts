@@ -1,5 +1,5 @@
-import { MetricUnit, EmfOutput, HandlerMethodDecorator, Dimensions, DecoratorOptions } from '../types';
 import { Metrics } from './Metrics';
+import { MetricUnit, EmfOutput, HandlerMethodDecorator, Dimensions, DecoratorOptions } from './types';
 
 interface MetricsInterface {
   addDimension(name: string, value: string): void;

@@ -14,7 +14,7 @@
       },
       "inputArtifacts": [
         {
-          "revision": "ca2bdeadbeef7d1932acb4977e08c803295d9896",
+          "revision": "ca2b123456787d1932acb4977e08c803295d9896",
           "name": "input-artifact",
           "location": {
             "type": "S3",

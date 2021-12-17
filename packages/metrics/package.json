@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/metrics",
-  "version": "0.0.0",
+  "version": "0.1.1-beta.0",
   "description": "The metrics package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -13,6 +13,7 @@
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
+    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
@@ -31,8 +32,8 @@
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/metrics#readme",
   "license": "MIT-0",
-  "main": "./lib/packages/metrics/src/index.js",
-  "types": "./lib/packages/metrics/src/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "typedocMain": "src/index.ts",
   "devDependencies": {
     "@commitlint/cli": "^15.0.0",
@@ -61,6 +62,7 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
+    "@aws-lambda-powertools/commons": "^0.0.2",
     "@types/aws-lambda": "^8.10.72"
   }
 }

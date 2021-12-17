@@ -41,11 +41,8 @@ const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
   const captureLambdaHandlerAfter = async (request: middy.Request): Promise<void> => {
     if (target.isTracingEnabled()) {
       const subsegment = target.getSegment();
-      if (request.response !== undefined && target.isCaptureResponseEnabled() === true) {
-        target.putMetadata(`${request.context.functionName} response`, request.response);
-      }
-      
-      subsegment?.close();
+      target.addResponseAsMetadata(request.response, request.context.functionName);
+      subsegment.close();
     }
   };
 

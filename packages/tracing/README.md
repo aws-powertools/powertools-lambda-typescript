@@ -77,7 +77,7 @@ export const handler = async (_event: any, context: any) => {
     try {
         res = ...
         // Add the response as metadata 
-        tracer.putMetadata(`${context.functionName} response`, res);
+        tracer.addResponseAsMetadata(res, context.functionName);
     } catch (err) {
         // Add the error as metadata
         handlerSegment.addError(err as Error, false);

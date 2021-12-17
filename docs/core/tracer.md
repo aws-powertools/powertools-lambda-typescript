@@ -92,7 +92,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         try {
             res = ...
             // Add the response as metadata 
-            tracer.putMetadata(`${context.functionName} response`, res);
+            tracer.addResponseAsMetadata(res, context.functionName);
         } catch (err) {
             // Add the error as metadata
             handlerSegment.addError(err as Error, false);

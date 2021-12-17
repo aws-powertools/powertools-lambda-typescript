@@ -90,7 +90,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *   try {
  *     res = ...
  *     // Add the response as metadata
- *     tracer.putMetadata(`${context.functionName} response`, res);
+ *     tracer.addResponseAsMetadata(res, context.functionName);
  *   } catch (err) {
  *     // Add the error as metadata
  *     handlerSegment.addError(err as Error, false);
@@ -123,6 +123,22 @@ class Tracer implements TracerInterface {
   public constructor(options: TracerOptions = {}) {
     this.setOptions(options);
     this.provider = new ProviderService();
+  }
+
+  /**
+    * Add an data to the current segment or subsegment as metadata.
+    *
+    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-annotations
+    *
+    * @param data - Data to serialize as metadata
+    * @param methodName - Name of the method that is being traced
+    */
+  public addResponseAsMetadata(data?: unknown, methodName?: string): void {
+    if (data === undefined || this.captureResponse === false || this.tracingEnabled === false) {
+      return;
+    }
+
+    this.putMetadata(`${methodName} response`, data);
   }
 
   /**
@@ -383,18 +399,6 @@ class Tracer implements TracerInterface {
   }
 
   /**
-   * Get the current value of the `captureResponse` property.
-   * 
-   * You can use this method during manual instrumentation to determine
-   * if tracer should be capturing function responses.
-   * 
-   * @returns captureResponse - `true` if responses should be captured, `false` otherwise. 
-   */
-  public isCaptureResponseEnabled(): boolean {
-    return this.captureResponse;
-  }
-
-  /**
    * Retrieve the current value of `ColdStart`.
    * 
    * If Tracer has been initialized outside of the Lambda handler then the same instance
@@ -536,23 +540,6 @@ class Tracer implements TracerInterface {
     }
 
     subsegment.addError(error, false);
-  }
-
-  /**
-    * Add an data to the current segment or subsegment as metadata.
-    * Used internally by decoratorators and middlewares.
-    *
-    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
-    *
-    * @param data - Data to serialize as metadata
-    * @param methodName - Name of the method that is being traced
-    */
-  private addResponseAsMetadata(data?: unknown, methodName?: string): void {
-    if (data === undefined || this.captureResponse === false || this.tracingEnabled === false) {
-      return;
-    }
-
-    this.putMetadata(`${methodName} response`, data);
   }
   
   /**

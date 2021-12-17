@@ -24,6 +24,69 @@ describe('Class: Tracer', () => {
     process.env = ENVIRONMENT_VARIABLES;
   });
 
+  describe('Method: addResponseAsMetadata', () => {
+
+    test('when called while tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      // Act
+      tracer.addResponseAsMetadata({ foo: 'bar' }, context.functionName);
+
+      // Assess
+      expect(putMetadataSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called while POWERTOOLS_TRACER_CAPTURE_RESPONSE is set to false, it does nothing', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
+      const tracer: Tracer = new Tracer();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      // Act
+      tracer.addResponseAsMetadata({ foo: 'bar' }, context.functionName);
+
+      // Assess
+      expect(putMetadataSpy).toBeCalledTimes(0);
+      delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
+
+    });
+
+    test('when called with data equal to undefined, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      // Act
+      tracer.addResponseAsMetadata(undefined, context.functionName);
+
+      // Assess
+      expect(putMetadataSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called with default config, it calls tracer.putMetadata correctly', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata').mockImplementation(() => null);
+
+      // Act
+      tracer.addResponseAsMetadata({ foo: 'bar' }, context.functionName);
+
+      // Assess
+      expect(putMetadataSpy).toBeCalledTimes(1);
+      expect(putMetadataSpy).toBeCalledWith(`${context.functionName} response`, expect.objectContaining({ foo: 'bar' }));
+
+    });
+
+  });
+
   describe('Method: isColdStart', () => {
 
     test('when called, it returns false the first time and always true after that', () => {

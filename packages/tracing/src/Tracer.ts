@@ -19,6 +19,8 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * ## Usage
  * 
+ * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/).
+ * 
  * ### Functions usage with middlewares
  * 
  * If you use function-based Lambda handlers you can use the [captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
@@ -78,24 +80,24 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * const tracer = new Tracer({ serviceName: 'my-service' });
  * 
  * export const handler = async (_event: any, context: any) => {
- *   // Create subsegment & set it as active
- *   const subsegment = new Subsegment(`## ${context.functionName}`);
- *   tracer.setSegment(subsegment);
- *   // Add the ColdStart annotation
+ *   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
+ *   // Create subsegment for the function
+ *   const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
+ *   // TODO: expose tracer.annotateColdStart()
  *   this.putAnnotation('ColdStart', tracer.isColdStart());
  * 
  *   let res;
  *   try {
- *     res = await someLogic(); // Do something
+ *     res = ...
  *     // Add the response as metadata
- *     tracer.putMetadata(`${context.functionName} response`, data);
+ *     tracer.putMetadata(`${context.functionName} response`, res);
  *   } catch (err) {
  *     // Add the error as metadata
- *     subsegment.addError(err, false);
+ *     handlerSegment.addError(err as Error, false);
  *   }
  * 
- *   // Close subsegment
- *   subsegment.close();
+ *   // Close subsegment (the AWS Lambda one is closed automatically)
+ *   handlerSegment.close();
  *
  *   return res;
  * }

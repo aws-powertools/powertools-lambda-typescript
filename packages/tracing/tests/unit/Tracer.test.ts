@@ -1,8 +1,5 @@
-import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
 import { LambdaInterface } from '../../examples/utils/lambda';
+import { Events, ContextExamples } from '@aws-lambda-powertools/commons';
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
@@ -13,6 +10,8 @@ jest.spyOn(console, 'error').mockImplementation(() => null);
 
 describe('Class: Tracer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
+  const event = Events.Custom.CustomEvent;
+  const context = ContextExamples.helloworldContext;
 
   beforeEach(() => {
     Tracer.coldStart = true;
@@ -348,7 +347,7 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(Events.Custom.CustomEvent, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(0);
@@ -378,7 +377,7 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -410,7 +409,7 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -452,7 +451,7 @@ describe('Class: Tracer', () => {
       }
             
       // Act & Assess
-      await expect(new Lambda().handler({}, dummyContext, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
         name: '## foo-bar-function',
@@ -488,7 +487,7 @@ describe('Class: Tracer', () => {
       }
             
       // Act & Assess
-      await expect(new Lambda().handler({}, dummyContext, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
         name: '## foo-bar-function',
@@ -526,8 +525,8 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(2);
@@ -559,6 +558,8 @@ describe('Class: Tracer', () => {
 
         // TODO: revisit return type & make it more specific
         @tracer.captureMethod()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         public async dummyMethod(some: string): Promise<any> {
           return new Promise((resolve, _reject) => resolve(some));
@@ -573,7 +574,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toBeCalledTimes(0);
@@ -607,7 +608,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -651,7 +652,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);

@@ -106,7 +106,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     }
     ```
 
-When using the `captureLambdaHanlder` decorator or middleware, Tracer performs these additional tasks to ease operations:
+When using the `captureLambdaHandler` decorator or middleware, Tracer performs these additional tasks to ease operations:
 
 * Handles the lifecycle of the subsegment
 * Creates a `ColdStart` annotation to easily filter traces that have had an initialization overhead
@@ -149,7 +149,7 @@ When using the `captureLambdaHanlder` decorator or middleware, Tracer performs t
 You can trace other methods using the `captureMethod` decorator or manual instrumentation.
 
 !!! info
-    We currently support a middleware for tracing methods, [let us know](https://github.com/awslabs/aws-lambda-powertools-typecsript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd like to see one!
+    We currently support a middleware for tracing methods, [let us know](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd like to see one!
 
 === "Decorator"
 

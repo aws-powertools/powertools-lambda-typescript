@@ -451,10 +451,8 @@ describe('Class: Tracer', () => {
             
       }
             
-      // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-
-      // Assess
+      // Act & Assess
+      await expect(new Lambda().handler({}, dummyContext, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
         name: '## foo-bar-function',
@@ -462,8 +460,10 @@ describe('Class: Tracer', () => {
       expect('cause' in newSubsegment).toBe(false);
       expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledTimes(0);
+      expect.assertions(6);
 
       delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+
     });
 
     test('when used as decorator and with standard config, it captures the exception correctly', async () => {
@@ -487,10 +487,8 @@ describe('Class: Tracer', () => {
             
       }
             
-      // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-
-      // Assess
+      // Act & Assess
+      await expect(new Lambda().handler({}, dummyContext, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
         name: '## foo-bar-function',
@@ -498,6 +496,7 @@ describe('Class: Tracer', () => {
       expect('cause' in newSubsegment).toBe(true);
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
+      expect.assertions(6);
     
     });
 

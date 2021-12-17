@@ -20,11 +20,28 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * ## Usage
  * 
  * ### Functions usage with middlewares
- * TBD
+ * 
+ * If you use function-based Lambda handlers you can use the [captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
+ * * handle the subsegment lifecycle 
+ * * add the `ColdStart` annotation
+ * * add the function response as metadata
+ * * add the function error as metadata (if any)
+ * 
+ * @example
+ * ```typescript
+ * import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+ * import middy from '@middy/core';
+ * 
+ * const tracer = new Tracer({ serviceName: 'my-service' });
+ * 
+ * export const handler = middy(async (_event: any, _context: any) => {
+ *   ...
+ * }).use(captureLambdaHandler(tracer));
+ * ```
  * 
  * ### Object oriented usage with decorators
  * 
- * If you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHanlder) decorator to automatically:
+ * If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHanlder) decorator to automatically:
  * * handle the subsegment lifecycle 
  * * add the `ColdStart` annotation
  * * add the function response as metadata
@@ -65,7 +82,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *   const subsegment = new Subsegment(`## ${context.functionName}`);
  *   tracer.setSegment(subsegment);
  *   // Add the ColdStart annotation
- *   this.putAnnotation('ColdStart', tracer.coldStart);
+ *   this.putAnnotation('ColdStart', tracer.isColdStart());
  * 
  *   let res;
  *   try {
@@ -242,8 +259,7 @@ class Tracer implements TracerInterface {
             this.addResponseAsMetadata(result, context.functionName);
           } catch (error) {
             this.addErrorAsMetadata(error as Error);
-            // TODO: should this error be thrown?? If thrown we get a ERR_UNHANDLED_REJECTION. If not aren't we are basically catching a Customer error?
-            // throw error;
+            throw error;
           } finally {
             subsegment?.close();
           }
@@ -351,6 +367,30 @@ class Tracer implements TracerInterface {
 
     return segment;
   }
+  
+  /**
+   * Get the current value of the `captureError` property.
+   * 
+   * You can use this method during manual instrumentation to determine
+   * if tracer should be capturing errors.
+   * 
+   * @returns captureError - `true` if errors should be captured, `false` otherwise. 
+   */
+  public isCaptureErrorEnabled(): boolean {
+    return this.captureError;
+  }
+
+  /**
+   * Get the current value of the `captureResponse` property.
+   * 
+   * You can use this method during manual instrumentation to determine
+   * if tracer should be capturing function responses.
+   * 
+   * @returns captureResponse - `true` if responses should be captured, `false` otherwise. 
+   */
+  public isCaptureResponseEnabled(): boolean {
+    return this.captureResponse;
+  }
 
   /**
    * Retrieve the current value of `ColdStart`.
@@ -361,7 +401,7 @@ class Tracer implements TracerInterface {
    * 
    * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
    * 
-   * @returns boolean - true if is cold start otherwise false
+   * @returns boolean - `true` if is cold start, otherwise `false`
    */
   public static isColdStart(): boolean {
     if (Tracer.coldStart === true) {
@@ -371,6 +411,18 @@ class Tracer implements TracerInterface {
     }
 
     return false;
+  }
+
+  /**
+   * Get the current value of the `tracingEnabled` property.
+   * 
+   * You can use this method during manual instrumentation to determine
+   * if tracer is currently enabled.
+   * 
+   * @returns tracingEnabled - `true` if tracing is enabled, `false` otherwise. 
+   */
+  public isTracingEnabled(): boolean {
+    return this.tracingEnabled;
   }
 
   /**

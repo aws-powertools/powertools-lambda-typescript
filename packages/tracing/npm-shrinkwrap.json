@@ -9,6 +9,7 @@
       "version": "0.0.0",
       "license": "MIT",
       "dependencies": {
+        "@middy/core": "^2.5.3",
         "@aws-lambda-powertools/commons": "^0.0.2",
         "aws-xray-sdk-core": "^3.3.3"
       },
@@ -978,6 +979,14 @@
       },
       "engines": {
         "node": "^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0"
+      }
+    },
+    "node_modules/@middy/core": {
+      "version": "2.5.3",
+      "resolved": "https://registry.npmjs.org/@middy/core/-/core-2.5.3.tgz",
+      "integrity": "sha512-hCXlRglDu48sl03IjDGjcJwfwElIPAf0fwBu08kqE80qpnouZ1hGH1lZbkbJjAhz6DkSR+79YArUQKUYaM2k1g==",
+      "engines": {
+        "node": ">=12"
       }
     },
     "node_modules/@nodelib/fs.scandir": {
@@ -2321,7 +2330,8 @@
         "esprima": "^4.0.1",
         "estraverse": "^5.2.0",
         "esutils": "^2.0.2",
-        "optionator": "^0.8.1"
+        "optionator": "^0.8.1",
+        "source-map": "~0.6.1"
       },
       "bin": {
         "escodegen": "bin/escodegen.js",
@@ -3956,6 +3966,7 @@
         "@types/node": "*",
         "anymatch": "^3.0.3",
         "fb-watchman": "^2.0.0",
+        "fsevents": "^2.3.2",
         "graceful-fs": "^4.2.4",
         "jest-regex-util": "^27.4.0",
         "jest-serializer": "^27.4.0",
@@ -6711,6 +6722,11 @@
         "@types/yargs": "^16.0.0",
         "chalk": "^4.0.0"
       }
+    },
+    "@middy/core": {
+      "version": "2.5.3",
+      "resolved": "https://registry.npmjs.org/@middy/core/-/core-2.5.3.tgz",
+      "integrity": "sha512-hCXlRglDu48sl03IjDGjcJwfwElIPAf0fwBu08kqE80qpnouZ1hGH1lZbkbJjAhz6DkSR+79YArUQKUYaM2k1g=="
     },
     "@nodelib/fs.scandir": {
       "version": "2.1.5",

@@ -42,17 +42,16 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Middleware"
 
-    ```typescript hl_lines="1 3 6"
+    ```typescript hl_lines="1-2 4 7 9"
     import { Tracer } from '@aws-lambda-powertools/tracer';
+    import middy from '@middy/core';
 
     const tracer = Tracer(); // Sets service via env var
     // OR tracer = Tracer({ service: 'example' });
 
-    // TODO: update example once middleware has been implemented.
-
-    export const handler = async (_event: any, _context: any) => {
+    export const handler = middy(async (_event: any, _context: any) => {
         ...
-    }
+    }).use(captureLambdaHandler(tracer));
     ```
 
 === "Decorator"
@@ -76,7 +75,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Manual"
 
-    ```typescript hl_lines="1-2 4 8-9 11 17 20 24"
+    ```typescript hl_lines="1-2 4 9-10 12 18 21 25"
     import { Tracer } from '@aws-lambda-powertools/tracer';
     import { Segment } from 'aws-xray-sdk-core';
     
@@ -107,8 +106,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     }
     ```
 
-<!-- TODO: Replace name of middleware once implemented -->
-When using thes `captureLambdaHanlder` decorator or the `TBD` middleware, Tracer performs these additional tasks to ease operations:
+When using the `captureLambdaHandler` decorator or middleware, Tracer performs these additional tasks to ease operations:
 
 * Handles the lifecycle of the subsegment
 * Creates a `ColdStart` annotation to easily filter traces that have had an initialization overhead
@@ -148,23 +146,10 @@ When using thes `captureLambdaHanlder` decorator or the `TBD` middleware, Tracer
 
 ### Methods
 
-You can trace other methods using the `captureMethod` decorator.
+You can trace other methods using the `captureMethod` decorator or manual instrumentation.
 
-=== "Middleware"
-
-    ```typescript hl_lines="1 3 6"
-    import { Tracer } from '@aws-lambda-powertools/tracer';
-
-    const tracer = Tracer();
-
-    // TODO: update example once middleware has been implemented.
-
-
-
-    export const handler = async (_event: any, _context: any) => {
-        ...
-    }
-    ```
+!!! info
+    We currently support a middleware for tracing methods, [let us know](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd like to see one!
 
 === "Decorator"
 

@@ -14,7 +14,8 @@
         "resolveJsonModule": true,
         "pretty": true,
         "baseUrl": "src/",
-        "rootDirs": [ "src/" ]
+        "rootDirs": [ "src/" ],
+        "esModuleInterop": true
     },
     "include": [ "src/**/*" ],
     "exclude": [ "./node_modules"],

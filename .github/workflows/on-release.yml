@@ -41,8 +41,8 @@ jobs:
         git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
 
         if [ ${{ github.base_ref }} = main ]; then
-          npx lerna version --conventional-commits --create-release github --yes
+          npx lerna version --conventional-commits --create-release github --force-publish=* --yes
         else
-          npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --yes
+          npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --force-publish=* --yes
         fi
         npx lerna publish from-git --no-verify-access --yes

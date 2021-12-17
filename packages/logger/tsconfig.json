@@ -5,7 +5,6 @@
         "target": "ES2020",
         "module": "commonjs",
         "declaration": true,
-        "declarationMap": true,
         "outDir": "lib",
         "strict": true,
         "inlineSourceMap": true,
@@ -13,7 +12,8 @@
         "resolveJsonModule": true,
         "pretty": true,
         "baseUrl": "src/",
-        "rootDirs": [ "src/" ]
+        "rootDirs": [ "src/" ],
+        "esModuleInterop": true
     },
     "include": [ "src/**/*" ],
     "exclude": [ "./node_modules"],

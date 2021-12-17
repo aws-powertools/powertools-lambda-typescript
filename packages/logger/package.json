@@ -22,6 +22,7 @@
     "example:hello-world": "ts-node examples/hello-world.ts",
     "example:inject-context": "ts-node examples/inject-context.ts",
     "example:inject-context-decorator": "ts-node examples/inject-context-decorator.ts",
+    "example:inject-context-middleware": "ts-node examples/inject-context-middleware.ts",
     "example:errors": "ts-node examples/errors.ts",
     "example:constructor-options": "ts-node examples/constructor-options.ts",
     "example:custom-log-formatter": "ts-node examples/custom-log-formatter.ts",
@@ -62,10 +63,13 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
+    "@middy/core": "^2.5.3",
+    "@types/aws-lambda": "^8.10.72",
     "@aws-lambda-powertools/commons": "^0.0.2",
     "@types/aws-lambda": "^8.10.72",
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
-    "lodash.merge": "^4.6.2"
+    "lodash.merge": "^4.6.2",
+    "@types/aws-lambda": "^8.10.72"
   }
 }

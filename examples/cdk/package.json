@@ -1,0 +1,36 @@
+{
+  "name": "cdk-app",
+  "version": "0.1.0",
+  "bin": {
+    "cdk-app": "bin/cdk-app.js"
+  },
+  "scripts": {
+    "build": "tsc --skipLibCheck",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.10",
+    "@types/node": "10.17.27",
+    "aws-cdk": "2.0.0",
+    "esbuild": "^0.14.2",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.2.0",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^0.1.0-beta.8",
+    "@aws-lambda-powertools/metrics": "^0.1.0-beta.9",
+    "@aws-lambda-powertools/tracer": "^0.1.0-beta.9",
+    "@middy/core": "^2.5.3",
+    "@middy/http-error-handler": "^2.5.3",
+    "@middy/http-json-body-parser": "^2.5.3",
+    "@middy/validator": "^2.5.3",
+    "@types/aws-lambda": "^8.10.86",
+    "aws-cdk-lib": "2.0.0",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.16"
+  }
+}

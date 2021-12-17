@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - main
+      - chore/releaseFlow
   workflow_dispatch: {}
 jobs:
   publish:
@@ -19,11 +19,11 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: '14'
-  
+
     - name: "Setup npm"
       run: |
         npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-        
+
     - name: Install packages
       run: |
         npm ci
@@ -36,9 +36,9 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
       run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
 
         if [ ${{ github.base_ref }} = main ]; then
           npx lerna version --conventional-commits --create-release github --yes

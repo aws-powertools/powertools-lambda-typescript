@@ -1,12 +1,12 @@
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
-  DecoratorOptions,
+  MetricsOptions,
   Dimensions,
   EmfOutput,
   HandlerMethodDecorator,
   StoredMetrics,
-  MetricsOptions,
+  ExtraOptions,
   MetricUnit,
   MetricUnits,
 } from './types';
@@ -165,7 +165,6 @@ class Metrics implements MetricsInterface {
     this.storedMetrics = {};
   }
 
-
   /**
    * Throw an Error if the metrics buffer is empty.
    *
@@ -212,7 +211,7 @@ class Metrics implements MetricsInterface {
    *
    * @decorator Class
    */
-  public logMetrics(options: DecoratorOptions = {}): HandlerMethodDecorator {
+  public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
     const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
     if (raiseOnEmptyMetrics) {
       this.raiseOnEmptyMetrics();
@@ -228,7 +227,8 @@ class Metrics implements MetricsInterface {
 
         if (captureColdStartMetric) this.captureColdStartMetric();
         try {
-          const result = originalMethod?.apply(this, [event, context, callback]);
+          const result = originalMethod?.apply(this, [ event, context, callback ]);
+          
           return result;
         } finally {
           this.purgeStoredMetrics();
@@ -284,7 +284,7 @@ class Metrics implements MetricsInterface {
       {},
     );
 
-    const dimensionNames = [...Object.keys(this.defaultDimensions), ...Object.keys(this.dimensions)];
+    const dimensionNames = [ ...Object.keys(this.defaultDimensions), ...Object.keys(this.dimensions) ];
 
     return {
       _aws: {
@@ -334,6 +334,7 @@ class Metrics implements MetricsInterface {
     return new Metrics({
       namespace: this.namespace,
       service: this.dimensions.service,
+      defaultDimensions: this.defaultDimensions,
       singleMetric: true,
     });
   }
@@ -371,6 +372,10 @@ class Metrics implements MetricsInterface {
       singleMetric.addDimension('function_name', this.functionName);
     }
     singleMetric.addMetric('ColdStart', MetricUnits.Count, 1);
+  }
+
+  public setFunctionName(value: string): void {
+    this.functionName = value;
   }
 
   private getCurrentDimensionsCount(): number {

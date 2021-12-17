@@ -37,6 +37,7 @@
   "typedocMain": "src/index.ts",
   "devDependencies": {
     "@commitlint/cli": "^15.0.0",
+    "@middy/core": "^2.5.3",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
     "@types/node": "^16.6.0",

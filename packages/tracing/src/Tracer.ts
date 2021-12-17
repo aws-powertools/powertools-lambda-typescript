@@ -173,12 +173,11 @@ class Tracer implements TracerInterface {
    * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
    */
   public annotateColdStart(): void {
+    if (this.tracingEnabled === true) {
+      this.putAnnotation('ColdStart', Tracer.coldStart);
+    }
     if (Tracer.coldStart === true) {
       Tracer.coldStart = false;
-
-      if (this.tracingEnabled === true) {
-        this.putAnnotation('ColdStart', true);
-      }
     }
   }
 

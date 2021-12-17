@@ -216,7 +216,7 @@ describe('Middy middlewares', () => {
       .mockImplementationOnce(() => newSubsegmentFirstInvocation)
       .mockImplementation(() => newSubsegmentSecondInvocation);
     setContextMissingStrategy(() => null);
-    const addAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+    const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
     const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
       foo: 'bar'
     });
@@ -232,8 +232,11 @@ describe('Middy middlewares', () => {
     expect(setSegmentSpy).toHaveBeenCalledWith(expect.objectContaining({
       name: '## foo-bar-function',
     }));
-    expect(addAnnotationSpy).toHaveBeenCalledTimes(1);
-    expect(addAnnotationSpy).toHaveBeenCalledWith('ColdStart', true);
+    expect(putAnnotationSpy).toHaveBeenCalledTimes(2);
+    expect(putAnnotationSpy.mock.calls).toEqual([
+      [ 'ColdStart', true ],
+      [ 'ColdStart', false ],
+    ]);
     expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
       name: '## foo-bar-function',
       annotations: {
@@ -241,7 +244,10 @@ describe('Middy middlewares', () => {
       }
     }));
     expect(newSubsegmentSecondInvocation).toEqual(expect.objectContaining({
-      name: '## foo-bar-function'
+      name: '## foo-bar-function',
+      annotations: {
+        'ColdStart': false,
+      }
     }));
 
   });

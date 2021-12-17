@@ -40,7 +40,7 @@ describe('Class: Tracer', () => {
 
     });
 
-    test('when called multiple times, it annotates the first time and then never again', () => {
+    test('when called multiple times, it annotates true the first time and then false afterwards', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer();
@@ -53,8 +53,13 @@ describe('Class: Tracer', () => {
       tracer.annotateColdStart();
 
       // Assess
-      expect(putAnnotationSpy).toBeCalledTimes(1);
-      expect(putAnnotationSpy).toBeCalledWith('ColdStart', true);
+      expect(putAnnotationSpy).toBeCalledTimes(4);
+      expect(putAnnotationSpy.mock.calls).toEqual([
+        [ 'ColdStart', true ],
+        [ 'ColdStart', false ],
+        [ 'ColdStart', false ],
+        [ 'ColdStart', false ],
+      ]);
 
     });
 
@@ -666,7 +671,7 @@ describe('Class: Tracer', () => {
         .mockImplementation(() => newSubsegmentSecondInvocation);
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
-      const addAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
       class Lambda implements LambdaInterface {
 
         @tracer.captureLambdaHanlder()
@@ -687,8 +692,11 @@ describe('Class: Tracer', () => {
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(2);
       expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## foo-bar-function', expect.anything());
-      expect(addAnnotationSpy).toHaveBeenCalledTimes(1);
-      expect(addAnnotationSpy).toHaveBeenCalledWith('ColdStart', true);
+      expect(putAnnotationSpy).toHaveBeenCalledTimes(2);
+      expect(putAnnotationSpy.mock.calls).toEqual([
+        [ 'ColdStart', true ],
+        [ 'ColdStart', false ],
+      ]);
       expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
         name: '## foo-bar-function',
         annotations: {
@@ -696,7 +704,10 @@ describe('Class: Tracer', () => {
         }
       }));
       expect(newSubsegmentSecondInvocation).toEqual(expect.objectContaining({
-        name: '## foo-bar-function'
+        name: '## foo-bar-function',
+        annotations: {
+          'ColdStart': false,
+        }
       }));
 
     });

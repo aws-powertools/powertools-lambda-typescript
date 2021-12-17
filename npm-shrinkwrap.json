@@ -2317,9 +2317,10 @@
       "license": "MIT"
     },
     "node_modules/@types/lodash": {
-      "version": "4.14.177",
-      "dev": true,
-      "license": "MIT"
+      "version": "4.14.178",
+      "resolved": "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.178.tgz",
+      "integrity": "sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==",
+      "dev": true
     },
     "node_modules/@types/minimatch": {
       "version": "3.0.5",
@@ -17389,11 +17390,6 @@
     },
     "packages/logger/node_modules/@types/json5": {
       "version": "0.0.29",
-      "dev": true,
-      "license": "MIT"
-    },
-    "packages/logger/node_modules/@types/lodash": {
-      "version": "4.14.178",
       "dev": true,
       "license": "MIT"
     },
@@ -37258,10 +37254,6 @@
           "version": "0.0.29",
           "dev": true
         },
-        "@types/lodash": {
-          "version": "4.14.178",
-          "dev": true
-        },
         "@types/node": {
           "version": "16.11.12",
           "dev": true
@@ -48623,7 +48615,9 @@
       "dev": true
     },
     "@types/lodash": {
-      "version": "4.14.177",
+      "version": "4.14.178",
+      "resolved": "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.178.tgz",
+      "integrity": "sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==",
       "dev": true
     },
     "@types/minimatch": {

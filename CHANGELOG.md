@@ -3,21 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [0.1.0-beta.10](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.1.0-beta.9...v0.1.0-beta.10) (2021-12-17)
-
-
-### Features
-
-* add tracer ([#107](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/107)) ([f92279f](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/f92279f723f89943ad4f192165d547607d4c32b8)), closes [#304](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/304)
-* Auto publish docs to version "develop" ([#269](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/269)) ([aa7e77a](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/aa7e77aab06249a0a00624197384958ea39b8ba9))
-* **logger:** edit mkdocs, small updates to logic and test for feature parity ([#293](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/293)) ([87cf8e6](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/87cf8e6e3f15982498531fb14ba10a75f4890cb4))
-* **logger:** middy middleware ([#313](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/313)) ([1b92a1e](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/1b92a1e3694482283643f47a9bd2a34301647726))
-* **metric:** bring feature parity between decorator and utility function ([#291](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/291)) ([8d40471](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/8d404712fc236931c1a512456f47c1afc41e3a73))
-
-
-
-
-
 # [0.1.0-beta.9](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.1.0-beta.8...v0.1.0-beta.9) (2021-12-15)
 
 

@@ -26,7 +26,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '17.2'
-    - name: "Setup npm"
+      - name: "Setup npm"
         run: |
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
       - name: Install dependencies

@@ -3,17 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [0.1.0-beta.10](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.1.0-beta.9...v0.1.0-beta.10) (2021-12-17)
-
-
-### Features
-
-* **metric:** bring feature parity between decorator and utility function ([#291](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/291)) ([8d40471](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/8d404712fc236931c1a512456f47c1afc41e3a73))
-
-
-
-
-
 # [0.1.0-beta.9](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.1.0-beta.8...v0.1.0-beta.9) (2021-12-15)
 
 

@@ -1,24 +1,46 @@
-name: on-release-event
-
+name: release
 on:
-  release:
-    types: [created]
-
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: "Setup npm"
-        run: |
-          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-      - name: Install packages
-        run: |
-          export NODE_ENV=dev
-          npm ci
-          npm run lerna-ci
-      - name: Run lint
-        run: npm run lerna-lint
-      - name: Run tests
-        run: npm run lerna-test
-  # TODO: add publish step
+    - name: "Checkout"
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: "Use NodeJS 14"
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+  
+    - name: "Setup npm"
+      run: |
+        npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+        
+    - name: Install packages
+      run: |
+        npm ci
+        npm run lerna-ci
+    - name: Run lint
+      run: npm run lerna-lint
+    - name: Run tests
+      run: npm run lerna-test
+    - name: "Version and publish"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor}}@users.noreply.github.com"
+
+        if [ ${{ github.base_ref }} = main ]; then
+          npx lerna version --conventional-commits --create-release github --yes
+        else
+          npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --yes
+        fi
+        npx lerna publish from-git --no-verify-access --yes

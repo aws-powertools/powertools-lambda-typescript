@@ -1,11 +1,12 @@
 name: on-push-event
 on:
-  push
-
+  push:
+    branches:    
+          - '**'        # matches every branch
+          - '!main' 
 jobs:
   on_push:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_ENV: dev
     steps:
@@ -25,3 +26,23 @@ jobs:
         run: npm run lerna-lint
       - name: Run tests
         run: npm run lerna-test
+      - name: Collate Coverage Reports
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        run: |
+          for d in ./packages/*/ ; do
+              mkdir -p coverage
+              if [[ ! -f coverage/lcov.info ]]
+              then
+                  continue
+              fi
+              filename="$d""coverage/lcov.info"
+              targetSource="SF:""$d""src"
+              sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
+          done
+      - name: Report Coverage
+        #Dependabot user will only have read-only perms, so don't try to report coverage
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info

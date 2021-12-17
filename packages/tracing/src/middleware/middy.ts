@@ -49,11 +49,8 @@ const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
   const captureLambdaHandlerError = async (request: middy.Request): Promise<void> => {
     if (target.isTracingEnabled()) {
       const subsegment = target.getSegment();
-      if (target.isCaptureErrorEnabled() === false) {  
-        subsegment?.addErrorFlag();
-      } else {
-        subsegment?.addError(request.error as Error, false);
-      }
+      target.addErrorAsMetadata(request.error as Error);
+
       // TODO: should this error be thrown?? I.e. should we stop the event flow & return?
       // throw request.error;
 

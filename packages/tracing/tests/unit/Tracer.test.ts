@@ -87,6 +87,63 @@ describe('Class: Tracer', () => {
 
   });
 
+  describe('Method: addErrorAsMetadata', () => {
+
+    test('when called while tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const getSegmentSpy = jest.spyOn(tracer, 'getSegment');
+
+      // Act
+      tracer.addErrorAsMetadata(new Error('foo'));
+
+      // Assess
+      expect(getSegmentSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false, it does not capture the error', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
+      const tracer: Tracer = new Tracer();
+      const subsegment = new Subsegment(`## ${context.functionName}`);
+      jest.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
+      const addErrorFlagSpy = jest.spyOn(subsegment, 'addErrorFlag');
+      const addErrorSpy = jest.spyOn(subsegment, 'addError');
+
+      // Act
+      tracer.addErrorAsMetadata(new Error('foo'));
+
+      // Assess
+      expect(addErrorFlagSpy).toBeCalledTimes(1);
+      expect(addErrorSpy).toBeCalledTimes(0);
+      delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+
+    });
+
+    test('when called with default config, it calls subsegment.addError correctly', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const subsegment = new Subsegment(`## ${context.functionName}`);
+      jest.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
+      const addErrorFlagSpy = jest.spyOn(subsegment, 'addErrorFlag');
+      const addErrorSpy = jest.spyOn(subsegment, 'addError');
+
+      // Act
+      tracer.addErrorAsMetadata(new Error('foo'));
+
+      // Assess
+      expect(addErrorFlagSpy).toBeCalledTimes(0);
+      expect(addErrorSpy).toBeCalledTimes(1);
+      expect(addErrorSpy).toBeCalledWith(new Error('foo'), false);
+
+    });
+
+  });
+
   describe('Method: isColdStart', () => {
 
     test('when called, it returns false the first time and always true after that', () => {

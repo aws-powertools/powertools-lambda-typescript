@@ -80,7 +80,7 @@ export const handler = async (_event: any, context: any) => {
         tracer.addResponseAsMetadata(res, context.functionName);
     } catch (err) {
         // Add the error as metadata
-        handlerSegment.addError(err as Error, false);
+        tracer.addErrorAsMetadata(err as Error);
     }
  
     // Close subsegment (the AWS Lambda one is closed automatically)

@@ -93,7 +93,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *     tracer.addResponseAsMetadata(res, context.functionName);
  *   } catch (err) {
  *     // Add the error as metadata
- *     handlerSegment.addError(err as Error, false);
+ *     tracer.addErrorAsMetadata(err as Error);
  *   }
  * 
  *   // Close subsegment (the AWS Lambda one is closed automatically)
@@ -123,6 +123,28 @@ class Tracer implements TracerInterface {
   public constructor(options: TracerOptions = {}) {
     this.setOptions(options);
     this.provider = new ProviderService();
+  }
+
+  /**
+    * Add an error to the current segment or subsegment as metadata.
+    *
+    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
+    *
+    * @param error - Error to serialize as metadata
+    */
+  public addErrorAsMetadata(error: Error): void {
+    if (this.tracingEnabled === false) {
+      return;
+    }
+
+    const subsegment = this.getSegment();
+    if (this.captureError === false) {
+      subsegment.addErrorFlag();
+
+      return;
+    }
+
+    subsegment.addError(error, false);
   }
 
   /**
@@ -385,18 +407,6 @@ class Tracer implements TracerInterface {
 
     return segment;
   }
-  
-  /**
-   * Get the current value of the `captureError` property.
-   * 
-   * You can use this method during manual instrumentation to determine
-   * if tracer should be capturing errors.
-   * 
-   * @returns captureError - `true` if errors should be captured, `false` otherwise. 
-   */
-  public isCaptureErrorEnabled(): boolean {
-    return this.captureError;
-  }
 
   /**
    * Retrieve the current value of `ColdStart`.
@@ -521,25 +531,6 @@ class Tracer implements TracerInterface {
    */
   public setSegment(segment: Segment | Subsegment): void {
     return this.provider.setSegment(segment);
-  }
-
-  /**
-    * Add an error to the current segment or subsegment as metadata.
-    * Used internally by decoratorators and middlewares.
-    *
-    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
-    *
-    * @param error - Error to serialize as metadata
-    */
-  private addErrorAsMetadata(error: Error): void {
-    const subsegment = this.getSegment();
-    if (this.captureError === false) {
-      subsegment.addErrorFlag();
-
-      return;
-    }
-
-    subsegment.addError(error, false);
   }
   
   /**

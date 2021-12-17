@@ -65,6 +65,54 @@ describe('Class: Tracer', () => {
 
   });
 
+  describe('Method: addServiceNameAnnotation', () => {
+
+    test('when called while tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const putAnnotation = jest.spyOn(tracer, 'putAnnotation');
+
+      // Act
+      tracer.addServiceNameAnnotation();
+
+      // Assess
+      expect(putAnnotation).toBeCalledTimes(0);
+
+    });
+
+    test('when called while a serviceName has been set, it adds it as annotation', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ serviceName: 'foo' });
+      const putAnnotation = jest.spyOn(tracer, 'putAnnotation').mockImplementation(() => null);
+
+      // Act
+      tracer.addServiceNameAnnotation();
+
+      // Assess
+      expect(putAnnotation).toBeCalledTimes(1);
+      expect(putAnnotation).toBeCalledWith('Service', 'foo');
+
+    });
+
+    test('when called while a serviceName has not been set, it does nothing', () => {
+
+      // Prepare
+      delete process.env.POWERTOOLS_SERVICE_NAME;
+      const tracer: Tracer = new Tracer();
+      const putAnnotation = jest.spyOn(tracer, 'putAnnotation').mockImplementation(() => null);
+
+      // Act
+      tracer.addServiceNameAnnotation();
+
+      // Assess
+      expect(putAnnotation).toBeCalledTimes(0);
+
+    });
+
+  });
+
   describe('Method: addResponseAsMetadata', () => {
 
     test('when called while tracing is disabled, it does nothing', () => {
@@ -692,22 +740,60 @@ describe('Class: Tracer', () => {
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(2);
       expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## foo-bar-function', expect.anything());
-      expect(putAnnotationSpy).toHaveBeenCalledTimes(2);
-      expect(putAnnotationSpy.mock.calls).toEqual([
+      expect(putAnnotationSpy.mock.calls.filter(call => 
+        call[0] === 'ColdStart'
+      )).toEqual([
         [ 'ColdStart', true ],
         [ 'ColdStart', false ],
       ]);
       expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
         name: '## foo-bar-function',
-        annotations: {
+        annotations: expect.objectContaining({
           'ColdStart': true,
-        }
+        })
       }));
       expect(newSubsegmentSecondInvocation).toEqual(expect.objectContaining({
         name: '## foo-bar-function',
-        annotations: {
+        annotations: expect.objectContaining({
           'ColdStart': false,
+        })
+      }));
+
+    });
+
+    test('when used as decorator and with standard config, it annotates Service correctly', async () => {
+      
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureLambdaHanlder()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return new Promise((resolve, _reject) => resolve({
+            foo: 'bar'
+          } as unknown as TResult));
         }
+            
+      }
+            
+      // Act
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## foo-bar-function', expect.anything());
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '## foo-bar-function',
+        annotations: expect.objectContaining({
+          'Service': 'hello-world',
+        })
       }));
 
     });

@@ -5,7 +5,7 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 Tracing data can be visualized through AWS X-Ray Console.
 
 ## Key features
-* Auto capture cold start as annotation, and responses or full exceptions as metadata
+* Auto capture cold start and service name as annotations, and responses or full exceptions as metadata
 * Auto-disable when not running in AWS Lambda environment
 * Support tracing functions via decorators, middleware, and manual instrumentation
 * Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
@@ -18,7 +18,7 @@ For more usage examples, see [our documentation](https://awslabs.github.io/aws-l
 
 If you use function-based Lambda handlers you can use the [captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
 * handle the subsegment lifecycle 
-* add the `ColdStart` annotation
+* add the `ServiceName` and `ColdStart` annotations
 * add the function response as metadata
 * add the function error as metadata (if any)
  
@@ -37,7 +37,7 @@ export const handler = middy(async (_event: any, _context: any) => {
 
 If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHanlder) decorator to automatically:
 * handle the subsegment lifecycle 
-* add the `ColdStart` annotation
+* add the `ServiceName` and `ColdStart` annotations
 * add the function response as metadata
 * add the function error as metadata (if any)
 
@@ -70,7 +70,8 @@ export const handler = async (_event: any, context: any) => {
     const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
     // Create subsegment for the function
     const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
-    tracer.annotateColdStart()
+    tracer.annotateColdStart();
+    tracer.addServiceNameAnnotation();
 
     let res;
     try {

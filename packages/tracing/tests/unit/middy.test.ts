@@ -232,22 +232,54 @@ describe('Middy middlewares', () => {
     expect(setSegmentSpy).toHaveBeenCalledWith(expect.objectContaining({
       name: '## foo-bar-function',
     }));
-    expect(putAnnotationSpy).toHaveBeenCalledTimes(2);
-    expect(putAnnotationSpy.mock.calls).toEqual([
+    expect(putAnnotationSpy.mock.calls.filter(call => 
+      call[0] === 'ColdStart'
+    )).toEqual([
       [ 'ColdStart', true ],
       [ 'ColdStart', false ],
     ]);
     expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
       name: '## foo-bar-function',
-      annotations: {
+      annotations: expect.objectContaining({
         'ColdStart': true,
-      }
+      })
     }));
     expect(newSubsegmentSecondInvocation).toEqual(expect.objectContaining({
       name: '## foo-bar-function',
-      annotations: {
+      annotations: expect.objectContaining({
         'ColdStart': false,
-      }
+      })
+    }));
+
+  });
+
+  test('when used with standard config, it annotates Service correctly', async () => {
+      
+    // Prepare
+    const tracer: Tracer = new Tracer();
+    const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+    const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+    jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
+    setContextMissingStrategy(() => null);
+    const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+      foo: 'bar'
+    });
+    const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
+    const context = Object.assign({}, mockContext);
+
+    // Act
+    await handler({}, context, () => console.log('Lambda invoked!'));
+
+    // Assess
+    expect(setSegmentSpy).toHaveBeenCalledTimes(1);
+    expect(setSegmentSpy).toHaveBeenCalledWith(expect.objectContaining({
+      name: '## foo-bar-function',
+    }));
+    expect(newSubsegment).toEqual(expect.objectContaining({
+      name: '## foo-bar-function',
+      annotations: expect.objectContaining({
+        'Service': 'hello-world',
+      })
     }));
 
   });

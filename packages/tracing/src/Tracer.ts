@@ -25,7 +25,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * If you use function-based Lambda handlers you can use the [captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
  * * handle the subsegment lifecycle 
- * * add the `ColdStart` annotation
+ * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
  * * add the function error as metadata (if any)
  * 
@@ -45,7 +45,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHanlder) decorator to automatically:
  * * handle the subsegment lifecycle 
- * * add the `ColdStart` annotation
+ * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
  * * add the function error as metadata (if any)
  * 
@@ -84,6 +84,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *   // Create subsegment for the function
  *   const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
  *   tracer.annotateColdStart()
+ *   tracer.addServiceNameAnnotation();
  * 
  *   let res;
  *   try {
@@ -116,7 +117,7 @@ class Tracer implements TracerInterface {
   
   private envVarsService?: EnvironmentVariablesService;
   
-  private serviceName: string = 'serviceUndefined';
+  private serviceName?: string;
   
   private tracingEnabled: boolean = true;
 
@@ -148,7 +149,7 @@ class Tracer implements TracerInterface {
   }
 
   /**
-    * Add an data to the current segment or subsegment as metadata.
+    * Add response data to the current segment or subsegment as metadata.
     *
     * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-annotations
     *
@@ -161,6 +162,17 @@ class Tracer implements TracerInterface {
     }
 
     this.putMetadata(`${methodName} response`, data);
+  }
+
+  /**
+   * Add service name to the current segment or subsegment as annotation.
+   * 
+   */
+  public addServiceNameAnnotation(): void {
+    if (this.tracingEnabled === false || this.serviceName === undefined) {
+      return;
+    }
+    this.putAnnotation('Service', this.serviceName);
   }
 
   /**
@@ -311,6 +323,7 @@ class Tracer implements TracerInterface {
 
         return this.provider.captureAsyncFunc(`## ${context.functionName}`, async subsegment => {
           this.annotateColdStart();
+          this.addServiceNameAnnotation();
           let result: unknown;
           try {
             result = await originalMethod?.apply(target, [ event, context, callback ]);

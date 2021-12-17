@@ -9,7 +9,7 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 
 ## Key features
 
-* Auto capture cold start as annotation, and responses or full exceptions as metadata
+* Auto capture cold start and service name as annotations, and responses or full exceptions as metadata
 * Auto-disable when not running in AWS Lambda environment
 * Support tracing functions via decorators, middleware, and manual instrumentation
 * Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
@@ -85,7 +85,8 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
         // Create subsegment for the function
         const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
-        tracer.annotateColdStart()
+        tracer.annotateColdStart();
+        tracer.addServiceNameAnnotation();
 
         let res;
         try {

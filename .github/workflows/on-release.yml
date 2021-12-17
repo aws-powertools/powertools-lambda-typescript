@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - chore/releaseFlow
+      - main
   workflow_dispatch: {}
 jobs:
   publish:

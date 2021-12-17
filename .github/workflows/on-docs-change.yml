@@ -3,7 +3,7 @@ name: Auto publish docs to version "develop"
 on:
   push:
     branches:
-      - chore/releaseFlow
+      - main
     paths:
       - 'docs/**'
       - 'README.md'

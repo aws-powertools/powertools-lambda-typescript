@@ -12,6 +12,7 @@ jobs:
     - name: "Checkout"
       uses: actions/checkout@v2
       with:
+        token: ${{ secrets.GH_PUBLISH_TOKEN }}
         fetch-depth: 0
 
     - name: "Use NodeJS 14"
@@ -33,10 +34,11 @@ jobs:
       run: npm run lerna-test
     - name: "Version and publish"
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
       run: |
-        git config user.name "${{ github.actor }}"
-        git config user.email "${{ github.actor}}@users.noreply.github.com"
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
 
         if [ ${{ github.base_ref }} = main ]; then
           npx lerna version --conventional-commits --create-release github --yes

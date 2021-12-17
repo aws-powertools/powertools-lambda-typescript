@@ -1,6 +1,5 @@
 import { captureLambdaHandler } from '../../src/middleware/middy';
 import middy from '@middy/core';
-// import { EnvironmentVariablesService } from '../../../src/config';
 import { Tracer } from './../../src';
 import type { Context, Handler } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
@@ -76,14 +75,11 @@ describe('Middy middlewares', () => {
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
       const context = Object.assign({}, mockContext);
 
-      // Act
-      try {
-        await handler({}, context, () => console.log('Lambda invoked!'));
-      } catch (error) {
-        // Assess
-        expect(setSegmentSpy).toHaveBeenCalledTimes(0);
-        expect(getSegmentSpy).toHaveBeenCalledTimes(0);
-      }
+      // Act & Assess
+      await expect(handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      expect(setSegmentSpy).toHaveBeenCalledTimes(0);
+      expect(getSegmentSpy).toHaveBeenCalledTimes(0);
+      expect.assertions(3);
 
     });
 
@@ -164,19 +160,16 @@ describe('Middy middlewares', () => {
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
       const context = Object.assign({}, mockContext);
 
-      // Act
-      try {
-        await handler({}, context, () => console.log('Lambda invoked!'));
-      } catch (error) {
-        // Assess
-        expect(setSegmentSpy).toHaveBeenCalledTimes(1);
-        expect(setSegmentSpy).toHaveBeenCalledWith(expect.objectContaining({
-          name: '## foo-bar-function',
-        }));
-        expect('cause' in newSubsegment).toBe(false);
-        expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
-        expect(addErrorSpy).toHaveBeenCalledTimes(0);
-      }
+      // Act & Assess
+      await expect(handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      expect(setSegmentSpy).toHaveBeenCalledTimes(1);
+      expect(setSegmentSpy).toHaveBeenCalledWith(expect.objectContaining({
+        name: '## foo-bar-function',
+      }));
+      expect('cause' in newSubsegment).toBe(false);
+      expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
+      expect(addErrorSpy).toHaveBeenCalledTimes(0);
+      expect.assertions(6);
 
       delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
 
@@ -199,19 +192,16 @@ describe('Middy middlewares', () => {
     const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
     const context = Object.assign({}, mockContext);
 
-    // Act
-    try {
-      await handler({}, context, () => console.log('Lambda invoked!'));
-    } catch (error) {
-      // Assess
-      expect(setSegmentSpy).toHaveBeenCalledTimes(1);
-      expect(setSegmentSpy).toHaveBeenCalledWith(expect.objectContaining({
-        name: '## foo-bar-function',
-      }));
-      expect('cause' in newSubsegment).toBe(true);
-      expect(addErrorSpy).toHaveBeenCalledTimes(1);
-      expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
-    }
+    // Act & Assess
+    await expect(handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+    expect(setSegmentSpy).toHaveBeenCalledTimes(1);
+    expect(setSegmentSpy).toHaveBeenCalledWith(expect.objectContaining({
+      name: '## foo-bar-function',
+    }));
+    expect('cause' in newSubsegment).toBe(true);
+    expect(addErrorSpy).toHaveBeenCalledTimes(1);
+    expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
+    expect.assertions(6);
 
   });
 

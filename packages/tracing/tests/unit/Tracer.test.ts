@@ -451,19 +451,16 @@ describe('Class: Tracer', () => {
             
       }
             
-      // Act
-      try {
-        await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      } catch (error) {
-        // Assess
-        expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-        expect(newSubsegment).toEqual(expect.objectContaining({
-          name: '## foo-bar-function',
-        }));
-        expect('cause' in newSubsegment).toBe(false);
-        expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
-        expect(addErrorSpy).toHaveBeenCalledTimes(0);
-      }
+      // Act & Assess
+      await expect(new Lambda().handler({}, dummyContext, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '## foo-bar-function',
+      }));
+      expect('cause' in newSubsegment).toBe(false);
+      expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
+      expect(addErrorSpy).toHaveBeenCalledTimes(0);
+      expect.assertions(6);
 
       delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
 
@@ -490,19 +487,16 @@ describe('Class: Tracer', () => {
             
       }
             
-      // Act
-      try {
-        await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      } catch (error) {
-        // Assess
-        expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-        expect(newSubsegment).toEqual(expect.objectContaining({
-          name: '## foo-bar-function',
-        }));
-        expect('cause' in newSubsegment).toBe(true);
-        expect(addErrorSpy).toHaveBeenCalledTimes(1);
-        expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
-      }
+      // Act & Assess
+      await expect(new Lambda().handler({}, dummyContext, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '## foo-bar-function',
+      }));
+      expect('cause' in newSubsegment).toBe(true);
+      expect(addErrorSpy).toHaveBeenCalledTimes(1);
+      expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
+      expect.assertions(6);
     
     });
 

@@ -27,7 +27,7 @@ npm run example:ephemeral-attributes
 ```typescript
 // Import the library
 import { Logger } from '../src';
-// When going public, it will be something like: import { Logger } from '@flochaz/logger';
+// When going public, it will be something like: import { Logger } from '@aws-lambda-powertools/logger';
 
 // Environment variables set for the Lambda
 process.env.LOG_LEVEL = 'WARN';

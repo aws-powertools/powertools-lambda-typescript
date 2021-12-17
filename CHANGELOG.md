@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-beta.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.1.1-beta.0...v0.2.0-beta.0) (2021-12-17)
+
+
+### Features
+
+* **tracer:** middy middleware ([#324](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/324)) ([2909d6f](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/2909d6f9b9bf1a570f950e17f0d49acbe63653ee))
+
+
+
+
+
 # [0.1.0-beta.9](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.1.0-beta.8...v0.1.0-beta.9) (2021-12-15)
 
 

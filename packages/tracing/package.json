@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "0.1.1-beta.0",
+  "version": "0.2.0-beta.0",
   "description": "The tracer package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -54,8 +54,8 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@middy/core": "^2.5.3",
     "@aws-lambda-powertools/commons": "^0.0.2",
+    "@middy/core": "^2.5.3",
     "aws-xray-sdk-core": "^3.3.3"
   }
 }

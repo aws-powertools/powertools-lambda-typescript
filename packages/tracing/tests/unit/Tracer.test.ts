@@ -24,6 +24,42 @@ describe('Class: Tracer', () => {
     process.env = ENVIRONMENT_VARIABLES;
   });
 
+  describe('Method: annotateColdStart', () => {
+
+    test('when called while tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+
+      // Act
+      tracer.annotateColdStart();
+
+      // Assess
+      expect(putAnnotationSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called multiple times, it annotates the first time and then never again', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation').mockImplementation(() => null);
+
+      // Act
+      tracer.annotateColdStart();
+      tracer.annotateColdStart();
+      tracer.annotateColdStart();
+      tracer.annotateColdStart();
+
+      // Assess
+      expect(putAnnotationSpy).toBeCalledTimes(1);
+      expect(putAnnotationSpy).toBeCalledWith('ColdStart', true);
+
+    });
+
+  });
+
   describe('Method: addResponseAsMetadata', () => {
 
     test('when called while tracing is disabled, it does nothing', () => {
@@ -144,15 +180,15 @@ describe('Class: Tracer', () => {
 
   });
 
-  describe('Method: isColdStart', () => {
+  describe('Method: getColdStart', () => {
 
     test('when called, it returns false the first time and always true after that', () => {
     
       // Assess
-      expect(Tracer.isColdStart()).toBe(true);
-      expect(Tracer.isColdStart()).toBe(false);
-      expect(Tracer.isColdStart()).toBe(false);
-      expect(Tracer.isColdStart()).toBe(false);
+      expect(Tracer.getColdStart()).toBe(true);
+      expect(Tracer.getColdStart()).toBe(false);
+      expect(Tracer.getColdStart()).toBe(false);
+      expect(Tracer.getColdStart()).toBe(false);
     
     });
     

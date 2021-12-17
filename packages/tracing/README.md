@@ -70,8 +70,7 @@ export const handler = async (_event: any, context: any) => {
     const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
     // Create subsegment for the function
     const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
-    // TODO: expose tracer.annotateColdStart()
-    this.putAnnotation('ColdStart', tracer.isColdStart());
+    tracer.annotateColdStart()
 
     let res;
     try {

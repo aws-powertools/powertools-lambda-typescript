@@ -31,10 +31,7 @@ const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
     if (target.isTracingEnabled()) {
       const subsegment = new Subsegment(`## ${request.context.functionName}`);
       target.setSegment(subsegment);
-  
-      if (Tracer.isColdStart()) {
-        target.putAnnotation('ColdStart', true);
-      }
+      target.annotateColdStart();
     }
   };
 

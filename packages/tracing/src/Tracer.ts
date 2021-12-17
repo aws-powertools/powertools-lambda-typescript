@@ -83,8 +83,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
  *   // Create subsegment for the function
  *   const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
- *   // TODO: expose tracer.annotateColdStart()
- *   this.putAnnotation('ColdStart', tracer.isColdStart());
+ *   tracer.annotateColdStart()
  * 
  *   let res;
  *   try {
@@ -104,6 +103,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
   * ```
  */
 class Tracer implements TracerInterface {
+  
   public static coldStart: boolean = true;
 
   public provider: ProviderServiceInterface;
@@ -161,6 +161,25 @@ class Tracer implements TracerInterface {
     }
 
     this.putMetadata(`${methodName} response`, data);
+  }
+
+  /**
+   * Add ColdStart annotation to the current segment or subsegment.
+   * 
+   * If Tracer has been initialized outside of the Lambda handler then the same instance
+   * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
+   * and this method will return `false` after the first invocation.
+   * 
+   * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
+   */
+  public annotateColdStart(): void {
+    if (Tracer.coldStart === true) {
+      Tracer.coldStart = false;
+
+      if (this.tracingEnabled === true) {
+        this.putAnnotation('ColdStart', true);
+      }
+    }
   }
 
   /**
@@ -376,6 +395,27 @@ class Tracer implements TracerInterface {
       return descriptor;
     };
   }
+
+  /**
+   * Retrieve the current value of `ColdStart`.
+   * 
+   * If Tracer has been initialized outside of the Lambda handler then the same instance
+   * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
+   * and this method will return `false` after the first invocation.
+   * 
+   * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
+   * 
+   * @returns boolean - `true` if is cold start, otherwise `false`
+   */
+  public static getColdStart(): boolean {
+    if (Tracer.coldStart === true) {
+      Tracer.coldStart = false;
+
+      return true;
+    }
+
+    return false;
+  }
   
   /**
    * Get the active segment or subsegment in the current scope.
@@ -406,27 +446,6 @@ class Tracer implements TracerInterface {
     }
 
     return segment;
-  }
-
-  /**
-   * Retrieve the current value of `ColdStart`.
-   * 
-   * If Tracer has been initialized outside of the Lambda handler then the same instance
-   * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
-   * and this method will return `false` after the first invocation.
-   * 
-   * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
-   * 
-   * @returns boolean - `true` if is cold start, otherwise `false`
-   */
-  public static isColdStart(): boolean {
-    if (Tracer.coldStart === true) {
-      Tracer.coldStart = false;
-
-      return true;
-    }
-
-    return false;
   }
 
   /**
@@ -531,16 +550,6 @@ class Tracer implements TracerInterface {
    */
   public setSegment(segment: Segment | Subsegment): void {
     return this.provider.setSegment(segment);
-  }
-  
-  /**
-   * Add ColdStart annotation to the current segment or subsegment.
-   * Used internally by decoratorators and middlewares.
-   */
-  private annotateColdStart(): void {
-    if (Tracer.isColdStart()) {
-      this.putAnnotation('ColdStart', true);
-    }
   }
 
   /**

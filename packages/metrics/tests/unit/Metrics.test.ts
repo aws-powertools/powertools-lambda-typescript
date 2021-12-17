@@ -1,5 +1,7 @@
 import { ContextExamples as dummyContext, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Context, Callback } from 'aws-lambda';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
 import { Metrics, MetricUnits } from '../../src/';
 import { populateEnvironmentVariables } from '../helpers';
@@ -227,7 +229,7 @@ describe('Class: Metrics', () => {
     test('Cold start metric should only be written out once and flushed automatically', async () => {
       const metrics = new Metrics({ namespace: 'test' });
 
-      const handler = async (event: any, context: Context) => {
+      const handler = async (_event, _context): Promise<void> => {
         // Should generate only one log
         metrics.captureColdStartMetric();
       };
@@ -361,7 +363,7 @@ describe('Class: Metrics', () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
-      const handler = async (event: any, context: Context) => {
+      const handler = async (_event, _context): Promise<void> => {
         metrics.raiseOnEmptyMetrics();
         // Logic goes here
         metrics.purgeStoredMetrics();

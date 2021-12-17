@@ -75,32 +75,31 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Manual"
 
-    ```typescript hl_lines="1-2 4 9-10 12 18 21 25"
+    ```typescript hl_lines="1 3 7 9 11 17 20 24"
     import { Tracer } from '@aws-lambda-powertools/tracer';
-    import { Segment } from 'aws-xray-sdk-core';
     
     const tracer = Tracer(); // Sets service via env var
     // OR tracer = Tracer({ service: 'example' });
 
     export const handler = async (_event: any, context: any) => {
-        // Create subsegment & set it as active
-        const subsegment = new Subsegment(`## ${context.functionName}`);
-        tracer.setSegment(subsegment);
-        // Add the ColdStart annotation
-        this.putAnnotation('ColdStart', tracer.coldStart);
+        const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
+        // Create subsegment for the function
+        const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
+        // TODO: expose tracer.annotateColdStart()
+        this.putAnnotation('ColdStart', tracer.isColdStart());
 
         let res;
         try {
-            res = await someLogic(); // Do something
-            // Add the response as metadata
-            tracer.putMetadata(`${context.functionName} response`, data);
+            res = ...
+            // Add the response as metadata 
+            tracer.putMetadata(`${context.functionName} response`, res);
         } catch (err) {
             // Add the error as metadata
-            subsegment.addError(err, false);
+            handlerSegment.addError(err as Error, false);
         }
-
-        // Close subsegment
-        subsegment.close();
+    
+        // Close subsegment (the AWS Lambda one is closed automatically)
+        handlerSegment.close();
     
         return res;
     }

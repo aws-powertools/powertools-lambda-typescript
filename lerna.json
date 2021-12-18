@@ -3,5 +3,6 @@
     "packages/*"
   ],
   "version": "0.2.0-beta.3",
-  "npmClient": "npm"
+  "npmClient": "npm",
+  "message": "chore(release): %s [skip ci]"
 }

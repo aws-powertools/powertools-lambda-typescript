@@ -321,13 +321,13 @@ class Tracer implements TracerInterface {
           return originalMethod?.apply(target, [ event, context, callback ]);
         }
 
-        return this.provider.captureAsyncFunc(`## ${context.functionName}`, async subsegment => {
+        return this.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
           this.annotateColdStart();
           this.addServiceNameAnnotation();
           let result: unknown;
           try {
             result = await originalMethod?.apply(target, [ event, context, callback ]);
-            this.addResponseAsMetadata(result, context.functionName);
+            this.addResponseAsMetadata(result, process.env._HANDLER);
           } catch (error) {
             this.addErrorAsMetadata(error as Error);
             throw error;

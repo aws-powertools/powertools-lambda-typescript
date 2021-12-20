@@ -568,7 +568,7 @@ describe('Class: Tracer', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
@@ -599,7 +599,7 @@ describe('Class: Tracer', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
@@ -622,12 +622,12 @@ describe('Class: Tracer', () => {
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## foo-bar-function', expect.anything());
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## index.handler', expect.anything());
       expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
         metadata: {
           'hello-world': {
-            'foo-bar-function response': {
+            'index.handler response': {
               foo: 'bar',
             },
           },
@@ -641,7 +641,7 @@ describe('Class: Tracer', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
@@ -663,7 +663,7 @@ describe('Class: Tracer', () => {
       await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
       }));
       expect('cause' in newSubsegment).toBe(false);
       expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
@@ -678,7 +678,7 @@ describe('Class: Tracer', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
@@ -699,7 +699,7 @@ describe('Class: Tracer', () => {
       await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
       }));
       expect('cause' in newSubsegment).toBe(true);
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
@@ -712,8 +712,8 @@ describe('Class: Tracer', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegmentFirstInvocation: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
-      const newSubsegmentSecondInvocation: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegmentFirstInvocation: Segment | Subsegment | undefined = new Subsegment('## index.handler');
+      const newSubsegmentSecondInvocation: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(() => newSubsegmentFirstInvocation)
         .mockImplementation(() => newSubsegmentSecondInvocation);
@@ -739,7 +739,7 @@ describe('Class: Tracer', () => {
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(2);
-      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## foo-bar-function', expect.anything());
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## index.handler', expect.anything());
       expect(putAnnotationSpy.mock.calls.filter(call => 
         call[0] === 'ColdStart'
       )).toEqual([
@@ -747,13 +747,13 @@ describe('Class: Tracer', () => {
         [ 'ColdStart', false ],
       ]);
       expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
         annotations: expect.objectContaining({
           'ColdStart': true,
         })
       }));
       expect(newSubsegmentSecondInvocation).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
         annotations: expect.objectContaining({
           'ColdStart': false,
         })
@@ -765,7 +765,7 @@ describe('Class: Tracer', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
@@ -788,9 +788,9 @@ describe('Class: Tracer', () => {
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## foo-bar-function', expect.anything());
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## index.handler', expect.anything());
       expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
         annotations: expect.objectContaining({
           'Service': 'hello-world',
         })

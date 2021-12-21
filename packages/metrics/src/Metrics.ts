@@ -163,7 +163,7 @@ class Metrics implements MetricsInterface {
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
+   * const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
    *
    * export const handler = async (event: any, context: Context) => {
    *     metrics.captureColdStartMetric();
@@ -282,7 +282,7 @@ class Metrics implements MetricsInterface {
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
+   * const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
    *
    * export const handler = async (event: any, context: Context) => {
    *     metrics.raiseOnEmptyMetrics();

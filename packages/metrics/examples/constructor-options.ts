@@ -1,21 +1,25 @@
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
+import { populateEnvironmentVariables } from '../tests/helpers';
 import { Metrics, MetricUnits } from '../src';
-import { LambdaInterface } from "./utils/lambda";
-import { Callback, Context } from "aws-lambda/handler";
+import middy from '@middy/core';
+import { logMetrics } from '../src/middleware/middy';
+
+// Populate runtime
+populateEnvironmentVariables();
+// Additional runtime variables
+process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 
 const metrics = new Metrics({
   namespace: 'hello-world-constructor',
   service: 'hello-world-service-constructor'
 });
 
-class Lambda implements LambdaInterface {
+const lambdaHandler = async (): Promise<void> => {
+  metrics.addMetric('test-metric', MetricUnits.Count, 10);
+};
 
-  @metrics.logMetrics()
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
+const handlerWithMiddleware = middy(lambdaHandler)
+  .use(logMetrics(metrics));
 
-  }
-
-}
-new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+handlerWithMiddleware(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));

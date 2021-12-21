@@ -20,11 +20,11 @@ describe('Middy middleware', () => {
     test('when a metrics instance is passed WITH custom options, it prints the metrics in the stdout', async () => {
 
       // Prepare
-      const metrics = new Metrics({ namespace:'ServerlessAirline', service:'orders' });
+      const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
 
       const lambdaHandler = (): void => {
-        metrics.addMetric('SuccessfulBooking', MetricUnits.Count, 1);
-        metrics.addMetric('SuccessfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
       };
       const metricsOptions: ExtraOptions = {
         raiseOnEmptyMetrics: true,
@@ -59,7 +59,7 @@ describe('Middy middleware', () => {
         '_aws': {
           'Timestamp': 1466424490000,
           'CloudWatchMetrics': [{
-            'Namespace': 'ServerlessAirline',
+            'Namespace': 'serverlessAirline',
             'Dimensions': [
               [ 'environment', 'aws_region', 'service', 'function_name' ]
             ],
@@ -76,17 +76,17 @@ describe('Middy middleware', () => {
         '_aws': {
           'Timestamp': 1466424490000,
           'CloudWatchMetrics': [{
-            'Namespace': 'ServerlessAirline',
+            'Namespace': 'serverlessAirline',
             'Dimensions': [
               [ 'environment', 'aws_region', 'service' ]
             ],
-            'Metrics': [{ 'Name': 'SuccessfulBooking', 'Unit': 'Count' }],
+            'Metrics': [{ 'Name': 'successfulBooking', 'Unit': 'Count' }],
           }],
         },
         'environment': 'prod',
         'aws_region' : 'eu-central-1',
         'service': 'orders',
-        'SuccessfulBooking': 1,
+        'successfulBooking': 1,
       }));
 
     });
@@ -94,11 +94,11 @@ describe('Middy middleware', () => {
     test('when a metrics instance is passed WITHOUT custom options, it prints the metrics in the stdout', async () => {
 
       // Prepare
-      const metrics = new Metrics({ namespace:'ServerlessAirline', service:'orders' });
+      const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
 
       const lambdaHandler = (): void => {
-        metrics.addMetric('SuccessfulBooking', MetricUnits.Count, 1);
-        metrics.addMetric('SuccessfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
       };
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
@@ -129,15 +129,15 @@ describe('Middy middleware', () => {
         '_aws': {
           'Timestamp': 1466424490000,
           'CloudWatchMetrics': [{
-            'Namespace': 'ServerlessAirline',
+            'Namespace': 'serverlessAirline',
             'Dimensions': [
               ['service']
             ],
-            'Metrics': [{ 'Name': 'SuccessfulBooking', 'Unit': 'Count' }],
+            'Metrics': [{ 'Name': 'successfulBooking', 'Unit': 'Count' }],
           }],
         },
         'service': 'orders',
-        'SuccessfulBooking': 1,
+        'successfulBooking': 1,
       }));
 
     });

@@ -229,7 +229,7 @@ describe('Class: Metrics', () => {
     test('Cold start metric should only be written out once and flushed automatically', async () => {
       const metrics = new Metrics({ namespace: 'test' });
 
-      const handler = async (_event, _context): Promise<void> => {
+      const handler = async (_event: unknown, _context: unknown): Promise<void> => {
         // Should generate only one log
         metrics.captureColdStartMetric();
       };
@@ -363,7 +363,7 @@ describe('Class: Metrics', () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
-      const handler = async (_event, _context): Promise<void> => {
+      const handler = async (_event: unknown, _context: unknown): Promise<void> => {
         metrics.raiseOnEmptyMetrics();
         // Logic goes here
         metrics.purgeStoredMetrics();

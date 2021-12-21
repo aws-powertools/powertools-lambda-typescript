@@ -142,6 +142,59 @@ describe('Middy middleware', () => {
 
     });
 
+    test('when an array of Metrics instances is passed, it prints the metrics in the stdout', async () => {
+
+      // Prepare
+      const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
+
+      const lambdaHandler = (): void => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+      };
+      const metricsOptions: ExtraOptions = {
+        raiseOnEmptyMetrics: true
+      };
+      const handler = middy(lambdaHandler).use(logMetrics([metrics], metricsOptions));
+      const event = { foo: 'bar' };
+      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
+
+      const awsRequestId = getRandomInt().toString();
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        awsRequestId: awsRequestId,
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      // Act
+      await handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(console.log).toHaveBeenNthCalledWith(1, JSON.stringify({
+        '_aws': {
+          'Timestamp': 1466424490000,
+          'CloudWatchMetrics': [{
+            'Namespace': 'serverlessAirline',
+            'Dimensions': [
+              ['service']
+            ],
+            'Metrics': [{ 'Name': 'successfulBooking', 'Unit': 'Count' }],
+          }],
+        },
+        'service': 'orders',
+        'successfulBooking': 1,
+      }));
+
+    });
+
   });
 
 });

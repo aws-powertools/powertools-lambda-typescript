@@ -180,7 +180,7 @@ class Tracer implements TracerInterface {
    * 
    * If Tracer has been initialized outside of the Lambda handler then the same instance
    * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
-   * and this method will return `false` after the first invocation.
+   * and this method will annotate `ColdStart: false` after the first invocation.
    * 
    * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
    */

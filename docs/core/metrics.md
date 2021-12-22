@@ -309,7 +309,7 @@ export class MyFunction {
 
 #### Manually
 
-If you wish to do so, you can manually flush the metrics with `purgeStoredMetrics` and clear metrics as follows:
+You can manually flush the metrics with `purgeStoredMetrics` as follows:
 
 !!! warning
     Metrics, dimensions and namespace validation still applies.

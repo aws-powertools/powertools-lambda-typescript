@@ -26,7 +26,7 @@
     "example:empty-metrics": "ts-node examples/empty-metrics.ts",
     "example:single-metric": "ts-node examples/single-metric.ts",
     "example:cold-start": "ts-node examples/cold-start.ts",
-    "example:programatic-access": "ts-node examples/programmatic-access.ts",
+    "example:programmatic-access": "ts-node examples/programmatic-access.ts",
     "example:constructor-options": "ts-node examples/constructor-options.ts",
     "example:default-dimensions-constructor": "ts-node examples/default-dimensions-constructor.ts",
     "example:hello-world-decorator": "ts-node examples/decorator/hello-world.ts",

@@ -115,7 +115,7 @@ You can use add default dimensions to your metrics by passing them as parameters
 
 * in the constructor
 * in the Middy middleware
-* using the setDefaultDimensions` method
+* using the `setDefaultDimensions` method
 * in the decorator
 
 If you'd like to remove them at some point, you can use `clearDefaultDimensions` method.  

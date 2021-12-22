@@ -209,7 +209,7 @@ The middleware and the decorator also **validate**, **serialize**, and **flush**
     * Metric units must be [supported by CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
 
 
-#### Using a middleware
+#### Using Middy middleware
 
 See below an example of how to automatically flush metrics with the Middy-compatible `logMetrics` middleware.
 

@@ -138,7 +138,7 @@ See examples below:
     }
     ```
 
-=== "logMetrics middleware"
+=== "Middy middleware"
 
     ```typescript hl_lines="5"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';

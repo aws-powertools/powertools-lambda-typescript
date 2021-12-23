@@ -18,14 +18,10 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
-    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
-    "example:hello-world": "ts-node examples/hello-world.ts",
-    "example:capture-lambda-handler-response-decorator": "ts-node examples/capture-lambda-handler-response-decorator.ts",
-    "example:capture-lambda-handler-error-decorator": "ts-node examples/capture-lambda-handler-error-decorator.ts",
-    "example:capture-clients": "ts-node examples/capture-clients.ts"
+    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
-  "license": "MIT",
+  "license": "MIT-0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {

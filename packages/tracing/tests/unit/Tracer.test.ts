@@ -553,7 +553,7 @@ describe('Class: Tracer', () => {
 
   });
 
-  describe('Method: captureLambdaHanlder', () => {
+  describe('Method: captureLambdaHandler', () => {
   
     test('when used as decorator while tracing is disabled, it does nothing', async () => {
      
@@ -563,7 +563,7 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -593,7 +593,7 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -625,7 +625,7 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -669,7 +669,7 @@ describe('Class: Tracer', () => {
       const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -705,7 +705,7 @@ describe('Class: Tracer', () => {
       const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -741,7 +741,7 @@ describe('Class: Tracer', () => {
       const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -791,7 +791,7 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {

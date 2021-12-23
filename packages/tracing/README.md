@@ -26,7 +26,7 @@ If you use function-based Lambda handlers you can use the [captureLambdaHandler(
 import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
 import middy from '@middy/core';
  
-const tracer = new Tracer({ serviceName: 'my-service' });
+const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  
 export const handler = middy(async (_event: any, _context: any) => {
     ...
@@ -44,7 +44,7 @@ If instead you use TypeScript Classes to wrap your Lambda handler you can use th
 ```typescript
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
-const tracer = new Tracer({ serviceName: 'my-service' });
+const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
 class Lambda {
     @tracer.captureLambdaHandler()
@@ -64,12 +64,15 @@ If you prefer to manually instrument your Lambda handler you can use the methods
 ```typescript
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
-const tracer = new Tracer({ serviceName: 'my-service' });
+const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
 export const handler = async (_event: any, context: any) => {
     const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
-    // Create subsegment for the function
-    const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
+    // Create subsegment for the function & set it as active
+    const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
+    tracer.setSegment(subsegment);
+
+    // Annotate the subsegment with the cold start & serviceName
     tracer.annotateColdStart();
     tracer.addServiceNameAnnotation();
 
@@ -77,14 +80,17 @@ export const handler = async (_event: any, context: any) => {
     try {
         res = ...
         // Add the response as metadata 
-        tracer.addResponseAsMetadata(res, context.functionName);
+        tracer.addResponseAsMetadata(res, process.env._HANDLER);
     } catch (err) {
         // Add the error as metadata
         tracer.addErrorAsMetadata(err as Error);
+        throw err;
     }
  
     // Close subsegment (the AWS Lambda one is closed automatically)
-    handlerSegment.close();
+    subsegment.close();
+    // Set the facade segment as active again
+    tracer.setSegment(segment);
  
     return res;
 }

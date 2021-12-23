@@ -1,27 +1,30 @@
 import { custom_resources, aws_iam } from 'aws-cdk-lib';
 import { Events } from '@aws-lambda-powertools/commons';
 import { Construct } from 'constructs';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 
 interface ExampleFunctionProps {
   readonly functionName: string;
   readonly tracingActive?: boolean;
   readonly invocations?: number;
+  readonly fnProps?: Partial<NodejsFunctionProps>;
 }
 
 class ExampleFunction extends Construct {
+  function: NodejsFunction;
 
   constructor(scope: Construct, id: string, props: ExampleFunctionProps) {
     super(scope, id);
 
-    const { functionName, tracingActive, invocations } = Object.assign({
+    const { functionName, tracingActive, invocations, fnProps } = Object.assign({
       tracingActive: false,
       invocations: 2
     }, props);
 
     const fn = new NodejsFunction(this, functionName, {
       tracing: tracingActive ? Tracing.ACTIVE : Tracing.DISABLED,
+      ...fnProps
     });
 
     for (let i = 0; i < invocations; i++) {

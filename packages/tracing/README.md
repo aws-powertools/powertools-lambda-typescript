@@ -16,7 +16,7 @@ For more usage examples, see [our documentation](https://awslabs.github.io/aws-l
 
 ### Functions usage with middlewares
 
-If you use function-based Lambda handlers you can use the [captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
+If you use function-based Lambda handlers you can use the [captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
 * handle the subsegment lifecycle 
 * add the `ServiceName` and `ColdStart` annotations
 * add the function response as metadata

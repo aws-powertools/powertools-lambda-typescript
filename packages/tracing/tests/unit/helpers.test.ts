@@ -2,7 +2,7 @@ import { ConfigServiceInterface } from '../../src/config';
 import { TracerOptions } from '../../src/types';
 import { createTracer, Tracer } from './../../src';
 
-describe('Helper: createLogger function', () => {
+describe('Helper: createTracer function', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
@@ -208,20 +208,6 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(tracer).toEqual(expect.objectContaining({
         serviceName: 'my-backend-service'
-      }));
-
-    });
-
-    test('when POWERTOOLS_SERVICE_NAME environment variable is set to invalid value, a tracer default serviceName is returned', () => {
-      // Prepare
-      process.env.POWERTOOLS_SERVICE_NAME = '';
-
-      // Act
-      const tracer = createTracer();
-
-      // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        serviceName: 'serviceUndefined'
       }));
 
     });

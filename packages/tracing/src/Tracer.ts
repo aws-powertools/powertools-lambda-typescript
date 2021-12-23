@@ -19,11 +19,13 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * ## Usage
  * 
+ * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/).
+ * 
  * ### Functions usage with middlewares
  * 
- * If you use function-based Lambda handlers you can use the [captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
+ * If you use function-based Lambda handlers you can use the [captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
  * * handle the subsegment lifecycle 
- * * add the `ColdStart` annotation
+ * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
  * * add the function error as metadata (if any)
  * 
@@ -43,7 +45,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHanlder) decorator to automatically:
  * * handle the subsegment lifecycle 
- * * add the `ColdStart` annotation
+ * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
  * * add the function error as metadata (if any)
  * 
@@ -78,30 +80,31 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * const tracer = new Tracer({ serviceName: 'my-service' });
  * 
  * export const handler = async (_event: any, context: any) => {
- *   // Create subsegment & set it as active
- *   const subsegment = new Subsegment(`## ${context.functionName}`);
- *   tracer.setSegment(subsegment);
- *   // Add the ColdStart annotation
- *   this.putAnnotation('ColdStart', tracer.isColdStart());
+ *   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
+ *   // Create subsegment for the function
+ *   const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
+ *   tracer.annotateColdStart()
+ *   tracer.addServiceNameAnnotation();
  * 
  *   let res;
  *   try {
- *     res = await someLogic(); // Do something
+ *     res = ...
  *     // Add the response as metadata
- *     tracer.putMetadata(`${context.functionName} response`, data);
+ *     tracer.addResponseAsMetadata(res, context.functionName);
  *   } catch (err) {
  *     // Add the error as metadata
- *     subsegment.addError(err, false);
+ *     tracer.addErrorAsMetadata(err as Error);
  *   }
  * 
- *   // Close subsegment
- *   subsegment.close();
+ *   // Close subsegment (the AWS Lambda one is closed automatically)
+ *   handlerSegment.close();
  *
  *   return res;
  * }
   * ```
  */
 class Tracer implements TracerInterface {
+  
   public static coldStart: boolean = true;
 
   public provider: ProviderServiceInterface;
@@ -114,13 +117,80 @@ class Tracer implements TracerInterface {
   
   private envVarsService?: EnvironmentVariablesService;
   
-  private serviceName: string = 'serviceUndefined';
+  private serviceName?: string;
   
   private tracingEnabled: boolean = true;
 
   public constructor(options: TracerOptions = {}) {
     this.setOptions(options);
     this.provider = new ProviderService();
+  }
+
+  /**
+    * Add an error to the current segment or subsegment as metadata.
+    *
+    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
+    *
+    * @param error - Error to serialize as metadata
+    */
+  public addErrorAsMetadata(error: Error): void {
+    if (this.tracingEnabled === false) {
+      return;
+    }
+
+    const subsegment = this.getSegment();
+    if (this.captureError === false) {
+      subsegment.addErrorFlag();
+
+      return;
+    }
+
+    subsegment.addError(error, false);
+  }
+
+  /**
+    * Add response data to the current segment or subsegment as metadata.
+    *
+    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-annotations
+    *
+    * @param data - Data to serialize as metadata
+    * @param methodName - Name of the method that is being traced
+    */
+  public addResponseAsMetadata(data?: unknown, methodName?: string): void {
+    if (data === undefined || this.captureResponse === false || this.tracingEnabled === false) {
+      return;
+    }
+
+    this.putMetadata(`${methodName} response`, data);
+  }
+
+  /**
+   * Add service name to the current segment or subsegment as annotation.
+   * 
+   */
+  public addServiceNameAnnotation(): void {
+    if (this.tracingEnabled === false || this.serviceName === undefined) {
+      return;
+    }
+    this.putAnnotation('Service', this.serviceName);
+  }
+
+  /**
+   * Add ColdStart annotation to the current segment or subsegment.
+   * 
+   * If Tracer has been initialized outside of the Lambda handler then the same instance
+   * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
+   * and this method will annotate `ColdStart: false` after the first invocation.
+   * 
+   * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
+   */
+  public annotateColdStart(): void {
+    if (this.tracingEnabled === true) {
+      this.putAnnotation('ColdStart', Tracer.coldStart);
+    }
+    if (Tracer.coldStart === true) {
+      Tracer.coldStart = false;
+    }
   }
 
   /**
@@ -251,12 +321,13 @@ class Tracer implements TracerInterface {
           return originalMethod?.apply(target, [ event, context, callback ]);
         }
 
-        return this.provider.captureAsyncFunc(`## ${context.functionName}`, async subsegment => {
+        return this.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
           this.annotateColdStart();
+          this.addServiceNameAnnotation();
           let result: unknown;
           try {
             result = await originalMethod?.apply(target, [ event, context, callback ]);
-            this.addResponseAsMetadata(result, context.functionName);
+            this.addResponseAsMetadata(result, process.env._HANDLER);
           } catch (error) {
             this.addErrorAsMetadata(error as Error);
             throw error;
@@ -336,6 +407,27 @@ class Tracer implements TracerInterface {
       return descriptor;
     };
   }
+
+  /**
+   * Retrieve the current value of `ColdStart`.
+   * 
+   * If Tracer has been initialized outside of the Lambda handler then the same instance
+   * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
+   * and this method will return `false` after the first invocation.
+   * 
+   * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
+   * 
+   * @returns boolean - `true` if is cold start, otherwise `false`
+   */
+  public static getColdStart(): boolean {
+    if (Tracer.coldStart === true) {
+      Tracer.coldStart = false;
+
+      return true;
+    }
+
+    return false;
+  }
   
   /**
    * Get the active segment or subsegment in the current scope.
@@ -366,51 +458,6 @@ class Tracer implements TracerInterface {
     }
 
     return segment;
-  }
-  
-  /**
-   * Get the current value of the `captureError` property.
-   * 
-   * You can use this method during manual instrumentation to determine
-   * if tracer should be capturing errors.
-   * 
-   * @returns captureError - `true` if errors should be captured, `false` otherwise. 
-   */
-  public isCaptureErrorEnabled(): boolean {
-    return this.captureError;
-  }
-
-  /**
-   * Get the current value of the `captureResponse` property.
-   * 
-   * You can use this method during manual instrumentation to determine
-   * if tracer should be capturing function responses.
-   * 
-   * @returns captureResponse - `true` if responses should be captured, `false` otherwise. 
-   */
-  public isCaptureResponseEnabled(): boolean {
-    return this.captureResponse;
-  }
-
-  /**
-   * Retrieve the current value of `ColdStart`.
-   * 
-   * If Tracer has been initialized outside of the Lambda handler then the same instance
-   * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
-   * and this method will return `false` after the first invocation.
-   * 
-   * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
-   * 
-   * @returns boolean - `true` if is cold start, otherwise `false`
-   */
-  public static isColdStart(): boolean {
-    if (Tracer.coldStart === true) {
-      Tracer.coldStart = false;
-
-      return true;
-    }
-
-    return false;
   }
 
   /**
@@ -515,52 +562,6 @@ class Tracer implements TracerInterface {
    */
   public setSegment(segment: Segment | Subsegment): void {
     return this.provider.setSegment(segment);
-  }
-
-  /**
-    * Add an error to the current segment or subsegment as metadata.
-    * Used internally by decoratorators and middlewares.
-    *
-    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
-    *
-    * @param error - Error to serialize as metadata
-    */
-  private addErrorAsMetadata(error: Error): void {
-    const subsegment = this.getSegment();
-    if (this.captureError === false) {
-      subsegment.addErrorFlag();
-
-      return;
-    }
-
-    subsegment.addError(error, false);
-  }
-
-  /**
-    * Add an data to the current segment or subsegment as metadata.
-    * Used internally by decoratorators and middlewares.
-    *
-    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
-    *
-    * @param data - Data to serialize as metadata
-    * @param methodName - Name of the method that is being traced
-    */
-  private addResponseAsMetadata(data?: unknown, methodName?: string): void {
-    if (data === undefined || this.captureResponse === false || this.tracingEnabled === false) {
-      return;
-    }
-
-    this.putMetadata(`${methodName} response`, data);
-  }
-  
-  /**
-   * Add ColdStart annotation to the current segment or subsegment.
-   * Used internally by decoratorators and middlewares.
-   */
-  private annotateColdStart(): void {
-    if (Tracer.isColdStart()) {
-      this.putAnnotation('ColdStart', true);
-    }
   }
 
   /**

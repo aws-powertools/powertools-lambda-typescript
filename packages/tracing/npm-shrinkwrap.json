@@ -1,16 +1,16 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "0.0.0",
+  "version": "0.2.0-beta.0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "@aws-lambda-powertools/tracer",
-      "version": "0.0.0",
+      "version": "0.2.0-beta.0",
       "license": "MIT",
       "dependencies": {
-        "@middy/core": "^2.5.3",
         "@aws-lambda-powertools/commons": "^0.0.2",
+        "@middy/core": "^2.5.3",
         "aws-xray-sdk-core": "^3.3.3"
       },
       "devDependencies": {
@@ -2330,8 +2330,7 @@
         "esprima": "^4.0.1",
         "estraverse": "^5.2.0",
         "esutils": "^2.0.2",
-        "optionator": "^0.8.1",
-        "source-map": "~0.6.1"
+        "optionator": "^0.8.1"
       },
       "bin": {
         "escodegen": "bin/escodegen.js",
@@ -3966,7 +3965,6 @@
         "@types/node": "*",
         "anymatch": "^3.0.3",
         "fb-watchman": "^2.0.0",
-        "fsevents": "^2.3.2",
         "graceful-fs": "^4.2.4",
         "jest-regex-util": "^27.4.0",
         "jest-serializer": "^27.4.0",

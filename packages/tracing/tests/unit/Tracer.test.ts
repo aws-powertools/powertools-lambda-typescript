@@ -1,7 +1,10 @@
-import { LambdaInterface } from '../../examples/utils/lambda';
 import { Tracer } from '../../src';
-import { Callback, Context } from 'aws-lambda/handler';
+import { Callback, Context, Handler } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
+
+interface LambdaInterface {
+  handler: Handler
+}
 
 jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);

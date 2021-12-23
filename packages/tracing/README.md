@@ -47,7 +47,7 @@ import { Tracer } from '@aws-lambda-powertools/tracer';
 const tracer = new Tracer({ serviceName: 'my-service' });
 
 class Lambda {
-    @tracer.captureLambdaHanlder()
+    @tracer.captureLambdaHandler()
     public handler(event: any, context: any) {
         ...
     }

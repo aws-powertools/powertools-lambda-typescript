@@ -35,7 +35,7 @@ export const handler = middy(async (_event: any, _context: any) => {
 
 ### Object oriented usage with decorators
 
-If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHanlder) decorator to automatically:
+If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHandler) decorator to automatically:
 * handle the subsegment lifecycle 
 * add the `ServiceName` and `ColdStart` annotations
 * add the function response as metadata

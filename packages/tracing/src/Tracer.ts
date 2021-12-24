@@ -98,13 +98,13 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *       // Add the error as metadata
  *       tracer.addErrorAsMetadata(err as Error);
  *       throw err;
+ *   } finally {
+ *       // Close the subsegment
+ *       subsegment.close();
+ *       // Set the facade segment as active again
+ *       tracer.setSegment(segment);
  *   }
  *
- *  // Close subsegment (the AWS Lambda one is closed automatically)
- *   subsegment.close();
- *   // Set the facade segment as active again
- *   tracer.setSegment(segment);
- * 
  *   return res;
  * }
  * ```

@@ -1,4 +1,4 @@
-import middy from '@middy/core'
+import middy from '@middy/core';
 import { Callback, Context } from 'aws-lambda';
 import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 

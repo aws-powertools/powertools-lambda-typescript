@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import { ExampleFunction } from './example-function';
 
 export class CdkAppStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  public constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     new ExampleFunction(this, 'MyFunction', {
@@ -22,7 +22,7 @@ export class CdkAppStack extends Stack {
     });
 
     new ExampleFunction(this, 'Tracer.Disabled', {
-      functionName: 'Tracer.CaptureDisabled',
+      functionName: 'Tracer.Disabled',
       tracingActive: true,
     });
 

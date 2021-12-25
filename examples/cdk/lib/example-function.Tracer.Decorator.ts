@@ -7,7 +7,7 @@ const tracer = new Tracer({ serviceName: 'tracerDecoratorFn' });
 
 export class MyFunctionWithDecorator {  
   // We instrument the handler with the decorator and the tracer will automatically create a subsegment and capture relevant annotations and metadata
-  @tracer.captureLambdaHanlder()
+  @tracer.captureLambdaHandler()
   public handler(event: typeof Events.Custom.CustomEvent, context: Context, _callback: Callback<unknown>): void | Promise<unknown> {
     // Add custom annotation & metadata
     tracer.putAnnotation('awsRequestId', context.awsRequestId);

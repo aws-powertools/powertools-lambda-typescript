@@ -1,4 +1,4 @@
-import middy from '@middy/core'
+import middy from '@middy/core';
 import { Context } from 'aws-lambda';
 import { Events } from '@aws-lambda-powertools/commons';
 import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';

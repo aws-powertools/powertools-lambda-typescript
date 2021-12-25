@@ -1,3 +1,9 @@
+/**
+ * Test Tracer class
+ *
+ * @group unit/tracer/all
+ */
+
 import { Tracer } from '../../src';
 import { Callback, Context, Handler } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
@@ -699,7 +705,10 @@ describe('Class: Tracer', () => {
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementationOnce(() => new Segment('facade', process.env._X_AMZN_TRACE_ID || null))
         .mockImplementation(() => newSubsegment);
+      /* jest.spyOn(tracer.provider, 'captureAsyncFunc').mockImplementation(
+        () => tracer.provider.captureAsyncFunc('## index.handler', )); */
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       const addErrorSpy = jest.spyOn(newSubsegment, 'addError');

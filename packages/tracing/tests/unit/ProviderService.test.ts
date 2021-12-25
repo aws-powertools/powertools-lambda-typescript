@@ -1,3 +1,9 @@
+/**
+ * Test ProviderService class
+ *
+ * @group unit/tracer/all
+ */
+
 import { ProviderService } from '../../src/provider';
 import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, getNamespace, getSegment, setContextMissingStrategy, setDaemonAddress, setLogger, setSegment, Subsegment } from 'aws-xray-sdk-core';
 

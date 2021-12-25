@@ -5,16 +5,16 @@ import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-node
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 
 interface ExampleFunctionProps {
-  readonly functionName: string;
-  readonly tracingActive?: boolean;
-  readonly invocations?: number;
-  readonly fnProps?: Partial<NodejsFunctionProps>;
+  readonly functionName: string
+  readonly tracingActive?: boolean
+  readonly invocations?: number
+  readonly fnProps?: Partial<NodejsFunctionProps>
 }
 
 class ExampleFunction extends Construct {
-  function: NodejsFunction;
+  public function: NodejsFunction;
 
-  constructor(scope: Construct, id: string, props: ExampleFunctionProps) {
+  public constructor(scope: Construct, id: string, props: ExampleFunctionProps) {
     super(scope, id);
 
     const { functionName, tracingActive, invocations, fnProps } = Object.assign({
@@ -54,5 +54,5 @@ class ExampleFunction extends Construct {
 }
 
 export {
- ExampleFunction
+  ExampleFunction
 };

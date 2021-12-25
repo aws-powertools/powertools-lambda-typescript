@@ -338,6 +338,7 @@ class Tracer implements TracerInterface {
             throw error;
           } finally {
             subsegment?.close();
+            subsegment?.flush();
           }
           
           return result;

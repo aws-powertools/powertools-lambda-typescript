@@ -8,7 +8,7 @@ const tracer = new Tracer({ serviceName: 'tracerPatchAWSSDKv2Fn' });
 // To patch a specific AWS SDK Client, we pass it to the Tracer that will return an instrumented version of it
 const sts = tracer.captureAWSClient(new STS());
 
-export const handler = async (_event: typeof Events.Custom.CustomEvent, _context: Context) => {
+export const handler = async (_event: typeof Events.Custom.CustomEvent, _context: Context): Promise<unknown> => {
   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
   // Create subsegment for the function & set it as active
   const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);

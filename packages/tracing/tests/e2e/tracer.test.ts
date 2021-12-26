@@ -7,7 +7,7 @@
 import { randomUUID } from 'crypto';
 import { Tracing } from '@aws-cdk/aws-lambda';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
-import { App, Stack } from '@aws-cdk/core';
+import { App, Duration, Stack } from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import * as AWS from 'aws-sdk';
@@ -64,6 +64,7 @@ describe('Tracer integration tests', () => {
           EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
           EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
         },
+        timeout: Duration.seconds(30),
       });
       invocationsMap[functionName] = {
         serviceName: expectedServiceName,
@@ -126,7 +127,7 @@ describe('Tracer integration tests', () => {
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(2);
+      expect(sortedTraces[i].Segments.length).toBe(4);
 
       const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
 
@@ -135,35 +136,46 @@ describe('Tracer integration tests', () => {
         const handlerSubsegment = invocationSubsegment?.subsegments[0];
         // Assert that the subsegment name is the expected one
         expect(handlerSubsegment.name).toBe('## index.handler');
-        // Assert that there're no subsegments
-        expect(handlerSubsegment.hasOwnProperty('subsegments')).toBe(false);
-        
-        const { annotations, metadata } = handlerSubsegment;
+        if (handlerSubsegment?.subsegments !== undefined) {
+          // Assert that there're two subsegments
+          expect(handlerSubsegment?.subsegments?.length).toBe(2);
 
-        if (annotations !== undefined && metadata !== undefined) {
-          // Assert that the annotations are as expected
-          expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
-          expect(annotations['Service']).toEqual(expectedServiceName);
-          expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
-          // Assert that the metadata object is as expected
-          expect(metadata[expectedServiceName][expectedCustomMetadataKey])
-            .toEqual(expectedCustomMetadataValue);
+          const [ AWSSDKSubsegment1, AWSSDKSubsegment2 ] = handlerSubsegment?.subsegments;
+          // Assert that the subsegment names is the expected ones
+          expect(AWSSDKSubsegment1.name).toBe('STS');
+          expect(AWSSDKSubsegment2.name).toBe('STS');
           
-          if (i === invocations - 1) {
-            // Assert that the subsegment has the expected fault
-            expect(invocationSubsegment.error).toBe(true);
-            expect(handlerSubsegment.fault).toBe(true);
-            expect(handlerSubsegment.hasOwnProperty('cause')).toBe(true);
-            expect(handlerSubsegment.cause?.exceptions[0].message).toBe(expectedCustomErrorMessage);
+          const { annotations, metadata } = handlerSubsegment;
+
+          if (annotations !== undefined && metadata !== undefined) {
+            // Assert that the annotations are as expected
+            expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+            expect(annotations['Service']).toEqual(expectedServiceName);
+            expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+            // Assert that the metadata object is as expected
+            expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+              .toEqual(expectedCustomMetadataValue);
+            
+            if (i === invocations - 1) {
+              // Assert that the subsegment has the expected fault
+              expect(invocationSubsegment.error).toBe(true);
+              expect(handlerSubsegment.fault).toBe(true);
+              expect(handlerSubsegment.hasOwnProperty('cause')).toBe(true);
+              expect(handlerSubsegment.cause?.exceptions[0].message).toBe(expectedCustomErrorMessage);
+            } else {
+              // Assert that the metadata object contains the response
+              expect(metadata[expectedServiceName]['index.handler response'])
+                .toEqual(expectedCustomResponseValue);
+            }
           } else {
-            // Assert that the metadata object contains the response
-            expect(metadata[expectedServiceName]['index.handler response'])
-              .toEqual(expectedCustomResponseValue);
+            // Make test fail if there are no annotations or metadata
+            expect('annotations !== undefined && metadata !== undefined')
+              .toBe('annotations === undefined && metadata === undefined');
           }
         } else {
-          // Make test fail if there are no annotations or metadata
-          expect('annotations !== undefined && metadata !== undefined')
-            .toBe('annotations === undefined && metadata === undefined');
+          // Make test fail if the handlerSubsegment subsegment doesn't have any subsebment
+          expect('handlerSubsegment?.subsegments !== undefined')
+            .toBe('handlerSubsegment?.subsegments === undefined');
         }
       } else {
         // Make test fail if the Invocation subsegment doesn't have an handler subsebment

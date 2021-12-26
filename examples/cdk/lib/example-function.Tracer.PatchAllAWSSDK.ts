@@ -5,11 +5,12 @@ import { Tracer } from '@aws-lambda-powertools/tracer';
 // process.env.POWERTOOLS_SERVICE_NAME = 'tracerManualFn'; // Alternative to setting the service name in the constructor
 const tracer = new Tracer({ serviceName: 'tracerPatchAllAWSSDKFn' });
 // To patch all AWS SDKs, we need to import aws-sdk and pass it to the Tracer
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const AWS = tracer.captureAWS(require('aws-sdk'));
 // Then we can use the AWS SDK as usual
 const sts = new AWS.STS();
 
-export const handler = async (_event: typeof Events.Custom.CustomEvent, _context: Context) => {
+export const handler = async (_event: typeof Events.Custom.CustomEvent, _context: Context): Promise<unknown> => {
   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
   // Create subsegment for the function & set it as active
   const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);

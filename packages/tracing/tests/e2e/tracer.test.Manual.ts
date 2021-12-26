@@ -1,5 +1,7 @@
 import { Tracer } from '../../src';
 import { Context } from 'aws-lambda';
+import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
+import { STS } from 'aws-sdk';
 
 const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
 const customAnnotationKey = process.env.EXPECTED_CUSTOM_ANNOTATION_KEY ?? 'myAnnotation';
@@ -14,6 +16,8 @@ interface CustomEvent {
 }
 
 const tracer = new Tracer({ serviceName: serviceName });
+const stsv2 = tracer.captureAWSClient(new STS({}));
+const stsv3 = tracer.captureAWSv3Client(new STSClient({}));
 
 export const handler = async (event: CustomEvent, _context: Context): Promise<void> => {
   const segment = tracer.getSegment();
@@ -25,6 +29,18 @@ export const handler = async (event: CustomEvent, _context: Context): Promise<vo
 
   tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
   tracer.putMetadata(customMetadataKey, customMetadataValue);
+
+  try {
+    await stsv2.getCallerIdentity().promise();
+  } catch (err) {
+    console.error(err);
+  }
+
+  try {
+    await stsv3.send(new GetCallerIdentityCommand({}));
+  } catch (err) {
+    console.error(err);
+  }
 
   let res;
   try {

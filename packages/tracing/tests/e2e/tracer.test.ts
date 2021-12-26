@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 /**
  * Test tracer manual mode
  *
@@ -19,7 +16,8 @@ import { getTraces, getInvocationSubsegment } from '../helpers/tracesUtils';
 const xray = new AWS.XRay();
 const lambdaClient = new AWS.Lambda();
 
-describe('Tracer', () => {
+describe('Tracer integration tests', () => {
+
   const expectedCustomAnnotationKey = 'myAnnotation';
   const expectedCustomAnnotationValue = 'myValue';
   const expectedCustomMetadataKey = 'myMetadata';
@@ -31,67 +29,47 @@ describe('Tracer', () => {
 
   let integTestApp: App;
   let stack: Stack;
-  const invocationsMap: { [key: string]: string } = {};
+  const invocationsMap: { [key: string]: { serviceName: string; resourceArn: string } } = {};
 
   beforeAll(async () => {
+
+    // Prepare
     integTestApp = new App();
+    const account = process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
+    const region = process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION;
     stack = new Stack(integTestApp, 'TracerIntegTest', {
       env: {
-        account: process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT, 
-        region: process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION 
+        account, 
+        region 
       }
     });
 
-    let expectedServiceName = randomUUID();
-    let functionName = 'TracerManualMode';
-    new NodejsFunction(stack, 'Manual', {
-      functionName: functionName,
-      tracing: Tracing.ACTIVE,
-      environment: {
-        EXPECTED_SERVICE_NAME: expectedServiceName,
-        EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
-        EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
-        EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
-        EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(expectedCustomMetadataValue),
-        EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
-        EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
-      },
-    });
-    invocationsMap[functionName] = expectedServiceName;
-
-    expectedServiceName = randomUUID();
-    functionName = 'TracerMiddlewareMode';
-    new NodejsFunction(stack, 'Middleware', {
-      functionName: functionName,
-      tracing: Tracing.ACTIVE,
-      environment: {
-        EXPECTED_SERVICE_NAME: expectedServiceName,
-        EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
-        EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
-        EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
-        EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(expectedCustomMetadataValue),
-        EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
-        EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
-      },
-    });
-    invocationsMap[functionName] = expectedServiceName;
-
-    expectedServiceName = randomUUID();
-    functionName = 'TracerDecoratorMode';
-    new NodejsFunction(stack, 'Decorator', {
-      functionName: functionName,
-      tracing: Tracing.ACTIVE,
-      environment: {
-        EXPECTED_SERVICE_NAME: expectedServiceName,
-        EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
-        EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
-        EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
-        EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(expectedCustomMetadataValue),
-        EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
-        EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
-      },
-    });
-    invocationsMap[functionName] = expectedServiceName;
+    const functions = [
+      'Manual',
+      'Middleware',
+      'Decorator',
+      'Disabled',
+    ];
+    for (const functionName of functions) {
+      const expectedServiceName = randomUUID();
+      new NodejsFunction(stack, functionName, {
+        functionName: functionName,
+        tracing: Tracing.ACTIVE,
+        environment: {
+          EXPECTED_SERVICE_NAME: expectedServiceName,
+          EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
+          EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
+          EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
+          EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(expectedCustomMetadataValue),
+          EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
+          EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
+        },
+      });
+      invocationsMap[functionName] = {
+        serviceName: expectedServiceName,
+        resourceArn: `arn:aws:lambda:${region}:${account}:function:${functionName}`, // ARN is still a token at this point, so we construct the ARN manually
+      };
+    }
 
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
 
@@ -103,6 +81,7 @@ describe('Tracer', () => {
       stack: stackArtifact,
     });
 
+    // Act
     Object.keys(invocationsMap).forEach(async (functionName) => {
       for (let i = 0; i < invocations; i++) {
         await lambdaClient.invoke({
@@ -116,9 +95,11 @@ describe('Tracer', () => {
     
     // sleep to allow for traces to be collected
     await new Promise((resolve) => setTimeout(resolve, 120000));
+
   }, 900000);
 
   afterAll(async () => {
+
     if (!process.env.DISABLE_TEARDOWN) {
       const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
   
@@ -131,15 +112,17 @@ describe('Tracer', () => {
         stack: stackArtifact,
       });
     }
+
   }, 900000);
 
-  it('Manual', async () => {
+  it('Verifies that a when Tracer is used to manually instrument a function all custom traces are generated with correct annotations and metadata', async () => {
     
-    const expectedServiceName = invocationsMap['TracerManualMode'];
+    const resourceArn = invocationsMap['Manual'].resourceArn;
+    const expectedServiceName = invocationsMap['Manual'].serviceName;
     
     // Assess
-    // Retrieve traces from X-Ray using Service name as filter
-    const sortedTraces = await getTraces(xray, startTime, expectedServiceName, invocations);
+    // Retrieve traces from X-Ray using Resource ARN as filter
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -191,13 +174,14 @@ describe('Tracer', () => {
 
   }, 900000);
 
-  it('Middleware', async () => {
+  it('Verifies that a when Tracer is used as middleware all custom traces are generated with correct annotations and metadata', async () => {
     
-    const expectedServiceName = invocationsMap['TracerMiddlewareMode'];
-    
+    const resourceArn = invocationsMap['Middleware'].resourceArn;
+    const expectedServiceName = invocationsMap['Middleware'].serviceName;
+
     // Assess
-    // Retrieve traces from X-Ray using Service name as filter
-    const sortedTraces = await getTraces(xray, startTime, expectedServiceName, invocations);
+    // Retrieve traces from X-Ray using Resource ARN as filter
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -249,13 +233,14 @@ describe('Tracer', () => {
 
   }, 900000);
 
-  it('Decorator', async () => {
+  it('Verifies that a when Tracer is used as decorator all custom traces are generated with correct annotations and metadata', async () => {
     
-    const expectedServiceName = invocationsMap['TracerDecoratorMode'];
+    const resourceArn = invocationsMap['Decorator'].resourceArn;
+    const expectedServiceName = invocationsMap['Decorator'].serviceName;
     
     // Assess
-    // Retrieve traces from X-Ray using Service name as filter
-    const sortedTraces = await getTraces(xray, startTime, expectedServiceName, invocations);
+    // Retrieve traces from X-Ray using Resource ARN as filter
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -323,6 +308,30 @@ describe('Tracer', () => {
         // Make test fail if the Invocation subsegment doesn't have an handler subsebment
         expect('invocationSubsegment?.subsegments !== undefined')
           .toBe('invocationSubsegment?.subsegments === undefined');
+      }
+    }
+
+  }, 900000);
+
+  it('Verifies that a when tracing is disabled no custom traces are generated', async () => {
+    
+    const resourceArn = invocationsMap['Disabled'].resourceArn;
+    
+    // Assess
+    // Retrieve traces from X-Ray using Resource ARN as filter
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+
+    for (let i = 0; i < invocations; i++) {
+      // Assert that the trace has the expected amount of segments
+      expect(sortedTraces[i].Segments.length).toBe(2);
+
+      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+
+      expect(invocationSubsegment?.subsegments).toBeUndefined();
+         
+      if (i === invocations - 1) {
+        // Assert that the subsegment has the expected fault
+        expect(invocationSubsegment.error).toBe(true);
       }
     }
 

@@ -57,12 +57,12 @@ interface ParsedTrace {
   Segments: ParsedSegment[]
 }
 
-const getTraces = async (xrayClient: XRay, startTime: Date, serviceName: string, expectedTraces: number): Promise<ParsedTrace[]> => {
+const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string, expectedTraces: number): Promise<ParsedTrace[]> => {
   const traces = await xrayClient
     .getTraceSummaries({
       StartTime: startTime,
       EndTime: new Date(),
-      FilterExpression: `annotation.Service = "${serviceName}"`,
+      FilterExpression: `resource.arn = "${resourceArn}"`,
     })
     .promise();
 

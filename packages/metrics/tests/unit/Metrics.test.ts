@@ -16,6 +16,19 @@ interface LooseObject {
   [key: string]: string
 }
 
+type DummyEvent = {
+  key1: string
+  key2: string
+  key3: string
+};
+
+/**
+ * Metrics tests
+ *
+ * @group metrics
+ * @group unit/Metrics
+ */
+
 describe('Class: Metrics', () => {
   const originalEnvironmentVariables = process.env;
 
@@ -229,7 +242,7 @@ describe('Class: Metrics', () => {
     test('Cold start metric should only be written out once and flushed automatically', async () => {
       const metrics = new Metrics({ namespace: 'test' });
 
-      const handler = async (_event: unknown, _context: unknown): Promise<void> => {
+      const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
         // Should generate only one log
         metrics.captureColdStartMetric();
       };
@@ -363,7 +376,7 @@ describe('Class: Metrics', () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
-      const handler = async (_event: unknown, _context: unknown): Promise<void> => {
+      const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
         metrics.raiseOnEmptyMetrics();
         // Logic goes here
         metrics.purgeStoredMetrics();

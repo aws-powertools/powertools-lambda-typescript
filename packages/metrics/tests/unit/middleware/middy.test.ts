@@ -1,12 +1,21 @@
 import { logMetrics } from '../../../../metrics/src/middleware';
 import { Metrics, MetricUnits } from '../../../../metrics/src';
 import middy from '@middy/core';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import * as event from '../../../../../tests/resources/events/custom/hello-world.json';
 import { ExtraOptions } from '../../../src/types';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
 
+/**
+ * Metrics tests
+ *
+ * @group metrics
+ * @group unit/middleware
+ */
 describe('Middy middleware', () => {
 
   beforeEach(() => {
@@ -17,7 +26,6 @@ describe('Middy middleware', () => {
 
   describe('logMetrics', () => {
 
-    const event = { foo: 'bar' };
     const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
     const awsRequestId = getRandomInt().toString();
 

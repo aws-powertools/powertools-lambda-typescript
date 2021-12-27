@@ -1,4 +1,4 @@
-import { populateEnvironmentVariables } from '../tests/helpers';
+import { populateEnvironmentVariables } from '../../tests/helpers';
 
 // Populate runtime
 populateEnvironmentVariables();
@@ -16,11 +16,11 @@ const metrics = new Metrics({ defaultDimensions:{ 'application': 'hello-world' }
 
 class Lambda implements LambdaInterface {
 
-    @metrics.logMetrics()
-    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-        metrics.addMetric('test-metric', MetricUnits.Count, 10);
+  @metrics.logMetrics()
+  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+    metrics.addMetric('test-metric', MetricUnits.Count, 10);
 
-    }
+  }
 
 }
 

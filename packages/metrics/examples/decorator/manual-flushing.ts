@@ -1,4 +1,4 @@
-import { populateEnvironmentVariables } from '../tests/helpers';
+import { populateEnvironmentVariables } from '../../tests/helpers';
 
 // Populate runtime
 populateEnvironmentVariables();

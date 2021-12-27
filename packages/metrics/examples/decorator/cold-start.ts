@@ -1,9 +1,9 @@
-import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
-import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
-import { LambdaInterface } from './utils/lambda/LambdaInterface';
-import { populateEnvironmentVariables } from '../tests/helpers';
+import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
+import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
+import { LambdaInterface } from './../utils/lambda/LambdaInterface';
+import { populateEnvironmentVariables } from '../../tests/helpers';
 import { Callback, Context } from 'aws-lambda/handler';
-import { Metrics, MetricUnits } from '../src';
+import { Metrics, MetricUnits } from '../../src';
 
 // Populate runtime
 populateEnvironmentVariables();

@@ -205,7 +205,7 @@ If you do not the middleware or decorator, you have to flush your metrics manual
     If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be raised:
 
     * Maximum of 9 dimensions
-    * Namespace is set, and no more than one
+    * Namespace is set only once (or none)
     * Metric units must be [supported by CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
 
 

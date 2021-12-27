@@ -21,6 +21,7 @@ class Lambda implements LambdaInterface {
     metrics.addDimension('environment', 'dev');
     metrics.addDimension('application', 'hello-world-dev');
     metrics.addMetric('test-metric', MetricUnits.Count, 10);
+    // You can override the default dimensions by clearing the existing metrics first. Note that the cleared metric will be dropped, it will NOT be published to CloudWatch 
     const metricsObject = metrics.serializeMetrics();
     metrics.clearMetrics();
     metrics.clearDimensions();

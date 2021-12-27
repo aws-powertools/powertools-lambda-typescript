@@ -124,5 +124,9 @@ const getInvocationSubsegment = (trace: ParsedTrace): ParsedDocument => {
 export {
   getTraces,
   getFunctionSegment,
-  getInvocationSubsegment
+  getInvocationSubsegment,
+};
+
+export type {
+  ParsedDocument,
 };

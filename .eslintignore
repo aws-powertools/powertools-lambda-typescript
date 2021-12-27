@@ -2,3 +2,4 @@ coverage
 lib
 node_modules
 tests/resources/*
+examples/cdk/*

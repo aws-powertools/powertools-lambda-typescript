@@ -22,7 +22,7 @@ const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): mi
 
   };
 
-  const logMetricsAfter = async (): Promise<void> => {
+  const logMetricsAfterOrError = async (): Promise<void> => {
     metricsInstances.forEach((metrics: Metrics) => {
       metrics.purgeStoredMetrics();
     });
@@ -30,7 +30,8 @@ const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): mi
   
   return {
     before: logMetricsBefore,
-    after: logMetricsAfter
+    after: logMetricsAfterOrError,
+    onError: logMetricsAfterOrError
   };
 };
 

@@ -17,6 +17,25 @@ describe('Middy middleware', () => {
 
   describe('logMetrics', () => {
 
+    const event = { foo: 'bar' };
+    const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
+    const awsRequestId = getRandomInt().toString();
+
+    const context = {
+      callbackWaitsForEmptyEventLoop: true,
+      functionVersion: '$LATEST',
+      functionName: 'foo-bar-function',
+      memoryLimitInMB: '128',
+      logGroupName: '/aws/lambda/foo-bar-function',
+      logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+      invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+      awsRequestId: awsRequestId,
+      getRemainingTimeInMillis: () => 1234,
+      done: () => console.log('Done!'),
+      fail: () => console.log('Failed!'),
+      succeed: () => console.log('Succeeded!'),
+    };
+
     test('when a metrics instance is passed WITH custom options, it prints the metrics in the stdout', async () => {
 
       // Prepare
@@ -32,24 +51,6 @@ describe('Middy middleware', () => {
         captureColdStartMetric: true
       };
       const handler = middy(lambdaHandler).use(logMetrics(metrics, metricsOptions));
-      const event = { foo: 'bar' };
-      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
-
-      const awsRequestId = getRandomInt().toString();
-      const context = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
-        awsRequestId: awsRequestId,
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-      };
 
       // Act
       await handler(event, context, () => console.log('Lambda invoked!'));
@@ -102,24 +103,6 @@ describe('Middy middleware', () => {
       };
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
-      const event = { foo: 'bar' };
-      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
-
-      const awsRequestId = getRandomInt().toString();
-      const context = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
-        awsRequestId: awsRequestId,
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-      };
 
       // Act
       await handler(event, context, () => console.log('Lambda invoked!'));
@@ -155,24 +138,6 @@ describe('Middy middleware', () => {
         raiseOnEmptyMetrics: true
       };
       const handler = middy(lambdaHandler).use(logMetrics([metrics], metricsOptions));
-      const event = { foo: 'bar' };
-      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
-
-      const awsRequestId = getRandomInt().toString();
-      const context = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
-        awsRequestId: awsRequestId,
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-      };
 
       // Act
       await handler(event, context, () => console.log('Lambda invoked!'));

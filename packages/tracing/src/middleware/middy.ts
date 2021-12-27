@@ -1,6 +1,6 @@
 import middy from '@middy/core';
-import { Subsegment } from 'aws-xray-sdk-core';
 import { Tracer } from '../Tracer';
+import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments ofr a Lambda Handler.
@@ -27,40 +27,41 @@ import { Tracer } from '../Tracer';
  * @returns middleware object - The middy middleware object
  */
 const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
-  const captureLambdaHandlerBefore = async (request: middy.Request): Promise<void> => {
-    if (target.isTracingEnabled()) {
-      const subsegment = new Subsegment(`## ${request.context.functionName}`);
-      target.setSegment(subsegment);
-  
-      if (Tracer.isColdStart()) {
-        target.putAnnotation('ColdStart', true);
-      }
-    }
+  let lambdaSegment: Subsegment | Segment;
+
+  const open = (): void => {
+    lambdaSegment = target.getSegment();
+    const handlerSegment = lambdaSegment.addNewSubsegment(`## ${process.env._HANDLER}`);
+    target.setSegment(handlerSegment);
   };
 
+  const close = (): void => {
+    const subsegment = target.getSegment();
+    subsegment?.close();
+    target.setSegment(lambdaSegment as Segment);
+  };
+
+  const captureLambdaHandlerBefore = async (_request: middy.Request): Promise<void> => {
+    if (target.isTracingEnabled()) {
+      open();
+      target.annotateColdStart();
+      target.addServiceNameAnnotation();
+    }
+  };
+  
   const captureLambdaHandlerAfter = async (request: middy.Request): Promise<void> => {
     if (target.isTracingEnabled()) {
-      const subsegment = target.getSegment();
-      if (request.response !== undefined && target.isCaptureResponseEnabled() === true) {
-        target.putMetadata(`${request.context.functionName} response`, request.response);
-      }
-      
-      subsegment?.close();
+      target.addResponseAsMetadata(request.response, process.env._HANDLER);
+      close();
     }
   };
-
+  
   const captureLambdaHandlerError = async (request: middy.Request): Promise<void> => {
     if (target.isTracingEnabled()) {
-      const subsegment = target.getSegment();
-      if (target.isCaptureErrorEnabled() === false) {  
-        subsegment?.addErrorFlag();
-      } else {
-        subsegment?.addError(request.error as Error, false);
-      }
+      target.addErrorAsMetadata(request.error as Error);
       // TODO: should this error be thrown?? I.e. should we stop the event flow & return?
       // throw request.error;
-
-      subsegment?.close();
+      close();
     }
   };
 

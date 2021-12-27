@@ -1,3 +1,9 @@
+/**
+ * Test metrics decorator
+ *
+ * @group unit/metrics/all
+ */
+
 import { ContextExamples as dummyContext, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Context, Callback } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -1,7 +1,3 @@
-import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
 import { LambdaInterface } from '../../examples/utils/lambda';
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda/handler';
@@ -13,6 +9,25 @@ jest.spyOn(console, 'error').mockImplementation(() => null);
 
 describe('Class: Tracer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
+  const event = {
+    key1: 'value1',
+    key2: 'value2',
+    key3: 'value3',
+  };
+  const context = {
+    callbackWaitsForEmptyEventLoop: true,
+    functionVersion: '$LATEST',
+    functionName: 'foo-bar-function',
+    memoryLimitInMB: '128',
+    logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
+    logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+    invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+    getRemainingTimeInMillis: () => 1234,
+    done: () => console.log('Done!'),
+    fail: () => console.log('Failed!'),
+    succeed: () => console.log('Succeeded!'),
+  };
 
   beforeEach(() => {
     Tracer.coldStart = true;
@@ -25,15 +40,224 @@ describe('Class: Tracer', () => {
     process.env = ENVIRONMENT_VARIABLES;
   });
 
-  describe('Method: isColdStart', () => {
+  describe('Method: annotateColdStart', () => {
+
+    test('when called while tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+
+      // Act
+      tracer.annotateColdStart();
+
+      // Assess
+      expect(putAnnotationSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called multiple times, it annotates true the first time and then false afterwards', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation').mockImplementation(() => null);
+
+      // Act
+      tracer.annotateColdStart();
+      tracer.annotateColdStart();
+      tracer.annotateColdStart();
+      tracer.annotateColdStart();
+
+      // Assess
+      expect(putAnnotationSpy).toBeCalledTimes(4);
+      expect(putAnnotationSpy.mock.calls).toEqual([
+        [ 'ColdStart', true ],
+        [ 'ColdStart', false ],
+        [ 'ColdStart', false ],
+        [ 'ColdStart', false ],
+      ]);
+
+    });
+
+  });
+
+  describe('Method: addServiceNameAnnotation', () => {
+
+    test('when called while tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const putAnnotation = jest.spyOn(tracer, 'putAnnotation');
+
+      // Act
+      tracer.addServiceNameAnnotation();
+
+      // Assess
+      expect(putAnnotation).toBeCalledTimes(0);
+
+    });
+
+    test('when called while a serviceName has been set, it adds it as annotation', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ serviceName: 'foo' });
+      const putAnnotation = jest.spyOn(tracer, 'putAnnotation').mockImplementation(() => null);
+
+      // Act
+      tracer.addServiceNameAnnotation();
+
+      // Assess
+      expect(putAnnotation).toBeCalledTimes(1);
+      expect(putAnnotation).toBeCalledWith('Service', 'foo');
+
+    });
+
+    test('when called while a serviceName has not been set, it does nothing', () => {
+
+      // Prepare
+      delete process.env.POWERTOOLS_SERVICE_NAME;
+      const tracer: Tracer = new Tracer();
+      const putAnnotation = jest.spyOn(tracer, 'putAnnotation').mockImplementation(() => null);
+
+      // Act
+      tracer.addServiceNameAnnotation();
+
+      // Assess
+      expect(putAnnotation).toBeCalledTimes(0);
+
+    });
+
+  });
+
+  describe('Method: addResponseAsMetadata', () => {
+
+    test('when called while tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      // Act
+      tracer.addResponseAsMetadata({ foo: 'bar' }, context.functionName);
+
+      // Assess
+      expect(putMetadataSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called while POWERTOOLS_TRACER_CAPTURE_RESPONSE is set to false, it does nothing', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
+      const tracer: Tracer = new Tracer();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      // Act
+      tracer.addResponseAsMetadata({ foo: 'bar' }, context.functionName);
+
+      // Assess
+      expect(putMetadataSpy).toBeCalledTimes(0);
+      delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
+
+    });
+
+    test('when called with data equal to undefined, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      // Act
+      tracer.addResponseAsMetadata(undefined, context.functionName);
+
+      // Assess
+      expect(putMetadataSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called with default config, it calls tracer.putMetadata correctly', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata').mockImplementation(() => null);
+
+      // Act
+      tracer.addResponseAsMetadata({ foo: 'bar' }, context.functionName);
+
+      // Assess
+      expect(putMetadataSpy).toBeCalledTimes(1);
+      expect(putMetadataSpy).toBeCalledWith(`${context.functionName} response`, expect.objectContaining({ foo: 'bar' }));
+
+    });
+
+  });
+
+  describe('Method: addErrorAsMetadata', () => {
+
+    test('when called while tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const getSegmentSpy = jest.spyOn(tracer, 'getSegment');
+
+      // Act
+      tracer.addErrorAsMetadata(new Error('foo'));
+
+      // Assess
+      expect(getSegmentSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false, it does not capture the error', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
+      const tracer: Tracer = new Tracer();
+      const subsegment = new Subsegment(`## ${context.functionName}`);
+      jest.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
+      const addErrorFlagSpy = jest.spyOn(subsegment, 'addErrorFlag');
+      const addErrorSpy = jest.spyOn(subsegment, 'addError');
+
+      // Act
+      tracer.addErrorAsMetadata(new Error('foo'));
+
+      // Assess
+      expect(addErrorFlagSpy).toBeCalledTimes(1);
+      expect(addErrorSpy).toBeCalledTimes(0);
+      delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+
+    });
+
+    test('when called with default config, it calls subsegment.addError correctly', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const subsegment = new Subsegment(`## ${context.functionName}`);
+      jest.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
+      const addErrorFlagSpy = jest.spyOn(subsegment, 'addErrorFlag');
+      const addErrorSpy = jest.spyOn(subsegment, 'addError');
+
+      // Act
+      tracer.addErrorAsMetadata(new Error('foo'));
+
+      // Assess
+      expect(addErrorFlagSpy).toBeCalledTimes(0);
+      expect(addErrorSpy).toBeCalledTimes(1);
+      expect(addErrorSpy).toBeCalledWith(new Error('foo'), false);
+
+    });
+
+  });
+
+  describe('Method: getColdStart', () => {
 
     test('when called, it returns false the first time and always true after that', () => {
     
       // Assess
-      expect(Tracer.isColdStart()).toBe(true);
-      expect(Tracer.isColdStart()).toBe(false);
-      expect(Tracer.isColdStart()).toBe(false);
-      expect(Tracer.isColdStart()).toBe(false);
+      expect(Tracer.getColdStart()).toBe(true);
+      expect(Tracer.getColdStart()).toBe(false);
+      expect(Tracer.getColdStart()).toBe(false);
+      expect(Tracer.getColdStart()).toBe(false);
     
     });
     
@@ -348,7 +572,7 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(0);
@@ -360,7 +584,7 @@ describe('Class: Tracer', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
@@ -378,7 +602,7 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -391,7 +615,7 @@ describe('Class: Tracer', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
@@ -410,16 +634,16 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## foo-bar-function', expect.anything());
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## index.handler', expect.anything());
       expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
         metadata: {
           'hello-world': {
-            'foo-bar-function response': {
+            'index.handler response': {
               foo: 'bar',
             },
           },
@@ -433,7 +657,7 @@ describe('Class: Tracer', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
@@ -452,10 +676,10 @@ describe('Class: Tracer', () => {
       }
             
       // Act & Assess
-      await expect(new Lambda().handler({}, dummyContext, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
       }));
       expect('cause' in newSubsegment).toBe(false);
       expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
@@ -470,7 +694,7 @@ describe('Class: Tracer', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
@@ -488,10 +712,10 @@ describe('Class: Tracer', () => {
       }
             
       // Act & Assess
-      await expect(new Lambda().handler({}, dummyContext, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
+        name: '## index.handler',
       }));
       expect('cause' in newSubsegment).toBe(true);
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
@@ -504,14 +728,14 @@ describe('Class: Tracer', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegmentFirstInvocation: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
-      const newSubsegmentSecondInvocation: Segment | Subsegment | undefined = new Subsegment('## foo-bar-function');
+      const newSubsegmentFirstInvocation: Segment | Subsegment | undefined = new Subsegment('## index.handler');
+      const newSubsegmentSecondInvocation: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(() => newSubsegmentFirstInvocation)
         .mockImplementation(() => newSubsegmentSecondInvocation);
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
-      const addAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
       class Lambda implements LambdaInterface {
 
         @tracer.captureLambdaHanlder()
@@ -526,22 +750,66 @@ describe('Class: Tracer', () => {
       }
             
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(2);
-      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## foo-bar-function', expect.anything());
-      expect(addAnnotationSpy).toHaveBeenCalledTimes(1);
-      expect(addAnnotationSpy).toHaveBeenCalledWith('ColdStart', true);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## index.handler', expect.anything());
+      expect(putAnnotationSpy.mock.calls.filter(call => 
+        call[0] === 'ColdStart'
+      )).toEqual([
+        [ 'ColdStart', true ],
+        [ 'ColdStart', false ],
+      ]);
       expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
-        name: '## foo-bar-function',
-        annotations: {
+        name: '## index.handler',
+        annotations: expect.objectContaining({
           'ColdStart': true,
-        }
+        })
       }));
       expect(newSubsegmentSecondInvocation).toEqual(expect.objectContaining({
-        name: '## foo-bar-function'
+        name: '## index.handler',
+        annotations: expect.objectContaining({
+          'ColdStart': false,
+        })
+      }));
+
+    });
+
+    test('when used as decorator and with standard config, it annotates Service correctly', async () => {
+      
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureLambdaHanlder()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return new Promise((resolve, _reject) => resolve({
+            foo: 'bar'
+          } as unknown as TResult));
+        }
+            
+      }
+            
+      // Act
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## index.handler', expect.anything());
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '## index.handler',
+        annotations: expect.objectContaining({
+          'Service': 'hello-world',
+        })
       }));
 
     });
@@ -559,6 +827,8 @@ describe('Class: Tracer', () => {
 
         // TODO: revisit return type & make it more specific
         @tracer.captureMethod()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         public async dummyMethod(some: string): Promise<any> {
           return new Promise((resolve, _reject) => resolve(some));
@@ -573,7 +843,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toBeCalledTimes(0);
@@ -607,7 +877,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -651,7 +921,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);

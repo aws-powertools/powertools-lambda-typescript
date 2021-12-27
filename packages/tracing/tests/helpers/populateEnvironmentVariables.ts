@@ -4,6 +4,7 @@ process.env.AWS_LAMBDA_FUNCTION_NAME = 'my-lambda-function';
 process.env.AWS_EXECUTION_ENV = 'nodejs14.x';
 process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE = '128';
 process.env.AWS_REGION = 'eu-central-1';
+process.env._HANDLER = 'index.handler';
 
 // Powertools variables
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';

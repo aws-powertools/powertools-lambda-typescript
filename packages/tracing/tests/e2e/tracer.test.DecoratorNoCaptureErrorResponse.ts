@@ -30,6 +30,9 @@ const refreshAWSSDKImport = (): void => {
   AWS = require('aws-sdk');
 };
 
+// Disable capture errors & responses for this test
+process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
+process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
 const tracer = new Tracer({ serviceName: serviceName });
 const stsv3 = tracer.captureAWSv3Client(new STSClient({}));
 

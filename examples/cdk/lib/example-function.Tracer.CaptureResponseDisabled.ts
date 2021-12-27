@@ -1,10 +1,10 @@
-import middy from '@middy/core'
+import middy from '@middy/core';
 import { Context } from 'aws-lambda';
 import { Events } from '@aws-lambda-powertools/commons';
 import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';
 
 // Set environment variable to disable capture response
-process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = "false";
+process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
 const tracer = new Tracer({ serviceName: 'tracerCaptureResponseDisabledFn' });
 
 // In this example we are using the middleware pattern but you could use also the captureLambdaHandler decorator

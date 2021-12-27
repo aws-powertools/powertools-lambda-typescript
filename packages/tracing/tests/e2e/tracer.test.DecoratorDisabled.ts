@@ -30,7 +30,7 @@ const refreshAWSSDKImport = (): void => {
   AWS = require('aws-sdk');
 };
 
-const tracer = new Tracer({ serviceName: serviceName });
+const tracer = new Tracer({ serviceName: serviceName, enabled: false });
 const stsv3 = tracer.captureAWSv3Client(new STSClient({}));
 
 export class MyFunctionWithDecorator {  

@@ -48,8 +48,11 @@ describe('Tracer integration tests', () => {
     const functions = [
       'Manual',
       'Middleware',
+      'MiddlewareDisabled',
+      'MiddlewareNoCaptureErrorResponse',
       'Decorator',
-      'Disabled',
+      'DecoratorDisabled',
+      'DecoratorNoCaptureErrorResponse',
     ];
     for (const functionName of functions) {
       const expectedServiceName = randomUUID();
@@ -98,7 +101,7 @@ describe('Tracer integration tests', () => {
     });
     
     // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, 120000));
+    await new Promise((resolve) => setTimeout(resolve, 180000));
 
   }, 360000); // 6 minutes
 
@@ -259,6 +262,99 @@ describe('Tracer integration tests', () => {
 
   }, 120000); // 2 minutes
 
+  it('Verifies that a when Tracer is used as middleware, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
+    
+    const resourceArn = invocationsMap['MiddlewareNoCaptureErrorResponse'].resourceArn;
+    const expectedServiceName = invocationsMap['MiddlewareNoCaptureErrorResponse'].serviceName;
+
+    // Assess
+    // Retrieve traces from X-Ray using Resource ARN as filter
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+
+    for (let i = 0; i < invocations; i++) {
+      // Assert that the trace has the expected amount of segments
+      expect(sortedTraces[i].Segments.length).toBe(4);
+
+      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+
+      if (invocationSubsegment?.subsegments !== undefined) {
+        expect(invocationSubsegment?.subsegments?.length).toBe(1);
+        const handlerSubsegment = invocationSubsegment?.subsegments[0];
+        // Assert that the subsegment name is the expected one
+        expect(handlerSubsegment.name).toBe('## index.handler');
+        if (handlerSubsegment?.subsegments !== undefined) {
+          // Assert that there're two subsegments
+          expect(handlerSubsegment?.subsegments?.length).toBe(2);
+
+          const [ AWSSDKSubsegment1, AWSSDKSubsegment2 ] = handlerSubsegment?.subsegments;
+          // Assert that the subsegment names is the expected ones
+          expect(AWSSDKSubsegment1.name).toBe('STS');
+          expect(AWSSDKSubsegment2.name).toBe('STS');
+          
+          const { annotations, metadata } = handlerSubsegment;
+
+          if (annotations !== undefined && metadata !== undefined) {
+            // Assert that the annotations are as expected
+            expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+            expect(annotations['Service']).toEqual(expectedServiceName);
+            expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+            // Assert that the metadata object is as expected
+            expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+              .toEqual(expectedCustomMetadataValue);
+            
+            if (i === invocations - 1) {
+              // Assert that the subsegment has the expected fault
+              expect(invocationSubsegment.error).toBe(true);
+              expect(handlerSubsegment.error).toBe(true);
+              // Assert that no error was captured on the subsegment
+              expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
+            } else {
+              // Assert that the metadata object does not contain the response object
+              expect(metadata[expectedServiceName].hasOwnProperty('index.handler response')).toBe(false);
+            }
+          } else {
+            // Make test fail if there are no annotations or metadata
+            expect('annotations !== undefined && metadata !== undefined')
+              .toBe('annotations === undefined && metadata === undefined');
+          }
+        } else {
+          // Make test fail if the handlerSubsegment subsegment doesn't have any subsebment
+          expect('handlerSubsegment?.subsegments !== undefined')
+            .toBe('handlerSubsegment?.subsegments === undefined');
+        }
+      } else {
+        // Make test fail if the Invocation subsegment doesn't have an handler subsebment
+        expect('invocationSubsegment?.subsegments !== undefined')
+          .toBe('invocationSubsegment?.subsegments === undefined');
+      }
+    }
+
+  }, 120000); // 2 minutes
+
+  it('Verifies that a when tracing is disabled in middleware mode no custom traces are generated', async () => {
+    
+    const resourceArn = invocationsMap['MiddlewareDisabled'].resourceArn;
+    
+    // Assess
+    // Retrieve traces from X-Ray using Resource ARN as filter
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+
+    for (let i = 0; i < invocations; i++) {
+      // Assert that the trace has the expected amount of segments
+      expect(sortedTraces[i].Segments.length).toBe(2);
+
+      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+
+      expect(invocationSubsegment?.subsegments).toBeUndefined();
+         
+      if (i === invocations - 1) {
+        // Assert that the subsegment has the expected fault
+        expect(invocationSubsegment.error).toBe(true);
+      }
+    }
+
+  }, 120000); // 2 minutes
+
   it('Verifies that a when Tracer is used as decorator all custom traces are generated with correct annotations and metadata', async () => {
     
     const resourceArn = invocationsMap['Decorator'].resourceArn;
@@ -356,9 +452,95 @@ describe('Tracer integration tests', () => {
 
   }, 120000); // 2 minutes
 
-  it('Verifies that a when tracing is disabled no custom traces are generated', async () => {
+  it('Verifies that a when Tracer is used as decorator, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
-    const resourceArn = invocationsMap['Disabled'].resourceArn;
+    const resourceArn = invocationsMap['DecoratorNoCaptureErrorResponse'].resourceArn;
+    const expectedServiceName = invocationsMap['DecoratorNoCaptureErrorResponse'].serviceName;
+    
+    // Assess
+    // Retrieve traces from X-Ray using Resource ARN as filter
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+
+    for (let i = 0; i < invocations; i++) {
+      // Assert that the trace has the expected amount of segments
+      expect(sortedTraces[i].Segments.length).toBe(4);
+
+      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+
+      if (invocationSubsegment?.subsegments !== undefined) {
+        expect(invocationSubsegment?.subsegments?.length).toBe(1);
+        const handlerSubsegment = invocationSubsegment?.subsegments[0];
+        // Assert that the subsegment name is the expected one
+        expect(handlerSubsegment.name).toBe('## index.handler');
+        if (handlerSubsegment?.subsegments !== undefined) {
+          // Assert that there're three subsegments
+          expect(handlerSubsegment?.subsegments?.length).toBe(3);
+          
+          // Sort the subsegments by name
+          const stsSubsegments: ParsedDocument[] = [];
+          const methodSubsegment: ParsedDocument[] = [];
+          const otherSegments: ParsedDocument[] = [];
+          handlerSubsegment?.subsegments.forEach(subsegment => {
+            if (subsegment.name === 'STS') {
+              stsSubsegments.push(subsegment);
+            } else if (subsegment.name === '### myMethod') {
+              methodSubsegment.push(subsegment);
+            } else {
+              otherSegments.push(subsegment);
+            }
+          });
+          // Assert that there are exactly two subsegment with the name 'STS'
+          expect(stsSubsegments.length).toBe(2);
+          // Assert that there is exactly one subsegment with the name '### myMethod'
+          expect(methodSubsegment.length).toBe(1);
+          // Assert that there are exactly zero other subsegments
+          expect(otherSegments.length).toBe(0);
+          // Assert that no response was captured on the subsegment
+          expect(methodSubsegment[0].hasOwnProperty('metadata')).toBe(false);
+        } else {
+          // Make test fail if the handlerSubsegment subsegment doesn't have any subsebment
+          expect('handlerSubsegment?.subsegments !== undefined')
+            .toBe('handlerSubsegment?.subsegments === undefined');
+        }
+        
+        const { annotations, metadata } = handlerSubsegment;
+
+        if (annotations !== undefined && metadata !== undefined) {
+          // Assert that the annotations are as expected
+          expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+          expect(annotations['Service']).toEqual(expectedServiceName);
+          expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+          // Assert that the metadata object is as expected
+          expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+            .toEqual(expectedCustomMetadataValue);
+          
+          if (i === invocations - 1) {
+            // Assert that the subsegment has the expected fault
+            expect(invocationSubsegment.error).toBe(true);
+            expect(handlerSubsegment.error).toBe(true);
+            // Assert that no error was captured on the subsegment
+            expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
+          } else {
+            // Assert that the metadata object does not contain the response object
+            expect(metadata[expectedServiceName].hasOwnProperty('index.handler response')).toBe(false);
+          }
+        } else {
+          // Make test fail if there are no annotations or metadata
+          expect('annotations !== undefined && metadata !== undefined')
+            .toBe('annotations === undefined && metadata === undefined');
+        }
+      } else {
+        // Make test fail if the Invocation subsegment doesn't have an handler subsebment
+        expect('invocationSubsegment?.subsegments !== undefined')
+          .toBe('invocationSubsegment?.subsegments === undefined');
+      }
+    }
+
+  }, 120000); // 2 minutes
+
+  it('Verifies that a when tracing is disabled in decorator mode no custom traces are generated', async () => {
+    
+    const resourceArn = invocationsMap['DecoratorDisabled'].resourceArn;
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter

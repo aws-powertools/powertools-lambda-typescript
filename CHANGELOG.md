@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-beta.7](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.6...v0.2.0-beta.7) (2021-12-27)
+
+
+### Features
+
+* **metrics:** logMetrics middleware ([#338](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/338)) ([f8cf705](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/f8cf7055de78e4515ffbae5de5867649a38dc17d))
+
+
+
+
+
 # [0.2.0-beta.6](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.5...v0.2.0-beta.6) (2021-12-23)
 
 **Note:** Version bump only for package aws-lambda-powertools-typescript

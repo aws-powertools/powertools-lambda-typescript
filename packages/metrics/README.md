@@ -24,7 +24,7 @@ Metrics has two global settings that will be used across all metrics emitted:
 
 |Setting|Description|Environment Variable|Constructor Parameter|
 |---|---|---|---|
-|Metric namespace|Logical container where all metrics will be placed e.g. ServerlessAirline|POWERTOOLS_METRICS_NAMESPACE|namespace|
+|Metric namespace|Logical container where all metrics will be placed e.g. serverlessAirline|POWERTOOLS_METRICS_NAMESPACE|namespace|
 |Service|Optionally, sets service metric dimension across all metrics e.g. payment|POWERTOOLS_SERVICE_NAME|service|
 
 ```typescript

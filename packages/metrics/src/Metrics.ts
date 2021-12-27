@@ -1,12 +1,12 @@
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
-  DecoratorOptions,
+  MetricsOptions,
   Dimensions,
   EmfOutput,
   HandlerMethodDecorator,
   StoredMetrics,
-  MetricsOptions,
+  ExtraOptions,
   MetricUnit,
   MetricUnits,
 } from './types';
@@ -149,6 +149,41 @@ class Metrics implements MetricsInterface {
     if (this.isSingleMetric) this.purgeStoredMetrics();
   }
 
+  /**
+   * Create a singleMetric to capture cold start.
+   * If it's a cold start invocation, this feature will:
+   *   * Create a separate EMF blob solely containing a metric named ColdStart
+   *   * Add function_name and service dimensions
+   *
+   * This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
+   *
+   * @example
+   *
+   * ```typescript
+   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+   * import { Context } from 'aws-lambda';
+   *
+   * const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+   *
+   * export const handler = async (event: any, context: Context) => {
+   *     metrics.captureColdStartMetric();
+   * }
+   * ```
+   */
+  public captureColdStartMetric(): void {
+    if (!this.isColdStart) return;
+    this.isColdStart = false;
+    const singleMetric = this.singleMetric();
+
+    if (this.dimensions.service) {
+      singleMetric.addDimension('service', this.dimensions.service);
+    }
+    if (this.functionName != null) {
+      singleMetric.addDimension('function_name', this.functionName);
+    }
+    singleMetric.addMetric('ColdStart', MetricUnits.Count, 1);
+  }
+
   public clearDefaultDimensions(): void {
     this.defaultDimensions = {};
   }
@@ -163,28 +198,6 @@ class Metrics implements MetricsInterface {
 
   public clearMetrics(): void {
     this.storedMetrics = {};
-  }
-
-
-  /**
-   * Throw an Error if the metrics buffer is empty.
-   *
-   * @example
-   *
-   * ```typescript
-   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-   * import { Context } from 'aws-lambda';
-   *
-   * const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
-   *
-   * export const handler = async (event: any, context: Context) => {
-   *     metrics.raiseOnEmptyMetrics();
-   *     metrics.purgeStoredMetrics(); // will throw since no metrics added.
-   * }
-   * ```
-   */
-  public raiseOnEmptyMetrics(): void {
-    this.shouldRaiseOnEmptyMetrics = true;
   }
 
   /**
@@ -212,7 +225,7 @@ class Metrics implements MetricsInterface {
    *
    * @decorator Class
    */
-  public logMetrics(options: DecoratorOptions = {}): HandlerMethodDecorator {
+  public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
     const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
     if (raiseOnEmptyMetrics) {
       this.raiseOnEmptyMetrics();
@@ -228,7 +241,8 @@ class Metrics implements MetricsInterface {
 
         if (captureColdStartMetric) this.captureColdStartMetric();
         try {
-          const result = originalMethod?.apply(this, [event, context, callback]);
+          const result = originalMethod?.apply(this, [ event, context, callback ]);
+
           return result;
         } finally {
           this.purgeStoredMetrics();
@@ -260,6 +274,27 @@ class Metrics implements MetricsInterface {
   }
 
   /**
+   * Throw an Error if the metrics buffer is empty.
+   *
+   * @example
+   *
+   * ```typescript
+   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+   * import { Context } from 'aws-lambda';
+   *
+   * const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+   *
+   * export const handler = async (event: any, context: Context) => {
+   *     metrics.raiseOnEmptyMetrics();
+   *     metrics.purgeStoredMetrics(); // will throw since no metrics added.
+   * }
+   * ```
+   */
+  public raiseOnEmptyMetrics(): void {
+    this.shouldRaiseOnEmptyMetrics = true;
+  }
+
+  /**
    * Function to create the right object compliant with Cloudwatch EMF (Event Metric Format).
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html for more details
    * @returns {string}
@@ -284,7 +319,7 @@ class Metrics implements MetricsInterface {
       {},
     );
 
-    const dimensionNames = [...Object.keys(this.defaultDimensions), ...Object.keys(this.dimensions)];
+    const dimensionNames = [ ...Object.keys(this.defaultDimensions), ...Object.keys(this.dimensions) ];
 
     return {
       _aws: {
@@ -315,6 +350,10 @@ class Metrics implements MetricsInterface {
     this.defaultDimensions = targetDimensions;
   }
 
+  public setFunctionName(value: string): void {
+    this.functionName = value;
+  }
+
   /**
    * CloudWatch EMF uses the same dimensions across all your metrics. Use singleMetric if you have a metric that should have different dimensions.
    *
@@ -334,43 +373,9 @@ class Metrics implements MetricsInterface {
     return new Metrics({
       namespace: this.namespace,
       service: this.dimensions.service,
+      defaultDimensions: this.defaultDimensions,
       singleMetric: true,
     });
-  }
-
-  /**
-   * Create a singleMetric to capture cold start.
-   * If it's a cold start invocation, this feature will:
-   *   * Create a separate EMF blob solely containing a metric named ColdStart
-   *   * Add function_name and service dimensions
-   *
-   * This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
-   *
-   * @example
-   *
-   * ```typescript
-   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-   * import { Context } from 'aws-lambda';
-   *
-   * const metrics = new Metrics({namespace:"ServerlessAirline", service:"orders"});
-   *
-   * export const handler = async (event: any, context: Context) => {
-   *     metrics.captureColdStartMetric();
-   * }
-   * ```
-   */
-  public captureColdStartMetric(): void {
-    if (!this.isColdStart) return;
-    this.isColdStart = false;
-    const singleMetric = this.singleMetric();
-
-    if (this.dimensions.service) {
-      singleMetric.addDimension('service', this.dimensions.service);
-    }
-    if (this.functionName != null) {
-      singleMetric.addDimension('function_name', this.functionName);
-    }
-    singleMetric.addMetric('ColdStart', MetricUnits.Count, 1);
   }
 
   private getCurrentDimensionsCount(): number {

@@ -88,7 +88,7 @@ describe('Tracer integration tests', () => {
         await lambdaClient.invoke({
           FunctionName: functionName,
           Payload: JSON.stringify({
-            throw: true ? i === invocations - 1 : false, // only last invocation should throw
+            throw: i === invocations ? true : false, // only last invocation should throw
           }),
         }).promise();
       }
@@ -97,7 +97,7 @@ describe('Tracer integration tests', () => {
     // sleep to allow for traces to be collected
     await new Promise((resolve) => setTimeout(resolve, 120000));
 
-  }, 900000);
+  }, 360000); // 6 minutes
 
   afterAll(async () => {
 
@@ -114,7 +114,7 @@ describe('Tracer integration tests', () => {
       });
     }
 
-  }, 900000);
+  }, 180000); // 3 minutes
 
   it('Verifies that a when Tracer is used to manually instrument a function all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -184,7 +184,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 900000);
+  }, 120000); // 2 minutes
 
   it('Verifies that a when Tracer is used as middleware all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -243,7 +243,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 900000);
+  }, 120000); // 2 minutes
 
   it('Verifies that a when Tracer is used as decorator all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -323,7 +323,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 900000);
+  }, 120000); // 2 minutes
 
   it('Verifies that a when tracing is disabled no custom traces are generated', async () => {
     
@@ -347,6 +347,6 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 900000);
+  }, 120000); // 2 minutes
 
 });

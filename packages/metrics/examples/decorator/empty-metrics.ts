@@ -15,7 +15,8 @@ const metrics = new Metrics();
 
 class Lambda implements LambdaInterface {
 
-  @metrics.logMetrics({ raiseOnEmptyMetrics: true })
+    // Be default, we will not throw any error if there is no metrics. Use this property to override and throw an exception
+    @metrics.logMetrics({ raiseOnEmptyMetrics: true })
   public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
 
   }

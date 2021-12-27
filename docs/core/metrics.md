@@ -115,7 +115,7 @@ You can use add default dimensions to your metrics by passing them as parameters
 
 * in the constructor
 * in the Middy middleware
-* using the setDefaultDimensions` method
+* using the `setDefaultDimensions` method
 * in the decorator
 
 If you'd like to remove them at some point, you can use `clearDefaultDimensions` method.  
@@ -138,7 +138,7 @@ See examples below:
     }
     ```
 
-=== "logMetrics middleware"
+=== "Middy middleware"
 
     ```typescript hl_lines="5"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
@@ -209,7 +209,7 @@ If you do not the middleware or decorator, you have to flush your metrics manual
     * Metric units must be [supported by CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
 
 
-#### Using a middleware
+#### Using Middy middleware
 
 See below an example of how to automatically flush metrics with the Middy-compatible `logMetrics` middleware.
 
@@ -257,7 +257,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
     }
     ```
 
-#### Using a class decorator
+#### Using the class decorator
 
 !!! info
     Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you prefer to write your handler as a standard function rather than a Class method, check the [middleware](#using-a-middleware) or [manual](#manually) method sections instead.  
@@ -312,7 +312,7 @@ export class MyFunction {
 
 #### Manually
 
-If you wish to do so, you can manually flush metrics with `purgeStoredMetrics` and clear metrics as follows:
+You can manually flush the metrics with `purgeStoredMetrics` as follows:
 
 !!! warning
     Metrics, dimensions and namespace validation still applies.

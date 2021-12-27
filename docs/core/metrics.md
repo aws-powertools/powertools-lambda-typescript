@@ -462,18 +462,22 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 
 === "logMetrics middleware"
 
-    ```typescript hl_lines="7 9 11 15"
+    ```typescript hl_lines="12 14 15"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
     import { Context } from 'aws-lambda';
+    import middy from '@middy/core';
 
     const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
 
     const lambdaHandler = async (event: any, context: Context) => {
-            const singleMetric = metrics.singleMetric();
-            metrics.addDimension('outerDimension', 'true');
-            singleMetric.addDimension('innerDimension', 'true');
-            metrics.addMetric('testMetric', MetricUnits.Count, 10);
-            singleMetric.addMetric('singleMetric', MetricUnits.Percent, 50);
+        metrics.addDimension('metricUnit', 'milliseconds');
+        // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
+        metrics.addMetric('latency', MetricUnits.Milliseconds, 56);
+    
+        const singleMetric = metrics.singleMetric();
+        // This metric will have the "metricType" dimension, and no "metricUnit" dimension:
+        singleMetric.addDimension('metricType', 'business');
+        singleMetric.addMetric('orderSubmitted', MetricUnits.Count, 1);
     }
 
     export const handler = middy(lambdaHandler)
@@ -482,10 +486,9 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 
 === "logMetrics decorator"
 
-    ```typescript hl_lines="9 11 13 15"
+    ```typescript hl_lines="14 16 17"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context, Callback } from 'aws-lambda'; 
-    import middy from '@middy/core';
+    import { Context, Callback } from 'aws-lambda';
 
     const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
 
@@ -493,11 +496,14 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 
         @metrics.logMetrics()
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+            metrics.addDimension('metricUnit', 'milliseconds');
+            // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
+            metrics.addMetric('latency', MetricUnits.Milliseconds, 56);
+        
             const singleMetric = metrics.singleMetric();
-            metrics.addDimension('outerDimension', 'true');
-            singleMetric.addDimension('innerDimension', 'true');
-            metrics.addMetric('testMetric', MetricUnits.Count, 10);
-            singleMetric.addMetric('singleMetric', MetricUnits.Percent, 50);
+            // This metric will have the "metricType" dimension, and no "metricUnit" dimension:
+            singleMetric.addDimension('metricType', 'business');
+            singleMetric.addMetric('orderSubmitted', MetricUnits.Count, 1);
         }
     }
     ```

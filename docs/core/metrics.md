@@ -145,7 +145,7 @@ See examples below:
     import { Context } from 'aws-lambda';
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
     const lambdaHandler = async (event: any, context: Context) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
@@ -205,7 +205,7 @@ If you do not the middleware or decorator, you have to flush your metrics manual
     If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be raised:
 
     * Maximum of 9 dimensions
-    * Namespace is set, and no more than one
+    * Namespace is set only once (or none)
     * Metric units must be [supported by CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
 
 
@@ -219,7 +219,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
     import { Context } from 'aws-lambda';
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace:"exampleApplication", service:"exampleService"});
+    const metrics = new Metrics({ namespace: 'exampleApplication' , service: 'exampleService' });
 
     const lambdaHandler = async (event: any, context: Context) => {
         metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);
@@ -360,7 +360,7 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
     import { Context } from 'aws-lambda';
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+    const metrics = new Metrics({namespace: 'serverlessAirline', service: 'orders' });
 
     const lambdaHandler = async (event: any, context: Context) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
@@ -377,7 +377,7 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
     import { Context, Callback } from 'aws-lambda'; 
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+    const metrics = new Metrics({namespace: 'serverlessAirline', service: 'orders' });
 
     export class MyFunction {
 

@@ -16,7 +16,7 @@ const lambdaHandler: Handler = async () => {
 
   metrics.addMetric('test-metric', MetricUnits.Count, 10);
   metrics.purgeStoredMetrics();
-  //Metrics will be logged and cleared
+  //Metrics will be published and cleared
 
   return {
     foo: 'bar'

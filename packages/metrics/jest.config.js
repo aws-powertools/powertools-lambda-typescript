@@ -1,5 +1,4 @@
 module.exports = {
-  'runner': 'groups',
   'preset': 'ts-jest',
   'transform': {
     '^.+\\.ts?$': 'ts-jest',

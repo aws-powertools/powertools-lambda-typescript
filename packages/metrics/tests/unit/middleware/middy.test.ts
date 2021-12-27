@@ -10,12 +10,6 @@ const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
 
-/**
- * Metrics tests
- *
- * @group metrics
- * @group unit/middleware
- */
 describe('Middy middleware', () => {
 
   beforeEach(() => {

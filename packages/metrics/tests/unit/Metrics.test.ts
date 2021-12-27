@@ -22,13 +22,6 @@ type DummyEvent = {
   key3: string
 };
 
-/**
- * Metrics tests
- *
- * @group metrics
- * @group unit/Metrics
- */
-
 describe('Class: Metrics', () => {
   const originalEnvironmentVariables = process.env;
 

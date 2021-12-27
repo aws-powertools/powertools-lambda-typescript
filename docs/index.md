@@ -26,24 +26,25 @@ This project separates core utilities that will be available in other runtimes v
 * **We work backwards from the community**. We aim to strike a balance of what would work best for 80% of customers. Emerging practices are considered and discussed via Requests for Comment (RFCs)
 * **Progressive**. Utilities are designed to be incrementally adoptable for customers at any stage of their Serverless journey. They follow language idioms and their community’s common practices.
 
-## Installation
-
-The AWS Lambda Powertools TypeScript utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).
-Each TypeScript utility is installed as standalone NPM package.
-
-[Installation guide for the **Tracer** utility](./core/tracer.md#getting-started)  
-
-[Installation guide for the **Logger** utility](./core/logger.md#getting-started)  
-
-[Installation guide for the **Metrics** utility](./core/metrics.md#getting-started)  
-
 ## Features
 
 | Utility | Description
 | ------------------------------------------------- | ---------------------------------------------------------------------------------
 [Tracer](./core/tracer.md) | Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
-[Logger](./core/logger.md) | Structured logging made easier, and a middleware to enrich structured logging with key details of the Lambda context
+[Logger](./core/logger.md) | Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
 [Metrics](./core/metrics.md) | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
+
+## Installation
+
+The AWS Lambda Powertools TypeScript utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3){target="_blank"}.
+Each TypeScript utility is installed as standalone NPM package.
+
+[Installation guide for the **Tracer** utility](./core/tracer.md#getting-started)
+
+[Installation guide for the **Logger** utility](./core/logger.md#getting-started)
+
+[Installation guide for the **Metrics** utility](./core/metrics.md#getting-started)
+
 
 ## Environment variables
 
@@ -61,3 +62,21 @@ Each TypeScript utility is installed as standalone NPM package.
 | **POWERTOOLS_LOGGER_SAMPLE_RATE**         | Debug log sampling | [Logger](./core/logger)  | `0`                   |
 | **POWERTOOLS_LOG_DEDUPLICATION_DISABLED** | Disables log deduplication filter protection to use Pytest Live Log feature | [Logger](./core/logger)  | `false`               |
 | **LOG_LEVEL**                             | Sets logging level | [Logger](./core/logger)  | `INFO`                |
+
+
+## Examples
+
+* [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk){target="_blank"}
+* [Tracer](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/tracing/examples){target="_blank"}
+* [Logger](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logger/examples){target="_blank"}
+* [Metrics](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/metrics/examples){target="_blank"}
+
+## Credits
+
+* Credits for the Lambda Powertools idea go to [DAZN](https://github.com/getndazn){target="_blank"} and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/){target="_blank"}.
+
+
+## Connect
+
+* **AWS Developers Slack**: `#lambda-powertools`** - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw){target="_blank"}**
+* **Email**: aws-lambda-powertools-feedback@amazon.com

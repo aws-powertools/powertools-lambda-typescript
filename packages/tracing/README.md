@@ -1,91 +1,55 @@
-# `tracer`
+# AWS Lambda Powertools TypeScript
 
-Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://github.com/aws/aws-xray-sdk-node).
+| ⚠️ **WARNING: Do not use this library in production** ⚠️                                                                                                                                                                                                                                                                                                                                             |
+|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| AWS Lambda Powertools for TypeScript is currently released as a beta developer preview and is intended strictly for feedback purposes only.  <br/>This version is not stable, and significant breaking changes might incur as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2).                                              |_
 
-Tracing data can be visualized through AWS X-Ray Console.
 
-## Key features
-* Auto capture cold start and service name as annotations, and responses or full exceptions as metadata
-* Auto-disable when not running in AWS Lambda environment
-* Support tracing functions via decorators, middleware, and manual instrumentation
-* Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
+A suite of TypeScript utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more. (AWS Lambda Powertools [Python](https://github.com/awslabs/aws-lambda-powertools-python) and [Java](https://github.com/awslabs/aws-lambda-powertools-java) are also available).
 
-## Usage
+**[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)**
 
-For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/).
+> **An AWS Developer Acceleration (DevAx) initiative by Specialist Solution Architects | aws-devax-open-source@amazon.com**
 
-### Functions usage with middlewares
+### Features
 
-If you use function-based Lambda handlers you can use the [captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
-* handle the subsegment lifecycle 
-* add the `ServiceName` and `ColdStart` annotations
-* add the function response as metadata
-* add the function error as metadata (if any)
- 
-```typescript
-import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
-import middy from '@middy/core';
- 
-const tracer = new Tracer({ serviceName: 'my-service' });
- 
-export const handler = middy(async (_event: any, _context: any) => {
-    ...
-}).use(captureLambdaHandler(tracer));
-```
+* **[Tracer](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
+* **[Logger](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
+* **[Metrics](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
 
-### Object oriented usage with decorators
 
-If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHandler) decorator to automatically:
-* handle the subsegment lifecycle 
-* add the `ServiceName` and `ColdStart` annotations
-* add the function response as metadata
-* add the function error as metadata (if any)
+## Getting started
 
-```typescript
-import { Tracer } from '@aws-lambda-powertools/tracer';
+Find the complete project's [documentation here](https://awslabs.github.io/aws-lambda-powertools-typescript).
 
-const tracer = new Tracer({ serviceName: 'my-service' });
+### Installation
 
-class Lambda {
-    @tracer.captureLambdaHandler()
-    public handler(event: any, context: any) {
-        ...
-    }
-}
+The AWS Lambda Powertools TypeScript utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).  
+Each TypeScript utility is installed as standalone NPM package.
 
-export const handlerClass = new Lambda();
-export const handler = handlerClass.handler; 
-```
+👉 [Installation guide for the **Tracer** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer#getting-started)
 
-### Functions usage with manual instrumentation
+👉 [Installation guide for the **Logger** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger#getting-started)
 
-If you prefer to manually instrument your Lambda handler you can use the methods in the tracer class directly.
+👉 [Installation guide for the **Metrics** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics#getting-started)
 
-```typescript
-import { Tracer } from '@aws-lambda-powertools/tracer';
+### Examples
 
-const tracer = new Tracer({ serviceName: 'my-service' });
+* [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)
+* [Tracer](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/tracing/examples)
+* [Logger](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logger/examples)
+* [Metrics](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/metrics/examples)
 
-export const handler = async (_event: any, context: any) => {
-    const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
-    // Create subsegment for the function
-    const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
-    tracer.annotateColdStart();
-    tracer.addServiceNameAnnotation();
+## Credits
 
-    let res;
-    try {
-        res = ...
-        // Add the response as metadata 
-        tracer.addResponseAsMetadata(res, context.functionName);
-    } catch (err) {
-        // Add the error as metadata
-        tracer.addErrorAsMetadata(err as Error);
-    }
- 
-    // Close subsegment (the AWS Lambda one is closed automatically)
-    handlerSegment.close();
- 
-    return res;
-}
-```
+* Credits for the Lambda Powertools idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
+
+
+## Connect
+
+* **AWS Developers Slack**: `#lambda-powertools`** - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw)**
+* **Email**: aws-lambda-powertools-feedback@amazon.com
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.

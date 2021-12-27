@@ -35,7 +35,7 @@ npm install @aws-lambda-powertools/tracer
 
 ### Utility settings
 
-The library requires one required setting. You can set it as environment variables, or pass it in the constructor.
+The library requires one setting. You can set it as environment variables, or pass it in the constructor.
 
 These settings will be used across all traces emitted:
 

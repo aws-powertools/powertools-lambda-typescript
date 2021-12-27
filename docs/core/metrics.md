@@ -171,27 +171,25 @@ See examples below:
 
 === "with logMetrics decorator"
 
-    ```typescript hl_lines="6 12"
+    ```typescript hl_lines="9"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context, Callback } from 'aws-lambda'; 
-    import middy from '@middy/core';
-
+    import { Context, Callback } from 'aws-lambda';
 
     const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
     const DEFAULT_DIMENSIONS = {"environment": "prod", "another": "one"};
 
-
     export class MyFunction {
 
-    @metrics.logMetrics({defaultDimensions: DEFAULT_DIMENSIONS})
-    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        @metrics.logMetrics({defaultDimensions: DEFAULT_DIMENSIONS})
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+            metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        }
     }
     ```
 
 ### Flushing metrics
 
-As you finish adding all your metrics, you need to serialize and flush them to standard output.
+As you finish adding all your metrics, you need to serialize and "flush them" (= print them to standard output).
 
 You can flush metrics automatically using one of the following methods:  
 
@@ -199,7 +197,9 @@ You can flush metrics automatically using one of the following methods:
 * class decorator
 * manually
 
-The middleware and the decorator also **validate**, **serialize**, and **flush** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
+Using the Middy middleware or decorator will **automatically validate, serialize, and flush** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
+If you do not the middleware or decorator, you have to flush your metrics manually.
+
 
 !!! warning "Metric validation"
     If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be raised:
@@ -257,10 +257,13 @@ See below an example of how to automatically flush metrics with the Middy-compat
     }
     ```
 
-#### Using the class decorator
+#### Using a class decorator
 
-Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if prefer to write your handler as a standard function, check the middleware or manual methods instead.  
-See the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
+!!! info
+    Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you prefer to write your handler as a standard function rather than a Class method, check the [middleware](#using-a-middleware) or [manual](#manually) method sections instead.  
+    See the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
+
+The `logMetrics` decorator of the metrics utility can be used when your Lambda handler function is implemented as method of a Class.
 
 
 ```typescript hl_lines="8"
@@ -309,7 +312,7 @@ export class MyFunction {
 
 #### Manually
 
-If you wish to do so, you can manually flush the metrics with `purgeStoredMetrics` and clear metrics as follows:
+If you wish to do so, you can manually flush metrics with `purgeStoredMetrics` and clear metrics as follows:
 
 !!! warning
     Metrics, dimensions and namespace validation still applies.
@@ -392,7 +395,7 @@ If it's a cold start invocation, this feature will:
 
 This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
 
-!!! info "We do not emit 0 as a value for the ColdStart metric for cost-efficiency reasons. [Let us know](https://github.com/awslabs/aws-lambda-powertools-typecsript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd prefer a flag to override it."
+!!! info "We do not emit 0 as a value for the ColdStart metric for cost-efficiency reasons. [Let us know](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd prefer a flag to override it."
 
 ## Advanced
 
@@ -459,10 +462,9 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 
 === "logMetrics middleware"
 
-    ```typescript hl_lines="8 10 12"
+    ```typescript hl_lines="7 9 11 15"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
     import { Context } from 'aws-lambda';
-    import middy from '@middy/core';
 
     const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
 
@@ -480,7 +482,7 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 
 === "logMetrics decorator"
 
-    ```typescript hl_lines="11 13 15"
+    ```typescript hl_lines="9 11 13 15"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
     import { Context, Callback } from 'aws-lambda'; 
     import middy from '@middy/core';

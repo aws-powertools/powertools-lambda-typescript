@@ -13,7 +13,8 @@ process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 const metrics = new Metrics();
 
 const lambdaHandler = async (): Promise<void> => {
-  // No metric added
+  // Notice that no metrics are added
+  // Since the raiseOnEmptyMetrics parameter is set to true, the Powertool throw an Error
 };
 
 const handlerWithMiddleware = middy(lambdaHandler)

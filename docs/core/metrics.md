@@ -219,7 +219,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
     import { Context } from 'aws-lambda';
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace:"exampleApplication", service:"exampleService"});
+    const metrics = new Metrics({ namespace: 'exampleApplication' , service: 'exampleService' });
 
     const lambdaHandler = async (event: any, context: Context) => {
         metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);

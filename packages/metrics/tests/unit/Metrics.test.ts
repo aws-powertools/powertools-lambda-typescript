@@ -1,7 +1,7 @@
 /**
- * Test metrics decorator
+ * Test Metrics class
  *
- * @group unit/metrics/all
+ * @group unit/metrics/class
  */
 
 import { ContextExamples as dummyContext, LambdaInterface } from '@aws-lambda-powertools/commons';

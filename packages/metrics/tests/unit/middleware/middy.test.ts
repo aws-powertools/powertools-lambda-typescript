@@ -1,3 +1,9 @@
+/**
+ * Test metrics middleware
+ *
+ * @group unit/metrics/middleware
+ */
+
 import { logMetrics } from '../../../../metrics/src/middleware';
 import { Metrics, MetricUnits } from '../../../../metrics/src';
 import middy from '@middy/core';

@@ -1,7 +1,7 @@
 {
   "name": "aws-lambda-powertools-typescript",
   "version": "0.0.1",
-  "description": "TODO: Fill this README out!",
+  "description": "A suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.",
   "main": "lib/index.js",
   "types": "lib/",
   "workspaces": [

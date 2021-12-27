@@ -3,6 +3,14 @@ title: Logger
 description: Core utility
 ---
 
+!!! warning  "Do not use this library in production"
+
+    AWS Lambda Powertools for TypeScript is currently released as a beta developer preview and is intended strictly for feedback purposes only.  
+    This version is not stable, and significant breaking changes might incur as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2){target="_blank"}.
+
+    **Do not use this library for production workloads.**
+
+
 Logger provides an opinionated logger with output structured as JSON.
 
 ## Key features
@@ -14,14 +22,31 @@ Logger provides an opinionated logger with output structured as JSON.
 
 ## Getting started
 
-Logger requires two settings:
+### Installation
 
-Setting | Description | Environment variable | Constructor parameter
-------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
-**Logging level** | Sets how verbose Logger should be (INFO, by default) |  `LOG_LEVEL` | `logLevel`
+Install the library in your project:
+
+```shell
+
+npm install @aws-lambda-powertools/logger
+
+```
+
+### Utility settings
+
+The library requires two settings. You can set them as environment variables, or pass them in the constructor.
+
+These settings will be used across all logs emitted:
+
+Setting | Description                                                                                                      | Environment variable | Constructor parameter
+------------------------------------------------- |------------------------------------------------------------------------------------------------------------------| ------------------------------------------------- | -------------------------------------------------
+**Logging level** | Sets how verbose Logger should be (INFO, by default). Supported values are: `DEBUG`, `INFO`, `WARN`, `ERROR`     |  `LOG_LEVEL` | `logLevel`
 **Service name** | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME` | `serviceName`
 
-> Example using AWS Serverless Application Model (SAM)
+
+For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
+
+#### Example using AWS Serverless Application Model (SAM)
 
 === "handler.ts"
 
@@ -33,7 +58,7 @@ Setting | Description | Environment variable | Constructor parameter
 
     // You can also pass the parameters in the constructor
     // const logger = new Logger({
-    //     logLevel: "INFO",
+    //     logLevel: "WARN",
     //     serviceName: "shopping-cart-api"
     // });
     ```
@@ -48,7 +73,7 @@ Setting | Description | Environment variable | Constructor parameter
           Runtime: nodejs14.x
           Environment:
             Variables:
-              LOG_LEVEL: INFO
+              LOG_LEVEL: WARN
               POWERTOOLS_SERVICE_NAME: shopping-cart-api
     ```
 
@@ -70,11 +95,21 @@ Key | Example | Note
 
 You can enrich your structured logs with key Lambda context information in multiple ways.
 
-Method 1, using a [Middy](https://github.com/middyjs/middy) middleware:
+This functionality will include the following keys in your structured logs:
+
+Key | Example
+------------------------------------------------- | ---------------------------------------------------------------------------------
+**cold_start**: `bool` | `false`
+**function_name** `string` | `shopping-cart-api-lambda-prod-eu-central-1`
+**function_memory_size**: `number` | `128`
+**function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
+**function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
+
+#### Method 1, using a [Middy](https://github.com/middyjs/middy) middleware:
 
 === "handler.ts"
 
-    ```typescript hl_lines="1 9-10"
+    ```typescript hl_lines="1 9-11"
     import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
     import middy from '@middy/core';
 
@@ -88,7 +123,7 @@ Method 1, using a [Middy](https://github.com/middyjs/middy) middleware:
         .use(injectLambdaContext(logger));
     ```
 
-Method 2, calling the `addContext` method:
+#### Method 2, calling the `addContext` method:
 
 === "handler.ts"
 
@@ -97,7 +132,7 @@ Method 2, calling the `addContext` method:
 
     const logger = new Logger();
 
-    const lambdaHandler = async () => {
+    const lambdaHandler = async (_event, context) => {
     
         logger.addContext(context);
         
@@ -106,7 +141,7 @@ Method 2, calling the `addContext` method:
     };
     ```
 
-Method 3, using a class decorator:
+#### Method 3, using a class decorator:
 
 === "handler.ts"
 
@@ -125,7 +160,7 @@ Method 3, using a class decorator:
     }
     ```
 
-In both case, the printed log will look like this:
+In each case, the printed log will look like this:
 
 === "Example CloudWatch Logs excerpt"
 
@@ -143,16 +178,6 @@ In both case, the printed log will look like this:
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
-
-When used, this will include the following keys:
-
-Key | Example
-------------------------------------------------- | ---------------------------------------------------------------------------------
-**cold_start**: `bool` | `false`
-**function_name** `string` | `shopping-cart-api-lambda-prod-eu-central-1`
-**function_memory_size**: `int` | `128`
-**function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
-**function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
 ### Appending persistent additional log keys and values
 
@@ -422,12 +447,12 @@ This number represents the probability that a Lambda invocation will print all t
 For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda invocations will print all the log items, including the `debug` ones.
 
 !!! tip "When is this useful?"
-In production, to avoid log data pollution and reduce CloudWatch costs, developers are encouraged to use the logger with `logLevel` equal to `ERROR` or `WARN`.
-This means that only errors or warnings will be printed. 
-
-However, it might still be useful to print all the logs (including debug ones) of a very small percentage of invocations to have a better understanding of the behaviour of your code in production even when there are no errors.
-
-Sampling decision happens at the Logger initialization. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
+    In production, to avoid log data pollution and reduce CloudWatch costs, developers are encouraged to use the logger with `logLevel` equal to `ERROR` or `WARN`.
+    This means that only errors or warnings will be printed. 
+    
+    However, it might still be useful to print all the logs (including debug ones) of a very small percentage of invocations to have a better understanding of the behaviour of your code in production even when there are no errors.
+    
+    Sampling decision happens at the Logger initialization. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
 
 === "handler.ts"
 

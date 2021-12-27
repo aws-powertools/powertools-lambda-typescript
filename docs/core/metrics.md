@@ -377,7 +377,7 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
     import { Context, Callback } from 'aws-lambda'; 
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+    const metrics = new Metrics({namespace: 'serverlessAirline', service: 'orders' });
 
     export class MyFunction {
 

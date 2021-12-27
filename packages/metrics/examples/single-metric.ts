@@ -13,11 +13,14 @@ process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 const metrics = new Metrics();
 
 const lambdaHandler = async (): Promise<void> => {
+  metrics.addDimension('metricUnit', 'milliseconds');
+  // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
+  metrics.addMetric('latency', MetricUnits.Milliseconds, 56);
+
   const singleMetric = metrics.singleMetric();
-  metrics.addDimension('OuterDimension', 'true');
-  singleMetric.addDimension('InnerDimension', 'true');
-  metrics.addMetric('test-metric', MetricUnits.Count, 10);
-  singleMetric.addMetric('single-metric', MetricUnits.Percent, 50);
+  // This metric will have the "metricType" dimension, and no "metricUnit" dimension:
+  singleMetric.addDimension('metricType', 'business');
+  singleMetric.addMetric('videoClicked', MetricUnits.Count, 1);
 };
 
 const handlerWithMiddleware = middy(lambdaHandler)

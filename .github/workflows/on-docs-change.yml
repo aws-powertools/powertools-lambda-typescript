@@ -1,4 +1,4 @@
-name: Auto publish docs to version "develop"
+name: Auto publish docs to version "main"
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
       - name: Build mkdocs site in 'gh-pages' branch and push
         run: |
           rm -rf site
-          VERSION="develop"
+          VERSION="main"
           ALIAS="stage"
           mkdocs build
           mike deploy --push --update-aliases "$VERSION" "$ALIAS"
@@ -55,4 +55,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./api
           keep_files: true
-          destination_dir: develop/api 
+          destination_dir: main/api 

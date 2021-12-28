@@ -5,6 +5,7 @@
  */
 
 import { randomUUID } from 'crypto';
+import { join } from 'path';
 import { Tracing } from '@aws-cdk/aws-lambda';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
 import { App, Duration, Stack } from '@aws-cdk/core';
@@ -48,15 +49,18 @@ describe('Tracer integration tests', () => {
     const functions = [
       'Manual',
       'Middleware',
-      'MiddlewareDisabled',
-      'MiddlewareNoCaptureErrorResponse',
+      'Middleware-Disabled',
+      'Middleware-NoCaptureErrorResponse',
       'Decorator',
-      'DecoratorDisabled',
-      'DecoratorNoCaptureErrorResponse',
+      'Decorator-Disabled',
+      'Decorator-NoCaptureErrorResponse',
     ];
     for (const functionName of functions) {
       const expectedServiceName = randomUUID();
+      const fileName = functionName.split('-')[0];
       new NodejsFunction(stack, functionName, {
+        entry: join(__dirname, `tracer.test.${fileName}.ts`),
+        handler: 'handler',
         functionName: functionName,
         tracing: Tracing.ACTIVE,
         environment: {
@@ -67,6 +71,9 @@ describe('Tracer integration tests', () => {
           EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(expectedCustomMetadataValue),
           EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
           EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
+          POWERTOOLS_TRACER_CAPTURE_RESPONSE: functionName.indexOf('NoCaptureErrorResponse') !== -1 ? 'false' : 'true',
+          POWERTOOLS_TRACER_CAPTURE_ERROR: functionName.indexOf('NoCaptureErrorResponse') !== -1 ? 'false' : 'true',
+          POWERTOOLS_TRACE_ENABLED: functionName.indexOf('Disabled') !== -1 ? 'false' : 'true',
         },
         timeout: Duration.seconds(30),
       });
@@ -264,8 +271,8 @@ describe('Tracer integration tests', () => {
 
   it('Verifies that a when Tracer is used as middleware, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
-    const resourceArn = invocationsMap['MiddlewareNoCaptureErrorResponse'].resourceArn;
-    const expectedServiceName = invocationsMap['MiddlewareNoCaptureErrorResponse'].serviceName;
+    const resourceArn = invocationsMap['Middleware-NoCaptureErrorResponse'].resourceArn;
+    const expectedServiceName = invocationsMap['Middleware-NoCaptureErrorResponse'].serviceName;
 
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
@@ -333,7 +340,7 @@ describe('Tracer integration tests', () => {
 
   it('Verifies that a when tracing is disabled in middleware mode no custom traces are generated', async () => {
     
-    const resourceArn = invocationsMap['MiddlewareDisabled'].resourceArn;
+    const resourceArn = invocationsMap['Middleware-Disabled'].resourceArn;
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
@@ -454,8 +461,8 @@ describe('Tracer integration tests', () => {
 
   it('Verifies that a when Tracer is used as decorator, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
-    const resourceArn = invocationsMap['DecoratorNoCaptureErrorResponse'].resourceArn;
-    const expectedServiceName = invocationsMap['DecoratorNoCaptureErrorResponse'].serviceName;
+    const resourceArn = invocationsMap['Decorator-NoCaptureErrorResponse'].resourceArn;
+    const expectedServiceName = invocationsMap['Decorator-NoCaptureErrorResponse'].serviceName;
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
@@ -540,7 +547,7 @@ describe('Tracer integration tests', () => {
 
   it('Verifies that a when tracing is disabled in decorator mode no custom traces are generated', async () => {
     
-    const resourceArn = invocationsMap['DecoratorDisabled'].resourceArn;
+    const resourceArn = invocationsMap['Decorator-Disabled'].resourceArn;
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter

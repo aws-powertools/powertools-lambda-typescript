@@ -56,7 +56,7 @@ jobs:
     - name: Set RELEASE_VERSION env var
       run: |
         RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
-        echo "RELEASE_VERSION=${RELEASE_VERSION:1}" >> $GITHUB_ENV
+        echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
     - name: Install doc generation dependencies
       run: |
         pip install --upgrade pip 
@@ -68,8 +68,9 @@ jobs:
     - name: Build mkdocs site in "gh-pages" branch and push
       run: |
         rm -rf site
-        VERSION="$RELEASE_VERSION"
+        VERSION="${{ env.RELEASE_VERSION }}"
         ALIAS="latest"
+        echo "Publishing doc for version: $VERSION"
         mkdocs build
         mike deploy --push --update-aliases "$VERSION" "$ALIAS"
         # Set latest version as a default

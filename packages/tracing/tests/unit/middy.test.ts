@@ -1,3 +1,9 @@
+/**
+ * Test Tracer middleware
+ *
+ * @group unit/tracer/all
+ */
+
 import { captureLambdaHandler } from '../../src/middleware/middy';
 import middy from '@middy/core';
 import { Tracer } from './../../src';

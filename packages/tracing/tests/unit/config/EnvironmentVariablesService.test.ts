@@ -1,3 +1,9 @@
+/**
+ * Test EnvironmentVariablesService class
+ *
+ * @group unit/tracer/all
+ */
+
 import { EnvironmentVariablesService } from '../../../src/config';
 
 describe('Class: EnvironmentVariablesService', () => {

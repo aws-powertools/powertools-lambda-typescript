@@ -6,7 +6,7 @@ interface TracerInterface {
   setSegment(segment: Segment | Subsegment): void
   putAnnotation: (key: string, value: string | number | boolean) => void
   putMetadata: (key: string, value: unknown, namespace?: string | undefined) => void
-  captureLambdaHanlder(): HandlerMethodDecorator
+  captureLambdaHandler(): HandlerMethodDecorator
   captureMethod(): MethodDecorator
   captureAWS<T>(aws: T): void | T
   captureAWSv3Client<T>(service: T): void | T

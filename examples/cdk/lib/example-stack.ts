@@ -1,86 +1,70 @@
-import { Stack, StackProps, custom_resources, aws_iam } from 'aws-cdk-lib';
-import { Events } from '@aws-lambda-powertools/commons';
+import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import { ExampleFunction } from './example-function';
 
 export class CdkAppStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  public constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const myFunctionWithStandardFunctions = new lambda.NodejsFunction(this, 'MyFunction', { tracing: Tracing.ACTIVE });
-    const myFunctionWithDecorator = new lambda.NodejsFunction(this, 'MyFunctionWithDecorator', {
-      tracing: Tracing.ACTIVE,
-    });
-    const myFunctionWithWithMiddleware = new lambda.NodejsFunction(this, 'MyFunctionWithMiddy', {
-      tracing: Tracing.ACTIVE,
+    new ExampleFunction(this, 'MyFunction', {
+      functionName: 'MyFunction',
+      tracingActive: true,
     });
 
-    // Invoke all functions twice
-    for (let i = 0; i < 2; i++) {
-      new custom_resources.AwsCustomResource(this, `Invoke-std-func-${i}`, {
-        onUpdate: {
-          service: 'Lambda',
-          action: 'invoke',
-          physicalResourceId: custom_resources.PhysicalResourceId.of(new Date().toISOString()),
-          parameters: {
-            FunctionName: myFunctionWithStandardFunctions.functionName,
-            InvocationType: 'RequestResponse',
-            Payload: JSON.stringify(Events.Custom.CustomEvent),
-          }
-        },
-        policy: custom_resources.AwsCustomResourcePolicy.fromStatements([
-          new aws_iam.PolicyStatement({
-            effect: aws_iam.Effect.ALLOW,
-            resources: [
-              myFunctionWithStandardFunctions.functionArn,
-            ],
-            actions: ['lambda:InvokeFunction'],
-          }),
-        ]),
-      });
-      new custom_resources.AwsCustomResource(this, `Invoke-dec-func-${i}`, {
-        onUpdate: {
-          service: 'Lambda',
-          action: 'invoke',
-          physicalResourceId: custom_resources.PhysicalResourceId.of(new Date().toISOString()),
-          parameters: {
-            FunctionName: myFunctionWithDecorator.functionName,
-            InvocationType: 'RequestResponse',
-            Payload: JSON.stringify(Events.Custom.CustomEvent),
-          }
-        },
-        policy: custom_resources.AwsCustomResourcePolicy.fromStatements([
-          new aws_iam.PolicyStatement({
-            effect: aws_iam.Effect.ALLOW,
-            resources: [
-              myFunctionWithDecorator.functionArn,
-            ],
-            actions: ['lambda:InvokeFunction'],
-          }),
-        ]),
-      });
-      new custom_resources.AwsCustomResource(this, `Invoke-middy-func-${i}`, {
-        onUpdate: {
-          service: 'Lambda',
-          action: 'invoke',
-          physicalResourceId: custom_resources.PhysicalResourceId.of(new Date().toISOString()),
-          parameters: {
-            FunctionName: myFunctionWithWithMiddleware.functionName,
-            InvocationType: 'RequestResponse',
-            Payload: JSON.stringify(Events.Custom.CustomEvent),
-          }
-        },
-        policy: custom_resources.AwsCustomResourcePolicy.fromStatements([
-          new aws_iam.PolicyStatement({
-            effect: aws_iam.Effect.ALLOW,
-            resources: [
-              myFunctionWithWithMiddleware.functionArn,
-            ],
-            actions: ['lambda:InvokeFunction'],
-          }),
-        ]),
-      });
-    }
+    new ExampleFunction(this, 'MyFunctionWithDecorator', {
+      functionName: 'MyFunctionWithDecorator',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'MyFunctionWithMiddy', {
+      functionName: 'MyFunctionWithMiddy',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'Tracer.Disabled', {
+      functionName: 'Tracer.Disabled',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'Tracer.Middleware', {
+      functionName: 'Tracer.Middleware',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'Tracer.Decorator', {
+      functionName: 'Tracer.Decorator',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'Tracer.Manual', {
+      functionName: 'Tracer.Manual',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'Tracer.PatchAllAWSSDK', {
+      functionName: 'Tracer.PatchAllAWSSDK',
+      tracingActive: true,
+    });
+    
+    new ExampleFunction(this, 'Tracer.PatchAWSSDKv2', {
+      functionName: 'Tracer.PatchAWSSDKv2',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'Tracer.PatchAWSSDKv3', {
+      functionName: 'Tracer.PatchAWSSDKv3',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'Tracer.CaptureResponseDisabled', {
+      functionName: 'Tracer.CaptureResponseDisabled',
+      tracingActive: true,
+    });
+
+    new ExampleFunction(this, 'Tracer.CaptureErrorDisabled', {
+      functionName: 'Tracer.CaptureErrorDisabled',
+      tracingActive: true,
+    });
+
   }
 }

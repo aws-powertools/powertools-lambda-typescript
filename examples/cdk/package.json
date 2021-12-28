@@ -21,9 +21,11 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^0.1.0-beta.8",
-    "@aws-lambda-powertools/metrics": "^0.1.0-beta.9",
-    "@aws-lambda-powertools/tracer": "^0.1.0-beta.9",
+    "@aws-lambda-powertools/commons": "^0.2.0-beta < 1.x.x",
+    "@aws-lambda-powertools/logger": "^0.2.0-beta < 1.x.x",
+    "@aws-lambda-powertools/metrics": "^0.2.0-beta < 1.x.x",
+    "@aws-lambda-powertools/tracer": "^0.2.0-beta < 1.x.x",
+    "@aws-sdk/client-sts": "^3.43.0",
     "@middy/core": "^2.5.3",
     "@middy/http-error-handler": "^2.5.3",
     "@middy/http-json-body-parser": "^2.5.3",

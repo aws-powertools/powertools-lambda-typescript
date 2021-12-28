@@ -16,7 +16,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
  * import middy from '@middy/core';
  * 
- * const tracer = new Tracer({ serviceName: 'my-service' });
+ * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
  * export const handler = middy(async (_event: any, _context: any) => {
  *   ...

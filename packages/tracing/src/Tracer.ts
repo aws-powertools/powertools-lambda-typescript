@@ -31,10 +31,10 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * @example
  * ```typescript
- * import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+ * import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';
  * import middy from '@middy/core';
  * 
- * const tracer = new Tracer({ serviceName: 'my-service' });
+ * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
  * export const handler = middy(async (_event: any, _context: any) => {
  *   ...
@@ -43,7 +43,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * ### Object oriented usage with decorators
  * 
- * If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHanlder()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHanlder) decorator to automatically:
+ * If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHandler) decorator to automatically:
  * * handle the subsegment lifecycle 
  * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
@@ -53,12 +53,12 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
  * 
- * const tracer = new Tracer({ serviceName: 'my-service' });
+ * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
- * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@tracer* instead of `@tracer.captureLambdaHanlder`
+ * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@tracer* instead of `@tracer.captureLambdaHandler`
  * 
  * class Lambda {
- *   @tracer.captureLambdaHanlder()
+ *   @tracer.captureLambdaHandler()
  *   public handler(event: any, context: any) {
  *     ...
  *   }
@@ -77,31 +77,37 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * import { Tracer } from '@aws-lambda-powertools/tracer';
  * import { Segment } from 'aws-xray-sdk-core';
  * 
- * const tracer = new Tracer({ serviceName: 'my-service' });
+ * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
  * export const handler = async (_event: any, context: any) => {
  *   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
- *   // Create subsegment for the function
- *   const handlerSegment = segment.addNewSubsegment(`## ${context.functionName}`);
- *   tracer.annotateColdStart()
+ *   // Create subsegment for the function & set it as active
+ *   const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
+ *   tracer.setSegment(subsegment);
+ *
+ *   // Annotate the subsegment with the cold start & serviceName
+ *   tracer.annotateColdStart();
  *   tracer.addServiceNameAnnotation();
- * 
+ *
  *   let res;
  *   try {
- *     res = ...
- *     // Add the response as metadata
- *     tracer.addResponseAsMetadata(res, context.functionName);
+ *       res = ...
+ *       // Add the response as metadata 
+ *       tracer.addResponseAsMetadata(res, process.env._HANDLER);
  *   } catch (err) {
- *     // Add the error as metadata
- *     tracer.addErrorAsMetadata(err as Error);
+ *       // Add the error as metadata
+ *       tracer.addErrorAsMetadata(err as Error);
+ *       throw err;
+ *   } finally {
+ *       // Close the subsegment
+ *       subsegment.close();
+ *       // Set the facade segment as active again
+ *       tracer.setSegment(segment);
  *   }
- * 
- *   // Close subsegment (the AWS Lambda one is closed automatically)
- *   handlerSegment.close();
  *
  *   return res;
  * }
-  * ```
+ * ```
  */
 class Tracer implements TracerInterface {
   
@@ -204,7 +210,7 @@ class Tracer implements TracerInterface {
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * const AWS = tracer.captureAWS(require('aws-sdk'));
    * 
    * export const handler = async (_event: any, _context: any) => {
@@ -233,8 +239,7 @@ class Tracer implements TracerInterface {
    * import { S3 } from "aws-sdk";
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
-   * tracer.captureAWS(require('aws-sdk'));
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * const s3 = tracer.captureAWSClient(new S3({ apiVersion: "2006-03-01" }));
    * 
    * export const handler = async (_event: any, _context: any) => {
@@ -263,7 +268,7 @@ class Tracer implements TracerInterface {
    * import { S3Client } from "@aws-sdk/client-s3";
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * const client = new S3Client({});
    * tracer.captureAWSv3Client(client);
    * 
@@ -297,10 +302,10 @@ class Tracer implements TracerInterface {
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
    * class Lambda {
-   *   @tracer.captureLambdaHanlder()
+   *   @tracer.captureLambdaHandler()
    *   public handler(event: any, context: any) {
    *     ...
    *   }
@@ -312,7 +317,7 @@ class Tracer implements TracerInterface {
    * 
    * @decorator Class
    */
-  public captureLambdaHanlder(): HandlerMethodDecorator {
+  public captureLambdaHandler(): HandlerMethodDecorator {
     return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
 
@@ -333,6 +338,7 @@ class Tracer implements TracerInterface {
             throw error;
           } finally {
             subsegment?.close();
+            subsegment?.flush();
           }
           
           return result;
@@ -358,7 +364,7 @@ class Tracer implements TracerInterface {
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
    * class Lambda {
    *   @tracer.captureMethod()
@@ -432,7 +438,7 @@ class Tracer implements TracerInterface {
   /**
    * Get the active segment or subsegment in the current scope.
    * 
-   * Usually you won't need to call this method unless you are manipulating segments using the escape hatch pattern.
+   * Usually you won't need to call this method unless you are creating custom subsegments or using manual mode.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-segments
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/#escape-hatch-mechanism
@@ -441,7 +447,7 @@ class Tracer implements TracerInterface {
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
    * export const handler = async (_event: any, _context: any) => {
    *   const currentSegment = tracer.getSegment();
@@ -481,10 +487,10 @@ class Tracer implements TracerInterface {
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
    * export const handler = async (_event: any, _context: any) => {
-   *   tracer.putAnnotation('PaymentStatus', "SUCCESS");
+   *   tracer.putAnnotation('successfulBooking', true);
    * }
    * ```
    * 
@@ -512,11 +518,11 @@ class Tracer implements TracerInterface {
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
    * export const handler = async (_event: any, _context: any) => {
    *   const res = someLogic();
-   *   tracer.putMetadata('PaymentResponse', res);
+   *   tracer.putMetadata('paymentResponse', res);
    * }
    * ```
    * 
@@ -550,7 +556,7 @@ class Tracer implements TracerInterface {
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * import { Segment } from 'aws-xray-sdk-core';
    * 
-   * const tracer = new Tracer({ serviceName: 'my-service' });
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
    * export const handler = async (_event: any, _context: any) => {
    *   const subsegment = new Subsegment('### foo.bar');

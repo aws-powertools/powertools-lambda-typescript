@@ -1,7 +1,16 @@
-import { LambdaInterface } from '../../examples/utils/lambda';
+/**
+ * Test Tracer class
+ *
+ * @group unit/tracer/all
+ */
+
 import { Tracer } from '../../src';
-import { Callback, Context } from 'aws-lambda/handler';
+import { Callback, Context, Handler } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
+
+interface LambdaInterface {
+  handler: Handler
+}
 
 jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);
@@ -550,7 +559,7 @@ describe('Class: Tracer', () => {
 
   });
 
-  describe('Method: captureLambdaHanlder', () => {
+  describe('Method: captureLambdaHandler', () => {
   
     test('when used as decorator while tracing is disabled, it does nothing', async () => {
      
@@ -560,7 +569,7 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -590,7 +599,7 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -622,7 +631,7 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -666,7 +675,7 @@ describe('Class: Tracer', () => {
       const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -696,13 +705,16 @@ describe('Class: Tracer', () => {
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
       jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementationOnce(() => new Segment('facade', process.env._X_AMZN_TRACE_ID || null))
         .mockImplementation(() => newSubsegment);
+      /* jest.spyOn(tracer.provider, 'captureAsyncFunc').mockImplementation(
+        () => tracer.provider.captureAsyncFunc('## index.handler', )); */
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -738,7 +750,7 @@ describe('Class: Tracer', () => {
       const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
@@ -788,7 +800,7 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        @tracer.captureLambdaHanlder()
+        @tracer.captureLambdaHandler()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {

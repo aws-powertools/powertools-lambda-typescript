@@ -65,7 +65,7 @@ jobs:
       run: |
         git config --global user.name Docs deploy
         git config --global user.email docs@dummy.bot.com
-    - name: Build mkdocs site in 'gh-pages' branch and push
+    - name: Build mkdocs site in "gh-pages" branch and push
       run: |
         rm -rf site
         VERSION="$RELEASE_VERSION"
@@ -78,14 +78,14 @@ jobs:
       run: |
         rm -rf api
         npm run docs-generateApiDoc
-    - name: Release API docs to release version
+    - name: Release API docs to the released version
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./api
         keep_files: true
         destination_dir: ${{ env.RELEASE_VERSION }}/api
-    - name: Release API docs to "latest" version
+    - name: Release API docs to the "latest" version
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}

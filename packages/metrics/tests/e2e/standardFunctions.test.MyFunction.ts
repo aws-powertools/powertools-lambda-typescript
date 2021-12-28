@@ -1,4 +1,5 @@
 import { Metrics, MetricUnits } from '../../src';
+import { Context } from 'aws-lambda';
 
 const namespace = process.env.EXPECTED_NAMESPACE ?? 'CDKExample';
 const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
@@ -14,7 +15,7 @@ const singleMetricValue = process.env.EXPECTED_SINGLE_METRIC_VALUE ?? 2;
 
 const metrics = new Metrics({ namespace: namespace, service: serviceName });
 
-export const handler = async (event: any, context: any) => {
+export const handler = async (_event: unknown, _context: Context): Promise<void> => {
   metrics.captureColdStartMetric();
   metrics.raiseOnEmptyMetrics();
   metrics.setDefaultDimensions(JSON.parse(defaultDimensions));

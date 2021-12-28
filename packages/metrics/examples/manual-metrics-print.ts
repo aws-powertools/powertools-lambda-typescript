@@ -1,7 +1,7 @@
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
 import { populateEnvironmentVariables } from '../tests/helpers';
-import { Metrics } from '../src';
+import { Metrics, MetricUnits } from '../src';
 import middy from '@middy/core';
 import { logMetrics } from '../src/middleware/middy';
 
@@ -13,11 +13,13 @@ process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 const metrics = new Metrics();
 
 const lambdaHandler = async (): Promise<void> => {
-  // Notice that no metrics are added
-  // Since the raiseOnEmptyMetrics parameter is set to true, the Powertool throw an Error
+  metrics.addMetric('test-metric', MetricUnits.Count, 10);
+  const metricsObject = metrics.serializeMetrics();
+  metrics.clearMetrics();
+  console.log(JSON.stringify(metricsObject));
 };
 
 const handlerWithMiddleware = middy(lambdaHandler)
-  .use(logMetrics(metrics, { raiseOnEmptyMetrics: true }));
+  .use(logMetrics(metrics));
 
 handlerWithMiddleware(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));

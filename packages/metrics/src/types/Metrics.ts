@@ -6,23 +6,23 @@ import { MetricUnit } from './MetricUnit';
 type Dimensions = { [key: string]: string };
 
 type MetricsOptions = {
-  customConfigService?: ConfigServiceInterface;
-  namespace?: string;
-  service?: string;
-  singleMetric?: boolean;
-  defaultDimensions?: Dimensions;
+  customConfigService?: ConfigServiceInterface
+  namespace?: string
+  service?: string
+  singleMetric?: boolean
+  defaultDimensions?: Dimensions
 };
 
 type EmfOutput = {
-  [key: string]: string | number | object;
+  [key: string]: string | number | object
   _aws: {
-    Timestamp: number;
+    Timestamp: number
     CloudWatchMetrics: {
-      Namespace: string;
-      Dimensions: [string[]];
-      Metrics: { Name: string; Unit: MetricUnit }[];
-    }[];
-  };
+      Namespace: string
+      Dimensions: [string[]]
+      Metrics: { Name: string; Unit: MetricUnit }[]
+    }[]
+  }
 };
 
 type HandlerMethodDecorator = (
@@ -38,7 +38,7 @@ type HandlerMethodDecorator = (
  *
  * ```typescript
  *
- * const metricsOptions: DecoratorOptions = {
+ * const metricsOptions: MetricsOptions = {
  *   raiseOnEmptyMetrics: true,
  *   defaultDimensions: {'environment': 'dev'},
  *   captureColdStartMetric: true,
@@ -50,20 +50,20 @@ type HandlerMethodDecorator = (
  * }
  * ```
  */
-type DecoratorOptions = {
-  raiseOnEmptyMetrics?: boolean;
-  defaultDimensions?: Dimensions;
-  captureColdStartMetric?: boolean;
+type ExtraOptions = {
+  raiseOnEmptyMetrics?: boolean
+  defaultDimensions?: Dimensions
+  captureColdStartMetric?: boolean
 };
 
 type StoredMetric = {
-  name: string;
-  unit: MetricUnit;
-  value: number;
+  name: string
+  unit: MetricUnit
+  value: number
 };
 
 type StoredMetrics = {
-  [key: string]: StoredMetric;
+  [key: string]: StoredMetric
 };
 
-export { DecoratorOptions, Dimensions, EmfOutput, HandlerMethodDecorator, MetricsOptions, StoredMetrics };
+export { MetricsOptions, Dimensions, EmfOutput, HandlerMethodDecorator, ExtraOptions, StoredMetrics };

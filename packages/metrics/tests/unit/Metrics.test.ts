@@ -1,11 +1,13 @@
 /**
- * Test metrics decorator
+ * Test Metrics class
  *
- * @group unit/metrics/all
+ * @group unit/metrics/class
  */
 
 import { ContextExamples as dummyContext, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Context, Callback } from 'aws-lambda';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
 import { Metrics, MetricUnits } from '../../src/';
 import { populateEnvironmentVariables } from '../helpers';
@@ -17,8 +19,14 @@ const DEFAULT_NAMESPACE = 'default_namespace';
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
 interface LooseObject {
-  [key: string]: string;
+  [key: string]: string
 }
+
+type DummyEvent = {
+  key1: string
+  key2: string
+  key3: string
+};
 
 describe('Class: Metrics', () => {
   const originalEnvironmentVariables = process.env;
@@ -233,7 +241,7 @@ describe('Class: Metrics', () => {
     test('Cold start metric should only be written out once and flushed automatically', async () => {
       const metrics = new Metrics({ namespace: 'test' });
 
-      const handler = async (event: any, context: Context) => {
+      const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
         // Should generate only one log
         metrics.captureColdStartMetric();
       };
@@ -267,7 +275,7 @@ describe('Class: Metrics', () => {
 
       await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
       await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked again!'));
-      const loggedData = [JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0])];
+      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(3);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
@@ -367,7 +375,7 @@ describe('Class: Metrics', () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
-      const handler = async (event: any, context: Context) => {
+      const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
         metrics.raiseOnEmptyMetrics();
         // Logic goes here
         metrics.purgeStoredMetrics();
@@ -401,7 +409,7 @@ describe('Class: Metrics', () => {
       }
 
       await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
-      const loggedData = [JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0])];
+      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(2);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(100);
@@ -410,7 +418,14 @@ describe('Class: Metrics', () => {
   });
 
   describe('Feature: Output validation ', () => {
-    test('Should use default namespace if no namepace is set', () => {
+
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+    beforeEach(() => {
+      consoleSpy.mockClear();
+    });
+
+    test('Should use default namespace if no namespace is set', () => {
       delete process.env.POWERTOOLS_METRICS_NAMESPACE;
       const metrics = new Metrics();
 
@@ -418,6 +433,7 @@ describe('Class: Metrics', () => {
       const serializedMetrics = metrics.serializeMetrics();
 
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Namespace).toBe(DEFAULT_NAMESPACE);
+      expect(console.warn).toHaveBeenNthCalledWith(1, 'Namespace should be defined, default used');
     });
   });
 
@@ -463,7 +479,7 @@ describe('Class: Metrics', () => {
       }
 
       await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
-      const loggedData = [JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0])];
+      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(2);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);

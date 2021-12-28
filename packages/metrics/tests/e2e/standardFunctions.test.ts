@@ -10,7 +10,7 @@
 import { randomUUID } from 'crypto';
 import { Tracing } from '@aws-cdk/aws-lambda';
 import * as lambda from '@aws-cdk/aws-lambda-nodejs';
-import { App, Stack, CfnOutput } from '@aws-cdk/core';
+import { App, Stack } from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import * as AWS from 'aws-sdk';
@@ -38,7 +38,7 @@ describe('coldstart', () => {
     const expectedSingleMetricUnit = MetricUnits.Percent;
     const expectedSingleMetricValue = '2';
     const functionName = 'MyFunctionWithStandardHandler';
-    const myFunctionWithStandardFunctions = new lambda.NodejsFunction(stack, 'MyFunction', {
+    new lambda.NodejsFunction(stack, 'MyFunction', {
       functionName: functionName,
       tracing: Tracing.ACTIVE,
       environment: {

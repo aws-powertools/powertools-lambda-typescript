@@ -1,9 +1,9 @@
-name: Auto publish docs to version "main"
+name: on-docs-change
 
 on:
   push:
     branches:
-      - main
+      - feat/gen-doc-on-release
     paths:
       - 'docs/**'
       - 'README.md'

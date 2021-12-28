@@ -69,7 +69,7 @@ jobs:
     - name: Build mkdocs site in "gh-pages" branch and push
       run: |
         rm -rf site
-        VERSION="${{ env.GITHUB_SHA_SHORT }}"
+        VERSION="${{ env.RELEASE_VERSION }}"
         ALIAS="latest"
         echo "VERSION = $VERSION"
         mkdocs build

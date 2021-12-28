@@ -3,18 +3,48 @@ title: Tracer
 description: Core utility
 ---
 
-Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://github.com/aws/aws-xray-sdk-node).
+!!! warning  "Do not use this library in production"
 
-![Tracer showcase](../media/tracer_utility_showcase.png)
+    AWS Lambda Powertools for TypeScript is currently released as a beta developer preview and is intended strictly for feedback purposes only.  
+    This version is not stable, and significant breaking changes might incur as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2){target="_blank"}.
+
+    **Do not use this library for production workloads.**
+
+Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://github.com/aws/aws-xray-sdk-node).
 
 ## Key features
 
 * Auto capture cold start and service name as annotations, and responses or full exceptions as metadata
 * Auto-disable when not running in AWS Lambda environment
 * Support tracing functions via decorators, middleware, and manual instrumentation
-* Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
+* Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js  
+
+![Tracer showcase](../media/tracer_utility_showcase.png)
 
 ## Getting started
+
+### Installation
+
+Install the library in your project:
+
+```shell
+
+npm install @aws-lambda-powertools/tracer
+
+```
+
+### Utility settings
+
+The library requires one setting. You can set it as environment variables, or pass it in the constructor.
+
+These settings will be used across all traces emitted:
+
+Setting | Description                                                                                    | Environment variable | Constructor parameter
+------------------------------------------------- |------------------------------------------------------------------------------------------------| ------------------------------------------------- | -------------------------------------------------
+**Service name** | Sets an annotation with the **name of the service** across all traces e.g. `shopping-cart-api` | `POWERTOOLS_SERVICE_NAME` | `serviceName`
+
+For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
+
 
 ### Permissions
 

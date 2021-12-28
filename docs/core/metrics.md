@@ -3,6 +3,13 @@ title: Metrics
 description: Core utility
 ---
 
+!!! warning  "Do not use this library in production"
+
+    AWS Lambda Powertools for TypeScript is currently released as a beta developer preview and is intended strictly for feedback purposes only.  
+    This version is not stable, and significant breaking changes might incur as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2){target="_blank"}.
+
+    **Do not use this library for production workloads.**
+
 Metrics creates custom metrics asynchronously by logging metrics to standard output following [Amazon CloudWatch Embedded Metric Format (EMF)](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html).
 
 These metrics can be visualized through [Amazon CloudWatch Console](https://console.aws.amazon.com/cloudwatch/).
@@ -28,12 +35,28 @@ If you're new to Amazon CloudWatch, there are two terminologies you must be awar
 
 ## Getting started
 
-Metric has two global settings that will be used across all metrics emitted:
+### Installation
+
+Install the library in your project:
+
+```shell
+
+npm install @aws-lambda-powertools/metrics
+
+```
+
+### Utility settings
+
+The library requires two settings. You can set them as environment variables, or pass them in the constructor.  
+
+These settings will be used across all metrics emitted:
 
 Setting | Description | Environment variable | Constructor parameter
 ------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
 **Metric namespace** | Logical container where all metrics will be placed e.g. `serverlessAirline` |  `POWERTOOLS_METRICS_NAMESPACE` | `namespace`
 **Service** | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME` | `service`
+
+For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
 
 !!! tip "Use your application or main service as the metric namespace to easily group all metrics"
 

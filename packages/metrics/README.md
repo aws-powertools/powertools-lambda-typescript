@@ -1,509 +1,55 @@
-# `Metrics`
-
+# AWS Lambda Powertools TypeScript
 
-##  Usage
+| ⚠️ **WARNING: Do not use this library in production** ⚠️                                                                                                                                                                                                                                                                                                                                             |
+|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| AWS Lambda Powertools for TypeScript is currently released as a beta developer preview and is intended strictly for feedback purposes only.  <br/>This version is not stable, and significant breaking changes might incur as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2).                                              |_
 
-```bash
-npm run test
 
-npm run example:hello-world
-npm run example:constructor-options
-npm run example:manual-flushing
-npm run example:programatic-access
-npm run example:dimensions
-npm run example:default-dimensions
-npm run example:default-dimensions-constructor
-npm run example:empty-metrics
-npm run example:single-metric
-npm run example:cold-start
-```
+A suite of TypeScript utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more. (AWS Lambda Powertools [Python](https://github.com/awslabs/aws-lambda-powertools-python) and [Java](https://github.com/awslabs/aws-lambda-powertools-java) are also available).
 
-### Getting started
+**[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)**
 
-Metrics has two global settings that will be used across all metrics emitted:
+> **An AWS Developer Acceleration (DevAx) initiative by Specialist Solution Architects | aws-devax-open-source@amazon.com**
 
-|Setting|Description|Environment Variable|Constructor Parameter|
-|---|---|---|---|
-|Metric namespace|Logical container where all metrics will be placed e.g. serverlessAirline|POWERTOOLS_METRICS_NAMESPACE|namespace|
-|Service|Optionally, sets service metric dimension across all metrics e.g. payment|POWERTOOLS_SERVICE_NAME|service|
+### Features
 
-```typescript
-// Import the library
-import { Metrics, MetricUnits } from '../src';
-// When going public, it will be something like: import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+* **[Tracer](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
+* **[Logger](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
+* **[Metrics](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
 
-process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
-process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
 
-// Instantiate the Logger with default configuration
-const metrics = new Metrics();
+## Getting started
 
-// Add an example Metric
-metrics.addMetric('test-metric', MetricUnits.Count, 10);
+Find the complete project's [documentation here](https://awslabs.github.io/aws-lambda-powertools-typescript).
 
-//Print resulting data
-const metricsObject = metrics.serializeMetrics();
-metrics.clearMetrics();
-console.log(JSON.stringify(metricsObject));
+### Installation
 
-```
+The AWS Lambda Powertools TypeScript utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).  
+Each TypeScript utility is installed as standalone NPM package.
 
-<details>
- <summary>Click to expand and see the logs outputs</summary>
+👉 [Installation guide for the **Tracer** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer#getting-started)
 
-```bash
+👉 [Installation guide for the **Logger** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger#getting-started)
 
-{
-  "_aws":{
-  "Timestamp":1625587915573,
-  "CloudWatchMetrics":
-    [
-      {
-        "Namespace":"hello-world",
-        "Dimensions":[["service"]],
-        "Metrics":
-          [
-            {
-              "Name":"test-metric",
-              "Unit":"Count"
-            }
-          ]
-      }
-    ]
-  },
-  "service":"hello-world-service",
-  "test-metric":10
-}
-
-```
-</details>
-
-With decorators:
-
-```typescript
-
-import { Metrics, MetricUnits } from '../src';
-
-process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
-process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
-
-// Instantiate the Logger with default configuration
-const metrics = new Metrics();
-
-class Lambda implements LambdaInterface {
-
-  @metrics.logMetrics()
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addDimension('OuterDimension', 'true');
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
-  }
-
-}
-
-```
+👉 [Installation guide for the **Metrics** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics#getting-started)
 
-### Capturing cold start
+### Examples
 
-By default the cold start metric is not captured, it can however be enabled using a parameter passed to the logMetrics decorator
+* [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)
+* [Tracer](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/tracing/examples)
+* [Logger](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logger/examples)
+* [Metrics](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/metrics/examples)
 
+## Credits
 
+* Credits for the Lambda Powertools idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
 
-```typescript
 
-import { Metrics, MetricUnits } from '../src';
+## Connect
 
-process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
-process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
+* **AWS Developers Slack**: `#lambda-powertools`** - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw)**
+* **Email**: aws-lambda-powertools-feedback@amazon.com
 
-// Instantiate the Logger with default configuration
-const metrics = new Metrics();
+## License
 
-class Lambda implements LambdaInterface {
-
-  @metrics.logMetrics({ captureColdStartMetric: true })
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
-  }
-
-}
-
-```
-
-<details>
- <summary>Click to expand and see the logs outputs</summary>
-
-```bash
-
-{
-  "_aws":{
-  "Timestamp":1625587915572,
-  "CloudWatchMetrics":
-    [
-      {
-        "Namespace":"hello-world",
-        "Dimensions":[[
-          "service","function_name"
-        ]],
-        "Metrics":
-          [
-            {
-              "Name":"ColdStart",
-              "Unit":"Count"
-            }
-          ]
-      }
-    ]
-  },
-  "service":"hello-world-service",
-  "function_name":"foo-bar-function",
-  "ColdStart":1
-}
-{
-  "_aws":{
-  "Timestamp":1625587915573,
-  "CloudWatchMetrics":
-    [
-      {
-        "Namespace":"hello-world",
-        "Dimensions":[["service"]],
-        "Metrics":
-          [
-            {
-              "Name":"test-metric",
-              "Unit":"Count"
-            }
-          ]
-      }
-    ]
-  },
-  "service":"hello-world-service",
-  "test-metric":10
-}
-
-```
-</details>
-
-> Please note, we do not emit a 0 value for the ColdStart metric, for cost reasons
-
-If it's a cold start invocation, this feature will:
-
-- Create a separate EMF blob solely containing a metric named ColdStart
-- Add function_name and service dimensions
-
-This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
-
-### Creating Metrics
-
-You can create metrics using addMetric, and you can create dimensions for all your aggregate metrics using addDimension method.
-
-```typescript
-
-import { Metrics, MetricUnits } from '../src';
-
-process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
-process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
-
-// Instantiate the Logger with default configuration
-const metrics = new Metrics();
-
-class Lambda implements LambdaInterface {
-
-  @metrics.logMetrics({ captureColdStartMetric: true })
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addDimension('OuterDimension', 'true'); //Optional -  add custom dimensions
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
-  }
-
-}
-
-```
-<details>
- <summary>Click to expand and see the logs outputs</summary>
-
-```bash
-
-{
-  "_aws":{
-  "Timestamp":1625587915572,
-  "CloudWatchMetrics":
-    [
-      {
-        "Namespace":"hello-world",
-        "Dimensions":[[
-          "service",
-          "OuterDimension"
-        ]],
-        "Metrics":
-          [
-            {
-              "Name":"test-metric",
-              "Unit":"Count"
-            }
-          ]
-      }
-    ]
-  },
-  "OuterDimension": "true",
-  "service":"hello-world-service",
-  "test-metric": 10
-}
-
-```
-</details>
-
-> ### Autocomplete Metric Units
-> MetricUnits will facilitate finding a supported metric unit by CloudWatch. Alternatively, you can pass the value as a string if you already know them e.g. "Count".
-
-> ### Metrics Overflow
-> CloudWatch EMF supports a max of 100 metrics per batch. Metrics utility will flush all metrics when adding the 100th metric. Subsequent metrics, e.g. 101th, will be aggregated into a new EMF object, for your convenience.
-
->### ! Do not create metrics or dimensions outside the handler
-> Metrics or dimensions added in the global scope will only be added during cold start. Disregard if that's the intended behaviour.
- 
-### Adding default dimensions
-You can use either setDefaultDimensions method or by passing a defaultDimensions object to either the decorator or to the constructor
-
-If you'd like to remove them at some point, you can use clearDefaultDimensions method.
-```typescript
-import { Metrics, MetricUnits } from '../src';
-
-const metrics = new Metrics();
-metrics.setDefaultDimensions({ 'application': 'hello-world' });
-class Lambda implements LambdaInterface {
-  @metrics.logMetrics()
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('new-test-metric', MetricUnits.Count, 5);
-  }
-
-}
-```
-
-With decorators:
-```typescript
-import { Metrics, MetricUnits } from '../src';
-
-const metrics = new Metrics();
-
-class Lambda implements LambdaInterface {
-  @metrics.logMetrics({ defaultDimensions:{ 'application': 'hello-world' } })
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('new-test-metric', MetricUnits.Count, 5);
-  }
-
-}
-```
-<details>
- <summary>Click to expand and see the logs outputs</summary>
-
-```bash
-
-{
-  "_aws":{
-  "Timestamp":1625587915572,
-  "CloudWatchMetrics":
-    [
-      {
-        "Namespace":"hello-world",
-        "Dimensions":[[
-          "application"
-        ]],
-        "Metrics":
-          [
-            {
-              "Name":"new-test-metric",
-              "Unit":"Count"
-            }
-          ]
-      }
-    ]
-  },
-  "application":"hello-world",
-  "new-test-metric": 5
-}
-
-```
-</details>
-
-### Flushing Metrics
-
-As you finish adding all your metrics, you need to serialize and flush them to standard output. You can do that automatically with the logMetrics decorator.
-
-This decorator also serializes, and flushes all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
-
-```typescript
-class Lambda implements LambdaInterface {
-
-  @metrics.logMetrics()
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
-
-  }
-
-}
-```
-
-If you need to log the metrics from within your code or if you do not wish to use the decorator, you can do this by calling the purgeStoredMetrics method.
-
-This will serialize, and flush all your metrics.
-```typescript
-process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
-process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
-const metrics = new Metrics();
-
-const lambdaHandler: Handler = async () => {
-
-  metrics.addMetric('test-metric', MetricUnits.Count, 10);
-  const metricsObject = metrics.serializeMetrics();
-  metrics.purgeStoredMetrics();
-  console.log(JSON.stringify(metricsObject));
-
-  return {
-    foo: 'bar'
-  };
-
-};
-```
-<details>
- <summary>Click to expand and see the logs outputs</summary>
-
-```bash
-
-{
-  "_aws":{
-  "Timestamp":1625587915573,
-  "CloudWatchMetrics":
-    [
-      {
-        "Namespace":"hello-world",
-        "Dimensions":[["service"]],
-        "Metrics":
-          [
-            {
-              "Name":"test-metric",
-              "Unit":"Count"
-            }
-          ]
-      }
-    ]
-  },
-  "service":"hello-world-service",
-  "test-metric":10
-}
-
-```
-</details>
-
-If you just need to clear the metrics manually you can do this by calling the clearMetrics method
-```typescript
-class Lambda implements LambdaInterface {
-
-  @metrics.logMetrics()
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
-    metrics.clearMetrics();
-
-  }
-
-}
-```
-
-#### Getting programmatic access to stored metrics 
-If you need to get programmatic access to the current stored metrics you can do this by calling the serializeMetrics method.
-
-This will not clear any metrics that are currently stored, if you need to do this, you can use the clearMetrics method as described above.
-```typescript
-process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
-process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
-class Lambda implements LambdaInterface {
-  @metrics.logMetrics()
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    metrics.addMetric('test-metric', MetricUnits.Count, 15);
-    const metricsObject = metrics.serializeMetrics();
-    console.log(JSON.stringify(metricsObject));
-  }
-
-}
-```
-<details>
- <summary>Click to expand and see the logs outputs</summary>
-
-```bash
-
-{
-  "_aws":{
-  "Timestamp":1625587915573,
-  "CloudWatchMetrics":
-    [
-      {
-        "Namespace":"hello-world",
-        "Dimensions":[["service"]],
-        "Metrics":
-          [
-            {
-              "Name":"test-metric",
-              "Unit":"Count"
-            }
-          ]
-      }
-    ]
-  },
-  "service":"hello-world-service",
-  "test-metric":15
-}
-
-```
-</details>
-
-### Raising SchemaValidationError on empty metrics
-
-If you want to ensure that at least one metric is emitted, you can pass raiseOnEmptyMetrics to the logMetrics decorator:
-
-```typescript
-class Lambda implements LambdaInterface {
-
-  @metrics.logMetrics({raiseOnEmptyMetrics: true})
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    // This will throw an error unless at least one metric is added
-  }
-
-}
-```
-
-### Adding metadata
-You can add high-cardinality data as part of your Metrics log with addMetadata method. This is useful when you want to search highly contextual information along with your metrics in your logs.
->### Info
-> This will not be available during metrics visualization - Use dimensions for this purpose
-```typescript
-class Lambda implements LambdaInterface {
-
-  @metrics.logMetrics()
-  metrics.addMetadata('metadata_name', 'metadata_value')
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    //Your Logic
-  }
-
-}
-```
-
-### Single metric with a different dimension
-
-CloudWatch EMF uses the same dimensions across all your metrics. Use the ```singleMetric``` method if you have a metric that should have different dimensions.
-
-```typescript
-class Lambda implements LambdaInterface {
-
-  @metrics.logMetrics()
-  public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-    const singleMetric = metrics.singleMetric();
-    metrics.addDimension('OuterDimension', 'true');
-    singleMetric.addDimension('InnerDimension', 'true');
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
-    singleMetric.addMetric('single-metric', MetricUnits.Percent, 50);
-  }
-
-}
-```
->### Info
-> Generally, this would be an edge case since you pay for unique metric. Keep the following formula in mind:
->
-> **unique metric = (metric_name + dimension_name + dimension_value)**
+This library is licensed under the MIT-0 License. See the LICENSE file.

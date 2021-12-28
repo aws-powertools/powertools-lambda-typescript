@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - feat/gen-doc-on-release
+      - fix/remove-on-docs-change-workflow
   workflow_dispatch: {}
 jobs:
   publish:

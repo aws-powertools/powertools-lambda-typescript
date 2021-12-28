@@ -56,6 +56,7 @@ jobs:
     - name: Set RELEASE_VERSION env var
       run: |
         RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
+        echo "RELEASE_VERSION = $RELEASE_VERSION"
         echo "RELEASE_VERSION=${RELEASE_VERSION:1}" >> $GITHUB_ENV
     - name: Install doc generation dependencies
       run: |

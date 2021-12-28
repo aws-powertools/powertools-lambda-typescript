@@ -68,10 +68,10 @@ jobs:
         git config --global user.email docs@dummy.bot.com
     - name: Build mkdocs site in "gh-pages" branch and push
       run: |
-        echo "RELEASE_VERSION = $RELEASE_VERSION"
         rm -rf site
-        VERSION="$RELEASE_VERSION"
+        VERSION="${{ env.GITHUB_SHA_SHORT }}"
         ALIAS="latest"
+        echo "VERSION = $VERSION"
         mkdocs build
         mike deploy --push --update-aliases "$VERSION" "$ALIAS"
         # Set latest version as a default

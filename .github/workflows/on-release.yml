@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - main
+      - feat/gen-doc-on-release
   workflow_dispatch: {}
 jobs:
   publish:
@@ -32,20 +32,20 @@ jobs:
       run: npm run lerna-lint
     - name: Run tests
       run: npm run lerna-test
-    - name: "Version and publish"
-      env:
-        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
+    # - name: "Version and publish"
+    #   env:
+    #     GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+    #   run: |
+    #     git config --global user.name 'github-actions[bot]'
+    #     git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+    #     git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
 
-        if [ ${{ github.base_ref }} = main ]; then
-          npx lerna version --conventional-commits --create-release github --force-publish=* --yes
-        else
-          npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --force-publish=* --yes
-        fi
-        npx lerna publish from-git --no-verify-access --yes
+    #     if [ ${{ github.base_ref }} = main ]; then
+    #       npx lerna version --conventional-commits --create-release github --force-publish=* --yes
+    #     else
+    #       npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --force-publish=* --yes
+    #     fi
+    #     npx lerna publish from-git --no-verify-access --yes
     #########################    
     # Generate documentation
     #########################
@@ -55,7 +55,7 @@ jobs:
         python-version: '3.8'
     - name: Set RELEASE_VERSION env var
       run: |
-        RELEASE_VERSION=$(cat package.json | jq '.version' -r)
+        RELEASE_VERSION=$(cat packages/common/package.json | jq '.version' -r)
         echo "RELEASE_VERSION=${RELEASE_VERSION:1}" >> $GITHUB_ENV
     - name: Install doc generation dependencies
       run: |

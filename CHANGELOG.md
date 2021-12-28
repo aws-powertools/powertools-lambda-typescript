@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-beta.10](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.9...v0.2.0-beta.10) (2021-12-28)
+
+
+### Features
+
+* generate new version of doc for each release ([#355](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/355)) ([9f45ee1](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/9f45ee12ceced39acc2cc69934a10f18cb95a161))
+
+
+
+
+
 # [0.2.0-beta.9](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.8...v0.2.0-beta.9) (2021-12-28)
 
 **Note:** Version bump only for package aws-lambda-powertools-typescript

@@ -3,7 +3,7 @@ name: on-docs-change
 on:
   push:
     branches:
-      - feat/gen-doc-on-release
+      - main
     paths:
       - 'docs/**'
       - 'README.md'

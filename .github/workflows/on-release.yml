@@ -14,16 +14,16 @@ jobs:
       with:
         token: ${{ secrets.GH_PUBLISH_TOKEN }}
         fetch-depth: 0
-
+    #########################    
+    # Release new version
+    #########################
     - name: "Use NodeJS 14"
       uses: actions/setup-node@v2
       with:
         node-version: '14'
-  
     - name: "Setup npm"
       run: |
         npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-        
     - name: Install packages
       run: |
         npm ci
@@ -46,3 +46,49 @@ jobs:
           npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --force-publish=* --yes
         fi
         npx lerna publish from-git --no-verify-access --yes
+    #########################    
+    # Generate documentation
+    #########################
+    - name: Set up Python
+      uses: actions/setup-python@v2.3.1
+      with:
+        python-version: '3.8'
+    - name: Set RELEASE_VERSION env var
+      run: |
+        RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
+        echo "RELEASE_VERSION=${RELEASE_VERSION:1}" >> $GITHUB_ENV
+    - name: Install doc generation dependencies
+      run: |
+        pip install --upgrade pip 
+        pip install -r docs/requirements.txt
+    - name: Setup doc deploy
+      run: |
+        git config --global user.name Docs deploy
+        git config --global user.email docs@dummy.bot.com
+    - name: Build mkdocs site in "gh-pages" branch and push
+      run: |
+        rm -rf site
+        VERSION="$RELEASE_VERSION"
+        ALIAS="latest"
+        mkdocs build
+        mike deploy --push --update-aliases "$VERSION" "$ALIAS"
+        # Set latest version as a default
+        mike set-default --push latest
+    - name: Build API docs
+      run: |
+        rm -rf api
+        npm run docs-generateApiDoc
+    - name: Release API docs to the released version
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./api
+        keep_files: true
+        destination_dir: ${{ env.RELEASE_VERSION }}/api
+    - name: Release API docs to the "latest" version
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./api
+        keep_files: true
+        destination_dir: latest/api 

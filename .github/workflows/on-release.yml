@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - fix/remove-on-docs-change-workflow
+      - main
   workflow_dispatch: {}
 jobs:
   publish:

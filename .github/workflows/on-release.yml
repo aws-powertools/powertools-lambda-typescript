@@ -67,6 +67,7 @@ jobs:
         git config --global user.email docs@dummy.bot.com
     - name: Build mkdocs site in "gh-pages" branch and push
       run: |
+        echo "RELEASE_VERSION = $RELEASE_VERSION"
         rm -rf site
         VERSION="$RELEASE_VERSION"
         ALIAS="latest"

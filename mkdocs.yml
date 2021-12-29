@@ -20,7 +20,7 @@ theme:
     text: Ubuntu
   palette:
     - scheme: default
-      primary: deep purple
+      primary: deep orange
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode

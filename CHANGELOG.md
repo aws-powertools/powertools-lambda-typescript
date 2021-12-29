@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-beta.13](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.12...v0.2.0-beta.13) (2021-12-29)
+
+
+### Bug Fixes
+
+* don't redirect from latest to the actual version ([237ad3a](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/237ad3a5e4b56d217f90da6172688de6aa7d12a7))
+
+
+### Features
+
+* switch color to deep orange ([a13d22a](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/a13d22aacfc1f47b73bd508972b016198873ceef))
+
+
+
+
+
 # [0.2.0-beta.12](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.11...v0.2.0-beta.12) (2021-12-28)
 
 **Note:** Version bump only for package aws-lambda-powertools-typescript

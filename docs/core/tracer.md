@@ -258,8 +258,6 @@ You can trace other methods using the `captureMethod` decorator or manual instru
     }
     ```
 
-## Advanced
-
 ### Patching AWS SDK clients
 
 Tracer can patch [AWS SDK clients](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-awssdkclients.html) and create traces when your application makes calls to AWS services.
@@ -305,6 +303,8 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
     const tracer = new Tracer();
     const s3 = tracer.captureAWSClient(new S3({ apiVersion: "2006-03-01" }));
     ```
+
+## Advanced
 
 ### Disabling response auto-capture
 

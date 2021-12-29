@@ -7,8 +7,8 @@ on:
 jobs:
   publish:
     #########################
-    # Ensure that we only a single job (with the same group) will run at a time
-    # This is to prevent "race-condition" in publishing a new version of doc to `gh-pages`
+    # Force Github action to run only a single job at a time (based on the group name)
+    # This is to prevent "race-condition" in publishing a new version of doc to `gh-pages` (#365)
     #########################
     concurrency:
       group: on-release-publish
@@ -79,8 +79,8 @@ jobs:
         mkdocs build
         mike deploy --push --update-aliases --no-redirect "$VERSION" "$ALIAS"
         # Once we have agreed on release process, we will also use "main" 
-        # to track the latest development version. For now, we make it the same
-        # as the latest version.
+        # to track the development version (on main branch). 
+        # For now, we make it the same as the latest version.
         mike deploy --push --update-aliases --no-redirect "main" "$ALIAS"
         # Set latest version as a default
         mike set-default --push latest

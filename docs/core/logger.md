@@ -179,6 +179,12 @@ In each case, the printed log will look like this:
     }
     ```
 
+!!! note
+    Middy comes bundled with Logger, so you can just import it when using the middleware.
+
+!!! tip "Using Middy for the first time?"
+    Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
 ### Appending persistent additional log keys and values
 
 You can append additional persistent keys and values in the logs generated during a Lambda invocation using either mechanism:

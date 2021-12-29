@@ -141,6 +141,12 @@ You can use add default dimensions to your metrics by passing them as parameters
 * using the `setDefaultDimensions` method
 * in the decorator
 
+!!! note
+    Middy comes bundled with Metrics, so you can just import it when using the middleware.
+
+!!! tip "Using Middy for the first time?"
+    Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
 If you'd like to remove them at some point, you can use `clearDefaultDimensions` method.  
 See examples below:
 

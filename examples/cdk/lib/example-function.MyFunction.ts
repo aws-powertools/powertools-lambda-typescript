@@ -10,7 +10,7 @@ const metrics = new Metrics({ namespace: namespace, service: serviceName });
 const logger = new Logger({ logLevel: 'INFO', serviceName: serviceName });
 const tracer = new Tracer({ serviceName: serviceName });
 
-export const handler = async (_event: unknown, context: Context): Promise<unknown> => {
+export const handler = async (_event: unknown, context: Context): Promise<void> => {
   // Since we are in manual mode we need to create the handler segment (the 4 lines below would be done for you by decorator/middleware)
   // we do it at the beginning because we want to trace the whole duration of the handler
   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by Lambda & that can't be manipulated)

@@ -61,8 +61,13 @@ jobs:
         python-version: '3.8'
     - name: Set RELEASE_VERSION env var
       run: |
+<<<<<<< HEAD
         RELEASE_VERSION=$(cat lerna.json | jq '.version' -r)
         echo "RELEASE_VERSION=${RELEASE_VERSION:1}" >> $GITHUB_ENV
+=======
+        RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
+        echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+>>>>>>> main
     - name: Install doc generation dependencies
       run: |
         pip install --upgrade pip 
@@ -74,8 +79,9 @@ jobs:
     - name: Build mkdocs site in "gh-pages" branch and push
       run: |
         rm -rf site
-        VERSION="$RELEASE_VERSION"
+        VERSION="${{ env.RELEASE_VERSION }}"
         ALIAS="latest"
+        echo "Publishing doc for version: $VERSION"
         mkdocs build
         mike deploy --push --update-aliases --no-redirect "$VERSION" "$ALIAS"
         # Once we have agreed on release process, we will also use "main" 

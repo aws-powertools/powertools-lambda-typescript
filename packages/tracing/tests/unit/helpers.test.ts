@@ -1,3 +1,9 @@
+/**
+ * Test Tracer helpers
+ *
+ * @group unit/tracer/all
+ */
+
 import { ConfigServiceInterface } from '../../src/config';
 import { TracerOptions } from '../../src/types';
 import { createTracer, Tracer } from './../../src';

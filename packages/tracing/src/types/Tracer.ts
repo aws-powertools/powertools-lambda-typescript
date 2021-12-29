@@ -11,7 +11,7 @@ import { LambdaInterface } from '@aws-lambda-powertools/commons';
   * const customConfigService: ConfigServiceInterface;
   * const tracerOptions: TracerOptions = {
   *   enabled?: true,
-  *   serviceName?: 'my-service',
+  *   serviceName?: 'serverlessAirline',
   *   customConfigService?: customConfigService, // Only needed for advanced uses
   * };
   * 

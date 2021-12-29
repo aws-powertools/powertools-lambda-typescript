@@ -1,8 +1,5 @@
 name: release
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch: {}
 jobs:
   publish:
@@ -39,12 +36,7 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
-
-        if [ ${{ github.base_ref }} = main ]; then
-          npx lerna version --conventional-commits --create-release github --force-publish=* --yes
-        else
-          npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --force-publish=* --yes
-        fi
+        npx lerna version --conventional-commits --create-release github --force-publish=* --yes
         npx lerna publish from-git --no-verify-access --yes
     #########################    
     # Generate documentation

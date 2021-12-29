@@ -41,9 +41,8 @@ jobs:
         git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
 
         # Follow https://github.com/lerna/lerna/issues/2248#issuecomment-527882069 recommendation
-        npx lerna version --conventional-commits --conventional-prerelease --preid rc --force-publish=* --yes --no-changelog
-        git tag -d $(git describe --abbrev=0)
-        git push
+        npx lerna version --conventional-commits --conventional-prerelease --preid beta --force-publish=* --yes --no-changelog
+        git push --delete origin $(git describe --abbrev=0)
 
         npx lerna publish from-package --no-verify-access --yes
     #########################    

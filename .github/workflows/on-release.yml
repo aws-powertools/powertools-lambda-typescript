@@ -77,7 +77,11 @@ jobs:
         VERSION="$RELEASE_VERSION"
         ALIAS="latest"
         mkdocs build
-        mike deploy --push --update-aliases "$VERSION" "$ALIAS"
+        mike deploy --push --update-aliases --no-redirect "$VERSION" "$ALIAS"
+        # Once we have agreed on release process, we will also use "main" 
+        # to track the latest development version. For now, we make it the same
+        # as the latest version.
+        mike deploy --push --update-aliases --no-redirect "main" "$ALIAS"
         # Set latest version as a default
         mike set-default --push latest
     - name: Build API docs

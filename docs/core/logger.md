@@ -107,6 +107,12 @@ Key | Example
 
 === "Middleware"
 
+    !!! note
+        Middy comes bundled with Logger, so you can just import it when using the middleware.
+
+    !!! tip "Using Middy for the first time?"
+        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
     ```typescript hl_lines="1-2 10-11"
     import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
     import middy from '@middy/core';
@@ -172,12 +178,6 @@ In each case, the printed log will look like this:
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
-
-!!! note
-    Middy comes bundled with Logger, so you can just import it when using the middleware.
-
-!!! tip "Using Middy for the first time?"
-    Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
 
 ### Appending persistent additional log keys and values
 

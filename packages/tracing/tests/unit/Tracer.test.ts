@@ -7,6 +7,8 @@
 import { Tracer } from '../../src';
 import { Callback, Context, Handler } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
+import { ContextExamples } from '@aws-lambda-powertools/commons';
+import { SQSRecord } from 'aws-lambda';
 
 interface LambdaInterface {
   handler: Handler
@@ -428,6 +430,70 @@ describe('Class: Tracer', () => {
 
     });
 
+  });
+
+  describe('Method: continueSQSRecordTrace', () => {
+    
+    test('when called, it calls the right function', () => {
+  
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: true });
+      const record: SQSRecord = {
+        messageId: 'fd95260b-1600-4028-b252-590cfcc9fe6d',
+        receiptHandle: 'test',
+        body: 'Information about current NY Times fiction bestseller for week of 12/11/2016.',
+        attributes: {
+          ApproximateReceiveCount: '1',
+          AWSTraceHeader: 'Root=1-61cc1005-53ff3b575736e3c74eae6bfb;Parent=1f57c53badf96998;Sampled=1',
+          SentTimestamp: '1640763398126',
+          SenderId: 'AROAT26JIZQWSOCCOUNE5:sqsProducer',
+          ApproximateFirstReceiveTimestamp: '1640763398127',
+        },
+        messageAttributes: {},
+        md5OfBody: 'bbdc5fdb8be7251f5c910905db994bab',
+        eventSource: 'aws:sqs',
+        eventSourceARN:
+          'arn:aws:sqs:eu-west-1:123456789012:queue',
+        awsRegion: 'eu-west-1',
+      };
+      jest.spyOn(tracer.provider, 'continueSQSRecordTrace').mockImplementation();
+
+      // Act
+      tracer.continueSQSRecordTrace(record, ContextExamples.helloworldContext);
+      
+      // Assess
+      expect(tracer.provider.continueSQSRecordTrace).toBeCalledTimes(1);
+    });
+    test('when called while tracing is disabled, it does nothing', () => {
+  
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const record: SQSRecord = {
+        messageId: 'fd95260b-1600-4028-b252-590cfcc9fe6d',
+        receiptHandle: 'test',
+        body: 'Information about current NY Times fiction bestseller for week of 12/11/2016.',
+        attributes: {
+          ApproximateReceiveCount: '1',
+          AWSTraceHeader: 'Root=1-61cc1005-53ff3b575736e3c74eae6bfb;Parent=1f57c53badf96998;Sampled=1',
+          SentTimestamp: '1640763398126',
+          SenderId: 'AROAT26JIZQWSOCCOUNE5:sqsProducer',
+          ApproximateFirstReceiveTimestamp: '1640763398127',
+        },
+        messageAttributes: {},
+        md5OfBody: 'bbdc5fdb8be7251f5c910905db994bab',
+        eventSource: 'aws:sqs',
+        eventSourceARN:
+          'arn:aws:sqs:eu-west-1:123456789012:queue',
+        awsRegion: 'eu-west-1',
+      };
+      jest.spyOn(tracer.provider, 'continueSQSRecordTrace').mockImplementation();
+
+      // Act
+      tracer.continueSQSRecordTrace(record, ContextExamples.helloworldContext);
+      
+      // Assess
+      expect(tracer.provider.continueSQSRecordTrace).toBeCalledTimes(0);
+    });
   });
 
   describe('Method: putMetadata', () => {

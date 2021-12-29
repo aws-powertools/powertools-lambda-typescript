@@ -18,6 +18,7 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 * Auto-disable when not running in AWS Lambda environment
 * Support tracing functions via decorators, middleware, and manual instrumentation
 * Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js  
+* Support following traces comming from SQS (https://github.com/aws/aws-xray-sdk-node/issues/208)
 
 ![Tracer showcase](../media/tracer_utility_showcase.png)
 
@@ -253,6 +254,55 @@ You can trace other methods using the `captureMethod` decorator or manual instru
     ```
 
 ## Advanced
+
+### Following SQS traces
+
+If your lambda is triggered by SQS, it will not use the trace that went through SQS but will create a new one (see https://github.com/aws/aws-xray-sdk-node/issues/208 for more details). This lib will let you easily continue the SQS message's trace:
+
+```typescript hl_lines="8 14-18 20 23 37 41"
+import { Tracer } from '@aws-lambda-powertools/tracer';
+
+const tracer = Tracer();
+
+export const handler = async (event: { Records: SQSRecord[] }, context: Context) => {
+  const handlerExecStartTime = new Date().getTime() / 1000;
+
+  const toCloseSegments = Segment[];
+  // Iterate over received messages
+  for (const recordIndex in event.Records) {
+    const record = event.Records[recordIndex];
+
+    // Re build lambda segments for this record
+    const { lambdaSegment, lambdaFunctionSegment, invocationSubsegment } = tracer.continueSQSRecordTrace(
+      record,
+      context,
+      handlerExecStartTime
+    );
+
+    toCloseSegments.push([lambdaSegment, lambdaFunctionSegment, invocationSubsegment]);
+
+    // Retrieve current segment: the message processing segment
+    const messageProcessingSegment = tracer.getSegment(); 
+    console.log(`messageProcessingSegment: ${JSON.stringify(messageProcessingSegment)}`);
+    
+    // use standard helper functions that will apply on current segment (messageProcessingSegment)
+    tracer.annotateColdStart();
+    tracer.addServiceNameAnnotation();
+
+    // Add custom annotation
+    messageProcessingSegment.addAnnotation('message_id', record.messageId);
+
+    // YOUR PROCESSING LOGIC HERE
+    // ...
+
+    // Close message processing segment to record end_time
+    messageProcessingSegment.close();
+  }
+
+  // Close lambda segments
+  toCloseSegments.forEach((segment) => segment.close());
+};
+```
 
 ### Patching AWS SDK clients
 

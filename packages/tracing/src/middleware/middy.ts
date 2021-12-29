@@ -37,6 +37,13 @@ const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
 
   const close = (): void => {
     const subsegment = target.getSegment();
+    if (subsegment.subsegments) {
+      for (const subsubSegment of subsegment.subsegments) {
+        console.log(`Closing Subsegment ${subsubSegment.name}`);
+        subsubSegment.close();
+      }
+    }
+    
     subsegment?.close();
     target.setSegment(lambdaSegment as Segment);
   };

@@ -1,4 +1,4 @@
-import { Handler } from 'aws-lambda';
+import { Context, Handler, SQSRecord } from 'aws-lambda';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
@@ -412,6 +412,12 @@ class Tracer implements TracerInterface {
 
       return descriptor;
     };
+  }
+
+  public continueSQSRecordTrace(record: SQSRecord, context: Context, handlerExecStartTime?: number): {lambdaSegment?: Segment; lambdaFunctionSegment?: Segment; invocationSubsegment?: Subsegment} {
+    if (this.tracingEnabled === false) return {};
+
+    return this.provider.continueSQSRecordTrace(record, context, handlerExecStartTime);
   }
 
   /**

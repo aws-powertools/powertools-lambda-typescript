@@ -23,6 +23,8 @@ interface ProviderServiceInterface {
   captureFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment): unknown
 
   captureAsyncFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment): unknown
+
+  continueSQSRecordTrace(record: unknown, context: unknown, handlerExecStartTime?: number): {lambdaSegment: Segment; lambdaFunctionSegment: Segment; invocationSubsegment: Subsegment}
 }
 
 export {

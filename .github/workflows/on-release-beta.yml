@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - main
+      - feat/cicd/prodWorkflow
   workflow_dispatch: {}
 jobs:
   publish:

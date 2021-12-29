@@ -105,11 +105,9 @@ Key | Example
 **function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
 **function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
-#### Method 1, using a [Middy](https://github.com/middyjs/middy) middleware:
+=== "Middleware"
 
-=== "handler.ts"
-
-    ```typescript hl_lines="1 9-11"
+    ```typescript hl_lines="1-2 10-11"
     import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
     import middy from '@middy/core';
 
@@ -123,9 +121,7 @@ Key | Example
         .use(injectLambdaContext(logger));
     ```
 
-#### Method 2, calling the `addContext` method:
-
-=== "handler.ts"
+=== "Manual"
 
     ```typescript hl_lines="7"
     import { Logger } from "@aws-lambda-powertools/logger";
@@ -141,9 +137,7 @@ Key | Example
     };
     ```
 
-#### Method 3, using a class decorator:
-
-=== "handler.ts"
+=== "Decorator"
 
     ```typescript hl_lines="7"
     import { Logger } from "@aws-lambda-powertools/logger";

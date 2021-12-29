@@ -39,9 +39,13 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
-        npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --force-publish=* --yes
 
-        npx lerna publish from-git --no-verify-access --yes
+        # Follow https://github.com/lerna/lerna/issues/2248#issuecomment-527882069 recommendation
+        npx lerna version --conventional-commits --conventional-prerelease --force-publish=* --yes --no-changelog
+        git tag -d $(git describe --abbrev=0)
+        git push
+
+        npx lerna publish from-package --no-verify-access --yes
     #########################    
     # Generate documentation
     #########################

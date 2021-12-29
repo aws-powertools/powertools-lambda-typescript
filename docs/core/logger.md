@@ -633,9 +633,6 @@ This is a Jest sample that provides the minimum information necessary for Logger
 
 === "handler.test.ts"
 
-!!! tip
-    If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/commons/src/tests/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).
-
 ```typescript
 
 const dummyContext = {
@@ -665,3 +662,6 @@ describe('MyUnitTest', () => {
 });
 
 ```
+
+!!! tip
+    If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/commons/src/tests/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).

@@ -1,7 +1,7 @@
 import { Handler } from 'aws-lambda';
 
 interface LambdaInterface {
-  handler: Handler;
+  handler: Handler
 }
 
 export {

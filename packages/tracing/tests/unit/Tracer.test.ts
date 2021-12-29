@@ -14,6 +14,10 @@ interface LambdaInterface {
   handler: Handler
 }
 
+interface LambdaInterface {
+  handler: Handler
+}
+
 jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);
 jest.spyOn(console, 'error').mockImplementation(() => null);

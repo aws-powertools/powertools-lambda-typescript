@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "0.2.0-beta.8",
+  "version": "0.2.0-beta.12",
   "description": "The tracer package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -26,11 +26,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {
-    "@aws-cdk/aws-lambda": "1.136.0",
-    "@aws-cdk/aws-lambda-nodejs": "1.136.0",
-    "@aws-cdk/core": "1.136.0",
     "@aws-sdk/client-sts": "^3.45.0",
-    "@aws-solutions-constructs/aws-lambda-sqs-lambda": "1.136.0",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
     "@types/node": "^16.0.0",

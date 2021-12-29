@@ -72,7 +72,7 @@ jobs:
         ALIAS="latest"
         echo "Publishing doc for version: $VERSION"
         mkdocs build
-        mike deploy --push --update-aliases "$VERSION" "$ALIAS"
+        mike deploy --push --update-aliases --no-redirect "$VERSION" "$ALIAS"
         # Set latest version as a default
         mike set-default --push latest
     - name: Build API docs

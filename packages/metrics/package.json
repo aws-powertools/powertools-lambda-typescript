@@ -47,18 +47,18 @@
   "types": "./lib/index.d.ts",
   "typedocMain": "src/index.ts",
   "devDependencies": {
-    "@aws-cdk/aws-lambda": "^1.136.0",
-    "@aws-cdk/aws-lambda-nodejs": "^1.136.0",
-    "@aws-cdk/core": "^1.136.0",
+    "@aws-cdk/aws-lambda-nodejs": "^1.137.0",
+    "@aws-cdk/core": "^1.137.0",
     "@aws-lambda-powertools/commons": "^0.0.2",
-    "@commitlint/cli": "^15.0.0",
+    "@commitlint/cli": "^16.0.1",
     "@middy/core": "^2.5.3",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
     "@types/node": "^16.6.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
-    "aws-cdk": "^1.136.0",
+    "aws-cdk": "^1.137.0",
+    "aws-sdk": "^2.1048.0",
     "esbuild": "^0.14.5",
     "eslint": "^8.3.0",
     "eslint-import-resolver-node": "^0.3.6",
@@ -82,7 +82,6 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^0.0.2",
-    "@types/aws-lambda": "^8.10.72",
-    "aws-sdk": "^2.1046.0"
+    "@types/aws-lambda": "^8.10.72"
   }
 }

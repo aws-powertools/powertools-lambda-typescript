@@ -105,11 +105,15 @@ Key | Example
 **function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
 **function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
-#### Method 1, using a [Middy](https://github.com/middyjs/middy) middleware:
+=== "Middleware"
 
-=== "handler.ts"
+    !!! note
+        Middy comes bundled with Logger, so you can just import it when using the middleware.
 
-    ```typescript hl_lines="1 9-11"
+    !!! tip "Using Middy for the first time?"
+        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
+    ```typescript hl_lines="1-2 10-11"
     import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
     import middy from '@middy/core';
 
@@ -123,9 +127,7 @@ Key | Example
         .use(injectLambdaContext(logger));
     ```
 
-#### Method 2, calling the `addContext` method:
-
-=== "handler.ts"
+=== "Manual"
 
     ```typescript hl_lines="7"
     import { Logger } from "@aws-lambda-powertools/logger";
@@ -141,9 +143,7 @@ Key | Example
     };
     ```
 
-#### Method 3, using a class decorator:
-
-=== "handler.ts"
+=== "Decorator"
 
     ```typescript hl_lines="7"
     import { Logger } from "@aws-lambda-powertools/logger";
@@ -622,3 +622,46 @@ This is how the printed log would look:
             "awsAccountId": "123456789012"
         }
     ```
+
+## Testing your code
+
+### Inject Lambda Context
+
+When unit testing your code that makes use of `logger.addContext()` or `injectLambdaContext` middleware and decorator, you can optionally pass a dummy Lambda Context if you want your logs to contain this information.
+
+This is a Jest sample that provides the minimum information necessary for Logger to inject context data:
+
+=== "handler.test.ts"
+
+```typescript
+
+const dummyContext = {
+    callbackWaitsForEmptyEventLoop: true,
+    functionVersion: '$LATEST',
+    functionName: 'foo-bar-function',
+    memoryLimitInMB: '128',
+    logGroupName: '/aws/lambda/foo-bar-function',
+    logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+    invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+    getRemainingTimeInMillis: () => 1234,
+    done: () => console.log('Done!'),
+    fail: () => console.log('Failed!'),
+    succeed: () => console.log('Succeeded!'),
+};
+
+describe('MyUnitTest', () => {
+
+    test('Lambda invoked successfully', async () => {
+       
+       const testEvent = { test: 'test' };
+        await handler(testEvent, dummyContext);
+
+    });
+
+});
+
+```
+
+!!! tip
+    If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/commons/src/tests/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).

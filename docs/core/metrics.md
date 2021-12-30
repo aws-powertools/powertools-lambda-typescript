@@ -163,6 +163,12 @@ See examples below:
 
 === "Middy middleware"
 
+    !!! note
+        Middy comes bundled with Metrics, so you can just import it when using the middleware.
+
+    !!! tip "Using Middy for the first time?"
+        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
     ```typescript hl_lines="5"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
     import { Context } from 'aws-lambda';

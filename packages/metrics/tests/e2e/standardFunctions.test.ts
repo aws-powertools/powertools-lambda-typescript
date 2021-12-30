@@ -8,7 +8,6 @@
  */
 
 import { randomUUID } from 'crypto';
-import { Tracing } from '@aws-cdk/aws-lambda';
 import * as lambda from '@aws-cdk/aws-lambda-nodejs';
 import { App, Stack } from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
@@ -40,7 +39,6 @@ describe('coldstart', () => {
     const functionName = 'MyFunctionWithStandardHandler';
     new lambda.NodejsFunction(stack, 'MyFunction', {
       functionName: functionName,
-      tracing: Tracing.ACTIVE,
       environment: {
         EXPECTED_NAMESPACE: expectedNamespace,
         EXPECTED_SERVICE_NAME: expectedServiceName,

@@ -6,17 +6,22 @@ on:
   workflow_dispatch: {}
 jobs:
   publish:
+    #########################
+    # Force Github action to run only a single job at a time (based on the group name)
+    # This is to prevent "race-condition" in publishing a new version of doc to `gh-pages` (#365)
+    #########################
+    concurrency:
+      group: on-release-publish
     runs-on: ubuntu-latest
-
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
       with:
         token: ${{ secrets.GH_PUBLISH_TOKEN }}
         fetch-depth: 0
-    #########################    
-    # Release new version
-    #########################
+      #########################    
+      # Release new version
+      #########################
     - name: "Use NodeJS 14"
       uses: actions/setup-node@v2
       with:
@@ -46,9 +51,9 @@ jobs:
           npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --force-publish=* --yes
         fi
         npx lerna publish from-git --no-verify-access --yes
-    #########################    
-    # Generate documentation
-    #########################
+      #########################    
+      # Generate documentation
+      #########################
     - name: Set up Python
       uses: actions/setup-python@v2.3.1
       with:
@@ -73,6 +78,10 @@ jobs:
         echo "Publishing doc for version: $VERSION"
         mkdocs build
         mike deploy --push --update-aliases --no-redirect "$VERSION" "$ALIAS"
+        # Once we have agreed on release process, we will also use "main" 
+        # to track the development version (on main branch). 
+        # For now, we make it the same as the latest version.
+        mike deploy --push --update-aliases --no-redirect "main" "$ALIAS"
         # Set latest version as a default
         mike set-default --push latest
     - name: Build API docs

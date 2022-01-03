@@ -74,7 +74,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * export const handler = async (_event: any, _context: any) => {
  *   metrics.captureColdStart();
  *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
- *   metrics.purgeStoredMetrics();
+ *   metrics.publishStoredMetrics();
  * };
  * ```
  */
@@ -146,7 +146,7 @@ class Metrics implements MetricsInterface {
    */
   public addMetric(name: string, unit: MetricUnit, value: number): void {
     this.storeMetric(name, unit, value);
-    if (this.isSingleMetric) this.purgeStoredMetrics();
+    if (this.isSingleMetric) this.publishStoredMetrics();
   }
 
   /**
@@ -245,7 +245,7 @@ class Metrics implements MetricsInterface {
 
           return result;
         } finally {
-          this.purgeStoredMetrics();
+          this.publishStoredMetrics();
         }
       };
     };
@@ -253,6 +253,7 @@ class Metrics implements MetricsInterface {
 
   /**
    * Synchronous function to actually publish your metrics. (Not needed if using logMetrics decorator).
+   * It will create a new EMF blob and log it to standard output to be then ingested by Cloudwatch logs and processed automatically for metrics creation.
    *
    * @example
    *
@@ -263,11 +264,11 @@ class Metrics implements MetricsInterface {
    *
    * export const handler = async (_event: any, _context: any) => {
    *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
-   *   metrics.purgeStoredMetrics();
+   *   metrics.publishStoredMetrics();
    * };
    * ```
    */
-  public purgeStoredMetrics(): void {
+  public publishStoredMetrics(): void {
     const target = this.serializeMetrics();
     console.log(JSON.stringify(target));
     this.storedMetrics = {};
@@ -286,7 +287,7 @@ class Metrics implements MetricsInterface {
    *
    * export const handler = async (event: any, context: Context) => {
    *     metrics.raiseOnEmptyMetrics();
-   *     metrics.purgeStoredMetrics(); // will throw since no metrics added.
+   *     metrics.publishStoredMetrics(); // will throw since no metrics added.
    * }
    * ```
    */
@@ -357,7 +358,7 @@ class Metrics implements MetricsInterface {
   /**
    * CloudWatch EMF uses the same dimensions across all your metrics. Use singleMetric if you have a metric that should have different dimensions.
    *
-   * You don't need to call purgeStoredMetrics() after calling addMetric for a singleMetrics, they will be flushed directly.
+   * You don't need to call publishStoredMetrics() after calling addMetric for a singleMetrics, they will be flushed directly.
    *
    * @example
    *
@@ -428,7 +429,7 @@ class Metrics implements MetricsInterface {
 
   private storeMetric(name: string, unit: MetricUnit, value: number): void {
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
-      this.purgeStoredMetrics();
+      this.publishStoredMetrics();
     }
     this.storedMetrics[name] = {
       unit,

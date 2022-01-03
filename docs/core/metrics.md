@@ -341,7 +341,7 @@ export class MyFunction {
 
 #### Manually
 
-You can manually flush the metrics with `purgeStoredMetrics` as follows:
+You can manually flush the metrics with `publishStoredMetrics` as follows:
 
 !!! warning
     Metrics, dimensions and namespace validation still applies.
@@ -354,7 +354,7 @@ const metrics = new Metrics();
 const lambdaHandler: Handler = async () => {
     metrics.addMetric('test-metric', MetricUnits.Count, 10);
     const metricsObject = metrics.serializeMetrics();
-    metrics.purgeStoredMetrics();
+    metrics.publishStoredMetrics();
     console.log(JSON.stringify(metricsObject));
 };
 ```

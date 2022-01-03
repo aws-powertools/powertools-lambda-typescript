@@ -32,6 +32,6 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   );
   metricWithItsOwnDimensions.addMetric(singleMetricName, singleMetricUnit, singleMetricValue as number);
 
-  metrics.purgeStoredMetrics();
+  metrics.publishStoredMetrics();
   metrics.raiseOnEmptyMetrics();
 };

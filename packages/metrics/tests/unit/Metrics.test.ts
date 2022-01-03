@@ -378,7 +378,7 @@ describe('Class: Metrics', () => {
       const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
         metrics.raiseOnEmptyMetrics();
         // Logic goes here
-        metrics.purgeStoredMetrics();
+        metrics.publishStoredMetrics();
       };
 
       try {
@@ -474,7 +474,7 @@ describe('Class: Metrics', () => {
           _callback: Callback<TResult>,
         ): void | Promise<TResult> {
           metrics.addMetric('test_name_1', MetricUnits.Count, 1);
-          metrics.purgeStoredMetrics();
+          metrics.publishStoredMetrics();
         }
       }
 

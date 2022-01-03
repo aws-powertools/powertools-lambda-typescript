@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-beta.15](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.14...v0.2.0-beta.15) (2022-01-03)
+
+
+### Bug Fixes
+
+* **metrics:** export middy middleware ([#380](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/380)) ([6107725](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/61077256b14d1e061155be9c5f9ae95be0a33417))
+
+
+### Features
+
+* **metrics:** rename method purgeStoredMetrics to publishStoredMetrics ([#377](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/377)) ([c9265b0](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c9265b0b76789048e6f7019d3a6f58afe37c39e5))
+
+
+
+
+
 # [0.2.0-beta.14](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.12...v0.2.0-beta.14) (2022-01-03)
 
 

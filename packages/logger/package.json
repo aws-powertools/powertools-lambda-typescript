@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/logger",
-  "version": "0.2.0-beta.14",
+  "version": "0.2.0-beta.15",
   "description": "The logging package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",

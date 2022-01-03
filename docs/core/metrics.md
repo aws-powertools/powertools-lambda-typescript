@@ -106,6 +106,7 @@ You can create metrics using `addMetric`, and you can create dimensions for all 
 
     export const handler = async (event: any, context: Context) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.purgeStoredMetrics();
     }
     ```
 === "Metrics with custom dimensions"
@@ -120,6 +121,7 @@ You can create metrics using `addMetric`, and you can create dimensions for all 
     export const handler = async (event: any, context: Context) => {
         metrics.addDimension('environment', 'prod');
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.purgeStoredMetrics();
     }
     ```
 
@@ -242,21 +244,22 @@ If you do not the middleware or decorator, you have to flush your metrics manual
 
 See below an example of how to automatically flush metrics with the Middy-compatible `logMetrics` middleware.
 
+=== "handler.ts"
 
-```typescript hl_lines="3 8 11-12"
-    import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda';
-    import middy from '@middy/core';
+    ```typescript hl_lines="3 8 11-12"
+        import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
+        import { Context } from 'aws-lambda';
+        import middy from '@middy/core';
 
-    const metrics = new Metrics({ namespace: 'exampleApplication' , service: 'exampleService' });
+        const metrics = new Metrics({ namespace: 'exampleApplication' , service: 'exampleService' });
 
-    const lambdaHandler = async (event: any, context: Context) => {
-        metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);
-    }
+        const lambdaHandler = async (event: any, context: Context) => {
+            metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);
+        }
 
-    export const handler = middy(lambdaHandler)
-        .use(logMetrics(metrics));
-```
+        export const handler = middy(lambdaHandler)
+            .use(logMetrics(metrics));
+    ```
 
 === "Example CloudWatch Logs excerpt"
 
@@ -295,20 +298,22 @@ See below an example of how to automatically flush metrics with the Middy-compat
 The `logMetrics` decorator of the metrics utility can be used when your Lambda handler function is implemented as method of a Class.
 
 
-```typescript hl_lines="8"
-import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-import { Context, Callback } from 'aws-lambda'; 
+=== "handler.ts"
 
-const metrics = new Metrics({namespace:"exampleApplication", service:"exampleService"});
+    ```typescript hl_lines="8"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context, Callback } from 'aws-lambda'; 
 
-export class MyFunction {
+    const metrics = new Metrics({namespace:"exampleApplication", service:"exampleService"});
 
-    @metrics.logMetrics()
-    public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-        metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);
+    export class MyFunction {
+
+        @metrics.logMetrics()
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+            metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);
+        }
     }
-}
-```
+    ```
 
 === "Example CloudWatch Logs excerpt"
 
@@ -353,9 +358,7 @@ const metrics = new Metrics();
 
 const lambdaHandler: Handler = async () => {
     metrics.addMetric('test-metric', MetricUnits.Count, 10);
-    const metricsObject = metrics.serializeMetrics();
     metrics.purgeStoredMetrics();
-    console.log(JSON.stringify(metricsObject));
 };
 ```
 
@@ -435,20 +438,22 @@ You can add high-cardinality data as part of your Metrics log with `addMetadata`
 !!! warning
     **This will not be available during metrics visualization** - Use **dimensions** for this purpose
 
-```typescript hl_lines="8"
-    import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda';
-    import middy from '@middy/core';
+=== "handler.ts"
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+    ```typescript hl_lines="8"
+        import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
+        import { Context } from 'aws-lambda';
+        import middy from '@middy/core';
 
-    const lambdaHandler = async (event: any, context: Context) => {
-        metrics.addMetadata('bookingId', '7051cd10-6283-11ec-90d6-0242ac120003');
-    }
+        const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
 
-    export const handler = middy(lambdaHandler)
-        .use(logMetrics(metrics));
-```
+        const lambdaHandler = async (event: any, context: Context) => {
+            metrics.addMetadata('bookingId', '7051cd10-6283-11ec-90d6-0242ac120003');
+        }
+
+        export const handler = middy(lambdaHandler)
+            .use(logMetrics(metrics));
+    ```
 
 === "Example CloudWatch Logs excerpt"
 

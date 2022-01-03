@@ -311,7 +311,7 @@ class Metrics implements MetricsInterface {
     if (!this.namespace) console.warn('Namespace should be defined, default used');
 
     const metricValues = Object.values(this.storedMetrics).reduce(
-      (result: { [key: string]: number }, { name, value }: { name: string; value: number }) => {
+      (result: { [key: string]: number | number[] }, { name, value }: { name: string; value: number | number[] }) => {
         result[name] = value;
 
         return result;
@@ -390,6 +390,19 @@ class Metrics implements MetricsInterface {
     return <EnvironmentVariablesService> this.envVarsService;
   }
 
+  private isNewMetric(name: string, unit: MetricUnit): boolean {
+    if (this.storedMetrics[name]){
+      // Inconsistent units indicates a bug or typos. We want to flag this to users early early
+      if (this.storedMetrics[name].unit !== unit) {
+        throw new Error('The same metric name has been added before with a different unit.');
+      }
+      
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
     this.customConfigService = customConfigService ? customConfigService : undefined;
   }
@@ -430,12 +443,22 @@ class Metrics implements MetricsInterface {
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.purgeStoredMetrics();
     }
-    this.storedMetrics[name] = {
-      unit,
-      value,
-      name,
-    };
+
+    if (this.isNewMetric(name, unit)) {
+      this.storedMetrics[name] = {
+        unit,
+        value,
+        name,
+      };
+    } else {
+      const storedMetric = this.storedMetrics[name];
+      if (!Array.isArray(storedMetric.value)) {
+        storedMetric.value = [storedMetric.value];
+      }
+      storedMetric.value.push(value);
+    }
   }
+
 }
 
 export { Metrics, MetricUnits };

@@ -20,13 +20,19 @@ categories:
   - title: '🚒 Deprecations'
     labels:
       - 'deprecated'
+  - title: '🔧 Maintenance'
+    labels:
+      - 'internal'
+      - 'dependencies'
 exclude-labels:
   - 'skip-changelog'
 tag-template: 'v$NEXT_PATCH_VERSION'
 template: |
-  ## Changes
+  ## Summary
 
   **[Human readable summary of changes]**
+
+  ## Changes
 
   $CHANGES
 

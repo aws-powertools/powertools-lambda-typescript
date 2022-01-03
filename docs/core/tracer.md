@@ -82,8 +82,8 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     import { Tracer } from '@aws-lambda-powertools/tracer';
     import middy from '@middy/core';
 
-    const tracer = Tracer(); // Sets service via env var
-    // OR tracer = Tracer({ service: 'example' });
+    const tracer = new Tracer(); // Sets service via env var
+    // OR tracer = new Tracer({ service: 'example' });
 
     export const handler = middy(async (_event: any, _context: any) => {
         ...
@@ -95,8 +95,8 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     ```typescript hl_lines="1 3 7"
     import { Tracer } from '@aws-lambda-powertools/tracer';
 
-    const tracer = Tracer(); // Sets service via env var
-    // OR tracer = Tracer({ service: 'example' });
+    const tracer = new Tracer(); // Sets service via env var
+    // OR tracer = new Tracer({ service: 'example' });
 
     class Lambda {
         @tracer.captureLambdaHandler()
@@ -114,8 +114,8 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     ```typescript hl_lines="1 3 7 9-10 13-14 20 23 27 29"
     import { Tracer } from '@aws-lambda-powertools/tracer';
     
-    const tracer = Tracer(); // Sets service via env var
-    // OR tracer = Tracer({ service: 'serverlessAirline' });
+    const tracer = new Tracer(); // Sets service via env var
+    // OR tracer = new Tracer({ service: 'serverlessAirline' });
 
     export const handler = async (_event: any, context: any) => {
         const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
@@ -198,7 +198,7 @@ You can trace other methods using the `captureMethod` decorator or manual instru
     ```typescript hl_lines="6"
     import { Tracer } from '@aws-lambda-powertools/tracer';
 
-    const tracer = Tracer();
+    const tracer = new Tracer();
 
     class Lambda {
         @tracer.captureMethod()

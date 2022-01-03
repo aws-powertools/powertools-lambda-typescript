@@ -24,7 +24,7 @@ const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): mi
 
   const logMetricsAfterOrError = async (): Promise<void> => {
     metricsInstances.forEach((metrics: Metrics) => {
-      metrics.purgeStoredMetrics();
+      metrics.publishStoredMetrics();
     });
   };
   

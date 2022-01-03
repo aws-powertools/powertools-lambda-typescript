@@ -152,9 +152,12 @@ You can call `addMetric()` with the same name multiple times. The values will be
     ```
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="15-16 23-26"
+    ```json hl_lines="2-5 18-19"
     {
-        "successfulBooking": 1.0,
+        "performedActionA": [
+            2,
+            1
+        ],
         "_aws": {
             "Timestamp": 1592234975665,
             "CloudWatchMetrics": [
@@ -174,11 +177,7 @@ You can call `addMetric()` with the same name multiple times. The values will be
                 }
             ]
         },
-        "service": "orders",
-        "performedActionA": [
-            2,
-            1
-        ]
+        "service": "orders"
     }
     ```
 ### Adding default dimensions

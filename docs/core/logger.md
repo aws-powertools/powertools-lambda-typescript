@@ -456,21 +456,26 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
 
 === "handler.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="6"
     import { Logger } from "@aws-lambda-powertools/logger";
 
+    // Notice the log level set to 'ERROR'
     const logger = new Logger({
         logLevel: "ERROR",
         sampleRateValue: 0.5
     });
     
     const lambdaHandler = async () => {
-    
-        // 0.5 means that you have 50% chance that these logs will be printed
-        logger.info("This is INFO log #1");
-        logger.info("This is INFO log #2");
-        logger.info("This is INFO log #3");
-        logger.info("This is INFO log #4");
+
+        // This log item (equal to log level 'ERROR') will be printed to standard output
+        // in all Lambda invocations
+        logger.error("This is an ERROR log");
+
+        // These log items (below the log level 'ERROR') have ~50% chance 
+        // of being printed in a Lambda invocation
+        logger.debug("This is a DEBUG log that has 50% chance of being printed");
+        logger.info("This is an INFO log that has 50% chance of being printed");
+        logger.warn("This is a WARN log that has 50% chance of being printed");
         
         // Optional: refresh sample rate calculation on runtime
         // logger.refreshSampleRateCalculation();
@@ -478,20 +483,20 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
     };
     ```
 
-=== "Example CloudWatch Logs excerpt"
+=== "Example CloudWatch Logs excerpt - Invocation #1"
 
-    ```json hl_lines="4 12 20 28"
+    ```json
     {
-        "level": "INFO",
-        "message": "This is INFO log #1",
+        "level": "ERROR",
+        "message": "This is an ERROR log",
         "sampling_rate": "0.5",
         "service": "shopping-cart-api",
         "timestamp": "2021-12-12T22:59:06.334Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
-        "level": "INFO",
-        "message": "This is INFO log #2",
+        "level": "DEBUG",
+        "message": "This is a DEBUG log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
         "service": "shopping-cart-api",
         "timestamp": "2021-12-12T22:59:06.337Z",
@@ -499,18 +504,81 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
     }
     {
         "level": "INFO",
-        "message": "This is INFO log #3",
+        "message": "This is an INFO log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
         "service": "shopping-cart-api",
         "timestamp": "2021-12-12T22:59:06.338Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
-        "level": "INFO",
-        "message": "This is INFO log #4",
+        "level": "WARN",
+        "message": "This is a WARN log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
         "service": "shopping-cart-api",
         "timestamp": "2021-12-12T22:59:06.338Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    ```
+
+=== "Example CloudWatch Logs excerpt - Invocation #2"
+
+    ```json
+    {
+        "level": "ERROR",
+        "message": "This is an ERROR log",
+        "sampling_rate": "0.5",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.334Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    ```
+
+=== "Example CloudWatch Logs excerpt - Invocation #3"
+
+    ```json
+    {
+        "level": "ERROR",
+        "message": "This is an ERROR log",
+        "sampling_rate": "0.5",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.334Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    {
+        "level": "DEBUG",
+        "message": "This is a DEBUG log that has 50% chance of being printed",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.337Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    {
+        "level": "INFO",
+        "message": "This is an INFO log that has 50% chance of being printed",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.338Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    {
+        "level": "WARN",
+        "message": "This is a WARN log that has 50% chance of being printed",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.338Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    ```
+
+=== "Example CloudWatch Logs excerpt - Invocation #4"
+
+    ```json
+    {
+        "level": "ERROR",
+        "message": "This is an ERROR log",
+        "sampling_rate": "0.5",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.334Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```

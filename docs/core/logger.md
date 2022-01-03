@@ -59,7 +59,7 @@ For a **complete list** of supported environment variables, refer to [this secti
     // You can also pass the parameters in the constructor
     // const logger = new Logger({
     //     logLevel: "WARN",
-    //     serviceName: "shopping-cart-api"
+    //     serviceName: "serverlessAirline"
     // });
     ```
 
@@ -74,7 +74,7 @@ For a **complete list** of supported environment variables, refer to [this secti
           Environment:
             Variables:
               LOG_LEVEL: WARN
-              POWERTOOLS_SERVICE_NAME: shopping-cart-api
+              POWERTOOLS_SERVICE_NAME: serverlessAirline
     ```
 
 ### Standard structured keys
@@ -105,7 +105,23 @@ Key | Example
 **function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
 **function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
-=== "Middleware"
+=== "Manual"
+
+    ```typescript hl_lines="7"
+    import { Logger } from "@aws-lambda-powertools/logger";
+
+    const logger = new Logger();
+
+    export const handler = async (_event, context) => {
+    
+        logger.addContext(context);
+        
+        logger.info("This is an INFO log with some context");
+
+    };
+    ```
+
+=== "Middy Middleware"
 
     !!! note
         Middy comes bundled with Logger, so you can just import it when using the middleware.
@@ -119,28 +135,12 @@ Key | Example
 
     const logger = new Logger();
 
-    const lambdaHandler = async () => {
+    const lambdaHandler = async (_event: any, _context: any) => {
         logger.info("This is an INFO log with some context");
     };
 
-    const handler = middy(lambdaHandler)
+    export const handler = middy(lambdaHandler)
         .use(injectLambdaContext(logger));
-    ```
-
-=== "Manual"
-
-    ```typescript hl_lines="7"
-    import { Logger } from "@aws-lambda-powertools/logger";
-
-    const logger = new Logger();
-
-    const lambdaHandler = async (_event, context) => {
-    
-        logger.addContext(context);
-        
-        logger.info("This is an INFO log with some context");
-
-    };
     ```
 
 === "Decorator"
@@ -151,13 +151,16 @@ Key | Example
     const logger = new Logger();
     
     class Lambda {
-    
+        // Decorate your handler class method
         @logger.injectLambdaContext()
-        public handler() {
+        public handler(_event: any, _context: any) {
             logger.info("This is an INFO log with some context");
         }
 
     }
+
+    export const handlerClass = new Lambda();
+    export const handler = handlerClass.handler;
     ```
 
 In each case, the printed log will look like this:
@@ -173,7 +176,7 @@ In each case, the printed log will look like this:
         "function_name": "shopping-cart-api-lambda-prod-eu-central-1",
         "level": "INFO",
         "message": "This is an INFO log with some context",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T21:21:08.921Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -213,7 +216,7 @@ You can append additional persistent keys and values in the logs generated durin
     //     }
     // });    
 
-    const lambdaHandler: Handler = async () => {
+    export const handler = async (_event: any, _context: any) => {
     
         // This info log will print all extra custom attributes added above
         // Extra attributes: logger object with name and version of the logger library, awsAccountId, awsRegion
@@ -232,7 +235,7 @@ You can append additional persistent keys and values in the logs generated durin
     {
         "level": "INFO",
         "message": "This is an INFO log",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T21:49:58.084Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "aws_account_id": "123456789012",
@@ -245,7 +248,7 @@ You can append additional persistent keys and values in the logs generated durin
     {
         "level": "INFO",
         "message": "This is another INFO log",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T21:49:58.088Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "aws_account_id": "123456789012",
@@ -271,7 +274,7 @@ You can append additional keys and values in a single log item passing them as p
 
     const logger = new Logger();
     
-    const lambdaHandler = async () => {
+    export const handler = async (_event: any, _context: any) => {
     
         const myImportantVariable = {
             foo: "bar"
@@ -300,7 +303,7 @@ You can append additional keys and values in a single log item passing them as p
     {
         "level": "INFO",
         "message": "This is a log with an extra variable",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:06:17.463Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "data": { foo: "bar" }
@@ -308,7 +311,7 @@ You can append additional keys and values in a single log item passing them as p
     {
         "level": "INFO",
         "message": "This is a log with 2 extra variables",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:06:17.466Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "data": { "foo": "bar" },
@@ -328,7 +331,7 @@ The error will be logged with default key name `error`, but you can also pass yo
 
     const logger = new Logger();
     
-    const lambdaHandler = async () => {
+    export const handler = async (_event: any, _context: any) => {
     
         try {
             throw new Error("Unexpected error #1");
@@ -353,7 +356,7 @@ The error will be logged with default key name `error`, but you can also pass yo
     {
         "level": "ERROR",
         "message": "This is an ERROR log #1",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:12:39.345Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "error": {
@@ -366,7 +369,7 @@ The error will be logged with default key name `error`, but you can also pass yo
     {   
         "level": "ERROR",
         "message": "This is an ERROR log #2",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:12:39.377Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "myCustomErrorKey": {
@@ -400,7 +403,7 @@ This can be useful for example if you want to enable multiple Loggers with diffe
         logLevel: "ERROR"
     });
     
-    const lambdaHandler: Handler = async () => {
+    export const handler = async (_event: any, _context: any) => {
     
         logger.info("This is an INFO log, from the parent logger");
         logger.error("This is an ERROR log, from the parent logger");
@@ -417,21 +420,21 @@ This can be useful for example if you want to enable multiple Loggers with diffe
     {
         "level": "INFO",
         "message": "This is an INFO log, from the parent logger",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.667Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
         "level": "ERROR",
         "message": "This is an ERROR log, from the parent logger",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.670Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
         "level": "ERROR",
         "message": "This is an ERROR log, from the child logger",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.670Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -464,7 +467,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         sampleRateValue: 0.5
     });
     
-    const lambdaHandler = async () => {
+    export const handler = async (_event: any, _context: any) => {
     
         // 0.5 means that you have 50% chance that these logs will be printed
         logger.info("This is INFO log #1");
@@ -485,7 +488,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "INFO",
         "message": "This is INFO log #1",
         "sampling_rate": "0.5",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.334Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -493,7 +496,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "INFO",
         "message": "This is INFO log #2",
         "sampling_rate": "0.5", 
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.337Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -501,7 +504,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "INFO",
         "message": "This is INFO log #3",
         "sampling_rate": "0.5", 
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.338Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -509,7 +512,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "INFO",
         "message": "This is INFO log #4",
         "sampling_rate": "0.5", 
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.338Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -528,7 +531,7 @@ You can customize the structure (keys and values) of your log items by passing a
     const logger = new Logger({
         logFormatter: new MyCompanyLogFormatter(),
         logLevel: "DEBUG",
-        serviceName: "shopping-cart-api",
+        serviceName: "serverlessAirline",
         sampleRateValue: 0.5,
         persistentLogAttributes: {
             awsAccountId: process.env.AWS_ACCOUNT_ID,
@@ -539,11 +542,13 @@ You can customize the structure (keys and values) of your log items by passing a
         },
     });
     
-    const lambdaHandler: Handler = async (event, context) => {
+    export const handler = async (event, _context) => {
+
         logger.addContext(context);
         
         logger.info("This is an INFO log", { correlationIds: { myCustomCorrelationId: "foo-bar-baz" } });
-    };
+
+};
     ```
 
 This is how the `MyCompanyLogFormatter` (dummy name) would look like:
@@ -598,7 +603,7 @@ This is how the printed log would look:
     ```json
         {
             "message": "This is an INFO log",
-            "service": "shopping-cart-api",
+            "service": "serverlessAirline",
             "awsRegion": "eu-central-1",
             "correlationIds": {
                 "awsRequestId": "c6af9ac6-7b61-11e6-9a41-93e812345678",
@@ -654,7 +659,7 @@ describe('MyUnitTest', () => {
 
     test('Lambda invoked successfully', async () => {
        
-       const testEvent = { test: 'test' };
+        const testEvent = { test: 'test' };
         await handler(testEvent, dummyContext);
 
     });

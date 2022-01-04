@@ -40,9 +40,17 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
 
-        # Follow https://github.com/lerna/lerna/issues/2248#issuecomment-527882069 recommendation
+        # For merge to main we 
+        ## don't create github release, 
+        ## don't update changelog (--no-changelog) 
+        ## bump version as a pre-release (--conventional-prerelease)
+        ## add a custom preid (--preid dev): 0.2.0-dev.1 -> 0.2.0-dev.2
         npx lerna version --conventional-commits --conventional-prerelease --preid dev --force-publish=* --yes --no-changelog
         git push --delete origin $(git describe --abbrev=0)
+    - name: update_release_draft:
+      uses: release-drafter/release-drafter@v5.15.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     #########################    
     # Generate documentation
     #########################
@@ -65,8 +73,6 @@ jobs:
         echo "Publishing doc for version: $VERSION"
         mkdocs build
         mike deploy --push "$VERSION"
-        # Set latest version as a default
-        mike set-default --push latest
     - name: Build API docs
       run: |
         rm -rf api

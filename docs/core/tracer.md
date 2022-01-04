@@ -145,15 +145,20 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Decorator"
 
-    ```typescript hl_lines="7"
+    !!! info
+        Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you prefer to write your handler as a standard function rather than a Class method, use the middleware or the manual instrumentations instead.  
+        See the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
+
+    ```typescript hl_lines="8"
     import { Tracer } from '@aws-lambda-powertools/tracer';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    class Lambda {
+    class Lambda extends LambdaInterface {
         // Decorate your handler class method
         @tracer.captureLambdaHandler()
-        public handler(event: any, context: any) {
+        public handler(_event: any, _context: any) {
             /* ... */
         }
     }
@@ -251,12 +256,13 @@ You can trace other methods using the `captureMethod` decorator or manual instru
 
 === "Decorator"
 
-    ```typescript hl_lines="7"
+    ```typescript hl_lines="8"
     import { Tracer } from '@aws-lambda-powertools/tracer';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    class Lambda {
+    class Lambda extends LambdaInterface {
         // Decorate your class method
         @tracer.captureMethod()
         public getChargeId(): string {
@@ -264,13 +270,13 @@ You can trace other methods using the `captureMethod` decorator or manual instru
             return 'foo bar';
         }
 
-        public handler(event: any, context: any) {
+        public async handler(_event: any, _context: any): Promise<unknown> {
             /* ... */
         }
     }
      
-    export const handlerClass = new Lambda();
-    export const handler = handlerClass.handler; 
+    export const myFunction = new Lambda();
+    export const handler = myFunction.handler; 
     ```
 
 ### Patching AWS SDK clients

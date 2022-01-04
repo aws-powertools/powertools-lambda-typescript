@@ -58,23 +58,27 @@ Setting | Description | Environment variable | Constructor parameter
 
 For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
 
-!!! tip "Use your application or main service as the metric namespace to easily group all metrics"
+!!! tip
+    Use your application name or main service as the metric namespace to easily group all metrics
 
-> Example using AWS Serverless Application Model (SAM)
+#### Example using AWS Serverless Application Model (SAM)
 
-=== "index.ts"
+=== "handler.ts"
 
-    ```typescript hl_lines="5 7"
+    ```typescript hl_lines="1 4"
     import { Metrics } from '@aws-lambda-powertools/metrics';
 
-
-    // Sets metric namespace and service via env var
+    // Metrics parameters fetched from the environment variables (see template.yaml tab)
     const metrics = new Metrics();
-    // OR Sets metric namespace, and service as a metrics parameters
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+    
+    // You can also pass the parameters in the constructor
+    // const metrics = new Metrics({
+    //   namespace: 'serverlessAirline',
+    //   service: 'orders'
+    // });
     ```
 
-=== "sam-template.yml"
+=== "template.yml"
 
     ```yaml hl_lines="9 10"
     Resources:
@@ -84,41 +88,37 @@ For a **complete list** of supported environment variables, refer to [this secti
           Runtime: nodejs14.x
           Environment:
           Variables:
-            POWERTOOLS_SERVICE_NAME: payment
+            POWERTOOLS_SERVICE_NAME: orders
             POWERTOOLS_METRICS_NAMESPACE: serverlessAirline
     ```
-
 
 You can initialize Metrics anywhere in your code - It'll keep track of your aggregate metrics in memory.
 
 ### Creating metrics
 
-You can create metrics using `addMetric`, and you can create dimensions for all your aggregate metrics using `addDimension` method.
+You can create metrics using the `addMetric` method, and you can create dimensions for all your aggregate metrics using the `addDimension` method.
 
 === "Metrics"
 
-    ```typescript hl_lines="8"
+    ```typescript hl_lines="6"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda'; 
 
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
-
-    export const handler = async (event: any, context: Context) => {
+    export const handler = async (_event: any, _context: any) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         metrics.purgeStoredMetrics();
     }
     ```
+
 === "Metrics with custom dimensions"
 
-    ```typescript hl_lines="8-9"
+    ```typescript hl_lines="6-7"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda';
 
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
-
-    export const handler = async (event: any, context: Context) => {
+    export const handler = async (_event: any, _context: any) => {
         metrics.addDimension('environment', 'prod');
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         metrics.purgeStoredMetrics();
@@ -126,39 +126,35 @@ You can create metrics using `addMetric`, and you can create dimensions for all 
     ```
 
 !!! tip "Autocomplete Metric Units"
-    `MetricUnit` enum facilitate finding a supported metric unit by CloudWatch. Alternatively, you can pass the value as a string if you already know them e.g. "Count".
+    Use the `MetricUnit` enum to easily find a supported metric unit by CloudWatch. Alternatively, you can pass the value as a string if you already know them e.g. "Count".
 
 !!! note "Metrics overflow"
-    CloudWatch EMF supports a max of 100 metrics per batch. Metrics utility will flush all metrics when adding the 100th metric. Subsequent metrics, e.g. 101th, will be aggregated into a new EMF object, for your convenience.
+    CloudWatch EMF supports a max of 100 metrics per batch. Metrics will automatically propagate all the metrics when adding the 100th metric. Subsequent metrics, e.g. 101th, will be aggregated into a new EMF object, for your convenience.
 
 !!! warning "Do not create metrics or dimensions outside the handler"
     Metrics or dimensions added in the global scope will only be added during cold start. Disregard if that's the intended behaviour.
 
 ### Adding default dimensions
 
-You can use add default dimensions to your metrics by passing them as parameters in 4 ways:  
+You can add default dimensions to your metrics by passing them as parameters in 4 ways:  
 
 * in the constructor
-* in the Middy middleware
+* in the [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
 * using the `setDefaultDimensions` method
 * in the decorator
 
-If you'd like to remove them at some point, you can use `clearDefaultDimensions` method.  
-See examples below:
-
 === "constructor"
 
-    ```typescript hl_lines="7"
+    ```typescript hl_lines="6"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda'; 
 
     const metrics = new Metrics({
-        namespace:"serverlessAirline", 
-        service:"orders", 
-        defaultDimensions: { 'environment': 'prod', 'anotherDimension': 'whatever' } 
+        namespace: 'serverlessAirline', 
+        service: 'orders', 
+        defaultDimensions: { 'environment': 'prod', 'foo': 'bar' } 
     });
 
-    export const handler = async (event: any, context: Context) => {
+    export const handler = async (_event: any, _context: any) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
     }
     ```
@@ -171,31 +167,31 @@ See examples below:
     !!! tip "Using Middy for the first time?"
         Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="1-2 11 13"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda';
     import middy from '@middy/core';
 
     const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    const lambdaHandler = async (event: any, context: Context) => {
+    const lambdaHandler = async (_event: any, _context: any) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
     }
 
+    // Wrap the handler with middy
     export const handler = middy(lambdaHandler)
-        .use(logMetrics(metrics, { defaultDimensions:{ 'environment': 'prod', 'anotherDimension': 'whatever' }  }));
+        // Use the middleware by passing the Metrics instance as a parameter
+        .use(logMetrics(metrics, { defaultDimensions:{ 'environment': 'prod', 'foo': 'bar' }  }));
     ```
 
 === "setDefaultDimensions method"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="4"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda'; 
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
-    metrics.setDefaultDimensions({ 'environment': 'prod', 'anotherDimension': 'whatever' });
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
+    metrics.setDefaultDimensions({ 'environment': 'prod', 'foo': 'bar' });
 
-    export const handler = async (event: any, context: Context) => {
+    export const handler = async (event: any, _context: any) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
     }
     ```
@@ -204,32 +200,34 @@ See examples below:
 
     ```typescript hl_lines="9"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context, Callback } from 'aws-lambda';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
-    const DEFAULT_DIMENSIONS = {"environment": "prod", "another": "one"};
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
+    const DEFAULT_DIMENSIONS = { 'environment': 'prod', 'foo': 'bar' };
 
-    export class MyFunction {
-
+    export class MyFunction extends LambdaInterface {
+        // Decorate your handler class method
         @metrics.logMetrics({defaultDimensions: DEFAULT_DIMENSIONS})
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler(_event: any, _context: any): Promise<unknown> {
             metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         }
     }
     ```
 
+If you'd like to remove them at some point, you can use the `clearDefaultDimensions` method.
+
 ### Flushing metrics
 
-As you finish adding all your metrics, you need to serialize and "flush them" (= print them to standard output).
+As you finish adding all your metrics, you need to serialize and "flush them" by calling `purgeStoredMetrics()`. This will print the metrics to standard output.
 
 You can flush metrics automatically using one of the following methods:  
 
+* manually
 * [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
 * class decorator
-* manually
 
 Using the Middy middleware or decorator will **automatically validate, serialize, and flush** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
-If you do not the middleware or decorator, you have to flush your metrics manually.
+If you do not use the middleware or decorator, you have to flush your metrics manually.
 
 
 !!! warning "Metric validation"
@@ -239,38 +237,36 @@ If you do not the middleware or decorator, you have to flush your metrics manual
     * Namespace is set only once (or none)
     * Metric units must be [supported by CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
 
+#### Manually
 
-#### Using Middy middleware
+You can manually flush the metrics with `purgeStoredMetrics` as follows:
 
-See below an example of how to automatically flush metrics with the Middy-compatible `logMetrics` middleware.
+!!! warning
+    Metrics, dimensions and namespace validation still applies.
 
 === "handler.ts"
 
-    ```typescript hl_lines="3 8 11-12"
-        import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
-        import { Context } from 'aws-lambda';
-        import middy from '@middy/core';
+    ```typescript hl_lines="7"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
-        const metrics = new Metrics({ namespace: 'exampleApplication' , service: 'exampleService' });
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-        const lambdaHandler = async (event: any, context: Context) => {
-            metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);
-        }
-
-        export const handler = middy(lambdaHandler)
-            .use(logMetrics(metrics));
+    export const handler = async (_event: any, _context: any) => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 10);
+        metrics.purgeStoredMetrics();
+    };
     ```
 
 === "Example CloudWatch Logs excerpt"
 
     ```json hl_lines="2 7 10 15 22"
     {
-        "bookingConfirmation": 1.0,
+        "successfulBooking": 1.0,
         "_aws": {
         "Timestamp": 1592234975665,
         "CloudWatchMetrics": [
             {
-            "Namespace": "exampleApplication",
+            "Namespace": "successfulBooking",
             "Dimensions": [
                 [
                 "service"
@@ -278,14 +274,62 @@ See below an example of how to automatically flush metrics with the Middy-compat
             ],
             "Metrics": [
                 {
-                "Name": "bookingConfirmation",
+                "Name": "successfulBooking",
                 "Unit": "Count"
                 }
             ]
             }
         ]
         },
-        "service": "exampleService"
+        "service": "orders"
+    }
+    ```
+
+#### Middy middleware
+
+See below an example of how to automatically flush metrics with the Middy-compatible `logMetrics` middleware.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="1-2 7 10-11"
+    import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
+    import middy from '@middy/core';
+
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
+
+    const lambdaHandler = async (_event: any, _context: any) => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+    }
+
+    export const handler = middy(lambdaHandler)
+        .use(logMetrics(metrics));
+    ```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json hl_lines="2 7 10 15 22"
+    {
+        "successfulBooking": 1.0,
+        "_aws": {
+        "Timestamp": 1592234975665,
+        "CloudWatchMetrics": [
+            {
+            "Namespace": "serverlessAirline",
+            "Dimensions": [
+                [
+                "service"
+                ]
+            ],
+            "Metrics": [
+                {
+                "Name": "successfulBooking",
+                "Unit": "Count"
+                }
+            ]
+            }
+        ]
+        },
+        "service": "orders"
     }
     ```
 
@@ -302,15 +346,15 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 
     ```typescript hl_lines="8"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context, Callback } from 'aws-lambda'; 
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
-    const metrics = new Metrics({namespace:"exampleApplication", service:"exampleService"});
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    export class MyFunction {
+    export class MyFunction extends LambdaInterface {
 
         @metrics.logMetrics()
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-            metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);
+        public async handler(_event: any, _context: any): Promise<unknown> {
+            metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         }
     }
     ```
@@ -319,12 +363,12 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 
     ```json hl_lines="2 7 10 15 22"
     {
-        "bookingConfirmation": 1.0,
+        "successfulBooking": 1.0,
         "_aws": {
         "Timestamp": 1592234975665,
         "CloudWatchMetrics": [
             {
-            "Namespace": "exampleApplication",
+            "Namespace": "successfulBooking",
             "Dimensions": [
                 [
                 "service"
@@ -332,49 +376,29 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
             ],
             "Metrics": [
                 {
-                "Name": "bookingConfirmation",
+                "Name": "successfulBooking",
                 "Unit": "Count"
                 }
             ]
             }
         ]
         },
-        "service": "exampleService"
+        "service": "orders"
     }
     ```
-
-
-#### Manually
-
-You can manually flush the metrics with `purgeStoredMetrics` as follows:
-
-!!! warning
-    Metrics, dimensions and namespace validation still applies.
-
-```typescript hl_lines="8"
-import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-
-const metrics = new Metrics();
-
-const lambdaHandler: Handler = async () => {
-    metrics.addMetric('test-metric', MetricUnits.Count, 10);
-    metrics.purgeStoredMetrics();
-};
-```
 
 #### Throwing a RangeError when no metrics are emitted
 
 If you want to ensure that at least one metric is emitted before you flush them, you can use the `raiseOnEmptyMetrics` parameter and pass it to the middleware or decorator:
 
-```typescript hl_lines="12"
+```typescript hl_lines="11"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda';
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace:"exampleApplication", service:"exampleService"});
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    const lambdaHandler = async (event: any, context: Context) => {
-        metrics.addMetric('bookingConfirmation', MetricUnits.Count, 1);
+    const lambdaHandler = async (_event: any, _context: any) => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
     }
 
     export const handler = middy(lambdaHandler)
@@ -387,14 +411,13 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 
 === "logMetrics middleware"
 
-    ```typescript hl_lines="12"
+    ```typescript hl_lines="11"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda';
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace: 'serverlessAirline', service: 'orders' });
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    const lambdaHandler = async (event: any, context: Context) => {
+    const lambdaHandler = async (_event: any, _context: any) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
     }
 
@@ -406,15 +429,14 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 
     ```typescript hl_lines="9"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context, Callback } from 'aws-lambda'; 
-    import middy from '@middy/core';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
     const metrics = new Metrics({namespace: 'serverlessAirline', service: 'orders' });
 
-    export class MyFunction {
+    export class MyFunction extends LambdaInterface {
 
         @metrics.logMetrics({ captureColdStartMetric: true })
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler(_event: any, _context: any): Promise<unknown> {
             metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         }
     }
@@ -423,7 +445,7 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 If it's a cold start invocation, this feature will:
 
 * Create a separate EMF blob solely containing a metric named `ColdStart`
-* Add `function_name`, `service` and default dimensions
+* Add the `function_name`, `service` and default dimensions
 
 This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
 
@@ -433,7 +455,7 @@ This has the advantage of keeping cold start metric separate from your applicati
 
 ### Adding metadata
 
-You can add high-cardinality data as part of your Metrics log with `addMetadata` method. This is useful when you want to search highly contextual information along with your metrics in your logs.
+You can add high-cardinality data as part of your Metrics log with the `addMetadata` method. This is useful when you want to search highly contextual information along with your metrics in your logs.
 
 !!! warning
     **This will not be available during metrics visualization** - Use **dimensions** for this purpose
@@ -442,12 +464,12 @@ You can add high-cardinality data as part of your Metrics log with `addMetadata`
 
     ```typescript hl_lines="8"
         import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
-        import { Context } from 'aws-lambda';
         import middy from '@middy/core';
 
-        const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+        const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-        const lambdaHandler = async (event: any, context: Context) => {
+        const lambdaHandler = async (_event: any, _context: any) => {
+            metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
             metrics.addMetadata('bookingId', '7051cd10-6283-11ec-90d6-0242ac120003');
         }
 
@@ -464,7 +486,7 @@ You can add high-cardinality data as part of your Metrics log with `addMetadata`
         "Timestamp": 1592234975665,
         "CloudWatchMetrics": [
             {
-            "Namespace": "exampleApplication",
+            "Namespace": "serverlessAirline",
             "Dimensions": [
                 [
                 "service"
@@ -479,7 +501,7 @@ You can add high-cardinality data as part of your Metrics log with `addMetadata`
             }
         ]
         },
-        "service": "booking",
+        "service": "orders",
         "bookingId": "7051cd10-6283-11ec-90d6-0242ac120003"
     }
     ```
@@ -496,14 +518,13 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 
 === "logMetrics middleware"
 
-    ```typescript hl_lines="12 14 15"
+    ```typescript hl_lines="11 13-14"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
-    import { Context } from 'aws-lambda';
     import middy from '@middy/core';
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    const lambdaHandler = async (event: any, context: Context) => {
+    const lambdaHandler = async (_event: any, _context: any) => {
         metrics.addDimension('metricUnit', 'milliseconds');
         // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
         metrics.addMetric('latency', MetricUnits.Milliseconds, 56);
@@ -515,21 +536,21 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
     }
 
     export const handler = middy(lambdaHandler)
-        .use(logMetrics(metrics, { captureColdStartMetric: true } }));
+        .use(logMetrics(metrics));
     ```
 
 === "logMetrics decorator"
 
-    ```typescript hl_lines="14 16 17"
+    ```typescript hl_lines="14 16-17"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-    import { Context, Callback } from 'aws-lambda';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
-    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+    const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    export class MyFunction {
+    class Lambda extends LambdaInterface {
 
         @metrics.logMetrics()
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler(_event: any, _context: any): Promise<unknown> {
             metrics.addDimension('metricUnit', 'milliseconds');
             // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
             metrics.addMetric('latency', MetricUnits.Milliseconds, 56);
@@ -540,4 +561,7 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
             singleMetric.addMetric('orderSubmitted', MetricUnits.Count, 1);
         }
     }
+
+    export const myFunction = new Lambda();
+    export const handler = myFunction.handler;
     ```

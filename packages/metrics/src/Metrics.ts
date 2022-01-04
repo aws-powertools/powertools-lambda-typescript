@@ -392,7 +392,7 @@ class Metrics implements MetricsInterface {
 
   private isNewMetric(name: string, unit: MetricUnit): boolean {
     if (this.storedMetrics[name]){
-      // Inconsistent units indicates a bug or typos. We want to flag this to users early early
+      // Inconsistent units indicates a bug or typos and we want to flag this to users early
       if (this.storedMetrics[name].unit !== unit) {
         throw new Error('The same metric name has been added before with a different unit.');
       }

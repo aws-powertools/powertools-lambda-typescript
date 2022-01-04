@@ -394,7 +394,8 @@ class Metrics implements MetricsInterface {
     if (this.storedMetrics[name]){
       // Inconsistent units indicates a bug or typos and we want to flag this to users early
       if (this.storedMetrics[name].unit !== unit) {
-        throw new Error('The same metric name has been added before with a different unit.');
+        const currentUnit = this.storedMetrics[name].unit;
+        throw new Error(`Metric "${name}" has already been added with unit "${currentUnit}", but we received unit "${unit}". Did you mean to use metric unit "${currentUnit}"?`);
       }
       
       return false;

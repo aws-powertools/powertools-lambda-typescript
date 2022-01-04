@@ -465,7 +465,7 @@ describe('Class: Metrics', () => {
       try {
         metrics.addMetric('test_name', MetricUnits.Seconds, 10);
       } catch (e) {
-        expect((<Error>e).message).toBe('The same metric name has been added before with a different unit.');
+        expect((<Error>e).message).toBe('Metric "test_name" has already been added with unit "Count", but we received unit "Seconds". Did you mean to use metric unit "Count"?');
       }
     });
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-beta.19](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.18...v0.2.0-beta.19) (2022-01-04)
+
+
+### Bug Fixes
+
+* **metrics:** Support multiple addMetric() call with the same metric name ([#390](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/390)) ([91a2bba](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/91a2bbabbed67b6c4a802e6313dfef6243ebffc8))
+
+
+
+
+
 # [0.2.0-beta.18](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.17...v0.2.0-beta.18) (2022-01-04)
 
 **Note:** Version bump only for package aws-lambda-powertools-typescript

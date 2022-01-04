@@ -59,7 +59,7 @@ type ExtraOptions = {
 type StoredMetric = {
   name: string
   unit: MetricUnit
-  value: number
+  value: number | number[]
 };
 
 type StoredMetrics = {

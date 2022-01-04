@@ -132,7 +132,7 @@ You can create metrics using `addMetric`, and you can create dimensions for all 
 !!! warning "Do not create metrics or dimensions outside the handler"
     Metrics or dimensions added in the global scope will only be added during cold start. Disregard if that's the intended behaviour.
 
-### Adding the same metric multiple times
+### Adding multi-value metrics
 You can call `addMetric()` with the same name multiple times. The values will be grouped together in an array.
 
 === "addMetric() with the same name"

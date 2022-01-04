@@ -1,4 +1,4 @@
-name: release
+name: on-merge-to-main
 on:
   push:
     branches:

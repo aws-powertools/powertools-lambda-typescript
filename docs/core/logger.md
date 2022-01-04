@@ -154,7 +154,7 @@ Key | Example
     class Lambda extends LambdaInterface {
         // Decorate your handler class method
         @logger.injectLambdaContext()
-        public async handler(_event: any, _context: any): Promise<unknown> {
+        public async handler(_event: any, _context: any): Promise<void> {
             logger.info("This is an INFO log with some context");
         }
 

@@ -163,6 +163,12 @@ See examples below:
 
 === "Middy middleware"
 
+    !!! note
+        Middy comes bundled with Metrics, so you can just import it when using the middleware.
+
+    !!! tip "Using Middy for the first time?"
+        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
     ```typescript hl_lines="5"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
     import { Context } from 'aws-lambda';
@@ -335,7 +341,7 @@ export class MyFunction {
 
 #### Manually
 
-You can manually flush the metrics with `purgeStoredMetrics` as follows:
+You can manually flush the metrics with `publishStoredMetrics` as follows:
 
 !!! warning
     Metrics, dimensions and namespace validation still applies.
@@ -348,7 +354,7 @@ const metrics = new Metrics();
 const lambdaHandler: Handler = async () => {
     metrics.addMetric('test-metric', MetricUnits.Count, 10);
     const metricsObject = metrics.serializeMetrics();
-    metrics.purgeStoredMetrics();
+    metrics.publishStoredMetrics();
     console.log(JSON.stringify(metricsObject));
 };
 ```

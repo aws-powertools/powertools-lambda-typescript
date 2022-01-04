@@ -5,13 +5,13 @@ const namespace = process.env.EXPECTED_NAMESPACE ?? 'CDKExample';
 const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
 const metricName = process.env.EXPECTED_METRIC_NAME ?? 'MyMetric';
 const metricUnit = (process.env.EXPECTED_METRIC_UNIT as MetricUnits) ?? MetricUnits.Count;
-const metricValue = process.env.EXPECTED_METRIC_VALUE ?? 1;
+const metricValue = process.env.EXPECTED_METRIC_VALUE ?? '1';
 const defaultDimensions = process.env.EXPECTED_DEFAULT_DIMENSIONS ?? '{"MyDimension":"MyValue"}';
 const extraDimension = process.env.EXPECTED_EXTRA_DIMENSION ?? '{"MyExtraDimension":"MyExtraValue"}';
 const singleMetricDimension = process.env.EXPECTED_SINGLE_METRIC_DIMENSION ?? '{"MySingleMetricDim":"MySingleValue"}';
 const singleMetricName = process.env.EXPECTED_SINGLE_METRIC_NAME ?? 'MySingleMetric';
 const singleMetricUnit = (process.env.EXPECTED_SINGLE_METRIC_UNIT as MetricUnits) ?? MetricUnits.Percent;
-const singleMetricValue = process.env.EXPECTED_SINGLE_METRIC_VALUE ?? 2;
+const singleMetricValue = process.env.EXPECTED_SINGLE_METRIC_VALUE ?? '2';
 
 const metrics = new Metrics({ namespace: namespace, service: serviceName });
 
@@ -19,7 +19,7 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   metrics.captureColdStartMetric();
   metrics.raiseOnEmptyMetrics();
   metrics.setDefaultDimensions(JSON.parse(defaultDimensions));
-  metrics.addMetric(metricName, metricUnit, metricValue as number);
+  metrics.addMetric(metricName, metricUnit, parseInt(metricValue));
   metrics.addDimension(
     Object.entries(JSON.parse(extraDimension))[0][0],
     Object.entries(JSON.parse(extraDimension))[0][1] as string,
@@ -30,8 +30,8 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     Object.entries(JSON.parse(singleMetricDimension))[0][0],
     Object.entries(JSON.parse(singleMetricDimension))[0][1] as string,
   );
-  metricWithItsOwnDimensions.addMetric(singleMetricName, singleMetricUnit, singleMetricValue as number);
+  metricWithItsOwnDimensions.addMetric(singleMetricName, singleMetricUnit, parseInt(singleMetricValue));
 
-  metrics.purgeStoredMetrics();
+  metrics.publishStoredMetrics();
   metrics.raiseOnEmptyMetrics();
 };

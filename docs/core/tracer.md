@@ -72,6 +72,12 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Middleware"
 
+    !!! note
+        Middy comes bundled with Tracer, so you can just import it when using the middleware.
+
+    !!! tip "Using Middy for the first time?"
+        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
     ```typescript hl_lines="1-2 4 7 9"
     import { Tracer } from '@aws-lambda-powertools/tracer';
     import middy from '@middy/core';
@@ -105,7 +111,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Manual"
 
-    ```typescript hl_lines="1 3 7 9 11 17 20 24"
+    ```typescript hl_lines="1 3 7 9-10 13-14 20 23 27 29"
     import { Tracer } from '@aws-lambda-powertools/tracer';
     
     const tracer = Tracer(); // Sets service via env var
@@ -252,8 +258,6 @@ You can trace other methods using the `captureMethod` decorator or manual instru
     }
     ```
 
-## Advanced
-
 ### Patching AWS SDK clients
 
 Tracer can patch [AWS SDK clients](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-awssdkclients.html) and create traces when your application makes calls to AWS services.
@@ -299,6 +303,8 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
     const tracer = new Tracer();
     const s3 = tracer.captureAWSClient(new S3({ apiVersion: "2006-03-01" }));
     ```
+
+## Advanced
 
 ### Disabling response auto-capture
 

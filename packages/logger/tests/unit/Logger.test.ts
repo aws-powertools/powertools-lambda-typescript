@@ -12,14 +12,22 @@ import { Context } from 'aws-lambda';
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
 
-const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+const consoleSpy = {
+  'debug': jest.spyOn(console, 'debug').mockImplementation(),
+  'info': jest.spyOn(console, 'info').mockImplementation(),
+  'warn': jest.spyOn(console, 'warn').mockImplementation(),
+  'error': jest.spyOn(console, 'error').mockImplementation(),
+};
 
 describe('Class: Logger', () => {
 
   beforeEach(() => {
     Logger.setColdStartValue(undefined);
     Logger.setColdStartEvaluatedValue(false);
-    consoleSpy.mockClear();
+    consoleSpy['debug'].mockClear();
+    consoleSpy['info'].mockClear();
+    consoleSpy['warn'].mockClear();
+    consoleSpy['error'].mockClear();
     dateSpy.mockClear();
   });
 
@@ -43,8 +51,9 @@ describe('Class: Logger', () => {
     ) => {
 
       describe('Feature: log level', () => {
+        const methodOfLogger = method as keyof ClassThatLogs;
 
-        test('when the Logger\'s log level is DEBUG, it '+ debugAction + ' prints to stdout', () => {
+        test('when the Logger\'s log level is DEBUG, it '+ debugAction + ' print to stdout', () => {
 
           // Prepare
           const logger: ClassThatLogs = createLogger({
@@ -52,20 +61,20 @@ describe('Class: Logger', () => {
           });
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(debugPrints ? 1 : 0);
+          expect(console[methodOfLogger]).toBeCalledTimes(debugPrints ? 1 : 0);
           if (debugPrints) {
-            expect(console.log).toHaveBeenNthCalledWith(1, {
+            expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+              level: methodOfLogger.toUpperCase(),
               message: 'foo',
               service: 'hello-world',
-              level: method.toUpperCase(),
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-            });
+            }));
           }
 
         });
@@ -78,20 +87,20 @@ describe('Class: Logger', () => {
           });
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(infoPrints ? 1 : 0);
+          expect(console[methodOfLogger]).toBeCalledTimes(infoPrints ? 1 : 0);
           if (infoPrints) {
-            expect(console.log).toHaveBeenNthCalledWith(1, {
+            expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+              level: methodOfLogger.toUpperCase(),
               message: 'foo',
               service: 'hello-world',
-              level: method.toUpperCase(),
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-            });
+            }));
           }
 
         });
@@ -104,20 +113,20 @@ describe('Class: Logger', () => {
           });
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(warnPrints ? 1 : 0);
+          expect(console[methodOfLogger]).toBeCalledTimes(warnPrints ? 1 : 0);
           if (warnPrints) {
-            expect(console.log).toHaveBeenNthCalledWith(1, {
+            expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+              level: methodOfLogger.toUpperCase(),
               message: 'foo',
               service: 'hello-world',
-              level: method.toUpperCase(),
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-            });
+            }));
           }
 
         });
@@ -130,20 +139,20 @@ describe('Class: Logger', () => {
           });
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(errorPrints ? 1 : 0);
+          expect(console[methodOfLogger]).toBeCalledTimes(errorPrints ? 1 : 0);
           if (errorPrints) {
-            expect(console.log).toHaveBeenNthCalledWith(1, {
+            expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+              level: methodOfLogger.toUpperCase(),
               message: 'foo',
               service: 'hello-world',
-              level: method.toUpperCase(),
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-            });
+            }));
           }
 
         });
@@ -151,6 +160,8 @@ describe('Class: Logger', () => {
       });
 
       describe('Feature: sample rate', () => {
+
+        const methodOfLogger = method as keyof ClassThatLogs;
 
         test('when the Logger\'s log level is higher and the current Lambda invocation IS NOT sampled for logging, it DOES NOT print to stdout', () => {
 
@@ -161,12 +172,12 @@ describe('Class: Logger', () => {
           });
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(method === 'error' ? 1 : 0);
+          expect(console[methodOfLogger]).toBeCalledTimes(method === 'error' ? 1 : 0);
         });
 
         test('when the Logger\'s log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout', () => {
@@ -178,25 +189,27 @@ describe('Class: Logger', () => {
           });
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(1);
-          expect(console.log).toHaveBeenNthCalledWith(1, {
+          expect(console[methodOfLogger]).toBeCalledTimes(1);
+          expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: method.toUpperCase(),
             message: 'foo',
             sampling_rate: 1,
             service: 'hello-world',
-            level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
+          }));
         });
 
       });
 
       describe('Feature: capture Lambda context information and add it in the printed logs', () => {
+
+        const methodOfLogger = method as keyof ClassThatLogs;
 
         test('when the Lambda context is not captured and a string is passed as log message, it should print a valid '+ method.toUpperCase() + ' log', () => {
 
@@ -204,19 +217,19 @@ describe('Class: Logger', () => {
           const logger: ClassThatLogs = createLogger();
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(1);
-          expect(console.log).toHaveBeenNthCalledWith(1, {
+          expect(console[methodOfLogger]).toBeCalledTimes(1);
+          expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: method.toUpperCase(),
             message: 'foo',
             service: 'hello-world',
-            level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
+          }));
         });
 
         test('when the Lambda context is captured, it returns a valid '+ method.toUpperCase() + ' log', () => {
@@ -228,13 +241,13 @@ describe('Class: Logger', () => {
           logger.addContext(dummyContext);
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(1);
-          expect(console.log).toHaveBeenNthCalledWith(1, {
+          expect(console[methodOfLogger]).toBeCalledTimes(1);
+          expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
             cold_start: true,
             function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
             function_memory_size: 128,
@@ -245,13 +258,16 @@ describe('Class: Logger', () => {
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
+          }));
 
         });
 
       });
 
       describe('Feature: ephemeral log attributes', () => {
+
+        const methodOfLogger = method as keyof ClassThatLogs;
+        const methodOfConsole = methodOfLogger;
 
         test('when added, they should appear in that log item only', () => {
 
@@ -261,78 +277,83 @@ describe('Class: Logger', () => {
           });
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('A log item without extra parameters');
-            logger[method as keyof ClassThatLogs]('A log item with a string as first parameter, and an object as second parameter', { extra: 'parameter' });
-            logger[method as keyof ClassThatLogs]('A log item with a string as first parameter, and objects as other parameters', { parameterOne: 'foo' }, { parameterTwo: 'bar' });
-            logger[method as keyof ClassThatLogs]( { message: 'A log item with an object as first parameters', extra: 'parameter' });
-            logger[method as keyof ClassThatLogs]('A log item with a string as first parameter, and an error as second parameter', new Error('Something happened!') );
-            logger[method as keyof ClassThatLogs]('A log item with a string as first parameter, and an error with custom key as second parameter', { myCustomErrorKey: new Error('Something happened!') });
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('A log item without extra parameters');
+            logger[methodOfLogger]('A log item with a string as first parameter, and an object as second parameter', { extra: 'parameter' });
+            logger[methodOfLogger]('A log item with a string as first parameter, and objects as other parameters', { parameterOne: 'foo' }, { parameterTwo: 'bar' });
+            logger[methodOfLogger]( { message: 'A log item with an object as first parameters', extra: 'parameter' });
+            logger[methodOfLogger]('A log item with a string as first parameter, and an error as second parameter', new Error('Something happened!') );
+            logger[methodOfLogger]('A log item with a string as first parameter, and an error with custom key as second parameter', { myCustomErrorKey: new Error('Something happened!') });
           }
 
           // Assess
-          expect(console.log).toHaveBeenNthCalledWith(1, {
+          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: method.toUpperCase(),
             message: 'A log item without extra parameters',
             service: 'hello-world',
-            level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
-          expect(console.log).toHaveBeenNthCalledWith(2, {
-            extra: 'parameter',
+          }));
+          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(2, JSON.stringify({
+            level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and an object as second parameter',
             service: 'hello-world',
-            level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
-          expect(console.log).toHaveBeenNthCalledWith(3, {
+            extra: 'parameter',
+          }));
+          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(3, JSON.stringify({
+            level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and objects as other parameters',
             service: 'hello-world',
-            level: method.toUpperCase(),
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             parameterOne: 'foo',
             parameterTwo: 'bar',
-            timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
-          expect(console.log).toHaveBeenNthCalledWith(4, {
-            extra: 'parameter',
+          }));
+          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(4, JSON.stringify({
+            level: method.toUpperCase(),
             message: 'A log item with an object as first parameters',
             service: 'hello-world',
-            level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
-          expect(console.log).toHaveBeenNthCalledWith(5, {
+            extra: 'parameter',
+          }));
+          const parameterCallNumber5 = JSON.parse(consoleSpy[methodOfConsole].mock.calls[4][0]);
+          expect(parameterCallNumber5).toEqual(expect.objectContaining( {
+            level: method.toUpperCase(),
+            message: 'A log item with a string as first parameter, and an error as second parameter',
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             error: {
               location: expect.stringMatching(/Logger.test.ts:[0-9]+$/),
               message: 'Something happened!',
               name: 'Error',
               stack: expect.stringMatching(/Logger.test.ts:[0-9]+:[0-9]+/),
             },
+          }));
+          const parameterCallNumber6 = JSON.parse(consoleSpy[methodOfConsole].mock.calls[5][0]);
+          expect(parameterCallNumber6).toEqual(expect.objectContaining({
             level: method.toUpperCase(),
-            message: 'A log item with a string as first parameter, and an error as second parameter',
+            message: 'A log item with a string as first parameter, and an error with custom key as second parameter',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
-          expect(console.log).toHaveBeenNthCalledWith(6, {
-            level: method.toUpperCase(),
-            message: 'A log item with a string as first parameter, and an error with custom key as second parameter',
             myCustomErrorKey: {
               location: expect.stringMatching(/Logger.test.ts:[0-9]+$/),
               message: 'Something happened!',
               name: 'Error',
               stack: expect.stringMatching(/Logger.test.ts:[0-9]+:[0-9]+/),
             },
-            service: 'hello-world',
-            timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
+          }));
         });
       });
 
       describe('Feature: persistent log attributes', () => {
+
+        const methodOfLogger = method as keyof ClassThatLogs;
+        const methodOfConsole = methodOfLogger;
 
         test('when persistent log attributes are added to the Logger instance, they should appear in all logs printed by the instance', () => {
 
@@ -346,26 +367,29 @@ describe('Class: Logger', () => {
           });
 
           // Act
-          if (logger[method as keyof ClassThatLogs]) {
-            logger[method as keyof ClassThatLogs]('foo');
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(console.log).toBeCalledTimes(1);
-          expect(console.log).toHaveBeenNthCalledWith(1, {
-            aws_account_id: '123456789012',
-            aws_region: 'eu-central-1',
+          expect(console[methodOfConsole]).toBeCalledTimes(1);
+          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: method.toUpperCase(),
             message: 'foo',
             service: 'hello-world',
-            level: method.toUpperCase(),
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
+            aws_account_id: '123456789012',
+            aws_region: 'eu-central-1',
+          }));
         });
 
       });
 
       describe('Feature: handle safely unexpected errors', () => {
+
+        const methodOfLogger = method as keyof ClassThatLogs;
+        const methodOfConsole = methodOfLogger;
 
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
 
@@ -379,8 +403,8 @@ describe('Class: Logger', () => {
           };
           circularObject.self = circularObject;
           const logCircularReference = (): string => {
-            if (logger[method as keyof ClassThatLogs]) {
-              logger[method as keyof ClassThatLogs]('A log with a circular reference', { details: circularObject });
+            if (logger[methodOfLogger]) {
+              logger[methodOfLogger]('A log with a circular reference', { details: circularObject });
             }
 
             return 'All good!';
@@ -391,16 +415,16 @@ describe('Class: Logger', () => {
 
           // Assess
           expect(result).toBe('All good!');
-          expect(console.log).toHaveBeenNthCalledWith(1, {
+          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: method.toUpperCase(),
+            message: 'A log with a circular reference',
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             details: {
               foo: 'bar',
             },
-            message: 'A log with a circular reference',
-            service: 'hello-world',
-            level: method.toUpperCase(),
-            timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-          });
+          }));
 
         });
 
@@ -595,26 +619,26 @@ describe('Class: Logger', () => {
 
       // Assess
 
-      expect(console.log).toBeCalledTimes(2);
-      expect(console.log).toHaveBeenNthCalledWith(1, {
+      expect(console['info']).toBeCalledTimes(2);
+      expect(console['info']).toHaveBeenNthCalledWith(1, JSON.stringify({
+        level: 'INFO',
         message: 'An INFO log without context!',
         service: 'hello-world',
-        level: 'INFO',
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-      });
-      expect(console.log).toHaveBeenNthCalledWith(2, {
+      }));
+      expect(console['info']).toHaveBeenNthCalledWith(2, JSON.stringify({
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
         function_memory_size: 128,
         function_name: 'foo-bar-function',
         function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        level: 'INFO',
         message: 'This is an INFO log with some context',
         service: 'hello-world',
-        level: 'INFO',
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
-      });
+      }));
 
     });
 

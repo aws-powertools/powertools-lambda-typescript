@@ -14,7 +14,7 @@ const metrics = new Metrics();
 
 const lambdaHandler = async (): Promise<void> => {
   metrics.addMetric('test-metric', MetricUnits.Count, 10);
-  metrics.purgeStoredMetrics();
+  metrics.publishStoredMetrics();
 };
 
 const handlerWithMiddleware = middy(lambdaHandler)

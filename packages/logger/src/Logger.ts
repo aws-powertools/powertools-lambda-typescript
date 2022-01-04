@@ -81,14 +81,11 @@ class Logger implements ClassThatLogs {
   }
 
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (!this.shouldPrint('DEBUG')) {
-      return;
-    }
-    this.printLog(this.createAndPopulateLogItem('DEBUG', input, extraInput));
+    this.processLogItem('DEBUG', input, extraInput);
   }
 
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.printLog(this.createAndPopulateLogItem('ERROR', input, extraInput));
+    this.processLogItem('ERROR', input, extraInput);
   }
 
   public static evaluateColdStartOnce(): void {
@@ -110,10 +107,7 @@ class Logger implements ClassThatLogs {
   }
 
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (!this.shouldPrint('INFO')) {
-      return;
-    }
-    this.printLog(this.createAndPopulateLogItem('INFO', input, extraInput));
+    this.processLogItem('INFO', input, extraInput);
   }
 
   public injectLambdaContext(): HandlerMethodDecorator {
@@ -149,10 +143,7 @@ class Logger implements ClassThatLogs {
   }
 
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (!this.shouldPrint('WARN')) {
-      return;
-    }
-    this.printLog(this.createAndPopulateLogItem('WARN', input, extraInput));
+    this.processLogItem('WARN', input, extraInput);
   }
 
   private addToPowertoolLogData(...attributesArray: Array<Partial<PowertoolLogData>>): void {
@@ -234,29 +225,46 @@ class Logger implements ClassThatLogs {
     return typeof logLevel === 'string' && logLevel.toUpperCase() in this.logLevelThresholds;
   }
 
-  private printLog(log: LogItem): void {
+  private printLog(logLevel: LogLevel, log: LogItem): void {
     log.prepareForPrint();
 
+    const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
+
+    console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
+  }
+
+  private processLogItem(logLevel: LogLevel, input: LogItemMessage, extraInput: LogItemExtraInput): void {
+    if (!this.shouldPrint(logLevel)) {
+      return;
+    }
+    this.printLog(logLevel, this.createAndPopulateLogItem(logLevel, input, extraInput));
+  }
+
+  /**
+   * When the data added in the log item when contains object references,
+   * JSON.stringify() doesn't try to solve them and throws an error: TypeError: cyclic object value.
+   * To mitigate this issue, this function will find and remove the cyclic references.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
+   * @private
+   */
+  private removeCircularDependencies(): (key: string, value: LogAttributes) => void {
     const references = new WeakSet();
 
-    console.log(
-      JSON.parse(
-        JSON.stringify(log.getAttributes(), (key: string, value: LogAttributes) => {
-          let item = value;
-          if (item instanceof Error) {
-            item = this.getLogFormatter().formatError(item);
-          }
-          if (typeof item === 'object' && value !== null) {
-            if (references.has(item)) {
-              return;
-            }
-            references.add(item);
-          }
+    return (key, value) => {
+      let item = value;
+      if (item instanceof Error) {
+        item = this.getLogFormatter().formatError(item);
+      }
+      if (typeof item === 'object' && value !== null) {
+        if (references.has(item)) {
+          return;
+        }
+        references.add(item);
+      }
 
-          return item;
-        }),
-      ),
-    );
+      return item;
+    };
   }
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {

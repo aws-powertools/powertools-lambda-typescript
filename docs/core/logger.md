@@ -105,11 +105,15 @@ Key | Example
 **function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
 **function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
-#### Method 1, using a [Middy](https://github.com/middyjs/middy) middleware:
+=== "Middleware"
 
-=== "handler.ts"
+    !!! note
+        Middy comes bundled with Logger, so you can just import it when using the middleware.
 
-    ```typescript hl_lines="1 9-11"
+    !!! tip "Using Middy for the first time?"
+        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
+    ```typescript hl_lines="1-2 10-11"
     import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
     import middy from '@middy/core';
 
@@ -123,9 +127,7 @@ Key | Example
         .use(injectLambdaContext(logger));
     ```
 
-#### Method 2, calling the `addContext` method:
-
-=== "handler.ts"
+=== "Manual"
 
     ```typescript hl_lines="7"
     import { Logger } from "@aws-lambda-powertools/logger";
@@ -141,9 +143,7 @@ Key | Example
     };
     ```
 
-#### Method 3, using a class decorator:
-
-=== "handler.ts"
+=== "Decorator"
 
     ```typescript hl_lines="7"
     import { Logger } from "@aws-lambda-powertools/logger";
@@ -456,21 +456,26 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
 
 === "handler.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="6"
     import { Logger } from "@aws-lambda-powertools/logger";
 
+    // Notice the log level set to 'ERROR'
     const logger = new Logger({
         logLevel: "ERROR",
         sampleRateValue: 0.5
     });
     
     const lambdaHandler = async () => {
-    
-        // 0.5 means that you have 50% chance that these logs will be printed
-        logger.info("This is INFO log #1");
-        logger.info("This is INFO log #2");
-        logger.info("This is INFO log #3");
-        logger.info("This is INFO log #4");
+
+        // This log item (equal to log level 'ERROR') will be printed to standard output
+        // in all Lambda invocations
+        logger.error("This is an ERROR log");
+
+        // These log items (below the log level 'ERROR') have ~50% chance 
+        // of being printed in a Lambda invocation
+        logger.debug("This is a DEBUG log that has 50% chance of being printed");
+        logger.info("This is an INFO log that has 50% chance of being printed");
+        logger.warn("This is a WARN log that has 50% chance of being printed");
         
         // Optional: refresh sample rate calculation on runtime
         // logger.refreshSampleRateCalculation();
@@ -478,20 +483,20 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
     };
     ```
 
-=== "Example CloudWatch Logs excerpt"
+=== "Example CloudWatch Logs excerpt - Invocation #1"
 
-    ```json hl_lines="4 12 20 28"
+    ```json
     {
-        "level": "INFO",
-        "message": "This is INFO log #1",
+        "level": "ERROR",
+        "message": "This is an ERROR log",
         "sampling_rate": "0.5",
         "service": "shopping-cart-api",
         "timestamp": "2021-12-12T22:59:06.334Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
-        "level": "INFO",
-        "message": "This is INFO log #2",
+        "level": "DEBUG",
+        "message": "This is a DEBUG log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
         "service": "shopping-cart-api",
         "timestamp": "2021-12-12T22:59:06.337Z",
@@ -499,18 +504,81 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
     }
     {
         "level": "INFO",
-        "message": "This is INFO log #3",
+        "message": "This is an INFO log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
         "service": "shopping-cart-api",
         "timestamp": "2021-12-12T22:59:06.338Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
-        "level": "INFO",
-        "message": "This is INFO log #4",
+        "level": "WARN",
+        "message": "This is a WARN log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
         "service": "shopping-cart-api",
         "timestamp": "2021-12-12T22:59:06.338Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    ```
+
+=== "Example CloudWatch Logs excerpt - Invocation #2"
+
+    ```json
+    {
+        "level": "ERROR",
+        "message": "This is an ERROR log",
+        "sampling_rate": "0.5",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.334Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    ```
+
+=== "Example CloudWatch Logs excerpt - Invocation #3"
+
+    ```json
+    {
+        "level": "ERROR",
+        "message": "This is an ERROR log",
+        "sampling_rate": "0.5",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.334Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    {
+        "level": "DEBUG",
+        "message": "This is a DEBUG log that has 50% chance of being printed",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.337Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    {
+        "level": "INFO",
+        "message": "This is an INFO log that has 50% chance of being printed",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.338Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    {
+        "level": "WARN",
+        "message": "This is a WARN log that has 50% chance of being printed",
+        "sampling_rate": "0.5", 
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.338Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    ```
+
+=== "Example CloudWatch Logs excerpt - Invocation #4"
+
+    ```json
+    {
+        "level": "ERROR",
+        "message": "This is an ERROR log",
+        "sampling_rate": "0.5",
+        "service": "shopping-cart-api",
+        "timestamp": "2021-12-12T22:59:06.334Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
@@ -622,3 +690,46 @@ This is how the printed log would look:
             "awsAccountId": "123456789012"
         }
     ```
+
+## Testing your code
+
+### Inject Lambda Context
+
+When unit testing your code that makes use of `logger.addContext()` or `injectLambdaContext` middleware and decorator, you can optionally pass a dummy Lambda Context if you want your logs to contain this information.
+
+This is a Jest sample that provides the minimum information necessary for Logger to inject context data:
+
+=== "handler.test.ts"
+
+```typescript
+
+const dummyContext = {
+    callbackWaitsForEmptyEventLoop: true,
+    functionVersion: '$LATEST',
+    functionName: 'foo-bar-function',
+    memoryLimitInMB: '128',
+    logGroupName: '/aws/lambda/foo-bar-function',
+    logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+    invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+    getRemainingTimeInMillis: () => 1234,
+    done: () => console.log('Done!'),
+    fail: () => console.log('Failed!'),
+    succeed: () => console.log('Succeeded!'),
+};
+
+describe('MyUnitTest', () => {
+
+    test('Lambda invoked successfully', async () => {
+       
+       const testEvent = { test: 'test' };
+        await handler(testEvent, dummyContext);
+
+    });
+
+});
+
+```
+
+!!! tip
+    If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/commons/src/tests/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).

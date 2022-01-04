@@ -301,7 +301,7 @@ You can manually flush the metrics with `publishStoredMetrics` as follows:
 
     export const handler = async (_event: any, _context: any) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 10);
-        metrics.purgeStoredMetrics();
+        metrics.publishStoredMetrics();
     };
     ```
 

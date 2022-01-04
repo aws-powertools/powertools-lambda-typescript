@@ -287,7 +287,7 @@ If you do not use the middleware or decorator, you have to flush your metrics ma
 
 #### Manually
 
-You can manually flush the metrics with `purgeStoredMetrics` as follows:
+You can manually flush the metrics with `publishStoredMetrics` as follows:
 
 !!! warning
     Metrics, dimensions and namespace validation still applies.

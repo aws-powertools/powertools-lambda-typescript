@@ -266,7 +266,7 @@ If you'd like to remove them at some point, you can use the `clearDefaultDimensi
 
 ### Flushing metrics
 
-As you finish adding all your metrics, you need to serialize and "flush them" by calling `purgeStoredMetrics()`. This will print the metrics to standard output.
+As you finish adding all your metrics, you need to serialize and "flush them" by calling `publishStoredMetrics()`. This will print the metrics to standard output.
 
 You can flush metrics automatically using one of the following methods:  
 

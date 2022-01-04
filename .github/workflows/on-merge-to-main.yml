@@ -1,4 +1,4 @@
-name: release
+name: on-merge-to-main
 on:
   push:
     branches:
@@ -6,22 +6,17 @@ on:
   workflow_dispatch: {}
 jobs:
   publish:
-    #########################
-    # Force Github action to run only a single job at a time (based on the group name)
-    # This is to prevent "race-condition" in publishing a new version of doc to `gh-pages` (#365)
-    #########################
-    concurrency:
-      group: on-release-publish
     runs-on: ubuntu-latest
+
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
       with:
         token: ${{ secrets.GH_PUBLISH_TOKEN }}
         fetch-depth: 0
-      #########################    
-      # Release new version
-      #########################
+    #########################    
+    # Release new version
+    #########################
     - name: "Use NodeJS 14"
       uses: actions/setup-node@v2
       with:
@@ -45,23 +40,24 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
 
-        if [ ${{ github.base_ref }} = main ]; then
-          npx lerna version --conventional-commits --create-release github --force-publish=* --yes
-        else
-          npx lerna version --conventional-commits --conventional-prerelease --preid beta --create-release github --force-publish=* --yes
-        fi
-        npx lerna publish from-git --no-verify-access --yes
-      #########################    
-      # Generate documentation
-      #########################
+        # For merge to main we 
+        ## don't create github release, 
+        ## don't update changelog (--no-changelog) 
+        ## bump version as a pre-release (--conventional-prerelease)
+        ## add a custom preid (--preid dev): 0.2.0-dev.1 -> 0.2.0-dev.2
+        npx lerna version --conventional-commits --conventional-prerelease --preid dev --force-publish=* --yes --no-changelog
+        git push --delete origin $(git describe --abbrev=0)
+    - name: update release draft
+      uses: release-drafter/release-drafter@v5.15.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #########################    
+    # Generate documentation
+    #########################
     - name: Set up Python
       uses: actions/setup-python@v2.3.1
       with:
         python-version: '3.8'
-    - name: Set RELEASE_VERSION env var
-      run: |
-        RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
-        echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
     - name: Install doc generation dependencies
       run: |
         pip install --upgrade pip 
@@ -73,17 +69,10 @@ jobs:
     - name: Build mkdocs site in "gh-pages" branch and push
       run: |
         rm -rf site
-        VERSION="${{ env.RELEASE_VERSION }}"
-        ALIAS="latest"
+        VERSION="dev"
         echo "Publishing doc for version: $VERSION"
         mkdocs build
-        mike deploy --push --update-aliases --no-redirect "$VERSION" "$ALIAS"
-        # Once we have agreed on release process, we will also use "main" 
-        # to track the development version (on main branch). 
-        # For now, we make it the same as the latest version.
-        mike deploy --push --update-aliases --no-redirect "main" "$ALIAS"
-        # Set latest version as a default
-        mike set-default --push latest
+        mike deploy --push "$VERSION"
     - name: Build API docs
       run: |
         rm -rf api
@@ -94,7 +83,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./api
         keep_files: true
-        destination_dir: ${{ env.RELEASE_VERSION }}/api
+        destination_dir: dev/api
     - name: Release API docs to the "latest" version
       uses: peaceiris/actions-gh-pages@v3
       with:

@@ -158,7 +158,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     class Lambda extends LambdaInterface {
         // Decorate your handler class method
         @tracer.captureLambdaHandler()
-        public handler(_event: any, _context: any) {
+        public async handler(_event: any, _context: any): Promise<void> {
             /* ... */
         }
     }
@@ -270,7 +270,7 @@ You can trace other methods using the `captureMethod` decorator or manual instru
             return 'foo bar';
         }
 
-        public async handler(_event: any, _context: any): Promise<unknown> {
+        public async handler(_event: any, _context: any): Promise<void> {
             /* ... */
         }
     }

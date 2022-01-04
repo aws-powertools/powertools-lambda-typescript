@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-beta.17](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.16...v0.2.0-beta.17) (2022-01-04)
+
+**Note:** Version bump only for package @aws-lambda-powertools/metrics
+
+
+
+
+
 # [0.2.0-beta.16](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.15...v0.2.0-beta.16) (2022-01-03)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

@@ -4,13 +4,13 @@
 /**
  * Test metrics standard functions
  *
- * @group e2e/metrics/standardFunctions
+ * @group e2e/metrics/decorator
  */
 
 import { randomUUID } from 'crypto';
 import * as lambda from '@aws-cdk/aws-lambda-nodejs';
-import { App, Stack } from '@aws-cdk/core';
 import { Tracing } from '@aws-cdk/aws-lambda';
+import { App, Stack } from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import * as AWS from 'aws-sdk';
@@ -20,12 +20,12 @@ const cloudwatchClient = new AWS.CloudWatch();
 const lambdaClient = new AWS.Lambda();
 
 const integTestApp = new App();
-const stack = new Stack(integTestApp, 'MetricsE2EStandardFunctionsStack');
+const stack = new Stack(integTestApp, 'MetricsE2EDecoratorStack');
 
 // GIVEN
 const startTime = new Date();
 const expectedNamespace = randomUUID(); // to easily find metrics back at assert phase
-const expectedServiceName = 'MyFunctionWithStandardHandler';
+const expectedServiceName = 'decoratorService';
 const expectedMetricName = 'MyMetric';
 const expectedMetricUnit = MetricUnits.Count;
 const expectedMetricValue = '1';
@@ -35,7 +35,7 @@ const expectedSingleMetricDimension = { MySingleMetricDim: 'MySingleValue' };
 const expectedSingleMetricName = 'MySingleMetric';
 const expectedSingleMetricUnit = MetricUnits.Percent;
 const expectedSingleMetricValue = '2';
-const functionName = 'MyFunctionWithStandardHandler';
+const functionName = 'MyFunctionWithDecoratedHandler';
 new lambda.NodejsFunction(stack, 'MyFunction', {
   functionName: functionName,
   tracing: Tracing.ACTIVE,
@@ -98,7 +98,11 @@ describe('happy cases', () => {
       .promise();
     expect(coldStartMetrics.Metrics?.length).toBe(1);
     const coldStartMetric = coldStartMetrics.Metrics?.[0];
-    expect(coldStartMetric?.Dimensions).toStrictEqual([{ Name: 'service', Value: expectedServiceName }]);
+    expect(coldStartMetric?.Dimensions).toStrictEqual([
+      { Name: 'service', Value: expectedServiceName },
+      { Name: 'function_name', Value: functionName },
+      { Name: Object.keys(expectedDefaultDimensions)[0], Value: expectedDefaultDimensions.MyDimension },
+    ]);
 
     // Check coldstart metric value
     const coldStartMetricStat = await cloudwatchClient
@@ -106,7 +110,11 @@ describe('happy cases', () => {
         {
           Namespace: expectedNamespace,
           StartTime: new Date(startTime.getTime() - 60 * 1000), // minus 1 minute,
-          Dimensions: [{ Name: 'service', Value: expectedServiceName }],
+          Dimensions: [
+            { Name: 'service', Value: expectedServiceName },
+            { Name: 'function_name', Value: functionName },
+            { Name: Object.keys(expectedDefaultDimensions)[0], Value: expectedDefaultDimensions.MyDimension },
+          ],
           EndTime: new Date(new Date().getTime() + 60 * 1000),
           Period: 60,
           MetricName: 'ColdStart',

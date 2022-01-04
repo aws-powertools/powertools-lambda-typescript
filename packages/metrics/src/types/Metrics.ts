@@ -1,5 +1,5 @@
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Handler } from 'aws-lambda';
+import { LambdaInterface, AsyncHandler, SyncHandler } from '@aws-lambda-powertools/commons';
 import { ConfigServiceInterface } from '../config';
 import { MetricUnit } from './MetricUnit';
 
@@ -28,8 +28,8 @@ type EmfOutput = {
 type HandlerMethodDecorator = (
   target: LambdaInterface,
   propertyKey: string | symbol,
-  descriptor: TypedPropertyDescriptor<Handler>
-) => TypedPropertyDescriptor<Handler> | void;
+  descriptor: TypedPropertyDescriptor<SyncHandler<Handler>> | TypedPropertyDescriptor<AsyncHandler<Handler>>
+) => void;
 
 /**
  * Options for the metrics decorator

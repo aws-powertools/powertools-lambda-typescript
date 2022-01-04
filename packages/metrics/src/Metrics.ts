@@ -1,3 +1,4 @@
+import { Callback, Context } from 'aws-lambda';
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
@@ -234,20 +235,26 @@ class Metrics implements MetricsInterface {
       this.setDefaultDimensions(defaultDimensions);
     }
 
-    return (target, propertyKey, descriptor) => {
+    return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
-      descriptor.value = (event, context, callback) => {
+
+      descriptor.value = ( async (event: unknown, context: Context, callback: Callback): Promise<unknown> => {
         this.functionName = context.functionName;
-
         if (captureColdStartMetric) this.captureColdStartMetric();
+          
+        let result: unknown;
         try {
-          const result = originalMethod?.apply(this, [ event, context, callback ]);
-
-          return result;
+          result = await originalMethod?.apply(this, [ event, context, callback ]);
+        } catch (error) {
+          throw error;
         } finally {
           this.publishStoredMetrics();
         }
-      };
+          
+        return result;
+      });
+
+      return descriptor;
     };
   }
 

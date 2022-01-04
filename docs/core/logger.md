@@ -145,22 +145,23 @@ Key | Example
 
 === "Decorator"
 
-    ```typescript hl_lines="7"
+    ```typescript hl_lines="8"
     import { Logger } from "@aws-lambda-powertools/logger";
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
     const logger = new Logger();
     
-    class Lambda {
+    class Lambda extends LambdaInterface {
         // Decorate your handler class method
         @logger.injectLambdaContext()
-        public handler(_event: any, _context: any) {
+        public async handler(_event: any, _context: any): Promise<unknown> {
             logger.info("This is an INFO log with some context");
         }
 
     }
 
-    export const handlerClass = new Lambda();
-    export const handler = handlerClass.handler;
+    export const myFunction = new Lambda();
+    export const handler = myFunction.handler;
     ```
 
 In each case, the printed log will look like this:

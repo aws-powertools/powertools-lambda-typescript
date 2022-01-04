@@ -49,25 +49,30 @@ export class MyFunctionWithDecorator {
       AWS = tracer.captureAWS(AWS);
       stsv2 = new AWS.STS();
     }
-    
-    return Promise.all([
-      stsv2.getCallerIdentity().promise(),
-      stsv3.send(new GetCallerIdentityCommand({})),
-      new Promise((resolve, reject) => {
-        setTimeout(() => {
-          const res = this.myMethod();
-          if (event.throw) {
-            reject(new Error(customErrorMessage));
-          } else {
-            resolve(res);
-          }
-        }, 2000); // We need to wait for to make sure previous calls are finished
-      })
-    ])
-      .then(([ _stsv2Res, _stsv3Res, promiseRes ]) => promiseRes)
-      .catch((err) => {
-        throw err;
-      });
+
+    try {
+      await stsv2.getCallerIdentity().promise();
+    } catch (err) {
+      console.error(err);
+    }
+
+    try {
+      await stsv3.send(new GetCallerIdentityCommand({}));
+    } catch (err) {
+      console.error(err);
+    }
+
+    let res;
+    try {
+      res = this.myMethod();
+      if (event.throw) {
+        throw new Error(customErrorMessage);
+      }
+    } catch (err) {
+      throw err;
+    }
+
+    return res;
   }
 
   @tracer.captureMethod()

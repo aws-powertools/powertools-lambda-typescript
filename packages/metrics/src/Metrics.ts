@@ -312,7 +312,7 @@ class Metrics implements MetricsInterface {
     if (!this.namespace) console.warn('Namespace should be defined, default used');
 
     const metricValues = Object.values(this.storedMetrics).reduce(
-      (result: { [key: string]: number }, { name, value }: { name: string; value: number }) => {
+      (result: { [key: string]: number | number[] }, { name, value }: { name: string; value: number | number[] }) => {
         result[name] = value;
 
         return result;
@@ -391,6 +391,20 @@ class Metrics implements MetricsInterface {
     return <EnvironmentVariablesService> this.envVarsService;
   }
 
+  private isNewMetric(name: string, unit: MetricUnit): boolean {
+    if (this.storedMetrics[name]){
+      // Inconsistent units indicates a bug or typos and we want to flag this to users early
+      if (this.storedMetrics[name].unit !== unit) {
+        const currentUnit = this.storedMetrics[name].unit;
+        throw new Error(`Metric "${name}" has already been added with unit "${currentUnit}", but we received unit "${unit}". Did you mean to use metric unit "${currentUnit}"?`);
+      }
+      
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
     this.customConfigService = customConfigService ? customConfigService : undefined;
   }
@@ -431,12 +445,22 @@ class Metrics implements MetricsInterface {
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }
-    this.storedMetrics[name] = {
-      unit,
-      value,
-      name,
-    };
+
+    if (this.isNewMetric(name, unit)) {
+      this.storedMetrics[name] = {
+        unit,
+        value,
+        name,
+      };
+    } else {
+      const storedMetric = this.storedMetrics[name];
+      if (!Array.isArray(storedMetric.value)) {
+        storedMetric.value = [storedMetric.value];
+      }
+      storedMetric.value.push(value);
+    }
   }
+
 }
 
 export { Metrics, MetricUnits };

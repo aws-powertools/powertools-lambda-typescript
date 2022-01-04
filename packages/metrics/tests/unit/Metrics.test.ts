@@ -435,6 +435,55 @@ describe('Class: Metrics', () => {
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Namespace).toBe(DEFAULT_NAMESPACE);
       expect(console.warn).toHaveBeenNthCalledWith(1, 'Namespace should be defined, default used');
     });
+
+    test('Should contain a metric value if added once', ()=> {
+      const metrics = new Metrics();
+      
+      metrics.addMetric('test_name', MetricUnits.Count, 1);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      
+      expect(serializedMetrics['test_name']).toBe(1);
+    });
+
+    test('Should convert multiple metrics with the same name and unit into an array', ()=> {
+      const metrics = new Metrics();
+      
+      metrics.addMetric('test_name', MetricUnits.Count, 2);
+      metrics.addMetric('test_name', MetricUnits.Count, 1);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      expect(serializedMetrics['test_name']).toStrictEqual([ 2, 1 ]);
+    });
+
+    test('Should throw an error if the same metric name is added again with a different unit', ()=> {
+      const metrics = new Metrics();
+      
+      metrics.addMetric('test_name', MetricUnits.Count, 2);
+      try {
+        metrics.addMetric('test_name', MetricUnits.Seconds, 10);
+      } catch (e) {
+        expect((<Error>e).message).toBe('Metric "test_name" has already been added with unit "Count", but we received unit "Seconds". Did you mean to use metric unit "Count"?');
+      }
+    });
+
+    test('Should contain multiple metric values if added with multiple names', ()=> {
+      const metrics = new Metrics();
+      
+      metrics.addMetric('test_name', MetricUnits.Count, 1);
+      metrics.addMetric('test_name2', MetricUnits.Count, 2);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics).toStrictEqual([
+        { Name: 'test_name', Unit: 'Count' },
+        { Name: 'test_name2', Unit: 'Count' },
+      ]);
+      
+      expect(serializedMetrics['test_name']).toBe(1);
+      expect(serializedMetrics['test_name2']).toBe(2);
+    });
   });
 
   describe('Feature: Clearing Metrics ', () => {

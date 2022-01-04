@@ -4,8 +4,7 @@
  * @group unit/metrics/middleware
  */
 
-import { logMetrics } from '../../../../metrics/src/middleware';
-import { Metrics, MetricUnits } from '../../../../metrics/src';
+import { Metrics, MetricUnits, logMetrics } from '../../../../metrics/src';
 import middy from '@middy/core';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -44,13 +43,46 @@ describe('Middy middleware', () => {
       succeed: () => console.log('Succeeded!'),
     };
 
+    test('when a metrics instance receive multiple metrics with the same name, it prints multiple values in an array format', async () => {
+      // Prepare
+      const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
+
+      const lambdaHandler = (): void => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 2);
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+      };
+
+      const handler = middy(lambdaHandler).use(logMetrics(metrics));
+      
+      // Act
+      await handler(event, context, () => console.log('Lambda invoked!'));
+      
+      // Assess
+      expect(console.log).toHaveBeenNthCalledWith(1, JSON.stringify({
+        '_aws': {
+          'Timestamp': 1466424490000,
+          'CloudWatchMetrics': [{
+            'Namespace': 'serverlessAirline',
+            'Dimensions': [
+              ['service']
+            ],
+            'Metrics': [{ 'Name': 'successfulBooking', 'Unit': 'Count' }],
+          }],
+        },
+        'service': 'orders',
+        'successfulBooking': [
+          2,
+          1,
+        ],
+      }));
+    });
+
     test('when a metrics instance is passed WITH custom options, it prints the metrics in the stdout', async () => {
 
       // Prepare
       const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
 
       const lambdaHandler = (): void => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
       };
       const metricsOptions: ExtraOptions = {
@@ -107,7 +139,6 @@ describe('Middy middleware', () => {
 
       const lambdaHandler = (): void => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
       };
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
@@ -139,7 +170,6 @@ describe('Middy middleware', () => {
       const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
 
       const lambdaHandler = (): void => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
       };
       const metricsOptions: ExtraOptions = {

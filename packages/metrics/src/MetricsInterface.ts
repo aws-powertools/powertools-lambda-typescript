@@ -11,7 +11,7 @@ interface MetricsInterface {
   clearMetrics(): void
   clearDefaultDimensions(): void
   logMetrics(options?: MetricsOptions): HandlerMethodDecorator
-  purgeStoredMetrics(): void
+  publishStoredMetrics(): void
   serializeMetrics(): EmfOutput
   setDefaultDimensions(dimensions: Dimensions | undefined): void
   singleMetric(): Metrics

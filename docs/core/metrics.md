@@ -134,6 +134,54 @@ You can create metrics using the `addMetric` method, and you can create dimensio
 !!! warning "Do not create metrics or dimensions outside the handler"
     Metrics or dimensions added in the global scope will only be added during cold start. Disregard if that's the intended behaviour.
 
+### Adding multi-value metrics
+You can call `addMetric()` with the same name multiple times. The values will be grouped together in an array.
+
+=== "addMetric() with the same name"
+
+    ```typescript hl_lines="8 10"
+    import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+    import { Context } from 'aws-lambda'; 
+
+
+    const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+
+    export const handler = async (event: any, context: Context) => {
+        metrics.addMetric('performedActionA', MetricUnits.Count, 2);
+        // do something else...
+        metrics.addMetric('performedActionA', MetricUnits.Count, 1);
+    }
+    ```
+=== "Example CloudWatch Logs excerpt"
+
+    ```json hl_lines="2-5 18-19"
+    {
+        "performedActionA": [
+            2,
+            1
+        ],
+        "_aws": {
+            "Timestamp": 1592234975665,
+            "CloudWatchMetrics": [
+                {
+                "Namespace": "serverlessAirline",
+                "Dimensions": [
+                    [
+                    "service"
+                    ]
+                ],
+                "Metrics": [
+                    {
+                    "Name": "performedActionA",
+                    "Unit": "Count"
+                    }
+                ]
+                }
+            ]
+        },
+        "service": "orders"
+    }
+    ```
 ### Adding default dimensions
 
 You can add default dimensions to your metrics by passing them as parameters in 4 ways:  
@@ -326,8 +374,6 @@ See below an example of how to automatically flush metrics with the Middy-compat
                 "Unit": "Count"
                 }
             ]
-            }
-        ]
         },
         "service": "orders"
     }
@@ -380,8 +426,6 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
                 "Unit": "Count"
                 }
             ]
-            }
-        ]
         },
         "service": "orders"
     }
@@ -494,12 +538,20 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
             ],
             "Metrics": [
                 {
-                "Name": "successfulBooking",
-                "Unit": "Count"
+                "Namespace": "exampleApplication",
+                "Dimensions": [
+                    [
+                    "service"
+                    ]
+                ],
+                "Metrics": [
+                    {
+                    "Name": "successfulBooking",
+                    "Unit": "Count"
+                    }
+                ]
                 }
             ]
-            }
-        ]
         },
         "service": "orders",
         "bookingId": "7051cd10-6283-11ec-90d6-0242ac120003"

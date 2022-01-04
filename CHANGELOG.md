@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-beta.19](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.18...v0.2.0-beta.19) (2022-01-04)
+
+
+### Bug Fixes
+
+* **metrics:** Support multiple addMetric() call with the same metric name ([#390](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/390)) ([91a2bba](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/91a2bbabbed67b6c4a802e6313dfef6243ebffc8))
+
+
+
+
+
+# [0.2.0-beta.18](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.17...v0.2.0-beta.18) (2022-01-04)
+
+**Note:** Version bump only for package aws-lambda-powertools-typescript
+
+
+
+
+
+# [0.2.0-beta.17](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.16...v0.2.0-beta.17) (2022-01-04)
+
+**Note:** Version bump only for package aws-lambda-powertools-typescript
+
+
+
+
+
+# [0.2.0-beta.16](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.15...v0.2.0-beta.16) (2022-01-03)
+
+
+### Bug Fixes
+
+* **logger:** correct log level in cloudwatch ([#386](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/386)) ([23ee7f4](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/23ee7f4fd612dfaa8e5c084a2294721ad78ed759))
+
+
+
+
+
+# [0.2.0-beta.15](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.14...v0.2.0-beta.15) (2022-01-03)
+
+
+### Bug Fixes
+
+* **metrics:** export middy middleware ([#380](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/380)) ([6107725](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/61077256b14d1e061155be9c5f9ae95be0a33417))
+
+
+### Features
+
+* **metrics:** rename method purgeStoredMetrics to publishStoredMetrics ([#377](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/377)) ([c9265b0](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c9265b0b76789048e6f7019d3a6f58afe37c39e5))
+
+
+
+
+
 # [0.2.0-beta.14](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.12...v0.2.0-beta.14) (2022-01-03)
 
 

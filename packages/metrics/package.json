@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/metrics",
-  "version": "0.2.0-beta.14",
+  "version": "0.2.0-beta.19",
   "description": "The metrics package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -10,7 +10,7 @@
     "commit": "commit",
     "test": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e": "jest --group=e2e",
-    "watch": "jest --watch",
+    "watch": "jest --group=unit --watch ",
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",

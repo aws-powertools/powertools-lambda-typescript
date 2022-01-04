@@ -107,7 +107,7 @@ You can create metrics using the `addMetric` method, and you can create dimensio
 
     export const handler = async (_event: any, _context: any) => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-        metrics.purgeStoredMetrics();
+        metrics.publishStoredMetrics();
     }
     ```
 
@@ -121,7 +121,7 @@ You can create metrics using the `addMetric` method, and you can create dimensio
     export const handler = async (_event: any, _context: any) => {
         metrics.addDimension('environment', 'prod');
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-        metrics.purgeStoredMetrics();
+        metrics.publishStoredMetrics();
     }
     ```
 

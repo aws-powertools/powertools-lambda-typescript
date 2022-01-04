@@ -62,10 +62,9 @@ jobs:
       run: |
         rm -rf site
         VERSION="dev"
-        ALIAS="dev"
         echo "Publishing doc for version: $VERSION"
         mkdocs build
-        mike deploy --push --update-aliases "$VERSION" "$ALIAS"
+        mike deploy --push "$VERSION"
         # Set latest version as a default
         mike set-default --push latest
     - name: Build API docs

@@ -41,10 +41,8 @@ jobs:
         git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
 
         # Follow https://github.com/lerna/lerna/issues/2248#issuecomment-527882069 recommendation
-        npx lerna version --conventional-commits --conventional-prerelease --preid beta --force-publish=* --yes --no-changelog
+        npx lerna version --conventional-commits --conventional-prerelease --preid dev --force-publish=* --yes --no-changelog
         git push --delete origin $(git describe --abbrev=0)
-
-        npx lerna publish from-package --no-verify-access --yes
     #########################    
     # Generate documentation
     #########################
@@ -52,10 +50,6 @@ jobs:
       uses: actions/setup-python@v2.3.1
       with:
         python-version: '3.8'
-    - name: Set RELEASE_VERSION env var
-      run: |
-        RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
-        echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
     - name: Install doc generation dependencies
       run: |
         pip install --upgrade pip 
@@ -67,8 +61,8 @@ jobs:
     - name: Build mkdocs site in "gh-pages" branch and push
       run: |
         rm -rf site
-        VERSION="${{ env.RELEASE_VERSION }}"
-        ALIAS="latest"
+        VERSION="dev"
+        ALIAS="dev"
         echo "Publishing doc for version: $VERSION"
         mkdocs build
         mike deploy --push --update-aliases "$VERSION" "$ALIAS"
@@ -84,7 +78,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./api
         keep_files: true
-        destination_dir: ${{ env.RELEASE_VERSION }}/api
+        destination_dir: dev/api
     - name: Release API docs to the "latest" version
       uses: peaceiris/actions-gh-pages@v3
       with:

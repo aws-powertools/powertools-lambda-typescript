@@ -52,6 +52,7 @@ describe('Tracer integration tests', () => {
       'Middleware-Disabled',
       'Middleware-NoCaptureErrorResponse',
       'Decorator',
+      'DecoratorWithAsyncHandler',
       'Decorator-Disabled',
       'Decorator-NoCaptureErrorResponse',
     ];
@@ -108,7 +109,7 @@ describe('Tracer integration tests', () => {
     });
     
     // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, 180000));
+    await new Promise((resolve) => setTimeout(resolve, 200000));
 
   }, 360000); // 6 minutes
 

@@ -155,7 +155,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    class Lambda extends LambdaInterface {
+    class Lambda implements LambdaInterface {
         // Decorate your handler class method
         @tracer.captureLambdaHandler()
         public async handler(_event: any, _context: any): Promise<void> {
@@ -262,7 +262,7 @@ You can trace other methods using the `captureMethod` decorator or manual instru
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    class Lambda extends LambdaInterface {
+    class Lambda implements LambdaInterface {
         // Decorate your class method
         @tracer.captureMethod()
         public getChargeId(): string {

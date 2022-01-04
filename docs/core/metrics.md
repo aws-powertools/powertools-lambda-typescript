@@ -253,7 +253,7 @@ You can add default dimensions to your metrics by passing them as parameters in 
     const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
     const DEFAULT_DIMENSIONS = { 'environment': 'prod', 'foo': 'bar' };
 
-    export class MyFunction extends LambdaInterface {
+    export class MyFunction implements LambdaInterface {
         // Decorate your handler class method
         @metrics.logMetrics({defaultDimensions: DEFAULT_DIMENSIONS})
         public handler(_event: any, _context: any): Promise<void> {
@@ -396,7 +396,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 
     const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    export class MyFunction extends LambdaInterface {
+    export class MyFunction implements LambdaInterface {
 
         @metrics.logMetrics()
         public async handler(_event: any, _context: any): Promise<void> {
@@ -477,7 +477,7 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 
     const metrics = new Metrics({namespace: 'serverlessAirline', service: 'orders' });
 
-    export class MyFunction extends LambdaInterface {
+    export class MyFunction implements LambdaInterface {
 
         @metrics.logMetrics({ captureColdStartMetric: true })
         public async handler(_event: any, _context: any): Promise<void> {
@@ -599,7 +599,7 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 
     const metrics = new Metrics({ namespace: 'serverlessAirline', service: 'orders' });
 
-    class Lambda extends LambdaInterface {
+    class Lambda implements LambdaInterface {
 
         @metrics.logMetrics()
         public async handler(_event: any, _context: any): Promise<void> {

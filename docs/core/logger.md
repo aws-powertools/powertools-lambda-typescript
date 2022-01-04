@@ -151,7 +151,7 @@ Key | Example
 
     const logger = new Logger();
     
-    class Lambda extends LambdaInterface {
+    class Lambda implements LambdaInterface {
         // Decorate your handler class method
         @logger.injectLambdaContext()
         public async handler(_event: any, _context: any): Promise<void> {
@@ -589,7 +589,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
 
 ### Custom Log formatter (Bring Your Own Formatter)
 
-You can customize the structure (keys and values) of your log items by passing a custom log formatter, an object that extends the `LogFormatter` abstract class.
+You can customize the structure (keys and values) of your log items by passing a custom log formatter, an object that implements the `LogFormatter` abstract class.
 
 === "handler.ts"
 
@@ -631,7 +631,7 @@ This is how the `MyCompanyLogFormatter` (dummy name) would look like:
     // Replace this line with your own type
     type MyCompanyLog = LogAttributes;
     
-    class MyCompanyLogFormatter extends LogFormatter {
+    class MyCompanyLogFormatter implements LogFormatter {
     
         public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
             return {

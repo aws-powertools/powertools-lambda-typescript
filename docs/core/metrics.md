@@ -471,7 +471,7 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 
 === "logMetrics decorator"
 
-    ```typescript hl_lines="9"
+    ```typescript hl_lines="8"
     import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
     import { LambdaInterface } from '@aws-lambda-powertools/commons';
 

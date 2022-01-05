@@ -6,6 +6,9 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "commit": "commit",
     "test": "jest --group=unit --detectOpenHandles --coverage --verbose",
@@ -58,7 +61,7 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "0.2.0-beta.19",
+    "@aws-lambda-powertools/commons": "0.2.0",
     "@middy/core": "^2.5.3",
     "aws-xray-sdk-core": "^3.3.3"
   }

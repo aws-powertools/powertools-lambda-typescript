@@ -35,22 +35,34 @@ npm install @aws-lambda-powertools/tracer
 
 ### Utility settings
 
-The library requires one setting. You can set it as environment variables, or pass it in the constructor.
+The library has one optional setting. You can set it as environment variable, or pass it in the constructor.
 
-These settings will be used across all traces emitted:
+This setting will be used across all traces emitted:
 
 Setting | Description                                                                                    | Environment variable | Constructor parameter
 ------------------------------------------------- |------------------------------------------------------------------------------------------------| ------------------------------------------------- | -------------------------------------------------
-**Service name** | Sets an annotation with the **name of the service** across all traces e.g. `shopping-cart-api` | `POWERTOOLS_SERVICE_NAME` | `serviceName`
+**Service name** | Sets an annotation with the **name of the service** across all traces e.g. `serverlessAirline` | `POWERTOOLS_SERVICE_NAME` | `serviceName`
 
 For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
 
+!!! note
+    Before your use this utility, your AWS Lambda function [must have permissions](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html#services-xray-permissions) to send traces to AWS X-Ray.
 
-### Permissions
+#### Example using AWS Serverless Application Model (SAM)
 
-Before your use this utility, your AWS Lambda function [must have permissions](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html#services-xray-permissions) to send traces to AWS X-Ray.
+=== "handler.ts"
 
-> Example using AWS Serverless Application Model (SAM)
+    ```typescript hl_lines="1 4"
+    import { Tracer } from "@aws-lambda-powertools/tracer";
+
+    // Tracer parameter fetched from the environment variables (see template.yaml tab)
+    const tracer = new Tracer();
+
+    // You can also pass the parameter in the constructor
+    // const tracer = new Tracer({
+    //     serviceName: "serverlessAirline"
+    // });
+    ```
 
 === "template.yml"
 
@@ -63,59 +75,19 @@ Before your use this utility, your AWS Lambda function [must have permissions](h
           Tracing: Active
           Environment:
             Variables:
-              POWERTOOLS_SERVICE_NAME: example
+              POWERTOOLS_SERVICE_NAME: serverlessAirline
     ```
 
 ### Lambda handler
 
 You can quickly start by importing the `Tracer` class, initialize it outside the Lambda handler, and instrument your function.
 
-=== "Middleware"
-
-    !!! note
-        Middy comes bundled with Tracer, so you can just import it when using the middleware.
-
-    !!! tip "Using Middy for the first time?"
-        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
-
-    ```typescript hl_lines="1-2 4 7 9"
-    import { Tracer } from '@aws-lambda-powertools/tracer';
-    import middy from '@middy/core';
-
-    const tracer = Tracer(); // Sets service via env var
-    // OR tracer = Tracer({ service: 'example' });
-
-    export const handler = middy(async (_event: any, _context: any) => {
-        ...
-    }).use(captureLambdaHandler(tracer));
-    ```
-
-=== "Decorator"
-
-    ```typescript hl_lines="1 3 7"
-    import { Tracer } from '@aws-lambda-powertools/tracer';
-
-    const tracer = Tracer(); // Sets service via env var
-    // OR tracer = Tracer({ service: 'example' });
-
-    class Lambda {
-        @tracer.captureLambdaHandler()
-        public handler(event: any, context: any) {
-            ...
-        }
-    }
-     
-    export const handlerClass = new Lambda();
-    export const handler = handlerClass.handler; 
-    ```
-
 === "Manual"
 
-    ```typescript hl_lines="1 3 7 9-10 13-14 20 23 27 29"
+    ```typescript hl_lines="6 8-9 12-13 19 22 26 28"
     import { Tracer } from '@aws-lambda-powertools/tracer';
     
-    const tracer = Tracer(); // Sets service via env var
-    // OR tracer = Tracer({ service: 'serverlessAirline' });
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
     export const handler = async (_event: any, context: any) => {
         const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
@@ -129,7 +101,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
         let res;
         try {
-            res = ...
+            /* ... */
             // Add the response as metadata 
             tracer.addResponseAsMetadata(res, process.env._HANDLER);
         } catch (err) {
@@ -139,7 +111,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         } finally {
             // Close subsegment (the AWS Lambda one is closed automatically)
             subsegment.close();
-            // Set the facade segment as active again
+            // Set back the facade segment as active again
             tracer.setSegment(segment);
         }
     
@@ -147,12 +119,60 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     }
     ```
 
+=== "Middy Middleware"
+
+    !!! note
+        Middy comes bundled with Tracer, so you can just import it when using the middleware.
+
+    !!! tip "Using Middy for the first time?"
+        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+
+    ```typescript hl_lines="1-2 11 13"
+    import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+    import middy from '@middy/core';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+
+    const lambdaHandler = async (_event: any, _context: any) => {
+        /* ... */
+    }
+
+    // Wrap the handler with middy
+    export const handler = middy(lambdaHandler)
+        // Use the middleware by passing the Tracer instance as a parameter
+        .use(captureLambdaHandler(tracer));
+    ```
+
+=== "Decorator"
+
+    !!! info
+        Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you prefer to write your handler as a standard function rather than a Class method, use the middleware or the manual instrumentations instead.  
+        See the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
+
+    ```typescript hl_lines="8"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+
+    class Lambda implements LambdaInterface {
+        // Decorate your handler class method
+        @tracer.captureLambdaHandler()
+        public async handler(_event: any, _context: any): Promise<void> {
+            /* ... */
+        }
+    }
+     
+    export const handlerClass = new Lambda();
+    export const handler = handlerClass.handler;
+    ```
+
 When using the `captureLambdaHandler` decorator or middleware, Tracer performs these additional tasks to ease operations:
 
 * Handles the lifecycle of the subsegment
 * Creates a `ColdStart` annotation to easily filter traces that have had an initialization overhead
-* Creates a `ServiceName` annotation to easily filter traces that have a specific service name
-* Captures any response, or full exceptions generated by the handler, and include as tracing metadata
+* Creates a `Service` annotation to easily filter traces that have a specific service name
+* Captures any response, or full exceptions generated by the handler, and include them as tracing metadata
 
 ### Annotations & Metadata
 
@@ -181,47 +201,18 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
     export const handler = async (_event: any, _context: any) => {
-        const res = someLogic();
+        const res; /* ... */
         tracer.putMetadata('paymentResponse', res);
     }
     ```
 
 ### Methods
 
-You can trace other methods using the `captureMethod` decorator or manual instrumentation.
-
-!!! info
-    We currently support a middleware for tracing methods, [let us know](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd like to see one!
-
-=== "Decorator"
-
-    ```typescript hl_lines="6"
-    import { Tracer } from '@aws-lambda-powertools/tracer';
-
-    const tracer = Tracer();
-
-    class Lambda {
-        @tracer.captureMethod()
-        public getChargeId(): string {
-            ...
-            return 'foo bar'
-        }
-
-        public handler(event: any, context: any) {
-            const chargeId = this.getChargeId();
-            const payment = collectPayment(chargeId);
-            ...
-        }
-    }
-     
-    export const handlerClass = new Lambda();
-    export const getChargeId = handlerClass.getChargeId;
-    export const handler = handlerClass.handler; 
-    ```
+You can trace other Class methods using the `captureMethod` decorator or any arbitrary function using manual instrumentation.
 
 === "Manual"
 
-    ```typescript hl_lines="6 8-9 15 23 25"
+    ```typescript hl_lines="6 8-9 15 18 23 25"
     import { Tracer } from '@aws-lambda-powertools/tracer';
     
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
@@ -234,7 +225,7 @@ You can trace other methods using the `captureMethod` decorator or manual instru
 
         let res;
         try {
-            res = await someLogic(); // Do something
+            /* ... */
             // Add the response as metadata
             tracer.addResponseAsMetadata(res, 'chargeId');
         } catch (err) {
@@ -254,45 +245,69 @@ You can trace other methods using the `captureMethod` decorator or manual instru
     export const handler = async (_event: any, _context: any) => {
         const chargeId = this.getChargeId();
         const payment = collectPayment(chargeId);
-        ...
+        /* ... */
     }
+    ```
+
+=== "Decorator"
+
+    ```typescript hl_lines="8"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+
+    class Lambda implements LambdaInterface {
+        // Decorate your class method
+        @tracer.captureMethod()
+        public getChargeId(): string {
+            /* ... */
+            return 'foo bar';
+        }
+
+        public async handler(_event: any, _context: any): Promise<void> {
+            /* ... */
+        }
+    }
+     
+    export const myFunction = new Lambda();
+    export const handler = myFunction.handler; 
     ```
 
 ### Patching AWS SDK clients
 
-Tracer can patch [AWS SDK clients](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-awssdkclients.html) and create traces when your application makes calls to AWS services.
+Tracer can patch any [AWS SDK clients](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-awssdkclients.html) and create traces when your application makes calls to AWS services.
 
 !!! info
-    The following snippet assumes you are using [**AWS SDK v3** for JavaScript](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/)
+    The following snippet assumes you are using the [**AWS SDK v3** for JavaScript](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/)
 
-You can patch any AWS SDK clients by calling `captureAWSv3Client` method:
+You can patch any AWS SDK clients by calling the `captureAWSv3Client` method:
 
 === "index.ts"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="5"
     import { S3Client } from "@aws-sdk/client-s3";
     import { Tracer } from '@aws-lambda-powertools/tracer';
 
-    const tracer = new Tracer();
-    const client = new S3Client({});
-    tracer.captureAWSv3Client(client);
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+    const client = tracer.captureAWSv3Client(new S3Client({}));
     ```
 
 !!! info
-    The following two snippets assume you are using [**AWS SDK v2** for JavaScript](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/welcome.html)
+    The following two snippets assume you are using the [**AWS SDK v2** for JavaScript](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/welcome.html)
 
-You can patch all AWS SDK clients by calling `captureAWS` method:
+You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
 
 === "index.ts"
 
     ```typescript hl_lines="4"
     import { Tracer } from '@aws-lambda-powertools/tracer';
 
-    const tracer = new Tracer();
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
     const AWS = tracer.captureAWS(require('aws-sdk'));
     ```
 
-If you're looking to shave a few microseconds, or milliseconds depending on your function memory configuration, you can patch specific clients using `captureAWSClient`:
+If you're looking to shave a few microseconds, or milliseconds depending on your function memory configuration, you can patch only specific AWS SDK v2 clients using `captureAWSClient`:
 
 === "index.ts"
 
@@ -300,8 +315,8 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
     import { S3 } from "aws-sdk";
     import { Tracer } from '@aws-lambda-powertools/tracer';
 
-    const tracer = new Tracer();
-    const s3 = tracer.captureAWSClient(new S3({ apiVersion: "2006-03-01" }));
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+    const s3 = tracer.captureAWSClient(new S3());
     ```
 
 ## Advanced
@@ -336,9 +351,10 @@ This is useful when you need a feature available in X-Ray that is not available 
     import { Logger } from '@aws-lambda-powertools/logger';
     import { Tracer } from '@aws-lambda-powertools/tracer';
 
-    const logger = new Logger();
-    const tracer = new Tracer()
-    tracer.provider.setLogger(logger)
+    const serviceName = 'serverlessAirline';
+    const logger = new Logger({ serviceName: serviceName });
+    const tracer = new Tracer({ serviceName: serviceName });
+    tracer.provider.setLogger(logger);
     ```
 
 ## Testing your code

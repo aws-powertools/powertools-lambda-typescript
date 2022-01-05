@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 0.2.0 (2022-01-05)
+
+
+### Bug Fixes
+
+* **metrics:** use same naming for serviceName ([#401](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/401)) ([43c7945](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/43c7945a6a5f539fdbce8f2fb80abb6dcc31556e))
+
+
+### Features
+
+* add tracer ([#107](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/107)) ([f92279f](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/f92279f723f89943ad4f192165d547607d4c32b8)), closes [#304](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/304)
+* **ALL:** Use optional callback LambdaInterface for decorator ([#397](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/397)) ([6413215](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/641321547d65acffa999a283f11333cfc2b1ebf9))
+* **tracer:** middy middleware ([#324](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/324)) ([2909d6f](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/2909d6f9b9bf1a570f950e17f0d49acbe63653ee))
+
+
+
+
+
 # [0.2.0-beta.19](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.18...v0.2.0-beta.19) (2022-01-04)
 
 **Note:** Version bump only for package @aws-lambda-powertools/tracer

@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 0.2.0 (2022-01-05)
+
+
+### Bug Fixes
+
+* **metrics:** export middy middleware ([#380](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/380)) ([6107725](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/61077256b14d1e061155be9c5f9ae95be0a33417))
+* **metrics:** publish metrics even if handler throw ([#249](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/249)) ([8ad0a6a](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/8ad0a6ac388641a41da08fefee48f6b996544a0a))
+* **metrics:** Support multiple addMetric() call with the same metric name ([#390](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/390)) ([91a2bba](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/91a2bbabbed67b6c4a802e6313dfef6243ebffc8))
+* **metrics:** use same naming for serviceName ([#401](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/401)) ([43c7945](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/43c7945a6a5f539fdbce8f2fb80abb6dcc31556e))
+
+
+### Features
+
+* add metrics ([#102](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/102)) ([cf22210](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/cf22210ebb519cf0a625a2bdc92d2bcea7b4a59d))
+* **ALL:** Use optional callback LambdaInterface for decorator ([#397](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/397)) ([6413215](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/641321547d65acffa999a283f11333cfc2b1ebf9))
+* **metric:** bring feature parity between decorator and utility function ([#291](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/291)) ([8d40471](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/8d404712fc236931c1a512456f47c1afc41e3a73))
+* **metrics:** logMetrics middleware ([#338](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/338)) ([f8cf705](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/f8cf7055de78e4515ffbae5de5867649a38dc17d))
+* **metrics:** rename method purgeStoredMetrics to publishStoredMetrics ([#377](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/377)) ([c9265b0](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c9265b0b76789048e6f7019d3a6f58afe37c39e5))
+
+
+
+
+
 # [0.2.0-beta.19](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.18...v0.2.0-beta.19) (2022-01-04)
 
 

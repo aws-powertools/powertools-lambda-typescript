@@ -617,7 +617,7 @@ You can customize the structure (keys and values) of your log items by passing a
         
         logger.info("This is an INFO log", { correlationIds: { myCustomCorrelationId: "foo-bar-baz" } });
 
-};
+    };
     ```
 
 This is how the `MyCompanyLogFormatter` (dummy name) would look like:

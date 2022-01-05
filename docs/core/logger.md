@@ -86,7 +86,7 @@ Key | Example | Note
 **level**: `string` | `INFO` | Logging level set for the Lambda function"s invocation
 **message**: `string` | `Query performed to DynamoDB` | A descriptive, human-readable representation of this log item
 **sampling_rate**: `float` |  `0.1` | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%
-**service**: `string` | `shopping-cart-api` | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`
+**service**: `string` | `serverlessAirline` | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`
 **timestamp**: `string` | `2011-10-05T14:48:00.000Z` | Timestamp string in simplified extended ISO format (ISO 8601)
 **xray_trace_id**: `string` | `1-5759e988-bd862e3fe1be46a994272793` | When [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"}, it shows X-Ray Trace ID
 **error**: `Object` | `{ name: "Error", location: "/my-project/handler.ts:18", message: "Unexpected error #1", stack: "[stacktrace]"}` | Optional - An object containing information about the Error passed to the logger
@@ -518,7 +518,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "WARN",
         "message": "This is a WARN log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.338Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -531,7 +531,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "ERROR",
         "message": "This is an ERROR log",
         "sampling_rate": "0.5",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.334Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -544,7 +544,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "ERROR",
         "message": "This is an ERROR log",
         "sampling_rate": "0.5",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.334Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -552,7 +552,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "DEBUG",
         "message": "This is a DEBUG log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.337Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -568,7 +568,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "WARN",
         "message": "This is a WARN log that has 50% chance of being printed",
         "sampling_rate": "0.5", 
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.338Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
@@ -581,7 +581,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "level": "ERROR",
         "message": "This is an ERROR log",
         "sampling_rate": "0.5",
-        "service": "shopping-cart-api",
+        "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:59:06.334Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }

@@ -208,7 +208,7 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
 
 ### Methods
 
-You can trace other methods using the `captureMethod` decorator or manual instrumentation.
+You can trace other Class methods using the `captureMethod` decorator or any arbitrary function using manual instrumentation.
 
 === "Manual"
 
@@ -248,11 +248,6 @@ You can trace other methods using the `captureMethod` decorator or manual instru
         /* ... */
     }
     ```
-
-=== "Middy Middleware"
-
-    !!! info
-        We currently don't support middleware for tracing methods, [let us know](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd like to see one!
 
 === "Decorator"
 

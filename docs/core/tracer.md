@@ -301,7 +301,7 @@ You can patch any AWS SDK clients by calling the `captureAWSv3Client` method:
 !!! info
     The following two snippets assume you are using the [**AWS SDK v2** for JavaScript](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/welcome.html)
 
-You can patch all AWS SDK clients by calling the `captureAWS` method:
+You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
 
 === "index.ts"
 

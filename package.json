@@ -26,7 +26,8 @@
     "docs-buildDockerImage": "docker build -t powertool-typescript/docs ./docs/",
     "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertool-typescript/docs",
     "docs-generateApiDoc": "typedoc .",
-    "docs-runLocalApiDoc": "npx live-server api"
+    "docs-runLocalApiDoc": "npx live-server api",
+    "preinstall": "(cd packages/commons && npm ci); (cd packages/logger && npm ci); (cd packages/metrics && npm ci); (cd packages/tracing && npm ci);"
   },
   "repository": {
     "type": "git",

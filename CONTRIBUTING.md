@@ -7,6 +7,7 @@ Please read through this document before submitting any issues or pull requests 
 information to effectively respond to your bug report or contribution.
 
 ## Security issue notifications
+
 If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.
 
 ## Reporting Bugs/Feature Requests
@@ -35,7 +36,7 @@ Contributions via pull requests are much appreciated. Before sending us a pull r
 To send us a pull request, please follow these steps:
 
 1. Fork the repository.
-2. Install dependencies: `npm install`
+2. Install dependencies: `npm ci`
 3. Prepare utilities like commit hooks: `npm run init-environment`
 4. Create a new branch to focus on the specific change you are contributing e.g. `git checkout -b improv/logger-debug-sampling`
 5. Run all tests, and code baseline checks: `npm run test`
@@ -54,8 +55,9 @@ You might find useful to run both the documentation website and the API referenc
 * **Docs website**:
 
 You can build and start a local docs website by running these two commands.
-  - `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
-  - `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
+
+* `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
+* `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
 
 ### Conventions
 

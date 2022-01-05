@@ -312,7 +312,7 @@ You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
     const AWS = tracer.captureAWS(require('aws-sdk'));
     ```
 
-If you're looking to shave a few microseconds, or milliseconds depending on your function memory configuration, you can patch specific clients using `captureAWSClient`:
+If you're looking to shave a few microseconds, or milliseconds depending on your function memory configuration, you can patch only specific AWS SDK v2 clients using `captureAWSClient`:
 
 === "index.ts"
 

@@ -48,7 +48,7 @@ describe('Class: Metrics', () => {
     test('should log service dimension correctly when passed', () => {
       const serviceName = 'testing_name';
 
-      const metrics = new Metrics({ namespace: 'test', service: serviceName });
+      const metrics = new Metrics({ namespace: 'test', serviceName: serviceName });
       metrics.addMetric('test_name', MetricUnits.Seconds, 14);
       const loggedData = metrics.serializeMetrics();
 
@@ -286,7 +286,7 @@ describe('Class: Metrics', () => {
 
     test('Cold should have service and function name if present', async () => {
       const serviceName = 'test-service';
-      const metrics = new Metrics({ namespace: 'test', service: serviceName });
+      const metrics = new Metrics({ namespace: 'test', serviceName: serviceName });
 
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics({ captureColdStartMetric: true })
@@ -316,7 +316,7 @@ describe('Class: Metrics', () => {
 
     test('Cold should still log, without a function name', async () => {
       const serviceName = 'test-service';
-      const metrics = new Metrics({ namespace: 'test', service: serviceName });
+      const metrics = new Metrics({ namespace: 'test', serviceName: serviceName });
       const newDummyContext = JSON.parse(JSON.stringify(dummyContext));
       delete newDummyContext.functionName;
       class LambdaFunction implements LambdaInterface {

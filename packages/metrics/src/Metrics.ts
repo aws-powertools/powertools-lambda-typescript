@@ -42,7 +42,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
  * import { Callback, Context } from 'aws-lambda';
  *
- * const metrics = new Metrics({namespace:"MyService", service:"withDecorator"});
+ * const metrics = new Metrics({namespace:"MyService", serviceName:"withDecorator"});
  *
  * export class MyFunctionWithDecorator {
  *
@@ -69,7 +69,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * ```typescript
  * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
  *
- * const metrics = new Metrics({namespace: "MyService", service: "MyFunction"});
+ * const metrics = new Metrics({namespace: "MyService", serviceName: "MyFunction"});
  *
  * export const handler = async (_event: any, _context: any) => {
  *   metrics.captureColdStart();
@@ -163,7 +163,7 @@ class Metrics implements MetricsInterface {
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+   * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
    *
    * export const handler = async (event: any, context: Context) => {
    *     metrics.captureColdStartMetric();
@@ -209,7 +209,7 @@ class Metrics implements MetricsInterface {
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Callback, Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({namespace:"CDKExample", service:"withDecorator"});
+   * const metrics = new Metrics({namespace:"CDKExample", serviceName:"withDecorator"});
    *
    * export class MyFunctionWithDecorator {
    *
@@ -260,7 +260,7 @@ class Metrics implements MetricsInterface {
    * ```typescript
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    *
-   * const metrics = new Metrics({namespace: "CDKExample", service: "MyFunction"}); // Sets metric namespace, and service as a metric dimension
+   * const metrics = new Metrics({namespace: "CDKExample", serviceName: "MyFunction"}); // Sets metric namespace, and service as a metric dimension
    *
    * export const handler = async (_event: any, _context: any) => {
    *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
@@ -283,7 +283,7 @@ class Metrics implements MetricsInterface {
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+   * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
    *
    * export const handler = async (event: any, context: Context) => {
    *     metrics.raiseOnEmptyMetrics();
@@ -373,7 +373,7 @@ class Metrics implements MetricsInterface {
   public singleMetric(): Metrics {
     return new Metrics({
       namespace: this.namespace,
-      service: this.dimensions.service,
+      serviceName: this.dimensions.service,
       defaultDimensions: this.defaultDimensions,
       singleMetric: true,
     });
@@ -420,12 +420,12 @@ class Metrics implements MetricsInterface {
   }
 
   private setOptions(options: MetricsOptions): Metrics {
-    const { customConfigService, namespace, service, singleMetric, defaultDimensions } = options;
+    const { customConfigService, namespace, serviceName, singleMetric, defaultDimensions } = options;
 
     this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
     this.setNamespace(namespace);
-    this.setService(service);
+    this.setService(serviceName);
     this.setDefaultDimensions(defaultDimensions);
     this.isSingleMetric = singleMetric || false;
 

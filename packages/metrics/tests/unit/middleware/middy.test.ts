@@ -45,7 +45,7 @@ describe('Middy middleware', () => {
 
     test('when a metrics instance receive multiple metrics with the same name, it prints multiple values in an array format', async () => {
       // Prepare
-      const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
+      const metrics = new Metrics({ namespace:'serverlessAirline', serviceName:'orders' });
 
       const lambdaHandler = (): void => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 2);
@@ -80,7 +80,7 @@ describe('Middy middleware', () => {
     test('when a metrics instance is passed WITH custom options, it prints the metrics in the stdout', async () => {
 
       // Prepare
-      const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
+      const metrics = new Metrics({ namespace:'serverlessAirline', serviceName:'orders' });
 
       const lambdaHandler = (): void => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
@@ -135,7 +135,7 @@ describe('Middy middleware', () => {
     test('when a metrics instance is passed WITHOUT custom options, it prints the metrics in the stdout', async () => {
 
       // Prepare
-      const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
+      const metrics = new Metrics({ namespace:'serverlessAirline', serviceName:'orders' });
 
       const lambdaHandler = (): void => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
@@ -167,7 +167,7 @@ describe('Middy middleware', () => {
     test('when an array of Metrics instances is passed, it prints the metrics in the stdout', async () => {
 
       // Prepare
-      const metrics = new Metrics({ namespace:'serverlessAirline', service:'orders' });
+      const metrics = new Metrics({ namespace:'serverlessAirline', serviceName:'orders' });
 
       const lambdaHandler = (): void => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);

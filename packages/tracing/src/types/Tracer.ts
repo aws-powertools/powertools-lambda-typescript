@@ -1,6 +1,6 @@
 import { ConfigServiceInterface } from '../config';
 import { Handler } from 'aws-lambda';
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import { AsyncHandler, LambdaInterface, SyncHandler } from '@aws-lambda-powertools/commons';
 
 /**
   * Options for the tracer class to be used during initialization.
@@ -24,8 +24,11 @@ type TracerOptions = {
   customConfigService?: ConfigServiceInterface
 };
 
-// TODO: Revisit type below, it doesn't allow to define async handlers & it requires callback to be defined.
-type HandlerMethodDecorator = (target: LambdaInterface, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Handler>) => TypedPropertyDescriptor<Handler> | void;
+type HandlerMethodDecorator = (
+  target: LambdaInterface,
+  propertyKey: string | symbol,
+  descriptor: TypedPropertyDescriptor<SyncHandler<Handler>> | TypedPropertyDescriptor<AsyncHandler<Handler>>
+) => void;
 
 // TODO: Revisit type below & make it more specific
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any

@@ -535,6 +535,35 @@ describe('Class: Metrics', () => {
       expect(loggedData[1]._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
     });
 
+    test('Using decorator on async handler (without callback) should work fine', async () => {
+      const metrics = new Metrics({ namespace: 'test' });
+      const additionalDimension = { name: 'metric2', value: 'metric2Value' };
+
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics({ defaultDimensions: { default: 'defaultValue' } })
+        public async handler<TEvent>(
+          _event: TEvent,
+          _context: Context): Promise<string> {
+          metrics.addMetric('test_name', MetricUnits.Seconds, 10);
+          metrics.addDimension(additionalDimension.name, additionalDimension.value);
+          const loggedData = metrics.serializeMetrics();
+          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+          expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
+          metrics.clearDimensions();
+
+          return 'Lambda invoked!';
+        }
+      }
+
+      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext);
+      const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
+
+      expect(console.log).toBeCalledTimes(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('default');
+      expect(loggedData.default).toContain('defaultValue');
+    });
+
     test('Using decorator should log even if exception thrown', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       class LambdaFunction implements LambdaInterface {

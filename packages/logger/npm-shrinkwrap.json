@@ -1,15 +1,15 @@
 {
   "name": "@aws-lambda-powertools/logger",
-  "version": "0.2.0-beta.18",
+  "version": "0.2.0-dev.2",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "@aws-lambda-powertools/logger",
-      "version": "0.2.0-beta.18",
+      "version": "0.2.0-dev.2",
       "license": "MIT",
       "dependencies": {
-        "@aws-lambda-powertools/commons": "^0.2.0-beta.18",
+        "@aws-lambda-powertools/commons": "0.2.0-beta.19",
         "@middy/core": "^2.5.3",
         "@types/aws-lambda": "^8.10.72",
         "lodash": "^4.17.21",

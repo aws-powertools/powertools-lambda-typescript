@@ -8,7 +8,7 @@ type Dimensions = { [key: string]: string };
 type MetricsOptions = {
   customConfigService?: ConfigServiceInterface
   namespace?: string
-  service?: string
+  serviceName?: string
   singleMetric?: boolean
   defaultDimensions?: Dimensions
 };

@@ -13,7 +13,7 @@ const singleMetricName = process.env.EXPECTED_SINGLE_METRIC_NAME ?? 'MySingleMet
 const singleMetricUnit = (process.env.EXPECTED_SINGLE_METRIC_UNIT as MetricUnits) ?? MetricUnits.Percent;
 const singleMetricValue = process.env.EXPECTED_SINGLE_METRIC_VALUE ?? '2';
 
-const metrics = new Metrics({ namespace: namespace, service: serviceName });
+const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 
 export const handler = async (_event: unknown, _context: Context): Promise<void> => {
   metrics.captureColdStartMetric();
@@ -33,5 +33,4 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   metricWithItsOwnDimensions.addMetric(singleMetricName, singleMetricUnit, parseInt(singleMetricValue));
 
   metrics.publishStoredMetrics();
-  metrics.raiseOnEmptyMetrics();
 };

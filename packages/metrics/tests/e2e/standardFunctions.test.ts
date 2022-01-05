@@ -9,6 +9,7 @@
 
 import { randomUUID } from 'crypto';
 import * as lambda from '@aws-cdk/aws-lambda-nodejs';
+import { Tracing } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
 import { Tracing } from '@aws-cdk/aws-lambda';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';

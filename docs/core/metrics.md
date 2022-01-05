@@ -568,7 +568,7 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
     **unique metric = (metric_name + dimension_name + dimension_value)**
 
 
-=== "logMetrics middleware"
+=== "Middy Middleware"
 
     ```typescript hl_lines="11 13-14"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';

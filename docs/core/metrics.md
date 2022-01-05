@@ -453,7 +453,7 @@ If you want to ensure that at least one metric is emitted before you flush them,
 
 You can optionally capture cold start metrics with the `logMetrics` middleware or decorator via the `captureColdStartMetric` param.
 
-=== "logMetrics middleware"
+=== "Middy Middleware"
 
     ```typescript hl_lines="11"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';

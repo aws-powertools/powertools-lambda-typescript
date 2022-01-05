@@ -49,7 +49,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *
  *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@metrics* instead of `@metrics.logMetrics`
  *
- *   @metrics.logMetrics({captureColdStartMetric: true, raiseOnEmptyMetrics: true, })
+ *   @metrics.logMetrics({captureColdStartMetric: true, throwOnEmptyMetrics: true, })
  *   public handler(_event: any, _context: Context, _callback: Callback<any>): void | Promise<any> {
  *    // ...
  *    metrics.addMetric('test-metric', MetricUnits.Count, 10);
@@ -89,7 +89,7 @@ class Metrics implements MetricsInterface {
   private isSingleMetric: boolean = false;
   private metadata: { [key: string]: string } = {};
   private namespace?: string;
-  private shouldRaiseOnEmptyMetrics: boolean = false;
+  private shouldThrowOnEmptyMetrics: boolean = false;
   private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {
@@ -227,9 +227,9 @@ class Metrics implements MetricsInterface {
    * @decorator Class
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
-    const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
-    if (raiseOnEmptyMetrics) {
-      this.raiseOnEmptyMetrics();
+    const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
+    if (throwOnEmptyMetrics) {
+      this.throwOnEmptyMetrics();
     }
     if (defaultDimensions !== undefined) {
       this.setDefaultDimensions(defaultDimensions);
@@ -293,13 +293,13 @@ class Metrics implements MetricsInterface {
    * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
    *
    * export const handler = async (event: any, context: Context) => {
-   *     metrics.raiseOnEmptyMetrics();
+   *     metrics.throwOnEmptyMetrics();
    *     metrics.publishStoredMetrics(); // will throw since no metrics added.
    * }
    * ```
    */
-  public raiseOnEmptyMetrics(): void {
-    this.shouldRaiseOnEmptyMetrics = true;
+  public throwOnEmptyMetrics(): void {
+    this.shouldThrowOnEmptyMetrics = true;
   }
 
   /**
@@ -312,7 +312,7 @@ class Metrics implements MetricsInterface {
       Name: metricDefinition.name,
       Unit: metricDefinition.unit,
     }));
-    if (metricDefinitions.length === 0 && this.shouldRaiseOnEmptyMetrics) {
+    if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
     }
 

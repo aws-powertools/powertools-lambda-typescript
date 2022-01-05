@@ -433,7 +433,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 
 #### Throwing a RangeError when no metrics are emitted
 
-If you want to ensure that at least one metric is emitted before you flush them, you can use the `raiseOnEmptyMetrics` parameter and pass it to the middleware or decorator:
+If you want to ensure that at least one metric is emitted before you flush them, you can use the `throwOnEmptyMetrics` parameter and pass it to the middleware or decorator:
 
 ```typescript hl_lines="11"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
@@ -446,7 +446,7 @@ If you want to ensure that at least one metric is emitted before you flush them,
     }
 
     export const handler = middy(lambdaHandler)
-        .use(logMetrics(metrics, { raiseOnEmptyMetrics: true }));
+        .use(logMetrics(metrics, { throwOnEmptyMetrics: true }));
 ```
 
 ### Capturing a cold start invocation as metric

@@ -1016,9 +1016,9 @@
       }
     },
     "node_modules/@middy/core": {
-      "version": "2.5.3",
-      "resolved": "https://registry.npmjs.org/@middy/core/-/core-2.5.3.tgz",
-      "integrity": "sha512-hCXlRglDu48sl03IjDGjcJwfwElIPAf0fwBu08kqE80qpnouZ1hGH1lZbkbJjAhz6DkSR+79YArUQKUYaM2k1g==",
+      "version": "2.5.4",
+      "resolved": "https://registry.npmjs.org/@middy/core/-/core-2.5.4.tgz",
+      "integrity": "sha512-WQFUFhCG0P2rmNDBX8x5RiREfSUnMhq77QyrwIZg2/gLUhuOZa8TPFFKzIFBz+blvw9Ep41LRrWdV/gzYwMuww==",
       "engines": {
         "node": ">=12"
       }
@@ -6750,9 +6750,9 @@
       }
     },
     "@middy/core": {
-      "version": "2.5.3",
-      "resolved": "https://registry.npmjs.org/@middy/core/-/core-2.5.3.tgz",
-      "integrity": "sha512-hCXlRglDu48sl03IjDGjcJwfwElIPAf0fwBu08kqE80qpnouZ1hGH1lZbkbJjAhz6DkSR+79YArUQKUYaM2k1g=="
+      "version": "2.5.4",
+      "resolved": "https://registry.npmjs.org/@middy/core/-/core-2.5.4.tgz",
+      "integrity": "sha512-WQFUFhCG0P2rmNDBX8x5RiREfSUnMhq77QyrwIZg2/gLUhuOZa8TPFFKzIFBz+blvw9Ep41LRrWdV/gzYwMuww=="
     },
     "@nodelib/fs.scandir": {
       "version": "2.1.5",

@@ -37,7 +37,7 @@
     "@types/node": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
-    "aws-cdk": "^1.137.0",
+    "aws-cdk": "^2.4.0",
     "aws-sdk": "^2.1048.0",
     "esbuild": "^0.14.10",
     "eslint": "^8.3.0",

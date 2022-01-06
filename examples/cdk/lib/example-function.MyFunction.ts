@@ -37,7 +37,7 @@ export const handler = async (_event: unknown, context: Context): Promise<void> 
   metricWithItsOwnDimensions.addDimension('InnerDimension', 'true');
   metricWithItsOwnDimensions.addMetric('single-metric', MetricUnits.Percent, 50);
 
-  metrics.purgeStoredMetrics();
+  metrics.publishStoredMetrics();
   metrics.raiseOnEmptyMetrics();
 
   // ### Experiment tracer

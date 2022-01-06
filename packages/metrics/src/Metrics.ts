@@ -35,7 +35,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the [@metrics.logMetrics()](./_aws_lambda_powertools_metrics.Metrics.html#logMetrics) decorator to automatically:
  *   * create cold start metric
  *   * flush buffered metrics
- *   * raise on empty metrics
+ *   * throw on empty metrics
  *
  * @example
  *
@@ -202,7 +202,7 @@ class Metrics implements MetricsInterface {
   }
 
   /**
-   * A decorator automating coldstart capture, raise on empty metrics and publishing metrics on handler exit.
+   * A decorator automating coldstart capture, throw on empty metrics and publishing metrics on handler exit.
    *
    * @example
    *

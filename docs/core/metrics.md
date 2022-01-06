@@ -274,12 +274,12 @@ You can flush metrics automatically using one of the following methods:
 * [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
 * class decorator
 
-Using the Middy middleware or decorator will **automatically validate, serialize, and flush** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
+Using the Middy middleware or decorator will **automatically validate, serialize, and flush** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be thrown.
 If you do not use the middleware or decorator, you have to flush your metrics manually.
 
 
 !!! warning "Metric validation"
-    If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be raised:
+    If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be thrown:
 
     * Maximum of 9 dimensions
     * Namespace is set only once (or none)

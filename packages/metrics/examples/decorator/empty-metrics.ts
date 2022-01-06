@@ -19,7 +19,7 @@ class Lambda implements LambdaInterface {
   @metrics.logMetrics({ throwOnEmptyMetrics: true })
   public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
     // Notice that no metrics are added
-    // Since the throwOnEmptyMetrics parameter is set to true, the Powertool throw an Error
+    // Since the throwOnEmptyMetrics parameter is set to true, the Powertool throws an Error
   }
 
 }

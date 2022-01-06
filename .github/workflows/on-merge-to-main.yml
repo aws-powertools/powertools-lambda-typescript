@@ -2,7 +2,7 @@ name: on-merge-to-main
 on:
   push:
     branches:
-      - chore/cicd/automateIntegTests
+      - main
   workflow_dispatch: {}
 jobs:
   publish:
@@ -34,54 +34,62 @@ jobs:
       run: npm run lerna-lint
     - name: Run tests
       run: npm run lerna-test
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@master
+    - name: "Version and publish"
+      env:
+        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
+
+        # For merge to main we 
+        ## don't create github release, 
+        ## don't update changelog (--no-changelog) 
+        ## bump version as a pre-release (--conventional-prerelease)
+        ## add a custom preid (--preid dev): 0.2.0-dev.1 -> 0.2.0-dev.2
+        npx lerna version --conventional-commits --conventional-prerelease --preid dev --force-publish=* --yes --no-changelog
+        git push --delete origin $(git describe --abbrev=0)
+    - name: update release draft
+      uses: release-drafter/release-drafter@v5.15.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #########################    
+    # Generate documentation
+    #########################
+    - name: Set up Python
+      uses: actions/setup-python@v2.3.1
       with:
-        role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
-        aws-region: eu-west-1
-    - name: Run integration tests
-      run: npm run lerna-test:e2e
-    # - name: update release draft
-    #   uses: release-drafter/release-drafter@v5.15.0
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    # #########################    
-    # # Generate documentation
-    # #########################
-    # - name: Set up Python
-    #   uses: actions/setup-python@v2.3.1
-    #   with:
-    #     python-version: '3.8'
-    # - name: Install doc generation dependencies
-    #   run: |
-    #     pip install --upgrade pip 
-    #     pip install -r docs/requirements.txt
-    # - name: Setup doc deploy
-    #   run: |
-    #     git config --global user.name Docs deploy
-    #     git config --global user.email docs@dummy.bot.com
-    # - name: Build mkdocs site in "gh-pages" branch and push
-    #   run: |
-    #     rm -rf site
-    #     VERSION="dev"
-    #     echo "Publishing doc for version: $VERSION"
-    #     mkdocs build
-    #     mike deploy --push "$VERSION"
-    # - name: Build API docs
-    #   run: |
-    #     rm -rf api
-    #     npm run docs-generateApiDoc
-    # - name: Release API docs to the released version
-    #   uses: peaceiris/actions-gh-pages@v3
-    #   with:
-    #     github_token: ${{ secrets.GITHUB_TOKEN }}
-    #     publish_dir: ./api
-    #     keep_files: true
-    #     destination_dir: dev/api
-    # - name: Release API docs to the "latest" version
-    #   uses: peaceiris/actions-gh-pages@v3
-    #   with:
-    #     github_token: ${{ secrets.GITHUB_TOKEN }}
-    #     publish_dir: ./api
-    #     keep_files: true
-    #     destination_dir: latest/api 
+        python-version: '3.8'
+    - name: Install doc generation dependencies
+      run: |
+        pip install --upgrade pip 
+        pip install -r docs/requirements.txt
+    - name: Setup doc deploy
+      run: |
+        git config --global user.name Docs deploy
+        git config --global user.email docs@dummy.bot.com
+    - name: Build mkdocs site in "gh-pages" branch and push
+      run: |
+        rm -rf site
+        VERSION="dev"
+        echo "Publishing doc for version: $VERSION"
+        mkdocs build
+        mike deploy --push "$VERSION"
+    - name: Build API docs
+      run: |
+        rm -rf api
+        npm run docs-generateApiDoc
+    - name: Release API docs to the released version
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./api
+        keep_files: true
+        destination_dir: dev/api
+    - name: Release API docs to the "latest" version
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./api
+        keep_files: true
+        destination_dir: latest/api 

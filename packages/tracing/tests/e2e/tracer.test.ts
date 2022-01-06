@@ -110,7 +110,7 @@ describe('Tracer integration tests', () => {
     });
     
     // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, 250000));
+    await new Promise((resolve) => setTimeout(resolve, 300000));
 
   }, 360000); // 6 minutes
 
@@ -126,6 +126,7 @@ describe('Tracer integration tests', () => {
   
       await cloudFormation.destroyStack({
         stack: stackArtifact,
+        quiet: true,
       });
     }
 

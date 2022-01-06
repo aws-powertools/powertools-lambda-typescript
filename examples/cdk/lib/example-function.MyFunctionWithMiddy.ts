@@ -13,7 +13,9 @@ const logger = new Logger({ logLevel: 'INFO', serviceName: serviceName });
 const tracer = new Tracer({ serviceName: serviceName });
 
 const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: Context) => {
-  // ### Experiment logger
+  // ### Experiment with Logger
+  // AWS Lambda context is automatically injected by the middleware
+
   logger.addPersistentLogAttributes({
     testKey: 'testValue',
   });
@@ -22,14 +24,16 @@ const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: C
   logger.warn('This is an WARN log');
   logger.error('This is an ERROR log');
 
-  // ### Experiment metrics
+  // ### Experiment with Metrics
+  // Default metrics, cold start, and throwOnEmptyMetrics are enabled by the middleware
+
   metrics.addMetric('test-metric', MetricUnits.Count, 10);
 
   const metricWithItsOwnDimensions = metrics.singleMetric();
   metricWithItsOwnDimensions.addDimension('InnerDimension', 'true');
   metricWithItsOwnDimensions.addMetric('single-metric', MetricUnits.Percent, 50);
   
-  // ### Experiment tracer
+  // ### Experiment with Tracer
 
   // Service & Cold Start annotations will be added for you by the decorator/middleware
 

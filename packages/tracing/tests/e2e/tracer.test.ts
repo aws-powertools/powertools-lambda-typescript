@@ -92,6 +92,7 @@ describe('Tracer integration tests', () => {
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
     await cloudFormation.deployStack({
       stack: stackArtifact,
+      quiet: true,
     });
 
     // Act
@@ -109,7 +110,7 @@ describe('Tracer integration tests', () => {
     });
     
     // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, 180000));
+    await new Promise((resolve) => setTimeout(resolve, 250000));
 
   }, 360000); // 6 minutes
 

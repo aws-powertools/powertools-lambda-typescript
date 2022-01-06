@@ -12,6 +12,7 @@
   "scripts": {
     "commit": "commit",
     "test": "jest  --detectOpenHandles --coverage --verbose",
+    "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",

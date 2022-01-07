@@ -59,7 +59,7 @@ You can build and start a local docs website by running these two commands.
 
 ### Tests
 
-Tests are under `tests` folder of each modules and splitted into two categories: Unit tests and e2e tests.
+Tests are under `tests` folder of each modules and split into two categories: unit tests and e2e tests.
 
 This split happen thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups).
 

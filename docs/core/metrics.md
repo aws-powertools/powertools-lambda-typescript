@@ -274,12 +274,12 @@ You can flush metrics automatically using one of the following methods:
 * [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
 * class decorator
 
-Using the Middy middleware or decorator will **automatically validate, serialize, and flush** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be raised.
+Using the Middy middleware or decorator will **automatically validate, serialize, and flush** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be thrown.
 If you do not use the middleware or decorator, you have to flush your metrics manually.
 
 
 !!! warning "Metric validation"
-    If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be raised:
+    If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be thrown:
 
     * Maximum of 9 dimensions
     * Namespace is set only once (or none)
@@ -433,7 +433,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 
 #### Throwing a RangeError when no metrics are emitted
 
-If you want to ensure that at least one metric is emitted before you flush them, you can use the `raiseOnEmptyMetrics` parameter and pass it to the middleware or decorator:
+If you want to ensure that at least one metric is emitted before you flush them, you can use the `throwOnEmptyMetrics` parameter and pass it to the middleware or decorator:
 
 ```typescript hl_lines="11"
     import { Metrics, MetricUnits, logMetrics } from '@aws-lambda-powertools/metrics';
@@ -446,7 +446,7 @@ If you want to ensure that at least one metric is emitted before you flush them,
     }
 
     export const handler = middy(lambdaHandler)
-        .use(logMetrics(metrics, { raiseOnEmptyMetrics: true }));
+        .use(logMetrics(metrics, { throwOnEmptyMetrics: true }));
 ```
 
 ### Capturing a cold start invocation as metric

@@ -14,10 +14,10 @@ const metrics = new Metrics();
 
 const lambdaHandler = async (): Promise<void> => {
   // Notice that no metrics are added
-  // Since the raiseOnEmptyMetrics parameter is set to true, the Powertool throw an Error
+  // Since the throwOnEmptyMetrics parameter is set to true, the Powertool throws an Error
 };
 
 const handlerWithMiddleware = middy(lambdaHandler)
-  .use(logMetrics(metrics, { raiseOnEmptyMetrics: true }));
+  .use(logMetrics(metrics, { throwOnEmptyMetrics: true }));
 
 handlerWithMiddleware(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));

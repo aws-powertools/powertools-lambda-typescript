@@ -17,6 +17,7 @@ import type { ParsedDocument } from '../helpers/tracesUtils';
 
 const xray = new AWS.XRay();
 const lambdaClient = new AWS.Lambda();
+const stsClient = new AWS.STS();
 
 describe('Tracer integration tests', () => {
 
@@ -39,8 +40,10 @@ describe('Tracer integration tests', () => {
     integTestApp = new App();
     stack = new Stack(integTestApp, 'TracerIntegTest');
 
-    const account = stack.account;
-    const region = stack.account;
+
+    const identity = await stsClient.getCallerIdentity().promise();
+    const account = identity.Account;
+    const region = process.env.AWS_REGION;
     
 
     const functions = [

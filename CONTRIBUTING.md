@@ -98,7 +98,7 @@ You can run selective tests by restricting the group to the one you want. For in
 
 As mentioned in the previous section, tests are split into groups thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups) and therefore each test needs to be tagged properly by adding the following comments in the header of your unit test file:
 
-```
+```typescript
 /**
  * Tests data lake catalog
  *

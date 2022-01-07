@@ -37,14 +37,11 @@ describe('Tracer integration tests', () => {
 
     // Prepare
     integTestApp = new App();
-    const account = process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
-    const region = process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION;
-    stack = new Stack(integTestApp, 'TracerIntegTest', {
-      env: {
-        account, 
-        region 
-      }
-    });
+    stack = new Stack(integTestApp, 'TracerIntegTest');
+
+    const account = stack.account;
+    const region = stack.account;
+    
 
     const functions = [
       'Manual',
@@ -110,9 +107,9 @@ describe('Tracer integration tests', () => {
     });
     
     // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, 300000));
+    await new Promise((resolve) => setTimeout(resolve, 250000));
 
-  }, 360000); // 6 minutes
+  }, 460000); // 6 minutes
 
   afterAll(async () => {
 

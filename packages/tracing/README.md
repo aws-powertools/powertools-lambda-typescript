@@ -1,4 +1,4 @@
-# AWS Lambda Powertools TypeScript
+# AWS Lambda Powertools (TypeScript)
 
 | ⚠️ **WARNING: Do not use this library in production** ⚠️                                                                                                                                                                                                                                                                                                                                             |
 |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -11,12 +11,11 @@ A suite of TypeScript utilities for AWS Lambda functions to ease adopting best p
 
 > **An AWS Developer Acceleration (DevAx) initiative by Specialist Solution Architects | aws-devax-open-source@amazon.com**
 
-### Features
+## Features
 
 * **[Tracer](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
 * **[Logger](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
 * **[Metrics](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
-
 
 ## Getting started
 
@@ -44,10 +43,9 @@ Each TypeScript utility is installed as standalone NPM package.
 
 * Credits for the Lambda Powertools idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
 
-
 ## Connect
 
-* **AWS Developers Slack**: `#lambda-powertools`** - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw)**
+* **AWS Developers Slack**: `#lambda-powertools` - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw)**
 * **Email**: aws-lambda-powertools-feedback@amazon.com
 
 ## License

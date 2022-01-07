@@ -19,7 +19,7 @@ const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: C
   logger.addPersistentLogAttributes({
     testKey: 'testValue',
   });
-  logger.debug('This is an DEBUG log'); // Won't show by default
+  logger.debug('This is an DEBUG log'); // Won't show because we pass logLevel: 'INFO' in the constructor.
   logger.info('This is an INFO log');
   logger.warn('This is an WARN log');
   logger.error('This is an ERROR log');

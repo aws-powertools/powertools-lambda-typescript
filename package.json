@@ -8,7 +8,6 @@
     "packages/*"
   ],
   "scripts": {
-    "preinstall": "(cd packages/commons && npm ci); (cd packages/logger && npm ci); (cd packages/metrics && npm ci); (cd packages/tracing && npm ci);",
     "init-environment": "husky install",
     "test": "npm run lerna-test",
     "commit": "commit",

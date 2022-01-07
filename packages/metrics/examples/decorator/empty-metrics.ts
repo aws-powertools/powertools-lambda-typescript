@@ -16,10 +16,10 @@ const metrics = new Metrics();
 class Lambda implements LambdaInterface {
 
   // Be default, we will not throw any error if there is no metrics. Use this property to override and throw an exception
-  @metrics.logMetrics({ raiseOnEmptyMetrics: true })
+  @metrics.logMetrics({ throwOnEmptyMetrics: true })
   public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
     // Notice that no metrics are added
-    // Since the raiseOnEmptyMetrics parameter is set to true, the Powertool throw an Error
+    // Since the throwOnEmptyMetrics parameter is set to true, the Powertool throws an Error
   }
 
 }

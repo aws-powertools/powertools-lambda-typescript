@@ -86,7 +86,7 @@ describe('Middy middleware', () => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
       };
       const metricsOptions: ExtraOptions = {
-        raiseOnEmptyMetrics: true,
+        throwOnEmptyMetrics: true,
         defaultDimensions: { environment : 'prod', aws_region: 'eu-central-1' },
         captureColdStartMetric: true
       };
@@ -173,7 +173,7 @@ describe('Middy middleware', () => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
       };
       const metricsOptions: ExtraOptions = {
-        raiseOnEmptyMetrics: true
+        throwOnEmptyMetrics: true
       };
       const handler = middy(lambdaHandler).use(logMetrics([metrics], metricsOptions));
 

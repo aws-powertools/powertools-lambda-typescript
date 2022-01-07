@@ -128,8 +128,8 @@ class Tracer implements TracerInterface {
   private tracingEnabled: boolean = true;
 
   public constructor(options: TracerOptions = {}) {
-    this.setOptions(options);
     this.provider = new ProviderService();
+    this.setOptions(options);
   }
 
   /**
@@ -458,7 +458,10 @@ class Tracer implements TracerInterface {
    * @returns segment - The active segment or subsegment in the current scope.
    */
   public getSegment(): Segment | Subsegment {
-    const segment = this.provider.getSegment();
+    let segment = this.provider.getSegment();
+    if (segment === undefined && this.isTracingEnabled() === false) {
+      segment = new Subsegment('## Dummy segment');
+    }
     if (segment === undefined) {
       throw new Error('Failed to get the current sub/segment from the context.');
     }
@@ -567,6 +570,8 @@ class Tracer implements TracerInterface {
    * @param segment - Subsegment to set as the current segment
    */
   public setSegment(segment: Segment | Subsegment): void {
+    if (this.isTracingEnabled() === false) return;
+    
     return this.provider.setSegment(segment);
   }
 
@@ -730,6 +735,7 @@ class Tracer implements TracerInterface {
   private setTracingEnabled(enabled?: boolean): void {
     if (enabled !== undefined && enabled === false) {
       this.tracingEnabled = enabled;
+      this.provider.setContextMissingStrategy(() => undefined);
 
       return;
     }
@@ -737,6 +743,7 @@ class Tracer implements TracerInterface {
     const customConfigValue = this.getCustomConfigService()?.getTracingEnabled();
     if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
       this.tracingEnabled = false;
+      this.provider.setContextMissingStrategy(() => undefined);
 
       return;
     }
@@ -744,12 +751,14 @@ class Tracer implements TracerInterface {
     const envVarsValue = this.getEnvVarsService()?.getTracingEnabled();
     if (envVarsValue.toLowerCase() === 'false') {
       this.tracingEnabled = false;
+      this.provider.setContextMissingStrategy(() => undefined);
 
       return;
     }
 
     if (this.isLambdaSamCli() || this.isLambdaExecutionEnv() === false) {
       this.tracingEnabled = false;
+      this.provider.setContextMissingStrategy(() => undefined);
     }
   }
 

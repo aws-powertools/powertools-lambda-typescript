@@ -61,6 +61,7 @@ export const handler = async (event: unknown, context: Context): Promise<void> =
   } catch (err) {
     // Add the error as metadata
     subsegment.addError(err as Error, false);
+    throw err;
   } finally {
     // Close subsegments (the AWS Lambda one is closed automatically)
     subsegment.close(); // (### MySubSegment)

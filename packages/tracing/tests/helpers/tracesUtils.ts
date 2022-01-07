@@ -58,10 +58,12 @@ interface ParsedTrace {
 }
 
 const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string, expectedTraces: number): Promise<ParsedTrace[]> => {
+  const endTime = new Date();
+  console.log(`Manual query: aws xray get-trace-summaries --start-time ${Math.floor(startTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --filter-expression 'resource.arn = "${resourceArn}"'`);
   const traces = await xrayClient
     .getTraceSummaries({
       StartTime: startTime,
-      EndTime: new Date(),
+      EndTime: endTime,
       FilterExpression: `resource.arn = "${resourceArn}"`,
     })
     .promise();

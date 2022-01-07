@@ -63,7 +63,7 @@ Tests are under `tests` folder of each modules and split into two categories: un
 
 You can run each group separately or all together thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups).
 
-Unit tests, under `tests/unit` folder are standard jest tests.
+Unit tests, under `tests/unit` folder are standard [Jest](https://jestjs.io) tests.
 
 Integration tests, under `tests/e2e` folder, will test the module features by deploying lambdas into your AWS Account (thanks to CDK lib for typescript) and use aws sdk to invoke them and assert on expected behavior. All of it orchestrated using standard Jest framework. Since it's deploying infrastructure, it will need an AWS account.
 

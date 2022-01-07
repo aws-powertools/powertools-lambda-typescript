@@ -1,3 +1,9 @@
+/**
+ * Test Logger class
+ *
+ * @group unit/logger/all
+ */
+
 import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore

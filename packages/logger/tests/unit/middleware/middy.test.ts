@@ -1,3 +1,9 @@
+/**
+ * Test Logger middleware
+ *
+ * @group unit/logger/all
+ */
+
 import { EnvironmentVariablesService } from '../../../src/config';
 import { injectLambdaContext } from '../../../src/middleware/middy';
 import { Logger } from './../../../src';

@@ -1,7 +1,8 @@
 import type { Context } from 'aws-lambda';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
-import { cloneDeep, merge } from 'lodash/fp';
+import cloneDeep from 'lodash.clonedeep';
+import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import type {
   Environment,
@@ -69,7 +70,7 @@ class Logger implements ClassThatLogs {
   }
 
   public addPersistentLogAttributes(attributes?: LogAttributes): void {
-    this.persistentLogAttributes = merge(this.getPersistentLogAttributes(), attributes);
+    this.persistentLogAttributes = merge(attributes, this.getPersistentLogAttributes());
   }
 
   public appendKeys(attributes?: LogAttributes): void {
@@ -148,16 +149,16 @@ class Logger implements ClassThatLogs {
 
   private addToPowertoolLogData(...attributesArray: Array<Partial<PowertoolLogData>>): void {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
-      this.powertoolLogData = merge(this.getPowertoolLogData(), attributes);
+      this.powertoolLogData = merge(attributes, this.getPowertoolLogData());
     });
   }
 
   private createAndPopulateLogItem(logLevel: LogLevel, input: LogItemMessage, extraInput: LogItemExtraInput): LogItem {
-    const unformattedBaseAttributes = merge(this.getPowertoolLogData(), {
+    const unformattedBaseAttributes = merge({
       logLevel,
       timestamp: new Date(),
       message: typeof input === 'string' ? input : input.message,
-    });
+    }, this.getPowertoolLogData());
 
     const logItem = new LogItem({
       baseAttributes: this.getLogFormatter().formatAttributes(unformattedBaseAttributes),

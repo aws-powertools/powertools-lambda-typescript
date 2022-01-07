@@ -15,7 +15,7 @@ export class MyFunctionWithDecorator {
   @logger.injectLambdaContext()
   @metrics.logMetrics({
     captureColdStartMetric: true,
-    raiseOnEmptyMetrics: true,
+    throwOnEmptyMetrics: true,
     defaultDimensions: { environment: 'example', type: 'withDecorator' },
   })
   public handler(_event: unknown, _context: Context, _callback: Callback<unknown>): void | Promise<unknown> {

@@ -650,6 +650,8 @@ describe('Class: Logger', () => {
       class LambdaFunction implements LambdaInterface {
 
         @logger.injectLambdaContext()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           logger.info('This is an INFO log with some context');
 

@@ -17,7 +17,7 @@ const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 
 export const handler = async (_event: unknown, _context: Context): Promise<void> => {
   metrics.captureColdStartMetric();
-  metrics.raiseOnEmptyMetrics();
+  metrics.throwOnEmptyMetrics();
   metrics.setDefaultDimensions(JSON.parse(defaultDimensions));
   metrics.addMetric(metricName, metricUnit, parseInt(metricValue));
   metrics.addDimension(

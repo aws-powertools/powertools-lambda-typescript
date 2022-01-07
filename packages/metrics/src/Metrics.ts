@@ -35,7 +35,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the [@metrics.logMetrics()](./_aws_lambda_powertools_metrics.Metrics.html#logMetrics) decorator to automatically:
  *   * create cold start metric
  *   * flush buffered metrics
- *   * raise on empty metrics
+ *   * throw on empty metrics
  *
  * @example
  *
@@ -49,7 +49,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *
  *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@metrics* instead of `@metrics.logMetrics`
  *
- *   @metrics.logMetrics({captureColdStartMetric: true, raiseOnEmptyMetrics: true, })
+ *   @metrics.logMetrics({captureColdStartMetric: true, throwOnEmptyMetrics: true, })
  *   public handler(_event: any, _context: Context, _callback: Callback<any>): void | Promise<any> {
  *    // ...
  *    metrics.addMetric('test-metric', MetricUnits.Count, 10);
@@ -89,7 +89,7 @@ class Metrics implements MetricsInterface {
   private isSingleMetric: boolean = false;
   private metadata: { [key: string]: string } = {};
   private namespace?: string;
-  private shouldRaiseOnEmptyMetrics: boolean = false;
+  private shouldThrowOnEmptyMetrics: boolean = false;
   private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {
@@ -202,7 +202,7 @@ class Metrics implements MetricsInterface {
   }
 
   /**
-   * A decorator automating coldstart capture, raise on empty metrics and publishing metrics on handler exit.
+   * A decorator automating coldstart capture, throw on empty metrics and publishing metrics on handler exit.
    *
    * @example
    *
@@ -227,9 +227,9 @@ class Metrics implements MetricsInterface {
    * @decorator Class
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
-    const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
-    if (raiseOnEmptyMetrics) {
-      this.raiseOnEmptyMetrics();
+    const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
+    if (throwOnEmptyMetrics) {
+      this.throwOnEmptyMetrics();
     }
     if (defaultDimensions !== undefined) {
       this.setDefaultDimensions(defaultDimensions);
@@ -282,27 +282,6 @@ class Metrics implements MetricsInterface {
   }
 
   /**
-   * Throw an Error if the metrics buffer is empty.
-   *
-   * @example
-   *
-   * ```typescript
-   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-   * import { Context } from 'aws-lambda';
-   *
-   * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
-   *
-   * export const handler = async (event: any, context: Context) => {
-   *     metrics.raiseOnEmptyMetrics();
-   *     metrics.publishStoredMetrics(); // will throw since no metrics added.
-   * }
-   * ```
-   */
-  public raiseOnEmptyMetrics(): void {
-    this.shouldRaiseOnEmptyMetrics = true;
-  }
-
-  /**
    * Function to create the right object compliant with Cloudwatch EMF (Event Metric Format).
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html for more details
    * @returns {string}
@@ -312,7 +291,7 @@ class Metrics implements MetricsInterface {
       Name: metricDefinition.name,
       Unit: metricDefinition.unit,
     }));
-    if (metricDefinitions.length === 0 && this.shouldRaiseOnEmptyMetrics) {
+    if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
     }
 
@@ -384,6 +363,27 @@ class Metrics implements MetricsInterface {
       defaultDimensions: this.defaultDimensions,
       singleMetric: true,
     });
+  }
+
+  /**
+   * Throw an Error if the metrics buffer is empty.
+   *
+   * @example
+   *
+   * ```typescript
+   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+   * import { Context } from 'aws-lambda';
+   *
+   * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
+   *
+   * export const handler = async (event: any, context: Context) => {
+   *     metrics.throwOnEmptyMetrics();
+   *     metrics.publishStoredMetrics(); // will throw since no metrics added.
+   * }
+   * ```
+   */
+  public throwOnEmptyMetrics(): void {
+    this.shouldThrowOnEmptyMetrics = true;
   }
 
   private getCurrentDimensionsCount(): number {

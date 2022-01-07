@@ -1,4 +1,5 @@
-import { pickBy, merge } from 'lodash';
+import pickBy from 'lodash.pickby';
+import merge from 'lodash.merge';
 import { LogItemInterface } from '.';
 import { LogAttributes } from '../types';
 

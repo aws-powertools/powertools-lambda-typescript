@@ -40,12 +40,10 @@ describe('Tracer integration tests', () => {
     integTestApp = new App();
     stack = new Stack(integTestApp, 'TracerIntegTest');
 
-
     const identity = await stsClient.getCallerIdentity().promise();
     const account = identity.Account;
     const region = process.env.AWS_REGION;
     
-
     const functions = [
       'Manual',
       'Middleware',
@@ -110,9 +108,9 @@ describe('Tracer integration tests', () => {
     });
     
     // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, 250000));
+    await new Promise((resolve) => setTimeout(resolve, 180000));
 
-  }, 460000); // 6 minutes
+  }, 360000); // 6 minutes
 
   afterAll(async () => {
 

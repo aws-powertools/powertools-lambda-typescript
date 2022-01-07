@@ -58,15 +58,11 @@ interface ParsedTrace {
 }
 
 const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string, expectedTraces: number): Promise<ParsedTrace[]> => {
-  const adjustedStartTime = new Date(startTime.getTime() - 60 * 1000);
-  const endTime = new Date(new Date().getTime() + 60 * 1000);
-  const filterExpression = `resource.arn = "${resourceArn}"`;
-  console.log(`Manual query: aws xray get-trace-summaries --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --filter-expression '${filterExpression}'`);
   const traces = await xrayClient
     .getTraceSummaries({
-      StartTime: adjustedStartTime,
-      EndTime: endTime,
-      FilterExpression: filterExpression,
+      StartTime: startTime,
+      EndTime: new Date(),
+      FilterExpression: `resource.arn = "${resourceArn}"`,
     })
     .promise();
 
@@ -77,7 +73,6 @@ const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string,
   const traceDetails = await xrayClient.batchGetTraces({
     TraceIds: traces.TraceSummaries?.map((traceSummary) => traceSummary?.Id) as XRay.TraceIdList,
   }).promise();
-  console.log(`traceDetails: ${JSON.stringify(traceDetails)}`);
 
   if (traceDetails.Traces?.length !== expectedTraces) {
     throw new Error(`Expected ${expectedTraces} trace summaries, got ${traceDetails.Traces?.length}`);

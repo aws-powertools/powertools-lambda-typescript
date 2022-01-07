@@ -37,7 +37,7 @@ type PowertoolLog = LogAttributes & {
   /**
    * message
    *
-   * Description: Log statement value. Unserializable JSON values will be casted to string.
+   * Description: Log statement value. Unserializable JSON values will be cast to string.
    * Example: "Collecting payment"
    */
   message?: string

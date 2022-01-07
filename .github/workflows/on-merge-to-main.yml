@@ -7,9 +7,6 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write # needed to interact with GitHub's OIDC Token endpoint.
-      contents: read
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
@@ -34,21 +31,6 @@ jobs:
       run: npm run lerna-lint
     - name: Run tests
       run: npm run lerna-test
-    - name: "Version and publish"
-      env:
-        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
-
-        # For merge to main we 
-        ## don't create github release, 
-        ## don't update changelog (--no-changelog) 
-        ## bump version as a pre-release (--conventional-prerelease)
-        ## add a custom preid (--preid dev): 0.2.0-dev.1 -> 0.2.0-dev.2
-        npx lerna version --conventional-commits --conventional-prerelease --preid dev --force-publish=* --yes --no-changelog
-        git push --delete origin $(git describe --abbrev=0)
     - name: update release draft
       uses: release-drafter/release-drafter@v5.15.0
       env:

@@ -511,7 +511,7 @@ describe('Class: Metrics', () => {
       await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
     });
 
-    test('Purge Stored Metrics should log and clear', async () => {
+    test('Publish Stored Metrics should log and clear', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics()

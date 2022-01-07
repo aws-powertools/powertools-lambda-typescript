@@ -57,6 +57,75 @@ You can build and start a local docs website by running these two commands.
   - `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
   - `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
 
+### Tests
+
+Tests are under `tests` folder of each modules and splitted into two categories: Unit tests and e2e tests.
+
+This split happen thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups).
+
+Unit tests, under `tests/unit` folder are standard jest tests.
+
+Integration tests, under `tests/e2e` folder, will test the module features by deploying lambdas into your AWS Account (thanks to CDK lib for typescript) and use aws sdk to invoke them and assert on expected behavior. All of it orchestrated using standard Jest framework. Since it's deploying infrastructure, it will need an AWS account.
+
+
+**Unit testing**
+
+**Write**
+
+As mentioned before, tests are splitted thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups) and therefore needs to be tagged properly by adding the following comments in your unit test file:
+
+```
+/**
+ * Tests metrics
+ *
+ * @group unit/<YOUR CATEGORY>/<YOUR SUB CATEGORY>
+ */
+```
+
+**Run**
+
+ `npm run test`
+
+You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/all`.
+
+**e2e tests**
+
+**Write**
+
+As mentioned before, unit and e2e tests are splitted thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups) and therefore needs to be tagged properly by adding the following comments in your unit test file:
+
+```
+/**
+ * Tests data lake catalog
+ *
+ * @group e2e/<YOUR CATEGORY>/<YOUR SUB CATEGORY>
+ */
+```
+
+and leverage `aws-cdk` package to programatically deploy and destroy stacks. See `metrics/tests/e2e/decorator.test.ts` as an example.
+
+
+**Run**
+
+To run unit tests you can either use projen task
+* `npm run test:e2e` which will only run jest integ tests
+* or jest directly `npx jest --group=e2e`
+
+You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=e2e/other/example`.
+
+Two important env variable can be used:
+* `AWS_PROFILE` to use the right credentials
+* `DISABLE_TEARDOWN` if you don't want your stack to be destroyed at the end of the test (useful in dev mode when iterating over your code).
+
+Example: `DISABLE_TEARDOWN=true AWS_PROFILE=ara npx jest --group=integ/other/example`
+
+**Automate**
+
+1. Create AWS Role
+  As mention earlier we are leveraging CDK to deploy and clean resources on AWS. Therefore to run those tests through github actions you will need to grant specific permissions to your workflow. To do so you can leverage [@pahud/cdk-github-oidc](https://constructs.dev/packages/@pahud/cdk-github-oidc) construct which setup the right resources to leverage [Github OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/) mechanism.
+1. Add your new role into your Github fork secrets under `AWS_ROLE_ARN_TO_ASSUME`.
+1. Run manually `run-e2e-tests` workflow.
+
 ### Conventions
 
 Category | Convention

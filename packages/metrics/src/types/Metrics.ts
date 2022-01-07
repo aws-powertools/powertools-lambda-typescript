@@ -39,7 +39,7 @@ type HandlerMethodDecorator = (
  * ```typescript
  *
  * const metricsOptions: MetricsOptions = {
- *   raiseOnEmptyMetrics: true,
+ *   throwOnEmptyMetrics: true,
  *   defaultDimensions: {'environment': 'dev'},
  *   captureColdStartMetric: true,
  * }
@@ -51,7 +51,7 @@ type HandlerMethodDecorator = (
  * ```
  */
 type ExtraOptions = {
-  raiseOnEmptyMetrics?: boolean
+  throwOnEmptyMetrics?: boolean
   defaultDimensions?: Dimensions
   captureColdStartMetric?: boolean
 };

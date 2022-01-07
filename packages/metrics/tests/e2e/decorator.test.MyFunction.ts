@@ -18,7 +18,7 @@ const metrics = new Metrics({ namespace: namespace, service: serviceName });
 
 class Lambda implements LambdaInterface {
 
-  @metrics.logMetrics({ captureColdStartMetric: true, defaultDimensions: JSON.parse(defaultDimensions), raiseOnEmptyMetrics: true })
+  @metrics.logMetrics({ captureColdStartMetric: true, defaultDimensions: JSON.parse(defaultDimensions), throwOnEmptyMetrics: true })
   public async handler(_event: unknown, _context: Context): Promise<void> {
     metrics.addMetric(metricName, metricUnit, parseInt(metricValue));
     metrics.addDimension(

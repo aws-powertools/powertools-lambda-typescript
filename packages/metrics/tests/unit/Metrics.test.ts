@@ -346,13 +346,13 @@ describe('Class: Metrics', () => {
     });
   });
 
-  describe('Feature: raiseOnEmptyMetrics', () => {
-    test('Error should be thrown on empty metrics when raiseOnEmptyMetrics is passed', async () => {
+  describe('Feature: throwOnEmptyMetrics', () => {
+    test('Error should be thrown on empty metrics when throwOnEmptyMetrics is passed', async () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
       class LambdaFunction implements LambdaInterface {
-        @metrics.logMetrics({ raiseOnEmptyMetrics: true })
+        @metrics.logMetrics({ throwOnEmptyMetrics: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(
@@ -371,12 +371,12 @@ describe('Class: Metrics', () => {
       }
     });
 
-    test('Error should be thrown on empty metrics when raiseOnEmptyMetrics() is callse', async () => {
+    test('Error should be thrown on empty metrics when throwOnEmptyMetrics() is callse', async () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
       const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
-        metrics.raiseOnEmptyMetrics();
+        metrics.throwOnEmptyMetrics();
         // Logic goes here
         metrics.publishStoredMetrics();
       };

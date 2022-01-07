@@ -29,7 +29,7 @@ export const handler = async (_event: unknown, context: Context): Promise<void> 
 
   // ### Experiment metrics
   metrics.captureColdStartMetric();
-  metrics.raiseOnEmptyMetrics();
+  metrics.throwOnEmptyMetrics();
   metrics.setDefaultDimensions({ environment: 'example', type: 'standardFunction' });
   metrics.addMetric('test-metric', MetricUnits.Count, 10);
 

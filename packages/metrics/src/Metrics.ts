@@ -282,27 +282,6 @@ class Metrics implements MetricsInterface {
   }
 
   /**
-   * Throw an Error if the metrics buffer is empty.
-   *
-   * @example
-   *
-   * ```typescript
-   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-   * import { Context } from 'aws-lambda';
-   *
-   * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
-   *
-   * export const handler = async (event: any, context: Context) => {
-   *     metrics.throwOnEmptyMetrics();
-   *     metrics.publishStoredMetrics(); // will throw since no metrics added.
-   * }
-   * ```
-   */
-  public throwOnEmptyMetrics(): void {
-    this.shouldThrowOnEmptyMetrics = true;
-  }
-
-  /**
    * Function to create the right object compliant with Cloudwatch EMF (Event Metric Format).
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html for more details
    * @returns {string}
@@ -384,6 +363,27 @@ class Metrics implements MetricsInterface {
       defaultDimensions: this.defaultDimensions,
       singleMetric: true,
     });
+  }
+
+  /**
+   * Throw an Error if the metrics buffer is empty.
+   *
+   * @example
+   *
+   * ```typescript
+   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+   * import { Context } from 'aws-lambda';
+   *
+   * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
+   *
+   * export const handler = async (event: any, context: Context) => {
+   *     metrics.throwOnEmptyMetrics();
+   *     metrics.publishStoredMetrics(); // will throw since no metrics added.
+   * }
+   * ```
+   */
+  public throwOnEmptyMetrics(): void {
+    this.shouldThrowOnEmptyMetrics = true;
   }
 
   private getCurrentDimensionsCount(): number {

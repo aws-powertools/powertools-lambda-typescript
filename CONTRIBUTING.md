@@ -78,7 +78,7 @@ When contributing to this repository these integration tests are run by the main
 
 As mentioned before, tests are splitted thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups) and therefore needs to be tagged properly by adding the following comments in your unit test file:
 
-```
+```typescript
 /**
  * Tests metrics
  *

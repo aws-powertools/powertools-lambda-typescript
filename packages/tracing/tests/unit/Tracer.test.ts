@@ -347,7 +347,7 @@ describe('Class: Tracer', () => {
       }).toThrow('No context available. ns.run() or ns.bind() must be called first.');
     });
 
-    test('when called outside of a namespace or without parent segment, and Tracer is NOT enabled, it does nothing', () => {
+    test('when called outside of a namespace or without parent segment, and tracing is disabled, it does nothing', () => {
       
       // Prepare
       delete process.env.AWS_EXECUTION_ENV; // This will disable the tracer, simulating local execution

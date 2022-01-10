@@ -299,7 +299,7 @@ describe('Class: Tracer', () => {
 
     });
 
-    test('when called outside of a namespace or without parent segment, and Tracer is NOT active, it returns a dummy subsegment', () => {
+    test('when called outside of a namespace or without parent segment, and tracing is disabled, it returns a dummy subsegment', () => {
 
       // Prepare
       delete process.env.AWS_EXECUTION_ENV; // This will disable the tracer, simulating local execution

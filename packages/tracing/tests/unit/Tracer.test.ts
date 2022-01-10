@@ -274,7 +274,7 @@ describe('Class: Tracer', () => {
 
   describe('Method: getSegment', () => {
 
-    test('when called outside of a namespace or without parent segment, and Tracer is active, it throws an error', () => {
+    test('when called outside of a namespace or without parent segment, and tracing is enabled, it throws an error', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer();

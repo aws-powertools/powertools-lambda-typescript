@@ -286,7 +286,7 @@ describe('Class: Tracer', () => {
 
     });
 
-    test('when called and no segment is returned, while Tracer is active, it throws an error', () => {
+    test('when called and no segment is returned, while tracing is enabled, it throws an error', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer();

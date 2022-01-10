@@ -262,7 +262,7 @@ class Tracer implements TracerInterface {
     } catch (error) {
       try {
         return this.provider.captureAWSClient((service as unknown as T & { service: T }).service);
-      } catch (errorTwo) {
+      } catch {
         throw error;
       }
     }

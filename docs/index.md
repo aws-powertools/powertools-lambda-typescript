@@ -17,7 +17,7 @@ AWS Lambda Powertools TypeScript provides a suite of utilities for AWS Lambda fu
 
 ## Tenets
 
-Core utilities such as Tracing, Logging, Metrics, and Event Handler will be available across all Lambda Powertools runtimes. Additional utilities are subjective to each language ecosystem and customer demand.
+Core utilities such as Tracer, Logger, Metrics, and Event Handler will be available across all Lambda Powertools runtimes. Additional utilities are subjective to each language ecosystem and customer demand.
 
 * **AWS Lambda only**. We optimise for AWS Lambda function environments and supported runtimes only. Utilities might work with web frameworks and non-Lambda environments, though they are not officially supported.
 * **Eases the adoption of best practices**. The main priority of the utilities is to facilitate best practices adoption, as defined in the AWS Well-Architected Serverless Lens; all other functionality is optional.

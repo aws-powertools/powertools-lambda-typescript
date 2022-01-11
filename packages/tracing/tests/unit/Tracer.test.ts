@@ -274,7 +274,7 @@ describe('Class: Tracer', () => {
 
   describe('Method: getSegment', () => {
 
-    test('when called outside of a namespace or without parent segment, it throws an error', () => {
+    test('when called outside of a namespace or without parent segment, and tracing is enabled, it throws an error', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer();
@@ -286,7 +286,7 @@ describe('Class: Tracer', () => {
 
     });
 
-    test('when called outside of a namespace or without parent segment, it throws an error', () => {
+    test('when called and no segment is returned, while tracing is enabled, it throws an error', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer();
@@ -298,7 +298,22 @@ describe('Class: Tracer', () => {
       }).toThrow('Failed to get the current sub/segment from the context.');
 
     });
-    
+
+    test('when called outside of a namespace or without parent segment, and tracing is disabled, it returns a dummy subsegment', () => {
+
+      // Prepare
+      delete process.env.AWS_EXECUTION_ENV; // This will disable the tracer, simulating local execution
+      const tracer: Tracer = new Tracer();
+
+      // Act
+      const segment = tracer.getSegment();
+
+      // Assess
+      expect(segment).toBeInstanceOf(Subsegment);
+      expect(segment.name).toBe('## Dummy segment');
+
+    });
+
     test('when called within a namespace, it returns the parent segment', () => {
 
       // Prepare
@@ -320,7 +335,7 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: setSegment', () => {
-    test('when called outside of a namespace or without parent segment, it throws an error', () => {
+    test('when called outside of a namespace or without parent segment, and Tracer is enabled, it throws an error', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
@@ -330,6 +345,22 @@ describe('Class: Tracer', () => {
         const newSubsegment = new Subsegment('## foo.bar');
         tracer.setSegment(newSubsegment);
       }).toThrow('No context available. ns.run() or ns.bind() must be called first.');
+    });
+
+    test('when called outside of a namespace or without parent segment, and tracing is disabled, it does nothing', () => {
+      
+      // Prepare
+      delete process.env.AWS_EXECUTION_ENV; // This will disable the tracer, simulating local execution
+      const tracer: Tracer = new Tracer();
+      const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment');
+    
+      // Act
+      const newSubsegment = new Subsegment('## foo.bar');
+      tracer.setSegment(newSubsegment);
+      
+      // Assess
+      expect(setSegmentSpy).toBeCalledTimes(0);
+
     });
 
     test('when called within a namespace, it sets the segment', () => {

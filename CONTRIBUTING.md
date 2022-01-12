@@ -69,7 +69,7 @@ End-to-end tests, under `tests/e2e` folder, will test the module features by dep
 
 Running end-to-end tests will deploy AWS resources. You will need an AWS account and the tests might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
-When contributing to this repository these integration tests are run by the maintainers before merging a PR.
+When contributing to this repository, these end-to-end tests are run by the maintainers before merging a PR.
 
 
 **Unit testing**

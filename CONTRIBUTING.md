@@ -65,7 +65,7 @@ You can run each group separately or all together thanks to [jest-runner-groups]
 
 Unit tests, under `tests/unit` folder are standard [Jest](https://jestjs.io) tests.
 
-Integration tests under `tests/e2e` folder on the other hand will test the module features by deploying Lambdas functions into your AWS Account. Infrastructure deployment is possible thanks to CDK lib for Typescript and `aws sdk` is used to invoke the functions and assert on the expected behavior. All of this is orchestrated using the same Jest framework used for the unit tests.
+End-to-end tests, under `tests/e2e` folder, will test the module features by deploying Lambdas functions into your AWS Account. We use CDK lib for Typescript for creating infrastructure, and `aws sdk` for invoking the functions and assert on the expected behaviors. All steps are also executed by Jest.
 
 Since running integration tests will deploy AWS resources you will need an AWS account and might incur in some costs which should be covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all). If you already don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 

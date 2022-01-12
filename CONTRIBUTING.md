@@ -131,6 +131,7 @@ You can run the end-to-end tests automatically on your forked project by followi
 1. Add your new role into your Github fork secrets under `AWS_ROLE_ARN_TO_ASSUME`.
 1. Run manually `run-e2e-tests` workflow.
 
+> :Warning: **Don't automatically run end-to-end tests on branch push or PRs**. A malicious attacker can submit a pull request to attack your AWS account. Ideally, use a blank account without any important workload/data, and limit `AWS_ROLE_ARN_TO_ASSUME` permission to least minimum privilege.
 ### Conventions
 
 Category | Convention

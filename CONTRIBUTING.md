@@ -72,7 +72,7 @@ Running end-to-end tests will deploy AWS resources. You will need an AWS account
 When contributing to this repository, these end-to-end tests are run by the maintainers before merging a PR.
 
 
-**Unit testing**
+**Unit tests**
 
 **Write**
 

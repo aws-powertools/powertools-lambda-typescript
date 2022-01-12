@@ -285,7 +285,7 @@ class Tracer implements TracerInterface {
    * @returns service - Instrumented AWS SDK v3 client
    */
   public captureAWSv3Client<T>(service: T): T {
-    if (!this.isTracingEnabled()) return aws;
+    if (!this.isTracingEnabled()) return service;
 
     return this.provider.captureAWSv3Client(service);
   }

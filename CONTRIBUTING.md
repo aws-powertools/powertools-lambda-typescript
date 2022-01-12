@@ -106,7 +106,7 @@ As mentioned in the previous section, tests are split into groups thanks to [jes
  */
 ```
 
-and leverage `aws-cdk` package to programatically deploy and destroy stacks. See `metrics/tests/e2e/decorator.test.ts` as an example.
+and leverage [aws-cdk](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) V1 package (not v2 due to [this cdk issue](https://github.com/aws/aws-cdk/issues/18211)) to programatically deploy and destroy stacks. See `metrics/tests/e2e/decorator.test.ts` as an example.
 
 
 **Run**

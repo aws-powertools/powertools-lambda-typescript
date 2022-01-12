@@ -2,7 +2,7 @@ name: run-e2e-tests
 on:
   workflow_dispatch: {}
 jobs:
-  publish:
+  run:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.

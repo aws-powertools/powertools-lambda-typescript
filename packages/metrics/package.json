@@ -61,7 +61,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "aws-cdk": "^1.137.0",
     "aws-sdk": "^2.1048.0",
-    "esbuild": "0.14.5",
+    "esbuild": "0.14.11",
     "eslint": "^8.3.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.5.0",

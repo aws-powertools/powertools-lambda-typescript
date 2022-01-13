@@ -5,11 +5,11 @@ import cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import type {
+  ClassThatLogs,
   Environment,
   HandlerMethodDecorator,
   LambdaFunctionContext,
   LogAttributes,
-  ClassThatLogs,
   LoggerOptions,
   LogItemExtraInput,
   LogItemMessage,
@@ -90,7 +90,7 @@ class Logger implements ClassThatLogs {
   }
 
   public static evaluateColdStartOnce(): void {
-    if (Logger.getColdStartEvaluatedValue() === false) {
+    if (!Logger.getColdStartEvaluatedValue()) {
       Logger.evaluateColdStart();
     }
   }
@@ -117,9 +117,8 @@ class Logger implements ClassThatLogs {
 
       descriptor.value = (event, context, callback) => {
         this.addContext(context);
-        const result = originalMethod?.apply(this, [ event, context, callback ]);
 
-        return result;
+        return originalMethod?.apply(this, [ event, context, callback ]);
       };
     };
   }
@@ -181,7 +180,7 @@ class Logger implements ClassThatLogs {
     const coldStartValue = Logger.getColdStartValue();
     if (typeof coldStartValue === 'undefined') {
       Logger.setColdStartValue(true);
-    } else if (coldStartValue === true) {
+    } else if (coldStartValue) {
       Logger.setColdStartValue(false);
     } else {
       Logger.setColdStartValue(false);

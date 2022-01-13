@@ -127,24 +127,24 @@ Example: `DISABLE_TEARDOWN=true AWS_PROFILE=dev-account npx jest --group=e2e/met
 **Automate**
 
 You can run the end-to-end tests automatically on your forked project by following these steps:
-1. Create an IAM role in your AWS account
-As mentioned above in this page, we are leveraging CDK to deploy and consequently clean-up resources on AWS. Therefore to run those tests through Github actions you will need to grant specific permissions to your workflow.  
-
-We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) for the AWS credentials used in GitHub Actions workflows, including:
-* Do not store credentials in your repository's code.
-* [Grant least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) to the credentials used in GitHub Actions workflows.  Grant only the permissions required to perform the actions in your GitHub Actions workflows.
-* [Monitor the activity](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#keep-a-log) of the credentials used in GitHub Actions workflows.
-
-For an example of how to create a role in CDK, you can look at [@pahud/cdk-github-oidc](https://constructs.dev/packages/@pahud/cdk-github-oidc) construct.
-
-More information about:  
-
-- [Github OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/
-- ["Configure AWS Credentials" Action For GitHub Actions](https://github.com/aws-actions/configure-aws-credentials/)
 1. Create an IAM role in your target AWS account, with the least amount of privilege.
-2. Add your new role into your [Github fork secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) with name  `AWS_ROLE_ARN_TO_ASSUME`.
-3. In your forked repository, go to the "Actions" tabs, select the `run-e2e-tests` workflow.
-4. In the run-e2e-tests workflow page, select "Run workflow" and run it on the desired branch.
+
+    As mentioned above in this page, we are leveraging CDK to deploy and consequently clean-up resources on AWS. Therefore to run those tests through Github actions you will need to grant specific permissions to your workflow.  
+
+    We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) for the AWS credentials used in GitHub Actions workflows, including:
+    * Do not store credentials in your repository's code.
+    * [Grant least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) to the credentials used in GitHub Actions workflows.  Grant only the permissions required to perform the actions in your GitHub Actions workflows.
+    * [Monitor the activity](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#keep-a-log) of the credentials used in GitHub Actions workflows.
+
+    For an example of how to create a role in CDK, you can look at [@pahud/cdk-github-oidc](https://constructs.dev/packages/@pahud/cdk-github-oidc) construct.
+
+    More information about:  
+
+    - [Github OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/
+    - ["Configure AWS Credentials" Action For GitHub Actions](https://github.com/aws-actions/configure-aws-credentials/)
+1. Add your new role into your [Github fork secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) with name  `AWS_ROLE_ARN_TO_ASSUME`.
+1. In your forked repository, go to the "Actions" tabs, select the `run-e2e-tests` workflow.
+1. In the run-e2e-tests workflow page, select "Run workflow" and run it on the desired branch.
 
 > :Warning: **Don't automatically run end-to-end tests on branch push or PRs**. A malicious attacker can submit a pull request to attack your AWS account. Ideally, use a blank account without any important workload/data, and limit `AWS_ROLE_ARN_TO_ASSUME` permission to least minimum privilege.
 ### Conventions

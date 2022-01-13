@@ -128,7 +128,7 @@ Example: `DISABLE_TEARDOWN=true AWS_PROFILE=ara npx jest --group=integ/other/exa
 **Automate**
 
 You can run the end-to-end tests automatically on your forked project by following these steps:
-1. Create AWS Role
+1. Create an IAM role in your AWS account
   As mention earlier we are leveraging CDK to deploy and clean resources on AWS. Therefore to run those tests through github actions you will need to grant specific permissions to your workflow. To do so you can leverage [@pahud/cdk-github-oidc](https://constructs.dev/packages/@pahud/cdk-github-oidc) construct which setup the right resources to leverage [Github OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/) mechanism.
 1. Add your new role into your Github fork secrets under `AWS_ROLE_ARN_TO_ASSUME`.
 1. Run manually `run-e2e-tests` workflow.

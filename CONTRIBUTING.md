@@ -65,7 +65,8 @@ You can run each group separately or all together thanks to [jest-runner-groups]
 
 Unit tests, under `tests/unit` folder are standard [Jest](https://jestjs.io) tests.
 
-End-to-end tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use CDK lib for Typescript for creating infrastructure, and `aws sdk` for invoking the functions and assert on the expected behaviors. All steps are also executed by Jest.
+End-to-end tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use [aws-cdk](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) v1 library (not v2 due to [this cdk issue](https://github.com/aws/aws-cdk/issues/18211)) for Typescript for creating infrastructure, and [aws-sdk-js v2](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/) for invoking the functions and assert on the expected behaviors. All steps are also executed by Jest.
+
 
 Running end-to-end tests will deploy AWS resources. You will need an AWS account and the tests might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
@@ -88,11 +89,10 @@ As mentioned before, tests are split into groups thanks to [jest-runner-groups](
 
 **Run**
 
-Run the following command in your terminal, in the folder of a utility package (for example: `packages/metrics`):
-
- `npm run test`
-
-You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/all`.
+To run unit tests you can either use 
+* npm task `lerna-test:unit` (`npm run lerna-test:unit`) in root folder to run them all
+* npm task `test:e2e` (`npm run test:unit`) in module folder (for example: `packages/metrics`) to run the module specific one
+* jest directly `npx jest --group=unit` in module folder to run the module specific one (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/class`)
 
 **e2e tests**
 
@@ -108,22 +108,21 @@ As mentioned in the previous section, tests are split into groups thanks to [jes
  */
 ```
 
-and leverage [aws-cdk](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) V1 package (not v2 due to [this cdk issue](https://github.com/aws/aws-cdk/issues/18211)) to programatically deploy and destroy stacks. See `metrics/tests/e2e/decorator.test.ts` as an example.
+ See `metrics/tests/e2e/decorator.test.ts` as an example.
 
 
 **Run**
 
-To run unit tests you can either use projen task
-* `npm run test:e2e` which will only run jest integ tests
-* or jest directly `npx jest --group=e2e`
-
-You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=e2e/other/example`.
+To run e2e tests you can either use 
+*  npm task `lerna-test:e2e` (`npm run lerna-test:e2e`) in root folder
+* npm task `test:e2e` (`npm run test:e2e`) in module folder (for example: `packages/metrics`) to run the module specific one
+* jest directly `npx jest --group=e2e` in module folder. (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=e2e/metrics/decorator`)
 
 Two important env variable can be used:
-* `AWS_PROFILE` to use the right credentials
+* `AWS_PROFILE` to use the right AWS credentials
 * `DISABLE_TEARDOWN` if you don't want your stack to be destroyed at the end of the test (useful in dev mode when iterating over your code).
 
-Example: `DISABLE_TEARDOWN=true AWS_PROFILE=ara npx jest --group=integ/other/example`
+Example: `DISABLE_TEARDOWN=true AWS_PROFILE=dev-account npx jest --group=e2e/metrics/decorator`
 
 **Automate**
 

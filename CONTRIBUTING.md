@@ -88,6 +88,8 @@ As mentioned before, tests are split into groups thanks to [jest-runner-groups](
 
 **Run**
 
+Run the following command in your terminal, in the folder of a utility package (for example: `packages/metrics`):
+
  `npm run test`
 
 You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/all`.

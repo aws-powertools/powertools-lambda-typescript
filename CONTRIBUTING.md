@@ -142,8 +142,10 @@ More information about:
 
 - [Github OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/
 - ["Configure AWS Credentials" Action For GitHub Actions](https://github.com/aws-actions/configure-aws-credentials/)
-1. Add your new role into your Github fork secrets under `AWS_ROLE_ARN_TO_ASSUME`.
-1. Run manually `run-e2e-tests` workflow.
+1. Create an IAM role in your target AWS account, with the least amount of privilege.
+2. Add your new role into your [Github fork secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) with name  `AWS_ROLE_ARN_TO_ASSUME`.
+3. In your forked repository, go to the "Actions" tabs, select the `run-e2e-tests` workflow.
+4. In the run-e2e-tests workflow page, select "Run workflow" and run it on the desired branch.
 
 > :Warning: **Don't automatically run end-to-end tests on branch push or PRs**. A malicious attacker can submit a pull request to attack your AWS account. Ideally, use a blank account without any important workload/data, and limit `AWS_ROLE_ARN_TO_ASSUME` permission to least minimum privilege.
 ### Conventions

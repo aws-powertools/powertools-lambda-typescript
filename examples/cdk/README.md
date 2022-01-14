@@ -1,14 +1,21 @@
-# Welcome to your CDK TypeScript project!
+# AWS Lambda Powertools (TypeScript) examples in CDK
 
-This is a blank project for TypeScript development with CDK.
+This is a deployable CDK app that deploys AWS Lambda functions as part of a CloudFormation stack. These Lambda functions use the utilities made available as part of AWS Lambda Powertools (TypeScript) to demonstrate their usage.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+The example functions, located in the `lib` folder, are triggered automatically when deployed using the CDK construct defined in `lib/example-function.ts`.
 
-## Useful commands
+## Deploying the stack
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+ * Navigate to this location of the repo in your terminal (`examples/cdk`)
+ * `npm install`
+ * `npx cdk deploy --all --profile <YOUR_AWS_PROFILE>`
+
+Note: Prior to deploying you may need to run `npx cdk bootstrap aws://<YOU_AWS_ACCOUNT_ID>/<AWS_REGION> --profile <YOUR_AWS_PROFILE>` if you have not already bootstrapped your account for CDK.
+
+## Viewing Utility Outputs
+
+All utility outputs can be viewed from the CloudWatch console.
+
+ * `Logger` outputs to Logs > Log groups
+ * `Metrics` outputs to Metrics > All metrics > LambdaPowertoolsTypeScript-CDKExample
+ * `Tracer` outputs to  X-Ray traces > Traces

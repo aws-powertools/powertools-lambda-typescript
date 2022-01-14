@@ -1,7 +1,7 @@
 name: pr-lint-and-test
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened, synchronize]
 jobs:
   on_push:
     runs-on: ubuntu-latest

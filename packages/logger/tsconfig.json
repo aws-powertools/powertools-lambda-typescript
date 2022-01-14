@@ -26,10 +26,5 @@
     "types": [
         "jest",
         "node"
-    ],
-    "references": [
-        {
-            "path": "../commons"
-        }
     ]
 }

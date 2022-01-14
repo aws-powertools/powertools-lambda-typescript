@@ -11,7 +11,9 @@
   },
   "scripts": {
     "commit": "commit",
-    "test": "jest  --detectOpenHandles --coverage --verbose",
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
@@ -53,6 +55,7 @@
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.3",
     "jest": "^27.0.4",
+    "jest-runner-groups": "^2.1.0",
     "ts-jest": "^27.0.3",
     "ts-node": "^10.0.0",
     "typescript": "^4.1.3"

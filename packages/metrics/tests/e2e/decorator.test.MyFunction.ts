@@ -14,7 +14,7 @@ const singleMetricName = process.env.EXPECTED_SINGLE_METRIC_NAME ?? 'MySingleMet
 const singleMetricUnit = (process.env.EXPECTED_SINGLE_METRIC_UNIT as MetricUnits) ?? MetricUnits.Percent;
 const singleMetricValue = process.env.EXPECTED_SINGLE_METRIC_VALUE ?? '2';
 
-const metrics = new Metrics({ namespace: namespace, service: serviceName });
+const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 
 class Lambda implements LambdaInterface {
 

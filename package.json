@@ -14,6 +14,7 @@
     "package": "npm run package",
     "lerna-ci": "lerna exec -- npm ci",
     "lerna-test": "lerna exec -- npm run test",
+    "lerna-test:e2e": "lerna exec -- npm run test:e2e",
     "lerna-package": "lerna exec -- npm run package",
     "lerna-build": "lerna exec -- tsc",
     "lerna-lint": "lerna exec -- eslint \"./{src,tests}/**/*.ts ./src/*.ts\"",

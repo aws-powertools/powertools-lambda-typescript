@@ -17,6 +17,7 @@ import type { ParsedDocument } from '../helpers/tracesUtils';
 
 const xray = new AWS.XRay();
 const lambdaClient = new AWS.Lambda();
+const stsClient = new AWS.STS();
 
 describe('Tracer integration tests', () => {
 
@@ -37,15 +38,12 @@ describe('Tracer integration tests', () => {
 
     // Prepare
     integTestApp = new App();
-    const account = process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
-    const region = process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION;
-    stack = new Stack(integTestApp, 'TracerIntegTest', {
-      env: {
-        account, 
-        region 
-      }
-    });
+    stack = new Stack(integTestApp, 'TracerIntegTest');
 
+    const identity = await stsClient.getCallerIdentity().promise();
+    const account = identity.Account;
+    const region = process.env.AWS_REGION;
+    
     const functions = [
       'Manual',
       'Middleware',
@@ -92,6 +90,7 @@ describe('Tracer integration tests', () => {
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
     await cloudFormation.deployStack({
       stack: stackArtifact,
+      quiet: true,
     });
 
     // Act
@@ -125,6 +124,7 @@ describe('Tracer integration tests', () => {
   
       await cloudFormation.destroyStack({
         stack: stackArtifact,
+        quiet: true,
       });
     }
 

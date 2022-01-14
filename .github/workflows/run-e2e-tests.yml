@@ -1,0 +1,30 @@
+name: run-e2e-tests
+on:
+  workflow_dispatch: {}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # needed to interact with GitHub's OIDC Token endpoint.
+      contents: read
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+    #########################    
+    # Release new version
+    #########################
+    - name: "Use NodeJS 14"
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Install packages
+      run: |
+        npm ci
+        npm run lerna-ci
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1.6.0
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
+        aws-region: eu-west-1
+    - name: Run integration tests
+      run: npm run lerna-test:e2e

@@ -11,7 +11,9 @@
   },
   "scripts": {
     "commit": "commit",
-    "test": "jest  --detectOpenHandles --coverage --verbose",
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "test:e2e": "echo 'Not Applicable'",
     "watch": "jest --watch",
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",

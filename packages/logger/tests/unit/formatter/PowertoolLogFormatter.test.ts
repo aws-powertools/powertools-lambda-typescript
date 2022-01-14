@@ -1,3 +1,9 @@
+/**
+ * Test Logger formatter
+ *
+ * @group unit/logger/all
+ */
+
 import { AssertionError, strictEqual } from 'assert';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { UnformattedAttributes } from '../../../src/types';

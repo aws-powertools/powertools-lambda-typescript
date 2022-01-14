@@ -11,7 +11,6 @@ import { randomUUID } from 'crypto';
 import * as lambda from '@aws-cdk/aws-lambda-nodejs';
 import { Tracing } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
-import { Tracing } from '@aws-cdk/aws-lambda';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import * as AWS from 'aws-sdk';
@@ -24,6 +23,7 @@ const integTestApp = new App();
 const stack = new Stack(integTestApp, 'MetricsE2EStandardFunctionsStack');
 
 // GIVEN
+const invocationCount = 2;
 const startTime = new Date();
 const expectedNamespace = randomUUID(); // to easily find metrics back at assert phase
 const expectedServiceName = 'MyFunctionWithStandardHandler';
@@ -68,28 +68,24 @@ describe('happy cases', () => {
     // lambda function is deployed
     await cloudFormation.deployStack({
       stack: stackArtifact,
+      quiet: true,
     });
-  }, 200000);
 
-  it('capture ColdStart Metric', async () => {
-    // WHEN
-    // invoked
-    await lambdaClient
-      .invoke({
-        FunctionName: functionName,
-      })
-      .promise();
-    // twice
-    await lambdaClient
-      .invoke({
-        FunctionName: functionName,
-      })
-      .promise();
+    // and invoked
+    for (let i = 0; i < invocationCount; i++) {
+      await lambdaClient
+        .invoke({
+          FunctionName: functionName,
+        })
+        .promise();
+    }
 
     // THEN
     // sleep to allow metrics to be collected
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 15000));
+  }, 200000);
 
+  it('capture ColdStart Metric', async () => {
     // Check coldstart metric dimensions
     const coldStartMetrics = await cloudwatchClient
       .listMetrics({
@@ -102,13 +98,16 @@ describe('happy cases', () => {
     expect(coldStartMetric?.Dimensions).toStrictEqual([{ Name: 'service', Value: expectedServiceName }]);
 
     // Check coldstart metric value
+    const adjustedStartTime = new Date(startTime.getTime() - 60 * 1000);
+    const endTime = new Date(new Date().getTime() + 60 * 1000);
+    console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ColdStart --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify([{ Name: 'service', Value: expectedServiceName }])}'`);
     const coldStartMetricStat = await cloudwatchClient
       .getMetricStatistics(
         {
           Namespace: expectedNamespace,
-          StartTime: new Date(startTime.getTime() - 60 * 1000), // minus 1 minute,
+          StartTime: adjustedStartTime, 
           Dimensions: [{ Name: 'service', Value: expectedServiceName }],
-          EndTime: new Date(new Date().getTime() + 60 * 1000),
+          EndTime: endTime,
           Period: 60,
           MetricName: 'ColdStart',
           Statistics: ['Sum'],
@@ -119,27 +118,10 @@ describe('happy cases', () => {
 
     // Despite lambda has been called twice, coldstart metric sum should only be 1
     const singleDataPoint = coldStartMetricStat.Datapoints ? coldStartMetricStat.Datapoints[0] : {};
-    expect(singleDataPoint.Sum).toBe(1);
+    expect(singleDataPoint?.Sum).toBe(1);
   }, 15000);
 
   it('produce added Metric with the default and extra one dimensions', async () => {
-    // GIVEN
-    const invocationCount = 2;
-
-    // WHEN
-    // invoked
-    for (let i = 0; i < invocationCount; i++) {
-      await lambdaClient
-        .invoke({
-          FunctionName: functionName,
-        })
-        .promise();
-    }
-
-    // THEN
-    // sleep to allow metrics to be collected
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-
     // Check metric dimensions
     const metrics = await cloudwatchClient
       .listMetrics({
@@ -157,6 +139,9 @@ describe('happy cases', () => {
     expect(metric?.Dimensions).toStrictEqual(expectedDimensions);
 
     // Check coldstart metric value
+    const adjustedStartTime = new Date(startTime.getTime() - 60 * 1000);
+    const endTime = new Date(new Date().getTime() + 60 * 1000);
+    console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ${expectedMetricName} --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(expectedDimensions)}'`);
     const metricStat = await cloudwatchClient
       .getMetricStatistics(
         {
@@ -188,6 +173,7 @@ describe('happy cases', () => {
 
       await cloudFormation.destroyStack({
         stack: stackArtifact,
+        quiet: true,
       });
     }
   }, 200000);

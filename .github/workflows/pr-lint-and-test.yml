@@ -1,9 +1,5 @@
-name: on-push-event
+name: pr-lint-and-test
 on:
-  push:
-    branches:    
-          - '**'        # matches every branch
-          - '!main' 
   pull_request:
     types: [opened, edited]
 jobs:

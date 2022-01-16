@@ -6,12 +6,12 @@ import { Logger } from '@aws-lambda-powertools/logger';
 const namespace = 'CDKExample';
 const serviceName = 'MyFunctionWithDecorator';
 
-const metrics = new Metrics({ namespace: namespace, service: serviceName });
+const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 const logger = new Logger({ logLevel: 'INFO', serviceName: serviceName });
 const tracer = new Tracer({ serviceName: serviceName });
 
 export class MyFunctionWithDecorator {
-  @tracer.captureLambdaHanlder()
+  @tracer.captureLambdaHandler()
   @logger.injectLambdaContext()
   @metrics.logMetrics({
     captureColdStartMetric: true,

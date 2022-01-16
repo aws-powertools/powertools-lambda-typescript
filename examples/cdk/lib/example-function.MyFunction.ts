@@ -6,7 +6,7 @@ import { Tracer } from '@aws-lambda-powertools/tracer';
 const namespace = 'CDKExample';
 const serviceName = 'MyFunctionWithStandardHandler';
 
-const metrics = new Metrics({ namespace: namespace, service: serviceName });
+const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 const logger = new Logger({ logLevel: 'INFO', serviceName: serviceName });
 const tracer = new Tracer({ serviceName: serviceName });
 
@@ -38,7 +38,7 @@ export const handler = async (_event: unknown, context: Context): Promise<void> 
   metricWithItsOwnDimensions.addMetric('single-metric', MetricUnits.Percent, 50);
 
   metrics.publishStoredMetrics();
-  metrics.raiseOnEmptyMetrics();
+  metrics.throwOnEmptyMetrics();
 
   // ### Experiment tracer
 

@@ -2,7 +2,7 @@ import middy from '@middy/core';
 import { Callback, Context } from 'aws-lambda';
 import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
-const metrics = new Metrics({ namespace: 'CDKExample', service: 'withMiddy' }); // Sets metric namespace, and service as a metric dimension
+const metrics = new Metrics({ namespace: 'CDKExample', serviceName: 'withMiddy' }); // Sets metric namespace, and service as a metric dimension
 
 type CustomEvent = {
   throw: boolean

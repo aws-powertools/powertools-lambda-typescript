@@ -8,6 +8,7 @@
     "build": "tsc --skipLibCheck",
     "watch": "tsc -w",
     "test": "npm run test:unit",
+    "package": "echo 'Not applicable'",
     "test:unit": "npm run build && jest",
     "test:e2e": "echo 'To be implemented ...'",
     "cdk": "cdk"

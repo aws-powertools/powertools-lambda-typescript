@@ -2,8 +2,9 @@ import { Context } from 'aws-lambda';
 import { Events } from '@aws-lambda-powertools/commons';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
-// process.env.POWERTOOLS_SERVICE_NAME = 'tracerManualFn'; // Alternative to setting the service name in the constructor
 const tracer = new Tracer({ serviceName: 'tracerManualFn' });
+// Alternatively, you can also set the service name using the POWERTOOLS_SERVICE_NAME environment variable
+// Learn more at: https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
 
 export const handler = async (event: typeof Events.Custom.CustomEvent, context: Context): Promise<unknown> => {
   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)

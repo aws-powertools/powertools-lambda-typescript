@@ -3,7 +3,7 @@ import { Context } from 'aws-lambda';
 import { Events } from '@aws-lambda-powertools/commons';
 import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';
 
-// Set environment variable to disable capture response
+// Set environment variable to disable capture response - https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
 process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
 const tracer = new Tracer({ serviceName: 'tracerCaptureResponseDisabledFn' });
 

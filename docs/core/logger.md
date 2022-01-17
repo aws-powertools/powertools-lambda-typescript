@@ -112,7 +112,7 @@ Key | Example
     
         logger.addContext(context);
         
-        logger.info("This is an INFO log with some context");
+        logger.info('This is an INFO log with some context');
 
     };
     ```
@@ -395,7 +395,7 @@ This can be useful for example if you want to enable multiple Loggers with diffe
     });
 
     // With this logger, only the ERROR logs will be printed
-    const childLogger = parentLogger.createChild({
+    const childLogger = logger.createChild({
         logLevel: 'ERROR'
     });
     
@@ -606,10 +606,10 @@ You can customize the structure (keys and values) of your log items by passing a
         },
     });
     
-    export const handler = async (event, _context): Promise<void> => {
+    export const handler = async (event, context): Promise<void> => {
 
         logger.addContext(context);
-        
+
         logger.info('This is an INFO log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
 
     };
@@ -620,7 +620,7 @@ This is how the `MyCompanyLogFormatter` (dummy name) would look like:
 === "utils/formatters/MyCompanyLogFormatter.ts"
 
     ```typescript
-    import { LogFormatter } from '@aws-lambda-powertools/logger/lib/formatter';
+    import { LogFormatter } from '@aws-lambda-powertools/logger';
     import { LogAttributes, UnformattedAttributes } from '@aws-lambda-powertools/logger/lib/types';
     
     // Replace this line with your own type

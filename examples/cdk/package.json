@@ -34,6 +34,7 @@
     "@middy/validator": "^2.5.3",
     "@types/aws-lambda": "^8.10.86",
     "aws-cdk-lib": "2.0.0",
+    "aws-sdk": "^2.1058.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.16"
   }

@@ -1,24 +1,26 @@
 import { Tracer } from '@aws-lambda-powertools/tracer';
-import { Callback, Context } from 'aws-lambda';
+import { Context } from 'aws-lambda';
+import { Events, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 import { Logger } from '@aws-lambda-powertools/logger';
 
 const namespace = 'CDKExample';
 const serviceName = 'MyFunctionWithDecorator';
 
-const metrics = new Metrics({ namespace: namespace, service: serviceName });
+const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 const logger = new Logger({ logLevel: 'INFO', serviceName: serviceName });
 const tracer = new Tracer({ serviceName: serviceName });
 
-export class MyFunctionWithDecorator {
-  @tracer.captureLambdaHanlder()
+export class MyFunctionWithDecorator implements LambdaInterface {
+  // We decorate the handler with the various decorators
+  @tracer.captureLambdaHandler()
   @logger.injectLambdaContext()
   @metrics.logMetrics({
     captureColdStartMetric: true,
     throwOnEmptyMetrics: true,
     defaultDimensions: { environment: 'example', type: 'withDecorator' },
   })
-  public handler(_event: unknown, _context: Context, _callback: Callback<unknown>): void | Promise<unknown> {
+  public async handler(event: typeof Events.Custom.CustomEvent, context: Context): Promise<unknown> {
     // ### Experiment logger
     logger.addPersistentLogAttributes({
       testKey: 'testValue',
@@ -36,28 +38,34 @@ export class MyFunctionWithDecorator {
     metricWithItsOwnDimensions.addMetric('single-metric', MetricUnits.Percent, 50);
 
     // ### Experiment tracer
-    tracer.putAnnotation('Myannotation', 'My annotation\'s value');
 
-    // Create subsegment & set it as active
-    const segment = tracer.getSegment(); // This is the facade segment (the one that is created by Lambda & that can't be manipulated)
-    const subsegment = segment.addNewSubsegment('MySubSegment');
+    // Service & Cold Start annotations will be added for you by the decorator/middleware
 
+    // These traces will be added to the main segment (## index.handler)
+    tracer.putAnnotation('awsRequestId', context.awsRequestId);
+    tracer.putMetadata('eventPayload', event);
+
+    // Create another subsegment & set it as active
+    const handlerSegment = tracer.getSegment(); // This is the custom segment created by Tracer for you (## index.handler)
+    const subsegment = handlerSegment.addNewSubsegment('### MySubSegment');
     tracer.setSegment(subsegment);
-    // TODO: Add the ColdStart annotation !!! NOT POSSIBLE
-    // tracer.putAnnotation('ColdStart', tracer);
 
+    let res;
     try {
-      throw new Error('test');
-      // Add the response as metadata
+      res = { foo: 'bar' };
     } catch (err) {
-      // Add the error as metadata
-      subsegment.addError(err as Error, false);
+      throw err;
+    } finally {
+      // Close the subsegment you created (### MySubSegment)
+      subsegment.close();
+      // Set back the original segment as active (## index.handler)
+      tracer.setSegment(handlerSegment);
+      // The main segment (facade) will be closed for you at the end by the decorator/middleware
     }
-
-    // Close subsegment
-    subsegment.close();
+    
+    return res;
   }
 }
 
-export const handlerClass = new MyFunctionWithDecorator();
-export const handler = handlerClass.handler;
+export const myFunction = new MyFunctionWithDecorator();
+export const handler = myFunction.handler;

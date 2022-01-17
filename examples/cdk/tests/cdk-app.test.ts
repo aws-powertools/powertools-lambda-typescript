@@ -5,5 +5,5 @@ import * as CdkApp from '../src/example-stack';
 test('CDK code synthesize', () => {
   const app = new cdk.App();
   const stack = new CdkApp.CdkAppStack(app, 'MyTestStack');
-  expect(Template.fromStack(stack)).toMatchSnapshot();
+  Template.fromStack(stack).resourceCountIs('AWS::Lambda::Function', 13);
 });

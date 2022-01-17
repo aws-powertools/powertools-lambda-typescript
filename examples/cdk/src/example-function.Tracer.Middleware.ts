@@ -7,20 +7,20 @@ const tracer = new Tracer({ serviceName: 'tracerMiddlewareFn' });
 // Alternatively, you can also set the service name using the POWERTOOLS_SERVICE_NAME environment variable
 // Learn more at: https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
 
-const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: Context) => {
+const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: Context): Promise<unknown> => {
   // Add custom annotation & metadata
   tracer.putAnnotation('awsRequestId', context.awsRequestId);
   tracer.putMetadata('eventPayload', event);
-  
+
   let res;
   try {
     res = { foo: 'bar' };
   } catch (err) {
     throw err;
   }
-  
+
   return res;
-}
+};
 
 // We instrument the handler with the Middy middleware and the Tracer will automatically:
 // * handle the lifecycle of the subsegment

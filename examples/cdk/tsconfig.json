@@ -1,29 +1,30 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
-    "skipLibCheck": true,
-    "lib": [
-      "es2018"
-    ],
-    "declaration": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": false,
-    "inlineSourceMap": true,
-    "inlineSources": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "types": []
-  },
-  "exclude": [
-    "node_modules",
-    "cdk.out"
-  ]
+    "noImplicitAny": true,
+    "target": "ES2020",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "lib",
+    "strict": true,
+    "inlineSourceMap": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "pretty": true,
+    "baseUrl": "src/",
+    "rootDirs": [ "src/" ],
+    "esModuleInterop": true
+},
+"include": [ "src/**/*" ],
+"exclude": [ "./node_modules", "cdk.out"],
+"watchOptions": {
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents",
+    "fallbackPolling": "dynamicPriority"
+},
+"lib": [ "es2020" ],
+"types": [
+    "jest",
+    "node"
+]
 }

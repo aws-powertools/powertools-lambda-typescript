@@ -1,13 +1,13 @@
 {
   "name": "cdk-app",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "bin": {
     "cdk-app": "bin/cdk-app.js"
   },
   "scripts": {
     "build": "tsc --skipLibCheck",
     "watch": "tsc -w",
-    "test": "jest",
+    "test": "npm run build && jest",
     "cdk": "cdk"
   },
   "devDependencies": {

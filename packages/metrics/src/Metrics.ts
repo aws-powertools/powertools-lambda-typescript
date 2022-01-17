@@ -210,7 +210,7 @@ class Metrics implements MetricsInterface {
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Callback, Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({namespace:"CDKExample", serviceName:"withDecorator"});
+   * const metrics = new Metrics({namespace:"CdkExample", serviceName:"withDecorator"});
    *
    * export class MyFunctionWithDecorator {
    *
@@ -267,7 +267,7 @@ class Metrics implements MetricsInterface {
    * ```typescript
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    *
-   * const metrics = new Metrics({namespace: "CDKExample", serviceName: "MyFunction"}); // Sets metric namespace, and service as a metric dimension
+   * const metrics = new Metrics({namespace: "CdkExample", serviceName: "MyFunction"}); // Sets metric namespace, and service as a metric dimension
    *
    * export const handler = async (_event: any, _context: any) => {
    *   metrics.addMetric('test-metric', MetricUnits.Count, 10);

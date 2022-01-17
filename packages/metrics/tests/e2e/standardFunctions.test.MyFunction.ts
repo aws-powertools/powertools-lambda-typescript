@@ -1,7 +1,7 @@
 import { Metrics, MetricUnits } from '../../src';
 import { Context } from 'aws-lambda';
 
-const namespace = process.env.EXPECTED_NAMESPACE ?? 'CDKExample';
+const namespace = process.env.EXPECTED_NAMESPACE ?? 'CdkExample';
 const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
 const metricName = process.env.EXPECTED_METRIC_NAME ?? 'MyMetric';
 const metricUnit = (process.env.EXPECTED_METRIC_UNIT as MetricUnits) ?? MetricUnits.Count;

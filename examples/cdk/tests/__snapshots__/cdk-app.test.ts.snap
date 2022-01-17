@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`It Deploys 1`] = `
+exports[`CDK code synthesize 1`] = `
 Object {
   "Parameters": Object {
     "BootstrapVersion": Object {

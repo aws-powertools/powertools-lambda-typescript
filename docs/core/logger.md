@@ -625,13 +625,13 @@ This is how the `MyCompanyLogFormatter` (dummy name) would look like:
 === "utils/formatters/MyCompanyLogFormatter.ts"
 
     ```typescript
-    import { LogFormatter } from "@aws-lambda-powertools/logger";
-    import { LogAttributes, UnformattedAttributes } from "@aws-lambda-powertools/logger/types";
+    import { LogFormatter } from '@aws-lambda-powertools/logger';
+    import { LogAttributes, UnformattedAttributes } from '@aws-lambda-powertools/logger/lib/types';
     
     // Replace this line with your own type
     type MyCompanyLog = LogAttributes;
     
-    class MyCompanyLogFormatter implements LogFormatter {
+    class MyCompanyLogFormatter extends LogFormatter {
     
         public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
             return {

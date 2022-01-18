@@ -1,9 +1,7 @@
-name: on-push-event
+name: pr-lint-and-test
 on:
-  push:
-    branches:    
-          - '**'        # matches every branch
-          - '!main' 
+  pull_request:
+    types: [opened, synchronize]
 jobs:
   on_push:
     runs-on: ubuntu-latest

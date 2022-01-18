@@ -28,3 +28,9 @@ jobs:
         aws-region: eu-west-1
     - name: Run integration tests
       run: npm run lerna-test:e2e
+    - name: Test packaging
+      run: | 
+        npm run lerna-package
+        cd examples/cdk
+        npm install ../../packages/**/dist/aws-lambda-powertools-*
+        npm run test

@@ -147,6 +147,30 @@ You can run the end-to-end tests automatically on your forked project by followi
 4. In the run-e2e-tests workflow page, select "Run workflow" and run it on the desired branch.
 
 > :warning: **Don't automatically run end-to-end tests on branch push or PRs**. A malicious attacker can submit a pull request to attack your AWS account. Ideally, use a blank account without any important workload/data, and limit `AWS_ROLE_ARN_TO_ASSUME` permission to least minimum privilege.
+
+
+### Examples
+
+As part of the repo you will find an examples folder at the root. This folder contains examples (written with CDK for now) of deployable AWS Lambda functions using Powertools.
+
+To test your updates with these examples you just have to:
+
+1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run lerna-package`
+1. Update their references in examples
+    ```
+    cd examples/cdk
+    npm install ../../packages/**/dist/aws-lambda-powertools-*
+    ```
+1. Run cdk tests
+    ```
+    npm run test
+    ```
+1. Deploy
+    ```
+    npm run cdk deploy
+    ```
+
+Previous command will deploy AWS resources therefore you will need an AWS account and it might incur in some costs which should be covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all). If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 ### Conventions
 
 Category | Convention

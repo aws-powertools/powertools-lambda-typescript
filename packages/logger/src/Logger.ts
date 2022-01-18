@@ -253,7 +253,6 @@ class Logger implements ClassThatLogs {
 
     return (key, value) => {
       let item = value;
-      // noinspection SuspiciousTypeOfGuard
       if (item instanceof Error) {
         item = this.getLogFormatter().formatError(item);
       }

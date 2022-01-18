@@ -12,7 +12,7 @@ const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 const logger = new Logger({ logLevel: 'INFO', serviceName: serviceName });
 const tracer = new Tracer({ serviceName: serviceName });
 
-const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: Context) => {
+const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: Context): Promise<unknown> => {
   // ### Experiment with Logger
   // AWS Lambda context is automatically injected by the middleware
 
@@ -32,7 +32,7 @@ const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: C
   const metricWithItsOwnDimensions = metrics.singleMetric();
   metricWithItsOwnDimensions.addDimension('InnerDimension', 'true');
   metricWithItsOwnDimensions.addMetric('single-metric', MetricUnits.Percent, 50);
-  
+
   // ### Experiment with Tracer
 
   // Service & Cold Start annotations will be added for you by the decorator/middleware
@@ -58,16 +58,18 @@ const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: C
     tracer.setSegment(handlerSegment);
     // The main segment (facade) will be closed for you at the end by the decorator/middleware
   }
-  
+
   return res;
-}
+};
 
 // We instrument the handler with the various Middy middlewares
 export const handler = middy(lambdaHandler)
   .use(captureLambdaHandler(tracer))
-  .use(logMetrics(metrics, {
-    captureColdStartMetric: true,
-    throwOnEmptyMetrics: true,
-    defaultDimensions: { environment: 'example', type: 'withDecorator' },
-  }))
+  .use(
+    logMetrics(metrics, {
+      captureColdStartMetric: true,
+      throwOnEmptyMetrics: true,
+      defaultDimensions: { environment: 'example', type: 'withDecorator' },
+    })
+  )
   .use(injectLambdaContext(logger));

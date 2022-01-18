@@ -272,6 +272,34 @@ describe('Class: PowertoolLogFormatter', () => {
       expect(shouldThrow).toThrowError(expect.any(TypeError));
     });
 
+    test('When an error of type URIError is passed, it returns an object with expected structure and values', () => {
+
+      // Prepare
+      const formatter = new PowertoolLogFormatter();
+      const shouldThrow = (): void => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        decodeURIComponent('%');
+      };
+
+      // Act
+      try {
+        shouldThrow();
+      } catch (error) {
+        // Assess
+        expect(error).toBeInstanceOf(URIError);
+        const formattedURIError = formatter.formatError(<URIError>error);
+        expect(formattedURIError).toEqual({
+          location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
+          message: 'URI malformed',
+          name: 'URIError',
+          stack: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/),
+        });
+      }
+
+      expect(shouldThrow).toThrowError(expect.any(URIError));
+    });
+    
   });
 
   describe('Method: formatTimestamp', () => {

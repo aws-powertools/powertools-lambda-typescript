@@ -12,7 +12,6 @@ interface ExampleFunctionProps {
 }
 
 class ExampleFunction extends Construct {
-  public function: NodejsFunction;
 
   public constructor(scope: Construct, id: string, props: ExampleFunctionProps) {
     super(scope, id);
@@ -32,7 +31,7 @@ class ExampleFunction extends Construct {
         onUpdate: {
           service: 'Lambda',
           action: 'invoke',
-          physicalResourceId: custom_resources.PhysicalResourceId.of(new Date().toISOString()),
+          physicalResourceId: custom_resources.PhysicalResourceId.of(`${functionName}-${i}`),
           parameters: {
             FunctionName: fn.functionName,
             InvocationType: 'RequestResponse',

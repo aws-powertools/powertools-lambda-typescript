@@ -18,7 +18,7 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "visualstudioexptteam.vscodeintellicode",
-    "amazonwebservices.aws-toolkit-vscode",
+    // "amazonwebservices.aws-toolkit-vscode",
     "github.copilot",
     "firsttris.vscode-jest-runner"
   ],

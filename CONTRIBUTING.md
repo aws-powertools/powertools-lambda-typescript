@@ -7,6 +7,7 @@ Please read through this document before submitting any issues or pull requests 
 information to effectively respond to your bug report or contribution.
 
 ## Security issue notifications
+
 If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.
 
 ## Reporting Bugs/Feature Requests
@@ -35,7 +36,7 @@ Contributions via pull requests are much appreciated. Before sending us a pull r
 To send us a pull request, please follow these steps:
 
 1. Fork the repository.
-2. Install dependencies: `npm install`
+2. Install dependencies: `npm ci; npm run lerna-ci`
 3. Prepare utilities like commit hooks: `npm run init-environment`
 4. Create a new branch to focus on the specific change you are contributing e.g. `git checkout -b improv/logger-debug-sampling`
 5. Run all tests, and code baseline checks: `npm run test`
@@ -54,8 +55,9 @@ You might find useful to run both the documentation website and the API referenc
 * **Docs website**:
 
 You can build and start a local docs website by running these two commands.
-  - `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
-  - `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
+
+* `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
+* `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
 
 ### Tests
 
@@ -67,11 +69,9 @@ Unit tests, under `tests/unit` folder are standard [Jest](https://jestjs.io) tes
 
 End-to-end tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use [aws-cdk](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) v1 library (not v2 due to [this cdk issue](https://github.com/aws/aws-cdk/issues/18211)) for Typescript for creating infrastructure, and [aws-sdk-js v2](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/) for invoking the functions and assert on the expected behaviors. All steps are also executed by Jest.
 
-
 Running end-to-end tests will deploy AWS resources. You will need an AWS account and the tests might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
 When contributing to this repository, these end-to-end tests are run by the maintainers before merging a PR.
-
 
 **Unit tests**
 
@@ -89,7 +89,8 @@ As mentioned before, tests are split into groups thanks to [jest-runner-groups](
 
 **Run**
 
-To run unit tests you can either use 
+To run unit tests you can either use
+
 * npm task `lerna-test:unit` (`npm run lerna-test:unit`) in root folder to run them all
 * npm task `test:e2e` (`npm run test:unit`) in module folder (for example: `packages/metrics`) to run the module specific one
 * jest directly `npx jest --group=unit` in module folder to run the module specific one (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/class`)
@@ -110,15 +111,16 @@ As mentioned in the previous section, tests are split into groups thanks to [jes
 
  See `metrics/tests/e2e/decorator.test.ts` as an example.
 
-
 **Run**
 
-To run e2e tests you can either use 
-*  npm task `lerna-test:e2e` (`npm run lerna-test:e2e`) in root folder
+To run e2e tests you can either use
+
+* npm task `lerna-test:e2e` (`npm run lerna-test:e2e`) in root folder
 * npm task `test:e2e` (`npm run test:e2e`) in module folder (for example: `packages/metrics`) to run the module specific one
 * jest directly `npx jest --group=e2e` in module folder. (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=e2e/metrics/decorator`)
 
 Two important env variable can be used:
+
 * `AWS_PROFILE` to use the right AWS credentials
 * `DISABLE_TEARDOWN` if you don't want your stack to be destroyed at the end of the test (useful in dev mode when iterating over your code).
 
@@ -127,6 +129,7 @@ Example: `DISABLE_TEARDOWN=true AWS_PROFILE=dev-account npx jest --group=e2e/met
 **Automate**
 
 You can run the end-to-end tests automatically on your forked project by following these steps:
+
 1. Create an IAM role in your target AWS account, with the least amount of privilege.
 
     As mentioned above in this page, we are leveraging CDK to deploy and consequently clean-up resources on AWS. Therefore to run those tests through Github actions you will need to grant specific permissions to your workflow.  
@@ -140,14 +143,14 @@ You can run the end-to-end tests automatically on your forked project by followi
 
     More information about:  
 
-    - [Github OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/
-    - ["Configure AWS Credentials" Action For GitHub Actions](https://github.com/aws-actions/configure-aws-credentials/)
+    * [Github OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/)
+    * ["Configure AWS Credentials" Action For GitHub Actions](https://github.com/aws-actions/configure-aws-credentials/)
+
 2. Add your new role into your [Github fork secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) with name  `AWS_ROLE_ARN_TO_ASSUME`.
 3. In your forked repository, go to the "Actions" tabs, select the `run-e2e-tests` workflow.
 4. In the run-e2e-tests workflow page, select "Run workflow" and run it on the desired branch.
 
 > :warning: **Don't automatically run end-to-end tests on branch push or PRs**. A malicious attacker can submit a pull request to attack your AWS account. Ideally, use a blank account without any important workload/data, and limit `AWS_ROLE_ARN_TO_ASSUME` permission to least minimum privilege.
-
 
 ### Examples
 
@@ -156,21 +159,22 @@ As part of the repo you will find an examples folder at the root. This folder co
 To test your updates with these examples you just have to:
 
 1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run lerna-package`
-1. Update their references in examples
+2. Update their references in examples
     ```
     cd examples/cdk
     npm install ../../packages/**/dist/aws-lambda-powertools-*
     ```
-1. Run cdk tests
+3. Run cdk tests
     ```
     npm run test
     ```
-1. Deploy
+4. Deploy
     ```
     npm run cdk deploy
     ```
 
 Previous command will deploy AWS resources therefore you will need an AWS account and it might incur in some costs which should be covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all). If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
+
 ### Conventions
 
 Category | Convention

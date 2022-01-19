@@ -28,9 +28,7 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 Install the library in your project:
 
 ```shell
-
 npm install @aws-lambda-powertools/tracer
-
 ```
 
 ### Utility settings
@@ -53,7 +51,7 @@ For a **complete list** of supported environment variables, refer to [this secti
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
-    import { Tracer } from "@aws-lambda-powertools/tracer";
+    import { Tracer } from '@aws-lambda-powertools/tracer';
 
     // Tracer parameter fetched from the environment variables (see template.yaml tab)
     const tracer = new Tracer();
@@ -89,7 +87,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    export const handler = async (_event: any, context: any) => {
+    export const handler = async (_event: any, context: any): Promise<unknown> => {
         const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
         // Create subsegment for the function & set it as active
         const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
@@ -116,7 +114,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         }
     
         return res;
-    }
+    };
     ```
 
 === "Middy Middleware"
@@ -133,9 +131,9 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    const lambdaHandler = async (_event: any, _context: any) => {
+    const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
         /* ... */
-    }
+    };
 
     // Wrap the handler with middy
     export const handler = middy(lambdaHandler)
@@ -181,16 +179,16 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
 **Metadata** are key-values also associated with traces but not indexed by AWS X-Ray. You can use them to add additional context for an operation using any native object.
 
 === "Annotations"
-	You can add annotations using `putAnnotation` method.
+    You can add annotations using `putAnnotation` method.
 
     ```typescript hl_lines="6"
     import { Tracer } from '@aws-lambda-powertools/tracer';
     
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  
-    export const handler = async (_event: any, _context: any) => {
+    export const handler = async (_event: any, _context: any): Promise<void> => {
         tracer.putAnnotation('successfulBooking', true);
-    }
+    };
     ```
 === "Metadata"
     You can add metadata using `putMetadata` method.
@@ -200,10 +198,10 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    export const handler = async (_event: any, _context: any) => {
+    export const handler = async (_event: any, _context: any): Promise<void> => {
         const res; /* ... */
         tracer.putMetadata('paymentResponse', res);
-    }
+    };
     ```
 
 ### Methods
@@ -217,7 +215,7 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
     
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    const chargeId = async () => {
+    const getChargeId = async (): Promise<unknown> => {
         const parentSubsegment = tracer.getSegment(); // This is the subsegment currently active
         // Create subsegment for the function & set it as active
         const subsegment = parentSubsegment.addNewSubsegment(`### chargeId`);
@@ -240,13 +238,13 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
         tracer.setSegment(parentSubsegment);
     
         return res;
-    }
+    };
 
-    export const handler = async (_event: any, _context: any) => {
-        const chargeId = this.getChargeId();
+    export const handler = async (_event: any, _context: any): Promise<void> => {
+        const chargeId = getChargeId();
         const payment = collectPayment(chargeId);
         /* ... */
-    }
+    };
     ```
 
 === "Decorator"
@@ -286,7 +284,7 @@ You can patch any AWS SDK clients by calling the `captureAWSv3Client` method:
 === "index.ts"
 
     ```typescript hl_lines="5"
-    import { S3Client } from "@aws-sdk/client-s3";
+    import { S3Client } from '@aws-sdk/client-s3';
     import { Tracer } from '@aws-lambda-powertools/tracer';
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
@@ -363,6 +361,6 @@ Tracer is disabled by default when not running in the AWS Lambda environment - T
 
 ## Tips
 
-- Use annotations on key operations to slice and dice traces, create unique views, and create metrics from it via Trace Groups
-- Use a namespace when adding metadata to group data more easily
-- Annotations and metadata are added to the current subsegment opened. If you want them in a specific subsegment, [create one](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda) via the escape hatch mechanism
+* Use annotations on key operations to slice and dice traces, create unique views, and create metrics from it via Trace Groups
+* Use a namespace when adding metadata to group data more easily
+* Annotations and metadata are added to the current subsegment opened. If you want them in a specific subsegment, [create one](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda) via the escape hatch mechanism

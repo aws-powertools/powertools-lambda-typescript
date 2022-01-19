@@ -1,3 +1,4 @@
+import { Callback, Context } from 'aws-lambda';
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
@@ -34,7 +35,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the [@metrics.logMetrics()](./_aws_lambda_powertools_metrics.Metrics.html#logMetrics) decorator to automatically:
  *   * create cold start metric
  *   * flush buffered metrics
- *   * raise on empty metrics
+ *   * throw on empty metrics
  *
  * @example
  *
@@ -42,13 +43,13 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
  * import { Callback, Context } from 'aws-lambda';
  *
- * const metrics = new Metrics({namespace:"MyService", service:"withDecorator"});
+ * const metrics = new Metrics({namespace:"MyService", serviceName:"withDecorator"});
  *
  * export class MyFunctionWithDecorator {
  *
  *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@metrics* instead of `@metrics.logMetrics`
  *
- *   @metrics.logMetrics({captureColdStartMetric: true, raiseOnEmptyMetrics: true, })
+ *   @metrics.logMetrics({captureColdStartMetric: true, throwOnEmptyMetrics: true, })
  *   public handler(_event: any, _context: Context, _callback: Callback<any>): void | Promise<any> {
  *    // ...
  *    metrics.addMetric('test-metric', MetricUnits.Count, 10);
@@ -69,12 +70,12 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * ```typescript
  * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
  *
- * const metrics = new Metrics({namespace: "MyService", service: "MyFunction"});
+ * const metrics = new Metrics({namespace: "MyService", serviceName: "MyFunction"});
  *
  * export const handler = async (_event: any, _context: any) => {
  *   metrics.captureColdStart();
  *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
- *   metrics.purgeStoredMetrics();
+ *   metrics.publishStoredMetrics();
  * };
  * ```
  */
@@ -88,7 +89,7 @@ class Metrics implements MetricsInterface {
   private isSingleMetric: boolean = false;
   private metadata: { [key: string]: string } = {};
   private namespace?: string;
-  private shouldRaiseOnEmptyMetrics: boolean = false;
+  private shouldThrowOnEmptyMetrics: boolean = false;
   private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {
@@ -146,7 +147,7 @@ class Metrics implements MetricsInterface {
    */
   public addMetric(name: string, unit: MetricUnit, value: number): void {
     this.storeMetric(name, unit, value);
-    if (this.isSingleMetric) this.purgeStoredMetrics();
+    if (this.isSingleMetric) this.publishStoredMetrics();
   }
 
   /**
@@ -163,7 +164,7 @@ class Metrics implements MetricsInterface {
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
+   * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
    *
    * export const handler = async (event: any, context: Context) => {
    *     metrics.captureColdStartMetric();
@@ -201,7 +202,7 @@ class Metrics implements MetricsInterface {
   }
 
   /**
-   * A decorator automating coldstart capture, raise on empty metrics and publishing metrics on handler exit.
+   * A decorator automating coldstart capture, throw on empty metrics and publishing metrics on handler exit.
    *
    * @example
    *
@@ -209,7 +210,7 @@ class Metrics implements MetricsInterface {
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * import { Callback, Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({namespace:"CDKExample", service:"withDecorator"});
+   * const metrics = new Metrics({namespace:"CdkExample", serviceName:"withDecorator"});
    *
    * export class MyFunctionWithDecorator {
    *
@@ -226,72 +227,58 @@ class Metrics implements MetricsInterface {
    * @decorator Class
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
-    const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
-    if (raiseOnEmptyMetrics) {
-      this.raiseOnEmptyMetrics();
+    const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
+    if (throwOnEmptyMetrics) {
+      this.throwOnEmptyMetrics();
     }
     if (defaultDimensions !== undefined) {
       this.setDefaultDimensions(defaultDimensions);
     }
 
-    return (target, propertyKey, descriptor) => {
+    return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
-      descriptor.value = (event, context, callback) => {
+
+      descriptor.value = ( async (event: unknown, context: Context, callback: Callback): Promise<unknown> => {
         this.functionName = context.functionName;
-
         if (captureColdStartMetric) this.captureColdStartMetric();
+          
+        let result: unknown;
         try {
-          const result = originalMethod?.apply(this, [ event, context, callback ]);
-
-          return result;
+          result = await originalMethod?.apply(this, [ event, context, callback ]);
+        } catch (error) {
+          throw error;
         } finally {
-          this.purgeStoredMetrics();
+          this.publishStoredMetrics();
         }
-      };
+          
+        return result;
+      });
+
+      return descriptor;
     };
   }
 
   /**
    * Synchronous function to actually publish your metrics. (Not needed if using logMetrics decorator).
+   * It will create a new EMF blob and log it to standard output to be then ingested by Cloudwatch logs and processed automatically for metrics creation.
    *
    * @example
    *
    * ```typescript
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    *
-   * const metrics = new Metrics({namespace: "CDKExample", service: "MyFunction"}); // Sets metric namespace, and service as a metric dimension
+   * const metrics = new Metrics({namespace: "CdkExample", serviceName: "MyFunction"}); // Sets metric namespace, and service as a metric dimension
    *
    * export const handler = async (_event: any, _context: any) => {
    *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
-   *   metrics.purgeStoredMetrics();
+   *   metrics.publishStoredMetrics();
    * };
    * ```
    */
-  public purgeStoredMetrics(): void {
+  public publishStoredMetrics(): void {
     const target = this.serializeMetrics();
     console.log(JSON.stringify(target));
     this.storedMetrics = {};
-  }
-
-  /**
-   * Throw an Error if the metrics buffer is empty.
-   *
-   * @example
-   *
-   * ```typescript
-   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-   * import { Context } from 'aws-lambda';
-   *
-   * const metrics = new Metrics({namespace:"serverlessAirline", service:"orders"});
-   *
-   * export const handler = async (event: any, context: Context) => {
-   *     metrics.raiseOnEmptyMetrics();
-   *     metrics.purgeStoredMetrics(); // will throw since no metrics added.
-   * }
-   * ```
-   */
-  public raiseOnEmptyMetrics(): void {
-    this.shouldRaiseOnEmptyMetrics = true;
   }
 
   /**
@@ -304,14 +291,14 @@ class Metrics implements MetricsInterface {
       Name: metricDefinition.name,
       Unit: metricDefinition.unit,
     }));
-    if (metricDefinitions.length === 0 && this.shouldRaiseOnEmptyMetrics) {
+    if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
     }
 
     if (!this.namespace) console.warn('Namespace should be defined, default used');
 
     const metricValues = Object.values(this.storedMetrics).reduce(
-      (result: { [key: string]: number }, { name, value }: { name: string; value: number }) => {
+      (result: { [key: string]: number | number[] }, { name, value }: { name: string; value: number | number[] }) => {
         result[name] = value;
 
         return result;
@@ -357,7 +344,7 @@ class Metrics implements MetricsInterface {
   /**
    * CloudWatch EMF uses the same dimensions across all your metrics. Use singleMetric if you have a metric that should have different dimensions.
    *
-   * You don't need to call purgeStoredMetrics() after calling addMetric for a singleMetrics, they will be flushed directly.
+   * You don't need to call publishStoredMetrics() after calling addMetric for a singleMetrics, they will be flushed directly.
    *
    * @example
    *
@@ -372,10 +359,31 @@ class Metrics implements MetricsInterface {
   public singleMetric(): Metrics {
     return new Metrics({
       namespace: this.namespace,
-      service: this.dimensions.service,
+      serviceName: this.dimensions.service,
       defaultDimensions: this.defaultDimensions,
       singleMetric: true,
     });
+  }
+
+  /**
+   * Throw an Error if the metrics buffer is empty.
+   *
+   * @example
+   *
+   * ```typescript
+   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+   * import { Context } from 'aws-lambda';
+   *
+   * const metrics = new Metrics({namespace:"serverlessAirline", serviceName:"orders"});
+   *
+   * export const handler = async (event: any, context: Context) => {
+   *     metrics.throwOnEmptyMetrics();
+   *     metrics.publishStoredMetrics(); // will throw since no metrics added.
+   * }
+   * ```
+   */
+  public throwOnEmptyMetrics(): void {
+    this.shouldThrowOnEmptyMetrics = true;
   }
 
   private getCurrentDimensionsCount(): number {
@@ -388,6 +396,20 @@ class Metrics implements MetricsInterface {
 
   private getEnvVarsService(): EnvironmentVariablesService {
     return <EnvironmentVariablesService> this.envVarsService;
+  }
+
+  private isNewMetric(name: string, unit: MetricUnit): boolean {
+    if (this.storedMetrics[name]){
+      // Inconsistent units indicates a bug or typos and we want to flag this to users early
+      if (this.storedMetrics[name].unit !== unit) {
+        const currentUnit = this.storedMetrics[name].unit;
+        throw new Error(`Metric "${name}" has already been added with unit "${currentUnit}", but we received unit "${unit}". Did you mean to use metric unit "${currentUnit}"?`);
+      }
+      
+      return false;
+    } else {
+      return true;
+    }
   }
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
@@ -405,12 +427,12 @@ class Metrics implements MetricsInterface {
   }
 
   private setOptions(options: MetricsOptions): Metrics {
-    const { customConfigService, namespace, service, singleMetric, defaultDimensions } = options;
+    const { customConfigService, namespace, serviceName, singleMetric, defaultDimensions } = options;
 
     this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
     this.setNamespace(namespace);
-    this.setService(service);
+    this.setService(serviceName);
     this.setDefaultDimensions(defaultDimensions);
     this.isSingleMetric = singleMetric || false;
 
@@ -428,14 +450,24 @@ class Metrics implements MetricsInterface {
 
   private storeMetric(name: string, unit: MetricUnit, value: number): void {
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
-      this.purgeStoredMetrics();
+      this.publishStoredMetrics();
     }
-    this.storedMetrics[name] = {
-      unit,
-      value,
-      name,
-    };
+
+    if (this.isNewMetric(name, unit)) {
+      this.storedMetrics[name] = {
+        unit,
+        value,
+        name,
+      };
+    } else {
+      const storedMetric = this.storedMetrics[name];
+      if (!Array.isArray(storedMetric.value)) {
+        storedMetric.value = [storedMetric.value];
+      }
+      storedMetric.value.push(value);
+    }
   }
+
 }
 
 export { Metrics, MetricUnits };

@@ -3,12 +3,12 @@ import { Context } from 'aws-lambda';
 import { Events } from '@aws-lambda-powertools/commons';
 import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';
 
-// process.env.POWERTOOLS_TRACE_ENABLED = 'false'; // Alternative to disabling tracing in the constructor
-const tracer = new Tracer({ serviceName: 'tracerDisabledFn', enabled: false });
+// Set environment variable to disable capture response - https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
+process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
+const tracer = new Tracer({ serviceName: 'tracerCaptureResponseDisabledFn' });
 
-// In this example we are using the middleware pattern but you could use also the captureLambdaHandler decorator or the manual mode
+// In this example we are using the middleware pattern but you could use also the captureLambdaHandler decorator
 export const handler = middy(async (event: typeof Events.Custom.CustomEvent, context: Context) => {
-  // No tracing will be done and the commands will be ignored, this is useful for testing
   tracer.putAnnotation('awsRequestId', context.awsRequestId);
   tracer.putMetadata('eventPayload', event);
 
@@ -19,5 +19,6 @@ export const handler = middy(async (event: typeof Events.Custom.CustomEvent, con
     throw err;
   }
   
+  // The response won't be captured in the subsegment metadata
   return res;
 }).use(captureLambdaHandler(tracer));

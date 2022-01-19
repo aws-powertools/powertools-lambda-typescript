@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [0.2.0-beta.13](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.12...v0.2.0-beta.13) (2021-12-29)
+## [0.3.3](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.3.2...v0.3.3) (2022-01-17)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger
 
@@ -11,173 +11,50 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-# [0.2.0-beta.12](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.11...v0.2.0-beta.12) (2021-12-28)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.11](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.10...v0.2.0-beta.11) (2021-12-28)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.10](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.9...v0.2.0-beta.10) (2021-12-28)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.9](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.8...v0.2.0-beta.9) (2021-12-28)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.8](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.7...v0.2.0-beta.8) (2021-12-28)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.7](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.6...v0.2.0-beta.7) (2021-12-27)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.6](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.5...v0.2.0-beta.6) (2021-12-23)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.5](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.4...v0.2.0-beta.5) (2021-12-21)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.4](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.3...v0.2.0-beta.4) (2021-12-21)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.3](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.2...v0.2.0-beta.3) (2021-12-17)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.2](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.1...v0.2.0-beta.2) (2021-12-17)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.2.0-beta.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0-beta.0...v0.2.0-beta.1) (2021-12-17)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# [0.1.0-beta.8](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.1.0-beta.7...v0.1.0-beta.8) (2021-12-15)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# 0.1.0-beta.7 (2021-12-15)
+## [0.3.2](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.3.1...v0.3.2) (2022-01-17)
 
 
 ### Bug Fixes
 
-* hosted-git-info bump in logger ([fb2a365](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/fb2a365cc73ae60d6e32d46361265a5ee8f5cad1))
-* **logger:** jest set to next version as workaround for vulnerability ([0f423bf](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/0f423bf7479a28829e81fabc6c58ed4e76dcfda4))
-* upgrade of dependencies, npm-shrinkwrap for packages/logger ([c120c64](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c120c64670ac3ed86438267c0a9c9fc72a3f7ebe))
-* version bumb for commitlint/cli ([0e1f6be](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/0e1f6be2786779ca43c3fcac6cb9e96431ca585d))
-
-
-### Features
-
-* add metrics ([#102](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/102)) ([cf22210](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/cf22210ebb519cf0a625a2bdc92d2bcea7b4a59d))
-* **logger:** add context decorator functionality ([#13](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/13)) ([369e4d1](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/369e4d1595776f4c563b1e9eb803897677df041f))
-* **logger:** basic logger logic ([#9](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/9)) ([5f867ea](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/5f867ea8dc43bd315a27d051993625fa699d514a)), closes [#10](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/10)
+* export LogFormatter + update docs ([#479](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/479)) ([7f91566](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/7f91566d4ff34887914009e2424df7c39a96cd71))
 
 
 
 
 
-# [0.1.0-beta.6](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.1.0-beta.5...v0.1.0-beta.6) (2021-12-06)
-
-**Note:** Version bump only for package @aws-lambda-powertools/logger
-
-
-
-
-
-# 0.1.0-beta.1 (2021-12-06)
+## [0.3.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.3.0...v0.3.1) (2022-01-14)
 
 
 ### Bug Fixes
 
-* hosted-git-info bump in logger ([fb2a365](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/fb2a365cc73ae60d6e32d46361265a5ee8f5cad1))
-* **logger:** jest set to next version as workaround for vulnerability ([0f423bf](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/0f423bf7479a28829e81fabc6c58ed4e76dcfda4))
-* upgrade of dependencies, npm-shrinkwrap for packages/logger ([c120c64](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c120c64670ac3ed86438267c0a9c9fc72a3f7ebe))
-* version bumb for commitlint/cli ([0e1f6be](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/0e1f6be2786779ca43c3fcac6cb9e96431ca585d))
-
-
-### Features
-
-* add metrics ([#102](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/102)) ([cf22210](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/cf22210ebb519cf0a625a2bdc92d2bcea7b4a59d))
-* **logger:** add context decorator functionality ([#13](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/13)) ([369e4d1](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/369e4d1595776f4c563b1e9eb803897677df041f))
-* **logger:** basic logger logic ([#9](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/9)) ([5f867ea](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/5f867ea8dc43bd315a27d051993625fa699d514a)), closes [#10](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/10)
+* **all:** fix latest release broken by change of npm pack result on common ([#470](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/470)) ([2c3df93](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/2c3df9378ac191f6da6cb5f458f6227d6466cafa)), closes [#417](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/417)
 
 
 
 
 
-# 0.1.0-beta.0 (2021-12-06)
+# [0.3.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.2.0...v0.3.0) (2022-01-14)
 
 
 ### Bug Fixes
 
-* hosted-git-info bump in logger ([fb2a365](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/fb2a365cc73ae60d6e32d46361265a5ee8f5cad1))
-* **logger:** jest set to next version as workaround for vulnerability ([0f423bf](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/0f423bf7479a28829e81fabc6c58ed4e76dcfda4))
-* upgrade of dependencies, npm-shrinkwrap for packages/logger ([c120c64](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c120c64670ac3ed86438267c0a9c9fc72a3f7ebe))
-* version bumb for commitlint/cli ([0e1f6be](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/0e1f6be2786779ca43c3fcac6cb9e96431ca585d))
+* **build:** Update contributing.md and fix npm ci ([#417](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/417)) ([279ad98](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/279ad984f71d5b157a13cffeab52602f2c09c1f8)), closes [#415](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/415) [#415](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/415)
 
 
 ### Features
 
-* add metrics ([#102](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/102)) ([cf22210](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/cf22210ebb519cf0a625a2bdc92d2bcea7b4a59d))
-* **logger:** add context decorator functionality ([#13](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/13)) ([369e4d1](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/369e4d1595776f4c563b1e9eb803897677df041f))
-* **logger:** basic logger logic ([#9](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/9)) ([5f867ea](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/5f867ea8dc43bd315a27d051993625fa699d514a)), closes [#10](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/10)
+* **all:** Update to examples use released version (0.2.0) ([#405](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/405)) ([d5e0620](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/d5e0620473f31d0839c027a76a88dcdcb98c84de))
+
+
+
+
+
+# 0.2.0 (2022-01-05)
+
+### Features
+
+* *logger:* beta release (#24 (https://github.com/awslabs/aws-lambda-powertools-python/issues/24))
+
+### Contributor List:
+
+@alan-churley, @bahrmichael, @dreamorosi, @flochaz, @heitorlessa, @ijemmy and @saragerion

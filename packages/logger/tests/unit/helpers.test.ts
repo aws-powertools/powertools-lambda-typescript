@@ -1,3 +1,9 @@
+/**
+ * Test Logger helpers
+ *
+ * @group unit/logger/all
+ */
+
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
 import { LoggerOptions } from '../../src/types';

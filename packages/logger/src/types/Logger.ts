@@ -1,4 +1,4 @@
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import { AsyncHandler, LambdaInterface, SyncHandler } from '@aws-lambda-powertools/commons';
 import { Handler } from 'aws-lambda';
 import { ConfigServiceInterface } from '../config';
 import { LogFormatterInterface } from '../formatter';
@@ -55,8 +55,8 @@ type LogItemExtraInput = Array<Error | LogAttributes | unknown>;
 type HandlerMethodDecorator = (
   target: LambdaInterface,
   propertyKey: string | symbol,
-  descriptor: TypedPropertyDescriptor<Handler>
-) => TypedPropertyDescriptor<Handler> | void;
+  descriptor: TypedPropertyDescriptor<SyncHandler<Handler>> | TypedPropertyDescriptor<AsyncHandler<Handler>>
+) => void;
 
 export {
   ClassThatLogs,

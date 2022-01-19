@@ -1,14 +1,19 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "0.2.0-beta.13",
+  "version": "0.3.3",
   "description": "A shared utility package for AWS Lambda powertools (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "commit": "commit",
-    "test": "jest  --detectOpenHandles --coverage --verbose",
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "test:e2e": "echo 'Not Applicable'",
     "watch": "jest --watch",
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
@@ -26,10 +31,10 @@
   "types": "./lib/index.d.ts",
   "typedocMain": "src/index.ts",
   "devDependencies": {
-    "@commitlint/cli": "^15.0.0",
+    "@commitlint/cli": "^16.0.2",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
-    "@types/node": "^16.6.0",
+    "@types/node": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint": "^8.3.0",

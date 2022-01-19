@@ -1,5 +1,5 @@
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Handler } from 'aws-lambda';
+import { LambdaInterface, AsyncHandler, SyncHandler } from '@aws-lambda-powertools/commons';
 import { ConfigServiceInterface } from '../config';
 import { MetricUnit } from './MetricUnit';
 
@@ -8,7 +8,7 @@ type Dimensions = { [key: string]: string };
 type MetricsOptions = {
   customConfigService?: ConfigServiceInterface
   namespace?: string
-  service?: string
+  serviceName?: string
   singleMetric?: boolean
   defaultDimensions?: Dimensions
 };
@@ -28,8 +28,8 @@ type EmfOutput = {
 type HandlerMethodDecorator = (
   target: LambdaInterface,
   propertyKey: string | symbol,
-  descriptor: TypedPropertyDescriptor<Handler>
-) => TypedPropertyDescriptor<Handler> | void;
+  descriptor: TypedPropertyDescriptor<SyncHandler<Handler>> | TypedPropertyDescriptor<AsyncHandler<Handler>>
+) => void;
 
 /**
  * Options for the metrics decorator
@@ -39,7 +39,7 @@ type HandlerMethodDecorator = (
  * ```typescript
  *
  * const metricsOptions: MetricsOptions = {
- *   raiseOnEmptyMetrics: true,
+ *   throwOnEmptyMetrics: true,
  *   defaultDimensions: {'environment': 'dev'},
  *   captureColdStartMetric: true,
  * }
@@ -51,7 +51,7 @@ type HandlerMethodDecorator = (
  * ```
  */
 type ExtraOptions = {
-  raiseOnEmptyMetrics?: boolean
+  throwOnEmptyMetrics?: boolean
   defaultDimensions?: Dimensions
   captureColdStartMetric?: boolean
 };
@@ -59,7 +59,7 @@ type ExtraOptions = {
 type StoredMetric = {
   name: string
   unit: MetricUnit
-  value: number
+  value: number | number[]
 };
 
 type StoredMetrics = {

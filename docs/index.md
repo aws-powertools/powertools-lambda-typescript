@@ -17,7 +17,7 @@ AWS Lambda Powertools TypeScript provides a suite of utilities for AWS Lambda fu
 
 ## Tenets
 
-This project separates core utilities that will be available in other runtimes vs general utilities that might not be available across all runtimes.
+Core utilities such as Tracer, Logger, Metrics, and Event Handler will be available across all Lambda Powertools runtimes. Additional utilities are subjective to each language ecosystem and customer demand.
 
 * **AWS Lambda only**. We optimise for AWS Lambda function environments and supported runtimes only. Utilities might work with web frameworks and non-Lambda environments, though they are not officially supported.
 * **Eases the adoption of best practices**. The main priority of the utilities is to facilitate best practices adoption, as defined in the AWS Well-Architected Serverless Lens; all other functionality is optional.
@@ -45,7 +45,6 @@ Each TypeScript utility is installed as standalone NPM package.
 
 [Installation guide for the **Metrics** utility](./core/metrics.md#getting-started)
 
-
 ## Environment variables
 
 !!! info
@@ -63,11 +62,10 @@ Each TypeScript utility is installed as standalone NPM package.
 | **POWERTOOLS_LOG_DEDUPLICATION_DISABLED** | Disables log deduplication filter protection to use Pytest Live Log feature | [Logger](./core/logger)  | `false`               |
 | **LOG_LEVEL**                             | Sets logging level | [Logger](./core/logger)  | `INFO`                |
 
-
 ## Examples
 
 * [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk){target="_blank"}
-* [Tracer](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/tracing/examples){target="_blank"}
+* [Tracer](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk/lib){target="_blank"}
 * [Logger](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logger/examples){target="_blank"}
 * [Metrics](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/metrics/examples){target="_blank"}
 
@@ -75,8 +73,7 @@ Each TypeScript utility is installed as standalone NPM package.
 
 * Credits for the Lambda Powertools idea go to [DAZN](https://github.com/getndazn){target="_blank"} and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/){target="_blank"}.
 
-
 ## Connect
 
-* **AWS Developers Slack**: `#lambda-powertools`** - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw){target="_blank"}**
+* **AWS Developers Slack**: `#lambda-powertools` - [Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw){target="_blank"}
 * **Email**: aws-lambda-powertools-feedback@amazon.com

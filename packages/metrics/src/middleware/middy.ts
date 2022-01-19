@@ -8,9 +8,9 @@ const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): mi
   const logMetricsBefore = async (request: middy.Request): Promise<void> => {
     metricsInstances.forEach((metrics: Metrics) => {
       metrics.setFunctionName(request.context.functionName);
-      const { raiseOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
-      if (raiseOnEmptyMetrics !== undefined) {
-        metrics.raiseOnEmptyMetrics();
+      const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
+      if (throwOnEmptyMetrics !== undefined) {
+        metrics.throwOnEmptyMetrics();
       }
       if (defaultDimensions !== undefined) {
         metrics.setDefaultDimensions(defaultDimensions);
@@ -24,7 +24,7 @@ const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): mi
 
   const logMetricsAfterOrError = async (): Promise<void> => {
     metricsInstances.forEach((metrics: Metrics) => {
-      metrics.purgeStoredMetrics();
+      metrics.publishStoredMetrics();
     });
   };
   

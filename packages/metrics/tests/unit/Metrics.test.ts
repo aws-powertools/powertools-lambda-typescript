@@ -48,7 +48,7 @@ describe('Class: Metrics', () => {
     test('should log service dimension correctly when passed', () => {
       const serviceName = 'testing_name';
 
-      const metrics = new Metrics({ namespace: 'test', service: serviceName });
+      const metrics = new Metrics({ namespace: 'test', serviceName: serviceName });
       metrics.addMetric('test_name', MetricUnits.Seconds, 14);
       const loggedData = metrics.serializeMetrics();
 
@@ -286,7 +286,7 @@ describe('Class: Metrics', () => {
 
     test('Cold should have service and function name if present', async () => {
       const serviceName = 'test-service';
-      const metrics = new Metrics({ namespace: 'test', service: serviceName });
+      const metrics = new Metrics({ namespace: 'test', serviceName: serviceName });
 
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics({ captureColdStartMetric: true })
@@ -316,7 +316,7 @@ describe('Class: Metrics', () => {
 
     test('Cold should still log, without a function name', async () => {
       const serviceName = 'test-service';
-      const metrics = new Metrics({ namespace: 'test', service: serviceName });
+      const metrics = new Metrics({ namespace: 'test', serviceName: serviceName });
       const newDummyContext = JSON.parse(JSON.stringify(dummyContext));
       delete newDummyContext.functionName;
       class LambdaFunction implements LambdaInterface {
@@ -346,13 +346,13 @@ describe('Class: Metrics', () => {
     });
   });
 
-  describe('Feature: raiseOnEmptyMetrics', () => {
-    test('Error should be thrown on empty metrics when raiseOnEmptyMetrics is passed', async () => {
+  describe('Feature: throwOnEmptyMetrics', () => {
+    test('Error should be thrown on empty metrics when throwOnEmptyMetrics is passed', async () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
       class LambdaFunction implements LambdaInterface {
-        @metrics.logMetrics({ raiseOnEmptyMetrics: true })
+        @metrics.logMetrics({ throwOnEmptyMetrics: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public handler<TEvent, TResult>(
@@ -371,14 +371,14 @@ describe('Class: Metrics', () => {
       }
     });
 
-    test('Error should be thrown on empty metrics when raiseOnEmptyMetrics() is callse', async () => {
+    test('Error should be thrown on empty metrics when throwOnEmptyMetrics() is callse', async () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
       const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
-        metrics.raiseOnEmptyMetrics();
+        metrics.throwOnEmptyMetrics();
         // Logic goes here
-        metrics.purgeStoredMetrics();
+        metrics.publishStoredMetrics();
       };
 
       try {
@@ -435,6 +435,55 @@ describe('Class: Metrics', () => {
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Namespace).toBe(DEFAULT_NAMESPACE);
       expect(console.warn).toHaveBeenNthCalledWith(1, 'Namespace should be defined, default used');
     });
+
+    test('Should contain a metric value if added once', ()=> {
+      const metrics = new Metrics();
+      
+      metrics.addMetric('test_name', MetricUnits.Count, 1);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      
+      expect(serializedMetrics['test_name']).toBe(1);
+    });
+
+    test('Should convert multiple metrics with the same name and unit into an array', ()=> {
+      const metrics = new Metrics();
+      
+      metrics.addMetric('test_name', MetricUnits.Count, 2);
+      metrics.addMetric('test_name', MetricUnits.Count, 1);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      expect(serializedMetrics['test_name']).toStrictEqual([ 2, 1 ]);
+    });
+
+    test('Should throw an error if the same metric name is added again with a different unit', ()=> {
+      const metrics = new Metrics();
+      
+      metrics.addMetric('test_name', MetricUnits.Count, 2);
+      try {
+        metrics.addMetric('test_name', MetricUnits.Seconds, 10);
+      } catch (e) {
+        expect((<Error>e).message).toBe('Metric "test_name" has already been added with unit "Count", but we received unit "Seconds". Did you mean to use metric unit "Count"?');
+      }
+    });
+
+    test('Should contain multiple metric values if added with multiple names', ()=> {
+      const metrics = new Metrics();
+      
+      metrics.addMetric('test_name', MetricUnits.Count, 1);
+      metrics.addMetric('test_name2', MetricUnits.Count, 2);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics).toStrictEqual([
+        { Name: 'test_name', Unit: 'Count' },
+        { Name: 'test_name2', Unit: 'Count' },
+      ]);
+      
+      expect(serializedMetrics['test_name']).toBe(1);
+      expect(serializedMetrics['test_name2']).toBe(2);
+    });
   });
 
   describe('Feature: Clearing Metrics ', () => {
@@ -462,7 +511,7 @@ describe('Class: Metrics', () => {
       await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
     });
 
-    test('Purge Stored Metrics should log and clear', async () => {
+    test('Publish Stored Metrics should log and clear', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics()
@@ -474,7 +523,7 @@ describe('Class: Metrics', () => {
           _callback: Callback<TResult>,
         ): void | Promise<TResult> {
           metrics.addMetric('test_name_1', MetricUnits.Count, 1);
-          metrics.purgeStoredMetrics();
+          metrics.publishStoredMetrics();
         }
       }
 
@@ -484,6 +533,35 @@ describe('Class: Metrics', () => {
       expect(console.log).toBeCalledTimes(2);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
       expect(loggedData[1]._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
+    });
+
+    test('Using decorator on async handler (without callback) should work fine', async () => {
+      const metrics = new Metrics({ namespace: 'test' });
+      const additionalDimension = { name: 'metric2', value: 'metric2Value' };
+
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics({ defaultDimensions: { default: 'defaultValue' } })
+        public async handler<TEvent>(
+          _event: TEvent,
+          _context: Context): Promise<string> {
+          metrics.addMetric('test_name', MetricUnits.Seconds, 10);
+          metrics.addDimension(additionalDimension.name, additionalDimension.value);
+          const loggedData = metrics.serializeMetrics();
+          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+          expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
+          metrics.clearDimensions();
+
+          return 'Lambda invoked!';
+        }
+      }
+
+      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext);
+      const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
+
+      expect(console.log).toBeCalledTimes(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('default');
+      expect(loggedData.default).toContain('defaultValue');
     });
 
     test('Using decorator should log even if exception thrown', async () => {

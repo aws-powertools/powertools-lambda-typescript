@@ -1,14 +1,15 @@
 import type { Context } from 'aws-lambda';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
-import { cloneDeep, merge } from 'lodash/fp';
+import cloneDeep from 'lodash.clonedeep';
+import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import type {
+  ClassThatLogs,
   Environment,
   HandlerMethodDecorator,
   LambdaFunctionContext,
   LogAttributes,
-  ClassThatLogs,
   LoggerOptions,
   LogItemExtraInput,
   LogItemMessage,
@@ -114,7 +115,7 @@ class Logger implements ClassThatLogs {
    * @return {void}
    */
   public addPersistentLogAttributes(attributes?: LogAttributes): void {
-    this.persistentLogAttributes = merge(this.getPersistentLogAttributes(), attributes);
+    this.persistentLogAttributes = merge(attributes, this.getPersistentLogAttributes());
   }
 
   /**
@@ -144,10 +145,7 @@ class Logger implements ClassThatLogs {
    * @param {Error | LogAttributes | unknown} extraInput
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (!this.shouldPrint('DEBUG')) {
-      return;
-    }
-    this.printLog(this.createAndPopulateLogItem('DEBUG', input, extraInput));
+    this.processLogItem('DEBUG', input, extraInput);
   }
 
   /**
@@ -156,14 +154,14 @@ class Logger implements ClassThatLogs {
    * @param {Error | LogAttributes | unknown} extraInput
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.printLog(this.createAndPopulateLogItem('ERROR', input, extraInput));
+    this.processLogItem('ERROR', input, extraInput);
   }
 
   /**
    *
    */
   public static evaluateColdStartOnce(): void {
-    if (Logger.getColdStartEvaluatedValue() === false) {
+    if (!Logger.getColdStartEvaluatedValue()) {
       Logger.evaluateColdStart();
     }
   }
@@ -198,10 +196,7 @@ class Logger implements ClassThatLogs {
    * @param {Error | LogAttributes | unknown} extraInput
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (!this.shouldPrint('INFO')) {
-      return;
-    }
-    this.printLog(this.createAndPopulateLogItem('INFO', input, extraInput));
+    this.processLogItem('INFO', input, extraInput);
   }
 
   /**
@@ -214,9 +209,8 @@ class Logger implements ClassThatLogs {
 
       descriptor.value = (event, context, callback) => {
         this.addContext(context);
-        const result = originalMethod?.apply(this, [ event, context, callback ]);
 
-        return result;
+        return originalMethod?.apply(this, [ event, context, callback ]);
       };
     };
   }
@@ -261,10 +255,7 @@ class Logger implements ClassThatLogs {
    * @param {Error | LogAttributes | unknown} extraInput
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (!this.shouldPrint('WARN')) {
-      return;
-    }
-    this.printLog(this.createAndPopulateLogItem('WARN', input, extraInput));
+    this.processLogItem('WARN', input, extraInput);
   }
 
   /**
@@ -274,7 +265,7 @@ class Logger implements ClassThatLogs {
    */
   private addToPowertoolLogData(...attributesArray: Array<Partial<PowertoolLogData>>): void {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
-      this.powertoolLogData = merge(this.getPowertoolLogData(), attributes);
+      this.powertoolLogData = merge(attributes, this.getPowertoolLogData());
     });
   }
 
@@ -287,11 +278,11 @@ class Logger implements ClassThatLogs {
    * @private
    */
   private createAndPopulateLogItem(logLevel: LogLevel, input: LogItemMessage, extraInput: LogItemExtraInput): LogItem {
-    const unformattedBaseAttributes = merge(this.getPowertoolLogData(), {
+    const unformattedBaseAttributes = merge({
       logLevel,
       timestamp: new Date(),
       message: typeof input === 'string' ? input : input.message,
-    });
+    }, this.getPowertoolLogData());
 
     const logItem = new LogItem({
       baseAttributes: this.getLogFormatter().formatAttributes(unformattedBaseAttributes),
@@ -318,7 +309,7 @@ class Logger implements ClassThatLogs {
     const coldStartValue = Logger.getColdStartValue();
     if (typeof coldStartValue === 'undefined') {
       Logger.setColdStartValue(true);
-    } else if (coldStartValue === true) {
+    } else if (coldStartValue) {
       Logger.setColdStartValue(false);
     } else {
       Logger.setColdStartValue(false);
@@ -368,29 +359,46 @@ class Logger implements ClassThatLogs {
     return typeof logLevel === 'string' && logLevel.toUpperCase() in this.logLevelThresholds;
   }
 
-  private printLog(log: LogItem): void {
+  private printLog(logLevel: LogLevel, log: LogItem): void {
     log.prepareForPrint();
 
+    const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
+
+    console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
+  }
+
+  private processLogItem(logLevel: LogLevel, input: LogItemMessage, extraInput: LogItemExtraInput): void {
+    if (!this.shouldPrint(logLevel)) {
+      return;
+    }
+    this.printLog(logLevel, this.createAndPopulateLogItem(logLevel, input, extraInput));
+  }
+
+  /**
+   * When the data added in the log item when contains object references,
+   * JSON.stringify() doesn't try to solve them and throws an error: TypeError: cyclic object value.
+   * To mitigate this issue, this function will find and remove the cyclic references.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
+   * @private
+   */
+  private removeCircularDependencies(): (key: string, value: LogAttributes) => void {
     const references = new WeakSet();
 
-    console.log(
-      JSON.parse(
-        JSON.stringify(log.getAttributes(), (key: string, value: LogAttributes) => {
-          let item = value;
-          if (item instanceof Error) {
-            item = this.getLogFormatter().formatError(item);
-          }
-          if (typeof item === 'object' && value !== null) {
-            if (references.has(item)) {
-              return;
-            }
-            references.add(item);
-          }
+    return (key, value) => {
+      let item = value;
+      if (item instanceof Error) {
+        item = this.getLogFormatter().formatError(item);
+      }
+      if (typeof item === 'object' && value !== null) {
+        if (references.has(item)) {
+          return;
+        }
+        references.add(item);
+      }
 
-          return item;
-        }),
-      ),
-    );
+      return item;
+    };
   }
 
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {

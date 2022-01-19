@@ -1,3 +1,9 @@
+/**
+ * Test Logger EnvironmentVariablesService class
+ *
+ * @group unit/logger/all
+ */
+
 import { EnvironmentVariablesService } from '../../../src/config';
 
 describe('Class: EnvironmentVariablesService', () => {

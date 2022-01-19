@@ -2,8 +2,9 @@ import { Callback, Context } from 'aws-lambda';
 import { Events } from '@aws-lambda-powertools/commons';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
-// process.env.POWERTOOLS_SERVICE_NAME = 'tracerManualFn'; // Alternative to setting the service name in the constructor
 const tracer = new Tracer({ serviceName: 'tracerDecoratorFn' });
+// Alternatively, you can also set the service name using the POWERTOOLS_SERVICE_NAME environment variable
+// Learn more at: https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
 
 export class MyFunctionWithDecorator {  
   // We instrument the handler with the decorator and the tracer will automatically create a subsegment and capture relevant annotations and metadata

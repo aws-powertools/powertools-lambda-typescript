@@ -1,14 +1,18 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "0.2.0-beta.13",
+  "version": "0.3.3",
   "description": "The tracer package for the AWS Lambda powertools (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "commit": "commit",
-    "test": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
     "build": "tsc",
@@ -26,12 +30,17 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {
+    "@aws-cdk/aws-lambda-nodejs": "^1.137.0",
+    "@aws-cdk/core": "^1.137.0",
     "@aws-sdk/client-sts": "^3.45.0",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
-    "@types/node": "^16.0.0",
+    "@types/node": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
+    "aws-cdk": "^1.137.0",
+    "aws-sdk": "^2.1048.0",
+    "esbuild": "^0.14.10",
     "eslint": "^8.3.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.5.0",
@@ -53,7 +62,7 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^0.0.2",
+    "@aws-lambda-powertools/commons": "^0.2.0",
     "@middy/core": "^2.5.3",
     "aws-xray-sdk-core": "^3.3.3"
   }

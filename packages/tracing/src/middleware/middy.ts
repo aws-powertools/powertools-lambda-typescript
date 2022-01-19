@@ -23,7 +23,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * }).use(captureLambdaHandler(tracer));
  * ```
  * 
- * @param tracer - The Tracer instance to use for tracing
+ * @param target - The Tracer instance to use for tracing
  * @returns middleware object - The middy middleware object
  */
 const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {

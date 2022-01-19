@@ -130,6 +130,10 @@ class Tracer implements TracerInterface {
   public constructor(options: TracerOptions = {}) {
     this.setOptions(options);
     this.provider = new ProviderService();
+    if (this.isTracingEnabled() === false) {
+      // Tell x-ray-sdk to not throw an error if context is missing but tracing is disabled
+      this.provider.setContextMissingStrategy(() => ({}));
+    }
   }
 
   /**
@@ -140,12 +144,12 @@ class Tracer implements TracerInterface {
     * @param error - Error to serialize as metadata
     */
   public addErrorAsMetadata(error: Error): void {
-    if (this.tracingEnabled === false) {
+    if (!this.isTracingEnabled()) {
       return;
     }
 
     const subsegment = this.getSegment();
-    if (this.captureError === false) {
+    if (!this.captureError) {
       subsegment.addErrorFlag();
 
       return;
@@ -163,7 +167,7 @@ class Tracer implements TracerInterface {
     * @param methodName - Name of the method that is being traced
     */
   public addResponseAsMetadata(data?: unknown, methodName?: string): void {
-    if (data === undefined || this.captureResponse === false || this.tracingEnabled === false) {
+    if (data === undefined || !this.captureResponse || !this.isTracingEnabled()) {
       return;
     }
 
@@ -175,7 +179,7 @@ class Tracer implements TracerInterface {
    * 
    */
   public addServiceNameAnnotation(): void {
-    if (this.tracingEnabled === false || this.serviceName === undefined) {
+    if (!this.isTracingEnabled() || this.serviceName === undefined) {
       return;
     }
     this.putAnnotation('Service', this.serviceName);
@@ -184,17 +188,17 @@ class Tracer implements TracerInterface {
   /**
    * Add ColdStart annotation to the current segment or subsegment.
    * 
-   * If Tracer has been initialized outside of the Lambda handler then the same instance
-   * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
+   * If Tracer has been initialized outside the Lambda handler then the same instance
+   * of Tracer will be reused throughout the lifecycle of that same Lambda execution environment
    * and this method will annotate `ColdStart: false` after the first invocation.
    * 
    * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
    */
   public annotateColdStart(): void {
-    if (this.tracingEnabled === true) {
+    if (this.isTracingEnabled()) {
       this.putAnnotation('ColdStart', Tracer.coldStart);
     }
-    if (Tracer.coldStart === true) {
+    if (Tracer.coldStart) {
       Tracer.coldStart = false;
     }
   }
@@ -222,7 +226,7 @@ class Tracer implements TracerInterface {
    * @returns AWS - Instrumented AWS SDK
    */
   public captureAWS<T>(aws: T): T {
-    if (this.tracingEnabled === false) return aws;
+    if (!this.isTracingEnabled()) return aws;
 
     return this.provider.captureAWS(aws);
   }
@@ -251,7 +255,7 @@ class Tracer implements TracerInterface {
    * @returns service - Instrumented AWS SDK v2 client
    */
   public captureAWSClient<T>(service: T): T {
-    if (this.tracingEnabled === false) return service;
+    if (!this.isTracingEnabled()) return service;
 
     return this.provider.captureAWSClient(service);
   }
@@ -281,7 +285,7 @@ class Tracer implements TracerInterface {
    * @returns service - Instrumented AWS SDK v3 client
    */
   public captureAWSv3Client<T>(service: T): T {
-    if (this.tracingEnabled === false) return service;
+    if (!this.isTracingEnabled()) return service;
 
     return this.provider.captureAWSv3Client(service);
   }
@@ -322,7 +326,7 @@ class Tracer implements TracerInterface {
       const originalMethod = descriptor.value;
 
       descriptor.value = ((event, context, callback) => {
-        if (this.tracingEnabled === false) {
+        if (!this.isTracingEnabled()) {
           return originalMethod?.apply(target, [ event, context, callback ]);
         }
 
@@ -389,7 +393,7 @@ class Tracer implements TracerInterface {
       const originalMethod = descriptor.value;
       
       descriptor.value = (...args: unknown[]) => {
-        if (this.tracingEnabled === false) {
+        if (!this.isTracingEnabled()) {
           return originalMethod?.apply(target, [...args]);
         }
 
@@ -417,8 +421,8 @@ class Tracer implements TracerInterface {
   /**
    * Retrieve the current value of `ColdStart`.
    * 
-   * If Tracer has been initialized outside of the Lambda handler then the same instance
-   * of Tracer will be reused throghout the lifecycle of that same Lambda execution environment
+   * If Tracer has been initialized outside the Lambda handler then the same instance
+   * of Tracer will be reused throughout the lifecycle of that same Lambda execution environment
    * and this method will return `false` after the first invocation.
    * 
    * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
@@ -426,7 +430,7 @@ class Tracer implements TracerInterface {
    * @returns boolean - `true` if is cold start, otherwise `false`
    */
   public static getColdStart(): boolean {
-    if (Tracer.coldStart === true) {
+    if (Tracer.coldStart) {
       Tracer.coldStart = false;
 
       return true;
@@ -458,11 +462,14 @@ class Tracer implements TracerInterface {
    * @returns segment - The active segment or subsegment in the current scope.
    */
   public getSegment(): Segment | Subsegment {
-    const segment = this.provider.getSegment();
+    if (this.isTracingEnabled() === false) {
+      return new Subsegment('## Dummy segment');
+    }
+    const segment = this.provider.getSegment();    
     if (segment === undefined) {
       throw new Error('Failed to get the current sub/segment from the context.');
     }
-
+ 
     return segment;
   }
 
@@ -498,7 +505,7 @@ class Tracer implements TracerInterface {
    * @param value - Value for annotation
    */
   public putAnnotation(key: string, value: string | number | boolean): void {
-    if (this.tracingEnabled === false) return;
+    if (!this.isTracingEnabled()) return;
 
     const document = this.getSegment();
     if (document instanceof Segment) {
@@ -528,10 +535,10 @@ class Tracer implements TracerInterface {
    * 
    * @param key - Metadata key
    * @param value - Value for metadata
-   * @param timestamp - Namespace that metadata will lie under, if none is passed it will use the serviceName
+   * @param namespace - Namespace that metadata will lie under, if none is passed it will use the serviceName
    */
   public putMetadata(key: string, value: unknown, namespace?: string | undefined): void {
-    if (this.tracingEnabled === false) return;
+    if (!this.isTracingEnabled()) return;
 
     const document = this.getSegment();
     if (document instanceof Segment) {
@@ -567,6 +574,8 @@ class Tracer implements TracerInterface {
    * @param segment - Subsegment to set as the current segment
    */
   public setSegment(segment: Segment | Subsegment): void {
+    if (this.isTracingEnabled() === false) return;
+    
     return this.provider.setSegment(segment);
   }
 
@@ -608,7 +617,7 @@ class Tracer implements TracerInterface {
    * 
    * @param serviceName - Service name to validate
    */
-  private isValidServiceName(serviceName?: string): boolean {
+  private static isValidServiceName(serviceName?: string): boolean {
     return typeof serviceName === 'string' && serviceName.trim().length > 0;
   }
 
@@ -700,21 +709,21 @@ class Tracer implements TracerInterface {
    * @param serviceName - Name of the service to use
    */
   private setServiceName(serviceName?: string): void {
-    if (serviceName !== undefined && this.isValidServiceName(serviceName)) {
+    if (serviceName !== undefined && Tracer.isValidServiceName(serviceName)) {
       this.serviceName = serviceName;
 
       return;
     }
 
     const customConfigValue = this.getCustomConfigService()?.getServiceName();
-    if (customConfigValue !== undefined && this.isValidServiceName(customConfigValue)) {
+    if (customConfigValue !== undefined && Tracer.isValidServiceName(customConfigValue)) {
       this.serviceName = customConfigValue;
 
       return;
     }
 
     const envVarsValue = this.getEnvVarsService()?.getServiceName();
-    if (envVarsValue !== undefined && this.isValidServiceName(envVarsValue)) {
+    if (envVarsValue !== undefined && Tracer.isValidServiceName(envVarsValue)) {
       this.serviceName = envVarsValue;
 
       return;
@@ -728,27 +737,27 @@ class Tracer implements TracerInterface {
    * @param enabled - Whether or not tracing is enabled
    */
   private setTracingEnabled(enabled?: boolean): void {
-    if (enabled !== undefined && enabled === false) {
+    if (enabled !== undefined && !enabled) {
       this.tracingEnabled = enabled;
-
+      
       return;
     }
 
     const customConfigValue = this.getCustomConfigService()?.getTracingEnabled();
     if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
       this.tracingEnabled = false;
-
+      
       return;
     }
 
     const envVarsValue = this.getEnvVarsService()?.getTracingEnabled();
     if (envVarsValue.toLowerCase() === 'false') {
       this.tracingEnabled = false;
-
+      
       return;
     }
 
-    if (this.isLambdaSamCli() || this.isLambdaExecutionEnv() === false) {
+    if (this.isLambdaSamCli() || !this.isLambdaExecutionEnv()) {
       this.tracingEnabled = false;
     }
   }

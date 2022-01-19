@@ -19,10 +19,11 @@
   "extensions": [
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
+    "firsttris.vscode-jest-runner",
     "visualstudioexptteam.vscodeintellicode",
     "amazonwebservices.aws-toolkit-vscode",
     "github.copilot",
-    "firsttris.vscode-jest-runner"
+    "ms-azuretools.vscode-docker"
   ],
 
   // Use 'postCreateCommand' to run commands after the container is created.

@@ -6,4 +6,4 @@ vscode:
     - esbenp.prettier-vscode
     - firsttris.vscode-jest-runner
 image:
-  file: .devcontainer/Dockerfile
+  file: .gitpod.Dockerfile

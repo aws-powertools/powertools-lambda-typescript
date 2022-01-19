@@ -122,9 +122,10 @@ To run e2e tests you can either use
 Two important env variable can be used:
 
 * `AWS_PROFILE` to use the right AWS credentials
+* `AWS_REGION` to select the region to deploy e2e tests infrastructure
 * `DISABLE_TEARDOWN` if you don't want your stack to be destroyed at the end of the test (useful in dev mode when iterating over your code).
 
-Example: `DISABLE_TEARDOWN=true AWS_PROFILE=dev-account npx jest --group=e2e/metrics/decorator`
+Example: `DISABLE_TEARDOWN=true AWS_PROFILE=dev-account AWS_REGION=eu-west-1 npx jest --group=e2e/metrics/decorator`
 
 **Automate**
 

@@ -244,7 +244,7 @@ class Metrics implements MetricsInterface {
           
         let result: unknown;
         try {
-          result = await originalMethod?.apply(this, [ event, context, callback ]);
+          result = await originalMethod?.apply(target, [ event, context, callback ]);
         } catch (error) {
           throw error;
         } finally {

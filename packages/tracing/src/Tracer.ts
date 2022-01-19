@@ -130,7 +130,7 @@ class Tracer implements TracerInterface {
   public constructor(options: TracerOptions = {}) {
     this.setOptions(options);
     this.provider = new ProviderService();
-    if (this.isTracingEnabled() === false) {
+    if (!this.isTracingEnabled()) {
       // Tell x-ray-sdk to not throw an error if context is missing but tracing is disabled
       this.provider.setContextMissingStrategy(() => ({}));
     }
@@ -462,7 +462,7 @@ class Tracer implements TracerInterface {
    * @returns segment - The active segment or subsegment in the current scope.
    */
   public getSegment(): Segment | Subsegment {
-    if (this.isTracingEnabled() === false) {
+    if (!this.isTracingEnabled()) {
       return new Subsegment('## Dummy segment');
     }
     const segment = this.provider.getSegment();    
@@ -574,7 +574,7 @@ class Tracer implements TracerInterface {
    * @param segment - Subsegment to set as the current segment
    */
   public setSegment(segment: Segment | Subsegment): void {
-    if (this.isTracingEnabled() === false) return;
+    if (!this.isTracingEnabled()) return;
     
     return this.provider.setSegment(segment);
   }

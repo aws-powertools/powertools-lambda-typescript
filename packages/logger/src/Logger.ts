@@ -248,7 +248,7 @@ class Logger implements ClassThatLogs {
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
    * @private
    */
-  private removeCircularDependencies(): (key: string, value: LogAttributes) => void {
+  private removeCircularDependencies(): (key: string, value: LogAttributes | Error) => void {
     const references = new WeakSet();
 
     return (key, value) => {

@@ -7,7 +7,7 @@ import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';
 process.env.POWERTOOLS_TRACER_ERROR_RESPONSE = 'false';
 const tracer = new Tracer({ serviceName: 'tracerCaptureErrorDisabledFn' });
 
-// In this example we are using the Middy middleware pattern but you can instrument your functions also with the captureLambdaHandler decorator & manual instrumentation
+// In this example we are using the Middy middleware pattern, but you can instrument your functions also with the captureLambdaHandler decorator & manual instrumentation
 export const handler = middy(async (event: typeof Events.Custom.CustomEvent, context: Context) => {
   tracer.putAnnotation('awsRequestId', context.awsRequestId);
   tracer.putMetadata('eventPayload', event);

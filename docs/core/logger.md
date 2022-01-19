@@ -10,7 +10,6 @@ description: Core utility
 
     **Do not use this library for production workloads.**
 
-
 Logger provides an opinionated logger with output structured as JSON.
 
 ## Key features
@@ -27,9 +26,7 @@ Logger provides an opinionated logger with output structured as JSON.
 Install the library in your project:
 
 ```shell
-
 npm install @aws-lambda-powertools/logger
-
 ```
 
 ### Utility settings
@@ -43,7 +40,6 @@ Setting | Description                                                           
 **Logging level** | Sets how verbose Logger should be (INFO, by default). Supported values are: `DEBUG`, `INFO`, `WARN`, `ERROR`     |  `LOG_LEVEL` | `logLevel`
 **Service name** | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME` | `serviceName`
 
-
 For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
 
 #### Example using AWS Serverless Application Model (SAM)
@@ -51,7 +47,7 @@ For a **complete list** of supported environment variables, refer to [this secti
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    import { Logger } from '@aws-lambda-powertools/logger';
 
     // Logger parameters fetched from the environment variables (see template.yaml tab)
     const logger = new Logger();
@@ -108,15 +104,15 @@ Key | Example
 === "Manual"
 
     ```typescript hl_lines="7"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    import { Logger } from '@aws-lambda-powertools/logger';
 
     const logger = new Logger();
 
-    export const handler = async (_event, context) => {
+    export const handler = async (_event, context): Promise<void> => {
     
         logger.addContext(context);
         
-        logger.info("This is an INFO log with some context");
+        logger.info('This is an INFO log with some context');
 
     };
     ```
@@ -130,13 +126,13 @@ Key | Example
         Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
 
     ```typescript hl_lines="1-2 10-11"
-    import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
+    import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
     import middy from '@middy/core';
 
     const logger = new Logger();
 
-    const lambdaHandler = async (_event: any, _context: any) => {
-        logger.info("This is an INFO log with some context");
+    const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
+        logger.info('This is an INFO log with some context');
     };
 
     export const handler = middy(lambdaHandler)
@@ -146,7 +142,7 @@ Key | Example
 === "Decorator"
 
     ```typescript hl_lines="8"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    import { Logger } from '@aws-lambda-powertools/logger';
     import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
     const logger = new Logger();
@@ -155,7 +151,7 @@ Key | Example
         // Decorate your handler class method
         @logger.injectLambdaContext()
         public async handler(_event: any, _context: any): Promise<void> {
-            logger.info("This is an INFO log with some context");
+            logger.info('This is an INFO log with some context');
         }
 
     }
@@ -193,39 +189,39 @@ You can append additional persistent keys and values in the logs generated durin
 === "handler.ts"
 
     ```typescript hl_lines="5-12 16-23"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    import { Logger } from '@aws-lambda-powertools/logger';
 
     // Add persistent log keys via the constructor
     const logger = new Logger({
         persistentLogAttributes: { 
-            aws_account_id: "123456789012",
-            aws_region: "eu-central-1",
+            aws_account_id: '123456789012',
+            aws_region: 'eu-central-1',
             logger: {
-                name: "@aws-lambda-powertools/logger",
-                version: "0.0.1",
+                name: '@aws-lambda-powertools/logger',
+                version: '0.0.1',
             }
         }
     });
 
     // OR add persistent log keys to an existing Logger instance with the appendKeys method:
     // logger.appendKeys({
-    //     aws_account_id: "123456789012",
-    //     aws_region: "eu-central-1",
+    //     aws_account_id: '123456789012',
+    //     aws_region: 'eu-central-1',
     //     logger: {
-    //         name: "@aws-lambda-powertools/logger",
-    //         version: "0.0.1",
+    //         name: '@aws-lambda-powertools/logger',
+    //         version: '0.0.1',
     //     }
     // });    
 
-    export const handler = async (_event: any, _context: any) => {
+    export const handler = async (_event: any, _context: any): Promise<unknown> => {
     
         // This info log will print all extra custom attributes added above
         // Extra attributes: logger object with name and version of the logger library, awsAccountId, awsRegion
-        logger.info("This is an INFO log");
-        logger.info("This is another INFO log");
+        logger.info('This is an INFO log');
+        logger.info('This is another INFO log');
         
         return {
-            foo: "bar"
+            foo: 'bar'
         };
     
     };
@@ -267,33 +263,32 @@ You can append additional persistent keys and values in the logs generated durin
 
 You can append additional keys and values in a single log item passing them as parameters.
 
-
 === "handler.ts"
 
     ```typescript hl_lines="14 18-19"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    import { Logger } from '@aws-lambda-powertools/logger';
 
     const logger = new Logger();
     
-    export const handler = async (_event: any, _context: any) => {
+    export const handler = async (_event: any, _context: any): Promise<unknown> => {
     
         const myImportantVariable = {
-            foo: "bar"
+            foo: 'bar'
         };
         
         // Pass additional keys and values in single log items
         
         // As second parameter
-        logger.info("This is a log with an extra variable", { data: myImportantVariable });
+        logger.info('This is a log with an extra variable', { data: myImportantVariable });
         
         // You can also pass multiple parameters
-        logger.info("This is a log with 2 extra variables",
+        logger.info('This is a log with 2 extra variables',
             { data: myImportantVariable },
-            { correlationIds: { myCustomCorrelationId: "foo-bar-baz" }}
+            { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } }
         );
         
         return {
-            foo: "bar"
+            foo: 'bar'
         };
     
     };
@@ -328,24 +323,24 @@ The error will be logged with default key name `error`, but you can also pass yo
 === "handler.ts"
 
     ```typescript hl_lines="11 18"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    import { Logger } from '@aws-lambda-powertools/logger';
 
     const logger = new Logger();
     
-    export const handler = async (_event: any, _context: any) => {
+    export const handler = async (_event: any, _context: any): Promise<void> => {
     
         try {
-            throw new Error("Unexpected error #1");
+            throw new Error('Unexpected error #1');
         } catch (error) {
             // Log information about the error using the default "error" key
-            logger.error("This is the first error", error);
+            logger.error('This is the first error', error);
         }
 
         try {
-            throw new Error("Unexpected error #2");
+            throw new Error('Unexpected error #2');
         } catch (error) {
             // Log information about the error using a custom "myCustomErrorKey" key
-            logger.error("This is the second error", { myCustomErrorKey: error } );
+            logger.error('This is the second error', { myCustomErrorKey: error } );
         }
     
     };
@@ -392,25 +387,25 @@ This can be useful for example if you want to enable multiple Loggers with diffe
 === "handler.ts"
 
     ```typescript hl_lines="9-11 18-19"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    import { Logger } from '@aws-lambda-powertools/logger';
 
     // With this logger, all the INFO logs will be printed
     const logger = new Logger({
-        logLevel: "INFO"
+        logLevel: 'INFO'
     });
 
     // With this logger, only the ERROR logs will be printed
-    const childLogger = parentLogger.createChild({
-        logLevel: "ERROR"
+    const childLogger = logger.createChild({
+        logLevel: 'ERROR'
     });
     
-    export const handler = async (_event: any, _context: any) => {
+    export const handler = async (_event: any, _context: any): Promise<void> => {
     
-        logger.info("This is an INFO log, from the parent logger");
-        logger.error("This is an ERROR log, from the parent logger");
+        logger.info('This is an INFO log, from the parent logger');
+        logger.error('This is an ERROR log, from the parent logger');
         
-        childLogger.info("This is an INFO log, from the child logger");
-        childLogger.error("This is an ERROR log, from the child logger");
+        childLogger.info('This is an INFO log, from the child logger');
+        childLogger.error('This is an ERROR log, from the child logger');
     
     };
     ```
@@ -452,8 +447,8 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
 
 !!! tip "When is this useful?"
     In production, to avoid log data pollution and reduce CloudWatch costs, developers are encouraged to use the logger with `logLevel` equal to `ERROR` or `WARN`.
-    This means that only errors or warnings will be printed. 
-    
+    This means that only errors or warnings will be printed.
+
     However, it might still be useful to print all the logs (including debug ones) of a very small percentage of invocations to have a better understanding of the behaviour of your code in production even when there are no errors.
     
     Sampling decision happens at the Logger initialization. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
@@ -461,25 +456,25 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
 === "handler.ts"
 
     ```typescript hl_lines="6"
-    import { Logger } from "@aws-lambda-powertools/logger";
+    import { Logger } from '@aws-lambda-powertools/logger';
 
     // Notice the log level set to 'ERROR'
     const logger = new Logger({
-        logLevel: "ERROR",
+        logLevel: 'ERROR',
         sampleRateValue: 0.5
     });
     
-    export const handler = async (_event: any, _context: any) => {
+    export const handler = async (_event: any, _context: any): Promise<void> => {
 
         // This log item (equal to log level 'ERROR') will be printed to standard output
         // in all Lambda invocations
-        logger.error("This is an ERROR log");
+        logger.error('This is an ERROR log');
 
         // These log items (below the log level 'ERROR') have ~50% chance 
         // of being printed in a Lambda invocation
-        logger.debug("This is a DEBUG log that has 50% chance of being printed");
-        logger.info("This is an INFO log that has 50% chance of being printed");
-        logger.warn("This is a WARN log that has 50% chance of being printed");
+        logger.debug('This is a DEBUG log that has 50% chance of being printed');
+        logger.info('This is an INFO log that has 50% chance of being printed');
+        logger.warn('This is a WARN log that has 50% chance of being printed');
         
         // Optional: refresh sample rate calculation on runtime
         // logger.refreshSampleRateCalculation();
@@ -594,28 +589,28 @@ You can customize the structure (keys and values) of your log items by passing a
 === "handler.ts"
 
     ```typescript hl_lines="2 5"
-    import { Logger } from "@aws-lambda-powertools/logger";
-    import { MyCompanyLogFormatter } from "./utils/formatters/MyCompanyLogFormatter";
+    import { Logger } from '@aws-lambda-powertools/logger';
+    import { MyCompanyLogFormatter } from './utils/formatters/MyCompanyLogFormatter';
 
     const logger = new Logger({
         logFormatter: new MyCompanyLogFormatter(),
-        logLevel: "DEBUG",
-        serviceName: "serverlessAirline",
+        logLevel: 'DEBUG',
+        serviceName: 'serverlessAirline',
         sampleRateValue: 0.5,
         persistentLogAttributes: {
             awsAccountId: process.env.AWS_ACCOUNT_ID,
             logger: {
-                name: "@aws-lambda-powertools/logger",
-                version: "0.0.1"
+                name: '@aws-lambda-powertools/logger',
+                version: '0.0.1'
             }
         },
     });
     
-    export const handler = async (event, _context) => {
+    export const handler = async (event, context): Promise<void> => {
 
         logger.addContext(context);
-        
-        logger.info("This is an INFO log", { correlationIds: { myCustomCorrelationId: "foo-bar-baz" } });
+
+        logger.info('This is an INFO log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
 
     };
     ```
@@ -707,35 +702,35 @@ This is a Jest sample that provides the minimum information necessary for Logger
 
 === "handler.test.ts"
 
-```typescript
+    ```typescript
 
-const dummyContext = {
-    callbackWaitsForEmptyEventLoop: true,
-    functionVersion: '$LATEST',
-    functionName: 'foo-bar-function',
-    memoryLimitInMB: '128',
-    logGroupName: '/aws/lambda/foo-bar-function',
-    logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-    invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
-    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-    getRemainingTimeInMillis: () => 1234,
-    done: () => console.log('Done!'),
-    fail: () => console.log('Failed!'),
-    succeed: () => console.log('Succeeded!'),
-};
+    const dummyContext = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+    };
 
-describe('MyUnitTest', () => {
+    describe('MyUnitTest', () => {
 
-    test('Lambda invoked successfully', async () => {
-       
-        const testEvent = { test: 'test' };
-        await handler(testEvent, dummyContext);
+        test('Lambda invoked successfully', async () => {
+        
+            const testEvent = { test: 'test' };
+            await handler(testEvent, dummyContext);
+
+        });
 
     });
 
-});
-
-```
+    ```
 
 !!! tip
     If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/commons/src/tests/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).

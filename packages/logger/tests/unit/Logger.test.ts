@@ -605,6 +605,45 @@ describe('Class: Logger', () => {
       jest.spyOn(console, 'log').mockImplementation(() => {});
     });
 
+    test('when used as decorator, it returns a function with the correct scope of the decorated class', async () => {
+
+      // Prepare
+      const logger = new Logger();
+      class LambdaFunction implements LambdaInterface {
+
+        @logger.injectLambdaContext()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          this.myClassMethod();
+        }
+
+        private myClassMethod (): void {
+          logger.info('This is an INFO log with some context');
+        }
+
+      }
+
+      // Act
+      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(console['info']).toBeCalledTimes(1);
+      expect(console['info']).toHaveBeenNthCalledWith(1, JSON.stringify({
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        function_memory_size: 128,
+        function_name: 'foo-bar-function',
+        function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        level: 'INFO',
+        message: 'This is an INFO log with some context',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+      }));
+
+    });
+
     test('when used as decorator, it returns a function that captures Lambda\'s context information and adds it in the printed logs', async () => {
 
       // Prepare

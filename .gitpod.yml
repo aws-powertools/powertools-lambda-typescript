@@ -1,0 +1,7 @@
+tasks:
+  - init: npm ci; npm run lerna-ci; npm run init-environment
+vscode:
+  extensions:
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode
+    - firsttris.vscode-jest-runner

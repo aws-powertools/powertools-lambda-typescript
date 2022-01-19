@@ -9,16 +9,18 @@
 		// Use -bullseye variants on local arm64/Apple Silicon.
     "args": { "VARIANT": "16-bullseye" }
   },
+  
   // Set *default* container specific settings.json values on container create.
   "settings": {
     "git.enableCommitSigning": true
   },
+
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "visualstudioexptteam.vscodeintellicode",
-    // "amazonwebservices.aws-toolkit-vscode",
+    "amazonwebservices.aws-toolkit-vscode",
     "github.copilot",
     "firsttris.vscode-jest-runner"
   ],

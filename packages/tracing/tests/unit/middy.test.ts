@@ -14,7 +14,7 @@ jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);
 jest.spyOn(console, 'error').mockImplementation(() => null);
 
-describe('Middy middlewares', () => {
+describe('Middy middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const context = {
     callbackWaitsForEmptyEventLoop: true,

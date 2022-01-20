@@ -83,7 +83,7 @@ class Logger implements ClassThatLogs {
   }
 
   /**
-   * It adds the current Lambda function's invocation context data to the powertoolLogData propriety of the instance.
+   * It adds the current Lambda function's invocation context data to the powertoolLogData property of the instance.
    * This context data will be part of all printed log items.
    *
    * @param {Context} context

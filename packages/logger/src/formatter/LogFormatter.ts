@@ -2,8 +2,6 @@ import { LogFormatterInterface } from '.';
 import { LogAttributes, UnformattedAttributes } from '../types';
 
 /**
- * Abstract class LogFormatter
- *
  * This class defines and implements common methods for the formatting of log attributes.
  *
  * @class

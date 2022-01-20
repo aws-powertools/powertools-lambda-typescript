@@ -1,8 +1,6 @@
 import { LogAttributes, UnformattedAttributes } from '../types';
 
 /**
- * Interface LogFormatterInterface
- *
  * @interface
  */
 interface LogFormatterInterface {

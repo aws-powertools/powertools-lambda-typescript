@@ -23,7 +23,7 @@ class EnvironmentVariablesService extends ConfigService {
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
 
   /**
-   * It returns a the value of an environment variable that has given name.
+   * It returns the value of an environment variable that has given name.
    *
    * @param {string} name
    * @returns {string}

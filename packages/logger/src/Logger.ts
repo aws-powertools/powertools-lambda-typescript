@@ -292,7 +292,7 @@ class Logger implements ClassThatLogs {
   }
 
   /**
-   * It stored information that is printed in all log items.
+   * It stores information that is printed in all log items.
    *
    * @param {Partial<PowertoolLogData>} attributesArray
    * @private

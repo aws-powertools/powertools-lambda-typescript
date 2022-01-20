@@ -571,7 +571,7 @@ class Logger implements ClassThatLogs {
   }
 
   /**
-   * If the sample rate feature is enabled, it sets a propriety that tracks whether this Lambda function invocation
+   * If the sample rate feature is enabled, it sets a property that tracks whether this Lambda function invocation
    * will print logs or not.
    *
    * @private

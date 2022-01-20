@@ -171,7 +171,7 @@ class Logger implements ClassThatLogs {
   }
 
   /**
-   * It returns a boolean value which is true if the current Lambda function cold start has been already evaluated, false if not.
+   * It returns a boolean value which is true if the current Lambda function cold start has been already evaluated, false otherwise.
    *
    * @static
    * @returns {boolean}

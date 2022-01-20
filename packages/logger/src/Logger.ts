@@ -126,7 +126,7 @@ class Logger implements ClassThatLogs {
   }
 
   /**
-   * it creates a separate Logger instance, identical to the current one.
+   * It creates a separate Logger instance, identical to the current one
    * It's possible to overwrite the new instance options by passing them.
    *
    * @param {LoggerOptions} options

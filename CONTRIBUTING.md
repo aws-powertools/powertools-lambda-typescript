@@ -10,6 +10,12 @@ information to effectively respond to your bug report or contribution.
 
 If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.
 
+## Code of Conduct
+
+This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
+For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
+opensource-codeofconduct@amazon.com with any additional questions or comments.
+
 ## Reporting Bugs/Feature Requests
 
 We welcome you to use the GitHub issue tracker to report bugs or suggest features.
@@ -24,40 +30,119 @@ reported the issue. Please try to include as much information as you can. Detail
 
 ## Contributing via Pull Requests
 
-Contributions via pull requests are much appreciated. Before sending us a pull request, please ensure that:
+Contributions via pull requests are much appreciated.
 
-1. You are working against the latest source on the **main** branch.
-2. You check existing open, and recently merged pull requests to make sure someone else hasn't addressed the problem already.
-3. You open an [RFC issue](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=RFC%2C+triage&template=rfc.md&title=RFC%3A+) to discuss any significant work - we would hate for your time to be wasted.
-4. You lint and test the code. When you've setup the repository with `npm run init-environment`, pre-commit and push-hooks will automatically lint and test the code. Pull request builds will run the same checks as well.
+### Step 1: Find something to work on
 
-### Dev setup
+If you want to contribute a specific feature or fix you have in mind, look at active [pull
+requests](https://github.com/awslabs/aws-lambda-powertools-typescript/pulls) to see if someone else is already working on it. If not, you can start designing your changes. 
 
-To send us a pull request, please follow these steps:
+On the other hand, if you are here looking for an issue to work on, check out our [backlog of
+issues](https://github.com/awslabs/aws-lambda-powertools-typescript/issues) and find something that piques your interest. Our project, by default, uses the default GitHub issue labels (enhancement/bug/help wanted/invalid/question/documentation), looking at any issue labeled as 'help wanted' or 'good-first-issue' is a great place to start.
 
-1. Fork the repository.
-2. Install dependencies: `npm ci; npm run lerna-ci`
-3. Prepare utilities like commit hooks: `npm run init-environment`
-4. Create a new branch to focus on the specific change you are contributing e.g. `git checkout -b improv/logger-debug-sampling`
-5. Run all tests, and code baseline checks: `npm run test`
-6. Commit to your fork using clear commit messages.
-7. Send us a pull request with a [conventional semantic title](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/semantic.yml), and answering any default questions in the pull request interface. [Here's an example](https://github.com/awslabs/aws-lambda-powertools-python/pull/67).
-8. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
+It's a good idea to keep the priority of issues in mind when deciding what to
+work on. If we have labelled an issue as `priority:medium` or `priority:low`, it means it's something we won't
+get to soon while `priority:high` issues have a bigger impact, so we are much more likely to give a PR for those issues prompt attention.
 
-GitHub provides an additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
-[creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
+### Step 2: Design
 
-#### Local documentation
+You can start by checking the project's tenets [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets).
 
-You might find useful to run both the documentation website and the API reference locally while contributing:
+We ask you to seek feedback and consensus on your proposed change by iterating on a design document. This is especially useful when you plan a big change or feature, or you want advice on what would be the best path forward.
 
-* **API reference**: :construction:
-* **Docs website**:
+If you're picking up an existing issue, you can simply post your comment and discuss your proposed changes. If instead you're proposing a new feature, you can start by creating a new [RFC issue](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=RFC%2C+triage&template=rfc.md&title=RFC%3A+) and discuss your proposed change with the maintainers.
 
-You can build and start a local docs website by running these two commands.
+This is a great way to get feedback on your proposed change, and make sure that it is in line with the project's direction and community needs. You can start working on the change when you've gotten approved by at least one maintainer - we would hate for your time to be wasted.
 
-* `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
-* `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
+### Step 3: Work your Magic
+
+Work your magic. Before starting make sure to check the [Getting Started](#Getting-Started) section to setup your dev environment and familiarize yourself with the project's structure and design. Here are some additional guidelines:
+
+* Working against the latest source on the **main** branch.
+* Try to maintain a single feature/bugfix per pull request. It's okay to introduce a little bit of housekeeping
+  changes along the way, but try to avoid conflating multiple features. Eventually, all these are going to go into a
+  single commit, so you can use that to frame your scope.
+* Try to add [unit tests](#Tests) that test your changes when applicable. This is especially important for new features and bug fixes as it helps you to make sure that your changes are working as intended.
+* Lint and test the the code. When you've setup the repository with `npm run init-environment`, pre-commit and push-hooks will automatically lint and test the code. Pull request builds will run the same checks as well.
+
+### Step 4: Pull Request
+
+* Create a commit with your changes and push them to a
+  [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
+  > Note: Core members can push directly to a branch on the AWS Lambda Powertools (Typescript) repo (following the same conventions detailed below).
+* Create a [pull request on Github](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+
+* Pull request title and message (and PR title and description) must adhere to
+  [conventionalcommits](https://www.conventionalcommits.org).
+  * The title must begin with `feat(module): title`, `fix(module): title`, `refactor(module): title` or
+    `chore(module): title`, etc.
+  * Title should be lowercase.
+  * No period at the end of the title.
+
+* Pull request message should describe _motivation_ and follow the template provided as closely as possible. Think about your code reviewers and what information they need in order to understand what you did. If it's a big commit (hopefully not), try to provide some good entry points so it will be easier to follow.
+
+* Pull request message should indicate which issue or RFC it relates to in the "Related issues, RFCs" section.
+
+* Shout out to collaborators.
+
+* If not obvious (i.e. from unit tests), describe how you verified that your change works.
+
+* If this PR includes breaking changes, they must be listed at the end in the "Breaking change checklist" section.
+
+* Once the pull request is submitted, a reviewer will be assigned by the maintainers.
+
+* Discuss review comments and iterate until you get at least one "Approve". When iterating, push new commits to the
+  same branch. Usually all these are going to be squashed when you merge to master. The commit messages should be hints
+  for you when you finalize your merge commit message.
+
+* Make sure to update the PR title/description if things change. The PR title/description are going to be used as the
+  commit title/message and will appear in the CHANGELOG and Release Notes, so maintain them all the way throughout the process.
+
+* Do not remove the legal notice at the end of the PR message. This is a requirement for any pull request to be
+  reviewed & accepted.
+
+### Step 5: Merge
+
+* Once approved and tested, one of the maintainers will squash-merge to `main` and will use your PR title/description will be used as the commit message. Your name will be also added to the Release Notes of the next release.
+
+## Getting Started
+
+The following steps describe how to set up the AWS Lambda Powertools (Typescript) repository on your local machine.
+<!-- The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [Codespaces](https://github.com/features/codespaces) for your development. -->
+
+### Setup
+
+The following tools need to be installed on your system prior to starting working on a pull request:
+
+- [Node.js >= 14.18.1](https://nodejs.org/download/release/latest-v14.x/)
+  - We recommend using a version in [Active LTS](https://nodejs.org/en/about/releases/)
+  - If you use [nvm](https://github.com/nvm-sh/nvm#nvmrc) or [fnm](https://github.com/Schniz/fnm) you can install the latest LTS version with `nvm use` or `fnm use` respectively. Both will use the `.nvmrc` file in the project's root.
+- [npm 8.x](https://www.npmjs.com/)
+  - After installing Node.js, you can install `npm` with `npm install -g npm@next-8` 
+- [Docker](https://docs.docker.com/get-docker/)
+  - If you are not planning on making changes to the documentation, you can skip this step.
+
+First [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository, and then run the following commands to clone and initialize the repository locally.
+
+```console
+git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
+cd aws-lambda-powertools-typescript
+npm ci; npm run lerna-ci
+npm run init-environment
+```
+
+We recommend that you use [Visual Studio Code](https://code.visualstudio.com/) to work on the repo.
+We use `eslint` to keep our code consistent in terms of style and reducing defects. We recommend installing
+the [eslint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) as well.
+
+### Repo Layout
+
+The AWS Lambda Powertools is a npm project written in [typescript](https://www.typescriptlang.org/).
+More specifically, it is a [monorepo managed using lerna](https://github.com/lerna/lerna#about).
+If you're unfamiliar with any of these technologies, it is useful to learn about them and will make understanding the codebase easier but strictly not necessary for simple contributions.
+
+The repo contains `packages/` directory that contains the Powertools utilities modules. For instance, the source code for the Logger utility can be found at the location `packages/logger` and so on.
+The repo also contains a `packages/commons` directory that holds code and logic shared between one or more utilities and that is published as separate npm package.
 
 ### Tests
 
@@ -175,33 +260,33 @@ To test your updates with these examples you just have to:
 
 Previous command will deploy AWS resources therefore you will need an AWS account and it might incur in some costs which should be covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all). If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
+### Local documentation
+
+You might find useful to run both the documentation website and the API reference locally while contributing:
+
+#### API reference
+
+You can build and start the API reference website by running these two commands in the project's root:
+
+* `npm run docs-generateApiDoc` OR `typedoc .`
+* `npm run docs-runLocalApiDoc` OR `npx live-server api`
+
+#### Docs website
+
+You can build and start a local docs website by running these two commands:
+
+* `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
+* `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`
+
 ### Conventions
 
 Category | Convention
 ------------------------------------------------- | ---------------------------------------------------------------------------------
-**Docstring** |  We use a slight variation of numpy convention with markdown to help generate more readable API references.
-**Style guide** | We use black as well as flake8 extensions to enforce beyond good practices [PEP8](https://pep8.org/). We strive to make use of type annotation as much as possible, but don't overdo in creating custom types.
-**Core utilities** | Core utilities use a Class, always accept `service` as a constructor parameter, can work in isolation, and are also available in other languages implementation.
-**Utilities** | Utilities are not as strict as core and focus on solving a developer experience problem while following the project [Tenets](https://awslabs.github.io/aws-lambda-powertools-typescript/#tenets).
-**Exceptions** | Specific exceptions live within utilities themselves and use `Error` suffix e.g. `MetricUnitError`.
+**Docstring** |  We use [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) annotations to provide type information and create API references.
+**Style guide** | We use black as well as flake8 extensions to enforce beyond good practices [PEP8](https://pep8.org/).
+**Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.
 **Git commits** | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.
-**Documentation** | API reference docs are generated from docstrings which should have Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strive to be concise.
-
-## Finding contributions to work on
-
-Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/help wanted/invalid/question/documentation), looking at any 'help wanted' issues is a great place to start.
-
-## Code of Conduct
-
-This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
-For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
-opensource-codeofconduct@amazon.com with any additional questions or comments.
-
-## Troubleshooting
-
-### API reference documentation
-
-TODO
+**Documentation** | API reference docs are generated from docstrings which should have Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise.
 
 ## Licensing
 

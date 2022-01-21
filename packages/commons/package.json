@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "A shared utility package for AWS Lambda powertools (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",

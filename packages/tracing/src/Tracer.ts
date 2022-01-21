@@ -21,7 +21,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/).
  * 
- * ### Functions usage with middlewares
+ * ### Functions usage with middleware
  * 
  * If you use function-based Lambda handlers you can use the [captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
  * * handle the subsegment lifecycle 

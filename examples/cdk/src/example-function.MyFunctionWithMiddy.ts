@@ -62,7 +62,7 @@ const lambdaHandler = async (event: typeof Events.Custom.CustomEvent, context: C
   return res;
 };
 
-// We instrument the handler with the various Middy middlewares
+// We instrument the handler with the various Middy middleware
 export const handler = middy(lambdaHandler)
   .use(captureLambdaHandler(tracer))
   .use(

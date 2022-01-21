@@ -3,6 +3,12 @@ on:
   workflow_dispatch: {}
 jobs:
   run:
+    #########################
+    # Force Github action to run only a single job at a time (based on the group name)
+    # This is to prevent "race-condition" in building e2e tests infrastructure
+    #########################
+    concurrency:
+      group: e2e-tests
     runs-on: ubuntu-latest
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.

@@ -8,7 +8,7 @@ jobs:
     # This is to prevent "race-condition" in publishing a new version of doc to `gh-pages` (#365)
     #########################
     concurrency:
-      group: on-release-publish
+      group: release
     runs-on: ubuntu-latest
     steps:
     - name: "Checkout"

@@ -1,7 +1,7 @@
 import middy from '@middy/core';
 import { captureLambdaHandler, Tracer } from '../../src';
 import { Context } from 'aws-lambda';
-import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
+import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -12,6 +12,7 @@ const customMetadataKey = process.env.EXPECTED_CUSTOM_METADATA_KEY ?? 'myMetadat
 const customMetadataValue = JSON.parse(process.env.EXPECTED_CUSTOM_METADATA_VALUE) ?? { bar: 'baz' };
 const customResponseValue = JSON.parse(process.env.EXPECTED_CUSTOM_RESPONSE_VALUE) ?? { foo: 'bar' };
 const customErrorMessage = process.env.EXPECTED_CUSTOM_ERROR_MESSAGE ?? 'An error has occurred';
+const testTableName = process.env.TEST_TABLE_NAME ?? 'TestTable';
 
 interface CustomEvent {
   throw: boolean
@@ -32,29 +33,29 @@ const refreshAWSSDKImport = (): void => {
 };
 
 const tracer = new Tracer({ serviceName: serviceName });
-const stsv3 = tracer.captureAWSv3Client(new STSClient({}));
+const dynamoDBv3 = tracer.captureAWSv3Client(new DynamoDBClient({}));
 
 export const handler = middy(async (event: CustomEvent, _context: Context): Promise<void> => {
   tracer.putAnnotation('invocation', event.invocation);
   tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
   tracer.putMetadata(customMetadataKey, customMetadataValue);
 
-  let stsv2;
+  let dynamoDBv2;
   refreshAWSSDKImport();
   if (event.sdkV2 === 'client') {
-    stsv2 = tracer.captureAWSClient(new AWS.STS());
+    dynamoDBv2 = tracer.captureAWSClient(new AWS.DynamoDB.DocumentClient());
   } else if (event.sdkV2 === 'all') {
     AWS = tracer.captureAWS(AWS);
-    stsv2 = new AWS.STS();
+    dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
   }
   try {
-    await stsv2.getCallerIdentity().promise();
+    await dynamoDBv2.scan({ TableName: testTableName }).promise();
   } catch (err) {
     console.error(err);
   }
 
   try {
-    await stsv3.send(new GetCallerIdentityCommand({}));
+    await dynamoDBv3.send(new ScanCommand({ TableName: testTableName }));
   } catch (err) {
     console.error(err);
   }

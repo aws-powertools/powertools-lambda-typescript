@@ -23,7 +23,7 @@
     "visualstudioexptteam.vscodeintellicode",
     "amazonwebservices.aws-toolkit-vscode",
     "ms-vscode.vscode-typescript-tslint-plugin",
-\    "ms-azuretools.vscode-docker"
+    "ms-azuretools.vscode-docker"
   ],
 
   // Use 'postCreateCommand' to run commands after the container is created.

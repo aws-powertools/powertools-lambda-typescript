@@ -6,3 +6,5 @@ vscode:
     - esbenp.prettier-vscode
     - firsttris.vscode-jest-runner
     - ms-azuretools.vscode-docker
+    - ms-vscode.vscode-typescript-tslint-plugin
+    - hbenl.vscode-test-explorer

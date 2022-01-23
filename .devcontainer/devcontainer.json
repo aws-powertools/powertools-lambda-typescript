@@ -22,6 +22,8 @@
     "firsttris.vscode-jest-runner",
     "visualstudioexptteam.vscodeintellicode",
     "amazonwebservices.aws-toolkit-vscode",
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "hbenl.vscode-test-explorer",
     "ms-azuretools.vscode-docker"
   ],
 

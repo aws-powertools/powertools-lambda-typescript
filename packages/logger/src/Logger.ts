@@ -282,13 +282,13 @@ class Logger implements ClassThatLogs {
    * @returns {HandlerMethodDecorator}
    */
   public injectLambdaContext(): HandlerMethodDecorator {
-    return (target, propertyKey, descriptor) => {
+    return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
 
       descriptor.value = (event, context, callback) => {
         this.addContext(context);
 
-        return originalMethod?.apply(this, [ event, context, callback ]);
+        return originalMethod?.apply(target, [ event, context, callback ]);
       };
     };
   }

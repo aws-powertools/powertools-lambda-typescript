@@ -11,11 +11,12 @@
     "package": "echo 'Not applicable'",
     "test:unit": "npm run build && jest",
     "test:e2e": "echo 'To be implemented ...'",
+    "version": "npm install @aws-lambda-powertools/commons@0.4.0 @aws-lambda-powertools/logger@0.4.0 @aws-lambda-powertools/tracer@0.4.0 @aws-lambda-powertools/metrics@0.4.0 && git add package.json",
     "cdk": "cdk"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
-    "@types/node": "10.17.27",
+    "@types/node": "17.0.10",
     "aws-cdk": "2.0.0",
     "esbuild": "^0.14.2",
     "jest": "^26.4.2",

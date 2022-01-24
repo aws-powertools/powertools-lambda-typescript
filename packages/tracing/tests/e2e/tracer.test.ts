@@ -20,6 +20,8 @@ const xray = new AWS.XRay();
 const lambdaClient = new AWS.Lambda();
 const stsClient = new AWS.STS();
 
+const ONE_MINUTE = 1000 * 60;
+
 describe('Tracer integration tests', () => {
 
   const expectedCustomAnnotationKey = 'myAnnotation';
@@ -123,9 +125,9 @@ describe('Tracer integration tests', () => {
     });
     
     // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, 100 * 1000));
+    await new Promise((resolve) => setTimeout(resolve, ONE_MINUTE * 2));
 
-  }, 360000); // 6 minutes
+  }, ONE_MINUTE * 5);
 
   afterAll(async () => {
 
@@ -143,7 +145,7 @@ describe('Tracer integration tests', () => {
       });
     }
 
-  }, 180000); // 3 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used to manually instrument a function all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -213,7 +215,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as middleware all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -283,7 +285,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as middleware, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
@@ -352,7 +354,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when tracing is disabled in middleware mode no custom traces are generated', async () => {
     
@@ -376,7 +378,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -473,7 +475,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator on an async handler all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -570,7 +572,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
@@ -656,7 +658,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when tracing is disabled in decorator mode no custom traces are generated', async () => {
     
@@ -680,6 +682,6 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
 });

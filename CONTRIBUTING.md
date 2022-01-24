@@ -108,7 +108,7 @@ Work your magic. Before starting make sure to check the [Getting Started](#Getti
 ## Getting Started
 
 The following steps describe how to set up the AWS Lambda Powertools (Typescript) repository on your local machine.
-<!-- The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [Codespaces](https://github.com/features/codespaces) for your development. -->
+The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [Codespaces](https://github.com/features/codespaces) for your development.
 
 ### Setup
 

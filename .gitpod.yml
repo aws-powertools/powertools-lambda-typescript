@@ -1,0 +1,9 @@
+tasks:
+  - init: nvm install; nvm use; npm i -g npm@next-8; npm ci; npm run lerna-ci; npm run init-environment
+vscode:
+  extensions:
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode
+    - firsttris.vscode-jest-runner
+    - ms-azuretools.vscode-docker
+    - ms-vscode.vscode-typescript-tslint-plugin

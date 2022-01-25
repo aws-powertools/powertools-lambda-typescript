@@ -257,7 +257,15 @@ class Tracer implements TracerInterface {
   public captureAWSClient<T>(service: T): T {
     if (!this.isTracingEnabled()) return service;
 
-    return this.provider.captureAWSClient(service);
+    try {
+      return this.provider.captureAWSClient(service);
+    } catch (error) {
+      try {
+        return this.provider.captureAWSClient((service as unknown as T & { service: T }).service);
+      } catch {
+        throw error;
+      }
+    }
   }
 
   /**

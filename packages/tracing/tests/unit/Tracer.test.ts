@@ -1054,8 +1054,7 @@ describe('Class: Tracer', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient')
-        .mockImplementation(() => null);
+      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
 
       // Act
       tracer.captureAWSClient({});
@@ -1065,20 +1064,62 @@ describe('Class: Tracer', () => {
     
     });
 
-    test('when called it returns the decorated object that was passed to it', () => {
+    test('when called with a simple AWS SDK v2 client, it returns it back instrumented', () => {
     
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient')
-        .mockImplementation(() => null);
+      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
+      // Minimum shape required for a regular AWS v2 client (i.e. AWS.S3) to be instrumented
+      const dummyClient = {
+        customizeRequests: () => null,
+      };
 
       // Act
-      tracer.captureAWSClient({});
+      tracer.captureAWSClient(dummyClient);
 
       // Assess
       expect(captureAWSClientSpy).toBeCalledTimes(1);
-      expect(captureAWSClientSpy).toBeCalledWith({});
+      expect(captureAWSClientSpy).toBeCalledWith(dummyClient);
     
+    });
+
+    test('when called with a complex AWS SDK v2 client, it returns it back instrumented', () => {
+    
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
+      // Minimum shape required for a complex AWS v2 client (i.e. AWS.DocumentClient) to be instrumented
+      const dummyClient = {
+        service: {
+          customizeRequests: () => null,
+        }
+      };
+
+      // Act
+      tracer.captureAWSClient(dummyClient);
+
+      // Assess
+      expect(captureAWSClientSpy).toBeCalledTimes(2);
+      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, dummyClient);
+      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, dummyClient.service);
+    
+    });
+
+    test('when called with an uncompatible object, it throws an error', () => {
+    
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
+
+      // Act / Assess
+      expect(() => {
+        tracer.captureAWSClient({});
+      }).toThrow('service.customizeRequests is not a function');
+      expect(captureAWSClientSpy).toBeCalledTimes(2);
+      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, {});
+      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, undefined);
+      expect.assertions(4);
+      
     });
 
   });

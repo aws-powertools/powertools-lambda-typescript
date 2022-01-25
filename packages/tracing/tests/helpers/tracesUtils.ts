@@ -69,7 +69,7 @@ const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string,
     .promise();
 
   if (traces.TraceSummaries?.length !== expectedTraces) {
-    throw new Error(`Expected ${expectedTraces} traces, got ${traces.TraceSummaries?.length}`);
+    throw new Error(`Expected ${expectedTraces} traces, got ${traces.TraceSummaries?.length} for ${resourceArn}`);
   }
 
   const traceDetails = await xrayClient.batchGetTraces({
@@ -77,7 +77,7 @@ const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string,
   }).promise();
 
   if (traceDetails.Traces?.length !== expectedTraces) {
-    throw new Error(`Expected ${expectedTraces} trace summaries, got ${traceDetails.Traces?.length}`);
+    throw new Error(`Expected ${expectedTraces} trace summaries, got ${traceDetails.Traces?.length} for ${resourceArn}`);
   }
 
   const sortedTraces = traceDetails.Traces?.map((trace): ParsedTrace => ({
@@ -91,11 +91,11 @@ const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string,
   })).sort((a, b) => a.Segments[0].Document.start_time - b.Segments[0].Document.start_time);
 
   if (sortedTraces === undefined) {
-    throw new Error('Traces are undefined');
+    throw new Error(`Traces are undefined for ${resourceArn}`);
   }
 
   if (sortedTraces.length !== expectedTraces) {
-    throw new Error(`Expected ${expectedTraces} sorted traces, but got ${sortedTraces.length}`);
+    throw new Error(`Expected ${expectedTraces} sorted traces, but got ${sortedTraces.length} for ${resourceArn}`);
   }
 
   return sortedTraces;

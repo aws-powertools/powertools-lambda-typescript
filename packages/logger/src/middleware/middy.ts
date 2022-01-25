@@ -1,5 +1,5 @@
 import type { Logger } from '../Logger';
-import middy from '@middy/core';
+import type middy from '@middy/core';
 
 /**
  * A middy middleware that adds the current Lambda invocation's context inside all log items.

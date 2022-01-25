@@ -43,6 +43,7 @@
   "types": "./lib/index.d.ts",
   "typedocMain": "src/index.ts",
   "devDependencies": {
+    "@middy/core": "^2.5.6",
     "@types/jest": "^27.0.0",
     "@types/lodash.clonedeep": "^4.5.6",
     "@types/lodash.merge": "^4.6.6",
@@ -72,7 +73,6 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^0.2.0",
-    "@middy/core": "^2.5.3",
     "@types/aws-lambda": "^8.10.72",
     "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.2",

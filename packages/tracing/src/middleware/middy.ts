@@ -1,6 +1,6 @@
-import middy from '@middy/core';
-import { Tracer } from '../Tracer';
-import { Segment, Subsegment } from 'aws-xray-sdk-core';
+import type middy from '@middy/core';
+import type { Tracer } from '../Tracer';
+import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments ofr a Lambda Handler.
@@ -41,7 +41,7 @@ const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
     target.setSegment(lambdaSegment as Segment);
   };
 
-  const captureLambdaHandlerBefore = async (_request: middy.Request): Promise<void> => {
+  const captureLambdaHandlerBefore = async (): Promise<void> => {
     if (target.isTracingEnabled()) {
       open();
       target.annotateColdStart();
@@ -59,8 +59,6 @@ const captureLambdaHandler = (target: Tracer): middy.MiddlewareObj => {
   const captureLambdaHandlerError = async (request: middy.Request): Promise<void> => {
     if (target.isTracingEnabled()) {
       target.addErrorAsMetadata(request.error as Error);
-      // TODO: should this error be thrown?? I.e. should we stop the event flow & return?
-      // throw request.error;
       close();
     }
   };

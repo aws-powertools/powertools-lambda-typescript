@@ -5,13 +5,12 @@ require('./../tests/helpers/populateEnvironmentVariables');
 process.env.LOG_LEVEL = 'INFO';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 
-// @ts-ignore
 import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
 import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
 import { Handler } from 'aws-lambda';
 import { Logger } from '../src';
 
-import { injectLambdaContext } from '../src/middleware/middy';
+import { injectLambdaContext } from '../src';
 import middy from '@middy/core';
 
 const logger = new Logger();

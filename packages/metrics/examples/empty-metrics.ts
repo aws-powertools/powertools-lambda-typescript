@@ -3,7 +3,7 @@ import { context as dummyContext } from '../../../tests/resources/contexts/hello
 import { populateEnvironmentVariables } from '../tests/helpers';
 import { Metrics } from '../src';
 import middy from '@middy/core';
-import { logMetrics } from '../src/middleware/middy';
+import { logMetrics } from '../src';
 
 // Populate runtime
 populateEnvironmentVariables();

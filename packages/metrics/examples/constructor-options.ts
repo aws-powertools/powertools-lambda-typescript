@@ -3,7 +3,7 @@ import { context as dummyContext } from '../../../tests/resources/contexts/hello
 import { populateEnvironmentVariables } from '../tests/helpers';
 import { Metrics, MetricUnits } from '../src';
 import middy from '@middy/core';
-import { logMetrics } from '../src/middleware/middy';
+import { logMetrics } from '../src';
 
 // Populate runtime
 populateEnvironmentVariables();
@@ -12,7 +12,7 @@ process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 
 const metrics = new Metrics({
   namespace: 'hello-world-constructor',
-  service: 'hello-world-service-constructor'
+  serviceName: 'hello-world-service-constructor'
 });
 
 const lambdaHandler = async (): Promise<void> => {

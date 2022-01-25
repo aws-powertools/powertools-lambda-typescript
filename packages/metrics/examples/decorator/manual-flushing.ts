@@ -5,10 +5,10 @@ populateEnvironmentVariables();
 // Additional runtime variables
 process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 
-import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
-import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
+import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
+import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
 import { Handler } from 'aws-lambda';
-import { Metrics, MetricUnits } from '../src';
+import { Metrics, MetricUnits } from '../../src';
 
 const metrics = new Metrics();
 

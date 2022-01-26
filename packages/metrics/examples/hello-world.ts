@@ -3,7 +3,7 @@ import { context as dummyContext } from '../../../tests/resources/contexts/hello
 import { populateEnvironmentVariables } from '../tests/helpers';
 import { Metrics, MetricUnits } from '../src';
 import middy from '@middy/core';
-import { logMetrics } from '../src/middleware/middy';
+import { logMetrics } from '../src';
 
 // Populate runtime
 populateEnvironmentVariables();
@@ -17,6 +17,6 @@ const lambdaHandler = async (): Promise<void> => {
 };
 
 const handlerWithMiddleware = middy(lambdaHandler)
-  .use(logMetrics(metrics}));
+  .use(logMetrics(metrics));
 
 handlerWithMiddleware(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));

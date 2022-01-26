@@ -6,11 +6,11 @@ populateEnvironmentVariables();
 process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world-service';
 
-import * as dummyEvent from '../../../tests/resources/events/custom/hello-world.json';
-import { context as dummyContext } from '../../../tests/resources/contexts/hello-world';
-import { LambdaInterface } from './utils/lambda/LambdaInterface';
+import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
+import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
+import { LambdaInterface } from '../utils/lambda';
 import { Callback, Context } from 'aws-lambda/handler';
-import { Metrics, MetricUnits } from '../src';
+import { Metrics, MetricUnits } from '../../src';
 
 const metrics = new Metrics();
 

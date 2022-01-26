@@ -34,6 +34,7 @@
     "@aws-cdk/aws-lambda-nodejs": "^1.139.0",
     "@aws-cdk/core": "^1.139.0",
     "@aws-sdk/client-dynamodb": "^3.47.0",
+    "@middy/core": "^2.5.6",
     "@types/aws-lambda": "^8.10.72",
     "@types/jest": "^27.0.0",
     "@types/node": "^17.0.8",
@@ -64,7 +65,6 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^0.2.0",
-    "@middy/core": "^2.5.3",
     "aws-xray-sdk-core": "^3.3.3"
   }
 }

@@ -119,10 +119,8 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Middy Middleware"
 
-    !!! note
-        Middy comes bundled with Tracer, so you can just import it when using the middleware.
-
     !!! tip "Using Middy for the first time?"
+        You can install Middy by running `npm i @middy/core`.
         Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
 
     ```typescript hl_lines="1-2 11 13"

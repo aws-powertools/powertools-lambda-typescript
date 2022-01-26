@@ -208,10 +208,8 @@ You can add default dimensions to your metrics by passing them as parameters in 
 
 === "Middy middleware"
 
-    !!! note
-        Middy comes bundled with Metrics, so you can just import it when using the middleware.
-
     !!! tip "Using Middy for the first time?"
+        You can install Middy by running `npm i @middy/core`.
         Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
 
     ```typescript hl_lines="1-2 11 13"

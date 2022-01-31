@@ -10,13 +10,12 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from '@aws-cdk/core';
-import { createStackWithLambdaFunction, deployStack, destroyStack, fetchLogs, fetchStreamsUntil, invokeFunction, invokeFunctionAsync } from '../helpers/e2eUtils';
+import { createStackWithLambdaFunction, deployStack, destroyStack, invokeFunction } from '../helpers/e2eUtils';
 import { InvocationLogs } from '../helpers/InvocationLog';
 
 const LEVEL = InvocationLogs.LEVEL;
 
-// TODO: put everything in a separted file
-const TEST_CASE_TIMEOUT = 25000; // 25 seconds
+const TEST_CASE_TIMEOUT = 30000; // 30 seconds
 const SETUP_TIMEOUT = 200000; // 200 seconds
 const TEARDOWN_TIMEOUT = 200000; 
 const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
@@ -84,6 +83,7 @@ describe('logger E2E tests sample rate and injectLambdaContext()', () => {
         } else if (logs.length === 4) {
           countSampled++;
         } else {
+          console.warn(`Log group ${logGroupName} contains missing log`);
           throw new Error('Sampled log should have either 1 error log or 4 logs of all levels')
         }
       }

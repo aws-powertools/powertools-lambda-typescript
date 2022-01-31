@@ -10,7 +10,7 @@ const tracer = new Tracer({ serviceName: 'tracerManualFn' });
 // To patch a specific AWS SDK v3 Client, we need to pass it to the Tracer that will return an instrumented version of it
 const sts = tracer.captureAWSv3Client(new STSClient({}));
 
-// Here we are showing an example with manual instrumentation but you can do the same also with the captureLambdaHandler Middy Middleware and Class decorator
+// Here we are showing an example with manual instrumentation, but you can do the same also with the captureLambdaHandler Middy Middleware and Class decorator
 // See: https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/#lambda-handler
 export const handler = async (_event: typeof Events.Custom.CustomEvent, _context: Context): Promise<unknown> => {
   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)

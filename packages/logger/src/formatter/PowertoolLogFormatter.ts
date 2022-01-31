@@ -2,8 +2,21 @@ import { LogFormatter } from '.';
 import { UnformattedAttributes } from '../types';
 import { PowertoolLog } from '../types/formats';
 
+/**
+ * This class is used to transform a set of log key-value pairs
+ * in the AWS Lambda Powertools' default structure log format.
+ *
+ * @class
+ * @extends {LogFormatter}
+ */
 class PowertoolLogFormatter extends LogFormatter {
 
+  /**
+   * It formats key-value pairs of log attributes.
+   *
+   * @param {UnformattedAttributes} attributes
+   * @returns {PowertoolLog}
+   */
   public formatAttributes(attributes: UnformattedAttributes): PowertoolLog {
     return {
       cold_start: attributes.lambdaContext?.coldStart,

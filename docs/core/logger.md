@@ -119,10 +119,8 @@ Key | Example
 
 === "Middy Middleware"
 
-    !!! note
-        Middy comes bundled with Logger, so you can just import it when using the middleware.
-
     !!! tip "Using Middy for the first time?"
+        You can install Middy by running `npm i @middy/core`.
         Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
 
     ```typescript hl_lines="1-2 10-11"

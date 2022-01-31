@@ -1,6 +1,6 @@
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda';
-import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
+import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -11,6 +11,7 @@ const customMetadataKey = process.env.EXPECTED_CUSTOM_METADATA_KEY ?? 'myMetadat
 const customMetadataValue = JSON.parse(process.env.EXPECTED_CUSTOM_METADATA_VALUE) ?? { bar: 'baz' };
 const customResponseValue = JSON.parse(process.env.EXPECTED_CUSTOM_RESPONSE_VALUE) ?? { foo: 'bar' };
 const customErrorMessage = process.env.EXPECTED_CUSTOM_ERROR_MESSAGE ?? 'An error has occurred';
+const testTableName = process.env.TEST_TABLE_NAME ?? 'TestTable';
 
 interface CustomEvent {
   throw: boolean
@@ -31,7 +32,7 @@ const refreshAWSSDKImport = (): void => {
 };
 
 const tracer = new Tracer({ serviceName: serviceName });
-const stsv3 = tracer.captureAWSv3Client(new STSClient({}));
+const dynamoDBv3 = tracer.captureAWSv3Client(new DynamoDBClient({}));
 
 export class MyFunctionWithDecorator {  
   @tracer.captureLambdaHandler()
@@ -41,18 +42,18 @@ export class MyFunctionWithDecorator {
     tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
     tracer.putMetadata(customMetadataKey, customMetadataValue);
 
-    let stsv2;
+    let dynamoDBv2;
     refreshAWSSDKImport();
     if (event.sdkV2 === 'client') {
-      stsv2 = tracer.captureAWSClient(new AWS.STS());
+      dynamoDBv2 = tracer.captureAWSClient(new AWS.DynamoDB.DocumentClient());
     } else if (event.sdkV2 === 'all') {
       AWS = tracer.captureAWS(AWS);
-      stsv2 = new AWS.STS();
+      dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
     }
     
     return Promise.all([
-      stsv2.getCallerIdentity().promise(),
-      stsv3.send(new GetCallerIdentityCommand({})),
+      dynamoDBv2.scan({ TableName: testTableName }).promise(),
+      dynamoDBv3.send(new ScanCommand({ TableName: testTableName })),
       new Promise((resolve, reject) => {
         setTimeout(() => {
           const res = this.myMethod();
@@ -64,7 +65,7 @@ export class MyFunctionWithDecorator {
         }, 2000); // We need to wait for to make sure previous calls are finished
       })
     ])
-      .then(([ _stsv2Res, _stsv3Res, promiseRes ]) => promiseRes)
+      .then(([ _dynamoDBv2Res, _dynamoDBv3Res, promiseRes ]) => promiseRes)
       .catch((err) => {
         throw err;
       });

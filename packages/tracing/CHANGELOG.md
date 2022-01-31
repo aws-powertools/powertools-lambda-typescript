@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.4.0...v0.5.0) (2022-01-26)
+
+
+### Features
+
+* **all:** make `@middy/core` optional ([#511](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/511)) ([1107f96](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/1107f96e9b4c678d34ee36757366f150d99be4dc))
+* **tracer:** add support for capturing DynamoDB DocumentClient ([#450](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/450)) ([621ae50](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/621ae50430e4459f90eaaa135eb0ed674b95e108))
+
+
+
+
+
+# [0.4.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.3.3...v0.4.0) (2022-01-20)
+
+
+### Features
+
+* **logger:** JSDOCS support ([#491](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/491)) ([cd2c2d9](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/cd2c2d93a5822e26d3113a042be1dd0473aa6b2a))
+
+
+
+
+
 ## [0.3.3](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.3.2...v0.3.3) (2022-01-17)
 
 **Note:** Version bump only for package @aws-lambda-powertools/tracer

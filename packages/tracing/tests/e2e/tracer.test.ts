@@ -6,9 +6,10 @@
 
 import { randomUUID } from 'crypto';
 import { join } from 'path';
-import { Tracing } from '@aws-cdk/aws-lambda';
+import { Tracing, Architecture } from '@aws-cdk/aws-lambda';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
-import { App, Duration, Stack } from '@aws-cdk/core';
+import { Table, AttributeType, BillingMode } from '@aws-cdk/aws-dynamodb';
+import { App, Duration, Stack, RemovalPolicy } from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import * as AWS from 'aws-sdk';
@@ -18,6 +19,8 @@ import type { ParsedDocument } from '../helpers/tracesUtils';
 const xray = new AWS.XRay();
 const lambdaClient = new AWS.Lambda();
 const stsClient = new AWS.STS();
+
+const ONE_MINUTE = 1000 * 60;
 
 describe('Tracer integration tests', () => {
 
@@ -44,6 +47,16 @@ describe('Tracer integration tests', () => {
     const account = identity.Account;
     const region = process.env.AWS_REGION;
     
+    const table = new Table(stack, 'Table', {
+      tableName: randomUUID(),
+      partitionKey: {
+        name: 'id',
+        type: AttributeType.STRING
+      },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY
+    });
+
     const functions = [
       'Manual',
       'Middleware',
@@ -57,11 +70,13 @@ describe('Tracer integration tests', () => {
     for (const functionName of functions) {
       const expectedServiceName = randomUUID();
       const fileName = functionName.split('-')[0];
-      new NodejsFunction(stack, functionName, {
+      const fn = new NodejsFunction(stack, functionName, {
         entry: join(__dirname, `tracer.test.${fileName}.ts`),
         handler: 'handler',
         functionName: functionName,
         tracing: Tracing.ACTIVE,
+        architecture: Architecture.X86_64,
+        memorySize: 256,
         environment: {
           EXPECTED_SERVICE_NAME: expectedServiceName,
           EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
@@ -73,9 +88,11 @@ describe('Tracer integration tests', () => {
           POWERTOOLS_TRACER_CAPTURE_RESPONSE: functionName.indexOf('NoCaptureErrorResponse') !== -1 ? 'false' : 'true',
           POWERTOOLS_TRACER_CAPTURE_ERROR: functionName.indexOf('NoCaptureErrorResponse') !== -1 ? 'false' : 'true',
           POWERTOOLS_TRACE_ENABLED: functionName.indexOf('Disabled') !== -1 ? 'false' : 'true',
+          TEST_TABLE_NAME: table.tableName,
         },
         timeout: Duration.seconds(30),
       });
+      table.grantReadData(fn);
       invocationsMap[functionName] = {
         serviceName: expectedServiceName,
         resourceArn: `arn:aws:lambda:${region}:${account}:function:${functionName}`, // ARN is still a token at this point, so we construct the ARN manually
@@ -108,9 +125,9 @@ describe('Tracer integration tests', () => {
     });
     
     // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, 180000));
+    await new Promise((resolve) => setTimeout(resolve, ONE_MINUTE * 2));
 
-  }, 360000); // 6 minutes
+  }, ONE_MINUTE * 5);
 
   afterAll(async () => {
 
@@ -128,7 +145,7 @@ describe('Tracer integration tests', () => {
       });
     }
 
-  }, 180000); // 3 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used to manually instrument a function all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -156,8 +173,8 @@ describe('Tracer integration tests', () => {
 
           const [ AWSSDKSubsegment1, AWSSDKSubsegment2 ] = handlerSubsegment?.subsegments;
           // Assert that the subsegment names is the expected ones
-          expect(AWSSDKSubsegment1.name).toBe('STS');
-          expect(AWSSDKSubsegment2.name).toBe('STS');
+          expect(AWSSDKSubsegment1.name).toBe('DynamoDB');
+          expect(AWSSDKSubsegment2.name).toBe('DynamoDB');
           
           const { annotations, metadata } = handlerSubsegment;
 
@@ -198,7 +215,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as middleware all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -226,8 +243,8 @@ describe('Tracer integration tests', () => {
 
           const [ AWSSDKSubsegment1, AWSSDKSubsegment2 ] = handlerSubsegment?.subsegments;
           // Assert that the subsegment names is the expected ones
-          expect(AWSSDKSubsegment1.name).toBe('STS');
-          expect(AWSSDKSubsegment2.name).toBe('STS');
+          expect(AWSSDKSubsegment1.name).toBe('DynamoDB');
+          expect(AWSSDKSubsegment2.name).toBe('DynamoDB');
           
           const { annotations, metadata } = handlerSubsegment;
 
@@ -268,7 +285,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as middleware, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
@@ -296,8 +313,8 @@ describe('Tracer integration tests', () => {
 
           const [ AWSSDKSubsegment1, AWSSDKSubsegment2 ] = handlerSubsegment?.subsegments;
           // Assert that the subsegment names is the expected ones
-          expect(AWSSDKSubsegment1.name).toBe('STS');
-          expect(AWSSDKSubsegment2.name).toBe('STS');
+          expect(AWSSDKSubsegment1.name).toBe('DynamoDB');
+          expect(AWSSDKSubsegment2.name).toBe('DynamoDB');
           
           const { annotations, metadata } = handlerSubsegment;
 
@@ -337,7 +354,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when tracing is disabled in middleware mode no custom traces are generated', async () => {
     
@@ -361,7 +378,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -388,20 +405,20 @@ describe('Tracer integration tests', () => {
           expect(handlerSubsegment?.subsegments?.length).toBe(3);
           
           // Sort the subsegments by name
-          const stsSubsegments: ParsedDocument[] = [];
+          const dynamoDBSubsegments: ParsedDocument[] = [];
           const methodSubsegment: ParsedDocument[] = [];
           const otherSegments: ParsedDocument[] = [];
           handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'STS') {
-              stsSubsegments.push(subsegment);
+            if (subsegment.name === 'DynamoDB') {
+              dynamoDBSubsegments.push(subsegment);
             } else if (subsegment.name === '### myMethod') {
               methodSubsegment.push(subsegment);
             } else {
               otherSegments.push(subsegment);
             }
           });
-          // Assert that there are exactly two subsegment with the name 'STS'
-          expect(stsSubsegments.length).toBe(2);
+          // Assert that there are exactly two subsegment with the name 'DynamoDB'
+          expect(dynamoDBSubsegments.length).toBe(2);
           // Assert that there is exactly one subsegment with the name '### myMethod'
           expect(methodSubsegment.length).toBe(1);
           // Assert that there are exactly zero other subsegments
@@ -458,7 +475,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator on an async handler all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -485,20 +502,20 @@ describe('Tracer integration tests', () => {
           expect(handlerSubsegment?.subsegments?.length).toBe(3);
           
           // Sort the subsegments by name
-          const stsSubsegments: ParsedDocument[] = [];
+          const dynamoDBSubsegments: ParsedDocument[] = [];
           const methodSubsegment: ParsedDocument[] = [];
           const otherSegments: ParsedDocument[] = [];
           handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'STS') {
-              stsSubsegments.push(subsegment);
+            if (subsegment.name === 'DynamoDB') {
+              dynamoDBSubsegments.push(subsegment);
             } else if (subsegment.name === '### myMethod') {
               methodSubsegment.push(subsegment);
             } else {
               otherSegments.push(subsegment);
             }
           });
-          // Assert that there are exactly two subsegment with the name 'STS'
-          expect(stsSubsegments.length).toBe(2);
+          // Assert that there are exactly two subsegment with the name 'DynamoDB'
+          expect(dynamoDBSubsegments.length).toBe(2);
           // Assert that there is exactly one subsegment with the name '### myMethod'
           expect(methodSubsegment.length).toBe(1);
           // Assert that there are exactly zero other subsegments
@@ -555,7 +572,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
@@ -582,20 +599,20 @@ describe('Tracer integration tests', () => {
           expect(handlerSubsegment?.subsegments?.length).toBe(3);
           
           // Sort the subsegments by name
-          const stsSubsegments: ParsedDocument[] = [];
+          const dynamoDBSubsegments: ParsedDocument[] = [];
           const methodSubsegment: ParsedDocument[] = [];
           const otherSegments: ParsedDocument[] = [];
           handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'STS') {
-              stsSubsegments.push(subsegment);
+            if (subsegment.name === 'DynamoDB') {
+              dynamoDBSubsegments.push(subsegment);
             } else if (subsegment.name === '### myMethod') {
               methodSubsegment.push(subsegment);
             } else {
               otherSegments.push(subsegment);
             }
           });
-          // Assert that there are exactly two subsegment with the name 'STS'
-          expect(stsSubsegments.length).toBe(2);
+          // Assert that there are exactly two subsegment with the name 'DynamoDB'
+          expect(dynamoDBSubsegments.length).toBe(2);
           // Assert that there is exactly one subsegment with the name '### myMethod'
           expect(methodSubsegment.length).toBe(1);
           // Assert that there are exactly zero other subsegments
@@ -641,7 +658,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
   it('Verifies that a when tracing is disabled in decorator mode no custom traces are generated', async () => {
     
@@ -665,6 +682,6 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, 120000); // 2 minutes
+  }, ONE_MINUTE * 2);
 
 });

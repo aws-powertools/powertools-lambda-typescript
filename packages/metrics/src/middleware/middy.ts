@@ -1,6 +1,6 @@
 import type { Metrics } from '../Metrics';
-import middy from '@middy/core';
-import { ExtraOptions } from '../types';
+import type middy from '@middy/core';
+import type { ExtraOptions } from '../types';
 
 const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): middy.MiddlewareObj => {
   const metricsInstances = target instanceof Array ? target : [target];

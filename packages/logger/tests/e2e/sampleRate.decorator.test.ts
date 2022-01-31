@@ -83,10 +83,10 @@ describe('logger E2E tests sample rate and injectLambdaContext()', () => {
         } else if (logs.length === 4) {
           countSampled++;
         } else {
-          // TODO: To be investigate, this happens once every 10-20 e2e tests runs. The symptoms are
+          // TODO: To be investigate if this is Lambda service's issue. This happens once every 10-20 e2e tests runs. The symptoms I found are:
           // 1. Warning and error logs disappear (in sampled case)
           // 2. Error log disappears (in non-sampled case)
-          //I reviewed Logger code but it is not possible that this could happen and we use the same "logsSampled" flag. Need to investigate if this is an issue with Lambda or our Logger
+          // I reviewed Logger code but it is not possible that the first case could happen because we use the same "logsSampled" flag.
           console.error(`Log group ${logGroupName} contains missing log`);
           throw new Error('Sampled log should have either 1 error log or 4 logs of all levels')
         }

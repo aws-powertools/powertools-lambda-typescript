@@ -34,18 +34,6 @@ const testFunction = async (event: APIGatewayProxyEvent) => {
     logger.error(ERROR_MSG, e);
   }
 
-  // TODO: test sampling
-  // // 8. Sampling works
-  // // This log item (equal to log level 'ERROR') will be printed to standard output
-  // // in all Lambda invocations
-  // sampleRateLogger.error("sampleRateLogger This is an ERROR log");
-
-  // // These log items (below the log level 'ERROR') have ~50% chance 
-  // // of being printed in a Lambda invocation
-  // sampleRateLogger.debug("# This is a DEBUG log that has 50% chance of being printed");
-  // sampleRateLogger.info("# This is an INFO log that has 50% chance of being printed");
-  // sampleRateLogger.warn("# This is a WARN log that has 50% chance of being printed");
-
   return formatJSONResponse({
     message: `E2E testing Lambda function`,
     event,

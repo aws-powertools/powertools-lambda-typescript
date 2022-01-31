@@ -26,7 +26,7 @@ const functionName = `LoggerE2EampleRateDecorator-${uuid}`;
 const lambdaFunctionCodeFile = 'sampleRate.decorator.test.FunctionCode.ts';
 
 // Parameters to be used by Logger in the Lambda function
-const LOG_MSG = `Log message ${uuid}`
+const LOG_MSG = `Log message ${uuid}`;
 const SAMPLE_RATE = '0.5';
 const LOG_LEVEL = LEVEL.ERROR.toString();
 const integTestApp = new App();
@@ -65,12 +65,6 @@ describe('logger E2E tests sample rate and injectLambdaContext()', () => {
     
   }, SETUP_TIMEOUT);
 
-  const countByLogLevel = (logMessages: string[], logLevel: string) => {
-    return logMessages
-      .filter(message => message.includes(logLevel))
-      .length;
-  };
-
   describe('Enabling sample rate', () => {
     it('should log all levels based on given sample rate, not just ERROR', async () => {
       // Fetch log streams from all invocations
@@ -88,7 +82,7 @@ describe('logger E2E tests sample rate and injectLambdaContext()', () => {
           // 2. Error log disappears (in non-sampled case)
           // I reviewed Logger code but it is not possible that the first case could happen because we use the same "logsSampled" flag.
           console.error(`Log group ${logGroupName} contains missing log`);
-          throw new Error('Sampled log should have either 1 error log or 4 logs of all levels')
+          throw new Error('Sampled log should have either 1 error log or 4 logs of all levels');
         }
       }
 
@@ -103,7 +97,7 @@ describe('logger E2E tests sample rate and injectLambdaContext()', () => {
     it('should inject Lambda context into the log', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs(LEVEL.ERROR);
 
-      for( const log of logMessages ) {
+      for ( const log of logMessages ) {
         expect(log).toContain('function_arn');
         expect(log).toContain('function_memory_size');
         expect(log).toContain('function_name');

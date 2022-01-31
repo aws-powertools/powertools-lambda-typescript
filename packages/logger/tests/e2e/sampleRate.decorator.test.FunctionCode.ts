@@ -1,6 +1,6 @@
-import { Logger } from "../../src";
-import { APIGatewayProxyEvent, Context } from "aws-lambda";
-import { LambdaInterface } from "@aws-lambda-powertools/commons";
+import { Logger } from '../../src';
+import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
 const SAMPLE_RATE = parseFloat(process.env.SAMPLE_RATE);
 const LOG_MSG = process.env.LOG_MSG;
@@ -12,18 +12,14 @@ const logger = new Logger({
 class Lambda implements LambdaInterface {
   // Decorate your handler class method
   @logger.injectLambdaContext()
-  public async handler(event: APIGatewayProxyEvent, context: Context): Promise<{ statusCode: number; body: string; }> {
+  public async handler(event: APIGatewayProxyEvent, context: Context): Promise<{requestId: string}> {
     logger.debug(LOG_MSG);
     logger.info(LOG_MSG);
     logger.warn(LOG_MSG);
     logger.error(LOG_MSG);
 
     return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: `E2E testing Lambda function`,
-        event,
-      })
+      requestId: context.awsRequestId,
     };
   }
 }

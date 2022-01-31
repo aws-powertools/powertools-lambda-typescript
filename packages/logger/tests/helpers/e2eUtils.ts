@@ -8,18 +8,18 @@ import { App, CfnOutput, Stack } from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda-nodejs';
 import * as AWS from 'aws-sdk';
 
-import { InvocationLogs } from "./InvocationLog";
+import { InvocationLogs } from './InvocationLog';
 
 const lambdaClient = new AWS.Lambda();
 
-export type StackWithLambdaFunctionOptions  = {
-  app: App;
-  stackName: string;
-  functionName: string;
-  functionEntry: string;
-  environment: {[key: string]: string};
-  logGroupOutputKey: string; 
-}
+export type StackWithLambdaFunctionOptions = {
+  app: App
+  stackName: string
+  functionName: string
+  functionEntry: string
+  environment: {[key: string]: string}
+  logGroupOutputKey: string
+};
 
 export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOptions): Stack => {
   
@@ -33,8 +33,9 @@ export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOpt
   new CfnOutput(stack, params.logGroupOutputKey, {
     value: testFunction.logGroup.logGroupName,
   });
+  
   return stack;
-}
+};
 
 export const deployStack = async (stackArtifact: CloudFormationStackArtifact ): Promise<{[name:string]: string}> => {
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
@@ -49,11 +50,11 @@ export const deployStack = async (stackArtifact: CloudFormationStackArtifact ): 
   });
 
   return result.outputs;
-}
+};
 
 export const invokeFunction = async (functionName: string, times: number = 1): Promise<InvocationLogs[]> => {
-  let invocationLogs: InvocationLogs[] = [];
-  let promises = [];
+  const invocationLogs: InvocationLogs[] = [];
+  const promises = [];
     
   for (let i = 0; i < times; i++) {
     const invokePromise = lambdaClient
@@ -63,26 +64,25 @@ export const invokeFunction = async (functionName: string, times: number = 1): P
       })
       .promise()
       .then((response) => {
-        invocationLogs.push(new InvocationLogs(response?.LogResult!));
+        invocationLogs.push(new InvocationLogs(response?.LogResult));
       });
     promises.push(invokePromise);
   }
-  await Promise.all(promises)
+  await Promise.all(promises);
 
   return invocationLogs; 
-}
-
+};
 
 export const destroyStack = async (app: App, stack: Stack): Promise<void> => {
   const stackArtifact = app.synth().getStackByName(stack.stackName);
 
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
+  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
+    profile: process.env.AWS_PROFILE,
+  });
+  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
 
-    await cloudFormation.destroyStack({
-      stack: stackArtifact,
-      quiet: true,
-    });
-}
+  await cloudFormation.destroyStack({
+    stack: stackArtifact,
+    quiet: true,
+  });
+};

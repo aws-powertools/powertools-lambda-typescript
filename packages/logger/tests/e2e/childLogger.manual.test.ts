@@ -19,17 +19,16 @@ const SETUP_TIMEOUT = 200000; // 200 seconds
 const TEARDOWN_TIMEOUT = 200000; 
 const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
-
 const uuid = randomUUID();
 const stackName = `LoggerE2EChildLoggerManualStack-${uuid}`;
 const functionName = `LoggerE2EChildLoggerManual-${uuid}`;
 const lambdaFunctionCodeFile = 'childLogger.manual.test.FunctionCode.ts';
 
 // Parameters to be used by Logger in the Lambda function
-const PARENT_PERSISTENT_KEY = 'persistentKey'
+const PARENT_PERSISTENT_KEY = 'persistentKey';
 const PARENT_PERSISTENT_VALUE = `a persistent value that will be put in prent only ${uuid}`;
-const PARENT_LOG_MSG = `only PARENT logger will log with this message ${uuid}`
-const CHILD_LOG_MSG = `only CHILD logger will log with this message ${uuid}`
+const PARENT_LOG_MSG = `only PARENT logger will log with this message ${uuid}`;
+const CHILD_LOG_MSG = `only CHILD logger will log with this message ${uuid}`;
 const CHILD_LOG_LEVEL = LEVEL.ERROR.toString();
 
 const integTestApp = new App();
@@ -72,10 +71,8 @@ describe('logger E2E tests child logger functionalities (manual)', () => {
     
   }, SETUP_TIMEOUT);
 
-  const getAllChildLogs = () => {
-    return invocationLogs[0].getFunctionLogs()
-        .filter(message => message.includes(CHILD_LOG_MSG));
-  };
+  const getAllChildLogs = (): string[] => invocationLogs[0].getFunctionLogs()
+    .filter(message => message.includes(CHILD_LOG_MSG));
 
   describe('Child logger', () => {
     it('should not log at parent log level', async () => {
@@ -99,7 +96,7 @@ describe('logger E2E tests child logger functionalities (manual)', () => {
       // Only parent has injected context.
       const allChildLogs = getAllChildLogs();
 
-      for( const log of allChildLogs ) {
+      for ( const log of allChildLogs ) {
         expect(log).not.toContain('function_arn');
         expect(log).not.toContain('function_memory_size');
         expect(log).not.toContain('function_name');
@@ -112,7 +109,7 @@ describe('logger E2E tests child logger functionalities (manual)', () => {
       // Only parent has injected context.
       const allChildLogs = getAllChildLogs();
 
-      for(const log of allChildLogs) {
+      for (const log of allChildLogs) {
         expect(log).not.toContain(`"${PARENT_PERSISTENT_KEY}":"${PARENT_PERSISTENT_VALUE}"`);
       }
     }, TEST_CASE_TIMEOUT);

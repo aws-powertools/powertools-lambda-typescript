@@ -19,14 +19,13 @@ const SETUP_TIMEOUT = 200000; // 200 seconds
 const TEARDOWN_TIMEOUT = 200000; 
 const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
-
 const uuid = randomUUID();
 const stackName = `LoggerE2EBasicFeatureMiddyStack-${uuid}`;
 const functionName = `loggerE2EBasicFeaturesMiddy-${uuid}`;
 const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
 
 // Text to be used by Logger in the Lambda function
-const PERSISTENT_KEY = 'persistentKey'
+const PERSISTENT_KEY = 'persistentKey';
 const PERSISTENT_VALUE = `a persistent value that will be put in every log ${uuid}`;
 const SINGLE_LOG_ITEM_KEY = `keyForSingleLogItem${uuid}`;
 const SINGLE_LOG_ITEM_VALUE = `a value for a single log item${uuid}`;
@@ -83,7 +82,7 @@ describe('logger E2E tests basic functionalities (middy)', () => {
     it('should log context information of the function', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs();
 
-      for(const message of logMessages) {
+      for (const message of logMessages) {
         expect(message).toContain('function_arn');
         expect(message).toContain('function_memory_size');
         expect(message).toContain('function_name');
@@ -92,10 +91,9 @@ describe('logger E2E tests basic functionalities (middy)', () => {
       }
     }, TEST_CASE_TIMEOUT);
 
-
     it('should include cold metrics only on the first invocation', async () => {
       const coldStartLogMessages = invocationLogs[0].getFunctionLogs(LEVEL.INFO);
-      for(const message of coldStartLogMessages) {
+      for (const message of coldStartLogMessages) {
         expect(message).toContain(`"cold_start":true`);
       }
       
@@ -112,7 +110,7 @@ describe('logger E2E tests basic functionalities (middy)', () => {
     it('should log context information in every log', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs();
 
-      for(const message of logMessages) {
+      for (const message of logMessages) {
         expect(message).toContain('function_arn');
         expect(message).toContain('function_memory_size');
         expect(message).toContain('function_name');
@@ -126,7 +124,7 @@ describe('logger E2E tests basic functionalities (middy)', () => {
     it('should contain persistent value in every log', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs();
 
-      for(const message of logMessages) {
+      for (const message of logMessages) {
         expect(message).toContain(`"${PERSISTENT_KEY}":"${PERSISTENT_VALUE}"`);
       }
     }, TEST_CASE_TIMEOUT);
@@ -150,7 +148,7 @@ describe('logger E2E tests basic functionalities (middy)', () => {
 
       // Each log contains:
       // We will extract the last part
-      const { logObject } = InvocationLogs.parseFunctionLog(logMessages[0])
+      const { logObject } = InvocationLogs.parseFunctionLog(logMessages[0]);
       const errorObj = logObject.error;
 
       expect(errorObj.name).toBe('Error');

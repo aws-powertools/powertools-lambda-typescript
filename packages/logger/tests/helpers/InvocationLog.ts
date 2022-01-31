@@ -12,7 +12,8 @@ export type FunctionLog = {
   timestamp: string
   invocationId: string
   logLevel: LEVEL
-  logObject: {[key: string]: string}
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  logObject: {[key: string]: any}
 };
 export class InvocationLogs {
   public static LEVEL = LEVEL;

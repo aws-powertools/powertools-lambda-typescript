@@ -64,7 +64,11 @@ export const invokeFunction = async (functionName: string, times: number = 1): P
       })
       .promise()
       .then((response) => {
-        invocationLogs.push(new InvocationLogs(response?.LogResult));
+        if (response?.LogResult) {
+          invocationLogs.push(new InvocationLogs(response?.LogResult));
+        } else {
+          throw new Error('No LogResult field returned in the response of Lambda invocation. This should not happen.');
+        }
       });
     promises.push(invokePromise);
   }

@@ -11,7 +11,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from '@aws-cdk/core';
 import { createStackWithLambdaFunction, deployStack, destroyStack, invokeFunction } from '../helpers/e2eUtils';
-import { InvocationLogs } from '../helpers/InvocationLog';
+import { InvocationLogs } from '../helpers/InvocationLogs';
 
 const LEVEL = InvocationLogs.LEVEL;
 const TEST_CASE_TIMEOUT = 20000; // 20 seconds

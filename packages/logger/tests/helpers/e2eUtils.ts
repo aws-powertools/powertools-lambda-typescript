@@ -8,7 +8,7 @@ import { App, CfnOutput, Stack } from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda-nodejs';
 import * as AWS from 'aws-sdk';
 
-import { InvocationLogs } from './InvocationLog';
+import { InvocationLogs } from './InvocationLogs';
 
 const lambdaClient = new AWS.Lambda();
 

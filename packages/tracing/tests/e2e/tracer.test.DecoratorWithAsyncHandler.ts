@@ -1,6 +1,6 @@
 import { Tracer } from '../../src';
 import { Context } from 'aws-lambda';
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -52,13 +52,13 @@ export class MyFunctionWithDecorator {
     }
 
     try {
-      await dynamoDBv2.scan({ TableName: testTableName }).promise();
+      await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
     } catch (err) {
       console.error(err);
     }
 
     try {
-      await dynamoDBv3.send(new ScanCommand({ TableName: testTableName }));
+      await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
     } catch (err) {
       console.error(err);
     }

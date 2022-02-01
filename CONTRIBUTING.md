@@ -183,7 +183,7 @@ To run unit tests you can either use
 **e2e tests**
 
 **Set up**
-We create e2e testing infrastructure with CDK. If you have never used it before, please check its [Getting started guide](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html). You need to run `cdk bootstrap` in the account and region you are going to run e2e tests.
+We create e2e testing infrastructure with CDK. If you have never used it before, please check its [Getting started guide](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html). You need to run `cdk bootstrap` in the account and region you are going to run e2e tests.
 
 **Write**
 

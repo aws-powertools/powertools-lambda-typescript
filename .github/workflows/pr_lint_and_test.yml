@@ -37,6 +37,13 @@ jobs:
               targetSource="SF:""$d""src"
               sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
           done
+      - name: Package size report
+        uses: pkg-size/action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          build-command: npm ci && npm lerna-ci && npm run lerna-package
+          hide-files: '{README.md,LICENSE,package.json}'
       - name: Report Coverage
         #Dependabot user will only have read-only perms, so don't try to report coverage
         if: ${{ github.actor != 'dependabot[bot]' }}

@@ -43,7 +43,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           build-command: npm ci && npm lerna-ci && npm run lerna-package
-          hide-files: '{README.md,LICENSE,package.json}'
+          comment-report: false
       - name: Report Coverage
         #Dependabot user will only have read-only perms, so don't try to report coverage
         if: ${{ github.actor != 'dependabot[bot]' }}

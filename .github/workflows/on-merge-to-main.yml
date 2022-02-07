@@ -38,7 +38,7 @@ jobs:
     - name: Run tests
       run: npm run lerna-test
     - name: update release draft
-      uses: release-drafter/release-drafter@v5.17.6
+      uses: release-drafter/release-drafter@v5.18.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     #########################    

@@ -261,7 +261,12 @@ class Tracer implements TracerInterface {
       return this.provider.captureAWSClient(service);
     } catch (error) {
       try {
-        return this.provider.captureAWSClient((service as unknown as T & { service: T }).service);
+        // This is needed because some aws-sdk clients like AWS.DynamoDB.DocumentDB don't comply with the same
+        // instrumentation contract like most base clients. 
+        // For detailed explanation see: https://github.com/awslabs/aws-lambda-powertools-typescript/issues/524#issuecomment-1024493662
+        this.provider.captureAWSClient((service as T & { service: T }).service);
+        
+        return service;
       } catch {
         throw error;
       }

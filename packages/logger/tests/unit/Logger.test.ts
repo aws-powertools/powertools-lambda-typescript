@@ -494,7 +494,7 @@ describe('Class: Logger', () => {
       });
     });
 
-    test('user-provided context object is not mutated', () => {
+    test('when called with a context object, the object is not mutated', () => {
 
       // Prepare
       const logger = new Logger();

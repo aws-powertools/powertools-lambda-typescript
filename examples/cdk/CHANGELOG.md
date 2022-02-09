@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.5.0...v0.5.1) (2022-02-09)
+
+
+### Reverts
+
+* Revert "build(deps-dev): bump aws-cdk from 1.139.0 to 1.143.0 (#532)" (#544) ([e96c9ba](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/e96c9ba5bd4f738e5ed7c5850e06856a8c69bff1)), closes [#532](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/532) [#544](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/544)
+
+
+
+
+
 # [0.5.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.4.0...v0.5.0) (2022-01-26)
 
 

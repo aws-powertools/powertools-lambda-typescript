@@ -564,7 +564,7 @@ describe('Class: Logger', () => {
       }));
     });
 
-    test('user-provided attribute object is not mutated', () => {
+    test('when called with user-provided attribute objects, the objects are not mutated', () => {
 
       // Prepare
       const logger = new Logger();

@@ -1,3 +1,8 @@
+/**
+ * Test LambdaInterface interface
+ *
+ * @group unit/commons/lambdaInterface
+ */
 import { Handler } from 'aws-lambda';
 import { Callback, Context } from 'aws-lambda';
 import { ContextExamples, SyncHandler, AsyncHandler, LambdaInterface } from '../../src';
@@ -102,6 +107,8 @@ describe('LambdaInterface with decorator', () => {
     class LambdaFunction implements LambdaInterface {
       
       @dummyModule.dummyDecorator()
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       public async handler(_event: unknown, context: Context): Promise<unknown> {
         context.getRemainingTimeInMillis();
         
@@ -118,6 +125,8 @@ describe('LambdaInterface with decorator', () => {
     class LambdaFunction implements LambdaInterface {
       
       @dummyModule.dummyDecorator()
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       public handler(_event: unknown, context: Context, _callback: Callback): void {
         context.getRemainingTimeInMillis();
       }

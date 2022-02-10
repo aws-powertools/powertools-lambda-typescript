@@ -1,4 +1,5 @@
 import { Handler } from 'aws-lambda';
+import { Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
@@ -109,9 +110,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * }
  * ```
  */
-class Tracer implements TracerInterface {
-  
-  public static coldStart: boolean = true;
+class Tracer extends Utility implements TracerInterface {
 
   public provider: ProviderServiceInterface;
   
@@ -128,6 +127,8 @@ class Tracer implements TracerInterface {
   private tracingEnabled: boolean = true;
 
   public constructor(options: TracerOptions = {}) {
+    super();
+
     this.setOptions(options);
     this.provider = new ProviderService();
     if (!this.isTracingEnabled()) {
@@ -196,10 +197,7 @@ class Tracer implements TracerInterface {
    */
   public annotateColdStart(): void {
     if (this.isTracingEnabled()) {
-      this.putAnnotation('ColdStart', Tracer.coldStart);
-    }
-    if (Tracer.coldStart) {
-      Tracer.coldStart = false;
+      this.putAnnotation('ColdStart', this.getColdStart());
     }
   }
 
@@ -429,27 +427,6 @@ class Tracer implements TracerInterface {
 
       return descriptor;
     };
-  }
-
-  /**
-   * Retrieve the current value of `ColdStart`.
-   * 
-   * If Tracer has been initialized outside the Lambda handler then the same instance
-   * of Tracer will be reused throughout the lifecycle of that same Lambda execution environment
-   * and this method will return `false` after the first invocation.
-   * 
-   * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
-   * 
-   * @returns boolean - `true` if is cold start, otherwise `false`
-   */
-  public static getColdStart(): boolean {
-    if (Tracer.coldStart) {
-      Tracer.coldStart = false;
-
-      return true;
-    }
-
-    return false;
   }
   
   /**

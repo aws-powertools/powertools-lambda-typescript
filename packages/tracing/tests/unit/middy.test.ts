@@ -32,7 +32,6 @@ describe('Middy middleware', () => {
   };
 
   beforeEach(() => {
-    Tracer.coldStart = true;
     jest.clearAllMocks();
     jest.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };

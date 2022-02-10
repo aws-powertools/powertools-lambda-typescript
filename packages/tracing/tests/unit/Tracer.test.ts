@@ -40,7 +40,6 @@ describe('Class: Tracer', () => {
   };
 
   beforeEach(() => {
-    Tracer.coldStart = true;
     jest.clearAllMocks();
     jest.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
@@ -257,20 +256,6 @@ describe('Class: Tracer', () => {
 
     });
 
-  });
-
-  describe('Method: getColdStart', () => {
-
-    test('when called, it returns false the first time and always true after that', () => {
-    
-      // Assess
-      expect(Tracer.getColdStart()).toBe(true);
-      expect(Tracer.getColdStart()).toBe(false);
-      expect(Tracer.getColdStart()).toBe(false);
-      expect(Tracer.getColdStart()).toBe(false);
-    
-    });
-    
   });
 
   describe('Method: getSegment', () => {

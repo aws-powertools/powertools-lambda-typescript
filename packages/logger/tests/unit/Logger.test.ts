@@ -460,7 +460,7 @@ describe('Class: Logger', () => {
       const logger = new Logger();
 
       // Act
-      logger.addContext({ ...baseContext });
+      logger.addContext(baseContext);
 
       // Assess
       expect(logger).toEqual({

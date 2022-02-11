@@ -439,26 +439,28 @@ describe('Class: Logger', () => {
 
   describe('Method: addContext', () => {
 
+    const baseContext = {
+      callbackWaitsForEmptyEventLoop: true,
+      functionVersion: '$LATEST',
+      functionName: 'foo-bar-function-with-cold-start',
+      memoryLimitInMB: '128',
+      logGroupName: '/aws/lambda/foo-bar-function-with-cold-start',
+      logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+      invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function-with-cold-start',
+      awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+      getRemainingTimeInMillis: () => 1234,
+      done: () => console.log('Done!'),
+      fail: () => console.log('Failed!'),
+      succeed: () => console.log('Succeeded!'),
+    };
+
     test('when called during a COLD START invocation, it populates the logger\'s PowertoolLogData object with coldstart set to true', () => {
 
       // Prepare
       const logger = new Logger();
 
       // Act
-      logger.addContext( {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function-with-cold-start',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function-with-cold-start',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function-with-cold-start',
-        awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-      });
+      logger.addContext(baseContext);
 
       // Assess
       expect(logger).toEqual({
@@ -492,6 +494,44 @@ describe('Class: Logger', () => {
       });
     });
 
+    test('when called with a context object, the object is not mutated', () => {
+
+      // Prepare
+      const logger = new Logger();
+      const context1 = { ...baseContext, awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678' };
+      const context2 = { ...baseContext, awsRequestId: 'd40c98a9-91c4-478c-a179-433c4b978289' };
+
+      // Act
+      logger.addContext(context1);
+      logger.addContext(context2);
+
+      // Assess
+      expect(context1.awsRequestId).toEqual('c6af9ac6-7b61-11e6-9a41-93e812345678');
+      expect(context2.awsRequestId).toEqual('d40c98a9-91c4-478c-a179-433c4b978289');
+    });
+
+    test('when called multiple times, the newer values override earlier values', () => {
+
+      // Prepare
+      const logger = new Logger();
+      const context1 = { ...baseContext, awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678' };
+      const context2 = { ...baseContext, awsRequestId: 'd40c98a9-91c4-478c-a179-433c4b978289' };
+
+      // Act
+      logger.addContext(context1);
+      logger.addContext(context2);
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
+          powertoolLogData: expect.objectContaining({
+            lambdaContext: expect.objectContaining({
+              awsRequestId: context2.awsRequestId,
+            })
+          })
+        })
+      );
+    });
   });
 
   describe('Method: appendKeys', () => {
@@ -521,6 +561,43 @@ describe('Class: Logger', () => {
             version: '0.2.4',
           },
         },
+      }));
+    });
+
+    test('when called with user-provided attribute objects, the objects are not mutated', () => {
+
+      // Prepare
+      const logger = new Logger();
+      const attributes1 = { keyOne: 'abc' };
+      const attributes2 = { keyTwo: 'def' };
+
+      // Act
+      logger.appendKeys(attributes1);
+      logger.appendKeys(attributes2);
+
+      // Assess
+      expect(attributes1).toEqual({ keyOne: 'abc' });
+      expect(attributes2).toEqual({ keyTwo: 'def' });
+    });
+
+    test('when called multiple times, the newer values override earlier values', () => {
+
+      // Prepare
+      const logger = new Logger();
+
+      // Act
+      logger.appendKeys({
+        duplicateKey: 'one'
+      });
+      logger.appendKeys({
+        duplicateKey: 'two'
+      });
+
+      // Assess
+      expect(logger).toEqual(expect.objectContaining({
+        persistentLogAttributes: {
+          duplicateKey: 'two'
+        }
       }));
     });
   });

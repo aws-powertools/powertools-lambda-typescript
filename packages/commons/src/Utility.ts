@@ -19,7 +19,7 @@
  * * Emit a metric during a cold start function invocation in ``Metrics`
  * * Annotate the invocation segment with a `coldStart` key in `Tracer`
  * 
- * If instead you want use this logic in your own utilities, `Utility` provides two methdos:
+ * If you want to use this logic in your own utilities, `Utility` provides two methods:
  * 
  * #### `getColdStart()`
  * 

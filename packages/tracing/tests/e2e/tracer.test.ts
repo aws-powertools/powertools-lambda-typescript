@@ -92,7 +92,7 @@ describe('Tracer integration tests', () => {
         },
         timeout: Duration.seconds(30),
       });
-      table.grantReadData(fn);
+      table.grantWriteData(fn);
       invocationsMap[functionName] = {
         serviceName: expectedServiceName,
         resourceArn: `arn:aws:lambda:${region}:${account}:function:${functionName}`, // ARN is still a token at this point, so we construct the ARN manually

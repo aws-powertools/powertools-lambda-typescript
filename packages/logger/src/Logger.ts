@@ -174,7 +174,7 @@ class Logger implements ClassThatLogs {
    * @returns {void}
    */
   public addPersistentLogAttributes(attributes?: LogAttributes): void {
-    this.persistentLogAttributes = merge(attributes, this.getPersistentLogAttributes());
+    merge(this.persistentLogAttributes, attributes);
   }
 
   /**
@@ -362,7 +362,7 @@ class Logger implements ClassThatLogs {
    */
   private addToPowertoolLogData(...attributesArray: Array<Partial<PowertoolLogData>>): void {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
-      this.powertoolLogData = merge(attributes, this.getPowertoolLogData());
+      merge(this.powertoolLogData, attributes);
     });
   }
 

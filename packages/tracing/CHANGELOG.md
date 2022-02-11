@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.5.0...v0.5.1) (2022-02-09)
+
+
+### Bug Fixes
+
+* **tracer:** properly return DynamoDB.DocumentClient ([#528](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/528)) ([3559e7b](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/3559e7b19339a4649f235fb4af41c6b182da3df1))
+
+
+### Reverts
+
+* Revert "build(deps-dev): bump aws-cdk from 1.139.0 to 1.143.0 (#532)" (#544) ([e96c9ba](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/e96c9ba5bd4f738e5ed7c5850e06856a8c69bff1)), closes [#532](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/532) [#544](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/544)
+* Revert "build(deps-dev): bump @aws-cdk/aws-lambda-nodejs from 1.139.0 to 1.143.0 (#531)" (#545) ([7dffbd8](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/7dffbd8708555fcc9817ea4373ccf71b0aea3c89)), closes [#531](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/531) [#545](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/545)
+
+
+
+
+
 # [0.5.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.4.0...v0.5.0) (2022-01-26)
 
 

@@ -1,6 +1,6 @@
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda';
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -52,8 +52,8 @@ export class MyFunctionWithDecorator {
     }
     
     return Promise.all([
-      dynamoDBv2.scan({ TableName: testTableName }).promise(),
-      dynamoDBv3.send(new ScanCommand({ TableName: testTableName })),
+      dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise(),
+      dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } })),
       new Promise((resolve, reject) => {
         setTimeout(() => {
           const res = this.myMethod();

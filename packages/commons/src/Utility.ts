@@ -16,7 +16,7 @@
  * 
  * As a Powertools user you probably won't be using this class directly, in fact if you use other Powertools utilities the cold start heuristic found here is already used to:
  * * Add a `coldStart` key to the structured logs when injecting context information in `Logger`
- * * Emit a metric during a cold start function invocation in ``Metrics`
+ * * Emit a metric during a cold start function invocation in `Metrics`
  * * Annotate the invocation segment with a `coldStart` key in `Tracer`
  * 
  * If you want to use this logic in your own utilities, `Utility` provides two methods:

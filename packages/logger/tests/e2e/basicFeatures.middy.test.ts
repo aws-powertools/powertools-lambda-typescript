@@ -27,7 +27,7 @@ const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
 const uuid = randomUUID();
 const stackName = generateUniqueName(uuid, runtime, 'BasicFeatures-Middy');
-const functionName = `LoggerE2E-${runtime}-BasicFeatures-Middy-${uuid}`.substring(0, 64);
+const functionName = generateUniqueName(uuid, runtime, 'BasicFeatures-Middy');
 const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
 
 // Text to be used by Logger in the Lambda function

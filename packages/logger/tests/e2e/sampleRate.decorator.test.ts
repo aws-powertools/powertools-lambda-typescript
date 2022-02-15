@@ -21,7 +21,7 @@ if (!isValidRuntimeKey(runtime)) {
 
 const LEVEL = InvocationLogs.LEVEL;
 const TEST_CASE_TIMEOUT = 30000; // 30 seconds
-const SETUP_TIMEOUT = 200000; // 200 seconds
+const SETUP_TIMEOUT = 300000; // 300 seconds
 const TEARDOWN_TIMEOUT = 200000; 
 const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 

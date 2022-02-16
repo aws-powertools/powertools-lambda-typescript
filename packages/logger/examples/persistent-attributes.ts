@@ -18,7 +18,7 @@ const lambdaHandler: Handler = async () => {
   // Add persistent log keys to an existing Logger instance:
   logger.appendKeys({
     aws_account_id: '123456789012',
-    aws_region: 'eu-central-1',
+    aws_region: 'eu-west-1',
     logger: {
       name: powertool.name,
       version: powertool.version,

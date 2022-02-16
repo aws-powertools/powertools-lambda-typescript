@@ -5,9 +5,9 @@ module.exports = {
     jest: true,
     node: true,
   },
-  extends: [ 'plugin:@typescript-eslint/eslint-recommended', 'plugin:@typescript-eslint/recommended' ],
+  extends: [ 'plugin:@typescript-eslint/eslint-recommended', 'plugin:@typescript-eslint/recommended', 'plugin:security/recommended' ],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'security'],
   settings: {
     'import/resolver': {
       node: {},

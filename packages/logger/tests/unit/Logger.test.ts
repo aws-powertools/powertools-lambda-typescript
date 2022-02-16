@@ -238,7 +238,7 @@ describe('Class: Logger', () => {
           }));
         });
 
-        test.only('when the Lambda context is captured, it returns a valid '+ method.toUpperCase() + ' log', () => {
+        test('when the Lambda context is captured, it returns a valid '+ method.toUpperCase() + ' log', () => {
 
           // Prepare
           const logger: ClassThatLogs & { addContext: (context: Context) => void } = createLogger({

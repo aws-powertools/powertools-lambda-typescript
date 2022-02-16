@@ -10,18 +10,24 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from '@aws-cdk/core';
-import { createStackWithLambdaFunction, deployStack, destroyStack, invokeFunction } from '../helpers/e2eUtils';
+import { createStackWithLambdaFunction, deployStack, destroyStack, generateUniqueName, invokeFunction, isValidRuntimeKey } from '../helpers/e2eUtils';
 import { InvocationLogs } from '../helpers/InvocationLogs';
+
+const runtime: string = process.env.RUNTIME || 'nodejs14x';
+
+if (!isValidRuntimeKey(runtime)) {
+  throw new Error(`Invalid runtime key value: ${runtime}`);
+}
 
 const LEVEL = InvocationLogs.LEVEL;
 const TEST_CASE_TIMEOUT = 20000; // 20 seconds
-const SETUP_TIMEOUT = 200000; // 200 seconds
+const SETUP_TIMEOUT = 300000; // 300 seconds
 const TEARDOWN_TIMEOUT = 200000; 
 const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
 const uuid = randomUUID();
-const stackName = `LoggerE2EChildLoggerManualStack-${uuid}`;
-const functionName = `LoggerE2EChildLoggerManual-${uuid}`;
+const stackName = generateUniqueName(uuid, runtime, 'ChildLogger-Manual');
+const functionName = generateUniqueName(uuid, runtime, 'ChildLogger-Manual');
 const lambdaFunctionCodeFile = 'childLogger.manual.test.FunctionCode.ts';
 
 // Parameters to be used by Logger in the Lambda function
@@ -34,7 +40,7 @@ const CHILD_LOG_LEVEL = LEVEL.ERROR.toString();
 const integTestApp = new App();
 let logGroupName: string; // We do not know it until deployment
 let stack: Stack;
-describe('logger E2E tests child logger functionalities (manual)', () => {
+describe(`logger E2E tests child logger functionalities (manual) for runtime: ${runtime}`, () => {
 
   let invocationLogs: InvocationLogs[];
 
@@ -58,7 +64,8 @@ describe('logger E2E tests child logger functionalities (manual)', () => {
         CHILD_LOG_MSG,
         CHILD_LOG_LEVEL,
       },
-      logGroupOutputKey: STACK_OUTPUT_LOG_GROUP
+      logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
+      runtime: runtime,
     });
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
     const outputs = await deployStack(stackArtifact);

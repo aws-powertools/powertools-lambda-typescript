@@ -10,19 +10,24 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from '@aws-cdk/core';
-import { createStackWithLambdaFunction, deployStack, destroyStack, invokeFunction } from '../helpers/e2eUtils';
+import { createStackWithLambdaFunction, deployStack, destroyStack, generateUniqueName, invokeFunction, isValidRuntimeKey } from '../helpers/e2eUtils';
 import { InvocationLogs } from '../helpers/InvocationLogs';
 
-const LEVEL = InvocationLogs.LEVEL;
+const runtime: string = process.env.RUNTIME || 'nodejs14x';
 
+if (!isValidRuntimeKey(runtime)) {
+  throw new Error(`Invalid runtime key value: ${runtime}`);
+}
+
+const LEVEL = InvocationLogs.LEVEL;
 const TEST_CASE_TIMEOUT = 30000; // 30 seconds
-const SETUP_TIMEOUT = 200000; // 200 seconds
+const SETUP_TIMEOUT = 300000; // 300 seconds
 const TEARDOWN_TIMEOUT = 200000; 
 const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
 const uuid = randomUUID();
-const stackName = `LoggerE2ESampleRateDecoratorStack-${uuid}`;
-const functionName = `LoggerE2EampleRateDecorator-${uuid}`;
+const stackName = generateUniqueName(uuid, runtime, 'SampleRate-Decorator');
+const functionName = generateUniqueName(uuid, runtime, 'SampleRate-Decorator');
 const lambdaFunctionCodeFile = 'sampleRate.decorator.test.FunctionCode.ts';
 
 // Parameters to be used by Logger in the Lambda function
@@ -32,7 +37,7 @@ const LOG_LEVEL = LEVEL.ERROR.toString();
 const integTestApp = new App();
 let logGroupName: string; // We do not know it until deployment
 let stack: Stack;
-describe('logger E2E tests sample rate and injectLambdaContext()', () => {
+describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${runtime}`, () => {
 
   let invocationLogs: InvocationLogs[];
 
@@ -53,7 +58,8 @@ describe('logger E2E tests sample rate and injectLambdaContext()', () => {
         LOG_MSG, 
         SAMPLE_RATE,
       },
-      logGroupOutputKey: STACK_OUTPUT_LOG_GROUP
+      logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
+      runtime: runtime,
     });
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
     const outputs = await deployStack(stackArtifact);

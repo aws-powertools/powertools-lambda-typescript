@@ -6,11 +6,20 @@ import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import { App, CfnOutput, Stack } from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda-nodejs';
+import { Runtime } from '@aws-cdk/aws-lambda';
 import * as AWS from 'aws-sdk';
 
 import { InvocationLogs } from './InvocationLogs';
 
 const lambdaClient = new AWS.Lambda();
+
+const NAME_PREFIX = 'Logger-E2E';
+const testRuntimeKeys = [ 'nodejs12x', 'nodejs14x' ];
+export type TestRuntimesKey = typeof testRuntimeKeys[number];
+const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
+  nodejs12x: Runtime.NODEJS_12_X,
+  nodejs14x: Runtime.NODEJS_14_X,
+};
 
 export type StackWithLambdaFunctionOptions = {
   app: App
@@ -19,7 +28,10 @@ export type StackWithLambdaFunctionOptions = {
   functionEntry: string
   environment: {[key: string]: string}
   logGroupOutputKey: string
+  runtime: string
 };
+
+export const isValidRuntimeKey = (runtime: string): runtime is TestRuntimesKey => testRuntimeKeys.includes(runtime);
 
 export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOptions): Stack => {
   
@@ -28,6 +40,7 @@ export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOpt
     functionName: params.functionName,
     entry: params.functionEntry,
     environment: params.environment,
+    runtime: TEST_RUNTIMES[params.runtime as TestRuntimesKey],
   });
 
   new CfnOutput(stack, params.logGroupOutputKey, {
@@ -36,6 +49,9 @@ export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOpt
   
   return stack;
 };
+
+export const generateUniqueName = (uuid: string, runtime: string, testName: string): string => 
+  `${NAME_PREFIX}-${runtime}-${testName}-${uuid}`.substring(0, 64);
 
 export const deployStack = async (stackArtifact: CloudFormationStackArtifact ): Promise<{[name:string]: string}> => {
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({

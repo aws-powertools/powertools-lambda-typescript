@@ -8,7 +8,11 @@ class EnvironmentVariablesService extends ConfigService {
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
 
   public get(name: string): string {
-    return process.env[name]?.trim() || '';
+    if (process.env.hasOwnProperty(name)) {
+      return process.env[`${name}`]?.trim() || '';
+    } else {
+      return '';
+    }
   }
 
   public getAwsExecutionEnv(): string {

@@ -25,7 +25,7 @@ const refreshAWSSDKImport = (): void => {
   // Clean up the require cache to ensure we're using a newly imported version of the AWS SDK v2
   for (const key in require.cache) {
     if (key.indexOf('/aws-sdk/') !== -1) {
-      delete require.cache[key];
+      delete require.cache[`${key}`];
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-var-requires

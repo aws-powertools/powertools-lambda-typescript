@@ -35,7 +35,7 @@ describe('Tracer integration tests', () => {
 
   let integTestApp: App;
   let stack: Stack;
-  const invocationsMap: { [key: string]: { serviceName: string; resourceArn: string } } = {};
+  const invocationsMap = new Map<string, { serviceName: string; resourceArn: string }>();
 
   beforeAll(async () => {
 
@@ -93,10 +93,10 @@ describe('Tracer integration tests', () => {
         timeout: Duration.seconds(30),
       });
       table.grantWriteData(fn);
-      invocationsMap[functionName] = {
+      invocationsMap.set(functionName, {
         serviceName: expectedServiceName,
         resourceArn: `arn:aws:lambda:${region}:${account}:function:${functionName}`, // ARN is still a token at this point, so we construct the ARN manually
-      };
+      });
     }
 
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
@@ -111,7 +111,7 @@ describe('Tracer integration tests', () => {
     });
 
     // Act
-    Object.keys(invocationsMap).forEach(async (functionName) => {
+    for (const functionName of invocationsMap.keys()) {
       for (let i = 0; i < invocations; i++) {
         await lambdaClient.invoke({
           FunctionName: functionName,
@@ -122,7 +122,7 @@ describe('Tracer integration tests', () => {
           }),
         }).promise();
       }
-    });
+    }
     
     // sleep to allow for traces to be collected
     await new Promise((resolve) => setTimeout(resolve, ONE_MINUTE * 2));
@@ -149,18 +149,21 @@ describe('Tracer integration tests', () => {
 
   it('Verifies that a when Tracer is used to manually instrument a function all custom traces are generated with correct annotations and metadata', async () => {
     
-    const resourceArn = invocationsMap['Manual'].resourceArn;
-    const expectedServiceName = invocationsMap['Manual'].serviceName;
+    const resourceArn = invocationsMap.get('Manual')?.resourceArn;
+    const expectedServiceName = invocationsMap.get('Manual')?.serviceName;
+
+    if (!resourceArn || !expectedServiceName) throw new Error('Missing resourceArn or expectedServiceName');
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
-    for (let i = 0; i < invocations; i++) {
+    let idx = 0;
+    for (const trace of sortedTraces) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(trace.Segments.length).toBe(4);
 
-      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+      const invocationSubsegment = getInvocationSubsegment(trace);
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
@@ -180,14 +183,14 @@ describe('Tracer integration tests', () => {
 
           if (annotations !== undefined && metadata !== undefined) {
             // Assert that the annotations are as expected
-            expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+            expect(annotations['ColdStart']).toEqual(true ? idx === 0 : false);
             expect(annotations['Service']).toEqual(expectedServiceName);
-            expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+            expect(annotations[`${expectedCustomAnnotationKey}`]).toEqual(expectedCustomAnnotationValue);
             // Assert that the metadata object is as expected
-            expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+            expect(metadata[`${expectedServiceName}`][`${expectedCustomMetadataKey}`])
               .toEqual(expectedCustomMetadataValue);
             
-            if (i === invocations - 1) {
+            if (idx === invocations - 1) {
               // Assert that the subsegment has the expected fault
               expect(invocationSubsegment.error).toBe(true);
               expect(handlerSubsegment.fault).toBe(true);
@@ -195,7 +198,7 @@ describe('Tracer integration tests', () => {
               expect(handlerSubsegment.cause?.exceptions[0].message).toBe(expectedCustomErrorMessage);
             } else {
               // Assert that the metadata object contains the response
-              expect(metadata[expectedServiceName]['index.handler response'])
+              expect(metadata[`${expectedServiceName}`]['index.handler response'])
                 .toEqual(expectedCustomResponseValue);
             }
           } else {
@@ -213,24 +216,29 @@ describe('Tracer integration tests', () => {
         expect('invocationSubsegment?.subsegments !== undefined')
           .toBe('invocationSubsegment?.subsegments === undefined');
       }
+
+      idx++;
     }
 
   }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as middleware all custom traces are generated with correct annotations and metadata', async () => {
     
-    const resourceArn = invocationsMap['Middleware'].resourceArn;
-    const expectedServiceName = invocationsMap['Middleware'].serviceName;
+    const resourceArn = invocationsMap.get('Middleware')?.resourceArn;
+    const expectedServiceName = invocationsMap.get('Middleware')?.serviceName;
+
+    if (!resourceArn || !expectedServiceName) throw new Error('Missing resourceArn or expectedServiceName');
 
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
-    for (let i = 0; i < invocations; i++) {
+    let idx = 0;
+    for (const trace of sortedTraces) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(trace.Segments.length).toBe(4);
 
-      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+      const invocationSubsegment = getInvocationSubsegment(trace);
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
@@ -250,14 +258,14 @@ describe('Tracer integration tests', () => {
 
           if (annotations !== undefined && metadata !== undefined) {
             // Assert that the annotations are as expected
-            expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+            expect(annotations['ColdStart']).toEqual(true ? idx === 0 : false);
             expect(annotations['Service']).toEqual(expectedServiceName);
-            expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+            expect(annotations[`${expectedCustomAnnotationKey}`]).toEqual(expectedCustomAnnotationValue);
             // Assert that the metadata object is as expected
-            expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+            expect(metadata[`${expectedServiceName}`][`${expectedCustomMetadataKey}`])
               .toEqual(expectedCustomMetadataValue);
             
-            if (i === invocations - 1) {
+            if (idx === invocations - 1) {
               // Assert that the subsegment has the expected fault
               expect(invocationSubsegment.error).toBe(true);
               expect(handlerSubsegment.fault).toBe(true);
@@ -265,7 +273,7 @@ describe('Tracer integration tests', () => {
               expect(handlerSubsegment.cause?.exceptions[0].message).toBe(expectedCustomErrorMessage);
             } else {
               // Assert that the metadata object contains the response
-              expect(metadata[expectedServiceName]['index.handler response'])
+              expect(metadata[`${expectedServiceName}`]['index.handler response'])
                 .toEqual(expectedCustomResponseValue);
             }
           } else {
@@ -283,24 +291,29 @@ describe('Tracer integration tests', () => {
         expect('invocationSubsegment?.subsegments !== undefined')
           .toBe('invocationSubsegment?.subsegments === undefined');
       }
+
+      idx++;
     }
 
   }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as middleware, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
-    const resourceArn = invocationsMap['Middleware-NoCaptureErrorResponse'].resourceArn;
-    const expectedServiceName = invocationsMap['Middleware-NoCaptureErrorResponse'].serviceName;
+    const resourceArn = invocationsMap.get('Middleware-NoCaptureErrorResponse')?.resourceArn;
+    const expectedServiceName = invocationsMap.get('Middleware-NoCaptureErrorResponse')?.serviceName;
+
+    if (!resourceArn || !expectedServiceName) throw new Error('Missing resourceArn or expectedServiceName');
 
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
-    for (let i = 0; i < invocations; i++) {
+    let idx = 0;
+    for (const trace of sortedTraces) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(trace.Segments.length).toBe(4);
 
-      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+      const invocationSubsegment = getInvocationSubsegment(trace);
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
@@ -320,14 +333,14 @@ describe('Tracer integration tests', () => {
 
           if (annotations !== undefined && metadata !== undefined) {
             // Assert that the annotations are as expected
-            expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+            expect(annotations['ColdStart']).toEqual(true ? idx === 0 : false);
             expect(annotations['Service']).toEqual(expectedServiceName);
-            expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+            expect(annotations[`${expectedCustomAnnotationKey}`]).toEqual(expectedCustomAnnotationValue);
             // Assert that the metadata object is as expected
-            expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+            expect(metadata[`${expectedServiceName}`][`${expectedCustomMetadataKey}`])
               .toEqual(expectedCustomMetadataValue);
             
-            if (i === invocations - 1) {
+            if (idx === invocations - 1) {
               // Assert that the subsegment has the expected fault
               expect(invocationSubsegment.error).toBe(true);
               expect(handlerSubsegment.error).toBe(true);
@@ -335,7 +348,7 @@ describe('Tracer integration tests', () => {
               expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
             } else {
               // Assert that the metadata object does not contain the response object
-              expect(metadata[expectedServiceName].hasOwnProperty('index.handler response')).toBe(false);
+              expect(metadata[`${expectedServiceName}`].hasOwnProperty('index.handler response')).toBe(false);
             }
           } else {
             // Make test fail if there are no annotations or metadata
@@ -352,48 +365,58 @@ describe('Tracer integration tests', () => {
         expect('invocationSubsegment?.subsegments !== undefined')
           .toBe('invocationSubsegment?.subsegments === undefined');
       }
+
+      idx++;
     }
 
   }, ONE_MINUTE * 2);
 
   it('Verifies that a when tracing is disabled in middleware mode no custom traces are generated', async () => {
     
-    const resourceArn = invocationsMap['Middleware-Disabled'].resourceArn;
+    const resourceArn = invocationsMap.get('Middleware-Disabled')?.resourceArn;
+
+    if (!resourceArn) throw new Error('Missing resourceArn');
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
-    for (let i = 0; i < invocations; i++) {
+    let idx = 0;
+    for (const trace of sortedTraces) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(2);
+      expect(trace.Segments.length).toBe(2);
 
-      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+      const invocationSubsegment = getInvocationSubsegment(trace);
 
       expect(invocationSubsegment?.subsegments).toBeUndefined();
          
-      if (i === invocations - 1) {
+      if (idx === invocations - 1) {
         // Assert that the subsegment has the expected fault
         expect(invocationSubsegment.error).toBe(true);
       }
+
+      idx++;
     }
 
   }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator all custom traces are generated with correct annotations and metadata', async () => {
     
-    const resourceArn = invocationsMap['Decorator'].resourceArn;
-    const expectedServiceName = invocationsMap['Decorator'].serviceName;
+    const resourceArn = invocationsMap.get('Decorator')?.resourceArn;
+    const expectedServiceName = invocationsMap.get('Decorator')?.serviceName;
     
+    if (!resourceArn || !expectedServiceName) throw new Error('Missing resourceArn or expectedServiceName');
+
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
-    for (let i = 0; i < invocations; i++) {
+    let idx = 0;
+    for (const trace of sortedTraces) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(trace.Segments.length).toBe(4);
 
-      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+      const invocationSubsegment = getInvocationSubsegment(trace);
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
@@ -428,7 +451,7 @@ describe('Tracer integration tests', () => {
 
           if (metadata !== undefined) {
             // Assert that the metadata object is as expected
-            expect(metadata[expectedServiceName]['myMethod response'])
+            expect(metadata[`${expectedServiceName}`]['myMethod response'])
               .toEqual(expectedCustomResponseValue);
           } else {
             // Make test fail if there is no metadata
@@ -445,14 +468,14 @@ describe('Tracer integration tests', () => {
 
         if (annotations !== undefined && metadata !== undefined) {
           // Assert that the annotations are as expected
-          expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+          expect(annotations['ColdStart']).toEqual(true ? idx === 0 : false);
           expect(annotations['Service']).toEqual(expectedServiceName);
-          expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+          expect(annotations[`${expectedCustomAnnotationKey}`]).toEqual(expectedCustomAnnotationValue);
           // Assert that the metadata object is as expected
-          expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+          expect(metadata[`${expectedServiceName}`][`${expectedCustomMetadataKey}`])
             .toEqual(expectedCustomMetadataValue);
           
-          if (i === invocations - 1) {
+          if (idx === invocations - 1) {
             // Assert that the subsegment has the expected fault
             expect(invocationSubsegment.error).toBe(true);
             expect(handlerSubsegment.fault).toBe(true);
@@ -460,7 +483,7 @@ describe('Tracer integration tests', () => {
             expect(handlerSubsegment.cause?.exceptions[0].message).toBe(expectedCustomErrorMessage);
           } else {
             // Assert that the metadata object contains the response
-            expect(metadata[expectedServiceName]['index.handler response'])
+            expect(metadata[`${expectedServiceName}`]['index.handler response'])
               .toEqual(expectedCustomResponseValue);
           }
         } else {
@@ -473,24 +496,29 @@ describe('Tracer integration tests', () => {
         expect('invocationSubsegment?.subsegments !== undefined')
           .toBe('invocationSubsegment?.subsegments === undefined');
       }
+
+      idx++;
     }
 
   }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator on an async handler all custom traces are generated with correct annotations and metadata', async () => {
     
-    const resourceArn = invocationsMap['DecoratorWithAsyncHandler'].resourceArn;
-    const expectedServiceName = invocationsMap['DecoratorWithAsyncHandler'].serviceName;
+    const resourceArn = invocationsMap.get('DecoratorWithAsyncHandler')?.resourceArn;
+    const expectedServiceName = invocationsMap.get('DecoratorWithAsyncHandler')?.serviceName;
     
+    if (!resourceArn || !expectedServiceName) throw new Error('Missing resourceArn or expectedServiceName');
+
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
-    for (let i = 0; i < invocations; i++) {
+    let idx = 0;
+    for (const trace of sortedTraces) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(trace.Segments.length).toBe(4);
 
-      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+      const invocationSubsegment = getInvocationSubsegment(trace);
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
@@ -525,7 +553,7 @@ describe('Tracer integration tests', () => {
 
           if (metadata !== undefined) {
             // Assert that the metadata object is as expected
-            expect(metadata[expectedServiceName]['myMethod response'])
+            expect(metadata[`${expectedServiceName}`]['myMethod response'])
               .toEqual(expectedCustomResponseValue);
           } else {
             // Make test fail if there is no metadata
@@ -542,14 +570,14 @@ describe('Tracer integration tests', () => {
 
         if (annotations !== undefined && metadata !== undefined) {
           // Assert that the annotations are as expected
-          expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+          expect(annotations['ColdStart']).toEqual(true ? idx === 0 : false);
           expect(annotations['Service']).toEqual(expectedServiceName);
-          expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+          expect(annotations[`${expectedCustomAnnotationKey}`]).toEqual(expectedCustomAnnotationValue);
           // Assert that the metadata object is as expected
-          expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+          expect(metadata[`${expectedServiceName}`][`${expectedCustomMetadataKey}`])
             .toEqual(expectedCustomMetadataValue);
           
-          if (i === invocations - 1) {
+          if (idx === invocations - 1) {
             // Assert that the subsegment has the expected fault
             expect(invocationSubsegment.error).toBe(true);
             expect(handlerSubsegment.fault).toBe(true);
@@ -557,7 +585,7 @@ describe('Tracer integration tests', () => {
             expect(handlerSubsegment.cause?.exceptions[0].message).toBe(expectedCustomErrorMessage);
           } else {
             // Assert that the metadata object contains the response
-            expect(metadata[expectedServiceName]['index.handler response'])
+            expect(metadata[`${expectedServiceName}`]['index.handler response'])
               .toEqual(expectedCustomResponseValue);
           }
         } else {
@@ -570,24 +598,29 @@ describe('Tracer integration tests', () => {
         expect('invocationSubsegment?.subsegments !== undefined')
           .toBe('invocationSubsegment?.subsegments === undefined');
       }
+
+      idx++;
     }
 
   }, ONE_MINUTE * 2);
 
   it('Verifies that a when Tracer is used as decorator, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
-    const resourceArn = invocationsMap['Decorator-NoCaptureErrorResponse'].resourceArn;
-    const expectedServiceName = invocationsMap['Decorator-NoCaptureErrorResponse'].serviceName;
+    const resourceArn = invocationsMap.get('Decorator-NoCaptureErrorResponse')?.resourceArn;
+    const expectedServiceName = invocationsMap.get('Decorator-NoCaptureErrorResponse')?.serviceName;
     
+    if (!resourceArn || !expectedServiceName) throw new Error('Missing resourceArn or expectedServiceName');
+
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
-    for (let i = 0; i < invocations; i++) {
+    let idx = 0;
+    for (const trace of sortedTraces) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(trace.Segments.length).toBe(4);
 
-      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+      const invocationSubsegment = getInvocationSubsegment(trace);
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
@@ -629,14 +662,14 @@ describe('Tracer integration tests', () => {
 
         if (annotations !== undefined && metadata !== undefined) {
           // Assert that the annotations are as expected
-          expect(annotations['ColdStart']).toEqual(true ? i === 0 : false);
+          expect(annotations['ColdStart']).toEqual(true ? idx === 0 : false);
           expect(annotations['Service']).toEqual(expectedServiceName);
-          expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+          expect(annotations[`${expectedCustomAnnotationKey}`]).toEqual(expectedCustomAnnotationValue);
           // Assert that the metadata object is as expected
-          expect(metadata[expectedServiceName][expectedCustomMetadataKey])
+          expect(metadata[`${expectedServiceName}`][`${expectedCustomMetadataKey}`])
             .toEqual(expectedCustomMetadataValue);
           
-          if (i === invocations - 1) {
+          if (idx === invocations - 1) {
             // Assert that the subsegment has the expected fault
             expect(invocationSubsegment.error).toBe(true);
             expect(handlerSubsegment.error).toBe(true);
@@ -644,7 +677,7 @@ describe('Tracer integration tests', () => {
             expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
           } else {
             // Assert that the metadata object does not contain the response object
-            expect(metadata[expectedServiceName].hasOwnProperty('index.handler response')).toBe(false);
+            expect(metadata[`${expectedServiceName}`].hasOwnProperty('index.handler response')).toBe(false);
           }
         } else {
           // Make test fail if there are no annotations or metadata
@@ -656,30 +689,37 @@ describe('Tracer integration tests', () => {
         expect('invocationSubsegment?.subsegments !== undefined')
           .toBe('invocationSubsegment?.subsegments === undefined');
       }
+
+      idx++;
     }
 
   }, ONE_MINUTE * 2);
 
   it('Verifies that a when tracing is disabled in decorator mode no custom traces are generated', async () => {
     
-    const resourceArn = invocationsMap['Decorator-Disabled'].resourceArn;
+    const resourceArn = invocationsMap.get('Decorator-Disabled')?.resourceArn;
     
+    if (!resourceArn) throw new Error('Missing resourceArn');
+
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
 
-    for (let i = 0; i < invocations; i++) {
+    let idx = 0;
+    for (const trace of sortedTraces) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(2);
+      expect(trace.Segments.length).toBe(2);
 
-      const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
+      const invocationSubsegment = getInvocationSubsegment(trace);
 
       expect(invocationSubsegment?.subsegments).toBeUndefined();
          
-      if (i === invocations - 1) {
+      if (idx === invocations - 1) {
         // Assert that the subsegment has the expected fault
         expect(invocationSubsegment.error).toBe(true);
       }
+
+      idx++;
     }
 
   }, ONE_MINUTE * 2);

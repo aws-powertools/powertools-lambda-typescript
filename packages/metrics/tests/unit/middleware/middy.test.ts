@@ -35,7 +35,7 @@ describe('Middy middleware', () => {
       memoryLimitInMB: '128',
       logGroupName: '/aws/lambda/foo-bar-function',
       logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-      invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
       awsRequestId: awsRequestId,
       getRemainingTimeInMillis: () => 1234,
       done: () => console.log('Done!'),
@@ -87,7 +87,7 @@ describe('Middy middleware', () => {
       };
       const metricsOptions: ExtraOptions = {
         throwOnEmptyMetrics: true,
-        defaultDimensions: { environment : 'prod', aws_region: 'eu-central-1' },
+        defaultDimensions: { environment : 'prod', aws_region: 'eu-west-1' },
         captureColdStartMetric: true
       };
       const handler = middy(lambdaHandler).use(logMetrics(metrics, metricsOptions));
@@ -108,7 +108,7 @@ describe('Middy middleware', () => {
           }],
         },
         'environment': 'prod',
-        'aws_region' : 'eu-central-1',
+        'aws_region' : 'eu-west-1',
         'service': 'orders',
         'function_name': 'foo-bar-function',
         'ColdStart': 1,
@@ -125,7 +125,7 @@ describe('Middy middleware', () => {
           }],
         },
         'environment': 'prod',
-        'aws_region' : 'eu-central-1',
+        'aws_region' : 'eu-west-1',
         'service': 'orders',
         'successfulBooking': 1,
       }));

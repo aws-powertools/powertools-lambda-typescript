@@ -255,7 +255,7 @@ describe('Class: Logger', () => {
           expect(console[methodOfLogger]).toBeCalledTimes(1);
           expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
             cold_start: true,
-            function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+            function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
             function_memory_size: 128,
             function_name: 'foo-bar-function',
             function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
@@ -368,7 +368,7 @@ describe('Class: Logger', () => {
             logLevel: 'DEBUG',
             persistentLogAttributes: {
               aws_account_id: '123456789012',
-              aws_region: 'eu-central-1',
+              aws_region: 'eu-west-1',
             },
           });
 
@@ -386,7 +386,7 @@ describe('Class: Logger', () => {
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             aws_account_id: '123456789012',
-            aws_region: 'eu-central-1',
+            aws_region: 'eu-west-1',
           }));
         });
 
@@ -446,7 +446,7 @@ describe('Class: Logger', () => {
       memoryLimitInMB: '128',
       logGroupName: '/aws/lambda/foo-bar-function-with-cold-start',
       logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-      invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function-with-cold-start',
+      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
       awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
       getRemainingTimeInMillis: () => 1234,
       done: () => console.log('Done!'),
@@ -477,14 +477,14 @@ describe('Class: Logger', () => {
         logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           lambdaContext: {
             awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
             coldStart: true,
             functionName: 'foo-bar-function-with-cold-start',
             functionVersion: '$LATEST',
-            invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function-with-cold-start',
+            invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
             memoryLimitInMB: 128,
           },
           sampleRateValue: undefined,
@@ -544,7 +544,7 @@ describe('Class: Logger', () => {
       // Act
       logger.appendKeys({
         aws_account_id: '123456789012',
-        aws_region: 'eu-central-1',
+        aws_region: 'eu-west-1',
         logger: {
           name: 'aws-lambda-powertool-typescript',
           version: '0.2.4',
@@ -555,7 +555,7 @@ describe('Class: Logger', () => {
       expect(logger).toEqual(expect.objectContaining({
         persistentLogAttributes: {
           aws_account_id: '123456789012',
-          aws_region: 'eu-central-1',
+          aws_region: 'eu-west-1',
           logger: {
             name: 'aws-lambda-powertool-typescript',
             version: '0.2.4',
@@ -708,7 +708,7 @@ describe('Class: Logger', () => {
       expect(console['info']).toBeCalledTimes(1);
       expect(console['info']).toHaveBeenNthCalledWith(1, JSON.stringify({
         cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         function_memory_size: 128,
         function_name: 'foo-bar-function',
         function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
@@ -751,7 +751,7 @@ describe('Class: Logger', () => {
       }));
       expect(console['info']).toHaveBeenNthCalledWith(2, JSON.stringify({
         cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         function_memory_size: 128,
         function_name: 'foo-bar-function',
         function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
@@ -798,7 +798,7 @@ describe('Class: Logger', () => {
       }));
       expect(console['info']).toHaveBeenNthCalledWith(2, JSON.stringify({
         cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         function_memory_size: 128,
         function_name: 'foo-bar-function',
         function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
@@ -905,7 +905,7 @@ describe('Class: Logger', () => {
         logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
@@ -929,7 +929,7 @@ describe('Class: Logger', () => {
           extra: 'This is an attribute that will be logged only by the child logger',
         },
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
@@ -951,7 +951,7 @@ describe('Class: Logger', () => {
         logsSampled: true,
         persistentLogAttributes: {},
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: 1,
           serviceName: 'hello-world',
@@ -973,7 +973,7 @@ describe('Class: Logger', () => {
         logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',

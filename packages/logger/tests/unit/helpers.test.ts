@@ -39,7 +39,7 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -88,7 +88,7 @@ describe('Helper: createLogger function', () => {
           awsAccountId: '123456789',
         },
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: 'prod',
           sampleRateValue: 1,
           serviceName: 'my-lambda-service',
@@ -124,7 +124,7 @@ describe('Helper: createLogger function', () => {
         logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'service_undefined',
@@ -151,7 +151,7 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -180,7 +180,7 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'my-backend-service',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -209,7 +209,7 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -246,7 +246,7 @@ describe('Helper: createLogger function', () => {
         logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
@@ -272,7 +272,7 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: 1,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -319,7 +319,7 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: 'dev',
           serviceName: 'my-backend-service',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -337,7 +337,7 @@ describe('Helper: createLogger function', () => {
       const loggerOptions:LoggerOptions = {
         persistentLogAttributes: {
           aws_account_id: '123456789012',
-          aws_region: 'eu-central-1',
+          aws_region: 'eu-west-1',
           logger: {
             name: 'aws-lambda-powertool-typescript',
             version: '0.2.4',
@@ -354,7 +354,7 @@ describe('Helper: createLogger function', () => {
         logsSampled: false,
         persistentLogAttributes: {
           aws_account_id: '123456789012',
-          aws_region: 'eu-central-1',
+          aws_region: 'eu-west-1',
           logger: {
             name: 'aws-lambda-powertool-typescript',
             version: '0.2.4',
@@ -362,7 +362,7 @@ describe('Helper: createLogger function', () => {
         },
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -391,7 +391,7 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: 'dev',
           serviceName: 'hello-world',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',

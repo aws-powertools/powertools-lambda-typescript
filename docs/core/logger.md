@@ -96,9 +96,9 @@ This functionality will include the following keys in your structured logs:
 Key | Example
 ------------------------------------------------- | ---------------------------------------------------------------------------------
 **cold_start**: `bool` | `false`
-**function_name** `string` | `shopping-cart-api-lambda-prod-eu-central-1`
+**function_name** `string` | `shopping-cart-api-lambda-prod-eu-west-1`
 **function_memory_size**: `number` | `128`
-**function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
+**function_arn**: `string` | `arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1`
 **function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
 === "Manual"
@@ -165,10 +165,10 @@ In each case, the printed log will look like this:
     ```json hl_lines="2-6"
     {
         "cold_start": true,
-        "function_arn": "arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1",
+        "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1",
         "function_memory_size": 128,
         "function_request_id": "c6af9ac6-7b61-11e6-9a41-93e812345678",
-        "function_name": "shopping-cart-api-lambda-prod-eu-central-1",
+        "function_name": "shopping-cart-api-lambda-prod-eu-west-1",
         "level": "INFO",
         "message": "This is an INFO log with some context",
         "service": "serverlessAirline",
@@ -193,7 +193,7 @@ You can append additional persistent keys and values in the logs generated durin
     const logger = new Logger({
         persistentLogAttributes: { 
             aws_account_id: '123456789012',
-            aws_region: 'eu-central-1',
+            aws_region: 'eu-west-1',
             logger: {
                 name: '@aws-lambda-powertools/logger',
                 version: '0.0.1',
@@ -204,7 +204,7 @@ You can append additional persistent keys and values in the logs generated durin
     // OR add persistent log keys to an existing Logger instance with the appendKeys method:
     // logger.appendKeys({
     //     aws_account_id: '123456789012',
-    //     aws_region: 'eu-central-1',
+    //     aws_region: 'eu-west-1',
     //     logger: {
     //         name: '@aws-lambda-powertools/logger',
     //         version: '0.0.1',
@@ -234,7 +234,7 @@ You can append additional persistent keys and values in the logs generated durin
         "timestamp": "2021-12-12T21:49:58.084Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "aws_account_id": "123456789012",
-        "aws_region": "eu-central-1",
+        "aws_region": "eu-west-1",
         "logger": { 
             "name": "@aws-lambda-powertools/logger",
             "version": "0.0.1"
@@ -247,7 +247,7 @@ You can append additional persistent keys and values in the logs generated durin
         "timestamp": "2021-12-12T21:49:58.088Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "aws_account_id": "123456789012",
-        "aws_region": "eu-central-1",
+        "aws_region": "eu-west-1",
         "logger": { 
             "name": "@aws-lambda-powertools/logger",
             "version": "0.0.1"
@@ -666,15 +666,15 @@ This is how the printed log would look:
         {
             "message": "This is an INFO log",
             "service": "serverlessAirline",
-            "awsRegion": "eu-central-1",
+            "awsRegion": "eu-west-1",
             "correlationIds": {
                 "awsRequestId": "c6af9ac6-7b61-11e6-9a41-93e812345678",
                 "xRayTraceId": "abcdef123456abcdef123456abcdef123456",
                 "myCustomCorrelationId": "foo-bar-baz"
             },
             "lambdaFunction": {
-                "name": "shopping-cart-api-lambda-prod-eu-central-1",
-                "arn": "arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1",
+                "name": "shopping-cart-api-lambda-prod-eu-west-1",
+                "arn": "arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1",
                 "memoryLimitInMB": 128,
                 "version": "$LATEST",
                 "coldStart": true
@@ -709,7 +709,7 @@ This is a Jest sample that provides the minimum information necessary for Logger
         memoryLimitInMB: '128',
         logGroupName: '/aws/lambda/foo-bar-function',
         logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
         getRemainingTimeInMillis: () => 1234,
         done: () => console.log('Done!'),

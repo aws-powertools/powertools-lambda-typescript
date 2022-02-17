@@ -25,7 +25,7 @@ describe('Class: PowertoolLogFormatter', () => {
       const formatter = new PowertoolLogFormatter();
       const unformattedAttributes = {
         sampleRateValue: undefined,
-        awsRegion: 'eu-central-1',
+        awsRegion: 'eu-west-1',
         environment: '',
         serviceName: 'hello-world',
         xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -59,7 +59,7 @@ describe('Class: PowertoolLogFormatter', () => {
       const formatter = new PowertoolLogFormatter();
       const unformattedAttributes: UnformattedAttributes = {
         sampleRateValue: 0.25,
-        awsRegion: 'eu-central-1',
+        awsRegion: 'eu-west-1',
         environment: 'prod',
         serviceName: 'hello-world',
         xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
@@ -72,7 +72,7 @@ describe('Class: PowertoolLogFormatter', () => {
           memoryLimitInMB: 123,
           functionVersion: '1.23.3',
           coldStart: true,
-          invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+          invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
           awsRequestId: 'abcdefg123456789',
         },
       };
@@ -83,7 +83,7 @@ describe('Class: PowertoolLogFormatter', () => {
       // Assess
       expect(value).toEqual({
         cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
         function_memory_size: 123,
         function_name: 'my-lambda-function',
         function_request_id: 'abcdefg123456789',

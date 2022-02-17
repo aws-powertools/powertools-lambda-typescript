@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.5.1...v0.6.0) (2022-02-17)
+
+
+### Features
+
+* **commons:** centralize cold start heuristic ([#547](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/547)) ([4e4091f](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/4e4091f7b853c56a8dfd28829f09a066cc8e2ee7))
+
+
+
+
+
 ## [0.5.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.5.0...v0.5.1) (2022-02-09)
 
 **Note:** Version bump only for package @aws-lambda-powertools/commons

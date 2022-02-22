@@ -1,4 +1,5 @@
 import { Callback, Context } from 'aws-lambda';
+import { Utility } from '@aws-lambda-powertools/commons';
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
@@ -79,13 +80,12 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * };
  * ```
  */
-class Metrics implements MetricsInterface {
+class Metrics extends Utility implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;
   private defaultDimensions: Dimensions = {};
   private dimensions: Dimensions = {};
   private envVarsService?: EnvironmentVariablesService;
   private functionName?: string;
-  private isColdStart: boolean = true;
   private isSingleMetric: boolean = false;
   private metadata: { [key: string]: string } = {};
   private namespace?: string;
@@ -93,6 +93,8 @@ class Metrics implements MetricsInterface {
   private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {
+    super();
+
     this.dimensions = {};
     this.setOptions(options);
   }
@@ -172,8 +174,7 @@ class Metrics implements MetricsInterface {
    * ```
    */
   public captureColdStartMetric(): void {
-    if (!this.isColdStart) return;
-    this.isColdStart = false;
+    if (!this.isColdStart()) return;
     const singleMetric = this.singleMetric();
 
     if (this.dimensions.service) {

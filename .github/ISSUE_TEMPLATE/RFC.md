@@ -1,7 +1,7 @@
 ---
 name: RFC
 about: Feature design and proposals
-title: 'RFC (module name): short description'
+title: 'RFC (module name): short issue description'
 labels: RFC, triage
 assignees: ''
 approved by: ''

@@ -32,6 +32,12 @@ reported the issue. Please try to include as much information as you can. Detail
 
 Contributions via pull requests are much appreciated.
 
+### Summary
+* This project uses `node@14.x` and `npm@8.x` for development (see [Setup](#setup))
+* Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed change. A PR without a related issue or discussion has an high risk of being rejected. We are very appreciative and thankful for your time and efforts and we want to make sure they are not wasted.
+* After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request
+* When opening a PR make sure to follow the checklist inside the pull request template
+
 ### Step 1: Find something to work on
 
 If you want to contribute a specific feature or fix you have in mind, look at active [pull
@@ -287,7 +293,7 @@ You can build and start a local docs website by running these two commands:
 Category | Convention
 ------------------------------------------------- | ---------------------------------------------------------------------------------
 **Docstring** |  We use [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) annotations to provide type information and create API references.
-**Style guide** | We use black as well as flake8 extensions to enforce beyond good practices [PEP8](https://pep8.org/).
+**Style guide** | We use `eslint` to keep our code consistent in terms of style and reducing defects.
 **Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.
 **Git commits** | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.
 **Documentation** | API reference docs are generated from docstrings which should have Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise.

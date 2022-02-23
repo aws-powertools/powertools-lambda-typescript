@@ -13,13 +13,19 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
+      - name: Install npm@8.x
+        run: npm i -g npm@next-8
       - name: "Setup npm"
         run: |
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-      - name: Install packages
-        run: |
-          npm ci
-          npm run lerna-ci
+      - name: Install monorepo packages
+        # This installs all the dependencies of ./packages/*
+        run: npm ci
+      - name: Install example packages
+        # Since we are not managing the cdk examples with npm workspaces we install
+        # the dependencies in a separate step
+        working-directory: ./examples/cdk
+        run: npm ci 
       - name: Run lint
         run: npm run lerna-lint
       - name: Run tests

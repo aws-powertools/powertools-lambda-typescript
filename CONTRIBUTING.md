@@ -133,7 +133,9 @@ First [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the 
 ```console
 git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
 cd aws-lambda-powertools-typescript
-npm ci; npm run lerna-ci
+npm ci;
+cd examples/cdk; npm ci
+cd ../..
 npm run init-environment
 ```
 

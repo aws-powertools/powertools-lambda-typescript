@@ -60,6 +60,7 @@
     "aws-cdk": "^1.145.0",
     "aws-sdk": "^2.1078.0",
     "concurrently": "^7.0.0",
+    "esbuild": "^0.14.23",
     "eslint": "^8.3.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.5.0",

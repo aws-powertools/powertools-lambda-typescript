@@ -1,7 +1,7 @@
 ---
 name: Documentation improvement
 about: Suggest a documentation update, improvement
-title: "(module name): short issue description"
+title: "Documentation (module name): short issue description"
 labels: documentation
 ---
 

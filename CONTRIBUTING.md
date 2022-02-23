@@ -129,7 +129,7 @@ git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
 cd aws-lambda-powertools-typescript
 npm ci;
 cd examples/cdk; npm ci
-cd ../
+cd ../..
 npm run init-environment
 ```
 

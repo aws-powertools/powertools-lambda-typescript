@@ -34,7 +34,7 @@ Contributions via pull requests are much appreciated.
 
 ### TL;DR;
 * This project uses `node@14.x` and `npm@8.x` for development (see [Setup](#setup))
-* Before opening a PR, find an existing issue or open a new one to discuss the proposed change (we would hate it for you to have to waste time)
+* Before opening a PR, find an existing issue or open a new one to discuss the proposed change. PR without an issue or discussion has high risk of being rejected. We don't want to you to waste time. And it is very uncomfortable for us to reject a PR
 * After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request
 * When opening a PR make sure to follow the checklist inside the pull request template
 

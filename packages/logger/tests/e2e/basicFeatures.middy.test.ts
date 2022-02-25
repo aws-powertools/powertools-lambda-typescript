@@ -98,16 +98,15 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
       }
     }, TEST_CASE_TIMEOUT);
 
-    it('should include cold metrics only on the first invocation', async () => {
+    it('should include cold start equal to TRUE only on the first invocation', async () => {
       const coldStartLogMessages = invocationLogs[0].getFunctionLogs(LEVEL.INFO);
       for (const message of coldStartLogMessages) {
         expect(message).toContain(`"cold_start":true`);
       }
-      
-      // TODO: There is a bug that the 'cold_start' field leaks to all invocation. (#518) 
-      // Link to tracked issue: https://github.com/awslabs/aws-lambda-powertools-typescript/issues/518
+      // TODO: There is an issue with the way in which functions are invoked that always forces a cold start. (#590) 
+      // Link to tracked issue: https://github.com/awslabs/aws-lambda-powertools-typescript/issues/590
       // const normalLogMessages = invocationLogs[1].getFunctionLogs(LEVEL.INFO);
-      // for(const message of normalLogMessages) {
+      // for (const message of normalLogMessages) {
       //   expect(message).not.toContain(`"cold_start":true`);
       // }
     }, TEST_CASE_TIMEOUT);

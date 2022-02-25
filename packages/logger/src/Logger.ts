@@ -1,4 +1,5 @@
 import type { Context } from 'aws-lambda';
+import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
 import cloneDeep from 'lodash.clonedeep';
@@ -104,11 +105,7 @@ import type {
  * @implements {ClassThatLogs}
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/
  */
-class Logger implements ClassThatLogs {
-
-  private static coldStart?: boolean = undefined;
-
-  private static coldStartEvaluated: boolean = false;
+class Logger extends Utility implements ClassThatLogs {
 
   private customConfigService?: ConfigServiceInterface;
 
@@ -141,6 +138,8 @@ class Logger implements ClassThatLogs {
    * @param {LoggerOptions} options
    */
   public constructor(options: LoggerOptions = {}) {
+    super();
+
     this.setOptions(options);
   }
 
@@ -152,10 +151,9 @@ class Logger implements ClassThatLogs {
    * @returns {void}
    */
   public addContext(context: Context): void {
-    Logger.evaluateColdStartOnce();
     const lambdaContext: Partial<LambdaFunctionContext> = {
       invokedFunctionArn: context.invokedFunctionArn,
-      coldStart: Logger.getColdStartValue(),
+      coldStart: this.getColdStart(),
       awsRequestId: context.awsRequestId,
       memoryLimitInMB: Number(context.memoryLimitInMB),
       functionName: context.functionName,
@@ -221,38 +219,6 @@ class Logger implements ClassThatLogs {
   }
 
   /**
-   * It evaluates whether the current Lambda function invocation has a cold start or not.
-   *
-   * @static
-   * @returns {void}
-   */
-  public static evaluateColdStartOnce(): void {
-    if (!Logger.getColdStartEvaluatedValue()) {
-      Logger.evaluateColdStart();
-    }
-  }
-
-  /**
-   * It returns a boolean value which is true if the current Lambda function cold start has been already evaluated, false otherwise.
-   *
-   * @static
-   * @returns {boolean}
-   */
-  public static getColdStartEvaluatedValue(): boolean {
-    return Logger.coldStartEvaluated;
-  }
-
-  /**
-   * It returns an optional boolean value, true if the current Lambda function invocation has a cold start, false otherwise.
-   *
-   * @static
-   * @returns {boolean | undefined}
-   */
-  public static getColdStartValue(): boolean | undefined {
-    return Logger.coldStart;
-  }
-
-  /**
    * It returns a boolean value, if true all the logs will be printed.
    *
    * @returns {boolean}
@@ -303,30 +269,6 @@ class Logger implements ClassThatLogs {
    */
   public refreshSampleRateCalculation(): void {
     this.setLogsSampled();
-  }
-
-  /**
-   * It sets the value of a flag static propriety that tracks whether
-   * the cold start evaluation already took place.
-   *
-   * @param {boolean} value
-   * @static
-   * @returns {void}
-   */
-  public static setColdStartEvaluatedValue(value: boolean): void {
-    Logger.coldStartEvaluated = value;
-  }
-
-  /**
-   * It sets the value of a flag static propriety that tracks whether
-   * the current Lambda invocation experienced a cold start.
-   *
-   * @static
-   * @param {boolean | undefined} value
-   * @returns {void}
-   */
-  public static setColdStartValue(value: boolean | undefined): void {
-    Logger.coldStart = value;
   }
 
   /**
@@ -400,27 +342,6 @@ class Logger implements ClassThatLogs {
     });
 
     return logItem;
-  }
-
-  /**
-   * It evaluates whether the current Lambda invocation experienced a
-   * cold start.
-   *
-   * @private
-   * @static
-   * @returns {void}
-   */
-  private static evaluateColdStart(): void {
-    const coldStartValue = Logger.getColdStartValue();
-    if (typeof coldStartValue === 'undefined') {
-      Logger.setColdStartValue(true);
-    } else if (coldStartValue) {
-      Logger.setColdStartValue(false);
-    } else {
-      Logger.setColdStartValue(false);
-    }
-
-    Logger.setColdStartEvaluatedValue(true);
   }
 
   /**

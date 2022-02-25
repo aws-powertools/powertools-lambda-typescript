@@ -5,10 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/",
   "workspaces": [
-    "packages/commons",
-    "packages/logger",
-    "packages/tracing",
-    "packages/metrics"
+    "packages/*"
   ],
   "scripts": {
     "init-environment": "husky install",

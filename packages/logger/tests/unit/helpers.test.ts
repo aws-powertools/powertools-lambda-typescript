@@ -73,6 +73,7 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
+        coldStart: true,
         customConfigService: expect.any(EnvironmentVariablesService),
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -111,6 +112,7 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
+        coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -233,6 +235,7 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
+        coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),

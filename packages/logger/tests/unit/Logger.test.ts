@@ -28,8 +28,6 @@ const consoleSpy = {
 describe('Class: Logger', () => {
 
   beforeEach(() => {
-    Logger.setColdStartValue(undefined);
-    Logger.setColdStartEvaluatedValue(false);
     consoleSpy['debug'].mockClear();
     consoleSpy['info'].mockClear();
     consoleSpy['warn'].mockClear();
@@ -464,6 +462,7 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(logger).toEqual({
+        coldStart: false, // This is now false because the `coldStart` attribute has been already accessed once by the `addContext` method
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -600,79 +599,6 @@ describe('Class: Logger', () => {
         }
       }));
     });
-  });
-
-  describe('Method: createChild', () => {
-
-    test('when called, creates a distinct clone of the original logger instance', () => {
-
-      // Prepare
-      const logger = new Logger();
-
-      // Act
-      const childLogger = logger.createChild({
-        logLevel: 'ERROR',
-      });
-
-      // Assess
-      expect(logger).toEqual(expect.objectContaining({
-        logLevel: 'DEBUG',
-      }));
-      expect(childLogger).toBeInstanceOf(Logger);
-      expect(childLogger).toEqual(expect.objectContaining({
-        logLevel: 'ERROR',
-      }));
-    });
-
-  });
-
-  describe('Method: evaluateColdStartOnce', () => {
-
-    test('when called during the first invocation (cold start), it populates the logger\'s PowertoolLogData object with coldstart set to true', () => {
-
-      // Prepare
-      // This value is undefined at the beginning of the first invocation
-      Logger.setColdStartValue(undefined);
-
-      // Act
-      Logger.evaluateColdStartOnce();
-      Logger.evaluateColdStartOnce();
-      Logger.evaluateColdStartOnce();
-
-      // Assess
-      expect(Logger.getColdStartValue()).toEqual(true);
-    });
-
-    test('when called during the SECOND invocation (warm start), it populates the logger\'s PowertoolLogData object with coldstart set to false', () => {
-
-      // Prepare
-      // This value is set to true at the beginning of the second invocation
-      Logger.setColdStartValue(true);
-
-      // Act
-      Logger.evaluateColdStartOnce();
-      Logger.evaluateColdStartOnce();
-      Logger.evaluateColdStartOnce();
-
-      // Assess
-      expect(Logger.getColdStartValue()).toEqual(false);
-    });
-
-    test('when called during the THIRD invocation (warm start), it populates the logger\'s PowertoolLogData object with coldstart set to false', () => {
-
-      // Prepare
-      // This value is set to false at the beginning of the third invocation
-      Logger.setColdStartValue(false);
-
-      // Act
-      Logger.evaluateColdStartOnce();
-      Logger.evaluateColdStartOnce();
-      Logger.evaluateColdStartOnce();
-
-      // Assess
-      expect(Logger.getColdStartValue()).toEqual(false);
-    });
-
   });
 
   describe('Method: injectLambdaContext', () => {
@@ -813,29 +739,6 @@ describe('Class: Logger', () => {
 
   });
 
-  describe('Method: setColdStartValue', () => {
-
-    test('when called, it sets the value of the static variable coldStart in the same file', async () => {
-
-      // Act
-      Logger.setColdStartValue(undefined);
-      const undefinedValue = Logger.getColdStartValue();
-
-      Logger.setColdStartValue(true);
-      const trueValue = Logger.getColdStartValue();
-
-      Logger.setColdStartValue(false);
-      const falseValue = Logger.getColdStartValue();
-
-      // Assess
-      expect(undefinedValue).toBe(undefined);
-      expect(trueValue).toBe(true);
-      expect(falseValue).toBe(false);
-
-    });
-
-  });
-
   describe('Method: refreshSampleRateCalculation', () => {
 
     test('when called, it recalculates whether the current Lambda invocation\'s logs will be printed or not', () => {
@@ -892,6 +795,7 @@ describe('Class: Logger', () => {
       expect(parentLogger === childLoggerWithErrorLogLevel).toBe(false);
 
       expect(parentLogger).toEqual({
+        coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -914,6 +818,7 @@ describe('Class: Logger', () => {
       });
 
       expect(childLoggerWithPermanentAttributes).toEqual({
+        coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -938,6 +843,7 @@ describe('Class: Logger', () => {
       });
 
       expect(childLoggerWithSampleRateEnabled).toEqual({
+        coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -960,6 +866,7 @@ describe('Class: Logger', () => {
       });
 
       expect(childLoggerWithErrorLogLevel).toEqual({
+        coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),

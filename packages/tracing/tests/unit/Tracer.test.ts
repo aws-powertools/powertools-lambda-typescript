@@ -1289,7 +1289,11 @@ describe('Class: Tracer', () => {
         configurable: true,
         writable: true
       });
-      Object.defineProperty(tracer, 'currentSubsegment', { value: subsegment, configurable: true, writable: true });
+      Object.defineProperty(tracer, 'currentSubsegment', {
+        value: subsegment,
+        configurable: true,
+        writable: true
+      });
       
       // Act
       tracer.stopTracing();

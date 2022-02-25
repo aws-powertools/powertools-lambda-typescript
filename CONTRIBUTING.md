@@ -8,13 +8,12 @@ information to effectively respond to your bug report or contribution.
 
 ## Security issue notifications
 
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.
+If you discover a potential security issue in this project, we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.
 
 ## Code of Conduct
 
 This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
-For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
-opensource-codeofconduct@amazon.com with any additional questions or comments.
+For more information, see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact opensource-codeofconduct@amazon.com with any additional questions or comments.
 
 ## Reporting Bugs/Feature Requests
 
@@ -33,10 +32,11 @@ reported the issue. Please try to include as much information as you can. Detail
 Contributions via pull requests are much appreciated.
 
 ### Summary
-* This project uses `node@14.x` and `npm@8.x` for development (see [Setup](#setup))
-* Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed change. A PR without a related issue or discussion has an high risk of being rejected. We are very appreciative and thankful for your time and efforts and we want to make sure they are not wasted.
-* After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request
-* When opening a PR make sure to follow the checklist inside the pull request template
+
+* This project uses `node@14.x` and `npm@8.x` for development (see [Setup](#setup)).
+* Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed changes. A PR without a related issue or discussion has a high risk of being rejected. We are very appreciative and thankful for your time and efforts, and we want to make sure they are not wasted.
+* After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request.
+* When opening a PR, make sure to follow the checklist inside the pull request template.
 
 ### Step 1: Find something to work on
 
@@ -58,25 +58,25 @@ We ask you to seek feedback and consensus on your proposed change by iterating o
 
 If you're picking up an existing issue, you can simply post your comment and discuss your proposed changes. If instead you're proposing a new feature, you can start by creating a new [RFC issue](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=RFC%2C+triage&template=rfc.md&title=RFC%3A+) and discuss your proposed change with the maintainers.
 
-This is a great way to get feedback on your proposed change, and make sure that it is in line with the project's direction and community needs. You can start working on the change when you've gotten approved by at least one maintainer - we would hate for your time to be wasted.
+This is a great way to get feedback on your proposed change and make sure that it is in line with the project's direction and community needs. You can start working on the change when you've gotten approved by at least one maintainer - we would hate for your time to be wasted.
 
 ### Step 3: Work your Magic
 
-Work your magic. Before starting make sure to check the [Getting Started](#Getting-Started) section to setup your dev environment and familiarize yourself with the project's structure and design. Here are some additional guidelines:
+Work your magic. Before starting, make sure to check the [Getting Started](#Getting-Started) section to setup your dev environment and familiarize yourself with the project's structure and design. Here are some additional guidelines:
 
 * Working against the latest source on the **main** branch.
 * Try to maintain a single feature/bugfix per pull request. It's okay to introduce a little bit of housekeeping
   changes along the way, but try to avoid conflating multiple features. Eventually, all these are going to go into a
   single commit, so you can use that to frame your scope.
-* Try to add [unit tests](#Tests) that test your changes when applicable. This is especially important for new features and bug fixes as it helps you to make sure that your changes are working as intended.
-* Lint and test the the code. When you've setup the repository with `npm run init-environment`, pre-commit and push-hooks will automatically lint and test the code. Pull request builds will run the same checks as well.
+* Try to add [unit tests](#Tests) that test your changes when applicable. This is especially important for new features and bug fixes, as it helps you to make sure that your changes are working as intended.
+* Lint and test the code. When you've setup the repository with `npm run init-environment`, pre-commit and push-hooks will automatically lint and test the code. Pull request builds will run the same checks as well.
 
 ### Step 4: Pull Request
 
 * Create a commit with your changes and push them to a
   [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
-  > Note: Core members can push directly to a branch on the AWS Lambda Powertools (Typescript) repo (following the same conventions detailed below).
-* Create a [pull request on Github](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+  > Note: Core members can push directly to a branch on the AWS Lambda Powertools (TypeScript) repo (following the same conventions detailed below).
+* Create a [pull request on GitHub](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 * Pull request title and message (and PR title and description) must adhere to
   [conventionalcommits](https://www.conventionalcommits.org).
@@ -98,7 +98,7 @@ Work your magic. Before starting make sure to check the [Getting Started](#Getti
 * Once the pull request is submitted, a reviewer will be assigned by the maintainers.
 
 * Discuss review comments and iterate until you get at least one "Approve". When iterating, push new commits to the
-  same branch. Usually all these are going to be squashed when you merge to master. The commit messages should be hints
+  same branch. Usually, all these are going to be squashed when the maintainers merge to `main`. The commit messages should be hints
   for you when you finalize your merge commit message.
 
 * Make sure to update the PR title/description if things change. The PR title/description are going to be used as the
@@ -113,7 +113,7 @@ Work your magic. Before starting make sure to check the [Getting Started](#Getti
 
 ## Getting Started
 
-The following steps describe how to set up the AWS Lambda Powertools (Typescript) repository on your local machine.
+The following steps describe how to set up the AWS Lambda Powertools (TypeScript) repository on your local machine.
 The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [Codespaces](https://github.com/features/codespaces) for your development.
 
 ### Setup
@@ -128,7 +128,7 @@ The following tools need to be installed on your system prior to starting workin
 - [Docker](https://docs.docker.com/get-docker/)
   - If you are not planning on making changes to the documentation, you can skip this step.
 
-First [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository, and then run the following commands to clone and initialize the repository locally.
+First, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository, and then run the following commands to clone and initialize the repository locally.
 
 ```console
 git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
@@ -145,32 +145,32 @@ the [eslint extension](https://marketplace.visualstudio.com/items?itemName=dbaeu
 
 ### Repo Layout
 
-The AWS Lambda Powertools is a npm project written in [typescript](https://www.typescriptlang.org/).
+The AWS Lambda Powertools is a npm project written in [TypeScript](https://www.typescriptlang.org/).
 More specifically, it is a [monorepo managed using lerna](https://github.com/lerna/lerna#about).
 If you're unfamiliar with any of these technologies, it is useful to learn about them and will make understanding the codebase easier but strictly not necessary for simple contributions.
 
 The repo contains `packages/` directory that contains the Powertools utilities modules. For instance, the source code for the Logger utility can be found at the location `packages/logger` and so on.
-The repo also contains a `packages/commons` directory that holds code and logic shared between one or more utilities and that is published as separate npm package.
+The repo also contains a `packages/commons` directory that holds code and logic shared between one or more utilities and that is published as a separate npm package.
 
 ### Tests
 
-Tests are under `tests` folder of each modules and split into two categories: unit tests and e2e (end-to-end) tests.
+Tests are under the `tests` folder of each module and split into two categories: unit tests and e2e (end-to-end) tests.
 
 You can run each group separately or all together thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups).
 
-Unit tests, under `tests/unit` folder are standard [Jest](https://jestjs.io) tests.
+Unit tests, under `tests/unit` folder, are standard [Jest](https://jestjs.io) tests.
 
-End-to-end tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use [aws-cdk](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) v1 library (not v2 due to [this cdk issue](https://github.com/aws/aws-cdk/issues/18211)) for Typescript for creating infrastructure, and [aws-sdk-js v2](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/) for invoking the functions and assert on the expected behaviors. All steps are also executed by Jest.
+End-to-end tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use [aws-cdk](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) v1 library (not v2 due to [this cdk issue](https://github.com/aws/aws-cdk/issues/18211)) for TypeScript for creating infrastructure, and [aws-sdk-js v2](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/) for invoking the functions and asserting on the expected behaviors. All steps are also executed by Jest.
 
-Running end-to-end tests will deploy AWS resources. You will need an AWS account and the tests might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
+Running end-to-end tests will deploy AWS resources. You will need an AWS account, and the tests might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account, follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
 When contributing to this repository, these end-to-end tests are run by the maintainers before merging a PR.
 
-**Unit tests**
+#### Unit tests
 
-**Write**
+##### Write
 
-As mentioned before, tests are split into groups thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups) and therefore each test needs to be tagged properly by adding the following comments in the header of your unit test file:
+As mentioned before, tests are split into groups thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups), and therefore, each test needs to be tagged properly by adding the following comments in the header of your unit test file:
 
 ```typescript
 /**
@@ -180,22 +180,23 @@ As mentioned before, tests are split into groups thanks to [jest-runner-groups](
  */
 ```
 
-**Run**
+##### Run
 
-To run unit tests you can either use
+To run unit tests, you can either use:
 
 * npm task `lerna-test:unit` (`npm run lerna-test:unit`) in root folder to run them all
-* npm task `test:e2e` (`npm run test:unit`) in module folder (for example: `packages/metrics`) to run the module specific one
-* jest directly `npx jest --group=unit` in module folder to run the module specific one (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/class`)
+* npm task `test:unit` (`npm run test:unit`) in module folder (for example: `packages/metrics`) to run the module specific ones
+* jest directly `npx jest --group=unit` in module folder to run the module specific ones (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/class`)
 
-**e2e tests**
+#### e2e tests
 
-**Set up**
-We create e2e testing infrastructure with CDK. If you have never used it before, please check its [Getting started guide](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html). You need to run `cdk bootstrap` in the account and region you are going to run e2e tests.
+##### Set up
 
-**Write**
+We create e2e testing infrastructure with CDK. If you have never used it before, please check its [Getting started guide](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html). You need to run `cdk bootstrap` in the account and region you are going to run e2e tests in.
 
-As mentioned in the previous section, tests are split into groups thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups) and therefore each test needs to be tagged properly by adding the following comments in the header of your unit test file:
+##### Write
+
+As mentioned in the previous section, tests are split into groups thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups), and therefore, each test needs to be tagged properly by adding the following comments in the header of your unit test file:
 
 ```typescript
 /**
@@ -207,29 +208,29 @@ As mentioned in the previous section, tests are split into groups thanks to [jes
 
  See `metrics/tests/e2e/decorator.test.ts` as an example.
 
-**Run**
+##### Run
 
-To run e2e tests you can either use
+To run e2e tests, you can either use:
 
 * npm task `lerna-test:e2e` (`npm run lerna-test:e2e`) in root folder
-* npm task `test:e2e` (`npm run test:e2e`) in module folder (for example: `packages/metrics`) to run the module specific one
+* npm task `test:e2e` (`npm run test:e2e`) in module folder (for example: `packages/metrics`) to run the module specific ones
 * jest directly `npx jest --group=e2e` in module folder. (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=e2e/metrics/decorator`)
 
-Two important env variable can be used:
+Three important environment variables can be used:
 
 * `AWS_PROFILE` to use the right AWS credentials
-* `AWS_REGION` to select the region to deploy e2e tests infrastructure
+* `AWS_REGION` to select the region to deploy e2e tests infrastructure to
 * `DISABLE_TEARDOWN` if you don't want your stack to be destroyed at the end of the test (useful in dev mode when iterating over your code).
 
 Example: `DISABLE_TEARDOWN=true AWS_PROFILE=dev-account AWS_REGION=eu-west-1 npx jest --group=e2e/metrics/decorator`
 
-**Automate**
+##### Automate
 
 You can run the end-to-end tests automatically on your forked project by following these steps:
 
 1. Create an IAM role in your target AWS account, with the least amount of privilege.
 
-    As mentioned above in this page, we are leveraging CDK to deploy and consequently clean-up resources on AWS. Therefore to run those tests through Github actions you will need to grant specific permissions to your workflow.  
+    As mentioned above in this page, we are leveraging CDK to deploy and consequently clean-up resources on AWS. Therefore, to run those tests through GitHub actions, you will need to grant specific permissions to your workflow.  
 
     We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) for the AWS credentials used in GitHub Actions workflows, including:
     * Do not store credentials in your repository's code.
@@ -240,12 +241,12 @@ You can run the end-to-end tests automatically on your forked project by followi
 
     More information about:  
 
-    * [Github OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/)
+    * [GitHub OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/)
     * ["Configure AWS Credentials" Action For GitHub Actions](https://github.com/aws-actions/configure-aws-credentials/)
 
-2. Add your new role into your [Github fork secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) with name  `AWS_ROLE_ARN_TO_ASSUME`.
-3. In your forked repository, go to the "Actions" tabs, select the `run-e2e-tests` workflow.
-4. In the run-e2e-tests workflow page, select "Run workflow" and run it on the desired branch.
+2. Add your new role into your [GitHub fork secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) with name `AWS_ROLE_ARN_TO_ASSUME`.
+3. In your forked repository, go to the "Actions" tab and select the `run-e2e-tests` workflow.
+4. On the `run-e2e-tests` workflow page, select "Run workflow" and run it on the desired branch.
 
 > :warning: **Don't automatically run end-to-end tests on branch push or PRs**. A malicious attacker can submit a pull request to attack your AWS account. Ideally, use a blank account without any important workload/data, and limit `AWS_ROLE_ARN_TO_ASSUME` permission to least minimum privilege.
 
@@ -253,7 +254,7 @@ You can run the end-to-end tests automatically on your forked project by followi
 
 As part of the repo you will find an examples folder at the root. This folder contains examples (written with CDK for now) of deployable AWS Lambda functions using Powertools.
 
-To test your updates with these examples you just have to:
+To test your updates with these examples, you just have to:
 
 1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run lerna-package`
 2. Update their references in examples
@@ -270,11 +271,11 @@ To test your updates with these examples you just have to:
     npm run cdk deploy
     ```
 
-Previous command will deploy AWS resources therefore you will need an AWS account and it might incur in some costs which should be covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all). If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
+The last command will deploy AWS resources, therefore, you will need an AWS account, and it might incur some costs which should be covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all). If you don't have an AWS Account, follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
 ### Local documentation
 
-You might find useful to run both the documentation website and the API reference locally while contributing:
+You might find useful to run both the documentation website and the API reference locally while contributing.
 
 #### API reference
 
@@ -298,7 +299,7 @@ Category | Convention
 **Style guide** | We use `eslint` to keep our code consistent in terms of style and reducing defects.
 **Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.
 **Git commits** | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.
-**Documentation** | API reference docs are generated from docstrings which should have Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise.
+**Documentation** | API reference docs are generated from docstrings which should have an Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise.
 
 ## Licensing
 

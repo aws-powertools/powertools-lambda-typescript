@@ -2,7 +2,7 @@ import { Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
+import { HandlerMethodDecorator, TracerOptions, MethodDecorator, ManualTracingOptions } from './types';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
@@ -76,20 +76,16 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
- * import { Segment } from 'aws-xray-sdk-core';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
  * export const handler = async (_event: any, context: any) => {
- *   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
- *   // Create subsegment for the function & set it as active
- *   const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
- *   tracer.setSegment(subsegment);
- *
- *   // Annotate the subsegment with the cold start & serviceName
- *   tracer.annotateColdStart();
- *   tracer.addServiceNameAnnotation();
- *
+ *   // This opens a subsegment created for you by Tracer (i.e. "## index.handler")
+ *   tracer.startTracing({
+ *     annotateColdStart: true,
+ *     annotateServiceName: true
+ *   });
+ *   
  *   let res;
  *   try {
  *       res = ...
@@ -100,10 +96,8 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *       tracer.addErrorAsMetadata(err as Error);
  *       throw err;
  *   } finally {
- *       // Close the subsegment
- *       subsegment.close();
- *       // Set the facade segment as active again
- *       tracer.setSegment(segment);
+ *       // Stop tracing
+ *       tracer.stopTracing();
  *   }
  *
  *   return res;
@@ -118,6 +112,10 @@ class Tracer extends Utility implements TracerInterface {
   
   private captureResponse: boolean = true;
 
+  private currentFacade: Segment | undefined;
+  
+  private currentSubsegment: Subsegment | undefined;
+  
   private customConfigService?: ConfigServiceInterface;
   
   private envVarsService?: EnvironmentVariablesService;
@@ -567,6 +565,44 @@ class Tracer extends Utility implements TracerInterface {
     if (!this.isTracingEnabled()) return;
     
     return this.provider.setSegment(segment);
+  }
+
+  public startTracing(tracingOptions?: ManualTracingOptions): void | Subsegment {
+    if (!this.isTracingEnabled()) return;
+
+    const options = Object.assign({
+      annotateColdStart: true,
+      annotateServiceName: true
+    }, tracingOptions);
+
+    const facade = this.getSegment();
+    if (!(facade instanceof Segment) || this.currentSubsegment) {
+      throw new Error('Cannot call startTracing when a subsegment is already active');
+    }
+    this.currentFacade = facade;
+    this.currentSubsegment = this.currentFacade.addNewSubsegment(`## ${process.env._HANDLER}`);
+    this.setSegment(this.currentSubsegment);
+
+    if (options.annotateColdStart) {
+      this.annotateColdStart();
+    }
+    if (options.annotateServiceName) {
+      this.addServiceNameAnnotation();
+    }
+
+    return this.currentSubsegment;
+  }
+
+  public stopTracing(): void {
+    if (!this.isTracingEnabled() ||
+      !this.currentSubsegment || !this.currentFacade) return;
+
+    this.currentSubsegment.close();
+    this.currentSubsegment = undefined;
+    this.setSegment(this.currentFacade);
+    this.currentFacade = undefined;
+    
+    return;
   }
 
   /**

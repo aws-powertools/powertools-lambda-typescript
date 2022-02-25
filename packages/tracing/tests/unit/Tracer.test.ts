@@ -1102,4 +1102,204 @@ describe('Class: Tracer', () => {
     });
 
   });
+
+  describe('Method: startTracing', () => {
+  
+    test('when called and tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const facade = new Segment('facade');
+      const facadeAddNewSubsegmentSpy = jest.spyOn(facade, 'addNewSubsegment');
+      const getSegmentSpy = jest.spyOn(tracer, 'getSegment');
+      const setSegmentSpy = jest.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      const annotateColdStartSpy = jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => null);
+      const annotateServiceNameSpy = jest.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => null);
+      
+      // Act
+      const subsegment = tracer.startTracing();
+
+      // Assess
+      expect(getSegmentSpy).toBeCalledTimes(0);
+      expect(facadeAddNewSubsegmentSpy).toBeCalledTimes(0);
+      expect(setSegmentSpy).toBeCalledTimes(0);
+      expect(annotateColdStartSpy).toBeCalledTimes(0);
+      expect(annotateServiceNameSpy).toBeCalledTimes(0);
+      expect(subsegment).toBe(undefined);
+
+    });
+
+    test('when called and the current active segment is not a facade (i.e. a subsegment was already created), it throws', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const getSegmentSpy = jest.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => new Subsegment('### foo.bar'));
+      const setSegmentSpy = jest.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      const annotateColdStartSpy = jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => null);
+      const annotateServiceNameSpy = jest.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => null);
+      
+      // Act / Assess
+      expect(() => {
+        tracer.startTracing();
+      }).toThrow('Cannot call startTracing when a subsegment is already active');
+      expect(getSegmentSpy).toBeCalledTimes(1);
+      expect(setSegmentSpy).toBeCalledTimes(0);
+      expect(annotateColdStartSpy).toBeCalledTimes(0);
+      expect(annotateServiceNameSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called and there\'s already a current active segment (i.e. is called twice), it throws', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const facade = new Segment('facade');
+      const facadeAddNewSubsegmentSpy = jest.spyOn(facade, 'addNewSubsegment');
+      const getSegmentSpy = jest.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => facade)
+        .mockImplementationOnce(() => new Subsegment(`## ${process.env._HANDLER}`));
+      const setSegmentSpy = jest.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      const annotateColdStartSpy = jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => null);
+      const annotateServiceNameSpy = jest.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => null);
+      
+      // Act / Assess
+      tracer.startTracing();
+      expect(() => {
+        tracer.startTracing();
+      }).toThrow('Cannot call startTracing when a subsegment is already active');
+      expect(facadeAddNewSubsegmentSpy).toBeCalledTimes(1);
+      expect(getSegmentSpy).toBeCalledTimes(2);
+      expect(setSegmentSpy).toBeCalledTimes(1);
+      expect(annotateColdStartSpy).toBeCalledTimes(1);
+      expect(annotateServiceNameSpy).toBeCalledTimes(1);
+
+    });
+
+    test('when called with default settings it creates a subsegment, sets it as active, and annotates it correctly', () => {
+      
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const facade = new Segment('facade');
+      const facadeAddNewSubsegmentSpy = jest.spyOn(facade, 'addNewSubsegment');
+      const getSegmentSpy = jest.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => facade);
+      const setSegmentSpy = jest.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      const annotateColdStartSpy = jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => null);
+      const annotateServiceNameSpy = jest.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => null);
+      
+      // Act
+      const subsegment = tracer.startTracing();
+
+      // Assess
+      expect(getSegmentSpy).toBeCalledTimes(1);
+      expect(facadeAddNewSubsegmentSpy).toBeCalledTimes(1);
+      expect(facadeAddNewSubsegmentSpy).toBeCalledWith(`## ${process.env._HANDLER}`);
+      expect(setSegmentSpy).toBeCalledTimes(1);
+      expect(setSegmentSpy).toBeCalledWith(subsegment);
+      expect(annotateColdStartSpy).toBeCalledTimes(1);
+      expect(annotateServiceNameSpy).toBeCalledTimes(1);
+      expect(subsegment).toBeInstanceOf(Subsegment);
+
+    });
+
+    test('when called with annotateColdStart disabled, it creates a subsegment, sets it as active, and annotates it correctly', () => {
+      
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const facade = new Segment('facade');
+      const facadeAddNewSubsegmentSpy = jest.spyOn(facade, 'addNewSubsegment');
+      const getSegmentSpy = jest.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => facade);
+      const setSegmentSpy = jest.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      const annotateColdStartSpy = jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => null);
+      const annotateServiceNameSpy = jest.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => null);
+      
+      // Act
+      const subsegment = tracer.startTracing({ annotateColdStart: false });
+
+      // Assess
+      expect(getSegmentSpy).toBeCalledTimes(1);
+      expect(facadeAddNewSubsegmentSpy).toBeCalledTimes(1);
+      expect(facadeAddNewSubsegmentSpy).toBeCalledWith(`## ${process.env._HANDLER}`);
+      expect(setSegmentSpy).toBeCalledTimes(1);
+      expect(setSegmentSpy).toBeCalledWith(subsegment);
+      expect(annotateColdStartSpy).toBeCalledTimes(0);
+      expect(annotateServiceNameSpy).toBeCalledTimes(1);
+      expect(subsegment).toBeInstanceOf(Subsegment);
+
+    });
+
+    test('when called with annotateServiceName disabled, it creates a subsegment, sets it as active, and annotates it correctly', () => {
+      
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const facade = new Segment('facade');
+      const facadeAddNewSubsegmentSpy = jest.spyOn(facade, 'addNewSubsegment');
+      const getSegmentSpy = jest.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => facade);
+      const setSegmentSpy = jest.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      const annotateColdStartSpy = jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => null);
+      const annotateServiceNameSpy = jest.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => null);
+      
+      // Act
+      const subsegment = tracer.startTracing({ annotateServiceName: false });
+
+      // Assess
+      expect(getSegmentSpy).toBeCalledTimes(1);
+      expect(facadeAddNewSubsegmentSpy).toBeCalledTimes(1);
+      expect(facadeAddNewSubsegmentSpy).toBeCalledWith(`## ${process.env._HANDLER}`);
+      expect(setSegmentSpy).toBeCalledTimes(1);
+      expect(setSegmentSpy).toBeCalledWith(subsegment);
+      expect(annotateColdStartSpy).toBeCalledTimes(1);
+      expect(annotateServiceNameSpy).toBeCalledTimes(0);
+      expect(subsegment).toBeInstanceOf(Subsegment);
+
+    });
+    
+    // const facadeCloseSpy = jest.spyOn(facade, 'close');
+  });
+
+  describe('Method: stopTracing', () => {
+
+    test('when called and tracing is disabled, it does nothing', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const setSegmentSpy = jest.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      
+      // Act
+      tracer.stopTracing();
+
+      // Assess
+      expect(setSegmentSpy).toBeCalledTimes(0);
+
+    });
+
+    test('when called without a', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const facade = new Segment('facade');
+      const subsegment = new Subsegment(`## ${process.env._HANDLER}`);
+      const subsegmentCloseSpy = jest.spyOn(subsegment, 'close');
+      const setSegmentSpy = jest.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      Object.defineProperty(tracer, 'currentFacade', {
+        value: facade,
+        configurable: true,
+        writable: true
+      });
+      Object.defineProperty(tracer, 'currentSubsegment', { value: subsegment, configurable: true, writable: true });
+      
+      // Act
+      tracer.stopTracing();
+
+      // Assess
+      expect(subsegmentCloseSpy).toBeCalledTimes(1);
+      expect(setSegmentSpy).toBeCalledTimes(1);
+      expect(setSegmentSpy).toBeCalledWith(facade);
+
+    });
+
+  });
 });

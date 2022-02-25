@@ -34,8 +34,14 @@ type HandlerMethodDecorator = (
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 type MethodDecorator = (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<any>) => any;
 
+type ManualTracingOptions = {
+  annotateColdStart?: boolean
+  annotateServiceName?: boolean
+};
+
 export {
   TracerOptions,
   HandlerMethodDecorator,
-  MethodDecorator
+  MethodDecorator,
+  ManualTracingOptions
 };

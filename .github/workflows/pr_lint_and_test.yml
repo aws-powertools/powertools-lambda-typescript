@@ -21,8 +21,7 @@ jobs:
       - name: Install monorepo packages
         # This installs all the dependencies of ./packages/*
         run: |
-          npm --version
-          npm ci
+          npm ci --ws
       - name: Install example packages
         # Since we are not managing the cdk examples with npm workspaces we install
         # the dependencies in a separate step

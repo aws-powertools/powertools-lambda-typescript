@@ -54,7 +54,7 @@ jobs:
       # Generate documentation
       #########################
     - name: Set up Python
-      uses: actions/setup-python@v2.3.2
+      uses: actions/setup-python@v3
       with:
         python-version: '3.8'
     - name: Set RELEASE_VERSION env var

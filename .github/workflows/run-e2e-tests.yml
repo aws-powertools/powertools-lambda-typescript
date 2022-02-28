@@ -20,7 +20,7 @@ jobs:
     # Release new version
     #########################
     - name: "Use NodeJS 14"
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: '14'
     - name: Install npm@8.x

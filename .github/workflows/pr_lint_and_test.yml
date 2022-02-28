@@ -21,7 +21,7 @@ jobs:
       - name: Install monorepo packages
         # This installs all the dependencies of ./packages/*
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        npm ci --foreground-scripts
+        run: npm ci --foreground-scripts
       - name: Install example packages
         # Since we are not managing the cdk examples with npm workspaces we install
         # the dependencies in a separate step

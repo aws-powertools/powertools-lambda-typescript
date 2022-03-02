@@ -45,7 +45,6 @@
   "types": "./lib/index.d.ts",
   "typedocMain": "src/index.ts",
   "devDependencies": {
-    "@middy/core": "^2.5.6",
     "@types/lodash.clonedeep": "^4.5.6",
     "@types/lodash.merge": "^4.6.6",
     "@types/lodash.pickby": "^4.6.6",

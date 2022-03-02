@@ -50,9 +50,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "typedocMain": "src/index.ts",
-  "devDependencies": {
-    "@middy/core": "^2.5.6"
-  },
+  "devDependencies": {},
   "files": [
     "lib"
   ],

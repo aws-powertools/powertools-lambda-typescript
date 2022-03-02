@@ -7,7 +7,7 @@ import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import type {
   ClassThatLogs,
-  Environment,
+  Environment, ExtraOptions,
   HandlerMethodDecorator,
   LambdaFunctionContext,
   LogAttributes,
@@ -114,6 +114,8 @@ class Logger extends Utility implements ClassThatLogs {
   private static readonly defaultServiceName: string = 'service_undefined';
 
   private envVarsService?: EnvironmentVariablesService;
+
+  private logEvent: boolean = false;
 
   private logFormatter?: LogFormatterInterface;
 
@@ -228,6 +230,16 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * It returns a boolean value. True means that the Lambda invocation events
+   * are printed in the logs.
+   *
+   * @returns {boolean}
+   */
+  public getLogEvent(): boolean {
+    return this.logEvent;
+  }
+
+  /**
    * It prints a log item with level INFO.
    *
    * @param {LogItemMessage} input
@@ -239,6 +251,20 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * Logs a Lambda invocation event, if it *should*.
+   *
+   ** @param {unknown} event
+   * @param {boolean} [overwriteValue]
+   * @returns {void}
+   */
+  public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
+    if(!this.shouldLogEvent(overwriteValue)) {
+      return;
+    }
+    this.info('Lambda invocation event', { event: event })
+  }
+
+  /**
    * Method decorator that adds the current Lambda function context as extra
    * information in all log items.
    * The decorator can be used only when attached to a Lambda function handler which
@@ -247,11 +273,12 @@ class Logger extends Utility implements ClassThatLogs {
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */
-  public injectLambdaContext(): HandlerMethodDecorator {
+  public injectLambdaContext(options: ExtraOptions = {}): HandlerMethodDecorator {
     return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
 
       descriptor.value = (event, context, callback) => {
+        this.logEventIfEnabled(event, options.logEvent);
         this.addContext(context);
 
         return originalMethod?.apply(target, [ event, context, callback ]);
@@ -272,6 +299,15 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * If set to true, the Lambda function invocation events are printed in the logs.
+   *
+   * @returns {void}
+   */
+  public setLogEvent(value: boolean): void {
+    this.logEvent = value;
+  }
+
+  /**
    * It sets the user-provided sample rate value.
    *
    * @param {number} [sampleRateValue]
@@ -282,6 +318,21 @@ class Logger extends Utility implements ClassThatLogs {
       sampleRateValue ||
       this.getCustomConfigService()?.getSampleRateValue() ||
       this.getEnvVarsService().getSampleRateValue();
+  }
+
+  /**
+   * It checks whether the current Lambda invocation event should be printed in the logs or not.
+   *
+   * @private
+   * @param {boolean} [overwriteValue]
+   * @returns {boolean}
+   */
+  public shouldLogEvent(overwriteValue?: boolean): boolean {
+    if (typeof overwriteValue === 'boolean') {
+      return overwriteValue;
+    }
+
+    return this.getLogEvent();
   }
 
   /**

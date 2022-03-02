@@ -1,5 +1,6 @@
 import type { Logger } from '../Logger';
 import type middy from '@middy/core';
+import { ExtraOptions } from '../types';
 
 /**
  * A middy middleware that adds the current Lambda invocation's context inside all log items.
@@ -26,10 +27,11 @@ import type middy from '@middy/core';
  * @param {Logger|Logger[]} target - The Tracer instance to use for tracing
  * @returns {middy.MiddlewareObj} - The middy middleware object
  */
-const injectLambdaContext = (target: Logger | Logger[]): middy.MiddlewareObj => {
+const injectLambdaContext = (target: Logger | Logger[], options: ExtraOptions = {}): middy.MiddlewareObj => {
   const injectLambdaContextBefore = async (request: middy.Request): Promise<void> => {
     const loggers = target instanceof Array ? target : [target];
     loggers.forEach((logger: Logger) => {
+      logger.logEventIfEnabled(request.event, options.logEvent);
       logger.addContext(request.context);
     });
   };

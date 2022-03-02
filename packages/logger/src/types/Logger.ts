@@ -8,6 +8,10 @@ type ClassThatLogs = {
   [key in 'debug' | 'error' | 'info' | 'warn']: (input: LogItemMessage, ...extraInput: LogItemExtraInput) => void;
 };
 
+type ExtraOptions = {
+  logEvent?: boolean
+};
+
 type LoggerOptions = {
   logLevel?: LogLevel
   serviceName?: string
@@ -60,6 +64,7 @@ type HandlerMethodDecorator = (
 
 export {
   ClassThatLogs,
+  ExtraOptions,
   LogItemMessage,
   LogItemExtraInput,
   HandlerMethodDecorator,

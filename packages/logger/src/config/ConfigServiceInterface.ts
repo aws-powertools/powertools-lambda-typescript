@@ -23,6 +23,13 @@ interface ConfigServiceInterface {
   getCurrentEnvironment(): string
 
   /**
+   * It returns the value of the POWERTOOLS_LOGGER_LOG_EVENT environment variable.
+   *
+   * @returns {boolean}
+   */
+  getLogEvent(): boolean
+
+  /**
    * It returns the value of the LOG_LEVEL environment variable.
    *
    * @returns {string}

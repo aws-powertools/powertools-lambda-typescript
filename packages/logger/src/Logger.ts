@@ -261,7 +261,7 @@ class Logger extends Utility implements ClassThatLogs {
     if(!this.shouldLogEvent(overwriteValue)) {
       return;
     }
-    this.info('Lambda invocation event', { event: event })
+    this.info('Lambda invocation event', { event })
   }
 
   /**
@@ -299,12 +299,13 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * If set to true, the Lambda function invocation events are printed in the logs.
+   * It sets the log event flag value.
    *
+   * @param {number} [sampleRateValue]
    * @returns {void}
    */
-  public setLogEvent(value: boolean): void {
-    this.logEvent = value;
+  public setLogEvent(): void {
+    this.logEvent = this.getCustomConfigService()?.getLogEvent() || this.getEnvVarsService().getLogEvent();
   }
 
   /**

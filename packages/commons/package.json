@@ -41,7 +41,5 @@
   "bugs": {
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
-  "dependencies": {
-    "@types/aws-lambda": "^8.10.72"
-  }
+  "dependencies": {}
 }

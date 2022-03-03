@@ -45,7 +45,7 @@ npm install @aws-lambda-powertools/metrics
 
 ### Usage
 
-The `Metrics` utility should always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition to this, `Metrics` can also be aware of things like whether or not a given invocation had a cold start or not and emit the appropriate metrics.
+The `Metrics` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Metrics` can track cold start and emit the appropriate metrics.
 
 === "handler.ts"
 

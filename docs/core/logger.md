@@ -31,7 +31,7 @@ npm install @aws-lambda-powertools/logger
 
 ### Usage
 
-The `Logger` utility should always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition to this, `Logger` can also be aware of things like whether or not a given invocation had a cold start or not and inject the appropriate fields into the log.
+The `Logger` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Logger` can keep track of a cold start and inject the appropriate fields into logs.
 
 === "handler.ts"
 

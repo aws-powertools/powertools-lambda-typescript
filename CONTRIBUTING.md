@@ -6,6 +6,39 @@ documentation, we greatly value feedback and contributions from our community.
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
 information to effectively respond to your bug report or contribution.
 
+## Table of Contents
+
+- [Contributing Guidelines](#contributing-guidelines)
+  - [Table of Contents](#table-of-contents)
+  - [Security issue notifications](#security-issue-notifications)
+  - [Code of Conduct](#code-of-conduct)
+  - [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
+  - [Contributing via Pull Requests](#contributing-via-pull-requests)
+    - [Summary](#summary)
+    - [Step 1: Find something to work on](#step-1-find-something-to-work-on)
+    - [Step 2: Design](#step-2-design)
+    - [Step 3: Work your Magic](#step-3-work-your-magic)
+    - [Step 4: Pull Request](#step-4-pull-request)
+    - [Step 5: Merge](#step-5-merge)
+  - [Getting Started](#getting-started)
+    - [Setup](#setup)
+    - [Repo Layout](#repo-layout)
+    - [Tests](#tests)
+      - [Unit tests](#unit-tests)
+        - [Write](#write)
+        - [Run](#run)
+      - [e2e tests](#e2e-tests)
+        - [Set up](#set-up)
+        - [Write](#write-1)
+        - [Run](#run-1)
+        - [Automate](#automate)
+    - [Examples](#examples)
+    - [Local documentation](#local-documentation)
+      - [API reference](#api-reference)
+      - [Docs website](#docs-website)
+    - [Conventions](#conventions)
+  - [Licensing](#licensing)
+
 ## Security issue notifications
 
 If you discover a potential security issue in this project, we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.

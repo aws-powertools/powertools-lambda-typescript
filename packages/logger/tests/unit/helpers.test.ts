@@ -299,6 +299,9 @@ describe('Helper: createLogger function', () => {
         getCurrentEnvironment(): string {
           return 'dev';
         },
+        getLogEvent(): boolean {
+          return false;
+        },
         getLogLevel(): string {
           return 'INFO';
         },

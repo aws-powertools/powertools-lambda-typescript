@@ -604,6 +604,11 @@ describe('Class: Logger', () => {
 
   describe('Method: injectLambdaContext', () => {
 
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(console, 'log').mockImplementation(() => {});
+    });
+
     test('when used as decorator, it returns a function with the correct scope of the decorated class', async () => {
 
       // Prepare
@@ -908,26 +913,27 @@ describe('Class: Logger', () => {
       expect(console['info']).toBeCalledTimes(0);
     });
 
-    test.only('When the feature is enabled via overwrite flag, it DOES log the event', () => {
+    test('When the feature is enabled via overwrite flag, it DOES log the event', () => {
 
       // Prepare
+      const event = {
+        something: 'happened!'
+      };
       const logger = new Logger();
 
       // Act
-      logger.logEventIfEnabled(dummyEvent, true);
+      logger.logEventIfEnabled(event, true);
 
       // Assess
       expect(console['info']).toBeCalledTimes(1);
       expect(console['info']).toHaveBeenNthCalledWith(1, JSON.stringify({
           level: 'INFO',
-          message: 'An INFO log without context!',
+          message: 'Lambda invocation event',
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           event: {
-            key1: "value1",
-            key2: "value2",
-            key3: "value3"
+            something: "happened!"
           }
         },
       ));

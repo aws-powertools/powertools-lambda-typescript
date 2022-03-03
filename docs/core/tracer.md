@@ -31,6 +31,22 @@ Install the library in your project:
 npm install @aws-lambda-powertools/tracer
 ```
 
+### Usage
+
+The `Tracer` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Tracer` can track cold start and annotate the traces accordingly.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="1 3"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+
+    export const handler = async (_event, _context): Promise<void> => {
+        // ...
+    };
+    ```
+
 ### Utility settings
 
 The library has one optional setting. You can set it as environment variable, or pass it in the constructor.

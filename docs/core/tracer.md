@@ -33,7 +33,7 @@ npm install @aws-lambda-powertools/tracer
 
 ### Usage
 
-The `Tracer` utility should always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition to this, `Tracer` can also be aware of things like whether or not a given invocation had a cold start or not and annotate your traces accordingly.
+The `Tracer` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Tracer` can track cold start and annotate the traces accordingly.
 
 === "handler.ts"
 

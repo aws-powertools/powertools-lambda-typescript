@@ -1,7 +1,7 @@
 {
   "name": "@aws-lambda-powertools/metrics",
   "version": "0.6.0",
-  "description": "The metrics package for the AWS Lambda powertools (TypeScript) library",
+  "description": "The metrics package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"

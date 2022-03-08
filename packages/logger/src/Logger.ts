@@ -278,8 +278,8 @@ class Logger extends Utility implements ClassThatLogs {
       const originalMethod = descriptor.value;
 
       descriptor.value = (event, context, callback) => {
-        this.logEventIfEnabled(event, options.logEvent);
         this.addContext(context);
+        this.logEventIfEnabled(event, options.logEvent);
 
         return originalMethod?.apply(target, [ event, context, callback ]);
       };

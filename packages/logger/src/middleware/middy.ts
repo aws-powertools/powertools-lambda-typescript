@@ -31,8 +31,8 @@ const injectLambdaContext = (target: Logger | Logger[], options: ExtraOptions = 
   const injectLambdaContextBefore = async (request: middy.Request): Promise<void> => {
     const loggers = target instanceof Array ? target : [target];
     loggers.forEach((logger: Logger) => {
-      logger.logEventIfEnabled(request.event, options.logEvent);
       logger.addContext(request.context);
+      logger.logEventIfEnabled(request.event, options.logEvent);
     });
   };
   

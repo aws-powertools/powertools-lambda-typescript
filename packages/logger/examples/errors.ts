@@ -17,13 +17,13 @@ const lambdaHandler: Handler = async () => {
   try {
     throw new Error('Unexpected error #1');
   } catch (error) {
-    logger.error('This is an ERROR log #1', error);
+    logger.error('This is an ERROR log #1', error as Error);
   }
 
   try {
     throw new Error('Unexpected error #2');
   } catch (error) {
-    logger.error('This is an ERROR log #2', { myCustomErrorKey: error } );
+    logger.error('This is an ERROR log #2', { myCustomErrorKey: error as Error } );
   }
 
   return {

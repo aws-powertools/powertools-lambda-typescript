@@ -30,7 +30,7 @@ const testFunction = async (event: APIGatewayProxyEvent, context: Context): Prom
   try {
     throw new Error(ERROR_MSG);
   } catch (e) {
-    logger.error(ERROR_MSG, e);
+    logger.error(ERROR_MSG, e as Error);
   }
 
   return {

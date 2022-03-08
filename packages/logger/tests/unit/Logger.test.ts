@@ -288,6 +288,7 @@ describe('Class: Logger', () => {
             logger[methodOfLogger]( { message: 'A log item with an object as first parameters', extra: 'parameter' });
             logger[methodOfLogger]('A log item with a string as first parameter, and an error as second parameter', new Error('Something happened!') );
             logger[methodOfLogger]('A log item with a string as first parameter, and an error with custom key as second parameter', { myCustomErrorKey: new Error('Something happened!') });
+            logger[methodOfLogger]('A log item with a string as first parameter, and a string as second parameter', 'parameter');
           }
 
           // Assess
@@ -350,6 +351,14 @@ describe('Class: Logger', () => {
               name: 'Error',
               stack: expect.stringMatching(/Logger.test.ts:[0-9]+:[0-9]+/),
             },
+          }));
+          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(7, JSON.stringify({
+            level: method.toUpperCase(),
+            message: 'A log item with a string as first parameter, and a string as second parameter',
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            extra: 'parameter',
           }));
         });
       });

@@ -20,6 +20,9 @@ const lambdaHandler: Handler = async () => {
   // Pass an error that occurred
   logger.error('This is an ERROR log', new Error('Something bad happened!'));
 
+  // Pass a simple string as additional data
+  logger.info('This is an INFO log', 'Extra log data');
+
   return {
     foo: 'bar'
   };

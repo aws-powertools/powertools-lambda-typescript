@@ -75,7 +75,7 @@ Work your magic. Before starting, make sure to check the [Getting Started](#Gett
 
 * Create a commit with your changes and push them to a
   [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
-  > Note: Core members can push directly to a branch on the AWS Lambda Powertools (TypeScript) repo (following the same conventions detailed below).
+  > Note: Core members can push directly to a branch on the AWS Lambda Powertools for TypeScript repo (following the same conventions detailed below).
 * Create a [pull request on GitHub](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 * Pull request title and message (and PR title and description) must adhere to
@@ -113,7 +113,7 @@ Work your magic. Before starting, make sure to check the [Getting Started](#Gett
 
 ## Getting Started
 
-The following steps describe how to set up the AWS Lambda Powertools (TypeScript) repository on your local machine.
+The following steps describe how to set up the AWS Lambda Powertools for TypeScript repository on your local machine.
 The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [Codespaces](https://github.com/features/codespaces) for your development.
 
 ### Setup

@@ -1,6 +1,6 @@
 ---
 title: Homepage
-description: AWS Lambda Powertools TypeScript
+description: AWS Lambda Powertools for TypeScript
 ---
 
 !!! warning  "Do not use this library in production"
@@ -10,7 +10,7 @@ description: AWS Lambda Powertools TypeScript
 
     **Do not use this library for production workloads.**
 
-AWS Lambda Powertools TypeScript provides a suite of utilities for AWS Lambda functions running on the Node.js runtime, to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.
+AWS Lambda Powertools for TypeScript provides a suite of utilities for AWS Lambda functions running on the Node.js runtime, to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.
 
 ## Tenets
 
@@ -33,7 +33,7 @@ Core utilities such as Tracer, Logger, Metrics, and Event Handler will be availa
 
 ## Installation
 
-The AWS Lambda Powertools TypeScript utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3){target="_blank"}.
+The AWS Lambda Powertools for TypeScript utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3){target="_blank"}.
 Each TypeScript utility is installed as standalone NPM package.
 
 [Installation guide for the **Tracer** utility](./core/tracer.md#getting-started)

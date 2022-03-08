@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.6.0...v0.7.0) (2022-03-08)
+
+
+### Features
+
+* **metrics:** adopted Utility class ([#548](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/548)) ([672e6a8](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/672e6a82a2c66f99153c63a53e9d31481afd897a))
+
+
+
+
+
 # [0.6.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.5.1...v0.6.0) (2022-02-17)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

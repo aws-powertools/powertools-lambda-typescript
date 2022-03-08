@@ -13,7 +13,6 @@ A suite of TypeScript utilities for AWS Lambda functions to ease adopting best p
 ## Table of contents
 
 - [AWS Lambda Powertools (TypeScript)](#aws-lambda-powertools-typescript)
-  - [Table of contents](#table-of-contents)
   - [Features](#features)
   - [Getting started](#getting-started)
     - [Installation](#installation)

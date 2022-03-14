@@ -72,7 +72,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     logGroupName = outputs[STACK_OUTPUT_LOG_GROUP];
 
     // Invoke the function twice (one for cold start, another for warm start)
-    invocationLogs = await invokeFunction(functionName, 2);
+    invocationLogs = await invokeFunction(functionName, 2, 'SEQUENTIAL');
 
     console.log('logGroupName', logGroupName);
     

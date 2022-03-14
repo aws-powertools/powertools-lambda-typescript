@@ -33,7 +33,7 @@ Core utilities such as Tracer, Logger, Metrics, and Event Handler will be availa
 
 ## Installation
 
-The AWS Lambda Powertools for TypeScript utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3){target="_blank"}.
+The AWS Lambda Powertools for TypeScript utilities (which from here will be referred as Powertools) follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).
 Each TypeScript utility is installed as standalone NPM package.
 
 [Installation guide for the **Tracer** utility](./core/tracer.md#getting-started)

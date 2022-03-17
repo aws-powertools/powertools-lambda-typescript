@@ -6,6 +6,31 @@ documentation, we greatly value feedback and contributions from our community.
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
 information to effectively respond to your bug report or contribution.
 
+## Table of contents
+
+- [Security issue notifications](#security-issue-notifications)
+- [Code of Conduct](#code-of-conduct)
+- [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
+- [Contributing via Pull Requests](#contributing-via-pull-requests)
+  - [Summary](#summary)
+  - [Step 1: Find something to work on](#step-1-find-something-to-work-on)
+  - [Step 2: Design](#step-2-design)
+  - [Step 3: Work your Magic](#step-3-work-your-magic)
+  - [Step 4: Pull Request](#step-4-pull-request)
+  - [Step 5: Merge](#step-5-merge)
+- [Getting Started](#getting-started)
+  - [Setup](#setup)
+  - [Repo Layout](#repo-layout)
+  - [Tests](#tests)
+    - [Unit tests](#unit-tests)
+    - [e2e tests](#e2e-tests)
+  - [Examples](#examples)
+  - [Local documentation](#local-documentation)
+    - [API reference](#api-reference)
+    - [Docs website](#docs-website)
+  - [Conventions](#conventions)
+- [Licensing](#licensing)
+
 ## Security issue notifications
 
 If you discover a potential security issue in this project, we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.
@@ -26,90 +51,6 @@ reported the issue. Please try to include as much information as you can. Detail
 * The version of our code being used
 * Any modifications you've made relevant to the bug
 * Anything unusual about your environment or deployment
-
-## Contributing via Pull Requests
-
-Contributions via pull requests are much appreciated.
-
-### Summary
-
-* This project uses `node@14.x` and `npm@8.x` for development (see [Setup](#setup)).
-* Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed changes. A PR without a related issue or discussion has a high risk of being rejected. We are very appreciative and thankful for your time and efforts, and we want to make sure they are not wasted.
-* After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request.
-* When opening a PR, make sure to follow the checklist inside the pull request template.
-
-### Step 1: Find something to work on
-
-If you want to contribute a specific feature or fix you have in mind, look at active [pull
-requests](https://github.com/awslabs/aws-lambda-powertools-typescript/pulls) to see if someone else is already working on it. If not, you can start designing your changes. 
-
-On the other hand, if you are here looking for an issue to work on, check out our [backlog of
-issues](https://github.com/awslabs/aws-lambda-powertools-typescript/issues) and find something that piques your interest. Our project, by default, uses the default GitHub issue labels (enhancement/bug/help wanted/invalid/question/documentation), looking at any issue labeled as 'help wanted' or 'good-first-issue' is a great place to start.
-
-It's a good idea to keep the priority of issues in mind when deciding what to
-work on. If we have labelled an issue as `priority:medium` or `priority:low`, it means it's something we won't
-get to soon while `priority:high` issues have a bigger impact, so we are much more likely to give a PR for those issues prompt attention.
-
-### Step 2: Design
-
-You can start by checking the project's tenets [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets).
-
-We ask you to seek feedback and consensus on your proposed change by iterating on a design document. This is especially useful when you plan a big change or feature, or you want advice on what would be the best path forward.
-
-If you're picking up an existing issue, you can simply post your comment and discuss your proposed changes. If instead you're proposing a new feature, you can start by creating a new [RFC issue](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=RFC%2C+triage&template=rfc.md&title=RFC%3A+) and discuss your proposed change with the maintainers.
-
-This is a great way to get feedback on your proposed change and make sure that it is in line with the project's direction and community needs. You can start working on the change when you've gotten approved by at least one maintainer - we would hate for your time to be wasted.
-
-### Step 3: Work your Magic
-
-Work your magic. Before starting, make sure to check the [Getting Started](#Getting-Started) section to setup your dev environment and familiarize yourself with the project's structure and design. Here are some additional guidelines:
-
-* Working against the latest source on the **main** branch.
-* Try to maintain a single feature/bugfix per pull request. It's okay to introduce a little bit of housekeeping
-  changes along the way, but try to avoid conflating multiple features. Eventually, all these are going to go into a
-  single commit, so you can use that to frame your scope.
-* Try to add [unit tests](#Tests) that test your changes when applicable. This is especially important for new features and bug fixes, as it helps you to make sure that your changes are working as intended.
-* Lint and test the code. When you've setup the repository with `npm run init-environment`, pre-commit and push-hooks will automatically lint and test the code. Pull request builds will run the same checks as well.
-
-### Step 4: Pull Request
-
-* Create a commit with your changes and push them to a
-  [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
-  > Note: Core members can push directly to a branch on the AWS Lambda Powertools for TypeScript repo (following the same conventions detailed below).
-* Create a [pull request on GitHub](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
-
-* Pull request title and message (and PR title and description) must adhere to
-  [conventionalcommits](https://www.conventionalcommits.org).
-  * The title must begin with `feat(module): title`, `fix(module): title`, `refactor(module): title` or
-    `chore(module): title`, etc.
-  * Title should be lowercase.
-  * No period at the end of the title.
-
-* Pull request message should describe _motivation_ and follow the template provided as closely as possible. Think about your code reviewers and what information they need in order to understand what you did. If it's a big commit (hopefully not), try to provide some good entry points so it will be easier to follow.
-
-* Pull request message should indicate which issue or RFC it relates to in the "Related issues, RFCs" section.
-
-* Shout out to collaborators.
-
-* If not obvious (i.e. from unit tests), describe how you verified that your change works.
-
-* If this PR includes breaking changes, they must be listed at the end in the "Breaking change checklist" section.
-
-* Once the pull request is submitted, a reviewer will be assigned by the maintainers.
-
-* Discuss review comments and iterate until you get at least one "Approve". When iterating, push new commits to the
-  same branch. Usually, all these are going to be squashed when the maintainers merge to `main`. The commit messages should be hints
-  for you when you finalize your merge commit message.
-
-* Make sure to update the PR title/description if things change. The PR title/description are going to be used as the
-  commit title/message and will appear in the CHANGELOG and Release Notes, so maintain them all the way throughout the process.
-
-* Do not remove the legal notice at the end of the PR message. This is a requirement for any pull request to be
-  reviewed & accepted.
-
-### Step 5: Merge
-
-* Once approved and tested, one of the maintainers will squash-merge to `main` and will use your PR title/description will be used as the commit message. Your name will be also added to the Release Notes of the next release.
 
 ## Getting Started
 
@@ -300,6 +241,90 @@ Category | Convention
 **Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.
 **Git commits** | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.
 **Documentation** | API reference docs are generated from docstrings which should have an Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise.
+
+## Contributing via Pull Requests
+
+Contributions via pull requests are much appreciated.
+
+### Summary
+
+* This project uses `node@14.x` and `npm@8.x` for development (see [Setup](#setup)).
+* Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed changes. A PR without a related issue or discussion has a high risk of being rejected. We are very appreciative and thankful for your time and efforts, and we want to make sure they are not wasted.
+* After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request.
+* When opening a PR, make sure to follow the checklist inside the pull request template.
+
+### Step 1: Find something to work on
+
+If you want to contribute a specific feature or fix you have in mind, look at active [pull
+requests](https://github.com/awslabs/aws-lambda-powertools-typescript/pulls) to see if someone else is already working on it. If not, you can start designing your changes. 
+
+On the other hand, if you are here looking for an issue to work on, check out our [backlog of
+issues](https://github.com/awslabs/aws-lambda-powertools-typescript/issues) and find something that piques your interest. Our project, by default, uses the default GitHub issue labels (enhancement/bug/help wanted/invalid/question/documentation), looking at any issue labeled as 'help wanted' or 'good-first-issue' is a great place to start.
+
+It's a good idea to keep the priority of issues in mind when deciding what to
+work on. If we have labelled an issue as `priority:medium` or `priority:low`, it means it's something we won't
+get to soon while `priority:high` issues have a bigger impact, so we are much more likely to give a PR for those issues prompt attention.
+
+### Step 2: Design
+
+You can start by checking the project's tenets [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets).
+
+We ask you to seek feedback and consensus on your proposed change by iterating on a design document. This is especially useful when you plan a big change or feature, or you want advice on what would be the best path forward.
+
+If you're picking up an existing issue, you can simply post your comment and discuss your proposed changes. If instead you're proposing a new feature, you can start by creating a new [RFC issue](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=RFC%2C+triage&template=rfc.md&title=RFC%3A+) and discuss your proposed change with the maintainers.
+
+This is a great way to get feedback on your proposed change and make sure that it is in line with the project's direction and community needs. You can start working on the change when you've gotten approved by at least one maintainer - we would hate for your time to be wasted.
+
+### Step 3: Work your Magic
+
+Work your magic. Before starting, make sure to check the [Getting Started](#Getting-Started) section to setup your dev environment and familiarize yourself with the project's structure and design. Here are some additional guidelines:
+
+* Working against the latest source on the **main** branch.
+* Try to maintain a single feature/bugfix per pull request. It's okay to introduce a little bit of housekeeping
+  changes along the way, but try to avoid conflating multiple features. Eventually, all these are going to go into a
+  single commit, so you can use that to frame your scope.
+* Try to add [unit tests](#Tests) that test your changes when applicable. This is especially important for new features and bug fixes, as it helps you to make sure that your changes are working as intended.
+* Lint and test the code. When you've setup the repository with `npm run init-environment`, pre-commit and push-hooks will automatically lint and test the code. Pull request builds will run the same checks as well.
+
+### Step 4: Pull Request
+
+* Create a commit with your changes and push them to a
+  [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
+  > Note: Core members can push directly to a branch on the AWS Lambda Powertools (TypeScript) repo (following the same conventions detailed below).
+* Create a [pull request on GitHub](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+
+* Pull request title and message (and PR title and description) must adhere to
+  [conventionalcommits](https://www.conventionalcommits.org).
+  * The title must begin with `feat(module): title`, `fix(module): title`, `refactor(module): title` or
+    `chore(module): title`, etc.
+  * Title should be lowercase.
+  * No period at the end of the title.
+
+* Pull request message should describe _motivation_ and follow the template provided as closely as possible. Think about your code reviewers and what information they need in order to understand what you did. If it's a big commit (hopefully not), try to provide some good entry points so it will be easier to follow.
+
+* Pull request message should indicate which issue or RFC it relates to in the "Related issues, RFCs" section.
+
+* Shout out to collaborators.
+
+* If not obvious (i.e. from unit tests), describe how you verified that your change works.
+
+* If this PR includes breaking changes, they must be listed at the end in the "Breaking change checklist" section.
+
+* Once the pull request is submitted, a reviewer will be assigned by the maintainers.
+
+* Discuss review comments and iterate until you get at least one "Approve". When iterating, push new commits to the
+  same branch. Usually, all these are going to be squashed when the maintainers merge to `main`. The commit messages should be hints
+  for you when you finalize your merge commit message.
+
+* Make sure to update the PR title/description if things change. The PR title/description are going to be used as the
+  commit title/message and will appear in the CHANGELOG and Release Notes, so maintain them all the way throughout the process.
+
+* Do not remove the legal notice at the end of the PR message. This is a requirement for any pull request to be
+  reviewed & accepted.
+
+### Step 5: Merge
+
+* Once approved and tested, one of the maintainers will squash-merge to `main` and will use your PR title/description will be used as the commit message. Your name will be also added to the Release Notes of the next release.
 
 ## Licensing
 

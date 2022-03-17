@@ -10,6 +10,16 @@ A suite of TypeScript utilities for AWS Lambda functions to ease adopting best p
 
 > **An AWS Developer Acceleration (DevAx) initiative by Specialist Solution Architects | aws-devax-open-source@amazon.com**
 
+## Table of contents
+
+- [Features](#features)
+- [Getting started](#getting-started)
+  - [Installation](#installation)
+  - [Examples](#examples)
+- [Credits](#credits)
+- [Connect](#connect)
+- [License](#license)
+
 ## Features
 
 * **[Tracer](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions

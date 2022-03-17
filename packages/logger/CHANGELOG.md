@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.7.0...v0.7.1) (2022-03-17)
+
+
+### Bug Fixes
+
+* **logger:** enable sequential invocation in e2e test ([#658](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/658)) ([800424b](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/800424bc77223682ad6cdcc9f35080aff30ba91e))
+* **logger:** fix handling of additional log keys ([#614](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/614)) ([8aab299](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/8aab29900c5fac8eb625eb747acbc23ceac8f6ba))
+
+
+
+
+
 # [0.7.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.6.0...v0.7.0) (2022-03-08)
 
 

@@ -3,7 +3,7 @@
     "packages/*",
     "examples/cdk"
   ],
-  "version": "0.7.0",
+  "version": "0.7.1",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

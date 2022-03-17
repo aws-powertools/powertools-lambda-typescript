@@ -1,4 +1,5 @@
 import { XRay } from 'aws-sdk';
+import promiseRetry from 'promise-retry';
 
 interface ParsedDocument {
   name: string
@@ -57,48 +58,59 @@ interface ParsedTrace {
   Segments: ParsedSegment[]
 }
 
-const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string, expectedTraces: number): Promise<ParsedTrace[]> => {
-  const endTime = new Date();
-  console.log(`Manual query: aws xray get-trace-summaries --start-time ${Math.floor(startTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --filter-expression 'resource.arn = "${resourceArn}"'`);
-  const traces = await xrayClient
-    .getTraceSummaries({
-      StartTime: startTime,
-      EndTime: endTime,
-      FilterExpression: `resource.arn = "${resourceArn}"`,
-    })
-    .promise();
+const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string, expectedTraces: number, expectedSegments: number): Promise<ParsedTrace[]> => {
+  const retryOptions = { retries: 20, minTimeout: 5_000, maxTimeout: 10_000, factor: 1.25 };
 
-  if (traces.TraceSummaries?.length !== expectedTraces) {
-    throw new Error(`Expected ${expectedTraces} traces, got ${traces.TraceSummaries?.length} for ${resourceArn}`);
-  }
+  return promiseRetry(async(retry: (err?: Error) => never , _: number) => {
 
-  const traceDetails = await xrayClient.batchGetTraces({
-    TraceIds: traces.TraceSummaries?.map((traceSummary) => traceSummary?.Id) as XRay.TraceIdList,
-  }).promise();
+    const endTime = new Date();
+    console.log(`Manual query: aws xray get-trace-summaries --start-time ${Math.floor(startTime.getTime() / 1000)} --end-time ${Math.floor(endTime.getTime() / 1000)} --filter-expression 'resource.arn = "${resourceArn}"'`);
+    const traces = await xrayClient
+      .getTraceSummaries({
+        StartTime: startTime,
+        EndTime: endTime,
+        FilterExpression: `resource.arn = "${resourceArn}"`,
+      })
+      .promise();
 
-  if (traceDetails.Traces?.length !== expectedTraces) {
-    throw new Error(`Expected ${expectedTraces} trace summaries, got ${traceDetails.Traces?.length} for ${resourceArn}`);
-  }
+    if (traces.TraceSummaries?.length !== expectedTraces) {
+      retry(new Error(`Expected ${expectedTraces} traces, got ${traces.TraceSummaries?.length} for ${resourceArn}`));
+    }
 
-  const sortedTraces = traceDetails.Traces?.map((trace): ParsedTrace => ({
-    Duration: trace?.Duration as number,
-    Id: trace?.Id as string,
-    LimitExceeded: trace?.LimitExceeded as boolean,
-    Segments: trace.Segments?.map((segment) => ({
-      Document: JSON.parse(segment?.Document as string) as ParsedDocument,
-      Id: segment.Id as string,
-    })).sort((a, b) => a.Document.start_time - b.Document.start_time) as ParsedSegment[],
-  })).sort((a, b) => a.Segments[0].Document.start_time - b.Segments[0].Document.start_time);
+    const traceDetails = await xrayClient.batchGetTraces({
+      TraceIds: traces.TraceSummaries?.map((traceSummary) => traceSummary?.Id) as XRay.TraceIdList,
+    }).promise();
 
-  if (sortedTraces === undefined) {
-    throw new Error(`Traces are undefined for ${resourceArn}`);
-  }
+    if (traceDetails.Traces?.length !== expectedTraces) {
+      retry(new Error(`Expected ${expectedTraces} trace summaries, got ${traceDetails.Traces?.length} for ${resourceArn}`));
+    }
 
-  if (sortedTraces.length !== expectedTraces) {
-    throw new Error(`Expected ${expectedTraces} sorted traces, but got ${sortedTraces.length} for ${resourceArn}`);
-  }
+    const sortedTraces = traceDetails.Traces?.map((trace): ParsedTrace => ({
+      Duration: trace?.Duration as number,
+      Id: trace?.Id as string,
+      LimitExceeded: trace?.LimitExceeded as boolean,
+      Segments: trace.Segments?.map((segment) => ({
+        Document: JSON.parse(segment?.Document as string) as ParsedDocument,
+        Id: segment.Id as string,
+      })).sort((a, b) => a.Document.start_time - b.Document.start_time) as ParsedSegment[],
+    })).sort((a, b) => a.Segments[0].Document.start_time - b.Segments[0].Document.start_time);
 
-  return sortedTraces;
+    if (sortedTraces === undefined) {
+      throw new Error(`Traces are undefined for ${resourceArn}`);
+    }
+
+    if (sortedTraces.length !== expectedTraces) {
+      throw new Error(`Expected ${expectedTraces} sorted traces, but got ${sortedTraces.length} for ${resourceArn}`);
+    }
+
+    sortedTraces.forEach((trace) => {
+      if (trace.Segments?.length != expectedSegments) {
+        retry(new Error(`Expected ${expectedSegments} segments, got ${trace.Segments?.length} for trace id ${trace.Id}`));
+      }
+    });
+
+    return sortedTraces;
+  }, retryOptions);
 };
 
 const getFunctionSegment = (trace: ParsedTrace): ParsedSegment => {

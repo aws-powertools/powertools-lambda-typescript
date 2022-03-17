@@ -200,7 +200,7 @@ class Logger extends Utility implements ClassThatLogs {
    * It prints a log item with level DEBUG.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -211,7 +211,7 @@ class Logger extends Utility implements ClassThatLogs {
    * It prints a log item with level ERROR.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -231,7 +231,7 @@ class Logger extends Utility implements ClassThatLogs {
    * It prints a log item with level INFO.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -288,7 +288,7 @@ class Logger extends Utility implements ClassThatLogs {
    * It prints a log item with level WARN.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -336,9 +336,13 @@ class Logger extends Utility implements ClassThatLogs {
     if (typeof input !== 'string') {
       logItem.addAttributes(input);
     }
-    extraInput.forEach((item: Error | LogAttributes | unknown) => {
-      const attributes = item instanceof Error ? { error: item } : item;
-      logItem.addAttributes(<LogAttributes>attributes);
+    extraInput.forEach((item: Error | LogAttributes | string) => {
+      const attributes: LogAttributes =
+        item instanceof Error ? { error: item } :
+          typeof item === 'string' ? { extra: item } :
+            item;
+
+      logItem.addAttributes(attributes);
     });
 
     return logItem;

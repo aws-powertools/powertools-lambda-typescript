@@ -4,7 +4,7 @@
  * @group e2e/tracer/manual
  */
 
-import { randomUUID } from 'crypto';
+import { randomUUID, randomBytes } from 'crypto';
 import { join } from 'path';
 import { Tracing, Architecture } from '@aws-cdk/aws-lambda';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
@@ -35,7 +35,7 @@ describe('Tracer integration tests', () => {
 
   let integTestApp: App;
   let stack: Stack;
-  const invocationsMap: { [key: string]: { serviceName: string; resourceArn: string } } = {};
+  const invocationsMap: { [key: string]: { serviceName: string; functionName: string; resourceArn: string } } = {};
 
   beforeAll(async () => {
 
@@ -70,10 +70,11 @@ describe('Tracer integration tests', () => {
     for (const functionName of functions) {
       const expectedServiceName = randomUUID();
       const fileName = functionName.split('-')[0];
+      const functionInstanceName = `${functionName}-${randomBytes(12).toString('hex')}`;
       const fn = new NodejsFunction(stack, functionName, {
         entry: join(__dirname, `tracer.test.${fileName}.ts`),
         handler: 'handler',
-        functionName: functionName,
+        functionName: functionInstanceName,
         tracing: Tracing.ACTIVE,
         architecture: Architecture.X86_64,
         memorySize: 256,
@@ -95,7 +96,8 @@ describe('Tracer integration tests', () => {
       table.grantWriteData(fn);
       invocationsMap[functionName] = {
         serviceName: expectedServiceName,
-        resourceArn: `arn:aws:lambda:${region}:${account}:function:${functionName}`, // ARN is still a token at this point, so we construct the ARN manually
+        functionName: functionInstanceName,
+        resourceArn: `arn:aws:lambda:${region}:${account}:function:${functionInstanceName}`, // ARN is still a token at this point, so we construct the ARN manually
       };
     }
 
@@ -111,10 +113,11 @@ describe('Tracer integration tests', () => {
     });
 
     // Act
-    Object.keys(invocationsMap).forEach(async (functionName) => {
+    Object.values(invocationsMap).forEach(async ({ functionName }) => {
       for (let i = 0; i < invocations; i++) {
         await lambdaClient.invoke({
           FunctionName: functionName,
+          LogType: 'Tail',
           Payload: JSON.stringify({
             throw: i === invocations - 1 ? true : false, // only last invocation should throw
             sdkV2: i === 1 ? 'all' : 'client', // only second invocation should use captureAll
@@ -124,9 +127,6 @@ describe('Tracer integration tests', () => {
       }
     });
     
-    // sleep to allow for traces to be collected
-    await new Promise((resolve) => setTimeout(resolve, ONE_MINUTE * 2));
-
   }, ONE_MINUTE * 5);
 
   afterAll(async () => {
@@ -154,7 +154,7 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -224,7 +224,7 @@ describe('Tracer integration tests', () => {
 
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -294,7 +294,7 @@ describe('Tracer integration tests', () => {
 
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -362,7 +362,7 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 2);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -387,7 +387,7 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -484,7 +484,7 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -581,7 +581,7 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -666,7 +666,7 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 2);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments

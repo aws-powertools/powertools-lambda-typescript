@@ -68,11 +68,10 @@ export const deployStack = async (stackArtifact: CloudFormationStackArtifact ): 
   return result.outputs;
 };
 
-export const invokeFunction = async (functionName: string, times: number = 1): Promise<InvocationLogs[]> => {
+export const invokeFunction = async (functionName: string, times: number = 1, invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL'): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];
-  const promises = [];
-    
-  for (let i = 0; i < times; i++) {
+
+  const promiseFactory = () : Promise<void> => {
     const invokePromise = lambdaClient
       .invoke({
         FunctionName: functionName,
@@ -86,9 +85,15 @@ export const invokeFunction = async (functionName: string, times: number = 1): P
           throw new Error('No LogResult field returned in the response of Lambda invocation. This should not happen.');
         }
       });
-    promises.push(invokePromise);
-  }
-  await Promise.all(promises);
+
+    return invokePromise;
+  };
+  
+  const promiseFactories = Array.from({ length: times }, () => promiseFactory );
+  const invocation = invocationMode == 'PARALLEL'
+    ? Promise.all(promiseFactories.map(factory => factory()))
+    : chainPromises(promiseFactories);
+  await invocation;
 
   return invocationLogs; 
 };
@@ -105,4 +110,11 @@ export const destroyStack = async (app: App, stack: Stack): Promise<void> => {
     stack: stackArtifact,
     quiet: true,
   });
+};
+
+const chainPromises = async (promiseFactories: (() => Promise<void>)[]) : Promise<void> => {
+  let chain = Promise.resolve();
+  promiseFactories.forEach(factory => chain = chain.then(factory));
+
+  return chain;
 };

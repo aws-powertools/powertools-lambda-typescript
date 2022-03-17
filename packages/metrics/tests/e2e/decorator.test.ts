@@ -15,6 +15,9 @@ import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import * as AWS from 'aws-sdk';
 import { MetricUnits } from '../../src';
+import { getMetrics } from '../helpers/metricsUtils';
+
+const ONE_MINUTE = 1000 * 60;
 
 const cloudwatchClient = new AWS.CloudWatch();
 const lambdaClient = new AWS.Lambda();
@@ -80,10 +83,7 @@ describe('happy cases', () => {
         .promise();
     }
 
-    // THEN
-    // sleep to allow metrics to be collected
-    await new Promise((resolve) => setTimeout(resolve, 15000));
-  }, 200000);
+  }, ONE_MINUTE * 3);
 
   it('capture ColdStart Metric', async () => {
     const expectedDimensions = [
@@ -92,12 +92,8 @@ describe('happy cases', () => {
       { Name: Object.keys(expectedDefaultDimensions)[0], Value: expectedDefaultDimensions.MyDimension },
     ];
     // Check coldstart metric dimensions
-    const coldStartMetrics = await cloudwatchClient
-      .listMetrics({
-        Namespace: expectedNamespace,
-        MetricName: 'ColdStart',
-      })
-      .promise();
+    const coldStartMetrics = await getMetrics(cloudwatchClient, expectedNamespace, 'ColdStart', 1);
+
     expect(coldStartMetrics.Metrics?.length).toBe(1);
     const coldStartMetric = coldStartMetrics.Metrics?.[0];
     expect(coldStartMetric?.Dimensions).toStrictEqual(expectedDimensions);
@@ -124,16 +120,12 @@ describe('happy cases', () => {
     // Despite lambda has been called twice, coldstart metric sum should only be 1
     const singleDataPoint = coldStartMetricStat.Datapoints ? coldStartMetricStat.Datapoints[0] : {};
     expect(singleDataPoint?.Sum).toBe(1);
-  }, 15000);
+  }, ONE_MINUTE * 3);
 
   it('produce added Metric with the default and extra one dimensions', async () => {
     // Check metric dimensions
-    const metrics = await cloudwatchClient
-      .listMetrics({
-        Namespace: expectedNamespace,
-        MetricName: expectedMetricName,
-      })
-      .promise();
+    const metrics = await getMetrics(cloudwatchClient, expectedNamespace, expectedMetricName, 1);
+
     expect(metrics.Metrics?.length).toBe(1);
     const metric = metrics.Metrics?.[0];
     const expectedDimensions = [
@@ -144,16 +136,16 @@ describe('happy cases', () => {
     expect(metric?.Dimensions).toStrictEqual(expectedDimensions);
 
     // Check coldstart metric value
-    const adjustedStartTime = new Date(startTime.getTime() - 60 * 1000);
-    const endTime = new Date(new Date().getTime() + 60 * 1000);
+    const adjustedStartTime = new Date(startTime.getTime() - 3 * ONE_MINUTE);
+    const endTime = new Date(new Date().getTime() + ONE_MINUTE);
     console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ${expectedMetricName} --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(expectedDimensions)}'`);
     const metricStat = await cloudwatchClient
       .getMetricStatistics(
         {
           Namespace: expectedNamespace,
-          StartTime: new Date(startTime.getTime() - 60 * 1000), // minus 1 minute,
+          StartTime: adjustedStartTime,
           Dimensions: expectedDimensions,
-          EndTime: new Date(new Date().getTime() + 60 * 1000),
+          EndTime: endTime,
           Period: 60,
           MetricName: expectedMetricName,
           Statistics: ['Sum'],
@@ -165,7 +157,7 @@ describe('happy cases', () => {
     // Since lambda has been called twice in this test and potentially more in others, metric sum should be at least of expectedMetricValue * invocationCount
     const singleDataPoint = metricStat.Datapoints ? metricStat.Datapoints[0] : {};
     expect(singleDataPoint?.Sum).toBeGreaterThanOrEqual(parseInt(expectedMetricValue) * invocationCount);
-  }, 15000);
+  }, ONE_MINUTE * 3);
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
@@ -181,5 +173,5 @@ describe('happy cases', () => {
         quiet: true,
       });
     }
-  }, 200000);
+  }, ONE_MINUTE * 3);
 });

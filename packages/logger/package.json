@@ -1,7 +1,7 @@
 {
   "name": "@aws-lambda-powertools/logger",
-  "version": "0.6.0",
-  "description": "The logging package for the AWS Lambda powertools (TypeScript) library",
+  "version": "0.7.0",
+  "description": "The logging package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -61,7 +61,7 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^0.6.0",
+    "@aws-lambda-powertools/commons": "^0.7.0",
     "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.2",
     "lodash.pickby": "^4.6.0"

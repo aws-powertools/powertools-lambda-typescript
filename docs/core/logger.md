@@ -29,6 +29,22 @@ Install the library in your project:
 npm install @aws-lambda-powertools/logger
 ```
 
+### Usage
+
+The `Logger` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Logger` can keep track of a cold start and inject the appropriate fields into logs.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="1 3"
+    import { Logger } from '@aws-lambda-powertools/logger';
+
+    const logger = new Logger({ serviceName: 'serverlessAirline' });
+
+    export const handler = async (_event, _context): Promise<void> => {
+        // ...
+    };
+    ```
+
 ### Utility settings
 
 The library requires two settings. You can set them as environment variables, or pass them in the constructor.
@@ -44,8 +60,6 @@ For a **complete list** of supported environment variables, refer to [this secti
 
 #### Example using AWS Serverless Application Model (SAM)
 
-The `Logger` utility is instantiated outside of the Lambda handler. In doing this, the same instance can be used across multiple invocations inside the same execution environment. This allows `Metrics` to be aware of things like whether or not a given invocation had a cold start or not.
-
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
@@ -56,8 +70,8 @@ The `Logger` utility is instantiated outside of the Lambda handler. In doing thi
 
     // You can also pass the parameters in the constructor
     // const logger = new Logger({
-    //     logLevel: "WARN",
-    //     serviceName: "serverlessAirline"
+    //     logLevel: 'WARN',
+    //     serviceName: 'serverlessAirline'
     // });
     ```
 
@@ -262,10 +276,12 @@ You can append additional persistent keys and values in the logs generated durin
 ### Appending additional log keys and values to a single log item
 
 You can append additional keys and values in a single log item passing them as parameters.
+Pass a string for logging it with default key name `extra`. Alternatively, pass one or multiple objects with custom keys.
+If you already have an object containing a `message` key and an additional property, you can pass this object directly.
 
 === "handler.ts"
 
-    ```typescript hl_lines="14 18-19"
+    ```typescript hl_lines="14 18-19 23 31"
     import { Logger } from '@aws-lambda-powertools/logger';
 
     const logger = new Logger();
@@ -286,6 +302,17 @@ You can append additional keys and values in a single log item passing them as p
             { data: myImportantVariable },
             { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } }
         );
+
+        // Simply pass a string for logging additional data
+        logger.info('This is a log with additional string value', 'string value');
+
+        // Directly passing an object containing both the message and the additional info
+        const logObject = {
+            message: 'This is a log message',
+            additionalValue: 42
+        };
+
+        logger.info(logObject);
         
         return {
             foo: 'bar'
@@ -295,7 +322,7 @@ You can append additional keys and values in a single log item passing them as p
     ```
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="7 15-16"
+    ```json hl_lines="7 15-16 24 32"
     {
         "level": "INFO",
         "message": "This is a log with an extra variable",
@@ -312,6 +339,22 @@ You can append additional keys and values in a single log item passing them as p
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "data": { "foo": "bar" },
         "correlationIds": { "myCustomCorrelationId": "foo-bar-baz" }
+    }
+    {
+        "level": "INFO",
+        "message": "This is a log with additional string value",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T22:06:17.463Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "extra": "string value"
+    }
+    {
+        "level": "INFO",
+        "message": "This is a log message",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T22:06:17.463Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "additionalValue": 42
     }
     ```
 
@@ -333,14 +376,14 @@ The error will be logged with default key name `error`, but you can also pass yo
             throw new Error('Unexpected error #1');
         } catch (error) {
             // Log information about the error using the default "error" key
-            logger.error('This is the first error', error);
+            logger.error('This is the first error', error as Error);
         }
 
         try {
             throw new Error('Unexpected error #2');
         } catch (error) {
             // Log information about the error using a custom "myCustomErrorKey" key
-            logger.error('This is the second error', { myCustomErrorKey: error } );
+            logger.error('This is the second error', { myCustomErrorKey: error as Error } );
         }
     
     };
@@ -376,6 +419,9 @@ The error will be logged with default key name `error`, but you can also pass yo
         }
     }
     ```
+
+!!! tip "Logging errors and log level"
+    You can also log errors using the `warn`, `info`, and `debug` methods. Be aware of the log level though, you might miss those  errors when analyzing the log later depending on the log level configuration.
 
 ## Advanced
 

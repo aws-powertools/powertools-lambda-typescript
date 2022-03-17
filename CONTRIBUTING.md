@@ -54,7 +54,7 @@ reported the issue. Please try to include as much information as you can. Detail
 
 ## Getting Started
 
-The following steps describe how to set up the AWS Lambda Powertools (TypeScript) repository on your local machine.
+The following steps describe how to set up the AWS Lambda Powertools for TypeScript repository on your local machine.
 The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [Codespaces](https://github.com/features/codespaces) for your development.
 
 ### Setup

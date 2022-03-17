@@ -50,7 +50,7 @@ type UnformattedAttributes = {
 };
 
 type LogItemMessage = string | LogAttributesWithMessage;
-type LogItemExtraInput = Array<Error | LogAttributes | unknown>;
+type LogItemExtraInput = [Error | string] | LogAttributes[];
 
 type HandlerMethodDecorator = (
   target: LambdaInterface,

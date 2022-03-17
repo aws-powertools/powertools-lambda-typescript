@@ -43,6 +43,22 @@ Install the library in your project:
 npm install @aws-lambda-powertools/metrics
 ```
 
+### Usage
+
+The `Metrics` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Metrics` can track cold start and emit the appropriate metrics.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="1 3"
+    import { Metrics } from '@aws-lambda-powertools/metrics';
+
+    const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+
+    export const handler = async (_event, _context): Promise<void> => {
+        // ...
+    };
+    ```
+
 ### Utility settings
 
 The library requires two settings. You can set them as environment variables, or pass them in the constructor.  

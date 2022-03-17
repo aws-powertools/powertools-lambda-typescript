@@ -8,8 +8,6 @@ information to effectively respond to your bug report or contribution.
 
 ## Table of contents
 
-- [Contributing Guidelines](#contributing-guidelines)
-  - [Table of contents](#table-of-contents)
   - [Security issue notifications](#security-issue-notifications)
   - [Code of Conduct](#code-of-conduct)
   - [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)

@@ -23,8 +23,6 @@ information to effectively respond to your bug report or contribution.
     - [Repo Layout](#repo-layout)
     - [Tests](#tests)
       - [Unit tests](#unit-tests)
-        - [Write](#write)
-        - [Run](#run)
       - [e2e tests](#e2e-tests)
         - [Set up](#set-up)
         - [Write](#write-1)

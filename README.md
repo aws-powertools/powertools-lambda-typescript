@@ -12,13 +12,13 @@ A suite of TypeScript utilities for AWS Lambda functions to ease adopting best p
 
 ## Table of contents
 
-  - [Features](#features)
-  - [Getting started](#getting-started)
-    - [Installation](#installation)
-    - [Examples](#examples)
-  - [Credits](#credits)
-  - [Connect](#connect)
-  - [License](#license)
+- [Features](#features)
+- [Getting started](#getting-started)
+  - [Installation](#installation)
+  - [Examples](#examples)
+- [Credits](#credits)
+- [Connect](#connect)
+- [License](#license)
 
 ## Features
 

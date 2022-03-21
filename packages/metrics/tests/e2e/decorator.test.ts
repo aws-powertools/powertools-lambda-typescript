@@ -8,28 +8,47 @@
  */
 
 import { randomUUID } from 'crypto';
-import * as lambda from '@aws-cdk/aws-lambda-nodejs';
 import { Tracing } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import * as AWS from 'aws-sdk';
 import { MetricUnits } from '../../src';
+import { 
+  ONE_MINUTE, 
+  RESOURCE_NAME_PREFIX, 
+  SETUP_TIMEOUT, 
+  TEARDOWN_TIMEOUT, 
+  TEST_CASE_TIMEOUT 
+} from './constants';
 import { getMetrics } from '../helpers/metricsUtils';
+import { 
+  generateUniqueName, 
+  isValidRuntimeKey, 
+  createStackWithLambdaFunction, 
+  deployStack, 
+  invokeFunction, 
+  destroyStack 
+} from '@aws-lambda-powertools/commons';
+import path from 'path';
 
-const ONE_MINUTE = 1000 * 60;
+const runtime: string = process.env.RUNTIME || 'nodejs14x';
+
+if (!isValidRuntimeKey(runtime)) {
+  throw new Error(`Invalid runtime key value: ${runtime}`);
+}
+
+const uuid = randomUUID();
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'decorator');
+const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'decorator');
+const lambdaFunctionCodeFile = 'decorator.test.MyFunction.ts';
 
 const cloudwatchClient = new AWS.CloudWatch();
-const lambdaClient = new AWS.Lambda();
 
-const integTestApp = new App();
-const stack = new Stack(integTestApp, 'MetricsE2EDecoratorStack');
-
-// GIVEN
 const invocationCount = 2;
 const startTime = new Date();
-const expectedNamespace = randomUUID(); // to easily find metrics back at assert phase
-const expectedServiceName = 'decoratorService';
+
+// Parameters to be used by Metrics in the Lambda function
+const expectedNamespace = uuid; // to easily find metrics back at assert phase
+const expectedServiceName = 'e2eDecorator';
 const expectedMetricName = 'MyMetric';
 const expectedMetricUnit = MetricUnits.Count;
 const expectedMetricValue = '1';
@@ -39,139 +58,127 @@ const expectedSingleMetricDimension = { MySingleMetricDim: 'MySingleValue' };
 const expectedSingleMetricName = 'MySingleMetric';
 const expectedSingleMetricUnit = MetricUnits.Percent;
 const expectedSingleMetricValue = '2';
-const functionName = 'MyFunctionWithDecoratedHandler';
-new lambda.NodejsFunction(stack, 'MyFunction', {
-  functionName: functionName,
-  tracing: Tracing.ACTIVE,
-  environment: {
-    EXPECTED_NAMESPACE: expectedNamespace,
-    EXPECTED_SERVICE_NAME: expectedServiceName,
-    EXPECTED_METRIC_NAME: expectedMetricName,
-    EXPECTED_METRIC_UNIT: expectedMetricUnit,
-    EXPECTED_METRIC_VALUE: expectedMetricValue,
-    EXPECTED_DEFAULT_DIMENSIONS: JSON.stringify(expectedDefaultDimensions),
-    EXPECTED_EXTRA_DIMENSION: JSON.stringify(expectedExtraDimension),
-    EXPECTED_SINGLE_METRIC_DIMENSION: JSON.stringify(expectedSingleMetricDimension),
-    EXPECTED_SINGLE_METRIC_NAME: expectedSingleMetricName,
-    EXPECTED_SINGLE_METRIC_UNIT: expectedSingleMetricUnit,
-    EXPECTED_SINGLE_METRIC_VALUE: expectedSingleMetricValue,
-  },
-});
 
-const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
+const integTestApp = new App();
+let stack: Stack;
 
-describe('happy cases', () => {
+describe(`metrics E2E tests (decorator) for runtime: ${runtime}`, () => {
   beforeAll(async () => {
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
+    // GIVEN a stack
+    stack = createStackWithLambdaFunction({
+      app: integTestApp,
+      stackName: stackName,
+      functionName: functionName,
+      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
+      tracing: Tracing.ACTIVE,
+      environment: {
+        POWERTOOLS_SERVICE_NAME: 'metrics-e2e-testing',
+        UUID: uuid,
 
-    // WHEN
-    // lambda function is deployed
-    await cloudFormation.deployStack({
-      stack: stackArtifact,
-      quiet: true,
+        // Parameter(s) to be used by Metrics in the Lambda function
+        EXPECTED_NAMESPACE: expectedNamespace,
+        EXPECTED_SERVICE_NAME: expectedServiceName,
+        EXPECTED_METRIC_NAME: expectedMetricName,
+        EXPECTED_METRIC_UNIT: expectedMetricUnit,
+        EXPECTED_METRIC_VALUE: expectedMetricValue,
+        EXPECTED_DEFAULT_DIMENSIONS: JSON.stringify(expectedDefaultDimensions),
+        EXPECTED_EXTRA_DIMENSION: JSON.stringify(expectedExtraDimension),
+        EXPECTED_SINGLE_METRIC_DIMENSION: JSON.stringify(expectedSingleMetricDimension),
+        EXPECTED_SINGLE_METRIC_NAME: expectedSingleMetricName,
+        EXPECTED_SINGLE_METRIC_UNIT: expectedSingleMetricUnit,
+        EXPECTED_SINGLE_METRIC_VALUE: expectedSingleMetricValue,
+      },
+      runtime: runtime,
     });
+
+    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
+    await deployStack(stackArtifact);
 
     // and invoked
-    for (let i = 0; i < invocationCount; i++) {
-      await lambdaClient
-        .invoke({
-          FunctionName: functionName,
-        })
+    await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
+
+  }, SETUP_TIMEOUT);
+  describe('ColdStart metrics', () => {
+    it('should capture ColdStart Metric', async () => {
+      const expectedDimensions = [
+        { Name: 'service', Value: expectedServiceName },
+        { Name: 'function_name', Value: functionName },
+        { Name: Object.keys(expectedDefaultDimensions)[0], Value: expectedDefaultDimensions.MyDimension },
+      ];
+      // Check coldstart metric dimensions
+      const coldStartMetrics = await getMetrics(cloudwatchClient, expectedNamespace, 'ColdStart', 1);
+
+      expect(coldStartMetrics.Metrics?.length).toBe(1);
+      const coldStartMetric = coldStartMetrics.Metrics?.[0];
+      expect(coldStartMetric?.Dimensions).toStrictEqual(expectedDimensions);
+
+      // Check coldstart metric value
+      const adjustedStartTime = new Date(startTime.getTime() - ONE_MINUTE);
+      const endTime = new Date(new Date().getTime() + ONE_MINUTE);
+      console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ColdStart --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(expectedDimensions)}'`);
+      const coldStartMetricStat = await cloudwatchClient
+        .getMetricStatistics(
+          {
+            Namespace: expectedNamespace,
+            StartTime: adjustedStartTime, 
+            Dimensions: expectedDimensions,
+            EndTime: endTime,
+            Period: 60,
+            MetricName: 'ColdStart',
+            Statistics: ['Sum'],
+          },
+          undefined
+        )
         .promise();
-    }
 
-  }, ONE_MINUTE * 3);
+      // Despite lambda has been called twice, coldstart metric sum should only be 1
+      const singleDataPoint = coldStartMetricStat.Datapoints ? coldStartMetricStat.Datapoints[0] : {};
+      expect(singleDataPoint?.Sum).toBe(1);
+    }, TEST_CASE_TIMEOUT);
+  });
 
-  it('capture ColdStart Metric', async () => {
-    const expectedDimensions = [
-      { Name: 'service', Value: expectedServiceName },
-      { Name: 'function_name', Value: functionName },
-      { Name: Object.keys(expectedDefaultDimensions)[0], Value: expectedDefaultDimensions.MyDimension },
-    ];
-    // Check coldstart metric dimensions
-    const coldStartMetrics = await getMetrics(cloudwatchClient, expectedNamespace, 'ColdStart', 1);
+  describe('Default and extra dimensions', () => {
+  
+    it('should produce a Metric with the default and extra one dimensions', async () => {
+      // Check metric dimensions
+      const metrics = await getMetrics(cloudwatchClient, expectedNamespace, expectedMetricName, 1);
 
-    expect(coldStartMetrics.Metrics?.length).toBe(1);
-    const coldStartMetric = coldStartMetrics.Metrics?.[0];
-    expect(coldStartMetric?.Dimensions).toStrictEqual(expectedDimensions);
+      expect(metrics.Metrics?.length).toBe(1);
+      const metric = metrics.Metrics?.[0];
+      const expectedDimensions = [
+        { Name: 'service', Value: expectedServiceName },
+        { Name: Object.keys(expectedDefaultDimensions)[0], Value: expectedDefaultDimensions.MyDimension },
+        { Name: Object.keys(expectedExtraDimension)[0], Value: expectedExtraDimension.MyExtraDimension },
+      ];
+      expect(metric?.Dimensions).toStrictEqual(expectedDimensions);
 
-    // Check coldstart metric value
-    const adjustedStartTime = new Date(startTime.getTime() - 60 * 1000);
-    const endTime = new Date(new Date().getTime() + 60 * 1000);
-    console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ColdStart --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(expectedDimensions)}'`);
-    const coldStartMetricStat = await cloudwatchClient
-      .getMetricStatistics(
-        {
-          Namespace: expectedNamespace,
-          StartTime: adjustedStartTime, 
-          Dimensions: expectedDimensions,
-          EndTime: endTime,
-          Period: 60,
-          MetricName: 'ColdStart',
-          Statistics: ['Sum'],
-        },
-        undefined
-      )
-      .promise();
+      // Check coldstart metric value
+      const adjustedStartTime = new Date(startTime.getTime() - 3 * ONE_MINUTE);
+      const endTime = new Date(new Date().getTime() + ONE_MINUTE);
+      console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ${expectedMetricName} --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(expectedDimensions)}'`);
+      const metricStat = await cloudwatchClient
+        .getMetricStatistics(
+          {
+            Namespace: expectedNamespace,
+            StartTime: adjustedStartTime,
+            Dimensions: expectedDimensions,
+            EndTime: endTime,
+            Period: 60,
+            MetricName: expectedMetricName,
+            Statistics: ['Sum'],
+          },
+          undefined
+        )
+        .promise();
 
-    // Despite lambda has been called twice, coldstart metric sum should only be 1
-    const singleDataPoint = coldStartMetricStat.Datapoints ? coldStartMetricStat.Datapoints[0] : {};
-    expect(singleDataPoint?.Sum).toBe(1);
-  }, ONE_MINUTE * 3);
-
-  it('produce added Metric with the default and extra one dimensions', async () => {
-    // Check metric dimensions
-    const metrics = await getMetrics(cloudwatchClient, expectedNamespace, expectedMetricName, 1);
-
-    expect(metrics.Metrics?.length).toBe(1);
-    const metric = metrics.Metrics?.[0];
-    const expectedDimensions = [
-      { Name: 'service', Value: expectedServiceName },
-      { Name: Object.keys(expectedDefaultDimensions)[0], Value: expectedDefaultDimensions.MyDimension },
-      { Name: Object.keys(expectedExtraDimension)[0], Value: expectedExtraDimension.MyExtraDimension },
-    ];
-    expect(metric?.Dimensions).toStrictEqual(expectedDimensions);
-
-    // Check coldstart metric value
-    const adjustedStartTime = new Date(startTime.getTime() - 3 * ONE_MINUTE);
-    const endTime = new Date(new Date().getTime() + ONE_MINUTE);
-    console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ${expectedMetricName} --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(expectedDimensions)}'`);
-    const metricStat = await cloudwatchClient
-      .getMetricStatistics(
-        {
-          Namespace: expectedNamespace,
-          StartTime: adjustedStartTime,
-          Dimensions: expectedDimensions,
-          EndTime: endTime,
-          Period: 60,
-          MetricName: expectedMetricName,
-          Statistics: ['Sum'],
-        },
-        undefined
-      )
-      .promise();
-
-    // Since lambda has been called twice in this test and potentially more in others, metric sum should be at least of expectedMetricValue * invocationCount
-    const singleDataPoint = metricStat.Datapoints ? metricStat.Datapoints[0] : {};
-    expect(singleDataPoint?.Sum).toBeGreaterThanOrEqual(parseInt(expectedMetricValue) * invocationCount);
-  }, ONE_MINUTE * 3);
-
+      // Since lambda has been called twice in this test and potentially more in others, metric sum should be at least of expectedMetricValue * invocationCount
+      const singleDataPoint = metricStat.Datapoints ? metricStat.Datapoints[0] : {};
+      expect(singleDataPoint?.Sum).toBeGreaterThanOrEqual(parseInt(expectedMetricValue) * invocationCount);
+    }, TEST_CASE_TIMEOUT);
+  });
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-      const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-        profile: process.env.AWS_PROFILE,
-      });
-      const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-      await cloudFormation.destroyStack({
-        stack: stackArtifact,
-        quiet: true,
-      });
+      await destroyStack(integTestApp, stack);
     }
-  }, ONE_MINUTE * 3);
+  }, TEARDOWN_TIMEOUT);
 });

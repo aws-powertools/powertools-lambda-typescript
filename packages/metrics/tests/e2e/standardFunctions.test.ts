@@ -12,8 +12,22 @@ import { Tracing } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
 import * as AWS from 'aws-sdk';
 import { MetricUnits } from '../../src';
+import { 
+  ONE_MINUTE, 
+  RESOURCE_NAME_PREFIX, 
+  SETUP_TIMEOUT, 
+  TEARDOWN_TIMEOUT, 
+  TEST_CASE_TIMEOUT 
+} from './constants';
 import { getMetrics } from '../helpers/metricsUtils';
-import { generateUniqueName, isValidRuntimeKey, createStackWithLambdaFunction, deployStack, invokeFunction, destroyStack } from '@aws-lambda-powertools/commons';
+import { 
+  generateUniqueName, 
+  isValidRuntimeKey, 
+  createStackWithLambdaFunction, 
+  deployStack, 
+  invokeFunction, 
+  destroyStack 
+} from '@aws-lambda-powertools/commons';
 import path from 'path';
 
 const runtime: string = process.env.RUNTIME || 'nodejs14x';
@@ -22,25 +36,19 @@ if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
 
-const RESOURCE_NAME_PREFIX = 'Metrics-E2E';
-const ONE_MINUTE = 60 * 10_00;
-const TEST_CASE_TIMEOUT = 30_000; // 30 seconds
-const SETUP_TIMEOUT = 300_000; // 300 seconds
-const TEARDOWN_TIMEOUT = 200_000;
+const uuid = randomUUID();
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'manual');
+const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'manual');
+const lambdaFunctionCodeFile = 'standardFunctions.test.MyFunction.ts';
 
 const cloudwatchClient = new AWS.CloudWatch();
-
-const uuid = randomUUID();
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Decorator');
-const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Decorator');
-const lambdaFunctionCodeFile = 'standardFunctions.test.MyFunction.ts';
 
 const invocationCount = 2;
 const startTime = new Date();
 
 // Parameters to be used by Metrics in the Lambda function
 const expectedNamespace = uuid; // to easily find metrics back at assert phase
-const expectedServiceName = 'MyFunctionWithStandardHandler';
+const expectedServiceName = 'e2eManual';
 const expectedMetricName = 'MyMetric';
 const expectedMetricUnit = MetricUnits.Count;
 const expectedMetricValue = '1';
@@ -94,7 +102,6 @@ describe(`metrics E2E tests (manual) for runtime: ${runtime}`, () => {
     it('should capture ColdStart Metric', async () => {
       // Check coldstart metric dimensions
       const coldStartMetrics = await getMetrics(cloudwatchClient, expectedNamespace, 'ColdStart', 1);
-  
       expect(coldStartMetrics.Metrics?.length).toBe(1);
       const coldStartMetric = coldStartMetrics.Metrics?.[0];
       expect(coldStartMetric?.Dimensions).toStrictEqual([{ Name: 'service', Value: expectedServiceName }]);

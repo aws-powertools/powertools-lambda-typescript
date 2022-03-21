@@ -34,9 +34,11 @@ const lambdaFunctionCodeFile = 'sampleRate.decorator.test.FunctionCode.ts';
 const LOG_MSG = `Log message ${uuid}`;
 const SAMPLE_RATE = '0.5';
 const LOG_LEVEL = LEVEL.ERROR.toString();
+
 const integTestApp = new App();
-let logGroupName: string; // We do not know it until deployment
 let stack: Stack;
+let logGroupName: string; // We do not know the exact name until deployment
+
 describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${runtime}`, () => {
 
   let invocationLogs: InvocationLogs[];

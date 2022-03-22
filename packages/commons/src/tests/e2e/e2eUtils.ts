@@ -1,6 +1,12 @@
+/* istanbul ignore file */
+
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/** 
+ * E2E utils is used by e2e tests. They are helper function that calls either CDK or SDK
+ * to interact with services. 
+*/
 import { CloudFormationStackArtifact } from '@aws-cdk/cx-api';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';

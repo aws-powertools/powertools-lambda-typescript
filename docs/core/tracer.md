@@ -340,7 +340,8 @@ When your function makes calls to microservices or public HTTP APIs, Tracer auto
 You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS=false`** environment variable or by passing the `captureHTTPSRequests: false` option to the `Tracer` constructor.
 
 !!! info
-    The following snippet shows how to trace [axios](https://www.npmjs.com/package/axios) requests, but you can use any HTTP client library built on top of [http](https://nodejs.org/api/http.html) or [https](https://nodejs.org/api/https.html)
+    The following snippet shows how to trace [axios](https://www.npmjs.com/package/axios) requests, but you can use any HTTP client library built on top of [http](https://nodejs.org/api/http.html) or [https](https://nodejs.org/api/https.html).
+    Support to 3rd party HTTP clients is provided on a best effort basis.
 
 === "index.ts"
 

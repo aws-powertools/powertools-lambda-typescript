@@ -39,7 +39,7 @@ if (!isValidRuntimeKey(runtime)) {
 const uuid = randomUUID();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'manual');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'manual');
-const lambdaFunctionCodeFile = 'standardFunctions.test.MyFunction.ts';
+const lambdaFunctionCodeFile = 'basicFeatures.manual.test.functionCode.ts';
 
 const cloudwatchClient = new AWS.CloudWatch();
 

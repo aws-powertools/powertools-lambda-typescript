@@ -39,7 +39,7 @@ if (!isValidRuntimeKey(runtime)) {
 const uuid = randomUUID();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'decorator');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'decorator');
-const lambdaFunctionCodeFile = 'decorator.test.MyFunction.ts';
+const lambdaFunctionCodeFile = 'basicFeatures.decorator.test.functionCode.ts';
 
 const cloudwatchClient = new AWS.CloudWatch();
 

@@ -12,6 +12,7 @@ import { AsyncHandler, LambdaInterface, SyncHandler } from '@aws-lambda-powertoo
   * const tracerOptions: TracerOptions = {
   *   enabled?: true,
   *   serviceName?: 'serverlessAirline',
+  *   captureHTTPsRequests?: true,
   *   customConfigService?: customConfigService, // Only needed for advanced uses
   * };
   * 
@@ -21,6 +22,7 @@ import { AsyncHandler, LambdaInterface, SyncHandler } from '@aws-lambda-powertoo
 type TracerOptions = {
   enabled?: boolean
   serviceName?: string
+  captureHTTPsRequests?: boolean
   customConfigService?: ConfigServiceInterface
 };
 

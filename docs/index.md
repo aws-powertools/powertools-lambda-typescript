@@ -54,6 +54,7 @@ Each TypeScript utility is installed as standalone NPM package.
 | **POWERTOOLS_TRACE_ENABLED**              | Explicitly disables tracing | [Tracer](./core/tracer)   | `true`                |
 | **POWERTOOLS_TRACER_CAPTURE_RESPONSE**    | Captures Lambda or method return as metadata. | [Tracer](./core/tracer)   | `true`                |
 | **POWERTOOLS_TRACER_CAPTURE_ERROR**       | Captures Lambda or method exception as metadata. | [Tracer](./core/tracer)   | `true`                |
+| **POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS** | Captures HTTP(s) requests as segments. | [Tracer](./core/tracer)   | `true`                |
 | **POWERTOOLS_LOGGER_LOG_EVENT**           | Logs incoming event | [Logger](./core/logger)   | `false`               |
 | **POWERTOOLS_LOGGER_SAMPLE_RATE**         | Debug log sampling | [Logger](./core/logger)  | `0`                   |
 | **POWERTOOLS_LOG_DEDUPLICATION_DISABLED** | Disables log deduplication filter protection to use Pytest Live Log feature | [Logger](./core/logger)  | `false`               |

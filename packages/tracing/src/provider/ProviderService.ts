@@ -1,7 +1,7 @@
 import { ContextMissingStrategy } from 'aws-xray-sdk-core/dist/lib/context_utils';
 import { Namespace } from 'cls-hooked';
 import { ProviderServiceInterface } from '.';
-import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, captureHTTPsGlobal, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger, Logger, enableManualMode } from 'aws-xray-sdk-core';
+import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, captureHTTPsGlobal, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger, Logger } from 'aws-xray-sdk-core';
 
 class ProviderService implements ProviderServiceInterface {
   

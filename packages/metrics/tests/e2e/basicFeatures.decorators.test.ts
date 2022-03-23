@@ -8,8 +8,9 @@
  */
 
 import { randomUUID } from 'crypto';
-import { Tracing } from '@aws-cdk/aws-lambda';
-import { App, Stack } from '@aws-cdk/core';
+import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import { App, Stack } from 'aws-cdk-lib';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
 import { MetricUnits } from '../../src';
 import { 
@@ -24,9 +25,7 @@ import {
   generateUniqueName, 
   isValidRuntimeKey, 
   createStackWithLambdaFunction, 
-  deployStack, 
   invokeFunction, 
-  destroyStack 
 } from '@aws-lambda-powertools/commons';
 import path from 'path';
 
@@ -91,8 +90,7 @@ describe(`metrics E2E tests (decorator) for runtime: ${runtime}`, () => {
       runtime: runtime,
     });
 
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    await deployStack(stackArtifact);
+    await deployStack(integTestApp, stack);
 
     // and invoked
     await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');

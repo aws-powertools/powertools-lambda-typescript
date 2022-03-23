@@ -13,10 +13,10 @@ import { App, Stack } from 'aws-cdk-lib';
 import { 
   createStackWithLambdaFunction,
   generateUniqueName,
-  InvocationLogs,
   invokeFunction,
   isValidRuntimeKey
-} from '@aws-lambda-powertools/commons';
+} from '../../../commons/tests/utils/e2eUtils';
+import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import { 
   RESOURCE_NAME_PREFIX,

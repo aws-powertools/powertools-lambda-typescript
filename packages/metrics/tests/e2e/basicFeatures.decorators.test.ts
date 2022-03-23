@@ -7,11 +7,18 @@
  * @group e2e/metrics/decorator
  */
 
+import path from 'path';
 import { randomUUID } from 'crypto';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { App, Stack } from 'aws-cdk-lib';
-import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
+import { 
+  generateUniqueName, 
+  isValidRuntimeKey, 
+  createStackWithLambdaFunction, 
+  invokeFunction, 
+} from '../../../commons/tests/utils/e2eUtils';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import { MetricUnits } from '../../src';
 import { 
   ONE_MINUTE, 
@@ -21,13 +28,6 @@ import {
   TEST_CASE_TIMEOUT 
 } from './constants';
 import { getMetrics } from '../helpers/metricsUtils';
-import { 
-  generateUniqueName, 
-  isValidRuntimeKey, 
-  createStackWithLambdaFunction, 
-  invokeFunction, 
-} from '@aws-lambda-powertools/commons';
-import path from 'path';
 
 const runtime: string = process.env.RUNTIME || 'nodejs14x';
 

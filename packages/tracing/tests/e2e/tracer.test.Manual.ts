@@ -1,6 +1,7 @@
 import { Tracer } from '../../src';
 import { Context } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -57,7 +58,8 @@ export const handler = async (event: CustomEvent, _context: Context): Promise<vo
   try {
     await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
     await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-    
+    await axios.get('https://httpbin.org/status/200');
+
     const res = customResponseValue;
     if (event.throw) {
       throw new Error(customErrorMessage);

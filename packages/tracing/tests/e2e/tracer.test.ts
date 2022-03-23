@@ -151,13 +151,14 @@ describe('Tracer integration tests', () => {
         // Assert that the subsegment name is the expected one
         expect(handlerSubsegment.name).toBe('## index.handler');
         if (handlerSubsegment?.subsegments !== undefined) {
-          // Assert that there're two subsegments
-          expect(handlerSubsegment?.subsegments?.length).toBe(2);
+          // Assert that there are three subsegments
+          expect(handlerSubsegment?.subsegments?.length).toBe(3);
 
-          const [ AWSSDKSubsegment1, AWSSDKSubsegment2 ] = handlerSubsegment?.subsegments;
-          // Assert that the subsegment names is the expected ones
+          const [ AWSSDKSubsegment1, AWSSDKSubsegment2, HTTPSegment ] = handlerSubsegment?.subsegments;
+          // Assert that the subsegment names are the expected ones
           expect(AWSSDKSubsegment1.name).toBe('DynamoDB');
           expect(AWSSDKSubsegment2.name).toBe('DynamoDB');
+          expect(HTTPSegment.name).toBe('httpbin.org');
           
           const { annotations, metadata } = handlerSubsegment;
 

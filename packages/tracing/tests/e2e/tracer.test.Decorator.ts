@@ -64,10 +64,10 @@ export class MyFunctionWithDecorator {
           } else {
             resolve(res);
           }
-        }, 2000); // We need to wait for to make sure previous calls are finished
+        }, 3000); // We need to wait to make sure previous calls are finished, we still want to see traces from them even when this throws
       })
     ])
-      .then(([ _dynamoDBv2Res, _dynamoDBv3Res, promiseRes ]) => promiseRes)
+      .then(([ _dynamoDBv2Res, _dynamoDBv3Res, _axiosRes, promiseRes ]) => promiseRes)
       .catch((err) => {
         throw err;
       });

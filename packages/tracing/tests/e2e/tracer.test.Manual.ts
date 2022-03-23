@@ -1,7 +1,6 @@
 import { Tracer } from '../../src';
 import { Context } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -55,19 +54,25 @@ export const handler = async (event: CustomEvent, _context: Context): Promise<vo
     AWS = tracer.captureAWS(AWS);
     dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
   }
-
   try {
     await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
-    await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-    await axios.get('https://httpbin.org/status/200');
+  } catch (err) {
+    console.error(err);
+  }
 
-    const res = customResponseValue;
+  try {
+    await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
+  } catch (err) {
+    console.error(err);
+  }
+
+  let res;
+  try {
+    res = customResponseValue;
     if (event.throw) {
       throw new Error(customErrorMessage);
     }
     tracer.addResponseAsMetadata(res, process.env._HANDLER);
-
-    return res;
   } catch (err) {
     tracer.addErrorAsMetadata(err as Error);
     throw err;
@@ -75,4 +80,6 @@ export const handler = async (event: CustomEvent, _context: Context): Promise<vo
     subsegment.close();
     tracer.setSegment(segment);
   }
+
+  return res;
 };

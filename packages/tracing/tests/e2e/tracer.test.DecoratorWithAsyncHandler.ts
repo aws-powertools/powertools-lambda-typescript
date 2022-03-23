@@ -1,7 +1,6 @@
 import { Tracer } from '../../src';
 import { Context } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -51,21 +50,30 @@ export class MyFunctionWithDecorator {
       AWS = tracer.captureAWS(AWS);
       dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
     }
-    
+
     try {
       await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
-      await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-      await axios.get('https://httpbin.org/status/200');
+    } catch (err) {
+      console.error(err);
+    }
 
-      const res = this.myMethod();
+    try {
+      await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
+    } catch (err) {
+      console.error(err);
+    }
+
+    let res;
+    try {
+      res = this.myMethod();
       if (event.throw) {
         throw new Error(customErrorMessage);
       }
-
-      return res;
     } catch (err) {
       throw err;
     }
+
+    return res;
   }
 
   @tracer.captureMethod()

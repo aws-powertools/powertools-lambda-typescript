@@ -50,25 +50,15 @@ export const handler = middy(async (event: CustomEvent, _context: Context): Prom
   }
   try {
     await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
-  } catch (err) {
-    console.error(err);
-  }
-
-  try {
     await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-  } catch (err) {
-    console.error(err);
-  }
-
-  let res;
-  try {
-    res = customResponseValue;
+    
+    const res = customResponseValue;
     if (event.throw) {
       throw new Error(customErrorMessage);
     }
+
+    return res;
   } catch (err) {
     throw err;
   }
-
-  return res;
 }).use(captureLambdaHandler(tracer));

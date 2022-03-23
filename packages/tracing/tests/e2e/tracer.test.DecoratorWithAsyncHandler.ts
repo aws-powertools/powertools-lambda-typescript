@@ -53,27 +53,17 @@ export class MyFunctionWithDecorator {
 
     try {
       await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
-    } catch (err) {
-      console.error(err);
-    }
-
-    try {
       await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-    } catch (err) {
-      console.error(err);
-    }
-
-    let res;
-    try {
-      res = this.myMethod();
+    
+      const res = this.myMethod();
       if (event.throw) {
         throw new Error(customErrorMessage);
       }
+
+      return res;
     } catch (err) {
       throw err;
     }
-
-    return res;
   }
 
   @tracer.captureMethod()

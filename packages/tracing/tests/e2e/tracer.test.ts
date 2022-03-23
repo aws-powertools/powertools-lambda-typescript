@@ -195,7 +195,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, ONE_MINUTE * 2);
+  }, ONE_MINUTE * 3);
 
   it('Verifies that a when Tracer is used as middleware all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -265,7 +265,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, ONE_MINUTE * 2);
+  }, ONE_MINUTE * 3);
 
   it('Verifies that a when Tracer is used as middleware, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
@@ -334,7 +334,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, ONE_MINUTE * 2);
+  }, ONE_MINUTE * 3);
 
   it('Verifies that a when tracing is disabled in middleware mode no custom traces are generated', async () => {
     
@@ -358,7 +358,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, ONE_MINUTE * 2);
+  }, ONE_MINUTE * 3);
 
   it('Verifies that a when Tracer is used as decorator all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -455,7 +455,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, ONE_MINUTE * 2);
+  }, ONE_MINUTE * 3);
 
   it('Verifies that a when Tracer is used as decorator on an async handler all custom traces are generated with correct annotations and metadata', async () => {
     
@@ -552,7 +552,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, ONE_MINUTE * 2);
+  }, ONE_MINUTE * 3);
 
   it('Verifies that a when Tracer is used as decorator, with errors & response capturing disabled, all custom traces are generated with correct annotations', async () => {
     
@@ -638,7 +638,7 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, ONE_MINUTE * 2);
+  }, ONE_MINUTE * 3);
 
   it('Verifies that a when tracing is disabled in decorator mode no custom traces are generated', async () => {
     
@@ -662,6 +662,6 @@ describe('Tracer integration tests', () => {
       }
     }
 
-  }, ONE_MINUTE * 2);
+  }, ONE_MINUTE * 3);
 
 });

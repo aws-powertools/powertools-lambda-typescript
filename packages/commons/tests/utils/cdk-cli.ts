@@ -20,7 +20,7 @@ export const destroyStack = async (app: App, stack: Stack, quiet?: boolean): Pro
 
   const cloudFormation = await createCloudFormationDeployments();
 
-  cloudFormation.destroyStack({
+  await cloudFormation.destroyStack({
     stack: stackArtifact,
     quiet: quiet ? quiet : true,
   });

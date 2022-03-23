@@ -58,7 +58,8 @@ export const handler = async (event: CustomEvent, _context: Context): Promise<vo
   try {
     await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
     await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-    await axios.get('https://httpbin.org/status/200');
+    const t = await axios.get('https://httpbin.org/status/200');
+    tracer.putAnnotation('httpbin', t.status);
 
     const res = customResponseValue;
     if (event.throw) {

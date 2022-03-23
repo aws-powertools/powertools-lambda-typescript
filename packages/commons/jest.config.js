@@ -20,7 +20,7 @@ module.exports = {
   'coveragePathIgnorePatterns': [
     '/node_modules/',
     /** 
-    * e2eUtils.ts contain helper methods that simplify several calls to CDK and SDK interface. 
+    * e2eUtils.ts contains helper methods that simplify several calls to CDK and SDK interface.
     * Unit testing it is mostly mocking the CDK/SDK functions. It will be brittle and yield little value.
     * In addition, the file is used for every E2E test run, so its correctness is verified for every PR. 
     */

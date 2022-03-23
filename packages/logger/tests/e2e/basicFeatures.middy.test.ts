@@ -9,8 +9,9 @@
 
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { App, Stack } from '@aws-cdk/core';
-import { createStackWithLambdaFunction, deployStack, destroyStack, generateUniqueName, invokeFunction, isValidRuntimeKey } from '../helpers/e2eUtils';
+import { App, Stack } from 'aws-cdk-lib';
+import { createStackWithLambdaFunction, generateUniqueName, invokeFunction, isValidRuntimeKey } from '../helpers/e2eUtils';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import { InvocationLogs } from '../helpers/InvocationLogs';
 
 const runtime: string = process.env.RUNTIME || 'nodejs14x';
@@ -67,9 +68,9 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
       logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
       runtime: runtime,
     });
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    const outputs = await deployStack(stackArtifact);
-    logGroupName = outputs[STACK_OUTPUT_LOG_GROUP];
+
+    const result = await deployStack(integTestApp, stack);
+    logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
 
     // Invoke the function twice (one for cold start, another for warm start)
     invocationLogs = await invokeFunction(functionName, 2, 'SEQUENTIAL');

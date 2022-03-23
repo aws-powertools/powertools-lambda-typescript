@@ -8,11 +8,10 @@
  */
 
 import { randomUUID } from 'crypto';
-import * as lambda from '@aws-cdk/aws-lambda-nodejs';
-import { Tracing } from '@aws-cdk/aws-lambda';
-import { App, Stack } from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import { App, Stack } from 'aws-cdk-lib';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
 import { MetricUnits } from '../../src';
 import { getMetrics } from '../helpers/metricsUtils';
@@ -58,21 +57,9 @@ new lambda.NodejsFunction(stack, 'MyFunction', {
   },
 });
 
-const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
 describe('happy cases', () => {
   beforeAll(async () => {
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-    // WHEN
-    // lambda function is deployed
-    await cloudFormation.deployStack({
-      stack: stackArtifact,
-      quiet: true,
-    });
+    await deployStack(integTestApp, stack);
 
     // and invoked
     for (let i = 0; i < invocationCount; i++) {
@@ -161,17 +148,7 @@ describe('happy cases', () => {
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-      const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-        profile: process.env.AWS_PROFILE,
-      });
-      const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-      await cloudFormation.destroyStack({
-        stack: stackArtifact,
-        quiet: true,
-      });
+      await destroyStack(integTestApp, stack);
     }
   }, ONE_MINUTE * 3);
 });

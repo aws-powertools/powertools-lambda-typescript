@@ -6,12 +6,11 @@
 
 import { randomUUID, randomBytes } from 'crypto';
 import { join } from 'path';
-import { Tracing, Architecture } from '@aws-cdk/aws-lambda';
-import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
-import { Table, AttributeType, BillingMode } from '@aws-cdk/aws-dynamodb';
-import { App, Duration, Stack, RemovalPolicy } from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import { Tracing, Architecture } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
+import { App, Duration, Stack, RemovalPolicy } from 'aws-cdk-lib';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
 import { getTraces, getInvocationSubsegment } from '../helpers/tracesUtils';
 import type { ParsedDocument } from '../helpers/tracesUtils';
@@ -101,16 +100,7 @@ describe('Tracer integration tests', () => {
       };
     }
 
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-    await cloudFormation.deployStack({
-      stack: stackArtifact,
-      quiet: true,
-    });
+    await deployStack(integTestApp, stack);
 
     // Act
     Object.values(invocationsMap).forEach(async ({ functionName }) => {
@@ -132,17 +122,7 @@ describe('Tracer integration tests', () => {
   afterAll(async () => {
 
     if (!process.env.DISABLE_TEARDOWN) {
-      const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-  
-      const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-        profile: process.env.AWS_PROFILE,
-      });
-      const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-  
-      await cloudFormation.destroyStack({
-        stack: stackArtifact,
-        quiet: true,
-      });
+      await destroyStack(integTestApp, stack);
     }
 
   }, ONE_MINUTE * 2);

@@ -137,7 +137,7 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 5);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
@@ -152,7 +152,7 @@ describe('Tracer integration tests', () => {
         expect(handlerSubsegment.name).toBe('## index.handler');
         if (handlerSubsegment?.subsegments !== undefined) {
           // Assert that there are three subsegments
-          expect(handlerSubsegment?.subsegments?.length).toBe(3);
+          expect(handlerSubsegment?.subsegments?.length).toBe(2);
 
           const [ AWSSDKSubsegment1, AWSSDKSubsegment2, HTTPSegment ] = handlerSubsegment?.subsegments;
           // Assert that the subsegment names are the expected ones

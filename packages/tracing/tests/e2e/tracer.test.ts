@@ -141,7 +141,7 @@ describe('Tracer integration tests', () => {
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(sortedTraces[i].Segments.length).toBe(5);
 
       const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
 

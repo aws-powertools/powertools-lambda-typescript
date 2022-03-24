@@ -335,7 +335,7 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
 
 ### Tracing HTTP requests
 
-When your function makes calls to microservices or public HTTP APIs, Tracer automatically traces those calls and add the API to the service graph as a downstream service.
+When your function makes calls to HTTP APIs, Tracer automatically traces those calls and add the API to the service graph as a downstream service.
 
 You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS=false`** environment variable or by passing the `captureHTTPSRequests: false` option to the `Tracer` constructor.
 

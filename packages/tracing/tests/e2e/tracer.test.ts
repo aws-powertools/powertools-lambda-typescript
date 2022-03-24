@@ -152,7 +152,7 @@ describe('Tracer integration tests', () => {
         expect(handlerSubsegment.name).toBe('## index.handler');
         if (handlerSubsegment?.subsegments !== undefined) {
           // Assert that there are three subsegments
-          expect(handlerSubsegment?.subsegments?.length).toBe(2);
+          expect(handlerSubsegment?.subsegments?.length).toBe(3);
 
           const [ AWSSDKSubsegment1, AWSSDKSubsegment2, HTTPSegment ] = handlerSubsegment?.subsegments;
           // Assert that the subsegment names are the expected ones
@@ -208,11 +208,11 @@ describe('Tracer integration tests', () => {
 
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 5);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(sortedTraces[i].Segments.length).toBe(5);
 
       const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
 
@@ -223,12 +223,13 @@ describe('Tracer integration tests', () => {
         expect(handlerSubsegment.name).toBe('## index.handler');
         if (handlerSubsegment?.subsegments !== undefined) {
           // Assert that there're two subsegments
-          expect(handlerSubsegment?.subsegments?.length).toBe(2);
+          expect(handlerSubsegment?.subsegments?.length).toBe(3);
 
-          const [ AWSSDKSubsegment1, AWSSDKSubsegment2 ] = handlerSubsegment?.subsegments;
+          const [ AWSSDKSubsegment1, AWSSDKSubsegment2, HTTPSegment ] = handlerSubsegment?.subsegments;
           // Assert that the subsegment names is the expected ones
           expect(AWSSDKSubsegment1.name).toBe('DynamoDB');
           expect(AWSSDKSubsegment2.name).toBe('DynamoDB');
+          expect(HTTPSegment.name).toBe('httpbin.org');
           
           const { annotations, metadata } = handlerSubsegment;
 
@@ -278,11 +279,11 @@ describe('Tracer integration tests', () => {
 
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 5);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(sortedTraces[i].Segments.length).toBe(5);
 
       const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
 
@@ -293,12 +294,13 @@ describe('Tracer integration tests', () => {
         expect(handlerSubsegment.name).toBe('## index.handler');
         if (handlerSubsegment?.subsegments !== undefined) {
           // Assert that there're two subsegments
-          expect(handlerSubsegment?.subsegments?.length).toBe(2);
+          expect(handlerSubsegment?.subsegments?.length).toBe(3);
 
-          const [ AWSSDKSubsegment1, AWSSDKSubsegment2 ] = handlerSubsegment?.subsegments;
-          // Assert that the subsegment names is the expected ones
+          const [ AWSSDKSubsegment1, AWSSDKSubsegment2, HTTPSegment ] = handlerSubsegment?.subsegments;
+          // Assert that the subsegment names are the expected ones
           expect(AWSSDKSubsegment1.name).toBe('DynamoDB');
           expect(AWSSDKSubsegment2.name).toBe('DynamoDB');
+          expect(HTTPSegment.name).toBe('httpbin.org');
           
           const { annotations, metadata } = handlerSubsegment;
 
@@ -371,11 +373,11 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 5);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(sortedTraces[i].Segments.length).toBe(5);
 
       const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
 
@@ -386,17 +388,20 @@ describe('Tracer integration tests', () => {
         expect(handlerSubsegment.name).toBe('## index.handler');
         if (handlerSubsegment?.subsegments !== undefined) {
           // Assert that there're three subsegments
-          expect(handlerSubsegment?.subsegments?.length).toBe(3);
+          expect(handlerSubsegment?.subsegments?.length).toBe(4);
           
           // Sort the subsegments by name
           const dynamoDBSubsegments: ParsedDocument[] = [];
           const methodSubsegment: ParsedDocument[] = [];
+          const httpSubsegment: ParsedDocument[] = [];
           const otherSegments: ParsedDocument[] = [];
           handlerSubsegment?.subsegments.forEach(subsegment => {
             if (subsegment.name === 'DynamoDB') {
               dynamoDBSubsegments.push(subsegment);
             } else if (subsegment.name === '### myMethod') {
               methodSubsegment.push(subsegment);
+            } else if (subsegment.name === 'httpbin.org') {
+              httpSubsegment.push(subsegment);
             } else {
               otherSegments.push(subsegment);
             }
@@ -405,6 +410,8 @@ describe('Tracer integration tests', () => {
           expect(dynamoDBSubsegments.length).toBe(2);
           // Assert that there is exactly one subsegment with the name '### myMethod'
           expect(methodSubsegment.length).toBe(1);
+          // Assert that there is exactly one subsegment with the name 'httpbin.org'
+          expect(httpSubsegment.length).toBe(1);
           // Assert that there are exactly zero other subsegments
           expect(otherSegments.length).toBe(0);
 
@@ -468,11 +475,11 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 5);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(sortedTraces[i].Segments.length).toBe(5);
 
       const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
 
@@ -483,17 +490,20 @@ describe('Tracer integration tests', () => {
         expect(handlerSubsegment.name).toBe('## index.handler');
         if (handlerSubsegment?.subsegments !== undefined) {
           // Assert that there're three subsegments
-          expect(handlerSubsegment?.subsegments?.length).toBe(3);
+          expect(handlerSubsegment?.subsegments?.length).toBe(4);
           
           // Sort the subsegments by name
           const dynamoDBSubsegments: ParsedDocument[] = [];
           const methodSubsegment: ParsedDocument[] = [];
+          const httpSubsegment: ParsedDocument[] = [];
           const otherSegments: ParsedDocument[] = [];
           handlerSubsegment?.subsegments.forEach(subsegment => {
             if (subsegment.name === 'DynamoDB') {
               dynamoDBSubsegments.push(subsegment);
             } else if (subsegment.name === '### myMethod') {
               methodSubsegment.push(subsegment);
+            } else if (subsegment.name === 'httpbin.org') {
+              httpSubsegment.push(subsegment);
             } else {
               otherSegments.push(subsegment);
             }
@@ -502,6 +512,8 @@ describe('Tracer integration tests', () => {
           expect(dynamoDBSubsegments.length).toBe(2);
           // Assert that there is exactly one subsegment with the name '### myMethod'
           expect(methodSubsegment.length).toBe(1);
+          // Assert that there is exactly one subsegment with the name 'httpbin.org'
+          expect(httpSubsegment.length).toBe(1);
           // Assert that there are exactly zero other subsegments
           expect(otherSegments.length).toBe(0);
 
@@ -565,11 +577,11 @@ describe('Tracer integration tests', () => {
     
     // Assess
     // Retrieve traces from X-Ray using Resource ARN as filter
-    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 4);
+    const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 5);
 
     for (let i = 0; i < invocations; i++) {
       // Assert that the trace has the expected amount of segments
-      expect(sortedTraces[i].Segments.length).toBe(4);
+      expect(sortedTraces[i].Segments.length).toBe(5);
 
       const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
 
@@ -580,17 +592,20 @@ describe('Tracer integration tests', () => {
         expect(handlerSubsegment.name).toBe('## index.handler');
         if (handlerSubsegment?.subsegments !== undefined) {
           // Assert that there're three subsegments
-          expect(handlerSubsegment?.subsegments?.length).toBe(3);
+          expect(handlerSubsegment?.subsegments?.length).toBe(5);
           
           // Sort the subsegments by name
           const dynamoDBSubsegments: ParsedDocument[] = [];
           const methodSubsegment: ParsedDocument[] = [];
+          const httpSubsegment: ParsedDocument[] = [];
           const otherSegments: ParsedDocument[] = [];
           handlerSubsegment?.subsegments.forEach(subsegment => {
             if (subsegment.name === 'DynamoDB') {
               dynamoDBSubsegments.push(subsegment);
             } else if (subsegment.name === '### myMethod') {
               methodSubsegment.push(subsegment);
+            } else if (subsegment.name === 'httpbin.org') {
+              httpSubsegment.push(subsegment);
             } else {
               otherSegments.push(subsegment);
             }
@@ -599,6 +614,8 @@ describe('Tracer integration tests', () => {
           expect(dynamoDBSubsegments.length).toBe(2);
           // Assert that there is exactly one subsegment with the name '### myMethod'
           expect(methodSubsegment.length).toBe(1);
+          // Assert that there is exactly one subsegment with the name 'httpbin.org'
+          expect(httpSubsegment.length).toBe(1);
           // Assert that there are exactly zero other subsegments
           expect(otherSegments.length).toBe(0);
           // Assert that no response was captured on the subsegment

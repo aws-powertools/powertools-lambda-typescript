@@ -10,9 +10,21 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
-import { createStackWithLambdaFunction, generateUniqueName, invokeFunction, isValidRuntimeKey } from '../helpers/e2eUtils';
+import { 
+  createStackWithLambdaFunction,
+  generateUniqueName,
+  invokeFunction,
+  isValidRuntimeKey
+} from '../../../commons/tests/utils/e2eUtils';
+import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
-import { InvocationLogs } from '../helpers/InvocationLogs';
+import { 
+  RESOURCE_NAME_PREFIX,
+  STACK_OUTPUT_LOG_GROUP,
+  SETUP_TIMEOUT,
+  TEST_CASE_TIMEOUT,
+  TEARDOWN_TIMEOUT
+} from './constants';
 
 const runtime: string = process.env.RUNTIME || 'nodejs14x';
 
@@ -21,14 +33,10 @@ if (!isValidRuntimeKey(runtime)) {
 }
 
 const LEVEL = InvocationLogs.LEVEL;
-const TEST_CASE_TIMEOUT = 20000; // 20 seconds
-const SETUP_TIMEOUT = 300000; // 300 seconds
-const TEARDOWN_TIMEOUT = 200000; 
-const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
 const uuid = randomUUID();
-const stackName = generateUniqueName(uuid, runtime, 'BasicFeatures-Middy');
-const functionName = generateUniqueName(uuid, runtime, 'BasicFeatures-Middy');
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'BasicFeatures-Middy');
+const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'BasicFeatures-Middy');
 const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
 
 // Text to be used by Logger in the Lambda function

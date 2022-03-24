@@ -10,9 +10,21 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
-import { createStackWithLambdaFunction, generateUniqueName, invokeFunction, isValidRuntimeKey } from '../helpers/e2eUtils';
+import { 
+  createStackWithLambdaFunction,
+  generateUniqueName,
+  invokeFunction,
+  isValidRuntimeKey
+} from '../../../commons/tests/utils/e2eUtils';
+import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
-import { InvocationLogs } from '../helpers/InvocationLogs';
+import { 
+  RESOURCE_NAME_PREFIX,
+  STACK_OUTPUT_LOG_GROUP,
+  SETUP_TIMEOUT,
+  TEST_CASE_TIMEOUT,
+  TEARDOWN_TIMEOUT
+} from './constants';
 
 const runtime: string = process.env.RUNTIME || 'nodejs14x';
 
@@ -21,23 +33,21 @@ if (!isValidRuntimeKey(runtime)) {
 }
 
 const LEVEL = InvocationLogs.LEVEL;
-const TEST_CASE_TIMEOUT = 30000; // 30 seconds
-const SETUP_TIMEOUT = 300000; // 300 seconds
-const TEARDOWN_TIMEOUT = 200000; 
-const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
 const uuid = randomUUID();
-const stackName = generateUniqueName(uuid, runtime, 'SampleRate-Decorator');
-const functionName = generateUniqueName(uuid, runtime, 'SampleRate-Decorator');
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'SampleRate-Decorator');
+const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'SampleRate-Decorator');
 const lambdaFunctionCodeFile = 'sampleRate.decorator.test.FunctionCode.ts';
 
 // Parameters to be used by Logger in the Lambda function
 const LOG_MSG = `Log message ${uuid}`;
 const SAMPLE_RATE = '0.5';
 const LOG_LEVEL = LEVEL.ERROR.toString();
+
 const integTestApp = new App();
-let logGroupName: string; // We do not know it until deployment
 let stack: Stack;
+let logGroupName: string; // We do not know the exact name until deployment
+
 describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${runtime}`, () => {
 
   let invocationLogs: InvocationLogs[];

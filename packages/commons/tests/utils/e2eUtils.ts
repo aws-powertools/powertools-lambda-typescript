@@ -1,16 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/** 
+ * E2E utils is used by e2e tests. They are helper function that calls either CDK or SDK
+ * to interact with services. 
+*/
 import { App, CfnOutput, Stack } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import * as AWS from 'aws-sdk';
 
 import { InvocationLogs } from './InvocationLogs';
 
 const lambdaClient = new AWS.Lambda();
 
-const NAME_PREFIX = 'Logger-E2E';
 const testRuntimeKeys = [ 'nodejs12x', 'nodejs14x' ];
 export type TestRuntimesKey = typeof testRuntimeKeys[number];
 const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
@@ -23,8 +26,9 @@ export type StackWithLambdaFunctionOptions = {
   stackName: string
   functionName: string
   functionEntry: string
+  tracing?: Tracing
   environment: {[key: string]: string}
-  logGroupOutputKey: string
+  logGroupOutputKey?: string
   runtime: string
 };
 
@@ -36,19 +40,22 @@ export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOpt
   const testFunction = new lambda.NodejsFunction(stack, `testFunction`, {
     functionName: params.functionName,
     entry: params.functionEntry,
+    tracing: params.tracing,
     environment: params.environment,
     runtime: TEST_RUNTIMES[params.runtime as TestRuntimesKey],
   });
 
-  new CfnOutput(stack, params.logGroupOutputKey, {
-    value: testFunction.logGroup.logGroupName,
-  });
+  if (params.logGroupOutputKey) {
+    new CfnOutput(stack, params.logGroupOutputKey, {
+      value: testFunction.logGroup.logGroupName,
+    });
+  }
   
   return stack;
 };
 
-export const generateUniqueName = (uuid: string, runtime: string, testName: string): string => 
-  `${NAME_PREFIX}-${runtime}-${testName}-${uuid}`.substring(0, 64);
+export const generateUniqueName = (name_prefix: string, uuid: string, runtime: string, testName: string): string => 
+  `${name_prefix}-${runtime}-${testName}-${uuid}`.substring(0, 64);
 
 export const invokeFunction = async (functionName: string, times: number = 1, invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL'): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];

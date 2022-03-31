@@ -12,8 +12,7 @@ import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Duration, Stack, RemovalPolicy } from 'aws-cdk-lib';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
-import { getTraces, getInvocationSubsegment } from '../helpers/tracesUtils';
-import type { ParsedDocument } from '../helpers/tracesUtils';
+import { getTraces, getInvocationSubsegment, splitSegmentsByName } from '../helpers/tracesUtils';
 
 const xray = new AWS.XRay();
 const lambdaClient = new AWS.Lambda();
@@ -140,39 +139,26 @@ describe('Tracer integration tests', () => {
     const sortedTraces = await getTraces(xray, startTime, resourceArn, invocations, 5);
 
     for (let i = 0; i < invocations; i++) {
-      // Assert that the trace has the expected amount of segments
       expect(sortedTraces[i].Segments.length).toBe(5);
 
       const invocationSubsegment = getInvocationSubsegment(sortedTraces[i]);
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
+        
         const handlerSubsegment = invocationSubsegment?.subsegments[0];
-        // Assert that the subsegment name is the expected one
         expect(handlerSubsegment.name).toBe('## index.handler');
+        
         if (handlerSubsegment?.subsegments !== undefined) {
-          // Assert that there are three subsegments
           expect(handlerSubsegment?.subsegments?.length).toBe(3);
 
-          // Sort the subsegments by name
-          const dynamoDBSubsegments: ParsedDocument[] = [];
-          const httpSubsegment: ParsedDocument[] = [];
-          const otherSegments: ParsedDocument[] = [];
-          handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'DynamoDB') {
-              dynamoDBSubsegments.push(subsegment);
-            } else if (subsegment.name === 'httpbin.org') {
-              httpSubsegment.push(subsegment);
-            } else {
-              otherSegments.push(subsegment);
-            }
-          });
+          const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
           // Assert that there are exactly two subsegment with the name 'DynamoDB'
-          expect(dynamoDBSubsegments.length).toBe(2);
+          expect(subsegments.get('DynamoDB')?.length).toBe(2);
           // Assert that there is exactly one subsegment with the name 'httpbin.org'
-          expect(httpSubsegment.length).toBe(1);
+          expect(subsegments.get('httpbin.org')?.length).toBe(1);
           // Assert that there are exactly zero other subsegments
-          expect(otherSegments.length).toBe(0);
+          expect(subsegments.get('other')?.length).toBe(0);
           
           const { annotations, metadata } = handlerSubsegment;
 
@@ -232,32 +218,20 @@ describe('Tracer integration tests', () => {
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
+        
         const handlerSubsegment = invocationSubsegment?.subsegments[0];
-        // Assert that the subsegment name is the expected one
         expect(handlerSubsegment.name).toBe('## index.handler');
+        
         if (handlerSubsegment?.subsegments !== undefined) {
-          // Assert that there're two subsegments
           expect(handlerSubsegment?.subsegments?.length).toBe(3);
 
-          // Sort the subsegments by name
-          const dynamoDBSubsegments: ParsedDocument[] = [];
-          const httpSubsegment: ParsedDocument[] = [];
-          const otherSegments: ParsedDocument[] = [];
-          handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'DynamoDB') {
-              dynamoDBSubsegments.push(subsegment);
-            } else if (subsegment.name === 'httpbin.org') {
-              httpSubsegment.push(subsegment);
-            } else {
-              otherSegments.push(subsegment);
-            }
-          });
+          const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
           // Assert that there are exactly two subsegment with the name 'DynamoDB'
-          expect(dynamoDBSubsegments.length).toBe(2);
+          expect(subsegments.get('DynamoDB')?.length).toBe(2);
           // Assert that there is exactly one subsegment with the name 'httpbin.org'
-          expect(httpSubsegment.length).toBe(1);
+          expect(subsegments.get('httpbin.org')?.length).toBe(1);
           // Assert that there are exactly zero other subsegments
-          expect(otherSegments.length).toBe(0);
+          expect(subsegments.get('other')?.length).toBe(0);
           
           const { annotations, metadata } = handlerSubsegment;
 
@@ -317,32 +291,20 @@ describe('Tracer integration tests', () => {
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
+        
         const handlerSubsegment = invocationSubsegment?.subsegments[0];
-        // Assert that the subsegment name is the expected one
         expect(handlerSubsegment.name).toBe('## index.handler');
+        
         if (handlerSubsegment?.subsegments !== undefined) {
-          // Assert that there're two subsegments
           expect(handlerSubsegment?.subsegments?.length).toBe(3);
 
-          // Sort the subsegments by name
-          const dynamoDBSubsegments: ParsedDocument[] = [];
-          const httpSubsegment: ParsedDocument[] = [];
-          const otherSegments: ParsedDocument[] = [];
-          handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'DynamoDB') {
-              dynamoDBSubsegments.push(subsegment);
-            } else if (subsegment.name === 'httpbin.org') {
-              httpSubsegment.push(subsegment);
-            } else {
-              otherSegments.push(subsegment);
-            }
-          });
+          const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
           // Assert that there are exactly two subsegment with the name 'DynamoDB'
-          expect(dynamoDBSubsegments.length).toBe(2);
+          expect(subsegments.get('DynamoDB')?.length).toBe(2);
           // Assert that there is exactly one subsegment with the name 'httpbin.org'
-          expect(httpSubsegment.length).toBe(1);
+          expect(subsegments.get('httpbin.org')?.length).toBe(1);
           // Assert that there are exactly zero other subsegments
-          expect(otherSegments.length).toBe(0);
+          expect(subsegments.get('other')?.length).toBe(0);
           
           const { annotations, metadata } = handlerSubsegment;
 
@@ -425,38 +387,24 @@ describe('Tracer integration tests', () => {
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
+        
         const handlerSubsegment = invocationSubsegment?.subsegments[0];
-        // Assert that the subsegment name is the expected one
         expect(handlerSubsegment.name).toBe('## index.handler');
+        
         if (handlerSubsegment?.subsegments !== undefined) {
-          // Assert that there are four subsegments
           expect(handlerSubsegment?.subsegments?.length).toBe(4);
           
-          // Sort the subsegments by name
-          const dynamoDBSubsegments: ParsedDocument[] = [];
-          const methodSubsegment: ParsedDocument[] = [];
-          const httpSubsegment: ParsedDocument[] = [];
-          const otherSegments: ParsedDocument[] = [];
-          handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'DynamoDB') {
-              dynamoDBSubsegments.push(subsegment);
-            } else if (subsegment.name === '### myMethod') {
-              methodSubsegment.push(subsegment);
-            } else if (subsegment.name === 'httpbin.org') {
-              httpSubsegment.push(subsegment);
-            } else {
-              otherSegments.push(subsegment);
-            }
-          });
+          const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', '### myMethod' ]);
           // Assert that there are exactly two subsegment with the name 'DynamoDB'
-          expect(dynamoDBSubsegments.length).toBe(2);
-          // Assert that there is exactly one subsegment with the name '### myMethod'
-          expect(methodSubsegment.length).toBe(1);
+          expect(subsegments.get('DynamoDB')?.length).toBe(2);
           // Assert that there is exactly one subsegment with the name 'httpbin.org'
-          expect(httpSubsegment.length).toBe(1);
+          expect(subsegments.get('httpbin.org')?.length).toBe(1);
+          // Assert that there is exactly one subsegment with the name '### myMethod'
+          expect(subsegments.get('### myMethod')?.length).toBe(1);
           // Assert that there are exactly zero other subsegments
-          expect(otherSegments.length).toBe(0);
+          expect(subsegments.get('other')?.length).toBe(0);
 
+          const methodSubsegment = subsegments.get('### myMethod') || [];
           const { metadata } = methodSubsegment[0];
 
           if (metadata !== undefined) {
@@ -527,38 +475,24 @@ describe('Tracer integration tests', () => {
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
+        
         const handlerSubsegment = invocationSubsegment?.subsegments[0];
-        // Assert that the subsegment name is the expected one
         expect(handlerSubsegment.name).toBe('## index.handler');
+        
         if (handlerSubsegment?.subsegments !== undefined) {
-          // Assert that there are four subsegments
           expect(handlerSubsegment?.subsegments?.length).toBe(4);
           
-          // Sort the subsegments by name
-          const dynamoDBSubsegments: ParsedDocument[] = [];
-          const methodSubsegment: ParsedDocument[] = [];
-          const httpSubsegment: ParsedDocument[] = [];
-          const otherSegments: ParsedDocument[] = [];
-          handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'DynamoDB') {
-              dynamoDBSubsegments.push(subsegment);
-            } else if (subsegment.name === '### myMethod') {
-              methodSubsegment.push(subsegment);
-            } else if (subsegment.name === 'httpbin.org') {
-              httpSubsegment.push(subsegment);
-            } else {
-              otherSegments.push(subsegment);
-            }
-          });
+          const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', '### myMethod' ]);
           // Assert that there are exactly two subsegment with the name 'DynamoDB'
-          expect(dynamoDBSubsegments.length).toBe(2);
-          // Assert that there is exactly one subsegment with the name '### myMethod'
-          expect(methodSubsegment.length).toBe(1);
+          expect(subsegments.get('DynamoDB')?.length).toBe(2);
           // Assert that there is exactly one subsegment with the name 'httpbin.org'
-          expect(httpSubsegment.length).toBe(1);
+          expect(subsegments.get('httpbin.org')?.length).toBe(1);
+          // Assert that there is exactly one subsegment with the name '### myMethod'
+          expect(subsegments.get('### myMethod')?.length).toBe(1);
           // Assert that there are exactly zero other subsegments
-          expect(otherSegments.length).toBe(0);
+          expect(subsegments.get('other')?.length).toBe(0);
 
+          const methodSubsegment = subsegments.get('### myMethod') || [];
           const { metadata } = methodSubsegment[0];
 
           if (metadata !== undefined) {
@@ -629,38 +563,25 @@ describe('Tracer integration tests', () => {
 
       if (invocationSubsegment?.subsegments !== undefined) {
         expect(invocationSubsegment?.subsegments?.length).toBe(1);
+        
         const handlerSubsegment = invocationSubsegment?.subsegments[0];
-        // Assert that the subsegment name is the expected one
         expect(handlerSubsegment.name).toBe('## index.handler');
+        
         if (handlerSubsegment?.subsegments !== undefined) {
-          // Assert that there are four subsegments
           expect(handlerSubsegment?.subsegments?.length).toBe(4);
           
-          // Sort the subsegments by name
-          const dynamoDBSubsegments: ParsedDocument[] = [];
-          const methodSubsegment: ParsedDocument[] = [];
-          const httpSubsegment: ParsedDocument[] = [];
-          const otherSegments: ParsedDocument[] = [];
-          handlerSubsegment?.subsegments.forEach(subsegment => {
-            if (subsegment.name === 'DynamoDB') {
-              dynamoDBSubsegments.push(subsegment);
-            } else if (subsegment.name === '### myMethod') {
-              methodSubsegment.push(subsegment);
-            } else if (subsegment.name === 'httpbin.org') {
-              httpSubsegment.push(subsegment);
-            } else {
-              otherSegments.push(subsegment);
-            }
-          });
+          const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', '### myMethod' ]);
           // Assert that there are exactly two subsegment with the name 'DynamoDB'
-          expect(dynamoDBSubsegments.length).toBe(2);
-          // Assert that there is exactly one subsegment with the name '### myMethod'
-          expect(methodSubsegment.length).toBe(1);
+          expect(subsegments.get('DynamoDB')?.length).toBe(2);
           // Assert that there is exactly one subsegment with the name 'httpbin.org'
-          expect(httpSubsegment.length).toBe(1);
+          expect(subsegments.get('httpbin.org')?.length).toBe(1);
+          // Assert that there is exactly one subsegment with the name '### myMethod'
+          expect(subsegments.get('### myMethod')?.length).toBe(1);
           // Assert that there are exactly zero other subsegments
-          expect(otherSegments.length).toBe(0);
+          expect(subsegments.get('other')?.length).toBe(0);
+
           // Assert that no response was captured on the subsegment
+          const methodSubsegment = subsegments.get('### myMethod') || [];
           expect(methodSubsegment[0].hasOwnProperty('metadata')).toBe(false);
         } else {
           // Make test fail if the handlerSubsegment subsegment doesn't have any subsebment

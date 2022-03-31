@@ -135,10 +135,23 @@ const getInvocationSubsegment = (trace: ParsedTrace): ParsedDocument => {
   return invocationSubsegment;
 };
 
+const splitSegmentsByName = (subsegments: ParsedDocument[], expectedNames: string[]): Map<string, ParsedDocument[]> => {
+  const splitSegments: Map<string, ParsedDocument[]> = new Map([ ...expectedNames, 'other' ].map(name => [ name, [] ]));
+  subsegments.forEach(subsegment => {
+    const name = expectedNames.indexOf(subsegment.name) !== -1 ? subsegment.name : 'other';
+    const newSegments = splitSegments.get(name) as ParsedDocument[];
+    newSegments.push(subsegment);
+    splitSegments.set(name, newSegments);
+  });
+  
+  return splitSegments;
+};
+
 export {
   getTraces,
   getFunctionSegment,
   getInvocationSubsegment,
+  splitSegmentsByName
 };
 
 export type {

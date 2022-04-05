@@ -351,7 +351,7 @@ You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HT
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-    export const handler = async (event: any, context: Context): Promise<void> => {
+    export const handler = async (event: unknown, context: Context): Promise<void> => {
         await axios.get('https://httpbin.org/status/200');
     };
     ```

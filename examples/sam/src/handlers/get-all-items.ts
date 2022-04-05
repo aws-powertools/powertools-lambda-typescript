@@ -57,15 +57,26 @@ export const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: C
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
     // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
     var params = {
-        TableName : tableName!
+        TableName: tableName!
     };
-    const data = await docClient.scan(params).promise();
-    const items = data.Items;
 
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(items)
-    };
+    var response;
+
+    try {
+        const data = await docClient.scan(params).promise();
+        const items = data.Items;
+        response = {
+            statusCode: 200,
+            body: JSON.stringify(items)
+        };
+    } catch (err) {
+        tracer.addErrorAsMetadata(err as Error);
+        logger.error("Error reading from table. " + err)
+        response = {
+            statusCode: 500,
+            body: JSON.stringify({ "error": "Error reading from table." })
+        };
+    }
 
     // Tracer: Close subsegment (the AWS Lambda one is closed automatically)
     handlerSegment.close(); // (## index.handler)

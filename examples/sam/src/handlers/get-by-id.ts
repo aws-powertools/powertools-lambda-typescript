@@ -55,20 +55,31 @@ export const getByIdHandler = async (event: APIGatewayProxyEvent, context: Conte
 
     // Get id from pathParameters from APIGateway because of `/{id}` at template.yaml
     const id = event.pathParameters!.id;
-    
+
     // Get the item from the table
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
     var params = {
-        TableName : tableName!,
+        TableName: tableName!,
         Key: { id: id },
     };
-    const data = await docClient.get(params).promise();
-    const item = data.Item;
-    
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(item)
-    };
+
+    var response;
+
+    try {
+        const data = await docClient.get(params).promise();
+        const item = data.Item;
+        response = {
+            statusCode: 200,
+            body: JSON.stringify(item)
+        };
+    } catch (err) {
+        tracer.addErrorAsMetadata(err as Error);
+        logger.error("Error reading from table. " + err)
+        response = {
+            statusCode: 500,
+            body: JSON.stringify({ "error": "Error reading from table." })
+        };
+    }
 
     // Tracer: Close subsegment (the AWS Lambda one is closed automatically)
     handlerSegment.close(); // (## index.handler)

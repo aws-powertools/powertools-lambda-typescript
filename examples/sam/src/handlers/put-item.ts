@@ -61,16 +61,26 @@ export const putItemHandler = async (event: APIGatewayProxyEvent, context: Conte
     // Creates a new item, or replaces an old item with a new item
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
     var params = {
-        TableName : tableName!,
-        Item: { id : id, name: name }
+        TableName: tableName!,
+        Item: { id: id, name: name }
     };
 
-    await docClient.put(params).promise();
+    var response;
 
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(body)
-    };
+    try {
+        await docClient.put(params).promise();
+        response = {
+            statusCode: 200,
+            body: JSON.stringify(body)
+        };
+    } catch (err) {
+        tracer.addErrorAsMetadata(err as Error);
+        logger.error("Error writing data to table. " + err)
+        response = {
+            statusCode: 500,
+            body: JSON.stringify({ "error": "Error writing data to table." })
+        };
+    }
 
     // Tracer: Close subsegment (the AWS Lambda one is closed automatically)
     handlerSegment.close(); // (## index.handler)

@@ -2,21 +2,18 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Tracer } from '@aws-lambda-powertools/tracer';
-import * as aws_client from 'aws-sdk';
+import { DynamoDB } from 'aws-sdk';
 
 // Create the PowerTools clients
 const metrics = new Metrics();
 const logger = new Logger();
 const tracer = new Tracer();
 
-// Patch aws-sdk for tracing
-const AWS = tracer.captureAWS(aws_client);
+// Create DynamoDB DocumentClient and patch it for tracing
+const docClient = tracer.captureAWS(new DynamoDB.DocumentClient());
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
-
-// Create a DocumentClient that represents the query to add an item
-const docClient = new AWS.DynamoDB.DocumentClient();
 
 /**
  *

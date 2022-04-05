@@ -104,7 +104,7 @@ describe('Class: ProviderService', () => {
 
   describe('Method: captureHTTPsGlobal', () => {
 
-    test('when called, it forwards the correct parameter, and call the correct function, twice', () => {
+    test('when called, it forwards the correct parameter and calls the correct function, twice', () => {
     
       // Prepare
       const provider: ProviderService = new ProviderService();

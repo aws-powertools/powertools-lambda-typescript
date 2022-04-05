@@ -638,7 +638,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Patch an all HTTP(s) clients and create traces when your application makes calls outgoing calls.
+   * Patch all HTTP(s) clients and create traces when your application makes calls outgoing calls.
    *
    * Calls using third-party HTTP request libraries, such as Axios, are supported as long as they use the native http
    * module under the hood. Support for third-party HTTP request libraries is provided on a best effort basis.

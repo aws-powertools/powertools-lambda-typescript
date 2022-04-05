@@ -1,15 +1,28 @@
 {
-    "compilerOptions": {
-      "target": "es2020",
+  "compilerOptions": {
+      "experimentalDecorators": true,
+      "noImplicitAny": true,
+      "target": "ES2020",
+      "module": "commonjs",
+      "declaration": true,
+      "declarationMap": true,
+      "outDir": "lib",
+      "removeComments": false,
       "strict": true,
-      "preserveConstEnums": true,
-      "noEmit": true,
-      "sourceMap": false,
-      "module":"es2015",
-      "moduleResolution":"node",
-      "esModuleInterop": true, 
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,  
-    },
-    "exclude": ["node_modules", "**/*.test.ts"]
-  }
+      "inlineSourceMap": true,
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "pretty": true,
+      "esModuleInterop": true
+  },
+  "exclude": [ "./node_modules"],
+  "watchOptions": {
+      "watchFile": "useFsEvents",
+      "watchDirectory": "useFsEvents",
+      "fallbackPolling": "dynamicPriority"
+  },
+  "lib": [ "es2020" ],
+  "types": [
+      "node"
+  ]
+}

@@ -5,13 +5,16 @@
  */
 
 import { ProviderService } from '../../src/provider';
-import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, getNamespace, getSegment, setContextMissingStrategy, setDaemonAddress, setLogger, setSegment, Subsegment } from 'aws-xray-sdk-core';
+import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureHTTPsGlobal, captureFunc, getNamespace, getSegment, setContextMissingStrategy, setDaemonAddress, setLogger, setSegment, Subsegment } from 'aws-xray-sdk-core';
+import http from 'http';
+import https from 'https';
 
 jest.mock('aws-xray-sdk-core', () => ({
   captureAWS: jest.fn(),
   captureAWSClient: jest.fn(),
   captureAWSv3Client: jest.fn(),
   captureAsyncFunc: jest.fn(),
+  captureHTTPsGlobal: jest.fn(),
   captureFunc: jest.fn(),
   getNamespace: jest.fn(),
   getSegment: jest.fn(),
@@ -94,6 +97,25 @@ describe('Class: ProviderService', () => {
       // Assess
       expect(captureAsyncFunc).toHaveBeenCalledTimes(1);
       expect(captureAsyncFunc).toHaveBeenCalledWith('my-func', expect.anything());
+    
+    });
+    
+  });
+
+  describe('Method: captureHTTPsGlobal', () => {
+
+    test('when called, it forwards the correct parameter and calls the correct function, twice', () => {
+    
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+    
+      // Act
+      provider.captureHTTPsGlobal();
+    
+      // Assess
+      expect(captureHTTPsGlobal).toHaveBeenCalledTimes(2);
+      expect(captureHTTPsGlobal).toHaveBeenNthCalledWith(1, http);
+      expect(captureHTTPsGlobal).toHaveBeenNthCalledWith(2, https);
     
     });
     

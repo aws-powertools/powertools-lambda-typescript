@@ -102,6 +102,23 @@ describe('Class: EnvironmentVariablesService', () => {
 
   });
 
+  describe('Method: getCaptureHTTPsRequests', () => {
+
+    test('It returns the value of the environment variable POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS = 'false';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getCaptureHTTPsRequests();
+
+      // Assess
+      expect(value).toEqual('false');
+    });
+
+  });
+
   describe('Method: getServiceName', () => {
 
     test('It returns the value of the environment variable POWERTOOLS_SERVICE_NAME', () => {

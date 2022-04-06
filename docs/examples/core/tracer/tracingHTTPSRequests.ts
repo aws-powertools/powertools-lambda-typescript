@@ -1,4 +1,5 @@
 import { Tracer } from '@aws-lambda-powertools/tracer';
+import { Context } from 'aws-lambda';
 import axios from 'axios'; // (1)
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });

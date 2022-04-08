@@ -9,6 +9,7 @@ import { injectLambdaContext } from '../../../src/middleware/middy';
 import { Logger } from './../../../src';
 import middy from '@middy/core';
 import { PowertoolLogFormatter } from '../../../src/formatter';
+import { Console } from 'console';
 
 describe('Middy middleware', () => {
 
@@ -16,8 +17,7 @@ describe('Middy middleware', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => null as unknown as boolean);
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -120,6 +120,8 @@ describe('Middy middleware', () => {
 
       // Assess
       const expectation = expect.objectContaining({
+        logsSampled: false,
+        persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
           awsRegion: 'eu-west-1',
@@ -135,8 +137,13 @@ describe('Middy middleware', () => {
           serviceName: 'hello-world',
           xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
+        envVarsService: expect.any(EnvironmentVariablesService),
+        customConfigService: undefined,
+        logLevel: 'DEBUG',
+        logFormatter: expect.any(PowertoolLogFormatter),
+        console: expect.any(Console),
       });
-      expect(logger).toEqual(anotherLogger);
+      expect(logger).toEqual(expectation);
       expect(anotherLogger).toEqual(expectation);
 
     });

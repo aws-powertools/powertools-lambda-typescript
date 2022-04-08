@@ -14,24 +14,16 @@ import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
 import { ClassThatLogs } from '../../src/types';
 import { Context } from 'aws-lambda';
+import { Console } from 'console';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
-
-const consoleSpy = {
-  'debug': jest.spyOn(console, 'debug').mockImplementation(),
-  'info': jest.spyOn(console, 'info').mockImplementation(),
-  'warn': jest.spyOn(console, 'warn').mockImplementation(),
-  'error': jest.spyOn(console, 'error').mockImplementation(),
-};
+const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
 
 describe('Class: Logger', () => {
 
   beforeEach(() => {
-    consoleSpy['debug'].mockClear();
-    consoleSpy['info'].mockClear();
-    consoleSpy['warn'].mockClear();
-    consoleSpy['error'].mockClear();
+    stdoutSpy.mockClear();
     dateSpy.mockClear();
   });
 
@@ -70,9 +62,9 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfLogger]).toBeCalledTimes(debugPrints ? 1 : 0);
+          expect(stdoutSpy).toBeCalledTimes(debugPrints ? 1 : 0);
           if (debugPrints) {
-            expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: 'foo',
               service: 'hello-world',
@@ -96,9 +88,9 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfLogger]).toBeCalledTimes(infoPrints ? 1 : 0);
+          expect(stdoutSpy).toBeCalledTimes(infoPrints ? 1 : 0);
           if (infoPrints) {
-            expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: 'foo',
               service: 'hello-world',
@@ -122,9 +114,9 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfLogger]).toBeCalledTimes(warnPrints ? 1 : 0);
+          expect(stdoutSpy).toBeCalledTimes(warnPrints ? 1 : 0);
           if (warnPrints) {
-            expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: 'foo',
               service: 'hello-world',
@@ -148,9 +140,9 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfLogger]).toBeCalledTimes(errorPrints ? 1 : 0);
+          expect(stdoutSpy).toBeCalledTimes(errorPrints ? 1 : 0);
           if (errorPrints) {
-            expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+            expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: 'foo',
               service: 'hello-world',
@@ -181,7 +173,7 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfLogger]).toBeCalledTimes(method === 'error' ? 1 : 0);
+          expect(stdoutSpy).toBeCalledTimes(method === 'error' ? 1 : 0);
         });
 
         test('when the Logger\'s log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout', () => {
@@ -198,8 +190,8 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfLogger]).toBeCalledTimes(1);
-          expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+          expect(stdoutSpy).toBeCalledTimes(1);
+          expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
             level: method.toUpperCase(),
             message: 'foo',
             sampling_rate: 1,
@@ -226,8 +218,8 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfLogger]).toBeCalledTimes(1);
-          expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+          expect(stdoutSpy).toBeCalledTimes(1);
+          expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
             level: method.toUpperCase(),
             message: 'foo',
             service: 'hello-world',
@@ -250,8 +242,8 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfLogger]).toBeCalledTimes(1);
-          expect(console[methodOfLogger]).toHaveBeenNthCalledWith(1, JSON.stringify({
+          expect(stdoutSpy).toBeCalledTimes(1);
+          expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
             cold_start: true,
             function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
             function_memory_size: 128,
@@ -292,14 +284,14 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(1, JSON.stringify({
+          expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
             level: method.toUpperCase(),
             message: 'A log item without extra parameters',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
           }));
-          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(2, JSON.stringify({
+          expect(stdoutSpy).toHaveBeenNthCalledWith(2, JSON.stringify({
             level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and an object as second parameter',
             service: 'hello-world',
@@ -307,7 +299,7 @@ describe('Class: Logger', () => {
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             extra: 'parameter',
           }));
-          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(3, JSON.stringify({
+          expect(stdoutSpy).toHaveBeenNthCalledWith(3, JSON.stringify({
             level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and objects as other parameters',
             service: 'hello-world',
@@ -316,7 +308,7 @@ describe('Class: Logger', () => {
             parameterOne: 'foo',
             parameterTwo: 'bar',
           }));
-          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(4, JSON.stringify({
+          expect(stdoutSpy).toHaveBeenNthCalledWith(4, JSON.stringify({
             level: method.toUpperCase(),
             message: 'A log item with an object as first parameters',
             service: 'hello-world',
@@ -324,7 +316,7 @@ describe('Class: Logger', () => {
             xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
             extra: 'parameter',
           }));
-          const parameterCallNumber5 = JSON.parse(consoleSpy[methodOfConsole].mock.calls[4][0]);
+          const parameterCallNumber5 = JSON.parse(stdoutSpy.mock.calls[4][0] as string);
           expect(parameterCallNumber5).toEqual(expect.objectContaining( {
             level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and an error as second parameter',
@@ -338,7 +330,7 @@ describe('Class: Logger', () => {
               stack: expect.stringMatching(/Logger.test.ts:[0-9]+:[0-9]+/),
             },
           }));
-          const parameterCallNumber6 = JSON.parse(consoleSpy[methodOfConsole].mock.calls[5][0]);
+          const parameterCallNumber6 = JSON.parse(stdoutSpy.mock.calls[5][0] as string);
           expect(parameterCallNumber6).toEqual(expect.objectContaining({
             level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and an error with custom key as second parameter',
@@ -352,7 +344,7 @@ describe('Class: Logger', () => {
               stack: expect.stringMatching(/Logger.test.ts:[0-9]+:[0-9]+/),
             },
           }));
-          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(7, JSON.stringify({
+          expect(stdoutSpy).toHaveBeenNthCalledWith(7, JSON.stringify({
             level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and a string as second parameter',
             service: 'hello-world',
@@ -385,8 +377,8 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(console[methodOfConsole]).toBeCalledTimes(1);
-          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(1, JSON.stringify({
+          expect(stdoutSpy).toBeCalledTimes(1);
+          expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
             level: method.toUpperCase(),
             message: 'foo',
             service: 'hello-world',
@@ -428,7 +420,7 @@ describe('Class: Logger', () => {
 
           // Assess
           expect(result).toBe('All good!');
-          expect(console[methodOfConsole]).toHaveBeenNthCalledWith(1, JSON.stringify({
+          expect(stdoutSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
             level: method.toUpperCase(),
             message: 'A log with a circular reference',
             service: 'hello-world',
@@ -471,6 +463,7 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(logger).toEqual({
+        console: expect.any(Console),
         coldStart: false, // This is now false because the `coldStart` attribute has been already accessed once by the `addContext` method
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
@@ -723,15 +716,17 @@ describe('Class: Logger', () => {
       // Assess
 
       expect(actualResult).toEqual(expectedReturnValue);
-      expect(console['info']).toBeCalledTimes(2);
-      expect(console['info']).toHaveBeenNthCalledWith(1, JSON.stringify({
+      expect(stdoutSpy).toBeCalledTimes(2);
+      const actualCall1 = stdoutSpy.mock.calls[0][0];
+      expect(actualCall1).toEqual(JSON.stringify({
         level: 'INFO',
         message: 'An INFO log without context!',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
       }));
-      expect(console['info']).toHaveBeenNthCalledWith(2, JSON.stringify({
+      const actualCall2 = stdoutSpy.mock.calls[0][1];
+      expect(actualCall2).toEqual(JSON.stringify({
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         function_memory_size: 128,
@@ -804,6 +799,7 @@ describe('Class: Logger', () => {
       expect(parentLogger === childLoggerWithErrorLogLevel).toBe(false);
 
       expect(parentLogger).toEqual({
+        console: expect.any(Console),
         coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
@@ -827,6 +823,7 @@ describe('Class: Logger', () => {
       });
 
       expect(childLoggerWithPermanentAttributes).toEqual({
+        console: expect.any(Console),
         coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
@@ -852,6 +849,7 @@ describe('Class: Logger', () => {
       });
 
       expect(childLoggerWithSampleRateEnabled).toEqual({
+        console: expect.any(Console),
         coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
@@ -875,6 +873,7 @@ describe('Class: Logger', () => {
       });
 
       expect(childLoggerWithErrorLogLevel).toEqual({
+        console: expect.any(Console),
         coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),

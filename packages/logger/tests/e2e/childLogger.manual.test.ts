@@ -9,10 +9,23 @@
 
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { App, Stack } from '@aws-cdk/core';
-import { createStackWithLambdaFunction, deployStack, destroyStack, generateUniqueName, invokeFunction, isValidRuntimeKey } from '../helpers/e2eUtils';
-import { InvocationLogs } from '../helpers/InvocationLogs';
-
+import { App, Stack } from 'aws-cdk-lib';
+import { 
+  createStackWithLambdaFunction,
+  generateUniqueName,
+  invokeFunction,
+  isValidRuntimeKey
+} from '../../../commons/tests/utils/e2eUtils';
+import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
+import { 
+  RESOURCE_NAME_PREFIX,
+  STACK_OUTPUT_LOG_GROUP,
+  SETUP_TIMEOUT,
+  TEST_CASE_TIMEOUT,
+  TEARDOWN_TIMEOUT
+} from './constants';
+ 
 const runtime: string = process.env.RUNTIME || 'nodejs14x';
 
 if (!isValidRuntimeKey(runtime)) {
@@ -20,14 +33,10 @@ if (!isValidRuntimeKey(runtime)) {
 }
 
 const LEVEL = InvocationLogs.LEVEL;
-const TEST_CASE_TIMEOUT = 20000; // 20 seconds
-const SETUP_TIMEOUT = 300000; // 300 seconds
-const TEARDOWN_TIMEOUT = 200000; 
-const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
 const uuid = randomUUID();
-const stackName = generateUniqueName(uuid, runtime, 'ChildLogger-Manual');
-const functionName = generateUniqueName(uuid, runtime, 'ChildLogger-Manual');
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'ChildLogger-Manual');
+const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'ChildLogger-Manual');
 const lambdaFunctionCodeFile = 'childLogger.manual.test.FunctionCode.ts';
 
 // Parameters to be used by Logger in the Lambda function
@@ -67,9 +76,8 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
       logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
       runtime: runtime,
     });
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    const outputs = await deployStack(stackArtifact);
-    logGroupName = outputs[STACK_OUTPUT_LOG_GROUP];
+    const result = await deployStack(integTestApp, stack);
+    logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
 
     // Invoke the function once
     invocationLogs = await invokeFunction(functionName, 1);

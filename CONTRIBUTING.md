@@ -101,7 +101,7 @@ You can run each group separately or all together thanks to [jest-runner-groups]
 
 Unit tests, under `tests/unit` folder, are standard [Jest](https://jestjs.io) tests.
 
-End-to-end tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use [aws-cdk](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) v1 library (not v2 due to [this cdk issue](https://github.com/aws/aws-cdk/issues/18211)) for TypeScript for creating infrastructure, and [aws-sdk-js v2](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/) for invoking the functions and asserting on the expected behaviors. All steps are also executed by Jest.
+End-to-end tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use [aws-cdk](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) v2 library with TypeScript for creating infrastructure, and [aws-sdk-js v2](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/) for invoking the functions and asserting on the expected behaviors. All steps are also executed by Jest.
 
 Running end-to-end tests will deploy AWS resources. You will need an AWS account, and the tests might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account, follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
@@ -133,7 +133,7 @@ To run unit tests, you can either use:
 
 ##### Set up
 
-We create e2e testing infrastructure with CDK. If you have never used it before, please check its [Getting started guide](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html). You need to run `cdk bootstrap` in the account and region you are going to run e2e tests in.
+We create e2e testing infrastructure with CDK. If you have never used it before, please check its [Getting started guide](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html). You need to run `cdk bootstrap` in the account and region you are going to run e2e tests in.
 
 ##### Write
 
@@ -147,7 +147,9 @@ As mentioned in the previous section, tests are split into groups thanks to [jes
  */
 ```
 
- See `metrics/tests/e2e/decorator.test.ts` as an example.
+Follow this convention for the test filename: `<TESTED_FEATURE>.<USAGE_TYPE>.test.ts`. (e.g. `sampleRate.decorator.test.ts`, `childLogger.manual.test.ts`)
+
+See `metrics/tests/e2e/basicFeatures.decorator.test.ts` as an example.
 
 ##### Run
 

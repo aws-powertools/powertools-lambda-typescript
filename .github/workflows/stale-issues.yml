@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Stale issue job
     steps:
-      - uses: aws-actions/stale-issue-cleanup@e9f9e34
+      - uses: aws-actions/stale-issue-cleanup@e1cf8a5d54b4ff316c76f5356079d3a8df84137e
         with:
           # Setting messages to an empty string will cause the automation to skip
           # that category

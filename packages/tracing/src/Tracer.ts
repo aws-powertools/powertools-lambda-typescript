@@ -15,6 +15,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * ## Key features
  *   * Auto capture cold start as annotation, and responses or full exceptions as metadata
  *   * Auto-disable when not running in AWS Lambda environment
+ *   * Automatically trace HTTP(s) clients and generate segments for each request
  *   * Support tracing functions via decorators, middleware, and manual instrumentation
  *   * Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
  * 
@@ -115,6 +116,8 @@ class Tracer extends Utility implements TracerInterface {
   public provider: ProviderServiceInterface;
   
   private captureError: boolean = true;
+
+  private captureHTTPsRequests: boolean = true;
   
   private captureResponse: boolean = true;
 
@@ -131,6 +134,9 @@ class Tracer extends Utility implements TracerInterface {
 
     this.setOptions(options);
     this.provider = new ProviderService();
+    if (this.isTracingEnabled() && this.captureHTTPsRequests) {
+      this.provider.captureHTTPsGlobal();
+    }
     if (!this.isTracingEnabled()) {
       // Tell x-ray-sdk to not throw an error if context is missing but tracing is disabled
       this.provider.setContextMissingStrategy(() => ({}));
@@ -632,6 +638,39 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
+   * Patch all HTTP(s) clients and create traces when your application makes calls outgoing calls.
+   *
+   * Calls using third-party HTTP request libraries, such as Axios, are supported as long as they use the native http
+   * module under the hood. Support for third-party HTTP request libraries is provided on a best effort basis.
+   * 
+   * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-httpclients.html
+   * 
+   * @param enabled - Whether or not to patch all HTTP clients
+   * @returns void
+   */
+  private setCaptureHTTPsRequests(enabled?: boolean): void {
+    if (enabled !== undefined && !enabled) {
+      this.captureHTTPsRequests = false;
+
+      return;
+    }
+
+    const customConfigValue = this.getCustomConfigService()?.getCaptureHTTPsRequests();
+    if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
+      this.captureHTTPsRequests = false;
+
+      return;
+    }
+
+    const envVarsValue = this.getEnvVarsService()?.getCaptureHTTPsRequests();
+    if (envVarsValue.toLowerCase() === 'false') {
+      this.captureHTTPsRequests = false;
+
+      return;
+    }
+  }
+
+  /**
    * Setter for `captureResponse` based on configuration passed and environment variables.
    * Used internally during initialization.
    */
@@ -679,6 +718,7 @@ class Tracer extends Utility implements TracerInterface {
     const {
       enabled,
       serviceName,
+      captureHTTPsRequests,
       customConfigService
     } = options;
 
@@ -688,6 +728,7 @@ class Tracer extends Utility implements TracerInterface {
     this.setCaptureResponse();
     this.setCaptureError();
     this.setServiceName(serviceName);
+    this.setCaptureHTTPsRequests(captureHTTPsRequests);
 
     return this;
   }

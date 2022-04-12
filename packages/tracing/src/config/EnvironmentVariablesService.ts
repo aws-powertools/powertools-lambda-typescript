@@ -15,6 +15,10 @@ class EnvironmentVariablesService extends ConfigService {
     return this.get(this.awsExecutionEnv);
   }
 
+  public getCaptureHTTPsRequests(): string {
+    return this.get(this.tracerCaptureHTTPsRequestsVariable);
+  }
+
   public getSamLocal(): string {
     return this.get(this.samLocalVariable);
   }

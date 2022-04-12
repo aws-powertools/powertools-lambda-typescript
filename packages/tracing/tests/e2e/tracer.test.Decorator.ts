@@ -1,6 +1,7 @@
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -54,6 +55,7 @@ export class MyFunctionWithDecorator {
     return Promise.all([
       dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise(),
       dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } })),
+      axios.get('https://httpbin.org/status/200'),
       new Promise((resolve, reject) => {
         setTimeout(() => {
           const res = this.myMethod();
@@ -65,7 +67,7 @@ export class MyFunctionWithDecorator {
         }, 2000); // We need to wait for to make sure previous calls are finished
       })
     ])
-      .then(([ _dynamoDBv2Res, _dynamoDBv3Res, promiseRes ]) => promiseRes)
+      .then(([ _dynamoDBv2Res, _dynamoDBv3Res, _axiosRes, promiseRes ]) => promiseRes)
       .catch((err) => {
         throw err;
       });

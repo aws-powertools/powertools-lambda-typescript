@@ -1,7 +1,7 @@
 import { ContextMissingStrategy } from 'aws-xray-sdk-core/dist/lib/context_utils';
 import { Namespace } from 'cls-hooked';
 import { ProviderServiceInterface } from '.';
-import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger, Logger } from 'aws-xray-sdk-core';
+import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, captureHTTPsGlobal, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger, Logger } from 'aws-xray-sdk-core';
 
 class ProviderService implements ProviderServiceInterface {
   
@@ -25,6 +25,13 @@ class ProviderService implements ProviderServiceInterface {
   
   public captureFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, _parent?: Segment | Subsegment): unknown {
     return captureFunc(name, fcn);
+  }
+
+  public captureHTTPsGlobal(): void {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    captureHTTPsGlobal(require('http'));
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    captureHTTPsGlobal(require('https'));
   }
 
   public getNamespace(): Namespace {

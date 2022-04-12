@@ -20,9 +20,11 @@ interface ProviderServiceInterface {
 
   captureAWSv3Client<T>(awsservice: T): T
 
+  captureAsyncFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment): unknown
+  
   captureFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment): unknown
 
-  captureAsyncFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment): unknown
+  captureHTTPsGlobal(): void
 }
 
 export {

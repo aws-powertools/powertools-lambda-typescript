@@ -56,7 +56,7 @@ You can find your API Gateway Endpoint URL in the output values displayed after 
 Build your application with the `sam build` command.
 
 ```bash
-powertools-example$ sam build
+aws-lambda-powertools-typescript/examples/sam$ sam build
 ```
 
 The SAM CLI installs dependencies defined in `hello-world/package.json`, compiles TypeScript with esbuild, creates a deployment package, and saves it in the `.aws-sam/build` folder.

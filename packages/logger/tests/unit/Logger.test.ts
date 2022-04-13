@@ -26,10 +26,10 @@ describe('Class: Logger', () => {
   });
 
   describe.each([
-    ['debug', 'DOES', true, 'DOES NOT', false, 'DOES NOT', false, 'DOES NOT', false],
-    ['info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false],
-    ['warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false],
-    ['error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true],
+    [ 'debug', 'DOES', true, 'DOES NOT', false, 'DOES NOT', false, 'DOES NOT', false ],
+    [ 'info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false ],
+    [ 'warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false ],
+    [ 'error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true ],
   ])(
     'Method: %p',
     (

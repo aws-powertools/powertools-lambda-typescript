@@ -257,7 +257,7 @@ class Logger extends Utility implements ClassThatLogs {
       descriptor.value = (event, context, callback) => {
         this.addContext(context);
 
-        return originalMethod?.apply(target, [event, context, callback]);
+        return originalMethod?.apply(target, [ event, context, callback ]);
       };
     };
   }
@@ -368,7 +368,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {EnvironmentVariablesService}
    */
   private getEnvVarsService(): EnvironmentVariablesService {
-    return <EnvironmentVariablesService>this.envVarsService;
+    return <EnvironmentVariablesService> this.envVarsService;
   }
 
   /**
@@ -379,7 +379,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {LogFormatterInterface}
    */
   private getLogFormatter(): LogFormatterInterface {
-    return <LogFormatterInterface>this.logFormatter;
+    return <LogFormatterInterface> this.logFormatter;
   }
 
   /**
@@ -389,7 +389,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {LogLevel}
    */
   private getLogLevel(): LogLevel {
-    return <LogLevel>this.logLevel;
+    return <LogLevel> this.logLevel;
   }
 
   /**
@@ -400,7 +400,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {LogAttributes}
    */
   private getPersistentLogAttributes(): LogAttributes {
-    return <LogAttributes>this.persistentLogAttributes;
+    return <LogAttributes> this.persistentLogAttributes;
   }
 
   /**
@@ -425,7 +425,7 @@ class Logger extends Utility implements ClassThatLogs {
       this.setSampleRateValue();
     }
 
-    return <number>this.powertoolLogData?.sampleRateValue;
+    return <number> this.powertoolLogData?.sampleRateValue;
   }
 
   /**

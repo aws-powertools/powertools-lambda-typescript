@@ -10,7 +10,7 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
-import { 
+import {
   createStackWithLambdaFunction,
   generateUniqueName,
   invokeFunction,
@@ -18,14 +18,14 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
-import { 
+import {
   RESOURCE_NAME_PREFIX,
   STACK_OUTPUT_LOG_GROUP,
   SETUP_TIMEOUT,
   TEST_CASE_TIMEOUT,
   TEARDOWN_TIMEOUT
 } from './constants';
- 
+
 const runtime: string = process.env.RUNTIME || 'nodejs14x';
 
 if (!isValidRuntimeKey(runtime)) {
@@ -54,7 +54,7 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
   let invocationLogs: InvocationLogs[];
 
   beforeAll(async () => {
-    
+
     // Create and deploy a stack with AWS CDK
     stack = createStackWithLambdaFunction({
       app: integTestApp,
@@ -67,8 +67,8 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
         UUID: uuid,
 
         // Text to be used by Logger in the Lambda function
-        PARENT_PERSISTENT_KEY, 
-        PARENT_PERSISTENT_VALUE, 
+        PARENT_PERSISTENT_KEY,
+        PARENT_PERSISTENT_VALUE,
         PARENT_LOG_MSG,
         CHILD_LOG_MSG,
         CHILD_LOG_LEVEL,
@@ -83,7 +83,7 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
     invocationLogs = await invokeFunction(functionName, 1);
 
     console.log('logGroupName', logGroupName);
-    
+
   }, SETUP_TIMEOUT);
 
   const getAllChildLogs = (): string[] => invocationLogs[0].getFunctionLogs()
@@ -111,7 +111,7 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
       // Only parent has injected context.
       const allChildLogs = getAllChildLogs();
 
-      for ( const log of allChildLogs ) {
+      for (const log of allChildLogs) {
         expect(log).not.toContain('function_arn');
         expect(log).not.toContain('function_memory_size');
         expect(log).not.toContain('function_name');

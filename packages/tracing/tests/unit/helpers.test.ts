@@ -16,8 +16,23 @@ describe('Helper: createTracer function', () => {
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
+  afterEach(() => {
+    Tracer['_instance'] = undefined;
+  });
+
   afterAll(() => {
     process.env = ENVIRONMENT_VARIABLES;
+  });
+
+  describe('Singleton', () => {
+
+    test('when called multiple times, it should return the same instance', () => {
+      const tracer1 = createTracer();
+      const tracer2 = createTracer();
+
+      expect(tracer1).toBe(tracer2);
+    });
+
   });
 
   describe('TracerOptions parameters', () => {
@@ -35,7 +50,7 @@ describe('Helper: createTracer function', () => {
         serviceName: 'hello-world',
         captureHTTPsRequests: true
       }));
-            
+
     });
 
     test('when all tracer options are passed, returns a Tracer instance with the correct properties', () => {
@@ -57,7 +72,7 @@ describe('Helper: createTracer function', () => {
         serviceName: 'my-lambda-service',
         captureHTTPsRequests: false,
       }));
-      
+
     });
 
     test('when a custom serviceName is passed, returns a Tracer instance with the correct properties', () => {
@@ -146,10 +161,10 @@ describe('Helper: createTracer function', () => {
       const tracerOptions: TracerOptions = {
         customConfigService: configService
       };
-      
+
       // Act
       const tracer = createTracer(tracerOptions);
-      
+
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
       expect(tracer).toEqual(expect.objectContaining({
@@ -168,7 +183,7 @@ describe('Helper: createTracer function', () => {
         enabled: true,
         captureHTTPsRequests: false
       };
-      
+
       // Act
       const tracer = createTracer(tracerOptions);
 
@@ -187,7 +202,7 @@ describe('Helper: createTracer function', () => {
       const tracerOptions = {
         enabled: true,
       };
-      
+
       // Act
       const tracer = createTracer(tracerOptions);
 

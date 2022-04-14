@@ -113,27 +113,33 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  */
 class Tracer extends Utility implements TracerInterface {
 
-  public provider: ProviderServiceInterface;
-  
+  public provider: ProviderServiceInterface = new ProviderService();
+
+  private static _instance?: Tracer;
+
   private captureError: boolean = true;
 
   private captureHTTPsRequests: boolean = true;
-  
+
   private captureResponse: boolean = true;
 
   private customConfigService?: ConfigServiceInterface;
-  
+
   private envVarsService?: EnvironmentVariablesService;
-  
+
   private serviceName?: string;
-  
+
   private tracingEnabled: boolean = true;
 
   public constructor(options: TracerOptions = {}) {
     super();
 
+    if (Tracer._instance) {
+      return Tracer._instance;
+    }
+    Tracer._instance = this;
+
     this.setOptions(options);
-    this.provider = new ProviderService();
     if (this.isTracingEnabled() && this.captureHTTPsRequests) {
       this.provider.captureHTTPsGlobal();
     }
@@ -269,7 +275,7 @@ class Tracer extends Utility implements TracerInterface {
         // instrumentation contract like most base clients. 
         // For detailed explanation see: https://github.com/awslabs/aws-lambda-powertools-typescript/issues/524#issuecomment-1024493662
         this.provider.captureAWSClient((service as T & { service: T }).service);
-        
+
         return service;
       } catch {
         throw error;
@@ -344,7 +350,7 @@ class Tracer extends Utility implements TracerInterface {
 
       descriptor.value = ((event, context, callback) => {
         if (!this.isTracingEnabled()) {
-          return originalMethod?.apply(target, [ event, context, callback ]);
+          return originalMethod?.apply(target, [event, context, callback]);
         }
 
         return this.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
@@ -352,7 +358,7 @@ class Tracer extends Utility implements TracerInterface {
           this.addServiceNameAnnotation();
           let result: unknown;
           try {
-            result = await originalMethod?.apply(target, [ event, context, callback ]);
+            result = await originalMethod?.apply(target, [event, context, callback]);
             this.addResponseAsMetadata(result, process.env._HANDLER);
           } catch (error) {
             this.addErrorAsMetadata(error as Error);
@@ -361,7 +367,7 @@ class Tracer extends Utility implements TracerInterface {
             subsegment?.close();
             subsegment?.flush();
           }
-          
+
           return result;
         });
       }) as Handler;
@@ -408,7 +414,7 @@ class Tracer extends Utility implements TracerInterface {
   public captureMethod(): MethodDecorator {
     return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
-      
+
       descriptor.value = (...args: unknown[]) => {
         if (!this.isTracingEnabled()) {
           return originalMethod?.apply(target, [...args]);
@@ -426,7 +432,7 @@ class Tracer extends Utility implements TracerInterface {
           } finally {
             subsegment?.close();
           }
-          
+
           return result;
         });
       };
@@ -434,7 +440,7 @@ class Tracer extends Utility implements TracerInterface {
       return descriptor;
     };
   }
-  
+
   /**
    * Get the active segment or subsegment in the current scope.
    * 
@@ -461,11 +467,11 @@ class Tracer extends Utility implements TracerInterface {
     if (!this.isTracingEnabled()) {
       return new Subsegment('## Dummy segment');
     }
-    const segment = this.provider.getSegment();    
+    const segment = this.provider.getSegment();
     if (segment === undefined) {
       throw new Error('Failed to get the current sub/segment from the context.');
     }
- 
+
     return segment;
   }
 
@@ -506,12 +512,12 @@ class Tracer extends Utility implements TracerInterface {
     const document = this.getSegment();
     if (document instanceof Segment) {
       console.warn('You cannot annotate the main segment in a Lambda execution environment');
-      
+
       return;
     }
     document?.addAnnotation(key, value);
   }
-  
+
   /**
    * Adds metadata to existing segment or subsegment.
    * 
@@ -539,14 +545,14 @@ class Tracer extends Utility implements TracerInterface {
     const document = this.getSegment();
     if (document instanceof Segment) {
       console.warn('You cannot add metadata to the main segment in a Lambda execution environment');
-      
+
       return;
     }
-    
+
     namespace = namespace || this.serviceName;
     document?.addMetadata(key, value, namespace);
   }
-  
+
   /**
    * Sets the passed subsegment as the current active subsegment.
    * 
@@ -571,7 +577,7 @@ class Tracer extends Utility implements TracerInterface {
    */
   public setSegment(segment: Segment | Subsegment): void {
     if (!this.isTracingEnabled()) return;
-    
+
     return this.provider.setSegment(segment);
   }
 
@@ -588,9 +594,9 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private getEnvVarsService(): EnvironmentVariablesService {
-    return <EnvironmentVariablesService> this.envVarsService;
+    return <EnvironmentVariablesService>this.envVarsService;
   }
-  
+
   /**
    * Determine if we are running in a Lambda execution environment.
    * Used internally during initialization.
@@ -598,7 +604,7 @@ class Tracer extends Utility implements TracerInterface {
   private isLambdaExecutionEnv(): boolean {
     return this.getEnvVarsService()?.getAwsExecutionEnv() !== '';
   }
-  
+
   /**
    * Determine if we are running inside a SAM CLI process.
    * Used internally during initialization.
@@ -770,21 +776,21 @@ class Tracer extends Utility implements TracerInterface {
   private setTracingEnabled(enabled?: boolean): void {
     if (enabled !== undefined && !enabled) {
       this.tracingEnabled = enabled;
-      
+
       return;
     }
 
     const customConfigValue = this.getCustomConfigService()?.getTracingEnabled();
     if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
       this.tracingEnabled = false;
-      
+
       return;
     }
 
     const envVarsValue = this.getEnvVarsService()?.getTracingEnabled();
     if (envVarsValue.toLowerCase() === 'false') {
       this.tracingEnabled = false;
-      
+
       return;
     }
 

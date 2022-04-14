@@ -45,6 +45,10 @@ describe('Class: Tracer', () => {
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
+  afterEach(() => {
+    Tracer['_instance'] = undefined;
+  });
+
   afterAll(() => {
     process.env = ENVIRONMENT_VARIABLES;
   });
@@ -80,10 +84,10 @@ describe('Class: Tracer', () => {
       // Assess
       expect(putAnnotationSpy).toBeCalledTimes(4);
       expect(putAnnotationSpy.mock.calls).toEqual([
-        [ 'ColdStart', true ],
-        [ 'ColdStart', false ],
-        [ 'ColdStart', false ],
-        [ 'ColdStart', false ],
+        ['ColdStart', true],
+        ['ColdStart', false],
+        ['ColdStart', false],
+        ['ColdStart', false],
       ]);
 
     });
@@ -264,7 +268,7 @@ describe('Class: Tracer', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer();
-    
+
       // Act / Assess
       expect(() => {
         tracer.getSegment();
@@ -277,7 +281,7 @@ describe('Class: Tracer', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => undefined);
-    
+
       // Act / Assess
       expect(() => {
         tracer.getSegment();
@@ -305,10 +309,10 @@ describe('Class: Tracer', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => new Segment('facade', process.env._X_AMZN_TRACE_ID || null));
-    
+
       // Act
       const segment = tracer.getSegment();
-    
+
       // Assess
       expect(segment).toBeInstanceOf(Segment);
       expect(segment).toEqual(expect.objectContaining({
@@ -322,10 +326,10 @@ describe('Class: Tracer', () => {
 
   describe('Method: setSegment', () => {
     test('when called outside of a namespace or without parent segment, and Tracer is enabled, it throws an error', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
-    
+
       // Act / Assess
       expect(() => {
         const newSubsegment = new Subsegment('## foo.bar');
@@ -334,28 +338,28 @@ describe('Class: Tracer', () => {
     });
 
     test('when called outside of a namespace or without parent segment, and tracing is disabled, it does nothing', () => {
-      
+
       // Prepare
       delete process.env.AWS_EXECUTION_ENV; // This will disable the tracer, simulating local execution
       const tracer: Tracer = new Tracer();
       const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment');
-    
+
       // Act
       const newSubsegment = new Subsegment('## foo.bar');
       tracer.setSegment(newSubsegment);
-      
+
       // Assess
       expect(setSegmentSpy).toBeCalledTimes(0);
 
     });
 
     test('when called within a namespace, it sets the segment', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => new Segment('facade', process.env._X_AMZN_TRACE_ID || null));
       const providerSetSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation(() => ({}));
-                
+
       // Act
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo.bar');
       tracer.setSegment(newSubsegment);
@@ -372,7 +376,7 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: putAnnotation', () => {
-    
+
     test('when called while tracing is disabled, it does nothing', () => {
 
       // Prepare
@@ -383,13 +387,13 @@ describe('Class: Tracer', () => {
 
       // Act
       tracer.putAnnotation('foo', 'bar');
-      
+
       // Assess
       expect('annotations' in facadeSegment).toBe(false);
       expect(addAnnotationSpy).toBeCalledTimes(0);
 
     });
-    
+
     test('when called outside of a namespace or without parent segment, it throws an error', () => {
 
       // Prepare
@@ -403,7 +407,7 @@ describe('Class: Tracer', () => {
     });
 
     test('when called within a namespace and on the main segment, it does nothing', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const facadeSegment = new Segment('facade', process.env._X_AMZN_TRACE_ID || null);
@@ -412,7 +416,7 @@ describe('Class: Tracer', () => {
 
       // Act
       tracer.putAnnotation('foo', 'bar');
-      
+
       // Assess
       expect('annotations' in facadeSegment).toBe(false);
       expect(addAnnotationSpy).toBeCalledTimes(0);
@@ -422,7 +426,7 @@ describe('Class: Tracer', () => {
     });
 
     test('when called within a namespace and on a subsegment, it adds an annotation', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo.bar');
@@ -432,7 +436,7 @@ describe('Class: Tracer', () => {
 
       // Act
       tracer.putAnnotation('foo', 'bar');
-            
+
       // Assess
       expect('annotations' in newSubsegment).toBe(true);
       expect(addAnnotationSpy).toBeCalledTimes(1);
@@ -448,9 +452,9 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: putMetadata', () => {
-    
+
     test('when called while tracing is disabled, it does nothing', () => {
-  
+
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
       const facadeSegment = new Segment('facade', process.env._X_AMZN_TRACE_ID || null);
@@ -459,7 +463,7 @@ describe('Class: Tracer', () => {
 
       // Act
       tracer.putMetadata('foo', 'bar');
-      
+
       // Assess
       expect('metadata' in facadeSegment).toBe(false);
       expect(addMetadataSpy).toBeCalledTimes(0);
@@ -467,48 +471,48 @@ describe('Class: Tracer', () => {
     });
 
     test('when called outside of a namespace or without parent segment, it throws an error', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
-      
+
       // Act / Assess
       expect(() => {
         tracer.putMetadata('foo', 'bar');
       }).toThrow('Failed to get the current sub/segment from the context.');
 
     });
-    
+
     test('when called within a namespace and on the main segment, it does nothing', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const facadeSegment = new Segment('facade', process.env._X_AMZN_TRACE_ID || null);
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => facadeSegment);
       const addMetadataSpy = jest.spyOn(facadeSegment, 'addMetadata');
-      
+
       // Act
       tracer.putMetadata('foo', 'bar');
-      
+
       // Assess
       expect('metadata' in facadeSegment).toBe(false);
       expect(addMetadataSpy).toBeCalledTimes(0);
       expect(console.warn).toBeCalledTimes(1);
       expect(console.warn).toHaveBeenNthCalledWith(1, 'You cannot add metadata to the main segment in a Lambda execution environment');
-      
+
     });
-    
+
     test('when called within a namespace and on a subsegment, it adds the metadata with the default service name as namespace', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo.bar');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       const addMetadataSpy = jest.spyOn(newSubsegment, 'addMetadata');
-      
+
       // Act
       tracer.putMetadata('foo', 'bar');
-      
+
       // Assess
       expect('metadata' in newSubsegment).toBe(true);
       expect(addMetadataSpy).toBeCalledTimes(1);
@@ -521,19 +525,19 @@ describe('Class: Tracer', () => {
         }
       }));
     });
-    
+
     test('when called within a namespace and on a subsegment, and with a custom namespace as an argument, it adds the metadata correctly', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo.bar');
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       const addMetadataSpy = jest.spyOn(newSubsegment, 'addMetadata');
-      
+
       // Act
       tracer.putMetadata('foo', 'bar', 'baz');
-      
+
       // Assess
       expect('metadata' in newSubsegment).toBe(true);
       expect(addMetadataSpy).toBeCalledTimes(1);
@@ -547,9 +551,9 @@ describe('Class: Tracer', () => {
       }));
 
     });
-    
+
     test('when called within a namespace and on a subsegment, and while a custom namespace was set in the class, it adds the metadata correctly', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer({ serviceName: 'baz' });
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## foo.bar');
@@ -559,7 +563,7 @@ describe('Class: Tracer', () => {
 
       // Act
       tracer.putMetadata('foo', 'bar');
-            
+
       // Assess
       expect('metadata' in newSubsegment).toBe(true);
       expect(addMetadataSpy).toBeCalledTimes(1);
@@ -571,15 +575,15 @@ describe('Class: Tracer', () => {
           }
         }
       }));
-    
+
     });
 
   });
 
   describe('Method: captureLambdaHandler', () => {
-  
+
     test('when used as decorator while tracing is disabled, it does nothing', async () => {
-     
+
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
       jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => new Segment('facade', process.env._X_AMZN_TRACE_ID || null));
@@ -594,9 +598,9 @@ describe('Class: Tracer', () => {
             foo: 'bar'
           } as unknown as TResult));
         }
-            
+
       }
-            
+
       // Act
       await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
@@ -624,9 +628,9 @@ describe('Class: Tracer', () => {
             foo: 'bar'
           } as unknown as TResult));
         }
-            
+
       }
-            
+
       // Act
       await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
@@ -634,11 +638,11 @@ describe('Class: Tracer', () => {
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect('metadata' in newSubsegment).toBe(false);
       delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
-    
+
     });
 
     test('when used as decorator and with standard config, it captures the response as metadata', async () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
@@ -656,9 +660,9 @@ describe('Class: Tracer', () => {
             foo: 'bar'
           } as unknown as TResult));
         }
-            
+
       }
-            
+
       // Act
       await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
@@ -698,9 +702,9 @@ describe('Class: Tracer', () => {
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
           throw new Error('Exception thrown!');
         }
-            
+
       }
-            
+
       // Act & Assess
       await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -717,7 +721,7 @@ describe('Class: Tracer', () => {
     });
 
     test('when used as decorator and with standard config, it captures the exception correctly', async () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
@@ -737,9 +741,9 @@ describe('Class: Tracer', () => {
         public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
           throw new Error('Exception thrown!');
         }
-            
+
       }
-            
+
       // Act & Assess
       await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -750,11 +754,11 @@ describe('Class: Tracer', () => {
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
       expect.assertions(6);
-    
+
     });
 
     test('when used as decorator and with standard config, it annotates ColdStart correctly', async () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegmentFirstInvocation: Segment | Subsegment | undefined = new Subsegment('## index.handler');
@@ -775,9 +779,9 @@ describe('Class: Tracer', () => {
             foo: 'bar'
           } as unknown as TResult));
         }
-            
+
       }
-            
+
       // Act
       await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
       await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
@@ -785,11 +789,11 @@ describe('Class: Tracer', () => {
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(2);
       expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## index.handler', expect.anything());
-      expect(putAnnotationSpy.mock.calls.filter(call => 
+      expect(putAnnotationSpy.mock.calls.filter(call =>
         call[0] === 'ColdStart'
       )).toEqual([
-        [ 'ColdStart', true ],
-        [ 'ColdStart', false ],
+        ['ColdStart', true],
+        ['ColdStart', false],
       ]);
       expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
         name: '## index.handler',
@@ -807,7 +811,7 @@ describe('Class: Tracer', () => {
     });
 
     test('when used as decorator and with standard config, it annotates Service correctly', async () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
@@ -825,9 +829,9 @@ describe('Class: Tracer', () => {
             foo: 'bar'
           } as unknown as TResult));
         }
-            
+
       }
-            
+
       // Act
       await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
 
@@ -865,7 +869,7 @@ describe('Class: Tracer', () => {
 
         public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
           const result = await this.dummyMethod('foo bar');
-          
+
           return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
         }
 
@@ -899,7 +903,7 @@ describe('Class: Tracer', () => {
 
         public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
           const result = await this.dummyMethod('foo bar');
-          
+
           return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
         }
 
@@ -943,7 +947,7 @@ describe('Class: Tracer', () => {
 
         public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
           const result = await this.dummyMethod('foo bar');
-          
+
           return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
         }
 
@@ -966,7 +970,7 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: captureAWS', () => {
-        
+
     test('when called while tracing is disabled, it does nothing', () => {
 
       // Prepare
@@ -1001,7 +1005,7 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: captureAWSv3Client', () => {
-        
+
     test('when called while tracing is disabled, it does nothing', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
@@ -1013,11 +1017,11 @@ describe('Class: Tracer', () => {
 
       // Assess
       expect(captureAWSv3ClientSpy).toBeCalledTimes(0);
-    
+
     });
 
     test('when called it returns the decorated object that was passed to it', () => {
-    
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAWSv3ClientSpy = jest.spyOn(tracer.provider, 'captureAWSv3Client')
@@ -1029,15 +1033,15 @@ describe('Class: Tracer', () => {
       // Assess
       expect(captureAWSv3ClientSpy).toBeCalledTimes(1);
       expect(captureAWSv3ClientSpy).toBeCalledWith({});
-    
+
     });
 
   });
 
   describe('Method: captureAWSClient', () => {
-        
+
     test('when called while tracing is disabled, it does nothing', () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
@@ -1048,11 +1052,11 @@ describe('Class: Tracer', () => {
       // Assess
       expect(captureAWSClientSpy).toBeCalledTimes(0);
       expect(client).toBeInstanceOf(DynamoDB);
-    
+
     });
 
     test('when called with a base AWS SDK v2 client, it returns it back instrumented', () => {
-    
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
@@ -1064,11 +1068,11 @@ describe('Class: Tracer', () => {
       expect(captureAWSClientSpy).toBeCalledTimes(1);
       expect(captureAWSClientSpy).toBeCalledWith(client);
       expect(client).toBeInstanceOf(DynamoDB);
-    
+
     });
 
     test('when called with a complex AWS SDK v2 client, it returns it back instrumented', () => {
-    
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
@@ -1081,11 +1085,11 @@ describe('Class: Tracer', () => {
       expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, client);
       expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, (client as unknown as DynamoDB & { service: DynamoDB }).service);
       expect(client).toBeInstanceOf(DynamoDB.DocumentClient);
-    
+
     });
 
     test('when called with an uncompatible object, it throws an error', () => {
-    
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
@@ -1098,7 +1102,7 @@ describe('Class: Tracer', () => {
       expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, {});
       expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, undefined);
       expect.assertions(4);
-      
+
     });
 
   });

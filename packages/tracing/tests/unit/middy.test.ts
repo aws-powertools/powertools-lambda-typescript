@@ -37,13 +37,18 @@ describe('Middy middleware', () => {
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
+  afterEach(() => {
+    Tracer['_instance'] = undefined;
+  });
+
   afterAll(() => {
     process.env = ENVIRONMENT_VARIABLES;
   });
+
   describe('Middleware: captureLambdaHandler', () => {
-    
+
     test('when used while tracing is disabled, it does nothing', async () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
       const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
@@ -65,7 +70,7 @@ describe('Middy middleware', () => {
     });
 
     test('when used while tracing is disabled, even if the handler throws an error, it does nothing', async () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
       const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
@@ -86,7 +91,7 @@ describe('Middy middleware', () => {
     });
 
     test('when used while POWERTOOLS_TRACER_CAPTURE_RESPONSE is set to false, it does not capture the response as metadata', async () => {
-      
+
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
       const tracer: Tracer = new Tracer();
@@ -110,7 +115,7 @@ describe('Middy middleware', () => {
     });
 
     test('when used with standard config, it captures the response as metadata', async () => {
-      
+
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
@@ -141,7 +146,7 @@ describe('Middy middleware', () => {
     });
 
     test('when used while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false, it does not capture the exceptions', async () => {
-      
+
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
       const tracer: Tracer = new Tracer();
@@ -171,7 +176,7 @@ describe('Middy middleware', () => {
   });
 
   test('when used with standard config, it captures the exception correctly', async () => {
-      
+
     // Prepare
     const tracer: Tracer = new Tracer();
     const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
@@ -195,7 +200,7 @@ describe('Middy middleware', () => {
   });
 
   test('when used with standard config, it annotates ColdStart correctly', async () => {
-      
+
     // Prepare
     const tracer: Tracer = new Tracer();
     const facadeSegment = new Segment('facade');
@@ -217,14 +222,14 @@ describe('Middy middleware', () => {
     // Act
     await handler({}, context, () => console.log('Lambda invoked!'));
     await handler({}, context, () => console.log('Lambda invoked!'));
-    
+
     // Assess
     expect(setSegmentSpy).toHaveBeenCalledTimes(4);
-    expect(putAnnotationSpy.mock.calls.filter(call => 
+    expect(putAnnotationSpy.mock.calls.filter(call =>
       call[0] === 'ColdStart'
     )).toEqual([
-      [ 'ColdStart', true ],
-      [ 'ColdStart', false ],
+      ['ColdStart', true],
+      ['ColdStart', false],
     ]);
     expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
       name: '## index.handler',
@@ -242,7 +247,7 @@ describe('Middy middleware', () => {
   });
 
   test('when used with standard config, it annotates Service correctly', async () => {
-      
+
     // Prepare
     const tracer: Tracer = new Tracer();
     const facadeSegment = new Segment('facade');

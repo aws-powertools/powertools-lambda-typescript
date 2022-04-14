@@ -1,3 +1,4 @@
+import { Console } from 'console';
 import type { Context } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
@@ -106,6 +107,8 @@ import type {
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/
  */
 class Logger extends Utility implements ClassThatLogs {
+
+  private console = new Console({ stdout: process.stdout, stderr: process.stderr });
 
   private customConfigService?: ConfigServiceInterface;
 
@@ -448,7 +451,7 @@ class Logger extends Utility implements ClassThatLogs {
 
     const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
 
-    console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
+    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
   }
 
   /**

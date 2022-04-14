@@ -13,23 +13,19 @@ import { App, Duration, Stack, RemovalPolicy } from 'aws-cdk-lib';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
 import { getTraces, getInvocationSubsegment, splitSegmentsByName } from '../helpers/tracesUtils';
-import { SETUP_TIMEOUT, TEARDOWN_TIMEOUT, TEST_CASE_TIMEOUT } from '../../../metrics/tests/e2e/constants';
 import { isValidRuntimeKey } from '@aws-lambda-powertools/commons/tests/utils/e2eUtils';
-
-/**
- * A type that contains information for invoking a Lambda function,
- * and retrieving the traces.
- * 
- * We fill the information while creting Lambda functions with CDK, 
- * and reuse it later in the test cases
- */
-type InvocationMap = { 
-  [key: string]: { 
-    functionName: string
-    serviceName: string
-    resourceArn: string 
-  }
-};
+import { 
+  SETUP_TIMEOUT, 
+  TEARDOWN_TIMEOUT, 
+  TEST_CASE_TIMEOUT,
+  expectedCustomAnnotationKey, 
+  expectedCustomAnnotationValue, 
+  expectedCustomMetadataKey, 
+  expectedCustomMetadataValue, 
+  expectedCustomResponseValue, 
+  expectedCustomErrorMessage,
+  InvocationMap,
+} from './constants';
 
 const xray = new AWS.XRay();
 const lambdaClient = new AWS.Lambda();
@@ -43,12 +39,6 @@ if (!isValidRuntimeKey(runtime)) {
 
 describe(`Tracer E2E tests for runtime: ${runtime}`, () => {
 
-  const expectedCustomAnnotationKey = 'myAnnotation';
-  const expectedCustomAnnotationValue = 'myValue';
-  const expectedCustomMetadataKey = 'myMetadata';
-  const expectedCustomMetadataValue = { bar: 'baz' };
-  const expectedCustomResponseValue = { foo: 'bar' };
-  const expectedCustomErrorMessage = 'An error has occurred';
   const startTime = new Date();
   const invocations = 3;
 

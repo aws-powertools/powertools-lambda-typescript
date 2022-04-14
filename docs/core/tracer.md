@@ -407,6 +407,85 @@ Use **`POWERTOOLS_TRACER_CAPTURE_ERROR=false`** environment variable to instruct
 
     1. You might **return sensitive** information from exceptions, stack traces you might not control
 
+### Reusing Tracer across your code
+
+Tracer keeps a copy of its configuration after the first initialization. This is useful for scenarios where you want to use Tracer in more than one location across your code base.
+
+=== "index.ts"
+
+    ```typescript hl_lines="5"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+    import middy from '@middy/core';
+    import collectPayment from './payment';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' }); // (1)
+
+    export const handler = middy(async (event: any, _context: any): Promise<void> => {
+        await collectPayment(event.chargeId);
+    }).use(captureLambdaHandler(tracer));
+    ```
+
+    1.  Since this is the first time Tracer is initialized, the settings are reused across all other Tracer instances
+=== "payment.ts"
+
+    ```typescript hl_lines="3"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+
+    const tracer = new Tracer(); // (1)
+
+    const collectPayment = async (chargeId: string) => {
+        const mainSegment = tracer.getSegment(); // (2)
+        const subsegment = mainSegment.addNewSubsegment('### collectPayment');
+        tracer.setSegment(subsegment);
+
+        // This annotation will be done on the `### collectPayment` segment 
+        tracer.putAnnotation('chargeId', chargeId);
+
+        /* ... */
+
+        subsegment.close();
+        tracer.setSegment(mainSegment);
+    };
+
+    export default collectPayment;
+    ```
+    
+    1.  You don't need to pass any parameters here, this instance will have the same configuration as the first Tracer instance
+    2.  This is the main subsegment called `### index.handler` that was created by the `captureLambdaHandler` middleware
+=== "Example Raw X-Ray Trace excerpt"
+
+    ```json hl_lines="3 17 20 24"
+    {
+        "id": "22883fbc730e3a0b",
+        "name": "## index.handler",
+        "start_time": 1647956168.22749,
+        "end_time": 1647956169.0679862,
+        "annotations": {
+            "ColdStart": true
+        },
+        "metadata": {
+            "default": {
+                "index.handler response": {
+                    "body": "{\"message\":\"Payment collected for chargeId: 1234\"}",
+                    "statusCode": 200
+                }
+            }
+        },
+        "subsegments": [
+            {
+                "id": "24542b252e5c0756",
+                "name": "collectPayment",
+                "start_time": 1647956169.22749,
+                "end_time": 1647956169.32749,
+                "annotations": {
+                    "chargeId": "1234"
+                }
+            }
+        ]
+    }
+    ```
+
+
 ### Escape hatch mechanism
 
 You can use `tracer.provider` attribute to access all methods provided by the [AWS X-Ray SDK](https://docs.aws.amazon.com/xray-sdk-for-nodejs/latest/reference/AWSXRay.html).

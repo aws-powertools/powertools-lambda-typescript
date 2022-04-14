@@ -84,10 +84,10 @@ describe('Class: Tracer', () => {
       // Assess
       expect(putAnnotationSpy).toBeCalledTimes(4);
       expect(putAnnotationSpy.mock.calls).toEqual([
-        ['ColdStart', true],
-        ['ColdStart', false],
-        ['ColdStart', false],
-        ['ColdStart', false],
+        [ 'ColdStart', true ],
+        [ 'ColdStart', false ],
+        [ 'ColdStart', false ],
+        [ 'ColdStart', false ],
       ]);
 
     });
@@ -792,8 +792,8 @@ describe('Class: Tracer', () => {
       expect(putAnnotationSpy.mock.calls.filter(call =>
         call[0] === 'ColdStart'
       )).toEqual([
-        ['ColdStart', true],
-        ['ColdStart', false],
+        [ 'ColdStart', true ],
+        [ 'ColdStart', false ],
       ]);
       expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
         name: '## index.handler',

@@ -228,8 +228,8 @@ describe('Middy middleware', () => {
     expect(putAnnotationSpy.mock.calls.filter(call =>
       call[0] === 'ColdStart'
     )).toEqual([
-      ['ColdStart', true],
-      ['ColdStart', false],
+      [ 'ColdStart', true ],
+      [ 'ColdStart', false ],
     ]);
     expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
       name: '## index.handler',

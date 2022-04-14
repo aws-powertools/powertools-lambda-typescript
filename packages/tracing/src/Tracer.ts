@@ -350,7 +350,7 @@ class Tracer extends Utility implements TracerInterface {
 
       descriptor.value = ((event, context, callback) => {
         if (!this.isTracingEnabled()) {
-          return originalMethod?.apply(target, [event, context, callback]);
+          return originalMethod?.apply(target, [ event, context, callback ]);
         }
 
         return this.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
@@ -358,7 +358,7 @@ class Tracer extends Utility implements TracerInterface {
           this.addServiceNameAnnotation();
           let result: unknown;
           try {
-            result = await originalMethod?.apply(target, [event, context, callback]);
+            result = await originalMethod?.apply(target, [ event, context, callback ]);
             this.addResponseAsMetadata(result, process.env._HANDLER);
           } catch (error) {
             this.addErrorAsMetadata(error as Error);
@@ -594,7 +594,7 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private getEnvVarsService(): EnvironmentVariablesService {
-    return <EnvironmentVariablesService>this.envVarsService;
+    return <EnvironmentVariablesService> this.envVarsService;
   }
 
   /**

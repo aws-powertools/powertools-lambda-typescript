@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.8.0...v0.8.1) (2022-04-14)
+
+
+### Bug Fixes
+
+* **logger:** change logging to use stdout ([#748](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/748)) ([0781a47](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/0781a479a6ae3c794f94c72b59cd0920073159a2))
+
+
+
+
+
 # [0.8.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.7.2...v0.8.0) (2022-04-08)
 
 

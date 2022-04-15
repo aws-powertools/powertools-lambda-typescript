@@ -144,6 +144,16 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     }, TEST_CASE_TIMEOUT);
   });
 
+  describe('X-Ray Trace ID injection', () => {
+    it('should inject & parse X-Ray Trace ID into every log', async () => {
+      const logMessages = invocationLogs[0].getFunctionLogs();
+
+      for (const message of logMessages) {
+        expect(message).toContain('xray_trace_id');
+      }
+    }, TEST_CASE_TIMEOUT);
+  });
+
   describe('One-time additional log keys and values', () => {
     it('should log additional keys and value only once', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs()

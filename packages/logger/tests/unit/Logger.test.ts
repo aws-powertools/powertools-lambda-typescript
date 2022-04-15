@@ -496,7 +496,6 @@ describe('Class: Logger', () => {
           },
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
     });
@@ -825,7 +824,6 @@ describe('Class: Logger', () => {
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -851,7 +849,6 @@ describe('Class: Logger', () => {
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -875,7 +872,6 @@ describe('Class: Logger', () => {
           environment: '',
           sampleRateValue: 1,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -899,7 +895,6 @@ describe('Class: Logger', () => {
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 

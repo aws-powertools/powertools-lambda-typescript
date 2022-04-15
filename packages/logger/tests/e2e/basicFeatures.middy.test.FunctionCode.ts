@@ -18,7 +18,7 @@ const testFunction = async (event: APIGatewayProxyEvent, context: Context): Prom
   // Test feature 1: Log level filtering
   // Test feature 2: Context data
   // Test feature 3: Persistent additional log keys and value
-  // Test feature 5: X-Ray Trace ID injection
+  // Test feature 4: X-Ray Trace ID injection
   logger.debug('##### This should not appear');
   logger.info('This is an INFO log with context and persistent key');
 

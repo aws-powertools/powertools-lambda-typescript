@@ -1,5 +1,5 @@
 // Reserved variables
-process.env._X_AMZN_TRACE_ID = 'abcdef123456abcdef123456abcdef123456';
+process.env._X_AMZN_TRACE_ID = 'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
 process.env.AWS_LAMBDA_FUNCTION_NAME = 'my-lambda-function';
 process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE = '128';
 process.env.AWS_REGION = 'eu-west-1';

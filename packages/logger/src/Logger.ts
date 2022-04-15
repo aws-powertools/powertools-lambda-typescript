@@ -430,10 +430,10 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It returns the current X-Ray Trace ID when Active Tracing is enabled.
+   * It returns the current X-Ray Trace ID parsing the content of the `_X_AMZN_TRACE_ID` env variable.
    * 
    * The X-Ray Trace data available in the environment variable has this format:
-   * `Root=1-6259a84e-26aa1820731c069002527c4e;Parent=557abcec3ee5a047;Sampled=1`,
+   * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
    * 
    * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
    *

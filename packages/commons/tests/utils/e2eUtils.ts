@@ -16,7 +16,7 @@ const lambdaClient = new AWS.Lambda();
 
 const testRuntimeKeys = [ 'nodejs12x', 'nodejs14x' ];
 export type TestRuntimesKey = typeof testRuntimeKeys[number];
-const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
+export const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
   nodejs12x: Runtime.NODEJS_12_X,
   nodejs14x: Runtime.NODEJS_14_X,
 };

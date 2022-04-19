@@ -51,7 +51,7 @@ interface ParsedSegment {
   Id: string
 }
 
-interface ParsedTrace {
+export interface ParsedTrace {
   Duration: number
   Id: string
   LimitExceeded: boolean

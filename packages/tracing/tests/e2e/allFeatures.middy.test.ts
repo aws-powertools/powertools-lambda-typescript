@@ -1,7 +1,7 @@
 /**
  * Test tracer manual mode
  *
- * @group e2e/tracer/manual
+ * @group e2e/tracer/middy
  */
 
 import { randomUUID } from 'crypto';
@@ -10,11 +10,11 @@ import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
 import { deployStack, destroyStack } from '@aws-lambda-powertools/commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
-import { getTraces, getInvocationSubsegment, splitSegmentsByName, ParsedTrace, invokeAllTestCases, createTracerTestFunction, getFunctionArn, getFirstSubsegment } from '../helpers/tracesUtils';
+import { getTraces, getInvocationSubsegment, splitSegmentsByName, ParsedTrace, invokeAllTestCases, createTracerTestFunction, getFunctionArn, ParsedDocument, getFirstSubsegment } from '../helpers/tracesUtils';
 import {
   generateUniqueName,
   isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
+} from '@aws-lambda-powertools/commons/tests/utils/e2eUtils';
 import { 
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT, 
@@ -28,8 +28,8 @@ import {
   expectedCustomErrorMessage,
 } from './constants';
 import { 
+  assertAnnotation,
   assertErrorAndFault,
-  assertAnnotation
 } from '../helpers/traceAssertions';
 
 const runtime: string = process.env.RUNTIME || 'nodejs14x';
@@ -39,9 +39,9 @@ if (!isValidRuntimeKey(runtime)) {
 }
 
 const uuid = randomUUID();
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Manual');
-const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Manual');
-const lambdaFunctionCodeFile = 'allFeatures.manual.test.functionCode.ts';
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Middy');
+const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Middy');
+const lambdaFunctionCodeFile = 'allFeatures.middy.test.functionCode.ts';
 const expectedServiceName = functionName; 
 
 const xray = new AWS.XRay();
@@ -51,7 +51,7 @@ let sortedTraces: ParsedTrace[];
 const integTestApp = new App();
 let stack: Stack;
 
-describe(`Tracer E2E tests, all features with manual instantiation for runtime: ${runtime}`, () => {
+describe(`Tracer E2E tests, all features with middy instantiation for runtime: ${runtime}`, () => {
 
   beforeAll(async () => {
     
@@ -181,6 +181,5 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       }
     }
   }, TEST_CASE_TIMEOUT);
-
 });
 

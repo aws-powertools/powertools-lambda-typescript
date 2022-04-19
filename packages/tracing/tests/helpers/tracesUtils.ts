@@ -1,11 +1,10 @@
-import { XRay } from 'aws-sdk';
+import AWS, { XRay } from 'aws-sdk';
 import promiseRetry from 'promise-retry';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import {
   invokeFunction, TestRuntimesKey, TEST_RUNTIMES,
 } from '../../../commons/tests/utils/e2eUtils';
 import { Duration, Stack } from 'aws-cdk-lib';
-import path from 'path';
 import { Architecture, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { 
   expectedCustomAnnotationKey, 
@@ -146,6 +145,15 @@ const getFunctionSegment = (trace: ParsedTrace): ParsedSegment => {
   return functionSegment;
 };
 
+const getFirstSubsegment = (segment: ParsedDocument): ParsedDocument => {
+  const subsegments = segment.subsegments;
+  if (!subsegments || subsegments.length == 0) {
+    throw new Error('segment should have subsegments');
+  }
+
+  return subsegments[0];
+};
+
 const getInvocationSubsegment = (trace: ParsedTrace): ParsedDocument => {
   const functionSegment = getFunctionSegment(trace);
   const invocationSubsegment = functionSegment.Document?.subsegments
@@ -225,15 +233,26 @@ const createTracerTestFunction = (params: TracerTestFunctionParams): NodejsFunct
   });
 
   return func;
-}
+};
+
+const getFunctionArn = async (functionName: string): Promise<string> => {
+  const stsClient = new AWS.STS();
+  const region = process.env.AWS_REGION;
+  const identity = await stsClient.getCallerIdentity().promise();
+  const account = identity.Account;
+  
+  return `arn:aws:lambda:${region}:${account}:function:${functionName}`;
+};
 
 export {
   getTraces,
   getFunctionSegment,
+  getFirstSubsegment,
   getInvocationSubsegment,
   splitSegmentsByName,
   invokeAllTestCases,
   createTracerTestFunction,
+  getFunctionArn,
 };
 
 export type {

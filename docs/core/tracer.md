@@ -418,14 +418,14 @@ Tracer keeps a copy of its configuration after the first initialization. This is
     import middy from '@middy/core';
     import collectPayment from './payment';
 
-    const tracer = new Tracer({ serviceName: 'serverlessAirline' }); // (1)
+    const tracer = new Tracer(); // (1)
 
     export const handler = middy(async (event: any, _context: any): Promise<void> => {
         await collectPayment(event.chargeId);
     }).use(captureLambdaHandler(tracer));
     ```
 
-    1.  Since this is the first time Tracer is initialized, the settings are reused across all other Tracer instances
+    1.  Because of the way ESM modules work, in order to set up Tracer, you'll need to pass the configurations as [environment variables](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables).
 === "payment.ts"
 
     ```typescript hl_lines="3"
@@ -450,7 +450,7 @@ Tracer keeps a copy of its configuration after the first initialization. This is
     export default collectPayment;
     ```
     
-    1.  You don't need to pass any parameters here, this instance will have the same configuration as the first Tracer instance
+    1.  You don't need to pass any parameters here, this instance will have the same configuration as the other Tracer instance
     2.  This is the main subsegment called `### index.handler` that was created by the `captureLambdaHandler` middleware
 === "Example Raw X-Ray Trace excerpt"
 

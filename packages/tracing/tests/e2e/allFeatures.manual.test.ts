@@ -10,7 +10,7 @@ import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy, Duration } from 'aws-cdk-lib';
 import { deployStack, destroyStack } from '@aws-lambda-powertools/commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
-import { getTraces, getInvocationSubsegment, splitSegmentsByName, ParsedTrace } from '../helpers/tracesUtils';
+import { getTraces, getInvocationSubsegment, splitSegmentsByName, ParsedTrace, invokeAllTestCases, createTracerTestFunction } from '../helpers/tracesUtils';
 import {
   generateUniqueName,
   isValidRuntimeKey,
@@ -43,9 +43,7 @@ const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFe
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Manual');
 const lambdaFunctionCodeFile = 'allFeatures.manual.test.functionCode.ts';
 const expectedServiceName = functionName; 
-let startTime : Date;
 
-const lambdaClient = new AWS.Lambda();
 const xray = new AWS.XRay();
 const invocations = 3;
 let sortedTraces: ParsedTrace[];
@@ -67,36 +65,26 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
   beforeAll(async () => {
     
     // Prepare
-    startTime = new Date();
+    const startTime = new Date();
     const ddbTableName = stackName + '-table';
     stack = new Stack(integTestApp, stackName);
 
-    const testFunction = new NodejsFunction(stack, functionName, {
-      entry: path.join(__dirname, lambdaFunctionCodeFile),
-      functionName: functionName,
-      handler: 'handler',
-      tracing: Tracing.ACTIVE,
-      architecture: Architecture.X86_64,
-      memorySize: 256,
-      environment: {
-        EXPECTED_SERVICE_NAME: expectedServiceName,
-        EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
-        EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
-        EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
-        EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(expectedCustomMetadataValue),
-        EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
-        EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
-        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-        POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-        POWERTOOLS_TRACE_ENABLED: 'true',
-        TEST_TABLE_NAME: ddbTableName,
-      },
-      timeout: Duration.seconds(30),
-      bundling: {
-        externalModules: ['aws-sdk'],
-      },
-      runtime: TEST_RUNTIMES[runtime as TestRuntimesKey],
+    const entry = path.join(__dirname, lambdaFunctionCodeFile);
+    const environmentParams = {
+      TEST_TABLE_NAME: ddbTableName,
+      POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
+      POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
+      POWERTOOLS_TRACE_ENABLED: 'true',
+    };
+    const testFunction = createTracerTestFunction({
+      stack,
+      functionName,
+      entry,
+      expectedServiceName,
+      environmentParams,
+      runtime
     });
+    
     const ddbTable = new Table(stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
@@ -112,17 +100,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
     await deployStack(integTestApp, stack);
 
     // Act
-    for (let i = 0; i < invocations; i++) {
-      await lambdaClient.invoke({
-        FunctionName: functionName,
-        LogType: 'Tail',
-        Payload: JSON.stringify({
-          throw: i === invocations - 1 ? true : false, // only last invocation should throw
-          sdkV2: i === 1 ? 'all' : 'client', // only second invocation should use captureAll
-          invocation: i + 1, // Pass invocation number for easier debugging
-        }),
-      }).promise();
-    }
+    await invokeAllTestCases(functionName);
 
     // Retrieve traces from X-Ray for assertion
     const lambdaFunctionArn = await getFunctionArn(functionName);
@@ -145,7 +123,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       const trace = sortedTraces[i];
 
       /**
-       *   Expect the trace to have 5 segments:
+       * Expect the trace to have 5 segments:
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)

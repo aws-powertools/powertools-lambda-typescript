@@ -1,6 +1,20 @@
 import { XRay } from 'aws-sdk';
 import promiseRetry from 'promise-retry';
-
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import {
+  invokeFunction, TestRuntimesKey, TEST_RUNTIMES,
+} from '../../../commons/tests/utils/e2eUtils';
+import { Duration, Stack } from 'aws-cdk-lib';
+import path from 'path';
+import { Architecture, Tracing } from 'aws-cdk-lib/aws-lambda';
+import { 
+  expectedCustomAnnotationKey, 
+  expectedCustomAnnotationValue, 
+  expectedCustomMetadataKey, 
+  expectedCustomMetadataValue, 
+  expectedCustomResponseValue, 
+  expectedCustomErrorMessage,
+} from '../e2e/constants';
 interface ParsedDocument {
   name: string
   id: string
@@ -56,6 +70,15 @@ export interface ParsedTrace {
   Id: string
   LimitExceeded: boolean
   Segments: ParsedSegment[]
+}
+
+interface TracerTestFunctionParams { 
+  stack: Stack
+  functionName: string
+  entry: string
+  expectedServiceName: string
+  environmentParams: { [key: string]: string }
+  runtime: string
 }
 
 const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string, expectedTraces: number, expectedSegments: number): Promise<ParsedTrace[]> => {
@@ -147,13 +170,73 @@ const splitSegmentsByName = (subsegments: ParsedDocument[], expectedNames: strin
   return splitSegments;
 };
 
+/**
+ * Invoke function sequentially 3 times with different parameters
+ * 
+ * invocation: is just a tracking number (it has to start from 1)
+ * sdkV2: define if we will use `captureAWSClient()` or `captureAWS()` for SDK V2
+ * throw: forces the Lambda to throw an error
+ * 
+ * @param functionName
+ */
+const invokeAllTestCases = async (functionName: string): Promise<void> => {
+  await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
+    invocation: 1,
+    sdkV2: 'client',
+    throw: false,
+  });
+  await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
+    invocation: 2,
+    sdkV2: 'all', // only second invocation should use captureAll
+    throw: false,
+  });
+  await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
+    invocation: 3,
+    sdkV2: 'client', 
+    throw: true, // only last invocation should throw
+  });
+};
+
+const createTracerTestFunction = (params: TracerTestFunctionParams): NodejsFunction => {
+  const { stack, functionName, entry, expectedServiceName, environmentParams, runtime } = params;
+  const func = new NodejsFunction(stack, functionName, {
+    entry: entry,
+    functionName: functionName,
+    handler: 'handler',
+    tracing: Tracing.ACTIVE,
+    architecture: Architecture.X86_64,
+    memorySize: 256, // Default value (128) will take too long to process
+    environment: {
+      EXPECTED_SERVICE_NAME: expectedServiceName,
+      EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
+      EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
+      EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
+      EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(expectedCustomMetadataValue),
+      EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
+      EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
+      ...environmentParams,
+    },
+    timeout: Duration.seconds(30), // Default value (3 seconds) will time out 
+    bundling: { 
+      // Exclude aws-sdk and use the default one provided by Lambda
+      externalModules: ['aws-sdk'],
+    },
+    runtime: TEST_RUNTIMES[runtime as TestRuntimesKey],
+  });
+
+  return func;
+}
+
 export {
   getTraces,
   getFunctionSegment,
   getInvocationSubsegment,
-  splitSegmentsByName
+  splitSegmentsByName,
+  invokeAllTestCases,
+  createTracerTestFunction,
 };
 
 export type {
   ParsedDocument,
+  TracerTestFunctionParams,
 };

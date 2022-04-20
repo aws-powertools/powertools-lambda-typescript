@@ -10,18 +10,3 @@ export const expectedCustomMetadataKey = 'myMetadata';
 export const expectedCustomMetadataValue = { bar: 'baz' };
 export const expectedCustomResponseValue = { foo: 'bar' };
 export const expectedCustomErrorMessage = 'An error has occurred';
-
-/**
- * A type that contains information for invoking a Lambda function,
- * and retrieving the traces.
- * 
- * We fill the information while creting Lambda functions with CDK, 
- * and reuse it later in the test cases
- */
-export type InvocationMap = { 
-  [key: string]: { 
-    functionName: string
-    serviceName: string
-    resourceArn: string 
-  }
-};

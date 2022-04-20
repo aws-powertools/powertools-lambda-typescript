@@ -60,7 +60,7 @@ const invocations = 3;
 const integTestApp = new App();
 let stack: Stack;
 
-describe(`Tracer E2E tests, all features with decorator instantiation for runtime: ${runtime}`, () => {
+describe(`Tracer E2E tests, asynchronous handler with decorator instantiation for runtime: ${runtime}`, () => {
 
   beforeAll(async () => {
     

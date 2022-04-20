@@ -51,6 +51,8 @@ if (!isValidRuntimeKey(runtime)) {
  * 1. With all flags enabled (capture both response and error)
  * 2. Do not capture error or response
  * 3. Do not enable tracer
+ * Each stack must use a unique `serviceName` as it's used to for retrieving the trace.
+ * Using the same one will result in traces from different test cases mixing up.
  */
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, randomUUID(), runtime, 'AllFeatures-Decorator');
 const lambdaFunctionCodeFile = 'allFeatures.decorator.test.functionCode.ts';
@@ -91,9 +93,6 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     const ddbTableName = stackName + '-table';
     stack = new Stack(integTestApp, stackName);
 
-    /**
-     * We need a DynamoDB table to connect via SDK so we can trace a PutItem call.
-     */
     const ddbTable = new Table(stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {

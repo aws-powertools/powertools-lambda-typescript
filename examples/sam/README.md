@@ -85,8 +85,8 @@ sam local invoke getAllItemsFunction --event events/event-get-all-items.json
 The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
 
 ```bash
-powertools-example$ sam local start-api
-powertools-example$ curl http://localhost:3000/
+sam local start-api
+curl http://localhost:3000/
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.

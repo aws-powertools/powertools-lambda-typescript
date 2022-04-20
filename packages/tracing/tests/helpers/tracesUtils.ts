@@ -235,11 +235,14 @@ const createTracerTestFunction = (params: TracerTestFunctionParams): NodejsFunct
   return func;
 };
 
+let account: string | undefined;
 const getFunctionArn = async (functionName: string): Promise<string> => {
-  const stsClient = new AWS.STS();
   const region = process.env.AWS_REGION;
-  const identity = await stsClient.getCallerIdentity().promise();
-  const account = identity.Account;
+  const stsClient = new AWS.STS();
+  if (!account) {
+    const identity = await stsClient.getCallerIdentity().promise();
+    account = identity.Account;
+  }
   
   return `arn:aws:lambda:${region}:${account}:function:${functionName}`;
 };

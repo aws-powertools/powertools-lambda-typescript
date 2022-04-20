@@ -1,10 +1,12 @@
 # AWS Lambda Powertools for TypeScript examples in SAM
 
-This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
+This project contains source code and supporting files for a serverless application that you can deploy with the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html). The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.
 
-- hello-world - Code for the application's Lambda function written in TypeScript.
-- events - Invocation events that you can use to invoke the function.
-- template.yaml - A template that defines the application's AWS resources.
+This project includes the following files and folders:
+
+- `src/handlers` - Code for the application's Lambda function written in TypeScript.
+- `events` - Invocation events that you can use to invoke the function.
+- `template.yaml` - A template that defines the application's AWS resources.
 
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
@@ -23,32 +25,36 @@ The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI
 * [VS Code](https://docs.aws.amazon.com/toolkit-for-vscode/latest/userguide/welcome.html)
 * [Visual Studio](https://docs.aws.amazon.com/toolkit-for-visual-studio/latest/user-guide/welcome.html)
 
+You will need to have a valid AWS Account in order to deploy these resources. These resources may incur costs to your AWS Account. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
+
 ## Prepare the project
 
-Before deploying this example, copy the Lambda Function Code to `src/handlers`
+All following commands must be executed inside the folder `examples/sam`
+
+Before deploying this example, copy the Lambda Function Code to `src/handlers`,
 
 ```bash
 cp -R ../lambda-functions/* ./src/handlers
 ```
 
+and install the npm dependencies
+
+```bash
+npm i
+```
+
+In addition to the [recommended setup for this project](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/CONTRIBUTING.md#setup), you'll need the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html). 
+
 ## Deploy the sample application
-
-The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.
-
-To use the SAM CLI, you need the following tools.
-
-* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* Node.js - [Install Node.js 14](https://nodejs.org/en/), including the NPM package management tool.
-* Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
 To build and deploy your application for the first time, run the following in your shell:
 
 ```bash
-sam build
+sam build  --beta-features
 sam deploy --guided
 ```
 
-The first command will build the source of your application. The second command will package and deploy your application to AWS, with a series of prompts:
+The first command will build the source of your application. Using esbuild for bundling Node.js and TypeScript is a beta feature, therefore we add the `--beta-features` parameter. The second command will package and deploy your application to AWS, with a series of prompts:
 
 * **Stack Name**: The name of the stack to deploy to CloudFormation. This should be unique to your account and region, and a good starting point would be something matching your project name.
 * **AWS Region**: The AWS region you want to deploy your app to.
@@ -63,17 +69,17 @@ You can find your API Gateway Endpoint URL in the output values displayed after 
 Build your application with the `sam build` command.
 
 ```bash
-aws-lambda-powertools-typescript/examples/sam$ sam build
+sam build --beta-features
 ```
 
-The SAM CLI installs dependencies defined in `hello-world/package.json`, compiles TypeScript with esbuild, creates a deployment package, and saves it in the `.aws-sam/build` folder.
+The SAM CLI installs dependencies defined in `src/handlers/package.json`, compiles TypeScript with esbuild, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
 
 Run functions locally and invoke them with the `sam local invoke` command.
 
 ```bash
-powertools-example$ sam local invoke HelloWorldFunction --event events/event.json
+sam local invoke getAllItemsFunction --event events/event-get-all-items.json
 ```
 
 The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
@@ -90,12 +96,9 @@ The SAM CLI reads the application template to determine the API's routes and the
         HelloWorld:
           Type: Api
           Properties:
-            Path: /hello
+            Path: /
             Method: get
 ```
-
-## Add a resource to your application
-The application template uses AWS Serverless Application Model (AWS SAM) to define application resources. AWS SAM is an extension of AWS CloudFormation with a simpler syntax for configuring common serverless application resources such as functions, triggers, and APIs. For resources not included in [the SAM specification](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md), you can use standard [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html) resource types.
 
 ## Fetch, tail, and filter Lambda function logs
 
@@ -104,7 +107,7 @@ To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs`
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-powertools-example$ sam logs -n HelloWorldFunction --stack-name powertools-example --tail
+sam logs -n getAllItemsFunction --stack-name powertools-example --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).

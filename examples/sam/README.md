@@ -115,10 +115,10 @@ You can find more information and examples about filtering Lambda function logs 
 
 ## Cleanup
 
-To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
+To delete the sample application that you created, run
 
 ```bash
-aws cloudformation delete-stack --stack-name powertools-example
+sam delete
 ```
 
 ## Resources

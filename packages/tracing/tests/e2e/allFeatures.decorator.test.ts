@@ -1,7 +1,7 @@
 /**
- * Test tracer in middy setup
+ * Test tracer in decorator setup
  *
- * @group e2e/tracer/middy
+ * @group e2e/tracer/decorator
  */
 
 import { randomUUID } from 'crypto';
@@ -52,28 +52,28 @@ if (!isValidRuntimeKey(runtime)) {
  * 2. Do not capture error or response
  * 3. Do not enable tracer
  */
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, randomUUID(), runtime, 'AllFeatures-Middy');
-const lambdaFunctionCodeFile = 'allFeatures.middy.test.functionCode.ts';
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, randomUUID(), runtime, 'AllFeatures-Decorator');
+const lambdaFunctionCodeFile = 'allFeatures.decorator.test.functionCode.ts';
 let startTime: Date;
 
 /**
  * Function #1 is with all flags enabled.
  */
 const uuidFunction1 = randomUUID();
-const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Middy-AllFlagsEnabled');
+const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Decoratory-AllFlagsEnabled');
 const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled; 
 
 /**
  * Function #2 doesn't capture error or response
  */
 const uuidFunction2 = randomUUID();
-const functionNameWithNoCaptureErrorOrResponse = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction2, runtime, 'AllFeatures-Middy-NoCaptureErrorOrResponse');
+const functionNameWithNoCaptureErrorOrResponse = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction2, runtime, 'AllFeatures-Decorator-NoCaptureErrorOrResponse');
 const serviceNameWithNoCaptureErrorOrResponse = functionNameWithNoCaptureErrorOrResponse; 
 /**
  * Function #3 disables tracer
  */
 const uuidFunction3 = randomUUID();
-const functionNameWithTracerDisabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction3, runtime, 'AllFeatures-Middy-TracerDisabled');
+const functionNameWithTracerDisabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction3, runtime, 'AllFeatures-Decorator-TracerDisabled');
 const serviceNameWithTracerDisabled = functionNameWithNoCaptureErrorOrResponse; 
 
 const xray = new AWS.XRay();
@@ -82,7 +82,7 @@ const invocations = 3;
 const integTestApp = new App();
 let stack: Stack;
 
-describe(`Tracer E2E tests, all features with middy instantiation for runtime: ${runtime}`, () => {
+describe(`Tracer E2E tests, all features with decorator instantiation for runtime: ${runtime}`, () => {
 
   beforeAll(async () => {
     
@@ -190,21 +190,23 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       
       /**
        * Invocation subsegment should have a subsegment '## index.handler' (default behavior for PowerTool tracer)
-       * '## index.handler' subsegment should have 3 subsegments
+       * '## index.handler' subsegment should have 4 subsegments
        * 1. DynamoDB (PutItem on the table)
        * 2. DynamoDB (PutItem overhead)
        * 3. httpbin.org (Remote call)
+       * 4. '### myMethod' (method decorator)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handler');
-      expect(handlerSubsegment?.subsegments).toHaveLength(3);
+      expect(handlerSubsegment?.subsegments).toHaveLength(4);
 
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', '### myMethod' ]);
       expect(subsegments.get('DynamoDB')?.length).toBe(2);
       expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('### myMethod')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
       
       const shouldThrowAnError = (i === (invocations - 1));
@@ -271,21 +273,23 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       
       /**
        * Invocation subsegment should have a subsegment '## index.handler' (default behavior for PowerTool tracer)
-       * '## index.handler' subsegment should have 3 subsegments
+       * '## index.handler' subsegment should have 4 subsegments
        * 1. DynamoDB (PutItem on the table)
        * 2. DynamoDB (PutItem overhead)
        * 3. httpbin.org (Remote call)
+       * 4. '### myMethod' (method decorator)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handler');
-      expect(handlerSubsegment?.subsegments).toHaveLength(3);
+      expect(handlerSubsegment?.subsegments).toHaveLength(4);
 
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', '### myMethod' ]);
       expect(subsegments.get('DynamoDB')?.length).toBe(2);
       expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('### myMethod')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
       
       const shouldThrowAnError = (i === (invocations - 1));

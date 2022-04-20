@@ -39,3 +39,6 @@ site
 
 # Generated API documentation (from TypeDoc)
 /api
+
+# SAM Example copies files
+/examples/sam/src/handlers/*.ts

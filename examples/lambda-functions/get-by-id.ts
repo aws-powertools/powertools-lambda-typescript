@@ -25,67 +25,66 @@ const tableName = process.env.SAMPLE_TABLE;
  *
  */
 
-
 export const getByIdHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
-    if (event.httpMethod !== 'GET') {
-        throw new Error(`getById only accepts GET method, you tried: ${event.httpMethod}`);
-    }
-    // Tracer: Get facade segment created by AWS Lambda
-    const segment = tracer.getSegment();
+  if (event.httpMethod !== 'GET') {
+    throw new Error(`getById only accepts GET method, you tried: ${event.httpMethod}`);
+  }
+  // Tracer: Get facade segment created by AWS Lambda
+  const segment = tracer.getSegment();
 
-    // Tracer: Create subsegment for the function & set it as active
-    const handlerSegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
-    tracer.setSegment(handlerSegment);
+  // Tracer: Create subsegment for the function & set it as active
+  const handlerSegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
+  tracer.setSegment(handlerSegment);
 
-    // Tracer: Annotate the subsegment with the cold start & serviceName
-    tracer.annotateColdStart();
-    tracer.addServiceNameAnnotation();
+  // Tracer: Annotate the subsegment with the cold start & serviceName
+  tracer.annotateColdStart();
+  tracer.addServiceNameAnnotation();
 
-    // Tracer: Add annotation for the awsRequestId
-    tracer.putAnnotation('awsRequestId', context.awsRequestId);
+  // Tracer: Add annotation for the awsRequestId
+  tracer.putAnnotation('awsRequestId', context.awsRequestId);
 
-    // Metrics: Capture cold start metrics
-    metrics.captureColdStartMetric();
+  // Metrics: Capture cold start metrics
+  metrics.captureColdStartMetric();
 
-    // All log statements are written to CloudWatch
-    logger.debug('received:', event);
+  // All log statements are written to CloudWatch
+  logger.debug('received:', event);
 
-    // Get id from pathParameters from APIGateway because of `/{id}` at template.yaml
-    const id = event.pathParameters!.id;
+  // Get id from pathParameters from APIGateway because of `/{id}` at template.yaml
+  const id = event.pathParameters!.id;
 
-    // Get the item from the table
-    // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
-    var params = {
-        TableName: tableName!,
-        Key: { id: id },
+  // Get the item from the table
+  // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
+  const params = {
+    TableName: tableName!,
+    Key: { id: id },
+  };
+
+  let response;
+
+  try {
+    const data = await docClient.get(params).promise();
+    const item = data.Item;
+    response = {
+      statusCode: 200,
+      body: JSON.stringify(item)
     };
+  } catch (err) {
+    tracer.addErrorAsMetadata(err as Error);
+    logger.error('Error reading from table. ' + err);
+    response = {
+      statusCode: 500,
+      body: JSON.stringify({ 'error': 'Error reading from table.' })
+    };
+  }
 
-    var response;
+  // Tracer: Close subsegment (the AWS Lambda one is closed automatically)
+  handlerSegment.close(); // (## index.handler)
 
-    try {
-        const data = await docClient.get(params).promise();
-        const item = data.Item;
-        response = {
-            statusCode: 200,
-            body: JSON.stringify(item)
-        };
-    } catch (err) {
-        tracer.addErrorAsMetadata(err as Error);
-        logger.error("Error reading from table. " + err)
-        response = {
-            statusCode: 500,
-            body: JSON.stringify({ "error": "Error reading from table." })
-        };
-    }
+  // Tracer: Set the facade segment as active again (the one created by AWS Lambda)
+  tracer.setSegment(segment);
 
-    // Tracer: Close subsegment (the AWS Lambda one is closed automatically)
-    handlerSegment.close(); // (## index.handler)
+  // All log statements are written to CloudWatch
+  logger.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
 
-    // Tracer: Set the facade segment as active again (the one created by AWS Lambda)
-    tracer.setSegment(segment);
-
-    // All log statements are written to CloudWatch
-    logger.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
-
-    return response;
+  return response;
 };

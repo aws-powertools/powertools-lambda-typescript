@@ -8,8 +8,8 @@ import { randomUUID } from 'crypto';
 import path from 'path';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
-import { deployStack, destroyStack } from '@aws-lambda-powertools/commons/tests/utils/cdk-cli';
 import * as AWS from 'aws-sdk';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import {
   getTraces,
   getInvocationSubsegment,
@@ -22,7 +22,7 @@ import {
 import {
   generateUniqueName,
   isValidRuntimeKey,
-} from '@aws-lambda-powertools/commons/tests/utils/e2eUtils';
+} from '../../../commons/tests/utils/e2eUtils';
 import { 
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT, 

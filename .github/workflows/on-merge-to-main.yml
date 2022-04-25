@@ -16,9 +16,6 @@ jobs:
     steps:
     - name: "Checkout"
       uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.GH_PUBLISH_TOKEN }}
-        fetch-depth: 0
     #########################    
     # Release new version
     #########################
@@ -44,7 +41,7 @@ jobs:
       run: npm run lerna-lint
     - name: Run tests
       run: npm run lerna-test
-    - name: update release draft
+    - name: Update release draft
       uses: release-drafter/release-drafter@v5.19.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

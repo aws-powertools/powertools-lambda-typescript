@@ -10,7 +10,7 @@ const logger = new Logger();
 const tracer = new Tracer();
 
 // Create DynamoDB DocumentClient and patch it for tracing
-const docClient = tracer.captureAWS(new DocumentClient());
+const docClient = tracer.captureAWSClient(new DocumentClient());
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;

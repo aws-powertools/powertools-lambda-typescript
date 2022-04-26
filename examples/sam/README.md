@@ -4,7 +4,7 @@ This project contains source code and supporting files for a serverless applicat
 
 This project includes the following files and folders:
 
-- `src/handlers` - Code for the application's Lambda function written in TypeScript.
+- `src/handlers` - Code for the application's Lambda function written in TypeScript. See "Prepare the project" below for instructions on how to copy the Lambda handler code here.
 - `events` - Invocation events that you can use to invoke the function.
 - `template.yaml` - A template that defines the application's AWS resources.
 
@@ -115,7 +115,7 @@ You can find more information and examples about filtering Lambda function logs 
 
 ## Cleanup
 
-To delete the sample application that you created, run
+To delete the sample application that you created, run the command below while in the `examples/sam` directory:
 
 ```bash
 sam delete

@@ -41,4 +41,5 @@ site
 /api
 
 # SAM Example copies files
-/examples/sam/src/handlers/*.ts
+/examples/sam/src/handlers/*
+!/examples/sam/src/handlers/COPY_LAMBDA_FUNCTIONS_HERE

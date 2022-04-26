@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Tracer } from '@aws-lambda-powertools/tracer';
-import { DynamoDB } from 'aws-sdk';
+import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 
 // Create the PowerTools clients
 const metrics = new Metrics();
@@ -10,7 +10,7 @@ const logger = new Logger();
 const tracer = new Tracer();
 
 // Create DynamoDB DocumentClient and patch it for tracing
-const docClient = tracer.captureAWS(new DynamoDB.DocumentClient());
+const docClient = tracer.captureAWS(new DocumentClient());
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
@@ -56,15 +56,16 @@ export const putItemHandler = async (event: APIGatewayProxyEvent, context: Conte
 
   // Creates a new item, or replaces an old item with a new item
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
-  const params = {
-    TableName: tableName!,
-    Item: { id: id, name: name }
-  };
-
   let response;
-
   try {
-    await docClient.put(params).promise();
+    if (!tableName) {
+      throw new Error('SAMPLE_TABLE environment variable is not set');
+    }
+
+    await docClient.put({
+      TableName: tableName,
+      Item: { id: id, name: name }
+    }).promise();
     response = {
       statusCode: 200,
       body: JSON.stringify(body)

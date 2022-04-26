@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Tracer } from '@aws-lambda-powertools/tracer';
-import { DynamoDB } from 'aws-sdk';
+import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 
 // Create the PowerTools clients
 const metrics = new Metrics();
@@ -10,7 +10,7 @@ const logger = new Logger();
 const tracer = new Tracer();
 
 // Create DynamoDB DocumentClient and patch it for tracing
-const docClient = tracer.captureAWS(new DynamoDB.DocumentClient());
+const docClient = tracer.captureAWSClient(new DocumentClient());
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
@@ -24,11 +24,11 @@ const tableName = process.env.SAMPLE_TABLE;
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
-
 export const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
   if (event.httpMethod !== 'GET') {
     throw new Error(`getAllItems only accepts GET method, you tried: ${event.httpMethod}`);
   }
+
   // Tracer: Get facade segment created by AWS Lambda
   const segment = tracer.getSegment();
 
@@ -46,21 +46,28 @@ export const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: C
   // Metrics: Capture cold start metrics
   metrics.captureColdStartMetric();
 
-  // All log statements are written to CloudWatch
-  logger.debug('received:', event);
+  // Logger: Add persistent attributes to each log statement
+  logger.addPersistentLogAttributes({
+    awsRequestId: context.awsRequestId,
+  });
 
   // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
   // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
-  const params = {
-    TableName: tableName!
-  };
-
   let response;
-
   try {
-    const data = await docClient.scan(params).promise();
+    if (!tableName) {
+      throw new Error('SAMPLE_TABLE environment variable is not set');
+    }
+
+    const data = await docClient.scan({
+      TableName: tableName
+    }).promise();
     const items = data.Items;
+
+    // Logger: All log statements are written to CloudWatch
+    logger.debug(`retrieved items: ${items?.length || 0}`);
+
     response = {
       statusCode: 200,
       body: JSON.stringify(items)

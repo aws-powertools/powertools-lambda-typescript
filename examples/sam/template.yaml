@@ -60,8 +60,6 @@ Resources:
         Sourcemap: true,
         EntryPoints: 
         - src/handlers/get-all-items.ts
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
   # This is a Lambda function config associated with the source code: get-by-id.js
   getByIdFunction:
@@ -96,8 +94,6 @@ Resources:
         Sourcemap: true,
         EntryPoints: 
         - src/handlers/get-by-id.ts
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
   # This is a Lambda function config associated with the source code: put-item.js
   putItemFunction:
@@ -132,8 +128,6 @@ Resources:
         Sourcemap: true,
         EntryPoints: 
         - src/handlers/put-item.ts
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
   # DynamoDB table to store item: {id: <ID>, name: <NAME>}
   SampleTable:

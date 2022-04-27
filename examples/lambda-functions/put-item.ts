@@ -46,8 +46,10 @@ export const putItemHandler = async (event: APIGatewayProxyEvent, context: Conte
   // Metrics: Capture cold start metrics
   metrics.captureColdStartMetric();
 
-  // All log statements are written to CloudWatch
-  logger.debug('received:', event);
+  // Logger: Add persistent attributes to each log statement
+  logger.addPersistentLogAttributes({
+    awsRequestId: context.awsRequestId,
+  });
 
   // Get id and name from the body of the request
   const body = JSON.parse(event.body!);

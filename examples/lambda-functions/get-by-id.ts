@@ -46,8 +46,10 @@ export const getByIdHandler = async (event: APIGatewayProxyEvent, context: Conte
   // Metrics: Capture cold start metrics
   metrics.captureColdStartMetric();
 
-  // All log statements are written to CloudWatch
-  logger.debug('received:', event);
+  // Logger: Add persistent attributes to each log statement
+  logger.addPersistentLogAttributes({
+    awsRequestId: context.awsRequestId,
+  });
 
   // Get id from pathParameters from APIGateway because of `/{id}` at template.yaml
   const id = event.pathParameters!.id;

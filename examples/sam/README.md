@@ -64,6 +64,50 @@ The first command will build the source of your application. Using esbuild for b
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
 
+## Execute the functions via API Gateway
+
+Use the API Gateway Endpoint URL from the output values to execute the functions. First, let's add two items to the DynamoDB Table by running:
+
+```bash
+curl -XPOST --header 'Content-Type: application/json' --data '{"id":"myfirstitem","name":"Some Name for the first item"}' https://randomid12345.execute-api.eu-central-1.amazonaws.com/Prod/
+curl -XPOST --header 'Content-Type: application/json' --data '{"id":"myseconditem","name":"Some Name for the second item"}' https://randomid1245.execute-api.eu-central-1.amazonaws.com/Prod/
+````
+
+Now, let's retrieve all items by running:
+
+```bash
+curl -XGET https://randomid12345.execute-api.eu-central-1.amazonaws.com/Prod/
+````
+
+And finally, let's retrieve a specific item by running:
+```bash
+https://randomid12345.execute-api.eu-central-1.amazonaws.com/Prod/myseconditem/
+```
+
+## Observe the outputs in AWS CloudWatch & X-Ray
+### CloudWatch
+
+If we check the logs in CloudWatch, we can see that the logs are structured like this
+```
+2022-04-26T17:00:23.808Z	e8a51294-6c6a-414c-9777-6b0f24d8739b	DEBUG	
+{
+    "level": "DEBUG",
+    "message": "retrieved items: 0",
+    "service": "getAllItems",
+    "timestamp": "2022-04-26T17:00:23.808Z",
+    "awsRequestId": "e8a51294-6c6a-414c-9777-6b0f24d8739b"
+}
+```
+
+By having structured logs like this, we can easily search and analyse them in [CloudWatch Logs Insight](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html). Run the following query to get all messages for a specific `awsRequestId`:
+
+````
+filter awsRequestId="bcd50969-3a55-49b6-a997-91798b3f133a"
+ | fields timestamp, message
+````
+### AWS X-Ray
+As we have enabled tracing for our Lambda-Funtions, we can visit [AWS X-Ray Console](https://console.aws.amazon.com/xray/home#/traces/) and see [traces](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces) and a [service map](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-using-xray-maps.html) for our application.
+
 ## Use the SAM CLI to build and test locally
 
 Build your application with the `sam build` command.

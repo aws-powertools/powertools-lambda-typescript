@@ -51,9 +51,6 @@ export const getByIdHandler = async (event: APIGatewayProxyEvent, context: Conte
     awsRequestId: context.awsRequestId,
   });
 
-  // Get id from pathParameters from APIGateway because of `/{id}` at template.yaml
-  const id = event.pathParameters!.id;
-
   // Get the item from the table
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
   let response;
@@ -61,10 +58,16 @@ export const getByIdHandler = async (event: APIGatewayProxyEvent, context: Conte
     if (!tableName) {
       throw new Error('SAMPLE_TABLE environment variable is not set');
     }
+    if (!event.pathParameters) {
+      throw new Error('event does not contain pathParameters')
+    }
+    if (!event.pathParameters.id) {
+      throw new Error('PathParameter id is missing')
+    }
 
     const data = await docClient.get({
       TableName: tableName,
-      Key: { id: id },
+      Key: { id: event.pathParameters.id },
     }).promise();
     const item = data.Item;
     response = {

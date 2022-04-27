@@ -51,11 +51,6 @@ export const putItemHandler = async (event: APIGatewayProxyEvent, context: Conte
     awsRequestId: context.awsRequestId,
   });
 
-  // Get id and name from the body of the request
-  const body = JSON.parse(event.body!);
-  const id = body.id;
-  const name = body.name;
-
   // Creates a new item, or replaces an old item with a new item
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
   let response;
@@ -63,6 +58,14 @@ export const putItemHandler = async (event: APIGatewayProxyEvent, context: Conte
     if (!tableName) {
       throw new Error('SAMPLE_TABLE environment variable is not set');
     }
+    if (!event.body) {
+      throw new Error('Event does not contain body')
+    }
+
+    // Get id and name from the body of the request
+    const body = JSON.parse(event.body);
+    const id = body.id;
+    const name = body.name;
 
     await docClient.put({
       TableName: tableName,

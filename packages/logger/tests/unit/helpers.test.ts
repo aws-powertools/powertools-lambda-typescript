@@ -4,6 +4,7 @@
  * @group unit/logger/all
  */
 
+import { Console } from 'console';
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
 import { LoggerOptions } from '../../src/types';
@@ -78,6 +79,7 @@ describe('Helper: createLogger function', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'WARN',
+        console: expect.any(Console),
         logLevelThresholds: {
           DEBUG: 8,
           ERROR: 20,
@@ -117,6 +119,7 @@ describe('Helper: createLogger function', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'INFO',
+        console: expect.any(Console),
         logLevelThresholds: {
           DEBUG: 8,
           ERROR: 20,
@@ -240,6 +243,7 @@ describe('Helper: createLogger function', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'INFO',
+        console: expect.any(Console),
         logLevelThresholds: {
           DEBUG: 8,
           ERROR: 20,

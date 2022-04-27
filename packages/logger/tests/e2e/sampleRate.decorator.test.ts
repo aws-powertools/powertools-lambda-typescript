@@ -10,7 +10,7 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
-import { 
+import {
   createStackWithLambdaFunction,
   generateUniqueName,
   invokeFunction,
@@ -18,7 +18,7 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
-import { 
+import {
   RESOURCE_NAME_PREFIX,
   STACK_OUTPUT_LOG_GROUP,
   SETUP_TIMEOUT,
@@ -53,7 +53,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
   let invocationLogs: InvocationLogs[];
 
   beforeAll(async () => {
-    
+
     // Create and deploy a stack with AWS CDK
     stack = createStackWithLambdaFunction({
       app: integTestApp,
@@ -66,7 +66,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
         UUID: uuid,
 
         // Parameter(s) to be used by Logger in the Lambda function
-        LOG_MSG, 
+        LOG_MSG,
         SAMPLE_RATE,
       },
       logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
@@ -78,7 +78,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
     invocationLogs = await invokeFunction(functionName, 20);
 
     console.log('logGroupName', logGroupName);
-    
+
   }, SETUP_TIMEOUT);
 
   describe('Enabling sample rate', () => {
@@ -105,7 +105,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
       // Given that we set rate to 0.5. The chance that we get all invocations sampled (or not sampled) is less than 0.5^20
       expect(countSampled).toBeGreaterThan(0);
       expect(countNotSampled).toBeGreaterThan(0);
-      
+
     }, TEST_CASE_TIMEOUT);
   });
 
@@ -113,7 +113,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
     it('should inject Lambda context into the log', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs(LEVEL.ERROR);
 
-      for ( const log of logMessages ) {
+      for (const log of logMessages) {
         expect(log).toContain('function_arn');
         expect(log).toContain('function_memory_size');
         expect(log).toContain('function_name');

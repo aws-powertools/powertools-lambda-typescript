@@ -8,10 +8,10 @@
 import { InvocationLogs, LEVEL } from '../utils/InvocationLogs';
 
 const exampleLogs = `START RequestId: c6af9ac6-7b61-11e6-9a41-93e812345678 Version: $LATEST
-2022-01-27T16:04:39.323Z\tc6af9ac6-7b61-11e6-9a41-93e812345678\tDEBUG\t{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"DEBUG","message":"This is a DEBUG log but contains the word INFO some context and persistent key","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works"}
-2022-01-27T16:04:39.323Z\tc6af9ac6-7b61-11e6-9a41-93e812345678\tINFO\t{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"INFO","message":"This is an INFO log with some context","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works","additionalKey":"additionalValue"}
-2022-01-27T16:04:39.323Z\tc6af9ac6-7b61-11e6-9a41-93e812345678\tINFO\t{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"INFO","message":"This is a second INFO log with some context","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works","additionalKey":"additionalValue"}
-2022-01-27T16:04:39.323Z\tc6af9ac6-7b61-11e6-9a41-93e812345678\tERROR\t{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"ERROR","message":"There was an error","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works","error":{"name":"Error","location":"/var/task/index.js:2778","message":"you cannot prevent this","stack":"Error: you cannot prevent this\\n    at testFunction (/var/task/index.js:2778:11)\\n    at runRequest (/var/task/index.js:2314:36)"}}
+{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"DEBUG","message":"This is a DEBUG log but contains the word INFO some context and persistent key","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works"}
+{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"INFO","message":"This is an INFO log with some context","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works","additionalKey":"additionalValue"}
+{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"INFO","message":"This is a second INFO log with some context","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works","additionalKey":"additionalValue"}
+{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"ERROR","message":"There was an error","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works","error":{"name":"Error","location":"/var/task/index.js:2778","message":"you cannot prevent this","stack":"Error: you cannot prevent this\\n    at testFunction (/var/task/index.js:2778:11)\\n    at runRequest (/var/task/index.js:2314:36)"}}
 END RequestId: c6af9ac6-7b61-11e6-9a41-93e812345678
 REPORT RequestId: c6af9ac6-7b61-11e6-9a41-93e812345678\tDuration: 2.16 ms\tBilled Duration: 3 ms\tMemory Size: 128 MB\tMax Memory Used: 57 MB\t`;
 
@@ -104,13 +104,10 @@ describe('getFunctionLogs()', () => {
 
 describe('parseFunctionLog()', () => {
   test('it should return object with the correct values based on the given log', () => {
-    const rawLogStr = '2022-01-27T16:04:39.323Z\tc6af9ac6-7b61-11e6-9a41-93e812345678\tDEBUG\t{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"DEBUG","message":"This is a DEBUG log but contains the word INFO some context and persistent key","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works"}';
+    const rawLogStr = '{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"DEBUG","message":"This is a DEBUG log but contains the word INFO some context and persistent key","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works"}';
 
     const logObj = InvocationLogs.parseFunctionLog(rawLogStr);
-    expect(logObj.timestamp).toBe('2022-01-27T16:04:39.323Z');
-    expect(logObj.invocationId).toBe('c6af9ac6-7b61-11e6-9a41-93e812345678');
-    expect(logObj.logLevel).toBe(LEVEL.DEBUG);
-    expect(logObj.logObject).toStrictEqual({
+    expect(logObj).toStrictEqual({
       cold_start: true,
       function_arn: 'arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c',
       function_memory_size: 128,
@@ -125,14 +122,9 @@ describe('parseFunctionLog()', () => {
   });
 
   test('it should throw an error if receive incorrect formatted raw log string', () => {
-    const noTabString = 'no-tab-character';
+    const notJSONstring = 'not-json-string';
     expect(() => {
-      InvocationLogs.parseFunctionLog(noTabString);
-    }).toThrow(Error);
-
-    const missSomeElements = '2022-01-27T16:04:39.323Z\tc6af9ac6-7b61-11e6-9a41-93e812345678\tDEBUG\t';
-    expect(() => {
-      InvocationLogs.parseFunctionLog(missSomeElements);
+      InvocationLogs.parseFunctionLog(notJSONstring);
     }).toThrow(Error);
   });
 });

@@ -10,7 +10,7 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
-import { 
+import {
   createStackWithLambdaFunction,
   generateUniqueName,
   invokeFunction,
@@ -18,7 +18,7 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
-import { 
+import {
   RESOURCE_NAME_PREFIX,
   STACK_OUTPUT_LOG_GROUP,
   SETUP_TIMEOUT,
@@ -67,8 +67,8 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
         UUID: uuid,
 
         // Text to be used by Logger in the Lambda function
-        PERSISTENT_KEY, 
-        PERSISTENT_VALUE, 
+        PERSISTENT_KEY,
+        PERSISTENT_VALUE,
         SINGLE_LOG_ITEM_KEY,
         SINGLE_LOG_ITEM_VALUE,
         ERROR_MSG,
@@ -84,7 +84,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     invocationLogs = await invokeFunction(functionName, 2, 'SEQUENTIAL');
 
     console.log('logGroupName', logGroupName);
-    
+
   }, SETUP_TIMEOUT);
 
   describe('Log level filtering', () => {
@@ -148,7 +148,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it('should log additional keys and value only once', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs()
         .filter(message => message.includes(`"${SINGLE_LOG_ITEM_KEY}":"${SINGLE_LOG_ITEM_VALUE}"`));
-      
+
       expect(logMessages).toHaveLength(1);
     }, TEST_CASE_TIMEOUT);
   });
@@ -157,10 +157,10 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it('should log additional keys and value only once', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs(LEVEL.ERROR)
         .filter(message => message.includes(ERROR_MSG));
-      
+
       expect(logMessages).toHaveLength(1);
 
-      const { logObject } = InvocationLogs.parseFunctionLog(logMessages[0]);
+      const logObject = InvocationLogs.parseFunctionLog(logMessages[0]);
       const errorObj = logObject.error;
 
       expect(errorObj.name).toBe('Error');

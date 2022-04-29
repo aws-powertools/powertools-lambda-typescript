@@ -43,7 +43,6 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -95,7 +94,6 @@ describe('Helper: createLogger function', () => {
           environment: 'prod',
           sampleRateValue: 1,
           serviceName: 'my-lambda-service',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -133,7 +131,6 @@ describe('Helper: createLogger function', () => {
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'service_undefined',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -159,7 +156,6 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -188,7 +184,6 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'my-backend-service',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -217,7 +212,6 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -257,7 +251,6 @@ describe('Helper: createLogger function', () => {
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
     });
@@ -282,7 +275,6 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -329,7 +321,6 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-west-1',
           environment: 'dev',
           serviceName: 'my-backend-service',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: configService,
@@ -372,7 +363,6 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -401,7 +391,6 @@ describe('Helper: createLogger function', () => {
           awsRegion: 'eu-west-1',
           environment: 'dev',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,

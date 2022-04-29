@@ -18,15 +18,16 @@ const testFunction = async (event: APIGatewayProxyEvent, context: Context): Prom
   // Test feature 1: Log level filtering
   // Test feature 2: Context data
   // Test feature 3: Persistent additional log keys and value
+  // Test feature 4: X-Ray Trace ID injection
   logger.debug('##### This should not appear');
   logger.info('This is an INFO log with context and persistent key');
 
-  // Test feature 4: One-time additional log keys and values
+  // Test feature 5: One-time additional log keys and values
   logger.info('This is an one-time log with an additional key-value', {
     [SINGLE_LOG_ITEM_KEY]: SINGLE_LOG_ITEM_VALUE,
   });
 
-  // Test feature 5: Logging an error object
+  // Test feature 6: Logging an error object
   try {
     throw new Error(ERROR_MSG);
   } catch (e) {

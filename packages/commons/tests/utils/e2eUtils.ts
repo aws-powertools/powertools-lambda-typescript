@@ -16,7 +16,7 @@ const lambdaClient = new AWS.Lambda();
 
 const testRuntimeKeys = [ 'nodejs12x', 'nodejs14x' ];
 export type TestRuntimesKey = typeof testRuntimeKeys[number];
-const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
+export const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
   nodejs12x: Runtime.NODEJS_12_X,
   nodejs14x: Runtime.NODEJS_14_X,
 };
@@ -31,6 +31,8 @@ export type StackWithLambdaFunctionOptions = {
   logGroupOutputKey?: string
   runtime: string
 };
+
+type FunctionPayload = {[key: string]: string | boolean | number};
 
 export const isValidRuntimeKey = (runtime: string): runtime is TestRuntimesKey => testRuntimeKeys.includes(runtime);
 
@@ -57,7 +59,7 @@ export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOpt
 export const generateUniqueName = (name_prefix: string, uuid: string, runtime: string, testName: string): string => 
   `${name_prefix}-${runtime}-${testName}-${uuid}`.substring(0, 64);
 
-export const invokeFunction = async (functionName: string, times: number = 1, invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL'): Promise<InvocationLogs[]> => {
+export const invokeFunction = async (functionName: string, times: number = 1, invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL', payload: FunctionPayload = {}): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];
 
   const promiseFactory = (): Promise<void> => {
@@ -65,6 +67,7 @@ export const invokeFunction = async (functionName: string, times: number = 1, in
       .invoke({
         FunctionName: functionName,
         LogType: 'Tail', // Wait until execution completes and return all logs
+        Payload: JSON.stringify(payload),
       })
       .promise()
       .then((response) => {

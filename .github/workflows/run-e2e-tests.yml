@@ -2,7 +2,7 @@ name: run-e2e-tests
 on:
   workflow_dispatch: {}
 jobs:
-  run:
+  e2e-tests:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
@@ -14,9 +14,6 @@ jobs:
     steps:
     - name: "Checkout"
       uses: actions/checkout@v3
-    #########################    
-    # Release new version
-    #########################
     - name: "Use NodeJS 14"
       uses: actions/setup-node@v3
       with:
@@ -40,7 +37,7 @@ jobs:
     - name: Run integration tests
       run: |
         export RUNTIME=nodejs${{ matrix.version }}
-        npm run jest -w packages/${{ matrix.package }} --group=e2e
+        npx jest -w packages/${{ matrix.package }} --group=e2e
     - name: Test packaging
       run: | 
         npm run lerna-package

@@ -36,8 +36,7 @@ jobs:
         aws-region: eu-west-1
     - name: Run integration tests
       run: |
-        export RUNTIME=nodejs${{ matrix.version }}
-        npm run test:e2e -w packages/${{ matrix.package }}
+        RUNTIME=nodejs${{ matrix.version }}x npm run test:e2e -w packages/${{ matrix.package }}
     - name: Test packaging
       run: | 
         npm run lerna-package

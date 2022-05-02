@@ -13,6 +13,10 @@ jobs:
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
+    strategy:
+      matrix:
+        version: [12, 14]
+        package: [logger, metrics, tracing]
     steps:
     - name: "Checkout"
       uses: actions/checkout@v3
@@ -22,7 +26,7 @@ jobs:
     - name: "Use NodeJS 14"
       uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: ${{ matrix.version }}
     - name: Install npm@8.x
       run: npm i -g npm@next-8
     - name: Install monorepo packages
@@ -40,7 +44,9 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
         aws-region: eu-west-1
     - name: Run integration tests
-      run: npm run lerna-test:e2e
+      run: |
+        export RUNTIME=nodejs${{ matrix.version }}
+        npm run jest -w packages/${{ matrix.package }} --group=e2e
     - name: Test packaging
       run: | 
         npm run lerna-package

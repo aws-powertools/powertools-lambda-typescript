@@ -17,7 +17,8 @@ jobs:
     - name: "Use NodeJS 14"
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.version }}
+        # Always use version 14 as we use TypeScript target es2020
+        node-version: 14 
     - name: Install npm@8.x
       run: npm i -g npm@next-8
     - name: Install monorepo packages

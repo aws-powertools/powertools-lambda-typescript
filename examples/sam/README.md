@@ -29,15 +29,9 @@ You will need to have a valid AWS Account in order to deploy these resources. Th
 
 ## Prepare the project
 
-All the following commands must be executed inside the folder `examples/sam`
+All the following commands in this file must be executed inside the folder `examples/sam`
 
-Before deploying this example, copy the Lambda Function Code to `src/handlers` by running:
-
-```bash
-cp -R ../lambda-functions/* ./src/handlers
-```
-
-and install the npm dependencies:
+Before deploying this example install the npm dependencies:
 
 ```bash
 npm i

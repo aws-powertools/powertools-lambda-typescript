@@ -20,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install all dependencies
-        uses: ./.github/workflows/common/install-dependencies.yml
+        uses: ./.github/workflows/install-dependencies.yml
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.1
         with:

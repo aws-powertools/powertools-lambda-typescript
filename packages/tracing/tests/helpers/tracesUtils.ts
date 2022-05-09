@@ -100,9 +100,6 @@ const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string,
       })
       .promise();
 
-    console.log('traces.TracesProcessedCount', traces.TracesProcessedCount);
-    console.log('traces.TraceSummaries', traces.TraceSummaries);
-    
     if (traces.TraceSummaries?.length !== expectedTraces) {
       retry(new Error(`Expected ${expectedTraces} traces, got ${traces.TraceSummaries?.length} for ${resourceArn}`));
     }
@@ -115,7 +112,6 @@ const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string,
       retry(new Error(`Expected ${expectedTraces} trace summaries, got ${traceDetails.Traces?.length} for ${resourceArn}`));
     }
 
-    console.log('### Raw traceDetails.Traces',traceDetails.Traces);
     const sortedTraces = traceDetails.Traces?.map((trace): ParsedTrace => ({
       Duration: trace?.Duration as number,
       Id: trace?.Id as string,

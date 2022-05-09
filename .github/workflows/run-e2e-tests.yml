@@ -10,7 +10,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout code and install all dependencies
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install all dependencies
         uses: ./.github/workflows/common/checkout-and-install-dependencies.yml
       - name: Install example packages
         # Since we are not managing the cdk examples with npm workspaces we install
@@ -33,7 +35,9 @@ jobs:
         version: [12, 14]
         package: [logger, metrics, tracing]
     steps:
-      - name: Checkout code and install all dependencies
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install all dependencies
         uses: ./.github/workflows/common/checkout-and-install-dependencies.yml
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.1

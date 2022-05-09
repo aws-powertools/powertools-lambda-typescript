@@ -1,4 +1,4 @@
-name: checkout-and-install-dependencies
+name: install-dependencies
 on:
   workflow_call: {}
 jobs:

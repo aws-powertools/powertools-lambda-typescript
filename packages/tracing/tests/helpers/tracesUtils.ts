@@ -19,7 +19,7 @@ interface ParsedDocument {
   name: string
   id: string
   start_time: number
-  end_time: number
+  end_time?: number
   // This flag may be set if the segment hasn't been fully processed
   // The trace may have already appeared in the `getTraceSummaries` response 
   // but a segment may still be in_progress

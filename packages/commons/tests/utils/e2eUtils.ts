@@ -57,7 +57,7 @@ export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOpt
 };
 
 export const generateUniqueName = (name_prefix: string, uuid: string, runtime: string, testName: string): string => 
-  `${name_prefix}-${runtime}-${testName}-${uuid}`.substring(0, 64);
+  `${name_prefix}-${runtime}-${uuid.substring(0,5)}-${testName}`.substring(0, 64);
 
 export const invokeFunction = async (functionName: string, times: number = 1, invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL', payload: FunctionPayload = {}): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];

@@ -2,48 +2,63 @@ name: run-e2e-tests
 on:
   workflow_dispatch: {}
 jobs:
-  run:
-    #########################
-    # Force Github action to run only a single job at a time (based on the group name)
-    # This is to prevent "race-condition" in building e2e tests infrastructure
-    #########################
-    concurrency:
-      group: e2e-tests
+  example-and-package-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+      - name: "Use NodeJS 14"
+        uses: actions/setup-node@v3
+        with:
+          # Always use version 14 as we use TypeScript target es2020
+          node-version: 14
+      - name: "Install npm@8.x"
+        run: npm i -g npm@next-8
+      - name: "Install monorepo packages"
+        # This installs all the dependencies of ./packages/*
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
+      - name: "Install example packages"
+        # Since we are not managing the cdk examples with npm workspaces we install
+        # the dependencies in a separate step
+        working-directory: ./examples/cdk
+        run: npm ci
+      - name: "Test packaging"
+        run: |
+          npm run lerna-package
+          cd examples/cdk
+          npm install ../../packages/**/dist/aws-lambda-powertools-*
+          npm run test
+  e2e-tests:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
+    strategy:
+      matrix:
+        version: [12, 14]
+        package: [logger, metrics, tracing]
     steps:
-    - name: "Checkout"
-      uses: actions/checkout@v3
-    #########################    
-    # Release new version
-    #########################
-    - name: "Use NodeJS 14"
-      uses: actions/setup-node@v3
-      with:
-        node-version: '14'
-    - name: Install npm@8.x
-      run: npm i -g npm@next-8
-    - name: Install monorepo packages
-      # This installs all the dependencies of ./packages/*
-      # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-      run: npm ci --foreground-scripts
-    - name: Install example packages
-      # Since we are not managing the cdk examples with npm workspaces we install
-      # the dependencies in a separate step
-      working-directory: ./examples/cdk
-      run: npm ci
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1.6.1
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
-        aws-region: eu-west-1
-    - name: Run integration tests
-      run: npm run lerna-test:e2e
-    - name: Test packaging
-      run: | 
-        npm run lerna-package
-        cd examples/cdk
-        npm install ../../packages/**/dist/aws-lambda-powertools-*
-        npm run test
+      - name: "Checkout"
+        uses: actions/checkout@v3
+      - name: "Use NodeJS 14"
+        uses: actions/setup-node@v3
+        with:
+          # Always use version 14 as we use TypeScript target es2020
+          node-version: 14
+      - name: "Install npm@8.x"
+        run: npm i -g npm@next-8
+      - name: "Install monorepo packages"
+        # This installs all the dependencies of ./packages/*
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@v1.6.1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
+          aws-region: eu-west-1
+      - name: "Run integration tests"
+        run: |
+          RUNTIME=nodejs${{ matrix.version }}x npm run test:e2e -w packages/${{ matrix.package }}

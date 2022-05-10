@@ -14,11 +14,16 @@ import {
   expectedCustomResponseValue, 
   expectedCustomErrorMessage,
 } from '../e2e/constants';
+import { FunctionSegmentNotDefinedError } from './FunctionSegmentNotDefinedError';
 interface ParsedDocument {
   name: string
   id: string
   start_time: number
   end_time: number
+  // This flag may be set if the segment hasn't been fully processed
+  // The trace may have already appeared in the `getTraceSummaries` response 
+  // but a segment may still be in_progress
+  in_progress?: boolean 
   aws?: {
     request_id: string
   }
@@ -117,6 +122,28 @@ const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string,
       })).sort((a, b) => a.Document.start_time - b.Document.start_time) as ParsedSegment[],
     })).sort((a, b) => a.Segments[0].Document.start_time - b.Segments[0].Document.start_time);
 
+    // Verify that all trace has fully loaded invocation subsegments.
+    // The subsegments may be not available yet or still in progress.
+    for (const trace of sortedTraces) {
+      let retryFlag = false;
+      
+      let invocationSubsegment;
+      try {
+        invocationSubsegment = getInvocationSubsegment(trace);
+      } catch (error) {
+        if (error instanceof FunctionSegmentNotDefinedError){
+          retry(new Error(`There is no Function subsegment (AWS::Lambda::Function) yet. Retry.`));
+        } else {
+          throw error;
+        }
+      }
+
+      retryFlag = retryFlag || (!!invocationSubsegment.in_progress);
+      if (retryFlag) {
+        retry(new Error(`There is at least an invocation subsegment that hasn't been fully processed yet. The "in_progress" flag is still "true" in the document.`));
+      }
+    }
+
     if (sortedTraces === undefined) {
       throw new Error(`Traces are undefined for ${resourceArn}`);
     }
@@ -139,7 +166,7 @@ const getFunctionSegment = (trace: ParsedTrace): ParsedSegment => {
   const functionSegment = trace.Segments.find((segment) => segment.Document.origin === 'AWS::Lambda::Function');
 
   if (functionSegment === undefined) {
-    throw new Error('Function segment is undefined');
+    throw new FunctionSegmentNotDefinedError('Function segment is undefined. This can be either due to eventual consistency or a bug in Tracer');
   }
 
   return functionSegment;

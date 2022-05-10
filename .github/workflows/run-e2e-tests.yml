@@ -9,11 +9,10 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
-      - name: "Use NodeJS 14"
+      - name: "Use NodeJS 16"
         uses: actions/setup-node@v3
         with:
-          # Always use version 14 as we use TypeScript target es2020
-          node-version: 14
+          node-version: 16
       - name: "Install npm@8.x"
         run: npm i -g npm@next-8
       - name: "Install monorepo packages"
@@ -43,16 +42,15 @@ jobs:
       contents: read
     strategy:
       matrix:
-        version: [12, 14]
+        version: [12, 14, 16]
         package: [logger, metrics, tracer]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
-      - name: "Use NodeJS 14"
+      - name: "Use NodeJS 16"
         uses: actions/setup-node@v3
         with:
-          # Always use version 14 as we use TypeScript target es2020
-          node-version: 14
+          node-version: 16
       - name: "Install npm@8.x"
         run: npm i -g npm@next-8
       - name: "Install monorepo packages"

@@ -11,12 +11,12 @@ test('getAllItemsHandler function imports & throws correctly', () => {
 
 test('getByIdHandler function imports & throws correctly', () => {
   expect(getByIdHandler({} as APIGatewayProxyEvent, {} as Context)).rejects.toThrow(
-    'getByIdHandler only accepts GET method, you tried: undefined'
+    'getById only accepts GET method, you tried: undefined'
   );
 });
 
 test('putItemHandler function imports & throws correctly', () => {
   expect(putItemHandler({} as APIGatewayProxyEvent, {} as Context)).rejects.toThrow(
-    'putItemHandler only accepts POST method, you tried: undefined'
+    'putItem only accepts POST method, you tried: undefined'
   );
 });

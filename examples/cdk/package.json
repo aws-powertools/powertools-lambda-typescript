@@ -1,6 +1,12 @@
 {
   "name": "cdk-app",
   "version": "0.8.1",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "description": "This project contains source code and supporting files for a serverless application that you can deploy with CDK.",
+  "license": "MIT-0",
   "bin": {
     "cdk-app": "bin/cdk-app.js"
   },

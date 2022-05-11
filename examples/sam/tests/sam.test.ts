@@ -1,4 +1,4 @@
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { getAllItemsHandler } from '../src/get-all-items';
 import { getByIdHandler } from '../src/get-by-id';
 import { putItemHandler } from '../src/put-item';

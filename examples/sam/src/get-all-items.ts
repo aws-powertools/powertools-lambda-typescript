@@ -24,11 +24,11 @@ const tableName = process.env.SAMPLE_TABLE;
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
-
-export const putItemHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
-  if (event.httpMethod !== 'POST') {
-    throw new Error(`putItem only accepts POST method, you tried: ${event.httpMethod}`);
+export const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+  if (event.httpMethod !== 'GET') {
+    throw new Error(`getAllItems only accepts GET method, you tried: ${event.httpMethod}`);
   }
+
   // Tracer: Get facade segment created by AWS Lambda
   const segment = tracer.getSegment();
 
@@ -51,36 +51,33 @@ export const putItemHandler = async (event: APIGatewayProxyEvent, context: Conte
     awsRequestId: context.awsRequestId,
   });
 
-  // Creates a new item, or replaces an old item with a new item
-  // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
+  // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
+  // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
+  // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
   let response;
   try {
     if (!tableName) {
       throw new Error('SAMPLE_TABLE environment variable is not set');
     }
-    if (!event.body) {
-      throw new Error('Event does not contain body');
-    }
 
-    // Get id and name from the body of the request
-    const body = JSON.parse(event.body);
-    const id = body.id;
-    const name = body.name;
-
-    await docClient.put({
-      TableName: tableName,
-      Item: { id: id, name: name }
+    const data = await docClient.scan({
+      TableName: tableName
     }).promise();
+    const items = data.Items;
+
+    // Logger: All log statements are written to CloudWatch
+    logger.debug(`retrieved items: ${items?.length || 0}`);
+
     response = {
       statusCode: 200,
-      body: JSON.stringify(body)
+      body: JSON.stringify(items)
     };
   } catch (err) {
     tracer.addErrorAsMetadata(err as Error);
-    logger.error('Error writing data to table. ' + err);
+    logger.error('Error reading from table. ' + err);
     response = {
       statusCode: 500,
-      body: JSON.stringify({ 'error': 'Error writing data to table.' })
+      body: JSON.stringify({ 'error': 'Error reading from table.' })
     };
   }
 

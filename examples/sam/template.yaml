@@ -31,7 +31,7 @@ Resources:
   getAllItemsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/get-all-items.getAllItemsHandler
+      Handler: src/get-all-items.getAllItemsHandler
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -59,13 +59,13 @@ Resources:
         Target: "es2020"
         Sourcemap: true,
         EntryPoints: 
-        - src/handlers/get-all-items.ts
+        - src/get-all-items.ts
 
   # This is a Lambda function config associated with the source code: get-by-id.js
   getByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/get-by-id.getByIdHandler
+      Handler: src/get-by-id.getByIdHandler
       Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -93,13 +93,13 @@ Resources:
         Target: "es2020"
         Sourcemap: true,
         EntryPoints: 
-        - src/handlers/get-by-id.ts
+        - src/get-by-id.ts
 
   # This is a Lambda function config associated with the source code: put-item.js
   putItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/put-item.putItemHandler
+      Handler: src/put-item.putItemHandler
       Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -127,7 +127,7 @@ Resources:
         Target: "es2020"
         Sourcemap: true,
         EntryPoints: 
-        - src/handlers/put-item.ts
+        - src/put-item.ts
 
   # DynamoDB table to store item: {id: <ID>, name: <NAME>}
   SampleTable:

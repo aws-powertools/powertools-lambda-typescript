@@ -23,5 +23,7 @@ jobs:
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
       - name: Package size report
         uses: ./.github/actions/pkg-size
+        with:
+          mode: regression
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

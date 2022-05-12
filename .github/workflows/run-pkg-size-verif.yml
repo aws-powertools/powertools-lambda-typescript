@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - flochaz/pkgSize
-defaults:
-  run:
-    working-directory: packages/metrics
+# defaults:
+#   run:
+#     working-directory: packages/metrics
 jobs:
   on_push:
     runs-on: ubuntu-latest

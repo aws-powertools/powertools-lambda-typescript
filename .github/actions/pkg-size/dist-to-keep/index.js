@@ -14060,36 +14060,6 @@ var import_fs2 = __toModule(require("fs"));
 var import_fs = __toModule(require("fs"));
 var import_path = __toModule(require("path"));
 var import_io = __toModule(require_io());
-async function npmCi({ cwd } = {}) {
-  if (import_fs.default.existsSync("node_modules")) {
-    import_core.info("Cleaning node_modules");
-    await (0, import_io.rmRF)(import_path.default.join(cwd, "node_modules"));
-  }
-  const options = {
-    cwd,
-    ignoreReturnCode: true
-  };
-  let installCommand = "";
-  if (import_fs.default.existsSync("package-lock.json")) {
-    import_core.info("Installing dependencies with npm");
-    installCommand = "npm ci";
-  } else if (import_fs.default.existsSync("yarn.lock")) {
-    import_core.info("Installing dependencies with yarn");
-    installCommand = "yarn install --frozen-lockfile";
-  } else if (import_fs.default.existsSync("pnpm-lock.yaml")) {
-    import_core.info("Installing dependencies with pnpm");
-    installCommand = "npx pnpm i --frozen-lockfile";
-  } else {
-    import_core.info("No lock file detected. Installing dependencies with npm");
-    installCommand = "npm i";
-  }
-  const { exitCode, stdout, stderr } = await exec_default(installCommand, options);
-  if (exitCode > 0) {
-    throw new Error(`${stderr}
-${stdout}`);
-  }
-}
-var npm_ci_default = npmCi;
 
 // src/lib/is-file-tracked.js
 async function isFileTracked(filePath) {
@@ -14127,10 +14097,6 @@ async function buildRef({
       }
     }
     if (buildCommand) {
-      await npm_ci_default({ cwd }).catch((error) => {
-        throw new Error(`Failed to install dependencies:
-${error.message}`);
-      });
       import_core.info(`Running build command: ${buildCommand}`);
       const buildStart = Date.now();
       await exec_default(buildCommand, { cwd }).catch((error) => {

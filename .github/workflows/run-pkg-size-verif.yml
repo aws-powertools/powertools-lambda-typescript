@@ -22,11 +22,11 @@ jobs:
       - name: Install monorepo packages
         # This installs all the dependencies of ./packages/*
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        run: npm ci --foreground-scripts
+        run: npm ci --foreground-scripts && npx lerna run ci
       - name: Package size report
         uses: ./.github/actions/pkg-size
         with:
-          build-command: npm ci && npm run build
+          build-command: npm run build
           work-directory: packages/metrics
           dist-directory: packages/metrics/dist
         env:

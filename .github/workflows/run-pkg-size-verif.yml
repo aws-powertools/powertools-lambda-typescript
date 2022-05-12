@@ -1,6 +1,9 @@
 name: test-pkg-size
 on:
   workflow_dispatch: {}
+  push:
+    branches:
+      - flochaz/pkgSize
 defaults:
   run:
     working-directory: packages/metrics

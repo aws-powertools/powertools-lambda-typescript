@@ -4,7 +4,7 @@ This project contains source code and supporting files for a serverless applicat
 
 This project includes the following files and folders:
 
-- `src/handlers` - Code for the application's Lambda function written in TypeScript. See "Prepare the project" below for instructions on how to copy the Lambda handler code here.
+- `src` - Code for the application's Lambda function written in TypeScript. See "Prepare the project" below for instructions on how to copy the Lambda handler code here.
 - `events` - Invocation events that you can use to invoke the function.
 - `template.yaml` - A template that defines the application's AWS resources.
 
@@ -110,7 +110,7 @@ Build your application with the `sam build` command.
 sam build --beta-features
 ```
 
-The SAM CLI installs dependencies defined in `src/handlers/package.json`, compiles TypeScript with esbuild, creates a deployment package, and saves it in the `.aws-sam/build` folder.
+The SAM CLI installs dependencies defined in `package.json`, compiles TypeScript with esbuild, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
 
@@ -130,12 +130,12 @@ curl http://localhost:3000/
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
 
 ```yaml
-      Events:
-        HelloWorld:
-          Type: Api
-          Properties:
-            Path: /
-            Method: get
+Events:
+  HelloWorld:
+    Type: Api
+    Properties:
+      Path: /
+      Method: get
 ```
 
 ## Fetch, tail, and filter Lambda function logs

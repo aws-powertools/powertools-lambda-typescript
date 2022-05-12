@@ -67,7 +67,7 @@
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.3",
-    "husky": "^7.0.1",
+    "husky": "^8.0.1",
     "jest": "^27.5.1",
     "jest-runner-groups": "^2.1.0",
     "lerna": "^4.0.0",

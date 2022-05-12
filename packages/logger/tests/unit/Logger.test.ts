@@ -20,9 +20,11 @@ const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
 
 describe('Class: Logger', () => {
+  const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
     dateSpy.mockClear();
+    process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
   describe.each([
@@ -68,7 +70,7 @@ describe('Class: Logger', () => {
               message: 'foo',
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             }));
           }
 
@@ -95,7 +97,7 @@ describe('Class: Logger', () => {
               message: 'foo',
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             }));
           }
 
@@ -122,7 +124,7 @@ describe('Class: Logger', () => {
               message: 'foo',
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             }));
           }
 
@@ -149,7 +151,7 @@ describe('Class: Logger', () => {
               message: 'foo',
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             }));
           }
 
@@ -201,7 +203,7 @@ describe('Class: Logger', () => {
             sampling_rate: 1,
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           }));
         });
 
@@ -229,7 +231,7 @@ describe('Class: Logger', () => {
             message: 'foo',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           }));
         });
 
@@ -259,7 +261,7 @@ describe('Class: Logger', () => {
             message: 'foo',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           }));
 
         });
@@ -295,14 +297,14 @@ describe('Class: Logger', () => {
             message: 'A log item without extra parameters',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           }));
           expect(consoleSpy).toHaveBeenNthCalledWith(2, JSON.stringify({
             level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and an object as second parameter',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             extra: 'parameter',
           }));
           expect(consoleSpy).toHaveBeenNthCalledWith(3, JSON.stringify({
@@ -310,7 +312,7 @@ describe('Class: Logger', () => {
             message: 'A log item with a string as first parameter, and objects as other parameters',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             parameterOne: 'foo',
             parameterTwo: 'bar',
           }));
@@ -319,7 +321,7 @@ describe('Class: Logger', () => {
             message: 'A log item with an object as first parameters',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             extra: 'parameter',
           }));
           const parameterCallNumber5 = JSON.parse(consoleSpy.mock.calls[4][0]);
@@ -328,7 +330,7 @@ describe('Class: Logger', () => {
             message: 'A log item with a string as first parameter, and an error as second parameter',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             error: {
               location: expect.stringMatching(/Logger.test.ts:[0-9]+$/),
               message: 'Something happened!',
@@ -342,7 +344,7 @@ describe('Class: Logger', () => {
             message: 'A log item with a string as first parameter, and an error with custom key as second parameter',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             myCustomErrorKey: {
               location: expect.stringMatching(/Logger.test.ts:[0-9]+$/),
               message: 'Something happened!',
@@ -355,7 +357,7 @@ describe('Class: Logger', () => {
             message: 'A log item with a string as first parameter, and a string as second parameter',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             extra: 'parameter',
           }));
         });
@@ -389,9 +391,63 @@ describe('Class: Logger', () => {
             message: 'foo',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             aws_account_id: '123456789012',
             aws_region: 'eu-west-1',
+          }));
+        });
+
+      });
+
+      describe('Feature: X-Ray Trace ID injection', () => {
+
+        const methodOfLogger = method as keyof ClassThatLogs;
+
+        test('when the `_X_AMZN_TRACE_ID` environment variable is set it parses it correctly and adds the Trace ID to the log', () => {
+
+          // Prepare
+          const logger: Logger = createLogger({
+            logLevel: 'DEBUG',
+          });
+          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+
+          // Act
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
+          }
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: method.toUpperCase(),
+            message: 'foo',
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          }));
+        });
+
+        test('when the `_X_AMZN_TRACE_ID` environment variable is NOT set it parses it correctly and adds the Trace ID to the log', () => {
+
+          // Prepare
+          delete process.env._X_AMZN_TRACE_ID;
+          const logger: Logger = createLogger({
+            logLevel: 'DEBUG',
+          });
+          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+
+          // Act
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
+          }
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: method.toUpperCase(),
+            message: 'foo',
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
           }));
         });
 
@@ -431,7 +487,7 @@ describe('Class: Logger', () => {
             message: 'A log with a circular reference',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
-            xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             details: {
               foo: 'bar',
             },
@@ -450,7 +506,7 @@ describe('Class: Logger', () => {
       functionName: 'foo-bar-function-with-cold-start',
       memoryLimitInMB: '128',
       logGroupName: '/aws/lambda/foo-bar-function-with-cold-start',
-      logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+      logStreamName: '2021/03/09/[$LATEST]1-5759e988-bd862e3fe1be46a994272793',
       invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
       awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
       getRemainingTimeInMillis: () => 1234,
@@ -496,7 +552,6 @@ describe('Class: Logger', () => {
           },
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
     });
@@ -651,7 +706,7 @@ describe('Class: Logger', () => {
         message: 'This is an INFO log with some context',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
 
     });
@@ -683,7 +738,7 @@ describe('Class: Logger', () => {
         message: 'An INFO log without context!',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
       expect(consoleSpy).toHaveBeenNthCalledWith(2, JSON.stringify({
         cold_start: true,
@@ -695,7 +750,7 @@ describe('Class: Logger', () => {
         message: 'This is an INFO log with some context',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
 
     });
@@ -731,7 +786,7 @@ describe('Class: Logger', () => {
         message: 'An INFO log without context!',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
       expect(consoleSpy).toHaveBeenNthCalledWith(2, JSON.stringify({
         cold_start: true,
@@ -743,7 +798,7 @@ describe('Class: Logger', () => {
         message: 'This is an INFO log with some context',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
 
     });
@@ -825,7 +880,6 @@ describe('Class: Logger', () => {
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -851,7 +905,6 @@ describe('Class: Logger', () => {
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -875,7 +928,6 @@ describe('Class: Logger', () => {
           environment: '',
           sampleRateValue: 1,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -899,7 +951,6 @@ describe('Class: Logger', () => {
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 

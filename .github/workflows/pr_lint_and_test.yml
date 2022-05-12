@@ -22,11 +22,16 @@ jobs:
         # This installs all the dependencies of ./packages/*
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
-      - name: Install example packages
-        # Since we are not managing the cdk examples with npm workspaces we install
+      - name: Install CDK example packages
+        # Since we are not managing the CDK examples with npm workspaces we install
         # the dependencies in a separate step
         working-directory: ./examples/cdk
-        run: npm ci 
+        run: npm ci
+      - name: Install SAM example packages
+        # Since we are not managing the SAM examples with npm workspaces we install
+        # the dependencies in a separate step
+        working-directory: ./examples/sam
+        run: npm ci
       - name: Run lint
         run: npm run lerna-lint
       - name: Run tests

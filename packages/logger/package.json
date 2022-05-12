@@ -15,7 +15,7 @@
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e:nodejs12x": "RUNTIME=nodejs12x jest --group=e2e",
     "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
-    "test:e2e": "concurrently \"npm:test:e2e:nodejs12x\" \"npm:test:e2e:nodejs14x\"",
+    "test:e2e": "jest --group=e2e",
     "watch": "jest --watch --group=unit",
     "build": "tsc",
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
@@ -47,8 +47,7 @@
   "devDependencies": {
     "@types/lodash.clonedeep": "^4.5.6",
     "@types/lodash.merge": "^4.6.6",
-    "@types/lodash.pickby": "^4.6.6",
-    "concurrently": "^7.0.0"
+    "@types/lodash.pickby": "^4.6.6"
   },
   "files": [
     "lib"

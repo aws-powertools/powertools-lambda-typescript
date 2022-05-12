@@ -1,5 +1,6 @@
 export const RESOURCE_NAME_PREFIX = 'Logger-E2E';
-export const TEST_CASE_TIMEOUT = 20_000; // 20 seconds
-export const SETUP_TIMEOUT = 300_000; // 300 seconds
-export const TEARDOWN_TIMEOUT = 200_000; 
+export const ONE_MINUTE = 60 * 1000;
+export const TEST_CASE_TIMEOUT = ONE_MINUTE;
+export const SETUP_TIMEOUT = 5 * ONE_MINUTE;
+export const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;
 export const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';

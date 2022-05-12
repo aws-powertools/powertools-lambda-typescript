@@ -328,6 +328,7 @@ class Logger extends Utility implements ClassThatLogs {
       logLevel,
       timestamp: new Date(),
       message: typeof input === 'string' ? input : input.message,
+      xRayTraceId: this.getXrayTraceId(),
     }, this.getPowertoolLogData());
 
     const logItem = new LogItem({
@@ -426,6 +427,23 @@ class Logger extends Utility implements ClassThatLogs {
     }
 
     return <number> this.powertoolLogData?.sampleRateValue;
+  }
+
+  /**
+   * It returns the current X-Ray Trace ID parsing the content of the `_X_AMZN_TRACE_ID` env variable.
+   * 
+   * The X-Ray Trace data available in the environment variable has this format:
+   * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+   * 
+   * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
+   *
+   * @private
+   * @returns {string}
+   */
+  private getXrayTraceId(): string {
+    const xRayTraceId = this.getEnvVarsService().getXrayTraceId();
+
+    return xRayTraceId.length > 0 ? xRayTraceId.split(';')[0].replace('Root=', '') : xRayTraceId;
   }
 
   /**
@@ -629,7 +647,6 @@ class Logger extends Utility implements ClassThatLogs {
         sampleRateValue: this.getSampleRateValue(),
         serviceName:
           serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || Logger.defaultServiceName,
-        xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
       },
       persistentLogAttributes,
     );

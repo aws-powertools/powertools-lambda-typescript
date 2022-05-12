@@ -1,7 +1,8 @@
 {
   "packages": [
     "packages/*",
-    "examples/cdk"
+    "examples/cdk",
+    "examples/sam"
   ],
   "version": "0.8.1",
   "npmClient": "npm",

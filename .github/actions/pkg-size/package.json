@@ -1,0 +1,78 @@
+{
+	"name": "pkg-size-action",
+	"version": "0.0.0-semantic-release",
+	"description": "Check package size changes on pull-requests",
+	"keywords": [
+		"github",
+		"action",
+		"pkg-size",
+		"package",
+		"distribution",
+		"size",
+		"watch"
+	],
+	"license": "MIT",
+	"repository": "pkg-size/action",
+	"funding": "https://github.com/pkg-size/action?sponsor=1",
+	"author": {
+		"name": "Hiroki Osame",
+		"email": "hiroki.osame@gmail.com"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "rollup -c && :",
+		"lint": "eslint ."
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
+	},
+	"lint-staged": {
+		"src/**/*.js": [
+			"eslint",
+			"npm run build",
+			"git add dist"
+		]
+	},
+	"devDependencies": {
+		"@actions/cache": "^1.0.7",
+		"@actions/core": "^1.4.0",
+		"@actions/exec": "^1.1.0",
+		"@actions/github": "^4.0.0",
+		"@actions/io": "^1.1.1",
+		"@pvtnbr/eslint-config-base": "^0.1.19",
+		"@rollup/plugin-commonjs": "^17.1.0",
+		"@rollup/plugin-node-resolve": "^11.2.1",
+		"builtin-modules": "^3.1.0",
+		"byte-size": "^7.0.1",
+		"conventional-changelog-conventionalcommits": "^4.6.0",
+		"esbuild": "^0.12.20",
+		"eslint": "^7.32.0",
+		"glob-to-regexp": "^0.4.1",
+		"husky": "^4.3.8",
+		"lint-staged": "^10.5.4",
+		"lodash-es": "^4.17.21",
+		"markdown-table": "^2.0.0",
+		"outdent": "^0.7.1",
+		"rollup": "^2.55.1",
+		"rollup-plugin-esbuild": "^4.5.0",
+		"rollup-plugin-terser": "^7.0.2"
+	},
+	"eslintConfig": {
+		"extends": "@pvtnbr/eslint-config-base",
+		"rules": {
+			"unicorn/prevent-abbreviations": [
+				"error",
+				{
+					"replacements": {
+						"pkg": false,
+						"ref": false
+					}
+				}
+			]
+		}
+	}
+}

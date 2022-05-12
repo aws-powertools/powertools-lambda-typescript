@@ -22,6 +22,6 @@ jobs:
         run: |
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
       - name: Package size report
-        uses: pkg-size/action@v1
+        uses: ./pkg-size
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

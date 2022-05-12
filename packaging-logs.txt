@@ -1,0 +1,294 @@
+
+> aws-lambda-powertools-typescript@0.0.1 lerna-package /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript
+> lerna exec -- npm run package
+
+lerna notice cli v4.0.0
+lerna info Executing command in 5 packages: "npm run package"
+
+> cdk-app@0.5.0 package /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/examples/cdk
+> echo 'Not applicable'
+
+
+> @aws-lambda-powertools/metrics@0.5.0 package /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/metrics
+> mkdir -p dist/ && npm pack && mv *.tgz dist/
+
+
+> @aws-lambda-powertools/commons@0.5.0 package /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/commons
+> mkdir -p dist/ && npm pack && mv *.tgz dist/
+
+
+> @aws-lambda-powertools/logger@0.5.0 package /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/logger
+> mkdir -p dist/ && npm pack && mv *.tgz dist/
+
+
+> @aws-lambda-powertools/tracer@0.5.0 package /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/tracing
+> mkdir -p dist/ && npm pack && mv *.tgz dist/
+
+Not applicable
+
+> @aws-lambda-powertools/commons@0.5.0 prepare /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/commons
+> npm run build
+
+
+> @aws-lambda-powertools/metrics@0.5.0 prepare /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/metrics
+> npm run build
+
+
+> @aws-lambda-powertools/tracer@0.5.0 prepare /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/tracing
+> npm run build
+
+
+> @aws-lambda-powertools/logger@0.5.0 prepare /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/logger
+> npm run build
+
+
+> @aws-lambda-powertools/commons@0.5.0 build /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/commons
+> tsc
+
+
+> @aws-lambda-powertools/metrics@0.5.0 build /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/metrics
+> tsc
+
+
+> @aws-lambda-powertools/tracer@0.5.0 build /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/tracing
+> tsc
+
+
+> @aws-lambda-powertools/logger@0.5.0 build /Users/chazalf/amazon/PowerTool/aws-lambda-powertools-typescript/packages/logger
+> tsc
+
+npm notice 
+npm notice 📦  @aws-lambda-powertools/commons@0.5.0
+npm notice === Tarball Contents === 
+npm notice 1.6kB  lib/src/tests/resources/contexts/hello-world.js      
+npm notice 1.6kB  lib/tests/resources/contexts/hello-world.js          
+npm notice 1.2kB  lib/index.js                                         
+npm notice 1.1kB  lib/src/index.js                                     
+npm notice 904B   lib/src/tests/resources/contexts/index.js            
+npm notice 564B   lib/src/tests/resources/events/custom/index.js       
+npm notice 394B   lib/src/tests/resources/events/index.js              
+npm notice 888B   lib/src/utils/lambda/index.js                        
+npm notice 1.1kB  lib/tests/resources/contexts/index.js                
+npm notice 560B   lib/tests/resources/events/custom/index.js           
+npm notice 390B   lib/tests/resources/events/index.js                  
+npm notice 1.1kB  lib/utils/lambda/index.js                            
+npm notice 319B   lib/src/utils/lambda/LambdaInterface.js              
+npm notice 315B   lib/utils/lambda/LambdaInterface.js                  
+npm notice 3.7kB  lib/Utility.js                                       
+npm notice 2.0kB  package.json                                         
+npm notice 264B   lib/src/tests/resources/contexts/hello-world.d.ts.map
+npm notice 261B   lib/tests/resources/contexts/hello-world.d.ts.map    
+npm notice 201B   lib/index.d.ts.map                                   
+npm notice 204B   lib/src/index.d.ts.map                               
+npm notice 160B   lib/src/tests/resources/contexts/index.d.ts.map      
+npm notice 182B   lib/src/tests/resources/events/custom/index.d.ts.map 
+npm notice 173B   lib/src/tests/resources/events/index.d.ts.map        
+npm notice 147B   lib/src/utils/lambda/index.d.ts.map                  
+npm notice 157B   lib/tests/resources/contexts/index.d.ts.map          
+npm notice 179B   lib/tests/resources/events/custom/index.d.ts.map     
+npm notice 170B   lib/tests/resources/events/index.d.ts.map            
+npm notice 144B   lib/utils/lambda/index.d.ts.map                      
+npm notice 764B   lib/src/utils/lambda/LambdaInterface.d.ts.map        
+npm notice 761B   lib/utils/lambda/LambdaInterface.d.ts.map            
+npm notice 264B   lib/Utility.d.ts.map                                 
+npm notice 2.3kB  CHANGELOG.md                                         
+npm notice 4.4kB  README.md                                            
+npm notice 152B   lib/src/tests/resources/contexts/hello-world.d.ts    
+npm notice 152B   lib/tests/resources/contexts/hello-world.d.ts        
+npm notice 182B   lib/index.d.ts                                       
+npm notice 182B   lib/src/index.d.ts                                   
+npm notice 66B    lib/src/tests/resources/contexts/index.d.ts          
+npm notice 128B   lib/src/tests/resources/events/custom/index.d.ts     
+npm notice 71B    lib/src/tests/resources/events/index.d.ts            
+npm notice 70B    lib/src/utils/lambda/index.d.ts                      
+npm notice 66B    lib/tests/resources/contexts/index.d.ts              
+npm notice 128B   lib/tests/resources/events/custom/index.d.ts         
+npm notice 71B    lib/tests/resources/events/index.d.ts                
+npm notice 70B    lib/utils/lambda/index.d.ts                          
+npm notice 508B   lib/src/utils/lambda/LambdaInterface.d.ts            
+npm notice 508B   lib/utils/lambda/LambdaInterface.d.ts                
+npm notice 2.8kB  lib/Utility.d.ts                                     
+npm notice 33.4kB lib/tsconfig.tsbuildinfo                             
+npm notice === Tarball Details === 
+npm notice name:          @aws-lambda-powertools/commons          
+npm notice version:       0.5.0                                   
+npm notice filename:      aws-lambda-powertools-commons-0.5.0.tgz 
+npm notice package size:  21.2 kB                                 
+npm notice unpacked size: 67.0 kB                                 
+npm notice shasum:        db989d02b6eee79c97a41a3c39a949c86d9b9286
+npm notice integrity:     sha512-coAJMyI4p4ASm[...]cecPbaPT0iPCg==
+npm notice total files:   49                                      
+npm notice 
+aws-lambda-powertools-commons-0.5.0.tgz
+npm notice 
+npm notice 📦  @aws-lambda-powertools/tracer@0.5.0
+npm notice === Tarball Contents === 
+npm notice 992B   lib/config/ConfigService.js                    
+npm notice 323B   lib/config/ConfigServiceInterface.js           
+npm notice 2.6kB  lib/config/EnvironmentVariablesService.js      
+npm notice 571B   lib/helpers.js                                 
+npm notice 1.2kB  lib/config/index.js                            
+npm notice 1.2kB  lib/index.js                                   
+npm notice 1.1kB  lib/provider/index.js                          
+npm notice 1.0kB  lib/types/index.js                             
+npm notice 4.0kB  lib/middleware/middy.js                        
+npm notice 2.9kB  lib/provider/ProviderService.js                
+npm notice 331B   lib/provider/ProviderServiceInterface.js       
+npm notice 36.7kB lib/Tracer.js                                  
+npm notice 279B   lib/types/Tracer.js                            
+npm notice 291B   lib/TracerInterface.js                         
+npm notice 2.3kB  package.json                                   
+npm notice 483B   lib/config/ConfigService.d.ts.map              
+npm notice 359B   lib/config/ConfigServiceInterface.d.ts.map     
+npm notice 545B   lib/config/EnvironmentVariablesService.d.ts.map
+npm notice 266B   lib/helpers.d.ts.map                           
+npm notice 181B   lib/config/index.d.ts.map                      
+npm notice 190B   lib/index.d.ts.map                             
+npm notice 160B   lib/provider/index.d.ts.map                    
+npm notice 132B   lib/types/index.d.ts.map                       
+npm notice 319B   lib/middleware/middy.d.ts.map                  
+npm notice 990B   lib/provider/ProviderService.d.ts.map          
+npm notice 1.0kB  lib/provider/ProviderServiceInterface.d.ts.map 
+npm notice 2.2kB  lib/Tracer.d.ts.map                            
+npm notice 775B   lib/types/Tracer.d.ts.map                      
+npm notice 838B   lib/TracerInterface.d.ts.map                   
+npm notice 3.2kB  CHANGELOG.md                                   
+npm notice 4.4kB  README.md                                      
+npm notice 598B   lib/config/ConfigService.d.ts                  
+npm notice 297B   lib/config/ConfigServiceInterface.d.ts         
+npm notice 557B   lib/config/EnvironmentVariablesService.d.ts    
+npm notice 196B   lib/helpers.d.ts                               
+npm notice 157B   lib/config/index.d.ts                          
+npm notice 159B   lib/index.d.ts                                 
+npm notice 114B   lib/provider/index.d.ts                        
+npm notice 61B    lib/types/index.d.ts                           
+npm notice 1.1kB  lib/middleware/middy.d.ts                      
+npm notice 911B   lib/provider/ProviderService.d.ts              
+npm notice 860B   lib/provider/ProviderServiceInterface.d.ts     
+npm notice 17.2kB lib/Tracer.d.ts                                
+npm notice 1.2kB  lib/types/Tracer.d.ts                          
+npm notice 719B   lib/TracerInterface.d.ts                       
+npm notice === Tarball Details === 
+npm notice name:          @aws-lambda-powertools/tracer           
+npm notice version:       0.5.0                                   
+npm notice filename:      aws-lambda-powertools-tracer-0.5.0.tgz  
+npm notice package size:  21.5 kB                                 
+npm notice unpacked size: 96.1 kB                                 
+npm notice shasum:        b62082591b6284e6559df025bb1454f88b3c4b28
+npm notice integrity:     sha512-Qi3kr5ydYLJq8[...]pBhDYtasGFJeg==
+npm notice total files:   45                                      
+npm notice 
+aws-lambda-powertools-tracer-0.5.0.tgz
+npm notice 
+npm notice 📦  @aws-lambda-powertools/metrics@0.5.0
+npm notice === Tarball Contents === 
+npm notice 438B   lib/config/ConfigService.js                    
+npm notice 323B   lib/config/ConfigServiceInterface.js           
+npm notice 1.5kB  lib/config/EnvironmentVariablesService.js      
+npm notice 1.2kB  lib/config/index.js                            
+npm notice 1.2kB  lib/index.js                                   
+npm notice 1.0kB  lib/middleware/index.js                        
+npm notice 1.1kB  lib/types/index.js                             
+npm notice 25.4kB lib/Metrics.js                                 
+npm notice 283B   lib/types/Metrics.js                           
+npm notice 295B   lib/MetricsInterface.js                        
+npm notice 2.4kB  lib/types/MetricUnit.js                        
+npm notice 2.6kB  lib/middleware/middy.js                        
+npm notice 4.0kB  package.json                                   
+npm notice 319B   lib/config/ConfigService.d.ts.map              
+npm notice 306B   lib/config/ConfigServiceInterface.d.ts.map     
+npm notice 403B   lib/config/EnvironmentVariablesService.d.ts.map
+npm notice 181B   lib/config/index.d.ts.map                      
+npm notice 167B   lib/index.d.ts.map                             
+npm notice 137B   lib/middleware/index.d.ts.map                  
+npm notice 153B   lib/types/index.d.ts.map                       
+npm notice 1.8kB  lib/Metrics.d.ts.map                           
+npm notice 1.5kB  lib/types/Metrics.d.ts.map                     
+npm notice 908B   lib/MetricsInterface.d.ts.map                  
+npm notice 2.1kB  lib/types/MetricUnit.d.ts.map                  
+npm notice 352B   lib/middleware/middy.d.ts.map                  
+npm notice 3.7kB  CHANGELOG.md                                   
+npm notice 4.4kB  README.md                                      
+npm notice 301B   lib/config/ConfigService.d.ts                  
+npm notice 211B   lib/config/ConfigServiceInterface.d.ts         
+npm notice 346B   lib/config/EnvironmentVariablesService.d.ts    
+npm notice 157B   lib/config/index.d.ts                          
+npm notice 128B   lib/index.d.ts                                 
+npm notice 60B    lib/middleware/index.d.ts                      
+npm notice 92B    lib/types/index.d.ts                           
+npm notice 8.7kB  lib/Metrics.d.ts                               
+npm notice 1.9kB  lib/types/Metrics.d.ts                         
+npm notice 844B   lib/MetricsInterface.d.ts                      
+npm notice 3.3kB  lib/types/MetricUnit.d.ts                      
+npm notice 290B   lib/middleware/middy.d.ts                      
+npm notice === Tarball Details === 
+npm notice name:          @aws-lambda-powertools/metrics          
+npm notice version:       0.5.0                                   
+npm notice filename:      aws-lambda-powertools-metrics-0.5.0.tgz 
+npm notice package size:  18.9 kB                                 
+npm notice unpacked size: 74.5 kB                                 
+npm notice shasum:        cfc9924f5427fd9d5fb05f24dc15aec3a9314bd5
+npm notice integrity:     sha512-vMPDe6Qnr5UW+[...]0B7CzWFbOpFUA==
+npm notice total files:   39                                      
+npm notice 
+aws-lambda-powertools-metrics-0.5.0.tgz
+npm notice 
+npm notice 📦  @aws-lambda-powertools/logger@0.5.0
+npm notice === Tarball Contents === 
+npm notice 1.5kB  lib/config/ConfigService.js                
+npm notice 323B   lib/config/ConfigServiceInterface.js       
+npm notice 5.6kB  lib/config/EnvironmentVariablesService.js  
+npm notice 571B   lib/helpers.js                             
+npm notice 1.2kB  lib/config/index.js                        
+npm notice 1.2kB  lib/formatter/index.js                     
+npm notice 1.2kB  lib/index.js                               
+npm notice 1.1kB  lib/log/index.js                           
+npm notice 1.0kB  lib/middleware/index.js                    
+npm notice 1.1kB  lib/types/formats/index.js                 
+npm notice 1.1kB  lib/types/index.js                         
+npm notice 271B   lib/types/Log.js                           
+npm notice 2.9kB  lib/formatter/LogFormatter.js              
+npm notice 323B   lib/formatter/LogFormatterInterface.js     
+npm notice 32.1kB lib/Logger.js                              
+npm notice 279B   lib/types/Logger.js                        
+npm notice 2.7kB  lib/log/LogItem.js                         
+npm notice 303B   lib/log/LogItemInterface.js                
+npm notice 2.0kB  lib/middleware/middy.js                    
+npm notice 311B   lib/types/formats/PowertoolLog.js          
+npm notice 2.3kB  lib/formatter/PowertoolLogFormatter.js     
+npm notice 3.2kB  package.json                               
+npm notice 3.6kB  CHANGELOG.md                               
+npm notice 4.4kB  README.md                                  
+npm notice 1.8kB  lib/config/ConfigService.d.ts              
+npm notice 1.2kB  lib/config/ConfigServiceInterface.d.ts     
+npm notice 2.5kB  lib/config/EnvironmentVariablesService.d.ts
+npm notice 160B   lib/helpers.d.ts                           
+npm notice 122B   lib/config/index.d.ts                      
+npm notice 114B   lib/formatter/index.d.ts                   
+npm notice 112B   lib/index.d.ts                             
+npm notice 63B    lib/log/index.d.ts                         
+npm notice 25B    lib/middleware/index.d.ts                  
+npm notice 32B    lib/types/formats/index.d.ts               
+npm notice 49B    lib/types/index.d.ts                       
+npm notice 813B   lib/types/Log.d.ts                         
+npm notice 1.2kB  lib/formatter/LogFormatter.d.ts            
+npm notice 558B   lib/formatter/LogFormatterInterface.d.ts   
+npm notice 13.7kB lib/Logger.d.ts                            
+npm notice 2.0kB  lib/types/Logger.d.ts                      
+npm notice 532B   lib/log/LogItem.d.ts                       
+npm notice 191B   lib/log/LogItemInterface.d.ts              
+npm notice 877B   lib/middleware/middy.d.ts                  
+npm notice 2.1kB  lib/types/formats/PowertoolLog.d.ts        
+npm notice 631B   lib/formatter/PowertoolLogFormatter.d.ts   
+npm notice === Tarball Details === 
+npm notice name:          @aws-lambda-powertools/logger           
+npm notice version:       0.5.0                                   
+npm notice filename:      aws-lambda-powertools-logger-0.5.0.tgz  
+npm notice package size:  23.6 kB                                 
+npm notice unpacked size: 99.1 kB                                 
+npm notice shasum:        1d41383e7cb5251d250423056008f2c909fedd7b
+npm notice integrity:     sha512-jp+fWkaiVygzu[...]+9oZnC2IEx5+Q==
+npm notice total files:   45                                      
+npm notice 
+aws-lambda-powertools-logger-0.5.0.tgz
+lerna success exec Executed command in 5 packages: "npm run package"

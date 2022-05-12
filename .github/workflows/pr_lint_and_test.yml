@@ -1,7 +1,6 @@
-name: pr-lint-and-test
+name: test-pkg-size
 on:
-  pull_request:
-    types: [opened, synchronize]
+  workflow_dispatch: {}
 defaults:
   run:
     working-directory: packages/metrics

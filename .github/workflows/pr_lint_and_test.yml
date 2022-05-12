@@ -2,6 +2,9 @@ name: pr-lint-and-test
 on:
   pull_request:
     types: [opened, synchronize]
+defaults:
+  run:
+    working-directory: packages/metrics
 jobs:
   on_push:
     runs-on: ubuntu-latest
@@ -16,37 +19,7 @@ jobs:
       - name: "Setup npm"
         run: |
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-      - name: Install packages
-        run: |
-          npm ci
-          npm run lerna-ci
-      - name: Run lint
-        run: npm run lerna-lint
-      - name: Run tests
-        run: npm run lerna-test
-      - name: Collate Coverage Reports
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        run: |
-          for d in ./packages/*/ ; do
-              mkdir -p coverage
-              if [[ ! -f coverage/lcov.info ]]
-              then
-                  continue
-              fi
-              filename="$d""coverage/lcov.info"
-              targetSource="SF:""$d""src"
-              sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
-          done
       - name: Package size report
         uses: pkg-size/action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          build-command: npm ci && npm lerna-ci && npm run lerna-package && rm LICENSE && rm README.md
-      - name: Report Coverage
-        #Dependabot user will only have read-only perms, so don't try to report coverage
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: romeovs/lcov-reporter-action@v0.3.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ./coverage/lcov.info

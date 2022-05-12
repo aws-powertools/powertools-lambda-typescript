@@ -66,6 +66,7 @@ The following tools need to be installed on your system prior to starting workin
   - If you use [nvm](https://github.com/nvm-sh/nvm#nvmrc) or [fnm](https://github.com/Schniz/fnm) you can install the latest LTS version with `nvm use` or `fnm use` respectively. Both will use the `.nvmrc` file in the project's root.
 - [npm 8.x](https://www.npmjs.com/)
   - After installing Node.js, you can install `npm` with `npm install -g npm@next-8` 
+- [AWS SAM CLI >= 1.39.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 - [Docker](https://docs.docker.com/get-docker/)
   - If you are not planning on making changes to the documentation, you can skip this step.
 
@@ -77,6 +78,7 @@ cd aws-lambda-powertools-typescript
 npm ci;
 cd examples/cdk; npm ci
 cd ../..
+cd examples/sam; npm ci
 npm run init-environment
 ```
 
@@ -195,23 +197,31 @@ You can run the end-to-end tests automatically on your forked project by followi
 
 ### Examples
 
-As part of the repo you will find an examples folder at the root. This folder contains examples (written with CDK for now) of deployable AWS Lambda functions using Powertools.
+As part of the repo you will find an examples folder at the root. This folder contains examples (written with CDK and SAM) of deployable AWS Lambda functions using Powertools.
 
 To test your updates with these examples, you just have to:
 
-1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run lerna-package`
-2. Update their references in examples
+1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run lerna-package` while in the root folder
+2. Move to the examples folder of your choice
+    ```sh
+    cd packages/examples/cdk
+    # or
+    cd packages/examples/sam
     ```
-    cd examples/cdk
+3. Update their references in examples
+    ```sh   
     npm install ../../packages/**/dist/aws-lambda-powertools-*
     ```
-3. Run cdk tests
-    ```
+4. Run cdk tests
+    ```sh
     npm run test
     ```
-4. Deploy
-    ```
+5. Deploy
+    ```sh
     npm run cdk deploy
+    # or
+    sam build  --beta-features
+    sam deploy --guided
     ```
 
 The last command will deploy AWS resources, therefore, you will need an AWS account, and it might incur some costs which should be covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all). If you don't have an AWS Account, follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).

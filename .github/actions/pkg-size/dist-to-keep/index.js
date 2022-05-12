@@ -14108,7 +14108,7 @@ ${error.message}`);
   }
   if (!pkgSizeInstalled) {
     import_core.info("Installing pkg-size globally");
-    await exec_default("npm i -g pkg-size", { cwd: distDirectory });
+    await exec_default("npm i -g pkg-size", { cwd: process.cwd() + distDirectory });
     pkgSizeInstalled = true;
   }
   import_core.info("Getting package size");

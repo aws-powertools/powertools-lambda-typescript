@@ -14107,7 +14107,7 @@ async function buildRef({
   workDirectory,
   distDirectory
 }) {
-  const cwd = process.chdir(workDirectory);
+  const cwd = process.cwd() + workDirectory;
   import_core.info(`Current working directory: ${cwd}`);
   if (checkoutRef) {
     import_core.info(`Checking out ref '${checkoutRef}'`);

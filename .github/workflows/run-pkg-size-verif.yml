@@ -17,12 +17,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '14'
+      - name: Install npm@8.x
+        run: npm i -g npm@next-8
       - name: "Setup npm"
         run: |
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+      - name: Install monorepo packages
+        # This installs all the dependencies of ./packages/*
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
       - name: Package size report
         uses: ./.github/actions/pkg-size
         with:
+          build-command: npm ci && npm run build
           work-directory: packages/metrics
           dist-directory: packages/metrics/dist
         env:

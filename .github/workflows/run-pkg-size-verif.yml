@@ -22,5 +22,7 @@ jobs:
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
       - name: Package size report
         uses: ./.github/actions/pkg-size
+        with:
+          build-command: npm ci && npm lerna-ci && npm run lerna-package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

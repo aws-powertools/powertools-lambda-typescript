@@ -29,6 +29,22 @@ Install the library in your project:
 npm install @aws-lambda-powertools/logger
 ```
 
+### Usage
+
+The `Logger` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Logger` can keep track of a cold start and inject the appropriate fields into logs.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="1 3"
+    import { Logger } from '@aws-lambda-powertools/logger';
+
+    const logger = new Logger({ serviceName: 'serverlessAirline' });
+
+    export const handler = async (_event, _context): Promise<void> => {
+        // ...
+    };
+    ```
+
 ### Utility settings
 
 The library requires two settings. You can set them as environment variables, or pass them in the constructor.
@@ -54,8 +70,8 @@ For a **complete list** of supported environment variables, refer to [this secti
 
     // You can also pass the parameters in the constructor
     // const logger = new Logger({
-    //     logLevel: "WARN",
-    //     serviceName: "serverlessAirline"
+    //     logLevel: 'WARN',
+    //     serviceName: 'serverlessAirline'
     // });
     ```
 
@@ -84,7 +100,7 @@ Key | Example | Note
 **sampling_rate**: `float` |  `0.1` | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%
 **service**: `string` | `serverlessAirline` | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`
 **timestamp**: `string` | `2011-10-05T14:48:00.000Z` | Timestamp string in simplified extended ISO format (ISO 8601)
-**xray_trace_id**: `string` | `1-5759e988-bd862e3fe1be46a994272793` | When [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"}, it shows X-Ray Trace ID
+**xray_trace_id**: `string` | `1-5759e988-bd862e3fe1be46a994272793` | X-Ray Trace ID. This value is always presented in Lambda environment, whether [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"} or not. Logger will always log this value.
 **error**: `Object` | `{ name: "Error", location: "/my-project/handler.ts:18", message: "Unexpected error #1", stack: "[stacktrace]"}` | Optional - An object containing information about the Error passed to the logger
 
 ### Capturing Lambda context info
@@ -96,9 +112,9 @@ This functionality will include the following keys in your structured logs:
 Key | Example
 ------------------------------------------------- | ---------------------------------------------------------------------------------
 **cold_start**: `bool` | `false`
-**function_name** `string` | `shopping-cart-api-lambda-prod-eu-central-1`
+**function_name** `string` | `shopping-cart-api-lambda-prod-eu-west-1`
 **function_memory_size**: `number` | `128`
-**function_arn**: `string` | `arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1`
+**function_arn**: `string` | `arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1`
 **function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
 === "Manual"
@@ -165,10 +181,10 @@ In each case, the printed log will look like this:
     ```json hl_lines="2-6"
     {
         "cold_start": true,
-        "function_arn": "arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1",
+        "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1",
         "function_memory_size": 128,
         "function_request_id": "c6af9ac6-7b61-11e6-9a41-93e812345678",
-        "function_name": "shopping-cart-api-lambda-prod-eu-central-1",
+        "function_name": "shopping-cart-api-lambda-prod-eu-west-1",
         "level": "INFO",
         "message": "This is an INFO log with some context",
         "service": "serverlessAirline",
@@ -193,7 +209,7 @@ You can append additional persistent keys and values in the logs generated durin
     const logger = new Logger({
         persistentLogAttributes: { 
             aws_account_id: '123456789012',
-            aws_region: 'eu-central-1',
+            aws_region: 'eu-west-1',
             logger: {
                 name: '@aws-lambda-powertools/logger',
                 version: '0.0.1',
@@ -204,7 +220,7 @@ You can append additional persistent keys and values in the logs generated durin
     // OR add persistent log keys to an existing Logger instance with the appendKeys method:
     // logger.appendKeys({
     //     aws_account_id: '123456789012',
-    //     aws_region: 'eu-central-1',
+    //     aws_region: 'eu-west-1',
     //     logger: {
     //         name: '@aws-lambda-powertools/logger',
     //         version: '0.0.1',
@@ -234,7 +250,7 @@ You can append additional persistent keys and values in the logs generated durin
         "timestamp": "2021-12-12T21:49:58.084Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "aws_account_id": "123456789012",
-        "aws_region": "eu-central-1",
+        "aws_region": "eu-west-1",
         "logger": { 
             "name": "@aws-lambda-powertools/logger",
             "version": "0.0.1"
@@ -247,7 +263,7 @@ You can append additional persistent keys and values in the logs generated durin
         "timestamp": "2021-12-12T21:49:58.088Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "aws_account_id": "123456789012",
-        "aws_region": "eu-central-1",
+        "aws_region": "eu-west-1",
         "logger": { 
             "name": "@aws-lambda-powertools/logger",
             "version": "0.0.1"
@@ -260,10 +276,12 @@ You can append additional persistent keys and values in the logs generated durin
 ### Appending additional log keys and values to a single log item
 
 You can append additional keys and values in a single log item passing them as parameters.
+Pass a string for logging it with default key name `extra`. Alternatively, pass one or multiple objects with custom keys.
+If you already have an object containing a `message` key and an additional property, you can pass this object directly.
 
 === "handler.ts"
 
-    ```typescript hl_lines="14 18-19"
+    ```typescript hl_lines="14 18-19 23 31"
     import { Logger } from '@aws-lambda-powertools/logger';
 
     const logger = new Logger();
@@ -284,6 +302,17 @@ You can append additional keys and values in a single log item passing them as p
             { data: myImportantVariable },
             { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } }
         );
+
+        // Simply pass a string for logging additional data
+        logger.info('This is a log with additional string value', 'string value');
+
+        // Directly passing an object containing both the message and the additional info
+        const logObject = {
+            message: 'This is a log message',
+            additionalValue: 42
+        };
+
+        logger.info(logObject);
         
         return {
             foo: 'bar'
@@ -293,7 +322,7 @@ You can append additional keys and values in a single log item passing them as p
     ```
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="7 15-16"
+    ```json hl_lines="7 15-16 24 32"
     {
         "level": "INFO",
         "message": "This is a log with an extra variable",
@@ -310,6 +339,22 @@ You can append additional keys and values in a single log item passing them as p
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "data": { "foo": "bar" },
         "correlationIds": { "myCustomCorrelationId": "foo-bar-baz" }
+    }
+    {
+        "level": "INFO",
+        "message": "This is a log with additional string value",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T22:06:17.463Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "extra": "string value"
+    }
+    {
+        "level": "INFO",
+        "message": "This is a log message",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T22:06:17.463Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "additionalValue": 42
     }
     ```
 
@@ -331,14 +376,14 @@ The error will be logged with default key name `error`, but you can also pass yo
             throw new Error('Unexpected error #1');
         } catch (error) {
             // Log information about the error using the default "error" key
-            logger.error('This is the first error', error);
+            logger.error('This is the first error', error as Error);
         }
 
         try {
             throw new Error('Unexpected error #2');
         } catch (error) {
             // Log information about the error using a custom "myCustomErrorKey" key
-            logger.error('This is the second error', { myCustomErrorKey: error } );
+            logger.error('This is the second error', { myCustomErrorKey: error as Error } );
         }
     
     };
@@ -374,6 +419,9 @@ The error will be logged with default key name `error`, but you can also pass yo
         }
     }
     ```
+
+!!! tip "Logging errors and log level"
+    You can also log errors using the `warn`, `info`, and `debug` methods. Be aware of the log level though, you might miss those  errors when analyzing the log later depending on the log level configuration.
 
 ## Advanced
 
@@ -666,15 +714,15 @@ This is how the printed log would look:
         {
             "message": "This is an INFO log",
             "service": "serverlessAirline",
-            "awsRegion": "eu-central-1",
+            "awsRegion": "eu-west-1",
             "correlationIds": {
                 "awsRequestId": "c6af9ac6-7b61-11e6-9a41-93e812345678",
                 "xRayTraceId": "abcdef123456abcdef123456abcdef123456",
                 "myCustomCorrelationId": "foo-bar-baz"
             },
             "lambdaFunction": {
-                "name": "shopping-cart-api-lambda-prod-eu-central-1",
-                "arn": "arn:aws:lambda:eu-central-1:123456789012:function:shopping-cart-api-lambda-prod-eu-central-1",
+                "name": "shopping-cart-api-lambda-prod-eu-west-1",
+                "arn": "arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1",
                 "memoryLimitInMB": 128,
                 "version": "$LATEST",
                 "coldStart": true
@@ -709,7 +757,7 @@ This is a Jest sample that provides the minimum information necessary for Logger
         memoryLimitInMB: '128',
         logGroupName: '/aws/lambda/foo-bar-function',
         logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
         getRemainingTimeInMillis: () => 1234,
         done: () => console.log('Done!'),

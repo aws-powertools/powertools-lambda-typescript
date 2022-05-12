@@ -1,4 +1,6 @@
+import { Console } from 'console';
 import type { Context } from 'aws-lambda';
+import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
 import cloneDeep from 'lodash.clonedeep';
@@ -104,11 +106,9 @@ import type {
  * @implements {ClassThatLogs}
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/
  */
-class Logger implements ClassThatLogs {
+class Logger extends Utility implements ClassThatLogs {
 
-  private static coldStart?: boolean = undefined;
-
-  private static coldStartEvaluated: boolean = false;
+  private console = new Console({ stdout: process.stdout, stderr: process.stderr });
 
   private customConfigService?: ConfigServiceInterface;
 
@@ -141,6 +141,8 @@ class Logger implements ClassThatLogs {
    * @param {LoggerOptions} options
    */
   public constructor(options: LoggerOptions = {}) {
+    super();
+
     this.setOptions(options);
   }
 
@@ -152,10 +154,9 @@ class Logger implements ClassThatLogs {
    * @returns {void}
    */
   public addContext(context: Context): void {
-    Logger.evaluateColdStartOnce();
     const lambdaContext: Partial<LambdaFunctionContext> = {
       invokedFunctionArn: context.invokedFunctionArn,
-      coldStart: Logger.getColdStartValue(),
+      coldStart: this.getColdStart(),
       awsRequestId: context.awsRequestId,
       memoryLimitInMB: Number(context.memoryLimitInMB),
       functionName: context.functionName,
@@ -174,7 +175,7 @@ class Logger implements ClassThatLogs {
    * @returns {void}
    */
   public addPersistentLogAttributes(attributes?: LogAttributes): void {
-    this.persistentLogAttributes = merge(attributes, this.getPersistentLogAttributes());
+    merge(this.persistentLogAttributes, attributes);
   }
 
   /**
@@ -202,7 +203,7 @@ class Logger implements ClassThatLogs {
    * It prints a log item with level DEBUG.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -213,43 +214,11 @@ class Logger implements ClassThatLogs {
    * It prints a log item with level ERROR.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     this.processLogItem('ERROR', input, extraInput);
-  }
-
-  /**
-   * It evaluates whether the current Lambda function invocation has a cold start or not.
-   *
-   * @static
-   * @returns {void}
-   */
-  public static evaluateColdStartOnce(): void {
-    if (!Logger.getColdStartEvaluatedValue()) {
-      Logger.evaluateColdStart();
-    }
-  }
-
-  /**
-   * It returns a boolean value which is true if the current Lambda function cold start has been already evaluated, false otherwise.
-   *
-   * @static
-   * @returns {boolean}
-   */
-  public static getColdStartEvaluatedValue(): boolean {
-    return Logger.coldStartEvaluated;
-  }
-
-  /**
-   * It returns an optional boolean value, true if the current Lambda function invocation has a cold start, false otherwise.
-   *
-   * @static
-   * @returns {boolean | undefined}
-   */
-  public static getColdStartValue(): boolean | undefined {
-    return Logger.coldStart;
   }
 
   /**
@@ -265,7 +234,7 @@ class Logger implements ClassThatLogs {
    * It prints a log item with level INFO.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -306,30 +275,6 @@ class Logger implements ClassThatLogs {
   }
 
   /**
-   * It sets the value of a flag static propriety that tracks whether
-   * the cold start evaluation already took place.
-   *
-   * @param {boolean} value
-   * @static
-   * @returns {void}
-   */
-  public static setColdStartEvaluatedValue(value: boolean): void {
-    Logger.coldStartEvaluated = value;
-  }
-
-  /**
-   * It sets the value of a flag static propriety that tracks whether
-   * the current Lambda invocation experienced a cold start.
-   *
-   * @static
-   * @param {boolean | undefined} value
-   * @returns {void}
-   */
-  public static setColdStartValue(value: boolean | undefined): void {
-    Logger.coldStart = value;
-  }
-
-  /**
    * It sets the user-provided sample rate value.
    *
    * @param {number} [sampleRateValue]
@@ -346,7 +291,7 @@ class Logger implements ClassThatLogs {
    * It prints a log item with level WARN.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -362,7 +307,7 @@ class Logger implements ClassThatLogs {
    */
   private addToPowertoolLogData(...attributesArray: Array<Partial<PowertoolLogData>>): void {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
-      this.powertoolLogData = merge(attributes, this.getPowertoolLogData());
+      merge(this.powertoolLogData, attributes);
     });
   }
 
@@ -383,6 +328,7 @@ class Logger implements ClassThatLogs {
       logLevel,
       timestamp: new Date(),
       message: typeof input === 'string' ? input : input.message,
+      xRayTraceId: this.getXrayTraceId(),
     }, this.getPowertoolLogData());
 
     const logItem = new LogItem({
@@ -394,33 +340,16 @@ class Logger implements ClassThatLogs {
     if (typeof input !== 'string') {
       logItem.addAttributes(input);
     }
-    extraInput.forEach((item: Error | LogAttributes | unknown) => {
-      const attributes = item instanceof Error ? { error: item } : item;
-      logItem.addAttributes(<LogAttributes>attributes);
+    extraInput.forEach((item: Error | LogAttributes | string) => {
+      const attributes: LogAttributes =
+        item instanceof Error ? { error: item } :
+          typeof item === 'string' ? { extra: item } :
+            item;
+
+      logItem.addAttributes(attributes);
     });
 
     return logItem;
-  }
-
-  /**
-   * It evaluates whether the current Lambda invocation experienced a
-   * cold start.
-   *
-   * @private
-   * @static
-   * @returns {void}
-   */
-  private static evaluateColdStart(): void {
-    const coldStartValue = Logger.getColdStartValue();
-    if (typeof coldStartValue === 'undefined') {
-      Logger.setColdStartValue(true);
-    } else if (coldStartValue) {
-      Logger.setColdStartValue(false);
-    } else {
-      Logger.setColdStartValue(false);
-    }
-
-    Logger.setColdStartEvaluatedValue(true);
   }
 
   /**
@@ -501,6 +430,23 @@ class Logger implements ClassThatLogs {
   }
 
   /**
+   * It returns the current X-Ray Trace ID parsing the content of the `_X_AMZN_TRACE_ID` env variable.
+   * 
+   * The X-Ray Trace data available in the environment variable has this format:
+   * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+   * 
+   * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
+   *
+   * @private
+   * @returns {string}
+   */
+  private getXrayTraceId(): string {
+    const xRayTraceId = this.getEnvVarsService().getXrayTraceId();
+
+    return xRayTraceId.length > 0 ? xRayTraceId.split(';')[0].replace('Root=', '') : xRayTraceId;
+  }
+
+  /**
    * It returns true if the provided log level is valid.
    *
    * @param {LogLevel} logLevel
@@ -523,7 +469,7 @@ class Logger implements ClassThatLogs {
 
     const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
 
-    console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
+    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
   }
 
   /**
@@ -701,7 +647,6 @@ class Logger implements ClassThatLogs {
         sampleRateValue: this.getSampleRateValue(),
         serviceName:
           serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || Logger.defaultServiceName,
-        xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
       },
       persistentLogAttributes,
     );

@@ -4,6 +4,7 @@
  * @group unit/logger/all
  */
 
+import { Console } from 'console';
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
 import { LoggerOptions } from '../../src/types';
@@ -39,10 +40,9 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -73,10 +73,12 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
+        coldStart: true,
         customConfigService: expect.any(EnvironmentVariablesService),
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'WARN',
+        console: expect.any(Console),
         logLevelThresholds: {
           DEBUG: 8,
           ERROR: 20,
@@ -88,11 +90,10 @@ describe('Helper: createLogger function', () => {
           awsAccountId: '123456789',
         },
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: 'prod',
           sampleRateValue: 1,
           serviceName: 'my-lambda-service',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -111,10 +112,12 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
+        coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'INFO',
+        console: expect.any(Console),
         logLevelThresholds: {
           DEBUG: 8,
           ERROR: 20,
@@ -124,11 +127,10 @@ describe('Helper: createLogger function', () => {
         logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'service_undefined',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
 
@@ -151,10 +153,9 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -180,10 +181,9 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'my-backend-service',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -209,10 +209,9 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -233,10 +232,12 @@ describe('Helper: createLogger function', () => {
       // Assess
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
+        coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'INFO',
+        console: expect.any(Console),
         logLevelThresholds: {
           DEBUG: 8,
           ERROR: 20,
@@ -246,11 +247,10 @@ describe('Helper: createLogger function', () => {
         logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: undefined,
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
       });
     });
@@ -272,10 +272,9 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: 1,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -319,10 +318,9 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: 'dev',
           serviceName: 'my-backend-service',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: configService,
@@ -337,7 +335,7 @@ describe('Helper: createLogger function', () => {
       const loggerOptions:LoggerOptions = {
         persistentLogAttributes: {
           aws_account_id: '123456789012',
-          aws_region: 'eu-central-1',
+          aws_region: 'eu-west-1',
           logger: {
             name: 'aws-lambda-powertool-typescript',
             version: '0.2.4',
@@ -354,7 +352,7 @@ describe('Helper: createLogger function', () => {
         logsSampled: false,
         persistentLogAttributes: {
           aws_account_id: '123456789012',
-          aws_region: 'eu-central-1',
+          aws_region: 'eu-west-1',
           logger: {
             name: 'aws-lambda-powertool-typescript',
             version: '0.2.4',
@@ -362,10 +360,9 @@ describe('Helper: createLogger function', () => {
         },
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -391,10 +388,9 @@ describe('Helper: createLogger function', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: 'dev',
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,

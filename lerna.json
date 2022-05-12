@@ -1,9 +1,10 @@
 {
   "packages": [
     "packages/*",
-    "examples/cdk"
+    "examples/cdk",
+    "examples/sam"
   ],
-  "version": "0.5.0",
+  "version": "0.8.1",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

@@ -1,6 +1,7 @@
 import { Tracer } from '../../src';
 import { Context } from 'aws-lambda';
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -34,55 +35,43 @@ const refreshAWSSDKImport = (): void => {
 const tracer = new Tracer({ serviceName: serviceName });
 const dynamoDBv3 = tracer.captureAWSv3Client(new DynamoDBClient({}));
 
-export class MyFunctionWithDecorator {  
-  @tracer.captureLambdaHandler()
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  public async handler(event: CustomEvent, _context: Context): Promise<unknown> {
-    tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
-    tracer.putMetadata(customMetadataKey, customMetadataValue);
+export const handler = async (event: CustomEvent, _context: Context): Promise<void> => {
+  const segment = tracer.getSegment();
+  const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
+  tracer.setSegment(subsegment);
 
-    let dynamoDBv2;
-    refreshAWSSDKImport();
-    if (event.sdkV2 === 'client') {
-      dynamoDBv2 = tracer.captureAWSClient(new AWS.DynamoDB.DocumentClient());
-    } else if (event.sdkV2 === 'all') {
-      AWS = tracer.captureAWS(AWS);
-      dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
-    }
+  tracer.annotateColdStart();
+  tracer.addServiceNameAnnotation();
 
-    try {
-      await dynamoDBv2.scan({ TableName: testTableName }).promise();
-    } catch (err) {
-      console.error(err);
-    }
+  tracer.putAnnotation('invocation', event.invocation);
+  tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
+  tracer.putMetadata(customMetadataKey, customMetadataValue);
 
-    try {
-      await dynamoDBv3.send(new ScanCommand({ TableName: testTableName }));
-    } catch (err) {
-      console.error(err);
-    }
+  let dynamoDBv2;
+  refreshAWSSDKImport();
+  if (event.sdkV2 === 'client') {
+    dynamoDBv2 = tracer.captureAWSClient(new AWS.DynamoDB.DocumentClient());
+  } else if (event.sdkV2 === 'all') {
+    AWS = tracer.captureAWS(AWS);
+    dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
+  }
+  try {
+    await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
+    await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
+    await axios.get('https://httpbin.org/status/200');
 
-    let res;
-    try {
-      res = this.myMethod();
-      if (event.throw) {
-        throw new Error(customErrorMessage);
-      }
-    } catch (err) {
-      throw err;
+    const res = customResponseValue;
+    if (event.throw) {
+      throw new Error(customErrorMessage);
     }
+    tracer.addResponseAsMetadata(res, process.env._HANDLER);
 
     return res;
+  } catch (err) {
+    tracer.addErrorAsMetadata(err as Error);
+    throw err;
+  } finally {
+    subsegment.close();
+    tracer.setSegment(segment);
   }
-
-  @tracer.captureMethod()
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  public myMethod(): string {
-    return customResponseValue;
-  }
-}
-
-export const handlerClass = new MyFunctionWithDecorator();
-export const handler = handlerClass.handler;
+};

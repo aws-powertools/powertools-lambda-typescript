@@ -25,10 +25,10 @@ describe('Class: PowertoolLogFormatter', () => {
       const formatter = new PowertoolLogFormatter();
       const unformattedAttributes = {
         sampleRateValue: undefined,
-        awsRegion: 'eu-central-1',
+        awsRegion: 'eu-west-1',
         environment: '',
         serviceName: 'hello-world',
-        xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        xRayTraceId: '1-5759e988-bd862e3fe1be46a994272793',
         logLevel: 'WARN',
         timestamp: new Date(),
         message: 'This is a WARN log',
@@ -49,7 +49,7 @@ describe('Class: PowertoolLogFormatter', () => {
         sampling_rate: undefined,
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       });
     });
 
@@ -59,10 +59,10 @@ describe('Class: PowertoolLogFormatter', () => {
       const formatter = new PowertoolLogFormatter();
       const unformattedAttributes: UnformattedAttributes = {
         sampleRateValue: 0.25,
-        awsRegion: 'eu-central-1',
+        awsRegion: 'eu-west-1',
         environment: 'prod',
         serviceName: 'hello-world',
-        xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
+        xRayTraceId: '1-5759e988-bd862e3fe1be46a994272793',
         logLevel: 'WARN',
         timestamp: new Date(),
         message: 'This is a WARN log',
@@ -72,7 +72,7 @@ describe('Class: PowertoolLogFormatter', () => {
           memoryLimitInMB: 123,
           functionVersion: '1.23.3',
           coldStart: true,
-          invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+          invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
           awsRequestId: 'abcdefg123456789',
         },
       };
@@ -83,7 +83,7 @@ describe('Class: PowertoolLogFormatter', () => {
       // Assess
       expect(value).toEqual({
         cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
         function_memory_size: 123,
         function_name: 'my-lambda-function',
         function_request_id: 'abcdefg123456789',
@@ -92,7 +92,7 @@ describe('Class: PowertoolLogFormatter', () => {
         sampling_rate: 0.25,
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       });
     });
 
@@ -363,18 +363,4 @@ describe('Class: PowertoolLogFormatter', () => {
 
   });
 
-// public getCodeLocation(stack?: string): string {
-//     if (!stack) {
-//       return '';
-//     }
-//
-//     const regex = /\((.*):(\d+):(\d+)\)$/;
-//     const match = regex.exec(stack.split('\n')[1]);
-//
-//     if (!Array.isArray(match)) {
-//       return '';
-//     }
-//
-//     return `${match[1]}:${Number(match[2])}`;
-//   }
 });

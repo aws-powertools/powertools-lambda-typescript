@@ -1,4 +1,4 @@
-site_name: Lambda Powertools TypeScript
+site_name: AWS Lambda Powertools for TypeScript
 site_description: AWS Lambda Powertools for TypeScript
 site_author: Amazon Web Services
 repo_url: https://github.com/awslabs/aws-lambda-powertools-typescript
@@ -34,6 +34,10 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.instant
+    - navigation.indexes
+    - navigation.tracking
+    - content.code.annotate
   icon:
     repo: fontawesome/brands/github
   logo: media/aws-logo-light.svg
@@ -58,9 +62,13 @@ markdown_extensions:
   - attr_list
   - pymdownx.emoji
   - pymdownx.inlinehilite
-  - attr_list
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
-copyright: Copyright &copy; 2021 Amazon Web Services
+copyright: Copyright &copy; 2022 Amazon Web Services
 
 plugins:
   - git-revision-date
@@ -75,3 +83,4 @@ extra_javascript:
 extra:
   version:
     provider: mike
+    default: latest

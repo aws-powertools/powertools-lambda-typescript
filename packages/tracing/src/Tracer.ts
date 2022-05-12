@@ -1,4 +1,5 @@
 import { Handler } from 'aws-lambda';
+import { Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
@@ -14,6 +15,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * ## Key features
  *   * Auto capture cold start as annotation, and responses or full exceptions as metadata
  *   * Auto-disable when not running in AWS Lambda environment
+ *   * Automatically trace HTTP(s) clients and generate segments for each request
  *   * Support tracing functions via decorators, middleware, and manual instrumentation
  *   * Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
  * 
@@ -109,13 +111,13 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * }
  * ```
  */
-class Tracer implements TracerInterface {
-  
-  public static coldStart: boolean = true;
+class Tracer extends Utility implements TracerInterface {
 
   public provider: ProviderServiceInterface;
   
   private captureError: boolean = true;
+
+  private captureHTTPsRequests: boolean = true;
   
   private captureResponse: boolean = true;
 
@@ -128,8 +130,13 @@ class Tracer implements TracerInterface {
   private tracingEnabled: boolean = true;
 
   public constructor(options: TracerOptions = {}) {
+    super();
+
     this.setOptions(options);
     this.provider = new ProviderService();
+    if (this.isTracingEnabled() && this.captureHTTPsRequests) {
+      this.provider.captureHTTPsGlobal();
+    }
     if (!this.isTracingEnabled()) {
       // Tell x-ray-sdk to not throw an error if context is missing but tracing is disabled
       this.provider.setContextMissingStrategy(() => ({}));
@@ -196,10 +203,7 @@ class Tracer implements TracerInterface {
    */
   public annotateColdStart(): void {
     if (this.isTracingEnabled()) {
-      this.putAnnotation('ColdStart', Tracer.coldStart);
-    }
-    if (Tracer.coldStart) {
-      Tracer.coldStart = false;
+      this.putAnnotation('ColdStart', this.getColdStart());
     }
   }
 
@@ -261,7 +265,12 @@ class Tracer implements TracerInterface {
       return this.provider.captureAWSClient(service);
     } catch (error) {
       try {
-        return this.provider.captureAWSClient((service as unknown as T & { service: T }).service);
+        // This is needed because some aws-sdk clients like AWS.DynamoDB.DocumentDB don't comply with the same
+        // instrumentation contract like most base clients. 
+        // For detailed explanation see: https://github.com/awslabs/aws-lambda-powertools-typescript/issues/524#issuecomment-1024493662
+        this.provider.captureAWSClient((service as T & { service: T }).service);
+        
+        return service;
       } catch {
         throw error;
       }
@@ -424,27 +433,6 @@ class Tracer implements TracerInterface {
 
       return descriptor;
     };
-  }
-
-  /**
-   * Retrieve the current value of `ColdStart`.
-   * 
-   * If Tracer has been initialized outside the Lambda handler then the same instance
-   * of Tracer will be reused throughout the lifecycle of that same Lambda execution environment
-   * and this method will return `false` after the first invocation.
-   * 
-   * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
-   * 
-   * @returns boolean - `true` if is cold start, otherwise `false`
-   */
-  public static getColdStart(): boolean {
-    if (Tracer.coldStart) {
-      Tracer.coldStart = false;
-
-      return true;
-    }
-
-    return false;
   }
   
   /**
@@ -650,6 +638,39 @@ class Tracer implements TracerInterface {
   }
 
   /**
+   * Patch all HTTP(s) clients and create traces when your application makes calls outgoing calls.
+   *
+   * Calls using third-party HTTP request libraries, such as Axios, are supported as long as they use the native http
+   * module under the hood. Support for third-party HTTP request libraries is provided on a best effort basis.
+   * 
+   * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-httpclients.html
+   * 
+   * @param enabled - Whether or not to patch all HTTP clients
+   * @returns void
+   */
+  private setCaptureHTTPsRequests(enabled?: boolean): void {
+    if (enabled !== undefined && !enabled) {
+      this.captureHTTPsRequests = false;
+
+      return;
+    }
+
+    const customConfigValue = this.getCustomConfigService()?.getCaptureHTTPsRequests();
+    if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
+      this.captureHTTPsRequests = false;
+
+      return;
+    }
+
+    const envVarsValue = this.getEnvVarsService()?.getCaptureHTTPsRequests();
+    if (envVarsValue.toLowerCase() === 'false') {
+      this.captureHTTPsRequests = false;
+
+      return;
+    }
+  }
+
+  /**
    * Setter for `captureResponse` based on configuration passed and environment variables.
    * Used internally during initialization.
    */
@@ -697,6 +718,7 @@ class Tracer implements TracerInterface {
     const {
       enabled,
       serviceName,
+      captureHTTPsRequests,
       customConfigService
     } = options;
 
@@ -706,6 +728,7 @@ class Tracer implements TracerInterface {
     this.setCaptureResponse();
     this.setCaptureError();
     this.setServiceName(serviceName);
+    this.setCaptureHTTPsRequests(captureHTTPsRequests);
 
     return this;
   }

@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: "(module name): short issue description"
+title: "Feature (module name): short issue description"
 labels: feature-request, triage
 ---
 

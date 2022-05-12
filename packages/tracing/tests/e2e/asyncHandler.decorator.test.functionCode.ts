@@ -1,6 +1,7 @@
 import { Tracer } from '../../src';
-import { Callback, Context } from 'aws-lambda';
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { Context } from 'aws-lambda';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -38,7 +39,7 @@ export class MyFunctionWithDecorator {
   @tracer.captureLambdaHandler()
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  public handler(event: CustomEvent, _context: Context, _callback: Callback<unknown>): void | Promise<unknown> {
+  public async handler(event: CustomEvent, _context: Context): Promise<unknown> {
     tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
     tracer.putMetadata(customMetadataKey, customMetadataValue);
 
@@ -50,25 +51,21 @@ export class MyFunctionWithDecorator {
       AWS = tracer.captureAWS(AWS);
       dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
     }
-    
-    return Promise.all([
-      dynamoDBv2.scan({ TableName: testTableName }).promise(),
-      dynamoDBv3.send(new ScanCommand({ TableName: testTableName })),
-      new Promise((resolve, reject) => {
-        setTimeout(() => {
-          const res = this.myMethod();
-          if (event.throw) {
-            reject(new Error(customErrorMessage));
-          } else {
-            resolve(res);
-          }
-        }, 2000); // We need to wait for to make sure previous calls are finished
-      })
-    ])
-      .then(([ _dynamoDBv2Res, _dynamoDBv3Res, promiseRes ]) => promiseRes)
-      .catch((err) => {
-        throw err;
-      });
+
+    try {
+      await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
+      await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
+      await axios.get('https://httpbin.org/status/200');
+
+      const res = this.myMethod();
+      if (event.throw) {
+        throw new Error(customErrorMessage);
+      }
+
+      return res;
+    } catch (err) {
+      throw err;
+    }
   }
 
   @tracer.captureMethod()

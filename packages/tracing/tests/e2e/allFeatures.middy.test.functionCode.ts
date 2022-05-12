@@ -1,7 +1,8 @@
 import middy from '@middy/core';
 import { captureLambdaHandler, Tracer } from '../../src';
 import { Context } from 'aws-lambda';
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let AWS = require('aws-sdk');
 
@@ -49,26 +50,17 @@ export const handler = middy(async (event: CustomEvent, _context: Context): Prom
     dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
   }
   try {
-    await dynamoDBv2.scan({ TableName: testTableName }).promise();
-  } catch (err) {
-    console.error(err);
-  }
+    await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
+    await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
+    await axios.get('https://httpbin.org/status/200');
 
-  try {
-    await dynamoDBv3.send(new ScanCommand({ TableName: testTableName }));
-  } catch (err) {
-    console.error(err);
-  }
-
-  let res;
-  try {
-    res = customResponseValue;
+    const res = customResponseValue;
     if (event.throw) {
       throw new Error(customErrorMessage);
     }
+
+    return res;
   } catch (err) {
     throw err;
   }
-
-  return res;
 }).use(captureLambdaHandler(tracer));

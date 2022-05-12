@@ -3,6 +3,96 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.8.0...v0.8.1) (2022-04-14)
+
+
+### Bug Fixes
+
+* **logger:** change logging to use stdout ([#748](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/748)) ([0781a47](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/0781a479a6ae3c794f94c72b59cd0920073159a2))
+
+
+
+
+
+# [0.8.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.7.2...v0.8.0) (2022-04-08)
+
+
+### Features
+
+* added captureHTTPsRequest feature ([#677](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/677)) ([5a36723](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/5a367233b3284c4b1c0c18caffd00e585afc9f55))
+
+
+
+
+
+## [0.7.2](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.7.1...v0.7.2) (2022-04-01)
+
+**Note:** Version bump only for package aws-lambda-powertools-typescript
+
+
+
+
+
+## [0.7.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.7.0...v0.7.1) (2022-03-17)
+
+
+### Bug Fixes
+
+* **logger:** enable sequential invocation in e2e test ([#658](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/658)) ([800424b](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/800424bc77223682ad6cdcc9f35080aff30ba91e))
+* **logger:** fix handling of additional log keys ([#614](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/614)) ([8aab299](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/8aab29900c5fac8eb625eb747acbc23ceac8f6ba))
+* **tracer, metrics:** use polling instead of fixed wait in e2e tests ([#654](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/654)) ([6d4ab75](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/6d4ab751bc98eb823d2a68b4973fa9f8405971a2))
+
+
+
+
+
+# [0.7.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.6.0...v0.7.0) (2022-03-08)
+
+
+### Features
+
+* **logger:** adopted Utility class & updated unit tests ([#550](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/550)) ([48f3487](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/48f34870d5bc3a5affcb70c8927859c56da6c5ff))
+* **metrics:** adopted Utility class ([#548](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/548)) ([672e6a8](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/672e6a82a2c66f99153c63a53e9d31481afd897a))
+* **tracer:** adopted Utility class & updated unit tests ([#549](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/549)) ([3769a69](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/3769a694725cc2a3fe6fb5f90fb045f73ea32a7c))
+
+
+
+
+
+# [0.6.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.5.1...v0.6.0) (2022-02-17)
+
+
+### Bug Fixes
+
+* **logger:** fix logger attribute merging ([#535](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/535)) ([8180be1](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/8180be1ceb3f75bb7a35a7905cca867fb5eaa970))
+
+
+### Features
+
+* **commons:** centralize cold start heuristic ([#547](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/547)) ([4e4091f](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/4e4091f7b853c56a8dfd28829f09a066cc8e2ee7))
+* **logger:** add e2e tests for logger ([#529](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/529)) ([e736b65](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/e736b652c112b1c24c29eca8b1edfd87a79d1b2e))
+
+
+
+
+
+## [0.5.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.5.0...v0.5.1) (2022-02-09)
+
+
+### Bug Fixes
+
+* **tracer:** properly return DynamoDB.DocumentClient ([#528](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/528)) ([3559e7b](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/3559e7b19339a4649f235fb4af41c6b182da3df1))
+
+
+### Reverts
+
+* Revert "build(deps-dev): bump aws-cdk from 1.139.0 to 1.143.0 (#532)" (#544) ([e96c9ba](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/e96c9ba5bd4f738e5ed7c5850e06856a8c69bff1)), closes [#532](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/532) [#544](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/544)
+* Revert "build(deps-dev): bump @aws-cdk/aws-lambda-nodejs from 1.139.0 to 1.143.0 (#531)" (#545) ([7dffbd8](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/7dffbd8708555fcc9817ea4373ccf71b0aea3c89)), closes [#531](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/531) [#545](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/545)
+
+
+
+
+
 # [0.5.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.4.0...v0.5.0) (2022-01-26)
 
 

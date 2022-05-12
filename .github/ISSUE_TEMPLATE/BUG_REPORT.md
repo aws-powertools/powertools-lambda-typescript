@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "(module name): short issue description"
+title: "Bug (module name): short issue description"
 labels: bug, triage
 ---
 

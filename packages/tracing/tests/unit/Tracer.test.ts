@@ -7,6 +7,7 @@
 import { Tracer } from '../../src';
 import { Callback, Context, Handler } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
+import { DynamoDB } from 'aws-sdk';
 
 interface LambdaInterface {
   handler: Handler
@@ -30,7 +31,7 @@ describe('Class: Tracer', () => {
     memoryLimitInMB: '128',
     logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
     logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-    invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:Example',
+    invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
     awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
     getRemainingTimeInMillis: () => 1234,
     done: () => console.log('Done!'),
@@ -39,7 +40,6 @@ describe('Class: Tracer', () => {
   };
 
   beforeEach(() => {
-    Tracer.coldStart = true;
     jest.clearAllMocks();
     jest.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
@@ -256,20 +256,6 @@ describe('Class: Tracer', () => {
 
     });
 
-  });
-
-  describe('Method: getColdStart', () => {
-
-    test('when called, it returns false the first time and always true after that', () => {
-    
-      // Assess
-      expect(Tracer.getColdStart()).toBe(true);
-      expect(Tracer.getColdStart()).toBe(false);
-      expect(Tracer.getColdStart()).toBe(false);
-      expect(Tracer.getColdStart()).toBe(false);
-    
-    });
-    
   });
 
   describe('Method: getSegment', () => {
@@ -1057,29 +1043,27 @@ describe('Class: Tracer', () => {
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
 
       // Act
-      tracer.captureAWSClient({});
+      const client = tracer.captureAWSClient(new DynamoDB());
 
       // Assess
       expect(captureAWSClientSpy).toBeCalledTimes(0);
+      expect(client).toBeInstanceOf(DynamoDB);
     
     });
 
-    test('when called with a simple AWS SDK v2 client, it returns it back instrumented', () => {
+    test('when called with a base AWS SDK v2 client, it returns it back instrumented', () => {
     
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
-      // Minimum shape required for a regular AWS v2 client (i.e. AWS.S3) to be instrumented
-      const dummyClient = {
-        customizeRequests: () => null,
-      };
 
       // Act
-      tracer.captureAWSClient(dummyClient);
+      const client = tracer.captureAWSClient(new DynamoDB());
 
       // Assess
       expect(captureAWSClientSpy).toBeCalledTimes(1);
-      expect(captureAWSClientSpy).toBeCalledWith(dummyClient);
+      expect(captureAWSClientSpy).toBeCalledWith(client);
+      expect(client).toBeInstanceOf(DynamoDB);
     
     });
 
@@ -1088,20 +1072,15 @@ describe('Class: Tracer', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
-      // Minimum shape required for a complex AWS v2 client (i.e. AWS.DocumentClient) to be instrumented
-      const dummyClient = {
-        service: {
-          customizeRequests: () => null,
-        }
-      };
 
       // Act
-      tracer.captureAWSClient(dummyClient);
+      const client = tracer.captureAWSClient(new DynamoDB.DocumentClient());
 
       // Assess
       expect(captureAWSClientSpy).toBeCalledTimes(2);
-      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, dummyClient);
-      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, dummyClient.service);
+      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, client);
+      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, (client as unknown as DynamoDB & { service: DynamoDB }).service);
+      expect(client).toBeInstanceOf(DynamoDB.DocumentClient);
     
     });
 
@@ -1123,4 +1102,5 @@ describe('Class: Tracer', () => {
     });
 
   });
+
 });

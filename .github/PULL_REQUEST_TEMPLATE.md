@@ -36,6 +36,7 @@
 - [ ] I have performed a *self-review* of my own code
 - [ ] I have *commented* my code where necessary, particularly in areas that should be flagged with a TODO, or hard-to-understand areas
 - [ ] I have made corresponding changes to the *documentation*
+- [ ] I have made corresponding changes to the *examples*
 - [ ] My changes generate *no new warnings*
 - [ ] The *code coverage* hasn't decreased
 - [ ] I have *added tests* that prove my change is effective and works

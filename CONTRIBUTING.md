@@ -67,6 +67,7 @@ The following tools need to be installed on your system prior to starting workin
 - [npm 8.x](https://www.npmjs.com/)
   - After installing Node.js, you can install `npm` with `npm install -g npm@next-8` 
 - [AWS SAM CLI >= 1.39.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+  - AWS SAM CLI is a command line interface for AWS Serverless Application Model (SAM), it's used in one of the examples, and it's part of the pre-push hook.
 - [Docker](https://docs.docker.com/get-docker/)
   - If you are not planning on making changes to the documentation, you can skip this step.
 

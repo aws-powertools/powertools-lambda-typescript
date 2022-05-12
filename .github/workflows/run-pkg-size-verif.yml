@@ -25,6 +25,6 @@ jobs:
         with:
           build-command: npm run build
           work-directory: /packages/metrics
-          dist-directory: /packages/metrics/dist
+          dist-directory: /packages/metrics/lib
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

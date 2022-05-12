@@ -24,7 +24,7 @@ jobs:
         uses: ./.github/actions/pkg-size
         with:
           build-command: npm run build
-          work-directory: packages/metrics
-          dist-directory: packages/metrics/dist
+          work-directory: /packages/metrics
+          dist-directory: /packages/metrics/dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

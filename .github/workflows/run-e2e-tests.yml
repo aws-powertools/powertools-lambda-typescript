@@ -44,7 +44,7 @@ jobs:
     strategy:
       matrix:
         version: [12, 14]
-        package: [logger, metrics, tracing]
+        package: [logger, metrics, tracer]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3

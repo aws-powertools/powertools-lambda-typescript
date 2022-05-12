@@ -23,6 +23,7 @@ jobs:
       - name: Package size report
         uses: ./.github/actions/pkg-size
         with:
-          build-command: npm ci && npm lerna-ci && npm run lerna-package
+          work-directory: packages/metrics
+          dist-directory: packages/metrics/dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

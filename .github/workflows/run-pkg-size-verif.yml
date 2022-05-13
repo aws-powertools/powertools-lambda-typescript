@@ -23,7 +23,7 @@ jobs:
       - name: Package size report
         uses: ./.github/actions/pkg-size
         with:
-          build-command: ls -la ./ && npm run package
+          build-command: npm run package
           work-directory: /packages/metrics
           dist-directory: /packages/metrics/dist
         env:

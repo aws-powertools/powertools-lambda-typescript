@@ -26,5 +26,5 @@ inputs:
   hide-files:
     description: 'Glob pattern to hide files with'
 runs:
-  using: 'node12'
+  using: 'node14'
   main: 'dist-to-keep/index.js'

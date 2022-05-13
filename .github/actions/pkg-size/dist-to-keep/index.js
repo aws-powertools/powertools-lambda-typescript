@@ -14091,7 +14091,7 @@ async function buildRef({
   if (checkoutRef) {
     import_core.info(`Checking out ref '${checkoutRef}'`);
     await exec_default(`git checkout -f ${checkoutRef}`);
-    await exec_default(`npm i`, { cwd });
+    await exec_default(`npm ci  --foreground-scripts`, { cwd: process.cwd() });
   }
   if (buildCommand !== "false") {
     if (!buildCommand) {

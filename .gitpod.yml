@@ -6,7 +6,7 @@ tasks:
       # Install npm 8.x
       npm i -g npm@next-8
       # Install monorepo packages
-      npm ci
+      npm ci --foreground-scripts
       # Install CDK exampels dependencies
       cd examples/cdk
       npm ci

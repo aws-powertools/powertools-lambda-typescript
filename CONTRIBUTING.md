@@ -57,6 +57,8 @@ reported the issue. Please try to include as much information as you can. Detail
 The following steps describe how to set up the AWS Lambda Powertools for TypeScript repository on your local machine.
 The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [Codespaces](https://github.com/features/codespaces) for your development.
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/awslabs/aws-lambda-powertools-typescript)
+
 ### Setup
 
 The following tools need to be installed on your system prior to starting working on a pull request:
@@ -76,7 +78,7 @@ First, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the
 ```console
 git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
 cd aws-lambda-powertools-typescript
-npm ci;
+npm ci --foreground-scripts;
 cd examples/cdk; npm ci
 cd ../..
 cd examples/sam; npm ci

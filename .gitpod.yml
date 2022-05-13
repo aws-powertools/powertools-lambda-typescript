@@ -1,5 +1,5 @@
 tasks:
-  - init: nvm install; nvm use; npm i -g npm@next-8; npm ci; npm run lerna-ci; npm run init-environment
+  - init: nvm install; nvm use; npm i -g npm@next-8; npm ci; cd examples/cdk; npm ci; cd ../sam; npm ci; cd ../../; npm run init-environment
 vscode:
   extensions:
     - dbaeumer.vscode-eslint

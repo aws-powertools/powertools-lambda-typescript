@@ -14037,6 +14037,10 @@ async function exec(command, options) {
     stderr += error.toString();
   }
   const duration = Date.now() - startTime;
+  console.info(`Exec ${command} command finished in ${duration}ms with exit code ${exitCode} and output:
+${stdout} 
+
+and stderr: ${stderr}`);
   return {
     exitCode,
     duration,

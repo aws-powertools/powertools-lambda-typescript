@@ -14101,7 +14101,9 @@ async function buildRef({
       const buildStart = Date.now();
       await exec_default(buildCommand, { cwd }).catch((error) => {
         throw new Error(`Failed to run build command: ${buildCommand}
-${JSON.stringify(error)}`);
+		 Error:
+${error}
+#####`);
       });
       import_core.info(`Build completed in ${(Date.now() - buildStart) / 1e3}s`);
     }
@@ -14112,7 +14114,7 @@ ${JSON.stringify(error)}`);
     pkgSizeInstalled = true;
   }
   import_core.info("Getting package size");
-  const result = await exec_default("pkg-size --json", { cwd }).catch((error) => {
+  const result = await exec_default("pkg-size --json", { cwd: process.cwd() + distDirectory }).catch((error) => {
     throw new Error(`Failed to determine package size: ${error.message}`);
   });
   import_core.debug(JSON.stringify(result, null, 4));

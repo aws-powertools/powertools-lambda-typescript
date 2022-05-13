@@ -14101,7 +14101,7 @@ async function buildRef({
       const buildStart = Date.now();
       await exec_default(buildCommand, { cwd }).catch((error) => {
         throw new Error(`Failed to run build command: ${buildCommand}
-${error.message}`);
+${JSON.stringify(error)}`);
       });
       import_core.info(`Build completed in ${(Date.now() - buildStart) / 1e3}s`);
     }

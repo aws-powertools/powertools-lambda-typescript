@@ -14020,17 +14020,22 @@ async function exec(command, options) {
   let stdout = "";
   let stderr = "";
   const startTime = Date.now();
-  const exitCode = await (0, import_exec.exec)(command, null, __spreadProps(__spreadValues({}, options), {
-    silent: true,
-    listeners: {
-      stdout(data) {
-        stdout += data.toString();
-      },
-      stderr(data) {
-        stderr += data.toString();
+  let exitCode = "127";
+  try {
+    exitCode = await (0, import_exec.exec)(command, null, __spreadProps(__spreadValues({}, options), {
+      silent: true,
+      listeners: {
+        stdout(data) {
+          stdout += data.toString();
+        },
+        stderr(data) {
+          stderr += data.toString();
+        }
       }
-    }
-  }));
+    }));
+  } catch (error) {
+    stderr += error.toString();
+  }
   const duration = Date.now() - startTime;
   return {
     exitCode,
@@ -14099,12 +14104,21 @@ async function buildRef({
     if (buildCommand) {
       import_core.info(`Running build command: ${buildCommand}`);
       const buildStart = Date.now();
-      await exec_default(buildCommand, { cwd }).catch((error) => {
+      const {
+        exitCode,
+        duration,
+        stdout,
+        stderr
+      } = await exec_default(buildCommand, { cwd }).catch((error) => {
         throw new Error(`Failed to run build command: ${buildCommand}
 		 Error:
 ${error}
 #####`);
       });
+      import_core.info(`Build command finished in ${duration}ms with exit code ${exitCode} and output:
+${stdout} 
+
+and stderr: ${stderr}`);
       import_core.info(`Build completed in ${(Date.now() - buildStart) / 1e3}s`);
     }
   }

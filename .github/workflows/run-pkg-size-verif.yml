@@ -23,9 +23,9 @@ jobs:
       - name: Package size report
         uses: ./.github/actions/pkg-size
         with:
-          build-command: npm run build
+          build-command: npm run package
           work-directory: /packages/metrics
-          dist-directory: /packages/metrics/lib
+          dist-directory: /packages/metrics/dist
           mode: 'head-only'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

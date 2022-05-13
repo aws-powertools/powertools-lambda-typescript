@@ -27,6 +27,9 @@ jobs:
         # the dependencies in a separate step
         working-directory: ./examples/cdk
         run: npm ci
+      - name: "Setup SAM"
+        uses: aws-actions/setup-sam@v2
+          version: 1.49.0
       - name: Install SAM example packages
         # Since we are not managing the SAM examples with npm workspaces we install
         # the dependencies in a separate step

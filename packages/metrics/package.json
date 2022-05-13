@@ -15,6 +15,7 @@
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e:nodejs12x": "RUNTIME=nodejs12x jest --group=e2e",
     "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
+    "test:e2e:nodejs16x": "RUNTIME=nodejs16x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --group=unit --watch ",
     "build": "tsc",

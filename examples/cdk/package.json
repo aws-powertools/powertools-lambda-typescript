@@ -37,7 +37,7 @@
     "@aws-sdk/client-sts": "^3.53.0",
     "@middy/core": "^2.5.6",
     "@types/aws-lambda": "^8.10.86",
-    "aws-cdk-lib": "2.23.0",
+    "aws-cdk-lib": "2.24.1",
     "aws-sdk": "^2.1088.0",
     "constructs": "^10.0.82",
     "source-map-support": "^0.5.16"

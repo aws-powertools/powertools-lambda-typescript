@@ -21,7 +21,7 @@ jobs:
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
       - name: Metrics package size report
-        uses: flochaz/pkg-size-action@v1.2.1
+        uses: flochaz/pkg-size-action@v1.2.2
         with:
           build-command: npm run package
           work-directory: /packages/metrics
@@ -30,7 +30,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tracer package size report
-        uses: flochaz/pkg-size-action@v1.2.1
+        uses: flochaz/pkg-size-action@v1.2.2
         with:
           build-command: npm run package
           work-directory: /packages/tracing
@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Logger package size report
-        uses: flochaz/pkg-size-action@v1.2.1
+        uses: flochaz/pkg-size-action@v1.2.2
         with:
           build-command: npm run package
           work-directory: /packages/logger

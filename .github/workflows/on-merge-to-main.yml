@@ -49,7 +49,7 @@ jobs:
     - name: Run tests
       run: npm run lerna-test
     - name: Update release draft
-      uses: release-drafter/release-drafter@v5.19.0
+      uses: release-drafter/release-drafter@v5.20.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     #########################    

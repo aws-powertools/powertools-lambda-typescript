@@ -1,6 +1,6 @@
 {
   "name": "cdk-app",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
-    "@types/node": "17.0.32",
+    "@types/node": "17.0.33",
     "aws-cdk": "^2.0.0",
     "esbuild": "^0.14.23",
     "jest": "^27.5.1",
@@ -37,7 +37,7 @@
     "@aws-sdk/client-sts": "^3.53.0",
     "@middy/core": "^2.5.6",
     "@types/aws-lambda": "^8.10.86",
-    "aws-cdk-lib": "2.23.0",
+    "aws-cdk-lib": "2.24.1",
     "aws-sdk": "^2.1088.0",
     "constructs": "^10.0.82",
     "source-map-support": "^0.5.16"

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.8.1...v0.9.0) (2022-05-16)
+
+
+### Bug Fixes
+
+* added back fetch-depth: 0 ([#812](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/812)) ([494c742](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/494c742aefc9355ee431f433655ddd3fd7efebcf))
+* **logger:** add xray_trace_id to every log ([#776](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/776)) ([11af21a](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/11af21ae236140e85d1503d355074c9ec254d90b))
+* reintroduce token while checking out ([#848](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/848)) ([cabef3e](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/cabef3e515c9074dc178efca76de7c72c70370e3))
+* removed token from remaining actions ([#805](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/805)) ([4fd9ecb](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/4fd9ecbde412f640deaeb17a997aae8a9f5841c0))
+
+
+### Features
+
+* **examples:** added sam example to workflows ([#849](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/849)) ([93f1c7b](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/93f1c7b55cb159dfcbbcb41149ccec7fd5db1660))
+
+
+
+
+
 ## [0.8.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.8.0...v0.8.1) (2022-04-14)
 
 

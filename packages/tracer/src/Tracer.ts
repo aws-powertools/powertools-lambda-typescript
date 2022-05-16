@@ -1,5 +1,5 @@
 import { Handler } from 'aws-lambda';
-import { Utility } from '@aws-lambda-powertools/commons';
+import { Utility } from '@aws-lambda-powertools/commons/lib/Utility';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';

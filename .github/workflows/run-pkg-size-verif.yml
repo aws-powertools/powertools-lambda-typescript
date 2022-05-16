@@ -20,11 +20,26 @@ jobs:
         # This installs all the dependencies of ./packages/*
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
-      - name: Package size report
-        uses: flochaz/pkg-size-action@v1.1
+      - name: Metrics package size report
+        uses: flochaz/pkg-size-action@v1.2
         with:
           build-command: npm run package
           work-directory: /packages/metrics
           dist-directory: /packages/metrics/dist
+          skip-npm-ci: true
+      - name: Tracer package size report
+        uses: flochaz/pkg-size-action@v1.2
+        with:
+          build-command: npm run package
+          work-directory: /packages/tracing
+          dist-directory: /packages/tracing/dist
+          skip-npm-ci: true
+      - name: Logger package size report
+        uses: flochaz/pkg-size-action@v1.2
+        with:
+          build-command: npm run package
+          work-directory: /packages/logger
+          dist-directory: /packages/logger/dist
+          skip-npm-ci: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

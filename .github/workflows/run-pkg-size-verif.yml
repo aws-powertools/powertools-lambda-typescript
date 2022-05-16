@@ -21,7 +21,7 @@ jobs:
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
       - name: Package size report
-        uses: ./.github/actions/pkg-size
+        uses: flochaz/pkg-size-action@v1.1
         with:
           build-command: npm run package
           work-directory: /packages/metrics

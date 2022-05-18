@@ -12,7 +12,7 @@ import { Logger } from '../src';
 
 const logger = new Logger();
 
-const lambdaHandler: Handler = async () => {
+const lambdaHandler: Handler = async (event) => {
 
   // Pass a custom correlation ID
   logger.warn('This is a WARN log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
@@ -22,6 +22,9 @@ const lambdaHandler: Handler = async () => {
 
   // Pass a simple string as additional data
   logger.info('This is an INFO log', 'Extra log data');
+
+  // Pass an arbitrary object as additional data
+  logger.debug('This is a DEBUG log', { lambdaEvent: event });
 
   return {
     foo: 'bar'

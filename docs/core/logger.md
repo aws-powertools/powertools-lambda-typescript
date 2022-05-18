@@ -298,9 +298,10 @@ If you already have an object containing a `message` key and an additional prope
         logger.info('This is a log with an extra variable', { data: myImportantVariable });
         
         // You can also pass multiple parameters
-        logger.info('This is a log with 2 extra variables',
+        logger.info('This is a log with 3 extra objects',
             { data: myImportantVariable },
-            { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } }
+            { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } },
+            { lambdaEvent: _event }
         );
 
         // Simply pass a string for logging additional data

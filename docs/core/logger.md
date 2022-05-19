@@ -286,7 +286,7 @@ If you already have an object containing a `message` key and an additional prope
 
     const logger = new Logger();
     
-    export const handler = async (_event: any, _context: any): Promise<unknown> => {
+    export const handler = async (event: any, _context: any): Promise<unknown> => {
     
         const myImportantVariable = {
             foo: 'bar'
@@ -301,7 +301,7 @@ If you already have an object containing a `message` key and an additional prope
         logger.info('This is a log with 3 extra objects',
             { data: myImportantVariable },
             { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } },
-            { lambdaEvent: _event }
+            { lambdaEvent: event }
         );
 
         // Simply pass a string for logging additional data

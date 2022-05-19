@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Layer  Created 1`] = `
+Object {
+  "Outputs": Object {
+    "LambdaPowerToolsForTypeScriptLayerARN": Object {
+      "Export": Object {
+        "Name": "LambdaPowerToolsForTypeScriptLayerARN",
+      },
+      "Value": Object {
+        "Ref": "LambdaPowertoolsLayer733361E9",
+      },
+    },
+  },
+  "Parameters": Object {
+    "BootstrapVersion": Object {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": Object {
+    "LambdaPowertoolsLayer733361E9": Object {
+      "Properties": Object {
+        "CompatibleRuntimes": Array [
+          "nodejs12.x",
+          "nodejs14.x",
+          "nodejs16.x",
+        ],
+        "Content": Object {
+          "S3Bucket": Object {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "0f4d80a675bbb88719f9bc614fb8d38846dc251131ba6f8dbfa514af65940dae.zip",
+        },
+        "Description": "Lambda Powertools for TypeScript latest version",
+        "LicenseInfo": "MIT-0",
+      },
+      "Type": "AWS::Lambda::LayerVersion",
+    },
+  },
+  "Rules": Object {
+    "CheckBootstrapVersion": Object {
+      "Assertions": Array [
+        Object {
+          "Assert": Object {
+            "Fn::Not": Array [
+              Object {
+                "Fn::Contains": Array [
+                  Array [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  Object {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;

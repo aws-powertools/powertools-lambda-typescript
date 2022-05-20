@@ -33,6 +33,18 @@ Find the complete project's [documentation here](https://awslabs.github.io/aws-l
 
 ### Installation
 
+You have 2 ways of consuming those utilities:
+* NPM modules
+* Lambda Layer
+
+#### Lambda layers
+
+The AWS Lambda Powertools for TypeScript utilities is packaged as a single [AWS Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-concepts.html#gettingstarted-concepts-layer)
+
+👉 [Installation guide for the **AWS Lambda Powertools for TypeScript** layer](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#lambda-layer)
+
+#### NPM modules
+
 The AWS Lambda Powertools for TypeScript utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).  
 Each TypeScript utility is installed as standalone NPM package.
 

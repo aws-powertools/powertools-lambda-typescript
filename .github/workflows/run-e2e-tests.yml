@@ -102,6 +102,6 @@ jobs:
       - name: "Run layer integration tests"
         run: |
           npm ci
-          RUNTIME=nodejs${{ matrix.version }}x npm run test:e2e
+          RUNTIME=nodejs${{ matrix.version }}.x npm run test:e2e
         working-directory: layer-publisher
 

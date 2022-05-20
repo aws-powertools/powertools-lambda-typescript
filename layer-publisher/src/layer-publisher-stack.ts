@@ -20,7 +20,7 @@ export class LayerPublisherStack extends Stack {
 
     new CfnOutput(this, 'LambdaPowerToolsForTypeScriptLayerARN', {
       value: this.lambdaLayerVersion.layerVersionArn,
-      exportName: 'LambdaPowerToolsForTypeScriptLayerARN',
+      exportName: props?.layerName ?? `LambdaPowerToolsForTypeScriptLayerARN`,
     });
   }
 }

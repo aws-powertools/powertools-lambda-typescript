@@ -6,22 +6,22 @@
 
 import * as cdk from 'aws-cdk-lib';
 import { Stack } from 'aws-cdk-lib';
-// import { randomUUID } from 'crypto';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as LayerPublisher from '../../src/layer-publisher-stack';
 import { deployStack, destroyStack } from './utils/cdk-cli';
 import { generateUniqueName, invokeFunction } from './utils/e2eUtils';
 import { LEVEL } from './utils/InvocationLogs';
 
+const runtime = lambda.Runtime.ALL.find(r => r.name === process.env.RUNTIME) ?? lambda.Runtime.NODEJS_14_X;
+
 const e2eTestLayerPublicationApp = new cdk.App();
 
-const layerStack = new LayerPublisher.LayerPublisherStack(e2eTestLayerPublicationApp, 'E2ELayerPublisherStack', {
-  layerName: 'e2e-tests-layer',
+const layerStack = new LayerPublisher.LayerPublisherStack(e2eTestLayerPublicationApp, `E2ELayerPublisherStack-${runtime.name.split('.')[0]}`, {
+  layerName: `e2e-tests-layer-${runtime.name.split('.')[0]}`,
 });
 
-test('The layer Created is usable by node 14 runtime lambda', async () => {
+test(`The layer Created is usable by ${runtime} runtime lambda`, async () => {
   // GIVEN
-  const runtime = lambda.Runtime.ALL.find(r => r.name === process.env.RUNTIME) ?? lambda.Runtime.NODEJS_14_X;
   const { consumerStack, functionName } = createSampleLambda(runtime);
 
   await deployStack(e2eTestLayerPublicationApp, layerStack);

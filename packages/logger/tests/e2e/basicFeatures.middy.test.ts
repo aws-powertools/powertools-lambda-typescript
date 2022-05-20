@@ -10,7 +10,7 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
-import { APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayAuthorizerResult } from 'aws-lambda';
 import {
   createStackWithLambdaFunction,
   generateUniqueName,
@@ -175,9 +175,18 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
 
       const logObject = InvocationLogs.parseFunctionLog(logMessages[0]);
       expect(logObject).toHaveProperty(ARBITRARY_OBJECT_KEY);
-      const arbitrary = logObject[ARBITRARY_OBJECT_KEY] as APIGatewayProxyResult;
-      expect(arbitrary.body).toBe(ARBITRARY_OBJECT_DATA);
-      expect(arbitrary.statusCode).toBe(ARBITRARY_OBJECT_DATA.length);
+      const arbitrary = logObject[ARBITRARY_OBJECT_KEY] as APIGatewayAuthorizerResult;
+      expect(arbitrary.principalId).toBe(ARBITRARY_OBJECT_DATA);
+      expect(arbitrary.policyDocument).toEqual(expect.objectContaining(
+        {
+          Version: 'Version' + ARBITRARY_OBJECT_DATA,
+          Statement: [{
+            Effect: 'Effect' + ARBITRARY_OBJECT_DATA,
+            Action: 'Action' + ARBITRARY_OBJECT_DATA,
+            Resource: 'Resource' + ARBITRARY_OBJECT_DATA
+          }]
+        }
+      ));
     }, TEST_CASE_TIMEOUT);
   });
 

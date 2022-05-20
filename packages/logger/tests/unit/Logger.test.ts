@@ -280,8 +280,13 @@ describe('Class: Logger', () => {
           });
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
 
-          interface ArbitraryObject { value: 'CUSTOM' | 'USER_DEFINED' }
-          const arbitraryObject: ArbitraryObject = { value: 'CUSTOM' };
+          interface NestedObject { bool: boolean; str: string; num: number; err: Error }
+          interface ArbitraryObject<TNested> { value: 'CUSTOM' | 'USER_DEFINED'; nested: TNested }
+
+          const arbitraryObject: ArbitraryObject<NestedObject> = {
+            value: 'CUSTOM',
+            nested: { bool: true, str: 'string value', num: 42, err: new Error('Arbitrary object error') }
+          };
 
           // Act
           if (logger[methodOfLogger]) {
@@ -373,13 +378,27 @@ describe('Class: Logger', () => {
             xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
             extra: { custom: '2016-06-20T12:08:10.000Z' }
           }));
-          expect(consoleSpy).toHaveBeenNthCalledWith(9, JSON.stringify({
+          const parameterCallNumber9 = JSON.parse(consoleSpy.mock.calls[8][0]);
+          expect(parameterCallNumber9).toEqual(expect.objectContaining({
             level: method.toUpperCase(),
             message: 'A log item with a string as first parameter, and an arbitrary object as second parameter',
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-            extra: { value: 'CUSTOM' }
+            extra: {
+              value: 'CUSTOM',
+              nested: {
+                bool: true,
+                str: 'string value',
+                num: 42,
+                err: {
+                  location: expect.stringMatching(/Logger.test.ts:[0-9]+$/),
+                  message: 'Arbitrary object error',
+                  name: 'Error',
+                  stack: expect.stringMatching(/Logger.test.ts:[0-9]+:[0-9]+/),
+                }
+              }
+            }
           }));
         });
       });

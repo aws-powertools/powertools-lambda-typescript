@@ -1,5 +1,5 @@
 import { injectLambdaContext, Logger } from '../../src';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent, Context, APIGatewayAuthorizerResult } from 'aws-lambda';
 import middy from '@middy/core';
 
 const PERSISTENT_KEY = process.env.PERSISTENT_KEY;
@@ -37,9 +37,16 @@ const testFunction = async (event: APIGatewayProxyEvent, context: Context): Prom
   }
 
   // Test feature 7: Logging an arbitrary object
-  const obj: APIGatewayProxyResult = {
-    body: ARBITRARY_OBJECT_DATA,
-    statusCode: ARBITRARY_OBJECT_DATA.length
+  const obj: APIGatewayAuthorizerResult = {
+    principalId: ARBITRARY_OBJECT_DATA,
+    policyDocument: {
+      Version: 'Version' + ARBITRARY_OBJECT_DATA,
+      Statement: [{
+        Effect: 'Effect' + ARBITRARY_OBJECT_DATA,
+        Action: 'Action' + ARBITRARY_OBJECT_DATA,
+        Resource: 'Resource' + ARBITRARY_OBJECT_DATA
+      }]
+    }
   };
 
   logger.info('A log entry with an object', { [ARBITRARY_OBJECT_KEY]: obj });

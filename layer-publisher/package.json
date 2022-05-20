@@ -7,8 +7,11 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest",
-    "cdk": "cdk"
+    "test": "npm run test:unit",
+    "cdk": "cdk",
+    "package": "echo 'Not applicable'",
+    "test:unit": "jest --group=unit",
+    "test:e2e": "jest --group=e2e"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
@@ -23,6 +26,7 @@
     "aws-cdk-lib": "^2.24.1",
     "cdk-lambda-powertools-python-layer": "file:../../cdk-lambda-powertools-python-layer/dist/js/cdk-lambda-powertools-python-layer@0.0.0.jsii.tgz",
     "constructs": "^10.0.0",
+    "jest-runner-groups": "^2.2.0",
     "source-map-support": "^0.5.16"
   }
 }

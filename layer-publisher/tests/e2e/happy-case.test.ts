@@ -1,3 +1,9 @@
+/**
+ * Test layer
+ *
+ * @group e2e/happy-case
+ */
+
 import * as cdk from 'aws-cdk-lib';
 import { Stack } from 'aws-cdk-lib';
 // import { randomUUID } from 'crypto';
@@ -15,7 +21,7 @@ const layerStack = new LayerPublisher.LayerPublisherStack(e2eTestLayerPublicatio
 
 test('The layer Created is usable by node 14 runtime lambda', async () => {
   // GIVEN
-  const runtime = lambda.Runtime.NODEJS_14_X;
+  const runtime = lambda.Runtime.ALL.find(r => r.name === process.env.RUNTIME) ?? lambda.Runtime.NODEJS_14_X;
   const { consumerStack, functionName } = createSampleLambda(runtime);
 
   await deployStack(e2eTestLayerPublicationApp, layerStack);

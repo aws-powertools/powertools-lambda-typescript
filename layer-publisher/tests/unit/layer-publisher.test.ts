@@ -1,3 +1,9 @@
+/**
+ * Test layer publisher
+ *
+ * @group unit/layer-publisher
+ */
+
 import * as cdk from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import * as LayerPublisher from '../../src/layer-publisher-stack';

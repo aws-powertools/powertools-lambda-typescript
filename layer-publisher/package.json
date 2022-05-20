@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "aws-cdk-lib": "^2.24.1",
-    "cdk-lambda-powertools-python-layer": "file:../../cdk-lambda-powertools-python-layer/dist/js/cdk-lambda-powertools-python-layer@0.0.0.jsii.tgz",
+    "cdk-lambda-powertools-python-layer": "file:cdk-lambda-powertools-python-layer@0.0.0.jsii.tgz",
     "constructs": "^10.0.0",
     "jest-runner-groups": "^2.2.0",
     "source-map-support": "^0.5.16"

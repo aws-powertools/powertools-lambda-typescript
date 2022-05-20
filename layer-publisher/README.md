@@ -1,14 +1,38 @@
-# Welcome to your CDK TypeScript project
+# Lambda Powertools for TypeScript Layer Publisher
 
-This is a blank project for TypeScript development with CDK.
+This CDK app is meant to be used to publish Powertools for TypeScript lambda layer. It is composed of a single stack deploying the layer into the target account.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+# Usage
 
-## Useful commands
+```sh
+npm ci
+npm run cdk deploy
+```
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+By default it will package the layer with the latest version publicly available but you can force the public version to use with `PowerToolsPackageVersion` context variable:
+   ```sh
+   npm run cdk deploy -- --context PowerToolsPackageVersion='0.9.0'
+   ```
+
+# Tests
+
+## Units
+
+```sh
+npm run test
+```
+
+## E2E
+
+This will deploy and destroy several stacks in your AWS Account
+
+```sh
+npm run test:e2e
+```
+
+PS: You can force 
+* the lambda runtime to test with the RUNTIME env variable
+* the powertools version with VERSION env variable
+```sh 
+RUNTIME=node12.x VERSION=0.9.0 npm run test:e2e
+```

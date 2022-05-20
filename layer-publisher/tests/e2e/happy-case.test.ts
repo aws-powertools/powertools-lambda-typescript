@@ -14,13 +14,16 @@ import { LEVEL } from './utils/InvocationLogs';
 
 const runtime = lambda.Runtime.ALL.find(r => r.name === process.env.RUNTIME) ?? lambda.Runtime.NODEJS_14_X;
 
+const powerToolsPackageVersion = process.env.VERSION;
+
 const e2eTestLayerPublicationApp = new cdk.App();
 
 const layerStack = new LayerPublisher.LayerPublisherStack(e2eTestLayerPublicationApp, `E2ELayerPublisherStack-${runtime.name.split('.')[0]}`, {
   layerName: `e2e-tests-layer-${runtime.name.split('.')[0]}`,
+  powerToolsPackageVersion: powerToolsPackageVersion,
 });
 
-test(`The layer Created is usable by ${runtime} runtime lambda`, async () => {
+test(`The layer Created is usable with ${runtime} runtime lambda`, async () => {
   // GIVEN
   const { consumerStack, functionName } = createSampleLambda(runtime);
 

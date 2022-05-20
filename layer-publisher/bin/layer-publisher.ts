@@ -4,4 +4,6 @@ import * as cdk from 'aws-cdk-lib';
 import { LayerPublisherStack } from '../src/layer-publisher-stack';
 
 const app = new cdk.App();
-new LayerPublisherStack(app, 'LayerPublisherStack');
+new LayerPublisherStack(app, 'LayerPublisherStack', {
+  powerToolsPackageVersion: app.node.tryGetContext('PowerToolsPackageVersion'),
+});

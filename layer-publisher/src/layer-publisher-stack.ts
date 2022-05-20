@@ -5,7 +5,8 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { LambdaPowertoolsLayer } from 'cdk-lambda-powertools-python-layer';
 
 export interface LayerPublisherStackProps extends StackProps {
-  readonly layerName: string
+  readonly layerName?: string
+  readonly powerToolsPackageVersion?: string
 }
 
 export class LayerPublisherStack extends Stack {
@@ -16,6 +17,7 @@ export class LayerPublisherStack extends Stack {
     this.lambdaLayerVersion = new LambdaPowertoolsLayer(this, 'LambdaPowertoolsLayer', {
       layerVersionName: props?.layerName,
       runtimeFamily: lambda.RuntimeFamily.NODEJS,
+      version: props?.powerToolsPackageVersion,
     });
 
     new CfnOutput(this, 'LambdaPowerToolsForTypeScriptLayerARN', {

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/metrics",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "The metrics package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",
@@ -67,6 +67,6 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^0.9.0"
+    "@aws-lambda-powertools/commons": "^0.9.1"
   }
 }

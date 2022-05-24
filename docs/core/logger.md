@@ -82,7 +82,7 @@ For a **complete list** of supported environment variables, refer to [this secti
       ShoppingCartApiFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs14.x
+          Runtime: nodejs16.x
           Environment:
             Variables:
               LOG_LEVEL: WARN

@@ -61,7 +61,7 @@ The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [
 
 The following tools need to be installed on your system prior to starting working on a pull request:
 
-- [Node.js >= 14.18.1](https://nodejs.org/download/release/latest-v14.x/)
+- [Node.js >= 16.x](https://nodejs.org/download/release/latest-v16.x/)
   - We recommend using a version in [Active LTS](https://nodejs.org/en/about/releases/)
   - If you use [nvm](https://github.com/nvm-sh/nvm#nvmrc) or [fnm](https://github.com/Schniz/fnm) you can install the latest LTS version with `nvm use` or `fnm use` respectively. Both will use the `.nvmrc` file in the project's root.
 - [npm 8.x](https://www.npmjs.com/)
@@ -250,7 +250,7 @@ Contributions via pull requests are much appreciated.
 
 ### Summary
 
-* This project uses `node@14.x` and `npm@8.x` for development (see [Setup](#setup)).
+* This project uses `node@16.x` and `npm@8.x` for development (see [Setup](#setup)).
 * Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed changes. A PR without a related issue or discussion has a high risk of being rejected. We are very appreciative and thankful for your time and efforts, and we want to make sure they are not wasted.
 * After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request.
 * When opening a PR, make sure to follow the checklist inside the pull request template.

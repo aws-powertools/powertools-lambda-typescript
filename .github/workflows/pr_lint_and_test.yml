@@ -9,10 +9,10 @@ jobs:
       NODE_ENV: dev
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Node
+      - name: "Use NodeJS 16"
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Install npm@8.x
         run: npm i -g npm@next-8
       - name: "Setup npm"
@@ -27,6 +27,11 @@ jobs:
         # the dependencies in a separate step
         working-directory: ./examples/cdk
         run: npm ci
+      - name: "Setup SAM"
+        # We use an ad-hoc action so we can specify the SAM CLI version
+        uses: aws-actions/setup-sam@v2
+        with:
+          version: 1.49.0
       - name: Install SAM example packages
         # Since we are not managing the SAM examples with npm workspaces we install
         # the dependencies in a separate step

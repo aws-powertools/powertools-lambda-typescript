@@ -273,34 +273,37 @@ You can append additional persistent keys and values in the logs generated durin
 
 !!! tip "Logger will automatically ignore any key with an `undefined` value"
 
-### Appending additional log keys and values to a single log item
+### Appending additional data to a single log item
 
-You can append additional keys and values in a single log item passing them as parameters.
-Pass a string for logging it with default key name `extra`. Alternatively, pass one or multiple objects with custom keys.
-If you already have an object containing a `message` key and an additional property, you can pass this object directly.
+You can append additional data to a single log item by passing objects as additional parameters.
+
+* Pass a simple string for logging it with default key name `extra`
+* Pass one or multiple objects containing arbitrary data to be logged. Each data object should be placed in an enclosing object as a single property value, you can name this property as you need: `{ myData: arbitraryObjectToLog }`
+* If you already have an object containing a `message` key and an additional property, you can pass this object directly
 
 === "handler.ts"
 
-    ```typescript hl_lines="14 18-19 23 31"
+    ```typescript hl_lines="14 18-20 24 32"
     import { Logger } from '@aws-lambda-powertools/logger';
 
     const logger = new Logger();
     
-    export const handler = async (_event: any, _context: any): Promise<unknown> => {
+    export const handler = async (event: any, _context: any): Promise<unknown> => {
     
         const myImportantVariable = {
             foo: 'bar'
         };
         
-        // Pass additional keys and values in single log items
+        // Log additional data in single log items
         
         // As second parameter
         logger.info('This is a log with an extra variable', { data: myImportantVariable });
         
-        // You can also pass multiple parameters
-        logger.info('This is a log with 2 extra variables',
+        // You can also pass multiple parameters containing arbitrary objects
+        logger.info('This is a log with 3 extra objects',
             { data: myImportantVariable },
-            { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } }
+            { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } },
+            { lambdaEvent: event }
         );
 
         // Simply pass a string for logging additional data
@@ -322,14 +325,14 @@ If you already have an object containing a `message` key and an additional prope
     ```
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="7 15-16 24 32"
+    ```json hl_lines="7 15-21 28 37"
     {
         "level": "INFO",
         "message": "This is a log with an extra variable",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:06:17.463Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
-        "data": { foo: "bar" }
+        "data": { "foo": "bar" }
     }
     {
         "level": "INFO",
@@ -338,7 +341,12 @@ If you already have an object containing a `message` key and an additional prope
         "timestamp": "2021-12-12T22:06:17.466Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "data": { "foo": "bar" },
-        "correlationIds": { "myCustomCorrelationId": "foo-bar-baz" }
+        "correlationIds": { "myCustomCorrelationId": "foo-bar-baz" },
+        "lambdaEvent": { 
+            "exampleEventData": {
+                "eventValue": 42
+            }
+        }
     }
     {
         "level": "INFO",

@@ -1,6 +1,10 @@
 name: run-e2e-tests
 on:
   workflow_dispatch: {}
+  # TODO: remove this once debugging completed
+  push:
+    branches:
+      - ijemmy/build-on-all-node-versions
 jobs:
   example-and-package-check:
     runs-on: ubuntu-latest
@@ -47,15 +51,15 @@ jobs:
       contents: read
     strategy:
       matrix:
-        package: [logger, metrics, tracer]
+        package: [logger]
         version: [12, 14, 16]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
-      - name: "Use NodeJS 16"
+      - name: "Use NodeJS"
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: ${{ matrix.version }}
       - name: "Install npm@8.x"
         run: npm i -g npm@next-8
       - name: "Install monorepo packages"

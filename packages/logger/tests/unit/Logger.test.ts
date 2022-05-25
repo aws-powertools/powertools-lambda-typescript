@@ -720,7 +720,7 @@ describe('Class: Logger', () => {
       });
 
       // Act
-      logger.removeKeys(["aws_account_id", "aws_region"]);
+      logger.removeKeys([ 'aws_account_id', 'aws_region' ]);
 
       // Assess
       expect(logger).toEqual(expect.objectContaining({
@@ -748,7 +748,7 @@ describe('Class: Logger', () => {
       const loggerBeforeKeysAreRemoved = { ...logger };
 
       // Act
-      logger.removeKeys(["not_existing_key"]);
+      logger.removeKeys(['not_existing_key']);
 
       // Assess
       expect(logger).toEqual(loggerBeforeKeysAreRemoved);
@@ -780,8 +780,8 @@ describe('Class: Logger', () => {
     });
 
     // Act
-    logger.removeKeys(["aws_account_id", "aws_region"]);
-    logger.removeKeys(["aws_account_id", "aws_region"]);
+    logger.removeKeys([ 'aws_account_id', 'aws_region' ]);
+    logger.removeKeys([ 'aws_account_id', 'aws_region' ]);
 
     // Assess
     expect(logger).toEqual(expect.objectContaining({

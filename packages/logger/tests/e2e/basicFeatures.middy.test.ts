@@ -43,8 +43,8 @@ const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
 // Text to be used by Logger in the Lambda function
 const PERSISTENT_KEY = 'persistentKey';
 const PERSISTENT_VALUE = `a persistent value that will be put in every log ${uuid}`;
-const REMOVABLE_KEY = "removableKey";
-const REMOVABLE_VALUE = "a persistent value that will be removed and not displayed in any log ${uuid}";
+const REMOVABLE_KEY = 'removableKey';
+const REMOVABLE_VALUE = 'a persistent value that will be removed and not displayed in any log ${uuid}';
 const SINGLE_LOG_ITEM_KEY = `keyForSingleLogItem${uuid}`;
 const SINGLE_LOG_ITEM_VALUE = `a value for a single log item${uuid}`;
 const ERROR_MSG = `error-${uuid}`;

@@ -24,7 +24,7 @@ const testFunction = async (event: APIGatewayProxyEvent, context: Context): Prom
   // Test feature 2: Context data
   // Test feature 3: Add and remove persistent additional log keys and value
   // Test feature 4: X-Ray Trace ID injection
-  logger.removeKeys([ REMOVABLE_KEY ]);
+  logger.removeKeys([REMOVABLE_KEY]);
   logger.debug('##### This should not appear');
   logger.info('This is an INFO log with context and persistent key');
 

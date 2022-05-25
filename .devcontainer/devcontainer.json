@@ -5,16 +5,16 @@
   "build": {
     "dockerfile": "Dockerfile",
     // Update 'VARIANT' to pick a Node version: 16, 14, 12.
-		// Append -bullseye or -buster to pin to an OS version.
-		// Use -bullseye variants on local arm64/Apple Silicon.
-    "args": { "VARIANT": "16-bullseye" }
+    // Append -bullseye or -buster to pin to an OS version.
+    // Use -bullseye variants on local arm64/Apple Silicon.
+    "args": {
+      "VARIANT": "16-bullseye"
+    }
   },
-  
   // Set *default* container specific settings.json values on container create.
   "settings": {
     "git.enableCommitSigning": true
   },
-
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
     "dbaeumer.vscode-eslint",
@@ -25,10 +25,8 @@
     "ms-vscode.vscode-typescript-tslint-plugin",
     "ms-azuretools.vscode-docker"
   ],
-
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "npm ci; npm run lerna-ci; npm run init-environment",
-
+  "postCreateCommand": "npm ci --foreground-scripts; cd examples/cdk; npm ci; cd ../sam; npm ci; cd ../../; npm run init-environment",
   // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "node"
+  "remoteUser": "node"
 }

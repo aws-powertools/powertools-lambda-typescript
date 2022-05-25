@@ -57,7 +57,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./coverage/lcov.info
       - name: Packages size report
-        uses: flochaz/pkg-size-action@v1.2.9
+        uses: flochaz/pkg-size-action@v1.2.11
         with:
           build-command: mkdir dist && ls && npm run lerna-package && ls packages/metrics/dist/ && mv packages/metrics/dist/aws-lambda-powertools-metrics-0.9.1.tgz dist/ && ls dist
           dist-directory: ./dist

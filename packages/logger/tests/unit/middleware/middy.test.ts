@@ -11,14 +11,13 @@ import middy from '@middy/core';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { Console } from 'console';
 
-const mockDate = new Date(1466424490000);
-
 describe('Middy middleware', () => {
 
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
     jest.resetModules();
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => null as unknown as boolean);
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -34,7 +33,6 @@ describe('Middy middleware', () => {
 
         // Prepare
         const logger = new Logger();
-        const debugConsoleMethod = jest.spyOn(logger.getConsole(), 'info').mockImplementation();
         const lambdaHandler = (): void => {
           logger.info('This is an INFO log with some context');
         };
@@ -176,7 +174,7 @@ describe('Middy middleware', () => {
           logger.debug('This is another DEBUG log with the user_id');
         };
         const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { clearState: true }));
-        const debugConsoleMethod = jest.spyOn(logger.getConsole(), 'debug').mockImplementation();
+        const debugConsoleMethod = jest.spyOn(logger.getConsole(), 'debug');
 
         const context = {
           callbackWaitsForEmptyEventLoop: true,

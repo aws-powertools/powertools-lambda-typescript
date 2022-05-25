@@ -57,9 +57,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./coverage/lcov.info
       - name: Packages size report
-        uses: flochaz/pkg-size-action@v1.2.11
+        uses: flochaz/pkg-size-action@v1.2.13
         with:
-          build-command: mkdir dist && npm run lerna-package && for d in ./packages/*/ ; do mv $ddist/* dist/;done && ls dist
+          build-command: mkdir dist && npm run lerna-package && mv ./packages/*/dist/* dist/ && ls dist
           dist-directory: /dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

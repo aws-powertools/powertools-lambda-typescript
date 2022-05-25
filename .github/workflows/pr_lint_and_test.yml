@@ -59,7 +59,7 @@ jobs:
       - name: Packages size report
         uses: flochaz/pkg-size-action@v1.2.5
         with:
-          build-command: mkdir dist && npm run lerna-package && mv packages/metrics/dist/* packages/logger/dist/* packages/tracer/dist/* ./dist && ls ./dist
+          build-command: /bin/bash -c "mkdir dist && npm run lerna-package && mv packages/metrics/dist/* packages/logger/dist/* packages/tracer/dist/* ./dist && ls ./dist"
           dist-directory: ./dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

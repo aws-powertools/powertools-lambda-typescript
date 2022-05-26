@@ -308,7 +308,7 @@ If you want to make sure that persistent attributes added **inside the handler f
         logger.debug('This is a DEBUG log');
     };
 
-    // Enable the clean state flag
+    // Enable the clear state flag
     export const handler = middy(lambdaHandler)
         .use(injectLambdaContext(logger, { clearState: true }));
     ```
@@ -330,7 +330,7 @@ If you want to make sure that persistent attributes added **inside the handler f
     });
     
     class Lambda implements LambdaInterface {
-        // Enable the clean state flag
+        // Enable the clear state flag
         @logger.injectLambdaContext({ clearState: true })
         public async handler(_event: any, _context: any): Promise<void> {
             // Persistent attributes added inside the handler will NOT be cached

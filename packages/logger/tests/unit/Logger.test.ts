@@ -843,7 +843,7 @@ describe('Class: Logger', () => {
 
     });
 
-    test('when used as decorator with the clear state flag enabled, ', async () => {
+    test('when used as decorator with the clear state flag enabled, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
 
       // Prepare
       const logger = new Logger({

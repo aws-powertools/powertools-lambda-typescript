@@ -152,7 +152,7 @@ describe('Middy middleware', () => {
 
     describe('Feature: clear state', () => {
 
-      test('when enabled, it clears the ', async () => {
+      test('when enabled, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
 
         // Prepare
         const logger = new Logger({

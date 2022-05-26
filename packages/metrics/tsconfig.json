@@ -2,7 +2,7 @@
     "compilerOptions": {
         "experimentalDecorators": true,
         "noImplicitAny": true,
-        "target": "ES2020",
+        "target": "ES2019",
         "module": "commonjs",
         "declaration": true,
         "declarationMap": true,
@@ -24,7 +24,7 @@
         "watchDirectory": "useFsEvents",
         "fallbackPolling": "dynamicPriority"
     },
-    "lib": [ "es2020" ],
+    "lib": [ "es2019" ],
     "types": [
         "jest",
         "node"

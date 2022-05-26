@@ -733,7 +733,7 @@ describe('Class: Logger', () => {
       }));
     });
 
-    test('when called with non-existing keys, the logger\'s propriety persistentLogAttributes is not mutated and it does not throw an error', () => {
+    test('when called with non-existing keys, the logger\'s property persistentLogAttributes is not mutated and it does not throw an error', () => {
 
       // Prepare
       const logger = new Logger();

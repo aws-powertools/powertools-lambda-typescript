@@ -7,7 +7,7 @@
 
 A suite of TypeScript utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more. (AWS Lambda Powertools for [Python](https://github.com/awslabs/aws-lambda-powertools-python) and AWS Lambda Powertools for [Java](https://github.com/awslabs/aws-lambda-powertools-java) are also available).
 
-**[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)**
+**[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples)**
 
 > **An AWS Developer Acceleration (DevAx) initiative by Specialist Solution Architects | aws-devax-open-source@amazon.com**
 
@@ -36,6 +36,7 @@ Each TypeScript utility is installed as standalone NPM package.
 ### Examples
 
 * [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)
+* [SAM](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/sam)
 * [Tracer](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/tracing/examples)
 * [Logger](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logger/examples)
 * [Metrics](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/metrics/examples)

@@ -41,7 +41,7 @@ const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions
     });
   };
 
-  const injectLambdaContextAfter = async (request: middy.Request): Promise<void> => {
+  const injectLambdaContextAfter = async (): Promise<void> => {
     if (options && options.clearState === true) {
       loggers.forEach((logger: Logger, index: number) => {
         logger.setPersistentLogAttributes(persistentAttributes[index]);

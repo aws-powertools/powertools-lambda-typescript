@@ -152,7 +152,7 @@ describe('Middy middleware', () => {
 
     describe('Feature: clear state', () => {
 
-      test('when enabled and a logger object is passed, it adds the context to the logger instance', async () => {
+      test('when enabled, it clears the ', async () => {
 
         // Prepare
         const logger = new Logger({
@@ -162,20 +162,6 @@ describe('Middy middleware', () => {
             biz: "baz"
           }
         });
-
-        const lambdaHandler = (event: { user_id: string }): void => {
-          // Only add these persistent keys for a specific user_id
-          if(event['user_id'] === '123456'){
-            logger.appendKeys({
-              details: { user_id: event['user_id'] }
-            });
-          }
-          logger.debug('This is a DEBUG log with the user_id');
-          logger.debug('This is another DEBUG log with the user_id');
-        };
-        const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { clearState: true }));
-        const debugConsoleMethod = jest.spyOn(logger.getConsole(), 'debug');
-
         const context = {
           callbackWaitsForEmptyEventLoop: true,
           functionVersion: '$LATEST',
@@ -191,80 +177,27 @@ describe('Middy middleware', () => {
           succeed: () => console.log('Succeeded!'),
         };
 
+        const lambdaHandler = (event: { user_id: string }): void => {
+          // Only add these persistent for the scope of this lambda handler
+          logger.appendKeys({
+            details: { user_id: event['user_id'] }
+          });
+          logger.debug('This is a DEBUG log with the user_id');
+          logger.debug('This is another DEBUG log with the user_id');
+        };
+        const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { clearState: true }));
+        const persistentAttribs = { ...logger.getPersistentLogAttributes() };
+
         // Act
         await handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
-        await handler({ user_id: '654321' }, context, () => console.log('Lambda invoked a second time!'));
+        const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
 
         // Assess
-        expect(debugConsoleMethod).toBeCalledTimes(4);
-        // First event
-        const debugConsoleCall1 = JSON.parse(debugConsoleMethod.mock.calls[0][0]);
-        expect(debugConsoleCall1).toEqual({
-          "biz": "baz",
-          "cold_start": true,
-          "details": {
-            "user_id": "123456",
-          },
-          "foo": "bar",
-          "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
-          "function_memory_size": 128,
-          "function_name": "foo-bar-function",
-          "function_request_id": "abcdef123456abcdef123456",
-          "level": "DEBUG",
-          "message": "This is a DEBUG log with the user_id",
-          "service": "hello-world",
-          "timestamp": expect.any(String),
-          "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
+        expect(persistentAttribs).toEqual({
+          foo: "bar",
+          biz: "baz"
         });
-        const debugConsoleCall2 = JSON.parse(debugConsoleMethod.mock.calls[1][0]);
-        expect(debugConsoleCall2).toEqual({
-          "biz": "baz",
-          "cold_start": true,
-          "details": {
-            "user_id": "123456",
-          },
-          "foo": "bar",
-          "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
-          "function_memory_size": 128,
-          "function_name": "foo-bar-function",
-          "function_request_id": "abcdef123456abcdef123456",
-          "level": "DEBUG",
-          "message": "This is another DEBUG log with the user_id",
-          "service": "hello-world",
-          "timestamp": expect.any(String),
-          "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
-        });
-        // Second event, which should not have the user_id attribute in the logs
-        const debugConsoleCall3 = JSON.parse(debugConsoleMethod.mock.calls[2][0]);
-        expect(debugConsoleCall3).toEqual({
-          "biz": "baz",
-          "cold_start": false,
-          "foo": "bar",
-          "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
-          "function_memory_size": 128,
-          "function_name": "foo-bar-function",
-          "function_request_id": "abcdef123456abcdef123456",
-          "level": "DEBUG",
-          "message": "This is a DEBUG log with the user_id",
-          "service": "hello-world",
-          "timestamp": expect.any(String),
-          "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
-        });
-        const debugConsoleCall4 = JSON.parse(debugConsoleMethod.mock.calls[3][0]);
-        expect(debugConsoleCall4).toEqual({
-          "biz": "baz",
-          "cold_start": false,
-          "foo": "bar",
-          "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
-          "function_memory_size": 128,
-          "function_name": "foo-bar-function",
-          "function_request_id": "abcdef123456abcdef123456",
-          "level": "DEBUG",
-          "message": "This is another DEBUG log with the user_id",
-          "service": "hello-world",
-          "timestamp": expect.any(String),
-          "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
-        });
+        expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
 
       });
 

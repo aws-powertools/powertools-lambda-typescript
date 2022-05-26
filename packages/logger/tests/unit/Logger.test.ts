@@ -843,6 +843,46 @@ describe('Class: Logger', () => {
 
     });
 
+    test('when used as decorator with the clear state flag enabled, ', async () => {
+
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+        persistentLogAttributes: {
+          foo: "bar",
+          biz: "baz"
+        }
+      });
+      class LambdaFunction implements LambdaInterface {
+
+        @logger.injectLambdaContext({ clearState: true })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(event: { user_id: string }, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          // Only add these persistent for the scope of this lambda handler
+          logger.appendKeys({
+            details: { user_id: event['user_id'] }
+          });
+          logger.debug('This is a DEBUG log with the user_id');
+          logger.debug('This is another DEBUG log with the user_id');
+        }
+      }
+
+      const persistentAttribs = { ...logger.getPersistentLogAttributes() };
+
+      // Act
+      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+      const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
+
+      // Assess
+      expect(persistentAttribs).toEqual({
+        foo: "bar",
+        biz: "baz"
+      });
+      expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
+
+    });
+
   });
 
   describe('Method: refreshSampleRateCalculation', () => {

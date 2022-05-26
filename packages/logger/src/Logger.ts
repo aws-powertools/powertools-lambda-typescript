@@ -18,6 +18,7 @@ import type {
   LogLevel,
   LogLevelThresholds,
   PowertoolLogData,
+  HandlerOptions,
 } from './types';
 
 /**
@@ -108,7 +109,7 @@ import type {
  */
 class Logger extends Utility implements ClassThatLogs {
 
-  private console: Console;
+  private console = new Console({ stdout: process.stdout, stderr: process.stderr });
 
   private customConfigService?: ConfigServiceInterface;
 
@@ -143,7 +144,6 @@ class Logger extends Utility implements ClassThatLogs {
   public constructor(options: ConstructorOptions = {}) {
     super();
 
-    this.console = new Console({ stdout: process.stdout, stderr: process.stderr })
     this.setOptions(options);
   }
 
@@ -223,15 +223,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It returns the Console instance.
-   *
-   * @returns {Console}
-   */
-  public getConsole(): Console {
-    return this.console;
-  }
-
-  /**
    * It returns a boolean value, if true all the logs will be printed.
    *
    * @returns {boolean}
@@ -271,14 +262,27 @@ class Logger extends Utility implements ClassThatLogs {
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */
-  public injectLambdaContext(): HandlerMethodDecorator {
+  public injectLambdaContext(options?: HandlerOptions): HandlerMethodDecorator {
+    const isClearStateEnabled = options && options.clearState === true;
+
     return (target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
-
       descriptor.value = (event, context, callback) => {
+
+        let initialPersistentAttributes: LogAttributes = {};
+        if (isClearStateEnabled) {
+          initialPersistentAttributes = { ...this.getPersistentLogAttributes() };
+        }
+
         this.addContext(context);
 
-        return originalMethod?.apply(target, [ event, context, callback ]);
+        const result = originalMethod?.apply(target, [ event, context, callback ]);
+
+        if (isClearStateEnabled) {
+          this.setPersistentLogAttributes(initialPersistentAttributes);
+        }
+
+        return result;
       };
     };
   }

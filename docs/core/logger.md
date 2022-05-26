@@ -281,17 +281,13 @@ When you attach persistent log attributes through the `persistentLogAttributes` 
 Due to the [Lambda Execution Context reuse](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html), this means those persistent log attributes may be reused across invocations.
 If you want to make sure that persistent attributes added **inside the handler function** code are not persisted across invocations, you can set the parameter `clearState` as `true`  in the `injectLambdaContext` middleware or decorator.
 
-???+ tip "Tip: When is this useful?"
-It is useful when you persist log attributes to all log items of a particular invocation,
-
-
 === "Middy Middleware"
 
     ```typescript hl_lines="27"
     import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
     import middy from '@middy/core';
 
-    // Peristent attributes added outside the handler will be 
+    // Persistent attributes added outside the handler will be 
     // cached across invocations
     const logger = new Logger({
         logLevel: 'DEBUG',
@@ -323,7 +319,7 @@ It is useful when you persist log attributes to all log items of a particular in
     import { Logger } from '@aws-lambda-powertools/logger';
     import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
-    // Peristent attributes added outside the handler will be 
+    // Persistent attributes added outside the handler will be 
     // cached across invocations
     const logger = new Logger({
         logLevel: 'DEBUG',
@@ -337,7 +333,7 @@ It is useful when you persist log attributes to all log items of a particular in
         // Enable the clean state flag
         @logger.injectLambdaContext({ clearState: true })
         public async handler(_event: any, _context: any): Promise<void> {
-            // Peristent attributes added inside the handler will NOT be cached
+            // Persistent attributes added inside the handler will NOT be cached
             // across invocations
             if (event['special_key'] === '123456'){
                 logger.appendKeys({

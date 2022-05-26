@@ -849,16 +849,19 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
         persistentLogAttributes: {
-          foo: "bar",
-          biz: "baz"
+          foo: 'bar',
+          biz: 'baz'
         }
       });
+
+      type CustomEvent = { user_id: string };
+
       class LambdaFunction implements LambdaInterface {
 
         @logger.injectLambdaContext({ clearState: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(event: { user_id: string }, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public handler<TResult>(event: CustomEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
           // Only add these persistent for the scope of this lambda handler
           logger.appendKeys({
             details: { user_id: event['user_id'] }
@@ -876,8 +879,8 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(persistentAttribs).toEqual({
-        foo: "bar",
-        biz: "baz"
+        foo: 'bar',
+        biz: 'baz'
       });
       expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
 

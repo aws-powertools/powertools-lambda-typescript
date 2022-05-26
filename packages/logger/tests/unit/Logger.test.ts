@@ -638,7 +638,7 @@ describe('Class: Logger', () => {
 
   describe('Method: appendKeys', () => {
 
-    test('when called, it populates the logger\'s propriety persistentLogAttributes ', () => {
+    test('when called, it populates the logger\'s persistentLogAttributes property', () => {
 
       // Prepare
       const logger = new Logger();
@@ -706,7 +706,7 @@ describe('Class: Logger', () => {
 
   describe('Method: removeKeys', () => {
 
-    test('when called, it removes keys from the logger\'s propriety persistentLogAttributes', () => {
+    test('when called, it removes keys from the logger\'s persistentLogAttributes property', () => {
 
       // Prepare
       const logger = new Logger();

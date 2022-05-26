@@ -158,8 +158,8 @@ describe('Middy middleware', () => {
         const logger = new Logger({
           logLevel: 'DEBUG',
           persistentLogAttributes: {
-            foo: "bar",
-            biz: "baz"
+            foo: 'bar',
+            biz: 'baz'
           }
         });
         const context = {
@@ -170,7 +170,7 @@ describe('Middy middleware', () => {
           logGroupName: '/aws/lambda/foo-bar-function',
           logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
           invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          awsRequestId: "abcdef123456abcdef123456",
+          awsRequestId: 'abcdef123456abcdef123456',
           getRemainingTimeInMillis: () => 1234,
           done: () => console.log('Done!'),
           fail: () => console.log('Failed!'),
@@ -194,8 +194,8 @@ describe('Middy middleware', () => {
 
         // Assess
         expect(persistentAttribs).toEqual({
-          foo: "bar",
-          biz: "baz"
+          foo: 'bar',
+          biz: 'baz'
         });
         expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
 

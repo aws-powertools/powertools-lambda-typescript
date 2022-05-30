@@ -450,11 +450,11 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {number}
    */
   private getSampleRateValue(): number {
-    if (!this.powertoolLogData?.sampleRateValue) {
+    if (!this.powertoolLogData.sampleRateValue) {
       this.setSampleRateValue();
     }
 
-    return <number> this.powertoolLogData?.sampleRateValue;
+    return <number> this.powertoolLogData.sampleRateValue;
   }
 
   /**

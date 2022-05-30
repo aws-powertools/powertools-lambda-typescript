@@ -1,6 +1,6 @@
 import { Console } from 'console';
 import type { Context } from 'aws-lambda';
-import { Utility } from '@aws-lambda-powertools/commons';
+import { LambdaInterface, Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
 import cloneDeep from 'lodash.clonedeep';
@@ -252,12 +252,16 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public injectLambdaContext(): HandlerMethodDecorator {
     return (target, _propertyKey, descriptor) => {
-      const originalMethod = descriptor.value;
+      /**
+       * The descriptor.value is the method this decorator decorates, it cannot be undefined.
+       */ 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const originalMethod = descriptor.value!;
 
       descriptor.value = (event, context, callback) => {
         this.addContext(context);
 
-        return originalMethod?.apply(target, [ event, context, callback ]);
+        return originalMethod.apply(target, [ event, context, callback ]);
       };
     };
   }

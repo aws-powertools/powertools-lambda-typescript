@@ -15,6 +15,7 @@
     "test": "npm run lerna-test",
     "commit": "commit",
     "package": "npm run package",
+    "setup-local": "npm ci --foreground-scripts && cd examples/cdk && npm ci && cd ../.. && cd examples/sam && npm ci && cd ../.. && npm run init-environment",
     "lerna-test": "lerna exec -- npm run test",
     "lerna-test:unit": "lerna exec -- npm run test:unit",
     "lerna-test:e2e": "lerna exec -- npm run test:e2e",

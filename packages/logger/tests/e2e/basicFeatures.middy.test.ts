@@ -43,6 +43,8 @@ const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
 // Text to be used by Logger in the Lambda function
 const PERSISTENT_KEY = 'persistentKey';
 const PERSISTENT_VALUE = `a persistent value that will be put in every log ${uuid}`;
+const REMOVABLE_KEY = 'removableKey';
+const REMOVABLE_VALUE = `a persistent value that will be removed and not displayed in any log ${uuid}`;
 const SINGLE_LOG_ITEM_KEY = `keyForSingleLogItem${uuid}`;
 const SINGLE_LOG_ITEM_VALUE = `a value for a single log item${uuid}`;
 const ERROR_MSG = `error-${uuid}`;
@@ -72,6 +74,8 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
         // Text to be used by Logger in the Lambda function
         PERSISTENT_KEY,
         PERSISTENT_VALUE,
+        REMOVABLE_KEY,
+        REMOVABLE_VALUE,
         SINGLE_LOG_ITEM_KEY,
         SINGLE_LOG_ITEM_VALUE,
         ERROR_MSG,
@@ -145,6 +149,14 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
 
       for (const message of logMessages) {
         expect(message).toContain(`"${PERSISTENT_KEY}":"${PERSISTENT_VALUE}"`);
+      }
+    }, TEST_CASE_TIMEOUT);
+
+    it('should not contain persistent keys that were removed on runtime', async () => {
+      const logMessages = invocationLogs[0].getFunctionLogs();
+
+      for (const message of logMessages) {
+        expect(message).not.toContain(`"${REMOVABLE_KEY}":"${REMOVABLE_VALUE}"`);
       }
     }, TEST_CASE_TIMEOUT);
   });

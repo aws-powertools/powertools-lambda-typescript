@@ -56,27 +56,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./coverage/lcov.info
-      - name: Metrics package size report
-        uses: flochaz/pkg-size-action@v1.2.4
+      - name: Packages size report
+        uses: flochaz/pkg-size-action@v1.2.12
         with:
-          build-command: npm run package
-          work-directory: /packages/metrics
-          dist-directory: /packages/metrics/dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Tracer package size report
-        uses: flochaz/pkg-size-action@v1.2.4
-        with:
-          build-command: npm run package
-          work-directory: /packages/tracer
-          dist-directory: /packages/tracer/dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Logger package size report
-        uses: flochaz/pkg-size-action@v1.2.4
-        with:
-          build-command: npm run package
-          work-directory: /packages/logger
-          dist-directory: /packages/logger/dist
+          build-command: mkdir dist && npm run lerna-package && bash -c "mv ./packages/*/dist/* dist/" && ls dist
+          dist-directory: /dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

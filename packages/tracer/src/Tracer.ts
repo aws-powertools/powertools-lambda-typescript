@@ -123,7 +123,8 @@ class Tracer extends Utility implements TracerInterface {
 
   private customConfigService?: ConfigServiceInterface;
   
-  private envVarsService?: EnvironmentVariablesService;
+  // envVarsService is always initialized in the constructor in setOptions()
+  private envVarsService!: EnvironmentVariablesService;
   
   private serviceName?: string;
   
@@ -411,17 +412,19 @@ class Tracer extends Utility implements TracerInterface {
    */
   public captureMethod(): MethodDecorator {
     return (target, _propertyKey, descriptor) => {
-      const originalMethod = descriptor.value;
+      // The descriptor.value is the method this decorator decorates, it cannot be undefined.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const originalMethod = descriptor.value!;
       
       descriptor.value = (...args: unknown[]) => {
         if (!this.isTracingEnabled()) {
-          return originalMethod?.apply(target, [...args]);
+          return originalMethod.apply(target, [...args]);
         }
 
         return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
           let result;
           try {
-            result = await originalMethod?.apply(this, [...args]);
+            result = await originalMethod.apply(this, [...args]);
             this.addResponseAsMetadata(result, originalMethod.name);
           } catch (error) {
             this.addErrorAsMetadata(error as Error);
@@ -513,7 +516,7 @@ class Tracer extends Utility implements TracerInterface {
       
       return;
     }
-    document?.addAnnotation(key, value);
+    document.addAnnotation(key, value);
   }
   
   /**
@@ -548,7 +551,7 @@ class Tracer extends Utility implements TracerInterface {
     }
     
     namespace = namespace || this.serviceName;
-    document?.addMetadata(key, value, namespace);
+    document.addMetadata(key, value, namespace);
   }
   
   /**
@@ -592,7 +595,7 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private getEnvVarsService(): EnvironmentVariablesService {
-    return <EnvironmentVariablesService> this.envVarsService;
+    return this.envVarsService;
   }
   
   /**
@@ -600,7 +603,7 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private isLambdaExecutionEnv(): boolean {
-    return this.getEnvVarsService()?.getAwsExecutionEnv() !== '';
+    return this.getEnvVarsService().getAwsExecutionEnv() !== '';
   }
   
   /**
@@ -608,7 +611,7 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private isLambdaSamCli(): boolean {
-    return this.getEnvVarsService()?.getSamLocal() !== '';
+    return this.getEnvVarsService().getSamLocal() !== '';
   }
 
   /**
@@ -633,7 +636,7 @@ class Tracer extends Utility implements TracerInterface {
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService()?.getTracingCaptureError();
+    const envVarsValue = this.getEnvVarsService().getTracingCaptureError();
     if (envVarsValue.toLowerCase() === 'false') {
       this.captureError = false;
 
@@ -666,7 +669,7 @@ class Tracer extends Utility implements TracerInterface {
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService()?.getCaptureHTTPsRequests();
+    const envVarsValue = this.getEnvVarsService().getCaptureHTTPsRequests();
     if (envVarsValue.toLowerCase() === 'false') {
       this.captureHTTPsRequests = false;
 
@@ -686,7 +689,7 @@ class Tracer extends Utility implements TracerInterface {
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService()?.getTracingCaptureResponse();
+    const envVarsValue = this.getEnvVarsService().getTracingCaptureResponse();
     if (envVarsValue.toLowerCase() === 'false') {
       this.captureResponse = false;
 
@@ -757,7 +760,7 @@ class Tracer extends Utility implements TracerInterface {
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService()?.getServiceName();
+    const envVarsValue = this.getEnvVarsService().getServiceName();
     if (envVarsValue !== undefined && Tracer.isValidServiceName(envVarsValue)) {
       this.serviceName = envVarsValue;
 
@@ -785,7 +788,7 @@ class Tracer extends Utility implements TracerInterface {
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService()?.getTracingEnabled();
+    const envVarsValue = this.getEnvVarsService().getTracingEnabled();
     if (envVarsValue.toLowerCase() === 'false') {
       this.tracingEnabled = false;
       

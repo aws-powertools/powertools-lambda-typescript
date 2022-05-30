@@ -1,5 +1,5 @@
 import { Callback, Context } from 'aws-lambda';
-import { Utility } from '@aws-lambda-powertools/commons';
+import { LambdaInterface, Utility } from '@aws-lambda-powertools/commons';
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {
@@ -237,7 +237,10 @@ class Metrics extends Utility implements MetricsInterface {
     }
 
     return (target, _propertyKey, descriptor) => {
-      const originalMethod = descriptor.value;
+      // Without explicit type, the apply method
+      const originalMethod = descriptor.value as {
+        apply: (target: LambdaInterface, any: unknown[]) => Promise<unknown>
+      };
 
       descriptor.value = ( async (event: unknown, context: Context, callback: Callback): Promise<unknown> => {
         this.functionName = context.functionName;
@@ -245,7 +248,7 @@ class Metrics extends Utility implements MetricsInterface {
           
         let result: unknown;
         try {
-          result = await originalMethod?.apply(target, [ event, context, callback ]);
+          result = await originalMethod.apply(target, [ event, context, callback ]);
         } catch (error) {
           throw error;
         } finally {

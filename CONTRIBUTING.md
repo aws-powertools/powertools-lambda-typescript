@@ -78,11 +78,7 @@ First, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the
 ```console
 git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
 cd aws-lambda-powertools-typescript
-npm ci --foreground-scripts;
-cd examples/cdk; npm ci
-cd ../..
-cd examples/sam; npm ci
-npm run init-environment
+npm run setup-local
 ```
 
 We recommend that you use [Visual Studio Code](https://code.visualstudio.com/) to work on the repo.

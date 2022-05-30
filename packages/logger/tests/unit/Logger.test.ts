@@ -638,7 +638,7 @@ describe('Class: Logger', () => {
 
   describe('Method: appendKeys', () => {
 
-    test('when called, populates the logger\'s propriety persistentLogAttributes ', () => {
+    test('when called, it populates the logger\'s persistentLogAttributes property', () => {
 
       // Prepare
       const logger = new Logger();
@@ -702,6 +702,97 @@ describe('Class: Logger', () => {
         }
       }));
     });
+  });
+
+  describe('Method: removeKeys', () => {
+
+    test('when called, it removes keys from the logger\'s persistentLogAttributes property', () => {
+
+      // Prepare
+      const logger = new Logger();
+      logger.appendKeys({
+        aws_account_id: '123456789012',
+        aws_region: 'eu-west-1',
+        logger: {
+          name: 'aws-lambda-powertool-typescript',
+          version: '0.2.4',
+        },
+      });
+
+      // Act
+      logger.removeKeys([ 'aws_account_id', 'aws_region' ]);
+
+      // Assess
+      expect(logger).toEqual(expect.objectContaining({
+        persistentLogAttributes: {
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      }));
+    });
+
+    test('when called with non-existing keys, the logger\'s property persistentLogAttributes is not mutated and it does not throw an error', () => {
+
+      // Prepare
+      const logger = new Logger();
+      logger.appendKeys({
+        aws_account_id: '123456789012',
+        aws_region: 'eu-west-1',
+        logger: {
+          name: 'aws-lambda-powertool-typescript',
+          version: '0.2.4',
+        },
+      });
+      const loggerBeforeKeysAreRemoved = { ...logger };
+
+      // Act
+      logger.removeKeys(['not_existing_key']);
+
+      // Assess
+      expect(logger).toEqual(loggerBeforeKeysAreRemoved);
+      expect(logger).toEqual(expect.objectContaining({
+        persistentLogAttributes: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      }));
+    });
+
+  });
+
+  test('when called multiple times with the same keys, the outcome is the same', () => {
+
+    // Prepare
+    const logger = new Logger();
+    logger.appendKeys({
+      aws_account_id: '123456789012',
+      aws_region: 'eu-west-1',
+      logger: {
+        name: 'aws-lambda-powertool-typescript',
+        version: '0.2.4',
+      },
+    });
+
+    // Act
+    logger.removeKeys([ 'aws_account_id', 'aws_region' ]);
+    logger.removeKeys([ 'aws_account_id', 'aws_region' ]);
+
+    // Assess
+    expect(logger).toEqual(expect.objectContaining({
+      persistentLogAttributes: {
+        logger: {
+          name: 'aws-lambda-powertool-typescript',
+          version: '0.2.4',
+        },
+      },
+    }));
+
   });
 
   describe('Method: injectLambdaContext', () => {

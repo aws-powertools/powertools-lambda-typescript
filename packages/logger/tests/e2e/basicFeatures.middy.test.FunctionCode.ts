@@ -4,6 +4,8 @@ import middy from '@middy/core';
 
 const PERSISTENT_KEY = process.env.PERSISTENT_KEY;
 const PERSISTENT_VALUE = process.env.PERSISTENT_VALUE;
+const REMOVABLE_KEY = process.env.REMOVABLE_KEY;
+const REMOVABLE_VALUE = process.env.REMOVABLE_VALUE;
 const ERROR_MSG = process.env.ERROR_MSG || 'error';
 const SINGLE_LOG_ITEM_KEY = process.env.SINGLE_LOG_ITEM_KEY;
 const SINGLE_LOG_ITEM_VALUE = process.env.SINGLE_LOG_ITEM_VALUE;
@@ -13,14 +15,16 @@ const ARBITRARY_OBJECT_DATA = process.env.ARBITRARY_OBJECT_DATA;
 const logger = new Logger({
   persistentLogAttributes: {
     [PERSISTENT_KEY]: PERSISTENT_VALUE,
+    [REMOVABLE_KEY]: REMOVABLE_VALUE,
   },
 });
 
 const testFunction = async (event: APIGatewayProxyEvent, context: Context): Promise<{requestId: string}> => {
   // Test feature 1: Log level filtering
   // Test feature 2: Context data
-  // Test feature 3: Persistent additional log keys and value
+  // Test feature 3: Add and remove persistent additional log keys and value
   // Test feature 4: X-Ray Trace ID injection
+  logger.removeKeys([REMOVABLE_KEY]);
   logger.debug('##### This should not appear');
   logger.info('This is an INFO log with context and persistent key');
 

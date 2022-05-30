@@ -200,9 +200,12 @@ You can append additional persistent keys and values in the logs generated durin
 * Via the Logger's `appendKeys` method, for all log items generated after calling this method
 * Passing them in the Logger's constructor
 
+To remove the keys you added, you can use the `removeKeys` method.
+
+
 === "handler.ts"
 
-    ```typescript hl_lines="5-12 16-23"
+    ```typescript hl_lines="5-13 17-25 30"
     import { Logger } from '@aws-lambda-powertools/logger';
 
     // Add persistent log keys via the constructor
@@ -213,7 +216,8 @@ You can append additional persistent keys and values in the logs generated durin
             logger: {
                 name: '@aws-lambda-powertools/logger',
                 version: '0.0.1',
-            }
+            },
+            extra_key: "some-value"
         }
     });
 
@@ -224,10 +228,14 @@ You can append additional persistent keys and values in the logs generated durin
     //     logger: {
     //         name: '@aws-lambda-powertools/logger',
     //         version: '0.0.1',
-    //     }
+    //     },
+    //     extra_key: "some-value"
     // });    
 
     export const handler = async (_event: any, _context: any): Promise<unknown> => {
+
+        // If you don't want to log the "extra_key" attribute in your logs, you can remove it
+        logger.removeKeys(["extra_key"])
     
         // This info log will print all extra custom attributes added above
         // Extra attributes: logger object with name and version of the logger library, awsAccountId, awsRegion
@@ -270,6 +278,7 @@ You can append additional persistent keys and values in the logs generated durin
         }
     }
     ```
+
 
 !!! tip "Logger will automatically ignore any key with an `undefined` value"
 

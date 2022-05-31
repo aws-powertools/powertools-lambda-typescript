@@ -4,11 +4,11 @@
  * @group e2e/tracer/manual
  */
 
-import { randomUUID } from 'crypto';
 import path from 'path';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
 import * as AWS from 'aws-sdk';
+import { v4 } from 'uuid';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import { 
   getTraces,
@@ -47,7 +47,7 @@ if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
 
-const uuid = randomUUID();
+const uuid = v4();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Manual');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Manual');
 const lambdaFunctionCodeFile = 'allFeatures.manual.test.functionCode.ts';

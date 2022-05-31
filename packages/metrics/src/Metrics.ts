@@ -1,5 +1,5 @@
 import { Callback, Context } from 'aws-lambda';
-import { LambdaInterface, Utility } from '@aws-lambda-powertools/commons';
+import { Utility } from '@aws-lambda-powertools/commons';
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import {

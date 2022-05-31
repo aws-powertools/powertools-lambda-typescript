@@ -10,6 +10,7 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
+import { v4 } from 'uuid';
 import {
   createStackWithLambdaFunction,
   generateUniqueName,
@@ -34,7 +35,7 @@ if (!isValidRuntimeKey(runtime)) {
 
 const LEVEL = InvocationLogs.LEVEL;
 
-const uuid = randomUUID();
+const uuid = v4();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'SampleRate-Decorator');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'SampleRate-Decorator');
 const lambdaFunctionCodeFile = 'sampleRate.decorator.test.FunctionCode.ts';

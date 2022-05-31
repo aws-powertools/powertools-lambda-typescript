@@ -8,9 +8,9 @@
  */
 
 import path from 'path';
-import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
 import { APIGatewayAuthorizerResult } from 'aws-lambda';
+import { v4 } from 'uuid';
 import {
   createStackWithLambdaFunction,
   generateUniqueName,
@@ -27,6 +27,7 @@ import {
   TEARDOWN_TIMEOUT
 } from './constants';
 
+
 const runtime: string = process.env.RUNTIME || 'nodejs16x';
 
 if (!isValidRuntimeKey(runtime)) {
@@ -35,7 +36,7 @@ if (!isValidRuntimeKey(runtime)) {
 
 const LEVEL = InvocationLogs.LEVEL;
 
-const uuid = randomUUID();
+const uuid = v4();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'BasicFeatures-Middy');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'BasicFeatures-Middy');
 const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';

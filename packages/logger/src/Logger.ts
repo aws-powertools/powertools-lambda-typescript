@@ -1,6 +1,6 @@
 import { Console } from 'console';
 import type { Context } from 'aws-lambda';
-import { LambdaInterface, Utility } from '@aws-lambda-powertools/commons';
+import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
 import cloneDeep from 'lodash.clonedeep';

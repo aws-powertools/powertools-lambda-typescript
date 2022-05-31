@@ -363,15 +363,8 @@ class Tracer extends Utility implements TracerInterface {
             this.addErrorAsMetadata(error as Error);
             throw error;
           } finally {
-            if (subsegment) {
-              console.log('## captureLambdaHandler() subsegment NOT empty');
-              subsegment.close();
-              subsegment.flush();
-            } else {
-              console.log('## captureLambdaHandler() subsegment IS empty');
-            }
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            subsegment?.close();
+            subsegment?.flush();
           }
           
           return result;
@@ -438,12 +431,7 @@ class Tracer extends Utility implements TracerInterface {
             // TODO: should this error be thrown?? If thrown we get a ERR_UNHANDLED_REJECTION. If not aren't we are basically catching a Customer error?
             // throw error;
           } finally {
-            if (subsegment) {
-              console.log('## captureMethod() subsegment NOT empty');
-              subsegment.close();
-            } else {
-              console.log('## captureMethod() subsegment IS empty');
-            }
+            subsegment?.close();
           }
           
           return result;

@@ -8,7 +8,6 @@
  */
 
 import path from 'path';
-import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
 import { v4 } from 'uuid';
 import {

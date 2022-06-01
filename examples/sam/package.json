@@ -1,6 +1,6 @@
 {
   "name": "powertools-typescript-sam-example",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.86",
-    "@types/node": "17.0.33",
+    "@types/node": "17.0.35",
     "esbuild": "^0.14.23",
     "eslint": "^8.4.0",
     "jest": "^27.5.1",

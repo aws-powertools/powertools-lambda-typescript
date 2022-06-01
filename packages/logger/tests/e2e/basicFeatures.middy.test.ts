@@ -10,6 +10,7 @@
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { App, Stack } from 'aws-cdk-lib';
+import { APIGatewayAuthorizerResult } from 'aws-lambda';
 import {
   createStackWithLambdaFunction,
   generateUniqueName,
@@ -26,7 +27,7 @@ import {
   TEARDOWN_TIMEOUT
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || 'nodejs14x';
+const runtime: string = process.env.RUNTIME || 'nodejs16x';
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -42,9 +43,13 @@ const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
 // Text to be used by Logger in the Lambda function
 const PERSISTENT_KEY = 'persistentKey';
 const PERSISTENT_VALUE = `a persistent value that will be put in every log ${uuid}`;
+const REMOVABLE_KEY = 'removableKey';
+const REMOVABLE_VALUE = `a persistent value that will be removed and not displayed in any log ${uuid}`;
 const SINGLE_LOG_ITEM_KEY = `keyForSingleLogItem${uuid}`;
 const SINGLE_LOG_ITEM_VALUE = `a value for a single log item${uuid}`;
 const ERROR_MSG = `error-${uuid}`;
+const ARBITRARY_OBJECT_KEY = `keyForArbitraryObject${uuid}`;
+const ARBITRARY_OBJECT_DATA = `arbitrary object data ${uuid}`;
 
 const integTestApp = new App();
 let logGroupName: string; // We do not know it until deployment
@@ -69,9 +74,13 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
         // Text to be used by Logger in the Lambda function
         PERSISTENT_KEY,
         PERSISTENT_VALUE,
+        REMOVABLE_KEY,
+        REMOVABLE_VALUE,
         SINGLE_LOG_ITEM_KEY,
         SINGLE_LOG_ITEM_VALUE,
         ERROR_MSG,
+        ARBITRARY_OBJECT_KEY,
+        ARBITRARY_OBJECT_DATA,
       },
       logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
       runtime: runtime,
@@ -142,6 +151,14 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
         expect(message).toContain(`"${PERSISTENT_KEY}":"${PERSISTENT_VALUE}"`);
       }
     }, TEST_CASE_TIMEOUT);
+
+    it('should not contain persistent keys that were removed on runtime', async () => {
+      const logMessages = invocationLogs[0].getFunctionLogs();
+
+      for (const message of logMessages) {
+        expect(message).not.toContain(`"${REMOVABLE_KEY}":"${REMOVABLE_VALUE}"`);
+      }
+    }, TEST_CASE_TIMEOUT);
   });
 
   describe('X-Ray Trace ID injection', () => {
@@ -161,10 +178,32 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
 
       expect(logMessages).toHaveLength(1);
     }, TEST_CASE_TIMEOUT);
+
+    it('should log additional arbitrary object only once', async () => {
+      const logMessages = invocationLogs[0].getFunctionLogs()
+        .filter(message => message.includes(ARBITRARY_OBJECT_DATA));
+
+      expect(logMessages).toHaveLength(1);
+
+      const logObject = InvocationLogs.parseFunctionLog(logMessages[0]);
+      expect(logObject).toHaveProperty(ARBITRARY_OBJECT_KEY);
+      const arbitrary = logObject[ARBITRARY_OBJECT_KEY] as APIGatewayAuthorizerResult;
+      expect(arbitrary.principalId).toBe(ARBITRARY_OBJECT_DATA);
+      expect(arbitrary.policyDocument).toEqual(expect.objectContaining(
+        {
+          Version: 'Version' + ARBITRARY_OBJECT_DATA,
+          Statement: [{
+            Effect: 'Effect' + ARBITRARY_OBJECT_DATA,
+            Action: 'Action' + ARBITRARY_OBJECT_DATA,
+            Resource: 'Resource' + ARBITRARY_OBJECT_DATA
+          }]
+        }
+      ));
+    }, TEST_CASE_TIMEOUT);
   });
 
   describe('Logging an error object', () => {
-    it('should log additional keys and value only once', async () => {
+    it('should log error only once', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs(LEVEL.ERROR)
         .filter(message => message.includes(ERROR_MSG));
 

@@ -1,5 +1,26 @@
 tasks:
-  - init: nvm install; nvm use; npm i -g npm@next-8; npm ci; npm run lerna-ci; npm run init-environment
+  - init: |
+      # Install Nodejs version specified in .nvmrc
+      nvm install
+      nvm use
+      # Install npm 8.x
+      npm i -g npm@next-8
+      # Install monorepo packages
+      npm ci --foreground-scripts
+      # Install CDK exampels dependencies
+      cd examples/cdk
+      npm ci
+      # Install SAM exampels dependencies
+      cd ../sam
+      npm ci
+      # Install AWS SAM CLI
+      wget https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
+      unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
+      sudo ./sam-installation/install
+      rm -rf sam-installation aws-sam-cli-linux-*
+      cd ../../
+      # Setup husky hooks
+      npm run init-environment
 vscode:
   extensions:
     - dbaeumer.vscode-eslint

@@ -2,7 +2,7 @@ import { custom_resources, aws_iam } from 'aws-cdk-lib';
 import { Events } from '@aws-lambda-powertools/commons';
 import { Construct } from 'constructs';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import { Tracing, Runtime } from 'aws-cdk-lib/aws-lambda';
 
 interface ExampleFunctionProps {
   readonly functionName: string
@@ -23,6 +23,7 @@ class ExampleFunction extends Construct {
 
     const fn = new NodejsFunction(this, functionName, {
       tracing: tracingActive ? Tracing.ACTIVE : Tracing.DISABLED,
+      runtime: Runtime.NODEJS_16_X,
       ...fnProps
     });
 

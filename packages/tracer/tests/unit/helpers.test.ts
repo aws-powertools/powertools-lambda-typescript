@@ -220,7 +220,7 @@ describe('Helper: createTracer function', () => {
 
     test('when AWS_EXECUTION_ENV environment variable is set, tracing is enabled', () => {
       // Prepare
-      process.env.AWS_EXECUTION_ENV = 'nodejs14.x';
+      process.env.AWS_EXECUTION_ENV = 'nodejs16.x';
 
       // Act
       const tracer = createTracer();

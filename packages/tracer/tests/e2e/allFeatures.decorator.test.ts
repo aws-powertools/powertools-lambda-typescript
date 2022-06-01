@@ -4,11 +4,11 @@
  * @group e2e/tracer/decorator
  */
 
-import { randomUUID } from 'crypto';
 import path from 'path';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
 import * as AWS from 'aws-sdk';
+import { v4 } from 'uuid';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import {
   getTraces,
@@ -54,27 +54,27 @@ if (!isValidRuntimeKey(runtime)) {
  * Each stack must use a unique `serviceName` as it's used to for retrieving the trace.
  * Using the same one will result in traces from different test cases mixing up.
  */
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, randomUUID(), runtime, 'AllFeatures-Decorator');
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'AllFeatures-Decorator');
 const lambdaFunctionCodeFile = 'allFeatures.decorator.test.functionCode.ts';
 let startTime: Date;
 
 /**
  * Function #1 is with all flags enabled.
  */
-const uuidFunction1 = randomUUID();
+const uuidFunction1 = v4();
 const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Decoratory-AllFlagsEnabled');
 const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled; 
 
 /**
  * Function #2 doesn't capture error or response
  */
-const uuidFunction2 = randomUUID();
+const uuidFunction2 = v4();
 const functionNameWithNoCaptureErrorOrResponse = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction2, runtime, 'AllFeatures-Decorator-NoCaptureErrorOrResponse');
 const serviceNameWithNoCaptureErrorOrResponse = functionNameWithNoCaptureErrorOrResponse; 
 /**
  * Function #3 disables tracer
  */
-const uuidFunction3 = randomUUID();
+const uuidFunction3 = v4();
 const functionNameWithTracerDisabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction3, runtime, 'AllFeatures-Decorator-TracerDisabled');
 const serviceNameWithTracerDisabled = functionNameWithNoCaptureErrorOrResponse; 
 

@@ -252,12 +252,16 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public injectLambdaContext(): HandlerMethodDecorator {
     return (target, _propertyKey, descriptor) => {
-      const originalMethod = descriptor.value;
+      /**
+       * The descriptor.value is the method this decorator decorates, it cannot be undefined.
+       */ 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const originalMethod = descriptor.value!;
 
       descriptor.value = (event, context, callback) => {
         this.addContext(context);
 
-        return originalMethod?.apply(target, [ event, context, callback ]);
+        return originalMethod.apply(target, [ event, context, callback ]);
       };
     };
   }
@@ -446,11 +450,11 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {number}
    */
   private getSampleRateValue(): number {
-    if (!this.powertoolLogData?.sampleRateValue) {
+    if (!this.powertoolLogData.sampleRateValue) {
       this.setSampleRateValue();
     }
 
-    return <number> this.powertoolLogData?.sampleRateValue;
+    return <number> this.powertoolLogData.sampleRateValue;
   }
 
   /**

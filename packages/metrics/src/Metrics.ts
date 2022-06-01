@@ -237,7 +237,11 @@ class Metrics extends Utility implements MetricsInterface {
     }
 
     return (target, _propertyKey, descriptor) => {
-      const originalMethod = descriptor.value;
+      /**
+       * The descriptor.value is the method this decorator decorates, it cannot be undefined.
+       */ 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const originalMethod = descriptor.value!;
 
       descriptor.value = ( async (event: unknown, context: Context, callback: Callback): Promise<unknown> => {
         this.functionName = context.functionName;
@@ -245,7 +249,7 @@ class Metrics extends Utility implements MetricsInterface {
           
         let result: unknown;
         try {
-          result = await originalMethod?.apply(target, [ event, context, callback ]);
+          result = await originalMethod.apply(target, [ event, context, callback ]);
         } catch (error) {
           throw error;
         } finally {

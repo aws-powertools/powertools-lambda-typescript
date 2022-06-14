@@ -72,7 +72,7 @@
     "husky": "^8.0.1",
     "jest": "^27.5.1",
     "jest-runner-groups": "^2.1.0",
-    "lerna": "^4.0.0",
+    "lerna": "^5.1.2",
     "promptly": "^3.2.0",
     "proxy-agent": "^5.0.0",
     "ts-jest": "^27.1.3",

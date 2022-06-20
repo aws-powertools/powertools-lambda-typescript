@@ -22,6 +22,7 @@
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
+    "package-bundle": "../../package-bundler.sh ${LERNA_PACKAGE_NAME}-bundle ./dist/",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",

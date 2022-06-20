@@ -26,7 +26,8 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
-    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/"
+    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
+    "package-bundle": "../../package-bundler.sh ${LERNA_PACKAGE_NAME}-bundle ./dist/"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
   "license": "MIT-0",

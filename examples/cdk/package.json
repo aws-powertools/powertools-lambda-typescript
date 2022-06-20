@@ -15,6 +15,7 @@
     "watch": "tsc -w",
     "test": "npm run test:unit",
     "package": "echo 'Not applicable'",
+    "package-bundle": "echo 'Not applicable'",
     "test:unit": "npm run build && jest",
     "test:e2e": "echo 'To be implemented ...'",
     "version": "npm install @aws-lambda-powertools/logger@0.7.0 @aws-lambda-powertools/tracer@0.7.0 @aws-lambda-powertools/metrics@0.7.0 && git add package.json",

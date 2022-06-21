@@ -159,6 +159,18 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
         expect(message).not.toContain(`"${REMOVABLE_KEY}":"${REMOVABLE_VALUE}"`);
       }
     }, TEST_CASE_TIMEOUT);
+
+    it('with clear state enabled, should not persist keys across invocations', async () => {
+      const firstInvocationMessages = invocationLogs[0].getFunctionLogs();
+      for (const message of firstInvocationMessages) {
+        expect(message).toContain(`"specialKey":0`);
+      }
+
+      const secondInvocationMessages = invocationLogs[1].getFunctionLogs();
+      for (const message of secondInvocationMessages) {
+        expect(message).not.toContain(`"specialKey":0`);
+      }
+    }, TEST_CASE_TIMEOUT);
   });
 
   describe('X-Ray Trace ID injection', () => {

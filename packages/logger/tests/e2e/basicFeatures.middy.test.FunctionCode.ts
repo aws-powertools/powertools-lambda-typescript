@@ -1,5 +1,5 @@
 import { injectLambdaContext, Logger } from '../../src';
-import { APIGatewayProxyEvent, Context, APIGatewayAuthorizerResult } from 'aws-lambda';
+import { Context, APIGatewayAuthorizerResult } from 'aws-lambda';
 import middy from '@middy/core';
 
 const PERSISTENT_KEY = process.env.PERSISTENT_KEY;
@@ -12,6 +12,10 @@ const SINGLE_LOG_ITEM_VALUE = process.env.SINGLE_LOG_ITEM_VALUE;
 const ARBITRARY_OBJECT_KEY = process.env.ARBITRARY_OBJECT_KEY;
 const ARBITRARY_OBJECT_DATA = process.env.ARBITRARY_OBJECT_DATA;
 
+type LambdaEvent = {
+  invocation: number
+};
+
 const logger = new Logger({
   persistentLogAttributes: {
     [PERSISTENT_KEY]: PERSISTENT_VALUE,
@@ -19,12 +23,20 @@ const logger = new Logger({
   },
 });
 
-const testFunction = async (event: APIGatewayProxyEvent, context: Context): Promise<{requestId: string}> => {
+const testFunction = async (event: LambdaEvent, context: Context): Promise<{requestId: string}> => {
   // Test feature 1: Log level filtering
   // Test feature 2: Context data
   // Test feature 3: Add and remove persistent additional log keys and value
   // Test feature 4: X-Ray Trace ID injection
   logger.removeKeys([REMOVABLE_KEY]);
+
+  const specialValue = event.invocation;
+  if (specialValue === 0) {
+    logger.appendKeys({
+      specialKey: specialValue
+    });
+  }
+
   logger.debug('##### This should not appear');
   logger.info('This is an INFO log with context and persistent key');
 
@@ -60,4 +72,4 @@ const testFunction = async (event: APIGatewayProxyEvent, context: Context): Prom
   };
 };
 
-export const handler = middy(testFunction).use(injectLambdaContext(logger));
+export const handler = middy(testFunction).use(injectLambdaContext(logger, { clearState: true }));

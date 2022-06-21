@@ -7,12 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
+    strategy:
+      matrix:
+        version: [12, 14, 16]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v3
-      - name: "Use NodeJS 16"
+      - name: "Use NodeJS"
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: ${{ matrix.version }}
       - name: Install npm@8.x
         run: npm i -g npm@next-8
       - name: "Setup npm"
@@ -61,3 +65,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./coverage/lcov.info
+      - name: Packages size report
+        uses: flochaz/pkg-size-action@v1.2.12
+        with:
+          build-command: mkdir dist && npm run lerna-package && npm run lerna-package-bundle && bash -c "mv ./packages/*/dist/* dist/" && ls dist
+          dist-directory: /dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/logger",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "The logging package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",
@@ -22,23 +22,12 @@
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
+    "package-bundle": "../../package-bundler.sh ${LERNA_PACKAGE_NAME}-bundle ./dist/",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags",
-    "example:hello-world": "ts-node examples/hello-world.ts",
-    "example:inject-context": "ts-node examples/inject-context.ts",
-    "example:inject-context-decorator": "ts-node examples/inject-context-decorator.ts",
-    "example:inject-context-middleware": "ts-node examples/inject-context-middleware.ts",
-    "example:errors": "ts-node examples/errors.ts",
-    "example:constructor-options": "ts-node examples/constructor-options.ts",
-    "example:custom-log-formatter": "ts-node examples/custom-log-formatter.ts",
-    "example:child-logger": "ts-node examples/child-logger.ts",
-    "example:additional-keys": "ts-node examples/additional-keys.ts",
-    "example:sample-rate": "ts-node examples/sample-rate.ts",
-    "example:persistent-attributes": "ts-node examples/persistent-attributes.ts",
-    "example:ephemeral-attributes": "ts-node examples/ephemeral-attributes.ts"
+    "postversion": "git push && git push --tags"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/logging#readme",
   "license": "MIT",
@@ -46,9 +35,9 @@
   "types": "./lib/index.d.ts",
   "typedocMain": "src/index.ts",
   "devDependencies": {
-    "@types/lodash.clonedeep": "^4.5.6",
-    "@types/lodash.merge": "^4.6.6",
-    "@types/lodash.pickby": "^4.6.6"
+    "@types/lodash.clonedeep": "^4.5.7",
+    "@types/lodash.merge": "^4.6.7",
+    "@types/lodash.pickby": "^4.6.7"
   },
   "files": [
     "lib"
@@ -61,7 +50,7 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^0.9.1",
+    "@aws-lambda-powertools/commons": "^0.10.0",
     "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.2",
     "lodash.pickby": "^4.6.0"

@@ -8,10 +8,10 @@
  */
 
 import path from 'path';
-import { randomUUID } from 'crypto';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { App, Stack } from 'aws-cdk-lib';
 import * as AWS from 'aws-sdk';
+import { v4 } from 'uuid';
 import { 
   generateUniqueName, 
   isValidRuntimeKey, 
@@ -35,7 +35,7 @@ if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
 
-const uuid = randomUUID();
+const uuid = v4();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'manual');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'manual');
 const lambdaFunctionCodeFile = 'basicFeatures.manual.test.functionCode.ts';

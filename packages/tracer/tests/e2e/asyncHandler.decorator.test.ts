@@ -4,11 +4,11 @@
  * @group e2e/tracer/decorator-async-handler
  */
 
-import { randomUUID } from 'crypto';
 import path from 'path';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
 import * as AWS from 'aws-sdk';
+import { v4 } from 'uuid';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import {
   getTraces,
@@ -46,11 +46,11 @@ if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
 
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, randomUUID(), runtime, 'AllFeatures-Decorator');
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'AllFeatures-Decorator');
 const lambdaFunctionCodeFile = 'asyncHandler.decorator.test.functionCode.ts';
 let startTime: Date;
 
-const uuid = randomUUID();
+const uuid = v4();
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Decoratory-AllFlagsEnabled');
 const serviceName = functionName; 
 

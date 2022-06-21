@@ -45,9 +45,6 @@ Each TypeScript utility is installed as standalone NPM package.
 
 * [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)
 * [SAM](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/sam)
-* [Tracer](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk/src)
-* [Logger](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logger/examples)
-* [Metrics](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/metrics/examples)
 
 ## Credits
 

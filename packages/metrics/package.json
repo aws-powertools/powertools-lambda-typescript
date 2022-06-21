@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/metrics",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "The metrics package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",
@@ -22,31 +22,12 @@
     "lint": "eslint --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
+    "package-bundle": "../../package-bundler.sh ${LERNA_PACKAGE_NAME}-bundle ./dist/",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags",
-    "example:hello-world": "ts-node examples/hello-world.ts",
-    "example:manual-flushing": "ts-node examples/manual-flushing.ts",
-    "example:dimensions": "ts-node examples/dimensions.ts",
-    "example:default-dimensions": "ts-node examples/default-dimensions.ts",
-    "example:empty-metrics": "ts-node examples/empty-metrics.ts",
-    "example:single-metric": "ts-node examples/single-metric.ts",
-    "example:cold-start": "ts-node examples/cold-start.ts",
-    "example:manual-metrics-print": "ts-node examples/manual-metrics-print.ts",
-    "example:constructor-options": "ts-node examples/constructor-options.ts",
-    "example:default-dimensions-constructor": "ts-node examples/default-dimensions-constructor.ts",
-    "example:decorator-hello-world": "ts-node examples/decorator/hello-world.ts",
-    "example:decorator-manual-flushing": "ts-node examples/decorator/manual-flushing.ts",
-    "example:decorator-dimensions": "ts-node examples/decorator/dimensions.ts",
-    "example:decorator-default-dimensions": "ts-node examples/decorator/default-dimensions.ts",
-    "example:decorator-empty-metrics": "ts-node examples/decorator/empty-metrics.ts",
-    "example:decorator-single-metric": "ts-node examples/decorator/single-metric.ts",
-    "example:decorator-cold-start": "ts-node examples/decorator/cold-start.ts",
-    "example:decorator-manual-metrics-print": "ts-node examples/decorator/manual-metrics-print.ts",
-    "example:decorator-constructor-options": "ts-node examples/decorator/constructor-options.ts",
-    "example:decorator-default-dimensions-constructor": "ts-node examples/decorator/default-dimensions-constructor.ts"
+    "postversion": "git push && git push --tags"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/metrics#readme",
   "license": "MIT-0",
@@ -68,6 +49,6 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^0.9.1"
+    "@aws-lambda-powertools/commons": "^0.10.0"
   }
 }

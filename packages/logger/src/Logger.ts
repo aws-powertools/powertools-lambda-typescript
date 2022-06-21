@@ -280,7 +280,8 @@ class Logger extends Utility implements ClassThatLogs {
         }
 
         this.addContext(context);
-        
+
+        /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         const result = originalMethod!.apply(target, [ event, context, callback ]);
 
         if (isClearStateEnabled) {

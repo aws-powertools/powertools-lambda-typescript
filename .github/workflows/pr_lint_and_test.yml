@@ -1,7 +1,12 @@
 name: pr-lint-and-test
 on:
-  pull_request:
-    types: [opened, synchronize]
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+permissions:
+  pull-requests: write
 jobs:
   on_push:
     runs-on: ubuntu-latest

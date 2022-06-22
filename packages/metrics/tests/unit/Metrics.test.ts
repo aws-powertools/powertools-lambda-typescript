@@ -535,12 +535,43 @@ describe('Class: Metrics', () => {
       expect(loggedData[1]._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
     });
 
+    test('Using decorator, it returns a function with the correct scope of the decorated class', async () => {
+
+      // Prepare
+      const metrics = new Metrics({ namespace: 'test' });
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics({ defaultDimensions: { default: 'defaultValue' } })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler<TEvent>(
+          _event: TEvent,
+          _context: Context): Promise<string> {
+          this.myMethod();
+
+          return 'Lambda invoked!';
+        }
+
+        private myMethod(): void {
+          metrics.addMetric('test_name', MetricUnits.Seconds, 10);
+        }
+      }
+
+      // Act
+      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext);
+
+      // Assess
+      expect(console.log).toBeCalledTimes(1);
+
+    });
+
     test('Using decorator on async handler (without callback) should work fine', async () => {
       const metrics = new Metrics({ namespace: 'test' });
       const additionalDimension = { name: 'metric2', value: 'metric2Value' };
 
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics({ defaultDimensions: { default: 'defaultValue' } })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context): Promise<string> {

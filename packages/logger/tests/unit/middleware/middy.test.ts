@@ -1,8 +1,15 @@
+/**
+ * Test Logger middleware
+ *
+ * @group unit/logger/all
+ */
+
 import { EnvironmentVariablesService } from '../../../src/config';
 import { injectLambdaContext } from '../../../src/middleware/middy';
 import { Logger } from './../../../src';
 import middy from '@middy/core';
 import { PowertoolLogFormatter } from '../../../src/formatter';
+import { Console } from 'console';
 
 describe('Middy middleware', () => {
 
@@ -10,8 +17,7 @@ describe('Middy middleware', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => null as unknown as boolean);
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -40,7 +46,7 @@ describe('Middy middleware', () => {
         memoryLimitInMB: '128',
         logGroupName: '/aws/lambda/foo-bar-function',
         logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         awsRequestId: awsRequestId,
         getRemainingTimeInMillis: () => 1234,
         done: () => console.log('Done!'),
@@ -57,18 +63,17 @@ describe('Middy middleware', () => {
         persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           lambdaContext: {
             awsRequestId: awsRequestId,
             coldStart: true,
             functionName: 'foo-bar-function',
             functionVersion: '$LATEST',
-            invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+            invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
             memoryLimitInMB: 128,
           },
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
@@ -101,7 +106,7 @@ describe('Middy middleware', () => {
         memoryLimitInMB: '128',
         logGroupName: '/aws/lambda/foo-bar-function',
         logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         awsRequestId: awsRequestId,
         getRemainingTimeInMillis: () => 1234,
         done: () => console.log('Done!'),
@@ -114,23 +119,29 @@ describe('Middy middleware', () => {
 
       // Assess
       const expectation = expect.objectContaining({
+        logsSampled: false,
+        persistentLogAttributes: {},
         powertoolLogData: {
           sampleRateValue: undefined,
-          awsRegion: 'eu-central-1',
+          awsRegion: 'eu-west-1',
           environment: '',
           lambdaContext: {
             awsRequestId: awsRequestId,
             coldStart: true,
             functionName: 'foo-bar-function',
             functionVersion: '$LATEST',
-            invokedFunctionArn: 'arn:aws:lambda:eu-central-1:123456789012:function:foo-bar-function',
+            invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
             memoryLimitInMB: 128,
           },
           serviceName: 'hello-world',
-          xRayTraceId: 'abcdef123456abcdef123456abcdef123456',
         },
+        envVarsService: expect.any(EnvironmentVariablesService),
+        customConfigService: undefined,
+        logLevel: 'DEBUG',
+        logFormatter: expect.any(PowertoolLogFormatter),
+        console: expect.any(Console),
       });
-      expect(logger).toEqual(anotherLogger);
+      expect(logger).toEqual(expectation);
       expect(anotherLogger).toEqual(expectation);
 
     });

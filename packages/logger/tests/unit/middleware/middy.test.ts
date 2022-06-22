@@ -268,7 +268,7 @@ describe('Middy middleware', () => {
         function_request_id: awsRequestId,
         level: 'INFO',
         message: 'Lambda invocation event',
-        service: 'hello-world',
+        service: 'my-backend-service',
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         event: {

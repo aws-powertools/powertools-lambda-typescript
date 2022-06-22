@@ -1146,12 +1146,14 @@ describe('Class: Logger', () => {
 
       // Prepare
       const logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
 
       // Act
       logger.logEventIfEnabled(dummyEvent);
 
       // Assess
-      expect(console['info']).toBeCalledTimes(0);
+
+      expect(consoleSpy).toBeCalledTimes(0);
     });
 
     test('When the feature is enabled via overwrite flag, it DOES log the event', () => {
@@ -1161,18 +1163,19 @@ describe('Class: Logger', () => {
         something: 'happened!'
       };
       const logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
 
       // Act
       logger.logEventIfEnabled(event, true);
 
       // Assess
-      expect(console['info']).toBeCalledTimes(1);
-      expect(console['info']).toHaveBeenNthCalledWith(1, JSON.stringify({
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
         level: 'INFO',
         message: 'Lambda invocation event',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         event: {
           something: 'happened!'
         }

@@ -19,10 +19,10 @@ abstract class ConfigService implements ConfigServiceInterface {
    * @protected
    */
   protected currentEnvironmentVariable = 'ENVIRONMENT';
+  protected logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
   protected logLevelVariable = 'LOG_LEVEL';
   protected sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
   protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
-  protected logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
 
   /**
    * It returns the value of an environment variable that has given name.
@@ -76,6 +76,7 @@ abstract class ConfigService implements ConfigServiceInterface {
    */
   protected isValueTrue(value: string): boolean {
     const normalizedValue = value.toLowerCase();
+    
     return normalizedValue === 'true' || normalizedValue === '1';
   }
 

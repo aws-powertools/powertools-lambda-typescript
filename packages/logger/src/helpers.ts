@@ -1,7 +1,7 @@
 import { Logger } from '.';
-import { LoggerOptions } from './types';
+import { ConstructorOptions } from './types';
 
-const createLogger = (options: LoggerOptions = {}): Logger => new Logger(options);
+const createLogger = (options: ConstructorOptions = {}): Logger => new Logger(options);
 
 export {
   createLogger,

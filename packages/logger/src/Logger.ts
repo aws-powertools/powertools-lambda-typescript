@@ -1,3 +1,4 @@
+import { Console } from 'console';
 import type { Context } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
@@ -7,16 +8,17 @@ import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import type {
   ClassThatLogs,
-  Environment, ExtraOptions,
+  Environment,
   HandlerMethodDecorator,
   LambdaFunctionContext,
   LogAttributes,
-  LoggerOptions,
+  ConstructorOptions,
   LogItemExtraInput,
   LogItemMessage,
   LogLevel,
   LogLevelThresholds,
   PowertoolLogData,
+  HandlerOptions,
 } from './types';
 
 /**
@@ -107,6 +109,8 @@ import type {
  */
 class Logger extends Utility implements ClassThatLogs {
 
+  private console = new Console({ stdout: process.stdout, stderr: process.stderr });
+
   private customConfigService?: ConfigServiceInterface;
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
@@ -137,9 +141,9 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * It initializes the Logger class with an optional set of options (settings).
    * *
-   * @param {LoggerOptions} options
+   * @param {ConstructorOptions} options
    */
-  public constructor(options: LoggerOptions = {}) {
+  public constructor(options: ConstructorOptions = {}) {
     super();
 
     this.setOptions(options);
@@ -191,10 +195,10 @@ class Logger extends Utility implements ClassThatLogs {
    * It creates a separate Logger instance, identical to the current one
    * It's possible to overwrite the new instance options by passing them.
    *
-   * @param {LoggerOptions} options
+   * @param {ConstructorOptions} options
    * @returns {Logger}
    */
-  public createChild(options: LoggerOptions = {}): Logger {
+  public createChild(options: ConstructorOptions = {}): Logger {
     return cloneDeep(this).setOptions(options);
   }
 
@@ -202,7 +206,7 @@ class Logger extends Utility implements ClassThatLogs {
    * It prints a log item with level DEBUG.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -213,20 +217,11 @@ class Logger extends Utility implements ClassThatLogs {
    * It prints a log item with level ERROR.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     this.processLogItem('ERROR', input, extraInput);
-  }
-
-  /**
-   * It returns a boolean value, if true all the logs will be printed.
-   *
-   * @returns {boolean}
-   */
-  public getLogsSampled(): boolean {
-    return this.logsSampled;
   }
 
   /**
@@ -240,28 +235,34 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * It returns a boolean value, if true all the logs will be printed.
+   *
+   * @returns {boolean}
+   */
+  public getLogsSampled(): boolean {
+    return this.logsSampled;
+  }
+
+  /**
+   * It returns the persistent log attributes, which are the attributes
+   * that will be logged in all log items.
+   *
+   * @private
+   * @returns {LogAttributes}
+   */
+  public getPersistentLogAttributes(): LogAttributes {
+    return <LogAttributes> this.persistentLogAttributes;
+  }
+
+  /**
    * It prints a log item with level INFO.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     this.processLogItem('INFO', input, extraInput);
-  }
-
-  /**
-   * Logs a Lambda invocation event, if it *should*.
-   *
-   ** @param {unknown} event
-   * @param {boolean} [overwriteValue]
-   * @returns {void}
-   */
-  public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
-    if(!this.shouldLogEvent(overwriteValue)) {
-      return;
-    }
-    this.info('Lambda invocation event', { event })
   }
 
   /**
@@ -273,17 +274,52 @@ class Logger extends Utility implements ClassThatLogs {
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */
-  public injectLambdaContext(options: ExtraOptions = {}): HandlerMethodDecorator {
+  public injectLambdaContext(options?: HandlerOptions): HandlerMethodDecorator {
+    const isClearStateEnabled = options && options.clearState === true;
+
     return (target, _propertyKey, descriptor) => {
+      /**
+       * The descriptor.value is the method this decorator decorates, it cannot be undefined.
+       */
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value;
 
       descriptor.value = (event, context, callback) => {
-        this.addContext(context);
-        this.logEventIfEnabled(event, options.logEvent);
 
-        return originalMethod?.apply(target, [ event, context, callback ]);
+        let initialPersistentAttributes: LogAttributes = {};
+        if (isClearStateEnabled) {
+          initialPersistentAttributes = { ...this.getPersistentLogAttributes() };
+        }
+
+        this.addContext(context);
+        if (options) {
+          this.logEventIfEnabled(event, options.logEvent);
+        }
+
+        /* eslint-disable  @typescript-eslint/no-non-null-assertion */
+        const result = originalMethod!.apply(target, [ event, context, callback ]);
+
+        if (isClearStateEnabled) {
+          this.setPersistentLogAttributes(initialPersistentAttributes);
+        }
+
+        return result;
       };
     };
+  }
+
+  /**
+   * Logs a Lambda invocation event, if it *should*.
+   *
+   ** @param {unknown} event
+   * @param {boolean} [overwriteValue]
+   * @returns {void}
+   */
+  public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
+    if (!this.shouldLogEvent(overwriteValue)) {
+      return;
+    }
+    this.info('Lambda invocation event', { event });
   }
 
   /**
@@ -299,6 +335,30 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * Alias for removePersistentLogAttributes.
+   *
+   * @param {string[]} keys
+   * @returns {void}
+   */
+  public removeKeys(keys: string[]): void {
+    this.removePersistentLogAttributes(keys);
+  }
+
+  /**
+   * It removes attributes based on provided keys to all log items generated by this Logger instance.
+   *
+   * @param {string[]} keys
+   * @returns {void}
+   */
+  public removePersistentLogAttributes(keys: string[]): void {
+    keys.forEach((key) => {
+      if (this.persistentLogAttributes && key in this.persistentLogAttributes) {
+        delete this.persistentLogAttributes[key];
+      }
+    });
+  }
+
+  /**
    * It sets the log event flag value.
    *
    * @param {number} [sampleRateValue]
@@ -306,6 +366,17 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public setLogEvent(): void {
     this.logEvent = this.getCustomConfigService()?.getLogEvent() || this.getEnvVarsService().getLogEvent();
+  }
+
+  /**
+   * It sets the given attributes (key-value pairs) to all log items generated by this Logger instance.
+   * Note: this replaces the pre-existing value.
+   *
+   * @param {LogAttributes} attributes
+   * @returns {void}
+   */
+  public setPersistentLogAttributes(attributes: LogAttributes): void {
+    this.persistentLogAttributes = attributes;
   }
 
   /**
@@ -340,7 +411,7 @@ class Logger extends Utility implements ClassThatLogs {
    * It prints a log item with level WARN.
    *
    * @param {LogItemMessage} input
-   * @param {Error | LogAttributes | unknown} extraInput
+   * @param {Error | LogAttributes | string} extraInput
    * @returns {void}
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
@@ -377,6 +448,7 @@ class Logger extends Utility implements ClassThatLogs {
       logLevel,
       timestamp: new Date(),
       message: typeof input === 'string' ? input : input.message,
+      xRayTraceId: this.getXrayTraceId(),
     }, this.getPowertoolLogData());
 
     const logItem = new LogItem({
@@ -388,9 +460,13 @@ class Logger extends Utility implements ClassThatLogs {
     if (typeof input !== 'string') {
       logItem.addAttributes(input);
     }
-    extraInput.forEach((item: Error | LogAttributes | unknown) => {
-      const attributes = item instanceof Error ? { error: item } : item;
-      logItem.addAttributes(<LogAttributes>attributes);
+    extraInput.forEach((item: Error | LogAttributes | string) => {
+      const attributes: LogAttributes =
+        item instanceof Error ? { error: item } :
+          typeof item === 'string' ? { extra: item } :
+            item;
+
+      logItem.addAttributes(attributes);
     });
 
     return logItem;
@@ -438,17 +514,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It returns the persistent log attributes, which are the attributes
-   * that will be logged in all log items.
-   *
-   * @private
-   * @returns {LogAttributes}
-   */
-  private getPersistentLogAttributes(): LogAttributes {
-    return <LogAttributes> this.persistentLogAttributes;
-  }
-
-  /**
    * It returns information that will be added in all log item by
    * this Logger instance (different from user-provided persistent attributes).
    *
@@ -466,11 +531,28 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {number}
    */
   private getSampleRateValue(): number {
-    if (!this.powertoolLogData?.sampleRateValue) {
+    if (!this.powertoolLogData.sampleRateValue) {
       this.setSampleRateValue();
     }
 
-    return <number> this.powertoolLogData?.sampleRateValue;
+    return <number> this.powertoolLogData.sampleRateValue;
+  }
+
+  /**
+   * It returns the current X-Ray Trace ID parsing the content of the `_X_AMZN_TRACE_ID` env variable.
+   *
+   * The X-Ray Trace data available in the environment variable has this format:
+   * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+   *
+   * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
+   *
+   * @private
+   * @returns {string}
+   */
+  private getXrayTraceId(): string {
+    const xRayTraceId = this.getEnvVarsService().getXrayTraceId();
+
+    return xRayTraceId.length > 0 ? xRayTraceId.split(';')[0].replace('Root=', '') : xRayTraceId;
   }
 
   /**
@@ -496,7 +578,7 @@ class Logger extends Utility implements ClassThatLogs {
 
     const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
 
-    console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
+    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
   }
 
   /**
@@ -623,10 +705,10 @@ class Logger extends Utility implements ClassThatLogs {
    * and the content of all logs.
    *
    * @private
-   * @param {LoggerOptions} options
+   * @param {ConstructorOptions} options
    * @returns {Logger}
    */
-  private setOptions(options: LoggerOptions): Logger {
+  private setOptions(options: ConstructorOptions): Logger {
     const {
       logLevel,
       serviceName,
@@ -674,7 +756,6 @@ class Logger extends Utility implements ClassThatLogs {
         sampleRateValue: this.getSampleRateValue(),
         serviceName:
           serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || Logger.defaultServiceName,
-        xRayTraceId: this.getEnvVarsService().getXrayTraceId(),
       },
       persistentLogAttributes,
     );

@@ -8,41 +8,52 @@
  */
 
 import path from 'path';
-import { randomUUID } from 'crypto';
-import { App, Stack } from '@aws-cdk/core';
-import { createStackWithLambdaFunction, deployStack, destroyStack, generateUniqueName, invokeFunction, isValidRuntimeKey } from '../helpers/e2eUtils';
-import { InvocationLogs } from '../helpers/InvocationLogs';
+import { App, Stack } from 'aws-cdk-lib';
+import { v4 } from 'uuid';
+import {
+  createStackWithLambdaFunction,
+  generateUniqueName,
+  invokeFunction,
+  isValidRuntimeKey
+} from '../../../commons/tests/utils/e2eUtils';
+import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
+import {
+  RESOURCE_NAME_PREFIX,
+  STACK_OUTPUT_LOG_GROUP,
+  SETUP_TIMEOUT,
+  TEST_CASE_TIMEOUT,
+  TEARDOWN_TIMEOUT
+} from './constants';
 
-const runtime: string = process.env.RUNTIME || 'nodejs14x';
+const runtime: string = process.env.RUNTIME || 'nodejs16x';
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
 
 const LEVEL = InvocationLogs.LEVEL;
-const TEST_CASE_TIMEOUT = 30000; // 30 seconds
-const SETUP_TIMEOUT = 300000; // 300 seconds
-const TEARDOWN_TIMEOUT = 200000; 
-const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 
-const uuid = randomUUID();
-const stackName = generateUniqueName(uuid, runtime, 'SampleRate-Decorator');
-const functionName = generateUniqueName(uuid, runtime, 'SampleRate-Decorator');
+const uuid = v4();
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'SampleRate-Decorator');
+const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'SampleRate-Decorator');
 const lambdaFunctionCodeFile = 'sampleRate.decorator.test.FunctionCode.ts';
 
 // Parameters to be used by Logger in the Lambda function
 const LOG_MSG = `Log message ${uuid}`;
 const SAMPLE_RATE = '0.5';
 const LOG_LEVEL = LEVEL.ERROR.toString();
+
 const integTestApp = new App();
-let logGroupName: string; // We do not know it until deployment
 let stack: Stack;
+let logGroupName: string; // We do not know the exact name until deployment
+
 describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${runtime}`, () => {
 
   let invocationLogs: InvocationLogs[];
 
   beforeAll(async () => {
-    
+
     // Create and deploy a stack with AWS CDK
     stack = createStackWithLambdaFunction({
       app: integTestApp,
@@ -55,20 +66,19 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
         UUID: uuid,
 
         // Parameter(s) to be used by Logger in the Lambda function
-        LOG_MSG, 
+        LOG_MSG,
         SAMPLE_RATE,
       },
       logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
       runtime: runtime,
     });
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    const outputs = await deployStack(stackArtifact);
-    logGroupName = outputs[STACK_OUTPUT_LOG_GROUP];
+    const result = await deployStack(integTestApp, stack);
+    logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
 
     invocationLogs = await invokeFunction(functionName, 20);
 
     console.log('logGroupName', logGroupName);
-    
+
   }, SETUP_TIMEOUT);
 
   describe('Enabling sample rate', () => {
@@ -95,7 +105,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
       // Given that we set rate to 0.5. The chance that we get all invocations sampled (or not sampled) is less than 0.5^20
       expect(countSampled).toBeGreaterThan(0);
       expect(countNotSampled).toBeGreaterThan(0);
-      
+
     }, TEST_CASE_TIMEOUT);
   });
 
@@ -103,7 +113,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
     it('should inject Lambda context into the log', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs(LEVEL.ERROR);
 
-      for ( const log of logMessages ) {
+      for (const log of logMessages) {
         expect(log).toContain('function_arn');
         expect(log).toContain('function_memory_size');
         expect(log).toContain('function_name');

@@ -8,11 +8,12 @@ type ClassThatLogs = {
   [key in 'debug' | 'error' | 'info' | 'warn']: (input: LogItemMessage, ...extraInput: LogItemExtraInput) => void;
 };
 
-type ExtraOptions = {
+type HandlerOptions = {
   logEvent?: boolean
+  clearState?: boolean
 };
 
-type LoggerOptions = {
+type ConstructorOptions = {
   logLevel?: LogLevel
   serviceName?: string
   sampleRateValue?: number
@@ -54,7 +55,7 @@ type UnformattedAttributes = {
 };
 
 type LogItemMessage = string | LogAttributesWithMessage;
-type LogItemExtraInput = Array<Error | LogAttributes | unknown>;
+type LogItemExtraInput = [Error | string] | LogAttributes[];
 
 type HandlerMethodDecorator = (
   target: LambdaInterface,
@@ -64,12 +65,12 @@ type HandlerMethodDecorator = (
 
 export {
   ClassThatLogs,
-  ExtraOptions,
   LogItemMessage,
   LogItemExtraInput,
   HandlerMethodDecorator,
   LambdaFunctionContext,
   UnformattedAttributes,
   PowertoolLogData,
-  LoggerOptions,
+  ConstructorOptions,
+  HandlerOptions
 };

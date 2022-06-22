@@ -7,12 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
+    strategy:
+      matrix:
+        version: [12, 14, 16]
+      fail-fast: false
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node
+      - uses: actions/checkout@v3
+      - name: "Use NodeJS"
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: ${{ matrix.version }}
       - name: Install npm@8.x
         run: npm i -g npm@next-8
       - name: "Setup npm"
@@ -22,11 +26,21 @@ jobs:
         # This installs all the dependencies of ./packages/*
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
-      - name: Install example packages
-        # Since we are not managing the cdk examples with npm workspaces we install
+      - name: Install CDK example packages
+        # Since we are not managing the CDK examples with npm workspaces we install
         # the dependencies in a separate step
         working-directory: ./examples/cdk
-        run: npm ci 
+        run: npm ci
+      - name: "Setup SAM"
+        # We use an ad-hoc action so we can specify the SAM CLI version
+        uses: aws-actions/setup-sam@v2
+        with:
+          version: 1.49.0
+      - name: Install SAM example packages
+        # Since we are not managing the SAM examples with npm workspaces we install
+        # the dependencies in a separate step
+        working-directory: ./examples/sam
+        run: npm ci
       - name: Run lint
         run: npm run lerna-lint
       - name: Run tests
@@ -51,3 +65,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./coverage/lcov.info
+      - name: Packages size report
+        uses: flochaz/pkg-size-action@v1.2.12
+        with:
+          build-command: mkdir dist && npm run lerna-package && npm run lerna-package-bundle && bash -c "mv ./packages/*/dist/* dist/" && ls dist
+          dist-directory: /dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

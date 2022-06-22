@@ -3,6 +3,7 @@ import { Context, APIGatewayAuthorizerResult } from 'aws-lambda';
 import middy from '@middy/core';
 
 const PERSISTENT_KEY = process.env.PERSISTENT_KEY;
+const PERSISTENT_KEY_FIRST_INVOCATION_ONLY = process.env.PERSISTENT_KEY_FIRST_INVOCATION_ONLY;
 const PERSISTENT_VALUE = process.env.PERSISTENT_VALUE;
 const REMOVABLE_KEY = process.env.REMOVABLE_KEY;
 const REMOVABLE_VALUE = process.env.REMOVABLE_VALUE;
@@ -33,7 +34,7 @@ const testFunction = async (event: LambdaEvent, context: Context): Promise<{requ
   const specialValue = event.invocation;
   if (specialValue === 0) {
     logger.appendKeys({
-      specialKey: specialValue
+      [PERSISTENT_KEY_FIRST_INVOCATION_ONLY]: specialValue
     });
   }
 
@@ -72,4 +73,5 @@ const testFunction = async (event: LambdaEvent, context: Context): Promise<{requ
   };
 };
 
-export const handler = middy(testFunction).use(injectLambdaContext(logger, { clearState: true }));
+export const handler = middy(testFunction)
+  .use(injectLambdaContext(logger, { clearState: true, logEvent: true }));

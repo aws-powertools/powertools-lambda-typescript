@@ -296,7 +296,7 @@ describe('Helper: createLogger function', () => {
           return 'dev';
         },
         getLogEvent(): boolean {
-          return false;
+          return true;
         },
         getLogLevel(): string {
           return 'INFO';

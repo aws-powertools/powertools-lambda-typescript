@@ -42,6 +42,7 @@ const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
 
 // Text to be used by Logger in the Lambda function
 const PERSISTENT_KEY = 'persistentKey';
+const PERSISTENT_KEY_FIRST_INVOCATION_ONLY = 'specialKey';
 const PERSISTENT_VALUE = `a persistent value that will be put in every log ${uuid}`;
 const REMOVABLE_KEY = 'removableKey';
 const REMOVABLE_VALUE = `a persistent value that will be removed and not displayed in any log ${uuid}`;
@@ -73,6 +74,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
 
         // Text to be used by Logger in the Lambda function
         PERSISTENT_KEY,
+        PERSISTENT_KEY_FIRST_INVOCATION_ONLY,
         PERSISTENT_VALUE,
         REMOVABLE_KEY,
         REMOVABLE_VALUE,
@@ -127,9 +129,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
         expect(message).not.toContain(`"cold_start":true`);
       }
     }, TEST_CASE_TIMEOUT);
-  });
 
-  describe('Context data', () => {
     it('should log context information in every log', async () => {
       const logMessages = invocationLogs[0].getFunctionLogs();
 
@@ -141,6 +141,34 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
         expect(message).toContain('timestamp');
       }
     }, TEST_CASE_TIMEOUT);
+  });
+
+  describe('Log event', () => {
+
+    it('should log the event on the first invocation', async () => {
+      const firstInvocationMessages = invocationLogs[0].getAllFunctionLogs();
+      let eventLoggedInFirstInvocation = false;
+      for (const message of firstInvocationMessages) {
+        if (message.includes(`event`)) {
+          eventLoggedInFirstInvocation = true;
+          expect(message).toContain(`"event":{"invocation":0}`);
+        }
+      }
+
+      const secondInvocationMessages = invocationLogs[1].getAllFunctionLogs();
+      let eventLoggedInSecondInvocation = false;
+      for (const message of secondInvocationMessages) {
+        if (message.includes(`event`)) {
+          eventLoggedInSecondInvocation = true;
+          expect(message).toContain(`"event":{"invocation":1}`);
+        }
+      }
+
+      expect(eventLoggedInFirstInvocation).toBe(true);
+      expect(eventLoggedInSecondInvocation).toBe(true);
+
+    }, TEST_CASE_TIMEOUT);
+
   });
 
   describe('Persistent additional log keys and values', () => {
@@ -163,12 +191,12 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it('with clear state enabled, should not persist keys across invocations', async () => {
       const firstInvocationMessages = invocationLogs[0].getFunctionLogs();
       for (const message of firstInvocationMessages) {
-        expect(message).toContain(`"specialKey":0`);
+        expect(message).toContain(`"${PERSISTENT_KEY_FIRST_INVOCATION_ONLY}":0`);
       }
 
       const secondInvocationMessages = invocationLogs[1].getFunctionLogs();
       for (const message of secondInvocationMessages) {
-        expect(message).not.toContain(`"specialKey":0`);
+        expect(message).not.toContain(`"${PERSISTENT_KEY_FIRST_INVOCATION_ONLY}":0`);
       }
     }, TEST_CASE_TIMEOUT);
   });

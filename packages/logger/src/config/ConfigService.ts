@@ -75,9 +75,7 @@ abstract class ConfigService implements ConfigServiceInterface {
    * @protected
    */
   protected isValueTrue(value: string): boolean {
-    const normalizedValue = value.toLowerCase();
-    
-    return normalizedValue === 'true' || normalizedValue === '1';
+    return value.toLowerCase() === 'true' || value === '1';
   }
 
 }

@@ -809,6 +809,7 @@ describe('Class: Logger', () => {
     test('when used as decorator, it returns a function with the correct scope of the decorated class', async () => {
 
       // Prepare
+
       const logger = new Logger();
       const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
       class LambdaFunction implements LambdaInterface {

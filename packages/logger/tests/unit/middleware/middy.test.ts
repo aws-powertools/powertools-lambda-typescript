@@ -11,12 +11,16 @@ import middy from '@middy/core';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { Console } from 'console';
 
+const mockDate = new Date(1466424490000);
+const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
+
 describe('Middy middleware', () => {
 
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
     jest.resetModules();
+    dateSpy.mockClear();
     jest.spyOn(process.stdout, 'write').mockImplementation(() => null as unknown as boolean);
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
@@ -87,15 +91,15 @@ describe('Middy middleware', () => {
 
       test('when a logger array is passed, it adds the context to all logger instances', async () => {
 
-      // Prepare
-      const logger = new Logger();
-      const anotherLogger = new Logger();
-      const lambdaHandler = (): void => {
-        logger.info('This is an INFO log with some context');
-        anotherLogger.info('This is an INFO log with some context');
-      };
-      const handler = middy(lambdaHandler).use(injectLambdaContext([ logger, anotherLogger ]));
-      const event = { foo: 'bar' };
+        // Prepare
+        const logger = new Logger();
+        const anotherLogger = new Logger();
+        const lambdaHandler = (): void => {
+          logger.info('This is an INFO log with some context');
+          anotherLogger.info('This is an INFO log with some context');
+        };
+        const handler = middy(lambdaHandler).use(injectLambdaContext([ logger, anotherLogger ]));
+        const event = { foo: 'bar' };
 
         const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
 
@@ -153,6 +157,7 @@ describe('Middy middleware', () => {
 
       // Prepare
       const logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
       const lambdaHandler = (): void => {
         logger.info('This is an INFO log with some context');
       };
@@ -179,8 +184,8 @@ describe('Middy middleware', () => {
       await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
-      expect(consoleSpy['info']).toBeCalledTimes(2);
-      expect(consoleSpy['info']).toHaveBeenNthCalledWith(1, JSON.stringify({
+      expect(consoleSpy).toBeCalledTimes(2);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         function_memory_size: 128,
@@ -190,16 +195,13 @@ describe('Middy middleware', () => {
         message: 'Lambda invocation event',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         event: {
           foo: 'bar'
         }
       }));
 
-
-
     });
-
 
     test('when a logger is passed with option logEvent set to true, it logs the event', async () => {
 
@@ -230,6 +232,7 @@ describe('Middy middleware', () => {
       const logger = new Logger({
         customConfigService: configService,
       });
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
       const lambdaHandler = (): void => {
         logger.info('This is an INFO log with some context');
       };
@@ -256,8 +259,8 @@ describe('Middy middleware', () => {
       await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
-      expect(consoleSpy['info']).toBeCalledTimes(2);
-      expect(consoleSpy['info']).toHaveBeenNthCalledWith(1, JSON.stringify({
+      expect(consoleSpy).toBeCalledTimes(2);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
         function_memory_size: 128,
@@ -267,71 +270,68 @@ describe('Middy middleware', () => {
         message: 'Lambda invocation event',
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: 'abcdef123456abcdef123456abcdef123456',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         event: {
           foo: 'bar'
         }
       }));
 
-
-
     });
 
   });
 
-    describe('Feature: clear state', () => {
+  describe('Feature: clear state', () => {
 
-      test('when enabled, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
+    test('when enabled, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
 
-        // Prepare
-        const logger = new Logger({
-          logLevel: 'DEBUG',
-          persistentLogAttributes: {
-            foo: 'bar',
-            biz: 'baz'
-          }
-        });
-        const context = {
-          callbackWaitsForEmptyEventLoop: true,
-          functionVersion: '$LATEST',
-          functionName: 'foo-bar-function',
-          memoryLimitInMB: '128',
-          logGroupName: '/aws/lambda/foo-bar-function',
-          logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-          invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          awsRequestId: 'abcdef123456abcdef123456',
-          getRemainingTimeInMillis: () => 1234,
-          done: () => console.log('Done!'),
-          fail: () => console.log('Failed!'),
-          succeed: () => console.log('Succeeded!'),
-        };
-
-        const lambdaHandler = (event: { user_id: string }): void => {
-          // Only add these persistent for the scope of this lambda handler
-          logger.appendKeys({
-            details: { user_id: event['user_id'] }
-          });
-          logger.debug('This is a DEBUG log with the user_id');
-          logger.debug('This is another DEBUG log with the user_id');
-        };
-        const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { clearState: true }));
-        const persistentAttribs = { ...logger.getPersistentLogAttributes() };
-
-        // Act
-        await handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
-        const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
-
-        // Assess
-        expect(persistentAttribs).toEqual({
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+        persistentLogAttributes: {
           foo: 'bar',
           biz: 'baz'
-        });
-        expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
-
+        }
       });
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        awsRequestId: 'abcdef123456abcdef123456',
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      const lambdaHandler = (event: { user_id: string }): void => {
+        // Only add these persistent for the scope of this lambda handler
+        logger.appendKeys({
+          details: { user_id: event['user_id'] }
+        });
+        logger.debug('This is a DEBUG log with the user_id');
+        logger.debug('This is another DEBUG log with the user_id');
+      };
+      const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { clearState: true }));
+      const persistentAttribs = { ...logger.getPersistentLogAttributes() };
+
+      // Act
+      await handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
+      const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
+
+      // Assess
+      expect(persistentAttribs).toEqual({
+        foo: 'bar',
+        biz: 'baz'
+      });
+      expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
 
     });
 
   });
 
 });
+

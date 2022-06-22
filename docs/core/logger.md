@@ -282,6 +282,125 @@ To remove the keys you added, you can use the `removeKeys` method.
 
 !!! tip "Logger will automatically ignore any key with an `undefined` value"
 
+#### Clearing all state
+
+The Logger utility is commonly initialized in the global scope, outside the handler function.
+When you attach persistent log attributes through the `persistentLogAttributes` constructor option or via the `appendKeys`, `addPersistentLogAttributes` methods, this data is attached to the Logger instance.  
+
+Due to the [Lambda Execution Context reuse](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html), this means those persistent log attributes may be reused across invocations.
+If you want to make sure that persistent attributes added **inside the handler function** code are not persisted across invocations, you can set the parameter `clearState` as `true`  in the `injectLambdaContext` middleware or decorator.
+
+=== "Middy Middleware"
+
+    ```typescript hl_lines="27"
+    import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
+    import middy from '@middy/core';
+
+    // Persistent attributes added outside the handler will be 
+    // cached across invocations
+    const logger = new Logger({
+        logLevel: 'DEBUG',
+        persistentLogAttributes: {
+            foo: "bar",
+            biz: "baz"
+        }
+    });
+
+    const lambdaHandler = async (event: { special_key: string }, _context: any): Promise<void> => {
+        // Persistent attributes added inside the handler will NOT be cached
+        // across invocations
+        if (event['special_key'] === '123456') {
+            logger.appendKeys({
+                details: { special_key: event['special_key'] }
+            });
+        }
+        logger.debug('This is a DEBUG log');
+    };
+
+    // Enable the clear state flag
+    export const handler = middy(lambdaHandler)
+        .use(injectLambdaContext(logger, { clearState: true }));
+    ```
+
+=== "Decorator"
+
+    ```typescript hl_lines="16"
+    import { Logger } from '@aws-lambda-powertools/logger';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
+
+    // Persistent attributes added outside the handler will be 
+    // cached across invocations
+    const logger = new Logger({
+        logLevel: 'DEBUG',
+        persistentLogAttributes: {
+            foo: "bar",
+            biz: "baz"
+        }
+    });
+    
+    class Lambda implements LambdaInterface {
+        // Enable the clear state flag
+        @logger.injectLambdaContext({ clearState: true })
+        public async handler(_event: any, _context: any): Promise<void> {
+            // Persistent attributes added inside the handler will NOT be cached
+            // across invocations
+            if (event['special_key'] === '123456'){
+                logger.appendKeys({
+                    details: { special_key: '123456' }
+                });
+            }
+            logger.debug('This is a DEBUG log');
+        }
+
+    }
+
+    export const myFunction = new Lambda();
+    export const handler = myFunction.handler;
+    ```
+
+In each case, the printed log will look like this:
+
+=== "First invocation"
+
+    ```json hl_lines="2 4-7"
+    {
+        "biz": "baz",
+        "cold_start": true,
+        "details": {
+            "special_key": "123456",
+        },
+        "foo": "bar",
+        "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
+        "function_memory_size": 128,
+        "function_name": "foo-bar-function",
+        "function_request_id": "abcdef123456abcdef123456",
+        "level": "DEBUG",
+        "message": "This is a DEBUG log with the user_id",
+        "service": "hello-world",
+        "timestamp": "2021-12-12T22:32:54.670Z",
+        "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
+    }
+    ```
+=== "Second invocation"
+
+    ```json hl_lines="2 4"
+    {
+        "biz": "baz",
+        "cold_start": false,
+        "foo": "bar",
+        "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
+        "function_memory_size": 128,
+        "function_name": "foo-bar-function",
+        "function_request_id": "abcdef123456abcdef123456",
+        "level": "DEBUG",
+        "message": "This is a DEBUG log with the user_id",
+        "service": "hello-world",
+        "timestamp": "2021-12-12T22:40:23.120Z",
+        "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
+    }
+    ```
+
+
 ### Appending additional data to a single log item
 
 You can append additional data to a single log item by passing objects as additional parameters.
@@ -439,6 +558,7 @@ The error will be logged with default key name `error`, but you can also pass yo
 
 !!! tip "Logging errors and log level"
     You can also log errors using the `warn`, `info`, and `debug` methods. Be aware of the log level though, you might miss those  errors when analyzing the log later depending on the log level configuration.
+
 
 ## Advanced
 

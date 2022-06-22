@@ -7,7 +7,7 @@
 import { Console } from 'console';
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
-import { LoggerOptions } from '../../src/types';
+import { ConstructorOptions } from '../../src/types';
 import { createLogger, Logger } from './../../src';
 
 describe('Helper: createLogger function', () => {
@@ -139,7 +139,7 @@ describe('Helper: createLogger function', () => {
     test('when a custom logFormatter is passed, returns a Logger instance with the correct proprieties', () => {
 
       // Prepare
-      const loggerOptions:LoggerOptions = {
+      const loggerOptions:ConstructorOptions = {
         logFormatter: expect.any(LogFormatter),
       };
 
@@ -167,7 +167,7 @@ describe('Helper: createLogger function', () => {
     test('when a custom serviceName is passed, returns a Logger instance with the correct proprieties', () => {
 
       // Prepare
-      const loggerOptions:LoggerOptions = {
+      const loggerOptions:ConstructorOptions = {
         serviceName: 'my-backend-service',
       };
 
@@ -195,7 +195,7 @@ describe('Helper: createLogger function', () => {
     test('when a custom logLevel is passed, returns a Logger instance with the correct proprieties', () => {
 
       // Prepare
-      const loggerOptions:LoggerOptions = {
+      const loggerOptions:ConstructorOptions = {
         logLevel: 'ERROR',
       };
 
@@ -223,7 +223,7 @@ describe('Helper: createLogger function', () => {
     test('when no log level is set, returns a Logger instance with INFO level', () => {
 
       // Prepare
-      const loggerOptions:LoggerOptions = {};
+      const loggerOptions:ConstructorOptions = {};
       delete process.env.LOG_LEVEL;
 
       // Act
@@ -258,7 +258,7 @@ describe('Helper: createLogger function', () => {
     test('when a custom sampleRateValue is passed, returns a Logger instance with the correct proprieties', () => {
 
       // Prepare
-      const loggerOptions:LoggerOptions = {
+      const loggerOptions:ConstructorOptions = {
         sampleRateValue: 1,
       };
 
@@ -304,7 +304,7 @@ describe('Helper: createLogger function', () => {
 
       };
       // Prepare
-      const loggerOptions:LoggerOptions = {
+      const loggerOptions:ConstructorOptions = {
         customConfigService: configService,
       };
 
@@ -332,7 +332,7 @@ describe('Helper: createLogger function', () => {
     test('when custom persistentLogAttributes is passed, returns a Logger instance with the correct proprieties', () => {
 
       // Prepare
-      const loggerOptions:LoggerOptions = {
+      const loggerOptions:ConstructorOptions = {
         persistentLogAttributes: {
           aws_account_id: '123456789012',
           aws_region: 'eu-west-1',
@@ -374,7 +374,7 @@ describe('Helper: createLogger function', () => {
     test('when A custom environment is passed, returns a Logger instance with the correct proprieties', () => {
 
       // Prepare
-      const loggerOptions:LoggerOptions = {
+      const loggerOptions:ConstructorOptions = {
         environment: 'dev',
       };
 

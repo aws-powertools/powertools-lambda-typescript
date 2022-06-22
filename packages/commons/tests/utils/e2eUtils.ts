@@ -63,12 +63,15 @@ export const generateUniqueName = (name_prefix: string, uuid: string, runtime: s
 export const invokeFunction = async (functionName: string, times: number = 1, invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL', payload: FunctionPayload = {}): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];
 
-  const promiseFactory = (): Promise<void> => {
+  const promiseFactory = (index?: number): Promise<void> => {
     const invokePromise = lambdaClient
       .invoke({
         FunctionName: functionName,
         LogType: 'Tail', // Wait until execution completes and return all logs
-        Payload: JSON.stringify(payload),
+        Payload: JSON.stringify({
+          invocation: index,
+          ...payload
+        }),
       })
       .promise()
       .then((response) => {
@@ -84,16 +87,15 @@ export const invokeFunction = async (functionName: string, times: number = 1, in
   
   const promiseFactories = Array.from({ length: times }, () => promiseFactory );
   const invocation = invocationMode == 'PARALLEL'
-    ? Promise.all(promiseFactories.map(factory => factory()))
+    ? Promise.all(promiseFactories.map((factory, index) => factory(index)))
     : chainPromises(promiseFactories);
   await invocation;
 
   return invocationLogs; 
 };
 
-const chainPromises = async (promiseFactories: (() => Promise<void>)[]) : Promise<void> => {
-  let chain = Promise.resolve();
-  promiseFactories.forEach(factory => chain = chain.then(factory));
-
-  return chain;
+const chainPromises = async (promiseFactories: ((index?: number) => Promise<void>)[]) : Promise<void> => {
+  for (let index = 0; index < promiseFactories.length; index++) {
+    await promiseFactories[index](index);
+  }
 };

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.10.0...v0.11.0) (2022-06-23)
+
+
+### Features
+
+* **logger:** add clear state functionality ([#902](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/902)) ([fa1dacb](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/fa1dacb001503a0a607e0951499119a1a9c61545))
+
+
+
+
+
 # [0.10.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.9.1...v0.10.0) (2022-06-02)
 
 

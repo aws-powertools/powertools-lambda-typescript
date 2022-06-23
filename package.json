@@ -29,8 +29,10 @@
     "lerna-preversion": "lerna exec -- npm run lint",
     "lerna-version": "lerna exec -- npm run format && git add -A src",
     "postversion": "git push && git push --tags",
+    "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",
     "docs-buildDockerImage": "docker build -t powertool-typescript/docs ./docs/",
     "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertool-typescript/docs",
+    "docs-api-build-run": "npm run docs-generateApiDoc && npx live-server api",
     "docs-generateApiDoc": "typedoc .",
     "docs-runLocalApiDoc": "npx live-server api"
   },

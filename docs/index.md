@@ -45,20 +45,20 @@ Each TypeScript utility is installed as standalone NPM package.
 ## Environment variables
 
 !!! info
-    **Explicit parameters take precedence over environment variables.**
+    **Explicit parameters passed in constructors or in middleware/decorators take precedence over environment variables.**
 
-| Environment variable                      | Description | Utility                   | Default               |
-|-------------------------------------------| --------------------------------------------------------------------------------- |---------------------------|-----------------------|
-| **POWERTOOLS_SERVICE_NAME**               | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       | `"service_undefined"` |
-| **POWERTOOLS_METRICS_NAMESPACE**          | Sets namespace used for metrics | [Metrics](./core/metrics) | `None`                |
-| **POWERTOOLS_TRACE_ENABLED**              | Explicitly disables tracing | [Tracer](./core/tracer)   | `true`                |
-| **POWERTOOLS_TRACER_CAPTURE_RESPONSE**    | Captures Lambda or method return as metadata. | [Tracer](./core/tracer)   | `true`                |
-| **POWERTOOLS_TRACER_CAPTURE_ERROR**       | Captures Lambda or method exception as metadata. | [Tracer](./core/tracer)   | `true`                |
-| **POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS** | Captures HTTP(s) requests as segments. | [Tracer](./core/tracer)   | `true`                |
-| **POWERTOOLS_LOGGER_LOG_EVENT**           | Logs incoming event | [Logger](./core/logger)   | `false`               |
-| **POWERTOOLS_LOGGER_SAMPLE_RATE**         | Debug log sampling | [Logger](./core/logger)  | `0`                   |
-| **POWERTOOLS_LOG_DEDUPLICATION_DISABLED** | Disables log deduplication filter protection to use Pytest Live Log feature | [Logger](./core/logger)  | `false`               |
-| **LOG_LEVEL**                             | Sets logging level | [Logger](./core/logger)  | `INFO`                |
+| Environment variable                         | Description                                                                            | Utility                   | Default               |
+|----------------------------------------------|----------------------------------------------------------------------------------------|---------------------------|-----------------------|
+| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       | `"service_undefined"` |
+| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) | `None`                |
+| **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                            | [Tracer](./core/tracer)   | `true`                |
+| **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Captures Lambda or method return as metadata.                                          | [Tracer](./core/tracer)   | `true`                |
+| **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Captures Lambda or method exception as metadata.                                       | [Tracer](./core/tracer)   | `true`                |
+| **POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS** | Captures HTTP(s) requests as segments.                                                 | [Tracer](./core/tracer)   | `true`                |
+| **POWERTOOLS_LOGGER_LOG_EVENT**              | Logs incoming event                                                                    | [Logger](./core/logger)   | `false`               |
+| **POWERTOOLS_LOGGER_SAMPLE_RATE**            | Debug log sampling                                                                     | [Logger](./core/logger)   | `0`                   |
+| **POWERTOOLS_LOGGER_LOG_EVENT**              | Logs incoming events                                                                   | [Logger](./core/logger)   | `false`               |
+| **LOG_LEVEL**                                | Sets logging level                                                                     | [Logger](./core/logger)   | `INFO`                |
 
 ## Examples
 

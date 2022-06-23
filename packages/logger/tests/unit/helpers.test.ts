@@ -76,6 +76,7 @@ describe('Helper: createLogger function', () => {
         coldStart: true,
         customConfigService: expect.any(EnvironmentVariablesService),
         envVarsService: expect.any(EnvironmentVariablesService),
+        logEvent: false,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'WARN',
         console: expect.any(Console),
@@ -115,6 +116,7 @@ describe('Helper: createLogger function', () => {
         coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
+        logEvent: false,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'INFO',
         console: expect.any(Console),
@@ -235,6 +237,7 @@ describe('Helper: createLogger function', () => {
         coldStart: true,
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
+        logEvent: false,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'INFO',
         console: expect.any(Console),
@@ -291,6 +294,9 @@ describe('Helper: createLogger function', () => {
         },
         getCurrentEnvironment(): string {
           return 'dev';
+        },
+        getLogEvent(): boolean {
+          return true;
         },
         getLogLevel(): string {
           return 'INFO';

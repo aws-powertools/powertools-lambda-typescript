@@ -136,6 +136,88 @@ describe('Class: EnvironmentVariablesService', () => {
 
   });
 
+  describe('Method: getLogEvent', () => {
+
+    test('It returns true if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "true"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogEvent();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    test('It returns true if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "TRUE"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'TRUE';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogEvent();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    test('It returns true if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "1"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = '1';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogEvent();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "false"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'false';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogEvent();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "0"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = '0';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogEvent();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "somethingsilly"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'somethingsilly';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogEvent();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+  });
+
   describe('Method: getLogLevel', () => {
 
     test('It returns the value of the environment variable LOG_LEVEL', () => {

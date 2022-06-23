@@ -9,6 +9,7 @@ type ClassThatLogs = {
 };
 
 type HandlerOptions = {
+  logEvent?: boolean
   clearState?: boolean
 };
 

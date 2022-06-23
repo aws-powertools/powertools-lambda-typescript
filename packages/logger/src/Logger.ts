@@ -119,6 +119,8 @@ class Logger extends Utility implements ClassThatLogs {
 
   private envVarsService?: EnvironmentVariablesService;
 
+  private logEvent: boolean = false;
+
   private logFormatter?: LogFormatterInterface;
 
   private logLevel?: LogLevel;
@@ -223,6 +225,16 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * It returns a boolean value. True means that the Lambda invocation events
+   * are printed in the logs.
+   *
+   * @returns {boolean}
+   */
+  public getLogEvent(): boolean {
+    return this.logEvent;
+  }
+
+  /**
    * It returns a boolean value, if true all the logs will be printed.
    *
    * @returns {boolean}
@@ -280,6 +292,9 @@ class Logger extends Utility implements ClassThatLogs {
         }
 
         this.addContext(context);
+        if (options) {
+          this.logEventIfEnabled(event, options.logEvent);
+        }
 
         /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         const result = originalMethod!.apply(target, [ event, context, callback ]);
@@ -291,6 +306,20 @@ class Logger extends Utility implements ClassThatLogs {
         return result;
       };
     };
+  }
+
+  /**
+   * Logs a Lambda invocation event, if it *should*.
+   *
+   ** @param {unknown} event
+   * @param {boolean} [overwriteValue]
+   * @returns {void}
+   */
+  public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
+    if (!this.shouldLogEvent(overwriteValue)) {
+      return;
+    }
+    this.info('Lambda invocation event', { event });
   }
 
   /**
@@ -351,6 +380,21 @@ class Logger extends Utility implements ClassThatLogs {
       sampleRateValue ||
       this.getCustomConfigService()?.getSampleRateValue() ||
       this.getEnvVarsService().getSampleRateValue();
+  }
+
+  /**
+   * It checks whether the current Lambda invocation event should be printed in the logs or not.
+   *
+   * @private
+   * @param {boolean} [overwriteValue]
+   * @returns {boolean}
+   */
+  public shouldLogEvent(overwriteValue?: boolean): boolean {
+    if (typeof overwriteValue === 'boolean') {
+      return overwriteValue;
+    }
+
+    return this.getLogEvent();
   }
 
   /**
@@ -486,10 +530,10 @@ class Logger extends Utility implements ClassThatLogs {
 
   /**
    * It returns the current X-Ray Trace ID parsing the content of the `_X_AMZN_TRACE_ID` env variable.
-   * 
+   *
    * The X-Ray Trace data available in the environment variable has this format:
    * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
-   * 
+   *
    * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
    *
    * @private

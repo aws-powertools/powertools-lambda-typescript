@@ -19,6 +19,7 @@ abstract class ConfigService implements ConfigServiceInterface {
    * @protected
    */
   protected currentEnvironmentVariable = 'ENVIRONMENT';
+  protected logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
   protected logLevelVariable = 'LOG_LEVEL';
   protected sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
   protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
@@ -37,6 +38,13 @@ abstract class ConfigService implements ConfigServiceInterface {
    * @returns {string}
    */
   public abstract getCurrentEnvironment(): string;
+
+  /**
+   * It returns the value of the POWERTOOLS_LOGGER_LOG_EVENT environment variable.
+   *
+   * @returns {boolean}
+   */
+  public abstract getLogEvent(): boolean;
 
   /**
    * It returns the value of the LOG_LEVEL environment variable.
@@ -58,6 +66,17 @@ abstract class ConfigService implements ConfigServiceInterface {
    * @returns {string}
    */
   public abstract getServiceName(): string;
+
+  /**
+   * It returns true if the string value represents a boolean true value.
+   *
+   * @param {string} value
+   * @returns boolean
+   * @protected
+   */
+  protected isValueTrue(value: string): boolean {
+    return value.toLowerCase() === 'true' || value === '1';
+  }
 
 }
 

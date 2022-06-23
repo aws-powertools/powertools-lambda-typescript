@@ -80,6 +80,15 @@ class EnvironmentVariablesService extends ConfigService {
   }
 
   /**
+   * It returns the value of the POWERTOOLS_LOGGER_LOG_EVENT environment variable.
+   *
+   * @returns {boolean}
+   */
+  public getLogEvent(): boolean {
+    return this.isValueTrue(this.get(this.logEventVariable));
+  }
+
+  /**
    * It returns the value of the LOG_LEVEL environment variable.
    *
    * @returns {string}

@@ -45,7 +45,7 @@ Each TypeScript utility is installed as standalone NPM package.
 ## Environment variables
 
 !!! info
-    **Explicit parameters passed in constructors or  take precedence over environment variables.**
+    **Explicit parameters passed in constructors or in middleware/decorators take precedence over environment variables.**
 
 | Environment variable                         | Description                                                                            | Utility                   | Default               |
 |----------------------------------------------|----------------------------------------------------------------------------------------|---------------------------|-----------------------|

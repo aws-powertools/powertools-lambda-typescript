@@ -14,9 +14,9 @@ Logger provides an opinionated logger with output structured as JSON.
 
 ## Key features
 
-* Capture key fields from Lambda context, cold start and structures logging output as JSON
-* Log Lambda context when instructed (disabled by default)
-* Log sampling prints all logs for a percentage of invocations (disabled by default)
+* Capture key fields from Lambda context, cold start and structure logging output as JSON
+* Log Lambda event when instructed (disabled by default)
+* Log sampling prints all the logs for a percentage of invocations (disabled by default)
 * Append additional keys to structured log at any point in time
 
 ## Getting started
@@ -191,6 +191,50 @@ In each case, the printed log will look like this:
         "timestamp": "2021-12-12T21:21:08.921Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
+    ```
+
+#### Log incoming event
+
+When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent` or via POWERTOOLS_LOGGER_LOG_EVENT env var set to `true`.
+
+???+ warning
+This is disabled by default to prevent sensitive info being logged
+
+=== "Middy Middleware"
+
+    ```typescript hl_lines="11"
+    import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
+    import middy from '@middy/core';
+
+    const logger = new Logger();
+
+    const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
+        logger.info('This is an INFO log with some context');
+    };
+
+    export const handler = middy(lambdaHandler)
+        .use(injectLambdaContext(logger, { logEvent: true }));
+    ```
+
+=== "Decorator"
+
+    ```typescript hl_lines="8"
+    import { Logger } from '@aws-lambda-powertools/logger';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
+
+    const logger = new Logger();
+    
+    class Lambda implements LambdaInterface {
+        // Set the log event flag to true
+        @logger.injectLambdaContext({ logEvent: true })
+        public async handler(_event: any, _context: any): Promise<void> {
+            logger.info('This is an INFO log with some context');
+        }
+
+    }
+
+    export const myFunction = new Lambda();
+    export const handler = myFunction.handler;
     ```
 
 ### Appending persistent additional log keys and values

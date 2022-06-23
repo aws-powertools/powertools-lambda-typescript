@@ -238,7 +238,11 @@ You can build and start the API reference website by running these two commands 
 
 #### Docs website
 
-You can build and start a local docs website by running these two commands:
+You can build and start a local docs website by running:  
+
+`npm run docs-website-build-run`
+
+Alternatively you can run these two commands:
 
 * `npm run docs-buildDockerImage` OR `docker build -t squidfunk/mkdocs-material ./docs/`
 * `npm run docs-runLocalDocker` OR `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material`

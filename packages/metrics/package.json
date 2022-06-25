@@ -55,6 +55,8 @@
     "aws",
     "lambda",
     "powertools",
-    "metrics"
+    "metrics",
+    "serverless",
+    "nodejs"
   ]
 }

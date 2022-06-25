@@ -60,6 +60,8 @@
     "lambda",
     "powertools",
     "logger",
-    "logging"
+    "logging",
+    "serverless",
+    "nodejs"
   ]
 }

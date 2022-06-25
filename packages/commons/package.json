@@ -44,6 +44,8 @@
   "keywords": [
     "aws",
     "lambda",
-    "powertools"
+    "powertools",
+    "serverless",
+    "nodejs"
   ]
 }

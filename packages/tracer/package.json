@@ -58,6 +58,8 @@
     "lambda",
     "powertools",
     "tracer",
-    "tracing"
+    "tracing",
+    "serverless",
+    "nodejs"
   ]
 }

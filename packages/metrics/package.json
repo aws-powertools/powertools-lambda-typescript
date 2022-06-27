@@ -50,5 +50,13 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^0.11.1-rc.0"
-  }
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "metrics",
+    "serverless",
+    "nodejs"
+  ]
 }

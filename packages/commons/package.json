@@ -40,5 +40,12 @@
   },
   "bugs": {
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
-  }
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "serverless",
+    "nodejs"
+  ]
 }

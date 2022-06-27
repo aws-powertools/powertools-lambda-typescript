@@ -54,5 +54,14 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.2",
     "lodash.pickby": "^4.6.0"
-  }
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "logger",
+    "logging",
+    "serverless",
+    "nodejs"
+  ]
 }

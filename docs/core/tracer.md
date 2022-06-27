@@ -3,12 +3,12 @@ title: Tracer
 description: Core utility
 ---
 
-!!! warning  "Do not use this library in production"
+!!! warning  "Do not use this library in production (yet)"
 
-    AWS Lambda Powertools for TypeScript is currently released as a beta developer preview and is intended strictly for feedback purposes only.  
-    This version is not stable, and significant breaking changes might incur as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2){target="_blank"}.
+    AWS Lambda Powertools for TypeScript is currently released as a release candidate (RC) and is intended for feedback and testing purposes only.  
+    While this version is fairly stable in terms of API surface, we still expect some changes to happen as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2){target="_blank"}.
 
-    **Do not use this library for production workloads.**
+    **Do not use this library for production workloads (yet).**
 
 Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://github.com/aws/aws-xray-sdk-node).
 

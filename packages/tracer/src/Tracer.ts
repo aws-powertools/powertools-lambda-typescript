@@ -597,6 +597,14 @@ class Tracer extends Utility implements TracerInterface {
   private getEnvVarsService(): EnvironmentVariablesService {
     return this.envVarsService;
   }
+
+  /**
+   * Determine if we are running inside an Amplify CLI process.
+   * Used internally during initialization.
+   */
+  private isAmplifyCli(): boolean {
+    return this.getEnvVarsService().getAwsExecutionEnv() === 'AWS_Lambda_amplify-mock';
+  }
   
   /**
    * Determine if we are running in a Lambda execution environment.
@@ -795,7 +803,7 @@ class Tracer extends Utility implements TracerInterface {
       return;
     }
 
-    if (this.isLambdaSamCli() || !this.isLambdaExecutionEnv()) {
+    if (this.isAmplifyCli() || this.isLambdaSamCli() || !this.isLambdaExecutionEnv()) {
       this.tracingEnabled = false;
     }
   }

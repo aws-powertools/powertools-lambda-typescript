@@ -61,7 +61,7 @@ Setting | Description                                                           
 For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
 
 !!! note
-    Before your use this utility, your AWS Lambda function [must have permissions](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html#services-xray-permissions) to send traces to AWS X-Ray.
+    Before your use this utility, your AWS Lambda function must have [Active Tracing enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html) as well as [have permissions](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html#services-xray-permissions) to send traces to AWS X-Ray
 
 #### Example using AWS Serverless Application Model (SAM)
 

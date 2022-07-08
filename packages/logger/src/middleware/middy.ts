@@ -38,9 +38,8 @@ const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions
       if (options && options.clearState === true) {
         persistentAttributes.push({ ...logger.getPersistentLogAttributes() });
       }
-      if (options) {
-        logger.logEventIfEnabled(request.event, options.logEvent);
-      }
+      const logEvent = options ? options.hasOwnProperty('logEvent') ? options.logEvent : undefined : undefined;
+      logger.logEventIfEnabled(request.event, logEvent);
     });
   };
 

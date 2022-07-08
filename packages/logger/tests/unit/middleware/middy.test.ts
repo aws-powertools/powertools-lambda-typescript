@@ -153,130 +153,6 @@ describe('Middy middleware', () => {
       });
 
     });
-    test('when a logger is passed with option logEvent set to true, it logs the event', async () => {
-
-      // Prepare
-      const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
-      const lambdaHandler = (): void => {
-        logger.info('This is an INFO log with some context');
-      };
-      const handler = middy(lambdaHandler).use(injectLambdaContext(logger , { logEvent: true }));
-      const event = { foo: 'bar' };
-      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
-      const awsRequestId = getRandomInt().toString();
-      const context = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-        awsRequestId: awsRequestId,
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-      };
-
-      // Act
-      await handler(event, context, () => console.log('Lambda invoked!'));
-
-      // Assess
-      expect(consoleSpy).toBeCalledTimes(2);
-      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
-        cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-        function_memory_size: 128,
-        function_name: 'foo-bar-function',
-        function_request_id: awsRequestId,
-        level: 'INFO',
-        message: 'Lambda invocation event',
-        service: 'hello-world',
-        timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-        event: {
-          foo: 'bar'
-        }
-      }));
-
-    });
-
-    test('when a logger is passed with option logEvent set to true, it logs the event', async () => {
-
-      // Prepare
-      const configService: ConfigServiceInterface = {
-        get(name: string): string {
-          return `a-string-from-${name}`;
-        },
-        getCurrentEnvironment(): string {
-          return 'dev';
-        },
-        getLogEvent(): boolean {
-          return true;
-        },
-        getLogLevel(): string {
-          return 'INFO';
-        },
-        getSampleRateValue(): number | undefined {
-          return undefined;
-        },
-        getServiceName(): string {
-          return 'my-backend-service';
-        },
-
-      };
-      // Prepare
-
-      const logger = new Logger({
-        customConfigService: configService,
-      });
-      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
-      const lambdaHandler = (): void => {
-        logger.info('This is an INFO log with some context');
-      };
-      const handler = middy(lambdaHandler).use(injectLambdaContext(logger , { logEvent: true }));
-      const event = { foo: 'bar' };
-      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
-      const awsRequestId = getRandomInt().toString();
-      const context = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-        awsRequestId: awsRequestId,
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-      };
-
-      // Act
-      await handler(event, context, () => console.log('Lambda invoked!'));
-
-      // Assess
-      expect(consoleSpy).toBeCalledTimes(2);
-      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
-        cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-        function_memory_size: 128,
-        function_name: 'foo-bar-function',
-        function_request_id: awsRequestId,
-        level: 'INFO',
-        message: 'Lambda invocation event',
-        service: 'my-backend-service',
-        timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-        event: {
-          foo: 'bar'
-        }
-      }));
-
-    });
 
   });
 
@@ -328,6 +204,221 @@ describe('Middy middleware', () => {
         biz: 'baz'
       });
       expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
+
+    });
+
+  });
+
+  describe('Feature: log event', () => {
+
+    test('when a logger is passed with option logEvent set to true, it logs the event', async () => {
+
+      // Prepare
+      const logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+      const lambdaHandler = (): void => {
+        logger.info('This is an INFO log with some context');
+      };
+      const handler = middy(lambdaHandler).use(injectLambdaContext(logger , { logEvent: true }));
+      const event = { foo: 'bar' };
+      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
+      const awsRequestId = getRandomInt().toString();
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        awsRequestId: awsRequestId,
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      // Act
+      await handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(2);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        function_memory_size: 128,
+        function_name: 'foo-bar-function',
+        function_request_id: awsRequestId,
+        level: 'INFO',
+        message: 'Lambda invocation event',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        event: {
+          foo: 'bar'
+        }
+      }));
+
+    });
+
+    test('when a logger is passed with option logEvent set to true, while also having a custom configService, it logs the event', async () => {
+
+      // Prepare
+      const configService: ConfigServiceInterface = {
+        get(name: string): string {
+          return `a-string-from-${name}`;
+        },
+        getCurrentEnvironment(): string {
+          return 'dev';
+        },
+        getLogEvent(): boolean {
+          return true;
+        },
+        getLogLevel(): string {
+          return 'INFO';
+        },
+        getSampleRateValue(): number | undefined {
+          return undefined;
+        },
+        getServiceName(): string {
+          return 'my-backend-service';
+        },
+
+      };
+
+      const logger = new Logger({
+        customConfigService: configService,
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+      const lambdaHandler = (): void => {
+        logger.info('This is an INFO log with some context');
+      };
+      const handler = middy(lambdaHandler).use(injectLambdaContext(logger , { logEvent: true }));
+      const event = { foo: 'bar' };
+      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
+      const awsRequestId = getRandomInt().toString();
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        awsRequestId: awsRequestId,
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      // Act
+      await handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(2);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        function_memory_size: 128,
+        function_name: 'foo-bar-function',
+        function_request_id: awsRequestId,
+        level: 'INFO',
+        message: 'Lambda invocation event',
+        service: 'my-backend-service',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        event: {
+          foo: 'bar'
+        }
+      }));
+
+    });
+
+    test('when a logger is passed without options, but POWERTOOLS_LOGGER_LOG_EVENT env var is set to true, it logs the event', async () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
+      const logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+      const lambdaHandler = (): void => {
+        logger.info('This is an INFO log with some context');
+      };
+      const handler = middy(lambdaHandler).use(injectLambdaContext(logger));
+      const event = { foo: 'bar' };
+      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
+      const awsRequestId = getRandomInt().toString();
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        awsRequestId: awsRequestId,
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      // Act
+      await handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(2);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        function_memory_size: 128,
+        function_name: 'foo-bar-function',
+        function_request_id: awsRequestId,
+        level: 'INFO',
+        message: 'Lambda invocation event',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        event: {
+          foo: 'bar'
+        }
+      }));
+
+    });
+
+    test('when a logger is passed with option logEvent set to false, but POWERTOOLS_LOGGER_LOG_EVENT env var is set to true, it does not log the event', async () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
+      const logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+      const lambdaHandler = (): void => {
+        logger.info('This is an INFO log with some context');
+      };
+      const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { logEvent: false }));
+      const event = { foo: 'bar' };
+      const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
+      const awsRequestId = getRandomInt().toString();
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        awsRequestId: awsRequestId,
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      // Act
+      await handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
 
     });
 

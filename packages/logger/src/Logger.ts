@@ -637,6 +637,19 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * If the log event feature is enabled via env variable, it sets a property that tracks whether
+   * the event passed to the Lambda function handler should be logged or not.
+   *
+   * @private
+   * @returns {void}
+   */
+  private setLogEvent(): void {
+    if (this.getEnvVarsService().getLogEvent()) {
+      this.logEvent = true;
+    }
+  }
+
+  /**
    * It sets the log formatter instance, in charge of giving a custom format
    * to the structured logs
    *
@@ -716,7 +729,8 @@ class Logger extends Utility implements ClassThatLogs {
     this.setLogsSampled();
     this.setLogFormatter(logFormatter);
     this.setPowertoolLogData(serviceName, environment);
-
+    this.setLogEvent();
+    
     this.addPersistentLogAttributes(persistentLogAttributes);
 
     return this;

@@ -292,9 +292,8 @@ class Logger extends Utility implements ClassThatLogs {
         }
 
         this.addContext(context);
-        if (options) {
-          this.logEventIfEnabled(event, options.logEvent);
-        }
+        const logEvent = options ? options.hasOwnProperty('logEvent') ? options.logEvent : undefined : undefined;
+        this.logEventIfEnabled(event, logEvent);
 
         /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         const result = originalMethod!.apply(target, [ event, context, callback ]);

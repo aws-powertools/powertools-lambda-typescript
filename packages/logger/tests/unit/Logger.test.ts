@@ -982,6 +982,93 @@ describe('Class: Logger', () => {
 
     });
 
+    test('when used as decorator with the log event flag enabled, it logs the event', async () => {
+
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+
+      type CustomEvent = { user_id: string };
+
+      class LambdaFunction implements LambdaInterface {
+
+        @logger.injectLambdaContext({ logEvent: true })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TResult>(_event: CustomEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return;
+        }
+      }
+
+      // Act
+      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        function_memory_size: 128,
+        function_name: 'foo-bar-function',
+        function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        level: 'INFO',
+        message: 'Lambda invocation event',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        event: {
+          user_id: '123456'
+        }
+      }));
+
+    });
+
+    test('when used as decorator without options, but POWERTOOLS_LOGGER_LOG_EVENT env var is set to true, it logs the event', async () => {
+
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+
+      type CustomEvent = { user_id: string };
+
+      class LambdaFunction implements LambdaInterface {
+
+        @logger.injectLambdaContext()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TResult>(_event: CustomEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return;
+        }
+      }
+
+      // Act
+      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        function_memory_size: 128,
+        function_name: 'foo-bar-function',
+        function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        level: 'INFO',
+        message: 'Lambda invocation event',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        event: {
+          user_id: '123456'
+        }
+      }));
+
+    });
+
   });
 
   describe('Method: refreshSampleRateCalculation', () => {

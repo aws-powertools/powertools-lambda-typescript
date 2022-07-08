@@ -65,7 +65,7 @@ For a **complete list** of supported environment variables, refer to [this secti
 
 #### Example using AWS Serverless Application Model (SAM)
 
-The `Tracer` utility is instantiated outside of the Lambda handler. In doing this, the same instance can be used across multiple invocations inside the same execution environment. This allows `Metrics` to be aware of things like whether or not a given invocation had a cold start or not.
+The `Tracer` utility is instantiated outside of the Lambda handler. In doing this, the same instance can be used across multiple invocations inside the same execution environment. This allows `Tracer` to be aware of things like whether or not a given invocation had a cold start or not.
 
 === "handler.ts"
 

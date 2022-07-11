@@ -158,7 +158,7 @@ describe('Middy middleware', () => {
 
   describe('Feature: clear state', () => {
 
-    test('when enabled, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
+    test('when enabled, the persistent log attributes added within the handler scope are removed after the invocation ends', async () => {
 
       // Prepare
       const logger = new Logger({
@@ -393,7 +393,7 @@ describe('Middy middleware', () => {
       const logger = new Logger();
       const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
       const lambdaHandler = (): void => {
-        logger.info('This is an INFO log with some context');
+        logger.info('This is an INFO log');
       };
       const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { logEvent: false }));
       const event = { foo: 'bar' };
@@ -419,7 +419,18 @@ describe('Middy middleware', () => {
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
-
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        function_memory_size: 128,
+        function_name: 'foo-bar-function',
+        function_request_id: awsRequestId,
+        level: 'INFO',
+        message: 'This is an INFO log',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      }));
     });
 
   });

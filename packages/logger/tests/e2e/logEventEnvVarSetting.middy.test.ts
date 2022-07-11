@@ -76,7 +76,7 @@ describe(`logger E2E tests log event via env var setting (middy) for runtime: ${
 
   describe('Log event', () => {
 
-    it('should log the event on the first invocation', async () => {
+    it('should log the event at both invocations', async () => {
       const firstInvocationMessages = invocationLogs[0].getAllFunctionLogs();
       let eventLoggedInFirstInvocation = false;
       for (const message of firstInvocationMessages) {

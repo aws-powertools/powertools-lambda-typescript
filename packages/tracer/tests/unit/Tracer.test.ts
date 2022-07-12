@@ -904,8 +904,7 @@ describe('Class: Tracer', () => {
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
-      // const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
-      const captureAsyncFuncSpy = createCaptureAsyncFuncMock(tracer.provider);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
         @tracer.captureMethod()
@@ -948,8 +947,8 @@ describe('Class: Tracer', () => {
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
-      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
-      // const captureAsyncFuncSpy = createCaptureAsyncFuncMock(tracer.provider);
+      // const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      const captureAsyncFuncSpy = createCaptureAsyncFuncMock(tracer.provider);
       const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
       class Lambda implements LambdaInterface {
 

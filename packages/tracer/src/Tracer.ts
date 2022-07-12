@@ -432,7 +432,7 @@ class Tracer extends Utility implements TracerInterface {
             throw error;
           } finally {
             subsegment?.close();
-            // subsegment?.flush();
+            subsegment?.flush();
           }
           
           return result;

@@ -17,16 +17,10 @@ interface LambdaInterface {
 type CaptureAsyncFuncMock = jest.SpyInstance<unknown, [name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment]>;
 const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface): CaptureAsyncFuncMock {
   return jest.spyOn(provider, 'captureAsyncFunc')
-    .mockImplementation((methodName, callBackFn) => {
+    .mockImplementation(async (methodName, callBackFn) => {
       const subsegment = new Subsegment(`### ${methodName}`);
       jest.spyOn(subsegment, 'flush').mockImplementation(() => null);
-      try {
-        callBackFn(subsegment);
-      } catch {
-        console.log('error was thrown');
-      } finally {
-        console.log('finally');
-      }
+      await callBackFn(subsegment);
     });
 };
 

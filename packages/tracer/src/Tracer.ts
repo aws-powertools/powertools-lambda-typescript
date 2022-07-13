@@ -421,17 +421,18 @@ class Tracer extends Utility implements TracerInterface {
           return originalMethod.apply(target, [...args]);
         }
 
-        return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
+        return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {          
           let result;
           try {
             result = await originalMethod.apply(this, [...args]);
             this.addResponseAsMetadata(result, originalMethod.name);
           } catch (error) {
-            this.addErrorAsMetadata(error as Error);
-            // TODO: should this error be thrown?? If thrown we get a ERR_UNHANDLED_REJECTION. If not aren't we are basically catching a Customer error?
-            // throw error;
+            this.addErrorAsMetadata(error as Error); 
+            
+            throw error;
           } finally {
             subsegment?.close();
+            subsegment?.flush();
           }
           
           return result;

@@ -17,10 +17,10 @@ interface LambdaInterface {
 type CaptureAsyncFuncMock = jest.SpyInstance<unknown, [name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment]>;
 const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface): CaptureAsyncFuncMock {
   return jest.spyOn(provider, 'captureAsyncFunc')
-    .mockImplementation((methodName, callBackFn) => {
+    .mockImplementation(async (methodName, callBackFn) => {
       const subsegment = new Subsegment(`### ${methodName}`);
       jest.spyOn(subsegment, 'flush').mockImplementation(() => null);
-      callBackFn(subsegment);
+      await callBackFn(subsegment);
     });
 };
 
@@ -865,7 +865,6 @@ describe('Class: Tracer', () => {
       const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
 
-        // TODO: revisit return type & make it more specific
         @tracer.captureMethod()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -895,6 +894,7 @@ describe('Class: Tracer', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
       jest.spyOn(tracer.provider, 'getSegment')
         .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
@@ -960,10 +960,8 @@ describe('Class: Tracer', () => {
 
       }
 
-      // Act
-      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
-
-      // Assess
+      // Act / Assess
+      await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(expect.objectContaining({
         name: '### dummyMethod',
@@ -971,6 +969,7 @@ describe('Class: Tracer', () => {
       expect('cause' in newSubsegment).toBe(true);
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
+      expect.assertions(6);
 
     });
 

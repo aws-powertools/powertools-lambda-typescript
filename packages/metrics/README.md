@@ -1,10 +1,5 @@
 # AWS Lambda Powertools for TypeScript
 
-| ⚠️ **WARNING: Do not use this library in production (yet)** ⚠️                                                                                                                                                                                                                                                                                                                                             |
-|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| AWS Lambda Powertools for TypeScript is currently released as a release candidate (RC) and is intended for feedback and testing purposes only.  <br/>While this version is fairly stable in terms of API surface, we still expect some changes to happen as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2).                                              |_
-
-
 A suite of TypeScript utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more. (AWS Lambda Powertools for [Python](https://github.com/awslabs/aws-lambda-powertools-python) and AWS Lambda Powertools for [Java](https://github.com/awslabs/aws-lambda-powertools-java) are also available).
 
 **[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples)**

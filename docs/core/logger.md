@@ -3,13 +3,6 @@ title: Logger
 description: Core utility
 ---
 
-!!! warning  "Do not use this library in production (yet)"
-
-    AWS Lambda Powertools for TypeScript is currently released as a release candidate (RC) and is intended for feedback and testing purposes only.
-    While this version is fairly stable in terms of API surface, we still expect some changes to happen as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2){target="_blank"}.
-
-    **Do not use this library for production workloads (yet).**
-
 Logger provides an opinionated logger with output structured as JSON.
 
 ## Key features

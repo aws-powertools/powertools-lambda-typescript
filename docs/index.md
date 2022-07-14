@@ -3,13 +3,6 @@ title: Homepage
 description: AWS Lambda Powertools for TypeScript
 ---
 
-!!! warning  "Do not use this library in production (yet)"
-
-    AWS Lambda Powertools for TypeScript is currently released as a release candidate (RC) and is intended for feedback and testing purposes only.  
-    While this version is fairly stable in terms of API surface, we still expect some changes to happen as part of the upcoming [production-ready release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/2){target="_blank"}.
-
-    **Do not use this library for production workloads (yet).**
-
 AWS Lambda Powertools for TypeScript provides a suite of utilities for AWS Lambda functions running on the Node.js runtime, to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.
 
 ## Tenets

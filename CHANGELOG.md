@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.12.0-rc.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.12.0-rc.0...v0.12.0-rc.1) (2022-07-14)
+
+
+### Reverts
+
+* Revert "build: bump lerna (#1014)" (#1018) ([623e12d](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/623e12de4c6c1dbc93d285e7d03426bff0802b38)), closes [#1014](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1014) [#1018](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1018)
+
+
+
+
+
 # [0.12.0-rc.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.11.1-rc.0...v0.12.0-rc.0) (2022-07-14)
 
 

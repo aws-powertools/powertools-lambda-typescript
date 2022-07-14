@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.12.0-rc.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.11.1-rc.0...v0.12.0-rc.0) (2022-07-14)
+
+
+### Bug Fixes
+
+* **logger:** POWERTOOLS_LOGGER_LOG_EVENT precedence is respected ([#1015](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1015)) ([1cbb4db](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/1cbb4db4daf776e12f7dc2b383ac7fa561b7bada))
+
+
+
+
+
 ## [0.11.1-rc.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.11.0...v0.11.1-rc.0) (2022-06-24)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger

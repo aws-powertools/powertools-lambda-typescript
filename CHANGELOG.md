@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.12.0-rc.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.11.1-rc.0...v0.12.0-rc.0) (2022-07-14)
+
+
+### Bug Fixes
+
+* **logger:** POWERTOOLS_LOGGER_LOG_EVENT precedence is respected ([#1015](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1015)) ([1cbb4db](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/1cbb4db4daf776e12f7dc2b383ac7fa561b7bada))
+* **tracer:** capture method throws errors correctly ([#1016](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1016)) ([fb85238](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/fb8523868e8d5e31c00a017ae1102ed31a0a4245))
+
+
+### Features
+
+* **tracer:** auto disable when running inside amplify mock ([#1010](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1010)) ([024d628](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/024d6286f9b9273becce825b5c6ca0db87d4c63a))
+
+
+
+
+
 ## [0.11.1-rc.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v0.11.0...v0.11.1-rc.0) (2022-06-24)
 
 **Note:** Version bump only for package aws-lambda-powertools-typescript

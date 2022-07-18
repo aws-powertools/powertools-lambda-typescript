@@ -3,7 +3,8 @@ title: Homepage
 description: AWS Lambda Powertools for TypeScript
 ---
 
-AWS Lambda Powertools for TypeScript provides a suite of utilities for AWS Lambda functions running on the Node.js runtime, to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.
+AWS Lambda Powertools for TypeScript provides a suite of utilities for AWS Lambda functions running on the Node.js runtime, to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.  
+You can use the library in both TypeScript and JavaScript code bases.
 
 ## Tenets
 
@@ -29,11 +30,27 @@ Core utilities such as Tracer, Logger, Metrics, and Event Handler will be availa
 The AWS Lambda Powertools for TypeScript utilities (which from here will be referred as Powertools) follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).
 Each TypeScript utility is installed as standalone NPM package.
 
+Install all three core utilities at once with this single command:
+
+```shell
+npm install @aws-lambda-powertools/logger @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics
+```
+
+Or refer to the installation guide of each utility: 
+
 [Installation guide for the **Tracer** utility](./core/tracer.md#getting-started)
 
 [Installation guide for the **Logger** utility](./core/logger.md#getting-started)
 
 [Installation guide for the **Metrics** utility](./core/metrics.md#getting-started)
+
+## Instrumentation
+
+You can instrument your code with Powertools in three different ways:  
+
+* **Manually**. It provides the most granular control. It’s the most verbose approach, with the added benefit of no additional dependency and no refactoring to [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html).
+* **Middy** middleware. It is the best choice if your existing code base relies on the [Middy]() middleware engine. Powertools offers compatible Middy middleware to make this integration seamless.
+* **Method** decorator. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using TypeScript Classes. If you aren’t using Classes, this requires the most significant refactoring.
 
 ## Environment variables
 
@@ -57,6 +74,11 @@ Each TypeScript utility is installed as standalone NPM package.
 
 * [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk){target="_blank"}
 * [SAM](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/sam){target="_blank"}
+
+## Serverless TypeScript demo application
+
+The [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) shows how to use Lambda Powertools for TypeScript.  
+You can find instructions on how to deploy and load test this application in the [repository](https://github.com/aws-samples/serverless-typescript-demo).
 
 ## Credits
 

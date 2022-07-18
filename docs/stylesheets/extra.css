@@ -1,17 +1,13 @@
+@font-face {
+    font-size: 0.65rem;
+}
+
 .md-grid {
     max-width: 81vw;
 }
 
-.md-typeset table:not([class]) {
-    font-size: 0.75rem;
-}
-
 .md-typeset a {
     border-bottom: 0.1px dashed black;
-}
-
-.md-typeset table:not([class]) {
-    font-size: 0.75rem;
 }
 
 .md-nav__link--active {

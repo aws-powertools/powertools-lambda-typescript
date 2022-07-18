@@ -7,11 +7,11 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 
 ## Key features
 
-* Auto capture cold start and service name as annotations, and responses or full exceptions as metadata
-* Auto-disable when not running in AWS Lambda environment
-* Automatically trace HTTP(s) clients and generate segments for each request
-* Support tracing functions via decorators, middleware, and manual instrumentation
-* Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js  
+* Auto-capturing cold start and service name as annotations, and responses or full exceptions as metadata.
+* Automatically tracing HTTP(S) clients and generating segments for each request.
+* Supporting tracing functions via decorators, middleware, and manual instrumentation.
+* Supporting tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js.
+* Auto-disable tracing when not running in the Lambda environment.
 
 ![Tracer showcase](../media/tracer_utility_showcase.png)
 

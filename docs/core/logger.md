@@ -13,6 +13,13 @@ Logger provides an opinionated logger with output structured as JSON.
 * Appending additional keys to structured logs at any point in time.
 * Providing a custom log formatter (Bring Your Own Formatter) to output logs in a structure compatible with your organization’s Logging RFC.
 
+<br />
+
+<figure>
+  <img src="../../media/logger_utility_showcase.png" loading="lazy" alt="Screenshot of the Amazon CloudWatch Console showing an example of error logged with various log attributes" />
+  <figcaption>Logger showcase - Log attributes</figcaption>
+</figure>
+
 ## Getting started
 
 ### Installation
@@ -25,7 +32,7 @@ npm install @aws-lambda-powertools/logger
 
 ### Usage
 
-The `Logger` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Logger` can keep track of a cold start and inject the appropriate fields into logs.
+The `Logger` utility must always be instantiated outside the Lambda handler. By doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Logger` can keep track of a cold start and inject the appropriate fields into logs.
 
 === "handler.ts"
 
@@ -45,10 +52,10 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all logs emitted:
 
-Setting | Description                                                                                                      | Environment variable | Constructor parameter
-------------------------------------------------- |------------------------------------------------------------------------------------------------------------------| ------------------------------------------------- | -------------------------------------------------
-**Logging level** | Sets how verbose Logger should be (INFO, by default). Supported values are: `DEBUG`, `INFO`, `WARN`, `ERROR`     |  `LOG_LEVEL` | `logLevel`
-**Service name** | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME` | `serviceName`
+| Setting           | Description                                                                                                      | Environment variable      | Constructor parameter |
+|-------------------|------------------------------------------------------------------------------------------------------------------|---------------------------|-----------------------|
+| **Logging level** | Sets how verbose Logger should be (INFO, by default). Supported values are: `DEBUG`, `INFO`, `WARN`, `ERROR`     | `LOG_LEVEL`               | `logLevel`            |
+| **Service name**  | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME` | `serviceName`         |
 
 For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
 
@@ -87,15 +94,15 @@ For a **complete list** of supported environment variables, refer to [this secti
 
 Your Logger will include the following keys to your structured logging (default log formatter):
 
-Key | Example | Note
-------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------
-**level**: `string` | `INFO` | Logging level set for the Lambda function"s invocation
-**message**: `string` | `Query performed to DynamoDB` | A descriptive, human-readable representation of this log item
-**sampling_rate**: `float` |  `0.1` | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%
-**service**: `string` | `serverlessAirline` | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`
-**timestamp**: `string` | `2011-10-05T14:48:00.000Z` | Timestamp string in simplified extended ISO format (ISO 8601)
-**xray_trace_id**: `string` | `1-5759e988-bd862e3fe1be46a994272793` | X-Ray Trace ID. This value is always presented in Lambda environment, whether [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"} or not. Logger will always log this value.
-**error**: `Object` | `{ name: "Error", location: "/my-project/handler.ts:18", message: "Unexpected error #1", stack: "[stacktrace]"}` | Optional - An object containing information about the Error passed to the logger
+| Key                         | Example                                                                                                          | Note                                                                                                                                                                                                                            |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **level**: `string`         | `INFO`                                                                                                           | Logging level set for the Lambda function"s invocation                                                                                                                                                                          |
+| **message**: `string`       | `Query performed to DynamoDB`                                                                                    | A descriptive, human-readable representation of this log item                                                                                                                                                                   |
+| **sampling_rate**: `float`  | `0.1`                                                                                                            | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%                                                                                                                                                   |
+| **service**: `string`       | `serverlessAirline`                                                                                              | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`                                                                                                                         |
+| **timestamp**: `string`     | `2011-10-05T14:48:00.000Z`                                                                                       | Timestamp string in simplified extended ISO format (ISO 8601)                                                                                                                                                                   |
+| **xray_trace_id**: `string` | `1-5759e988-bd862e3fe1be46a994272793`                                                                            | X-Ray Trace ID. This value is always presented in Lambda environment, whether [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"} or not. Logger will always log this value. |
+| **error**: `Object`         | `{ name: "Error", location: "/my-project/handler.ts:18", message: "Unexpected error #1", stack: "[stacktrace]"}` | Optional - An object containing information about the Error passed to the logger                                                                                                                                                |
 
 ### Capturing Lambda context info
 
@@ -111,27 +118,11 @@ Key | Example
 **function_arn**: `string` | `arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1`
 **function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
 
-=== "Manual"
-
-    ```typescript hl_lines="7"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    const logger = new Logger();
-
-    export const handler = async (_event, context): Promise<void> => {
-    
-        logger.addContext(context);
-        
-        logger.info('This is an INFO log with some context');
-
-    };
-    ```
-
 === "Middy Middleware"
 
     !!! tip "Using Middy for the first time?"
         You can install Middy by running `npm i @middy/core`.
-        Learn more about [its usage and lifecycle in the official Middy documentation](https://github.com/middyjs/middy#usage){target="_blank"}.
+        Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
 
     ```typescript hl_lines="1-2 10-11"
     import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
@@ -167,6 +158,21 @@ Key | Example
     export const myFunction = new Lambda();
     export const handler = myFunction.handler;
     ```
+=== "Manual"
+
+    ```typescript hl_lines="7"
+    import { Logger } from '@aws-lambda-powertools/logger';
+
+    const logger = new Logger();
+
+    export const handler = async (_event, context): Promise<void> => {
+    
+        logger.addContext(context);
+        
+        logger.info('This is an INFO log with some context');
+
+    };
+    ```
 
 In each case, the printed log will look like this:
 
@@ -189,7 +195,7 @@ In each case, the printed log will look like this:
 
 #### Log incoming event
 
-When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent` or via POWERTOOLS_LOGGER_LOG_EVENT env var set to `true`.
+When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent` or via `POWERTOOLS_LOGGER_LOG_EVENT` env var set to `true`.
 
 ???+ warning
 This is disabled by default to prevent sensitive info being logged

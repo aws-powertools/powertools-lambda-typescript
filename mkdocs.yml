@@ -75,6 +75,7 @@ copyright: Copyright &copy; 2022 Amazon Web Services
 plugins:
   - git-revision-date
   - search
+  - glightbox
 
 extra_css:
   - stylesheets/extra.css

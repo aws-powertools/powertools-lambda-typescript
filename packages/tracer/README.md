@@ -1,8 +1,10 @@
 # AWS Lambda Powertools for TypeScript
 
-A suite of utilities for AWS Lambda functions to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.  
+A suite of utilities for AWS Lambda functions to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.
+
 You can use the library in both TypeScript and JavaScript code bases.
-AWS Lambda Powertools for [Python](https://github.com/awslabs/aws-lambda-powertools-python) and  AWS Lambda Powertools for [Java](https://github.com/awslabs/aws-lambda-powertools-java) are also available).
+
+AWS Lambda Powertools for [Python](https://github.com/awslabs/aws-lambda-powertools-python) and  AWS Lambda Powertools for [Java](https://github.com/awslabs/aws-lambda-powertools-java) are also available.
 
 **[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
 
@@ -65,7 +67,7 @@ If you are interested in contributing to this project, please refer to our [Cont
 ## Roadmap
 
 The roadmap of Powertools is driven by customers’ demand.  
-Help us prioritize upcoming functionalities or utilities by [upvoting existing RFCs and feature requests](https://github.com/awslabs/aws-lambda-powertools-typescript/issues), or [creating new ones[(https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new/choose), in this GitHub repository.
+Help us prioritize upcoming functionalities or utilities by [upvoting existing RFCs and feature requests](https://github.com/awslabs/aws-lambda-powertools-typescript/issues), or [creating new ones](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new/choose), in this GitHub repository.
 
 ## Connect
 

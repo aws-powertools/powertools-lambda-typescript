@@ -21,7 +21,7 @@ Core utilities such as Tracer, Logger, Metrics, and Event Handler will be availa
 
 | Utility | Description
 | ------------------------------------------------- | ---------------------------------------------------------------------------------
-[Tracer](./core/tracer.md) | Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
+[Tracer](./core/tracer.md) | Trace Lambda function handlers, and both synchronous and asynchronous functions
 [Logger](./core/logger.md) | Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
 [Metrics](./core/metrics.md) | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
 
@@ -48,9 +48,9 @@ Or refer to the installation guide of each utility:
 
 You can instrument your code with Powertools in three different ways:  
 
+* **Middy** middleware. It is the best choice if your existing code base relies on the [Middy](https://middy.js.org/docs/) middleware engine. Powertools offers compatible Middy middleware to make this integration seamless.
+* **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using TypeScript Classes. If you aren’t using Classes, this requires the most significant refactoring.
 * **Manually**. It provides the most granular control. It’s the most verbose approach, with the added benefit of no additional dependency and no refactoring to [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html).
-* **Middy** middleware. It is the best choice if your existing code base relies on the [Middy]() middleware engine. Powertools offers compatible Middy middleware to make this integration seamless.
-* **Method** decorator. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using TypeScript Classes. If you aren’t using Classes, this requires the most significant refactoring.
 
 ## Environment variables
 
@@ -67,7 +67,6 @@ You can instrument your code with Powertools in three different ways:
 | **POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS** | Captures HTTP(s) requests as segments.                                                 | [Tracer](./core/tracer)   | `true`                |
 | **POWERTOOLS_LOGGER_LOG_EVENT**              | Logs incoming event                                                                    | [Logger](./core/logger)   | `false`               |
 | **POWERTOOLS_LOGGER_SAMPLE_RATE**            | Debug log sampling                                                                     | [Logger](./core/logger)   | `0`                   |
-| **POWERTOOLS_LOGGER_LOG_EVENT**              | Logs incoming events                                                                   | [Logger](./core/logger)   | `false`               |
 | **LOG_LEVEL**                                | Sets logging level                                                                     | [Logger](./core/logger)   | `INFO`                |
 
 ## Examples

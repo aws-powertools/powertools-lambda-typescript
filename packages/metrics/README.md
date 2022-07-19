@@ -10,10 +10,13 @@ AWS Lambda Powertools for [Python](https://github.com/awslabs/aws-lambda-powerto
 
 - [Features](#features)
 - [Getting started](#getting-started)
-    - [Installation](#installation)
-    - [Examples](#examples)
-- [Credits](#credits)
+  - [Installation](#installation)
+  - [Examples](#examples)
+  - [Serverless TypeScript Demo](#serverless-typescript-demo-application)
+- [Contribute](#contribute)
+- [Roadmap](#roadmap)
 - [Connect](#connect)
+- [Credits](#credits)
 - [License](#license)
 
 ## Features
@@ -50,18 +53,14 @@ Or refer to the installation guide of each utility:
 * [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)
 * [SAM](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/sam)
 
-## Serverless TypeScript demo application
+### Serverless TypeScript Demo application
 
 The [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) shows how to use Lambda Powertools for TypeScript.  
 You can find instructions on how to deploy and load test this application in the [repository](https://github.com/aws-samples/serverless-typescript-demo).
 
-## Credits
-
-* Credits for the Lambda Powertools idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
-
 ## Contribute
 
-If you want to contribute to this project, please refer to our [Contributing Guidelines](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/CONTRIBUTING.md).
+If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/CONTRIBUTING.md).
 
 ## Roadmap
 
@@ -72,6 +71,10 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 * **AWS Developers Slack**: `#lambda-powertools` - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw)**
 * **Email**: aws-lambda-powertools-feedback@amazon.com
+
+## Credits
+
+Credits for the Lambda Powertools idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
 
 ## License
 

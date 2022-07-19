@@ -75,14 +75,7 @@ copyright: Copyright &copy; 2022 Amazon Web Services
 plugins:
   - git-revision-date
   - search
-  - glightbox:
-      touchNavigation: true
-      loop: false
-      effect: zoom
-      width: 100%
-      height: auto
-      zoomable: true
-      draggable: true
+  - glightbox
 
 extra_css:
   - stylesheets/extra.css

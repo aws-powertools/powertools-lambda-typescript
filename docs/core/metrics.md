@@ -17,7 +17,7 @@ These metrics can be visualized through [Amazon CloudWatch Console](https://cons
 <br />
 
 <figure>
-  <img src="../../media/metrics_utility_showcase.png" loading="lazy" />
+  <img src="../../media/metrics_utility_showcase.png" loading="lazy" alt="Screenshot of the Amazon CloudWatch Console showing an example of business metrics in the Metrics Explorer" />
   <figcaption>Metrics showcase - Metrics Explorer</figcaption>
 </figure>
 

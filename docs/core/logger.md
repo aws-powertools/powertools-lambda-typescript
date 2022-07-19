@@ -16,7 +16,7 @@ Logger provides an opinionated logger with output structured as JSON.
 <br />
 
 <figure>
-  <img src="../../media/logger_utility_showcase.png" loading="lazy" />
+  <img src="../../media/logger_utility_showcase.png" loading="lazy" alt="Screenshot of the Amazon CloudWatch Console showing an example of error logged with various log attributes" />
   <figcaption>Logger showcase - Log attributes</figcaption>
 </figure>
 

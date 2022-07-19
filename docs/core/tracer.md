@@ -16,7 +16,7 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 <br />
 
 <figure>
-  <img src="../../media/tracer_utility_showcase.png" loading="lazy" />
+  <img src="../../media/tracer_utility_showcase.png" loading="lazy" alt="Screenshot of the Amazon CloudWatch Console showing an example of segments and subsegments generated and with annotations set for the handler" />
   <figcaption>Tracer showcase - Handler Annotations</figcaption>
 </figure>
 
@@ -223,7 +223,7 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
     ```
 
 <figure>
-  <img src="../../media/tracer_utility_showcase_2.png" loading="lazy"/>
+  <img src="../../media/tracer_utility_showcase_2.png" loading="lazy" alt="Screenshot of the Amazon CloudWatch Console showing an example of segments and subsegments generated and with metadata set for the handler"/>
   <figcaption>Tracer showcase - Handler Metadata</figcaption>
 </figure>
 

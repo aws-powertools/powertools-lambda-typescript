@@ -4,6 +4,7 @@ description: AWS Lambda Powertools for TypeScript
 ---
 
 AWS Lambda Powertools for TypeScript provides a suite of utilities for AWS Lambda functions running on the Node.js runtime, to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.  
+
 You can use the library in both TypeScript and JavaScript code bases.
 
 ## Tenets
@@ -36,6 +37,7 @@ Install all three core utilities at once with this single command:
 npm install @aws-lambda-powertools/logger @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics
 ```
 
+
 Or refer to the installation guide of each utility: 
 
 [Installation guide for the **Tracer** utility](./core/tracer.md#getting-started)
@@ -49,8 +51,10 @@ Or refer to the installation guide of each utility:
 You can instrument your code with Powertools in three different ways:  
 
 * **Middy** middleware. It is the best choice if your existing code base relies on the [Middy](https://middy.js.org/docs/) middleware engine. Powertools offers compatible Middy middleware to make this integration seamless.
-* **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using TypeScript Classes. If you aren’t using Classes, this requires the most significant refactoring.
-* **Manually**. It provides the most granular control. It’s the most verbose approach, with the added benefit of no additional dependency and no refactoring to [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html).
+* **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html). If you aren’t using Classes, this requires the most significant refactoring.
+* **Manually**. It provides the most granular control. It’s the most verbose approach, with the added benefit of no additional dependency and no refactoring to TypeScript Classes.
+
+The examples in this documentation will feature all the approaches described above, when applicable.
 
 ## Environment variables
 

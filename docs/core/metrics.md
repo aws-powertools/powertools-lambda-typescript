@@ -18,7 +18,7 @@ These metrics can be visualized through [Amazon CloudWatch Console](https://cons
 
 <figure>
   <img src="../../media/metrics_utility_showcase.png" loading="lazy" />
-  <figcaption>Metrics showcase - Handler Annotations</figcaption>
+  <figcaption>Metrics showcase - Metrics Explorer</figcaption>
 </figure>
 
 ## Terminologies

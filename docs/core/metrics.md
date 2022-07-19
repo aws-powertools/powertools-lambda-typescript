@@ -9,10 +9,10 @@ These metrics can be visualized through [Amazon CloudWatch Console](https://cons
 
 ## Key features
 
-* Aggregate up to 100 metrics using a single CloudWatch EMF object (large JSON blob)
-* Validate against common metric definitions mistakes (metric unit, values, max dimensions, max metrics, etc)
-* Metrics are created asynchronously by CloudWatch service, no custom stacks needed
-* Context manager to create a one off metric with a different dimension
+* Aggregating up to 100 metrics using a single CloudWatch EMF object (large JSON blob).
+* Validating your metrics against common metric definitions mistakes (for example, metric unit, values, max dimensions, max metrics).
+* Metrics are created asynchronously by the CloudWatch service. You do not need any custom stacks, and there is no impact to Lambda function latency.
+* Creating a one-off metric with different dimensions.
 
 ## Terminologies
 

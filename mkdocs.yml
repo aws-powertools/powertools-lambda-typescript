@@ -34,10 +34,12 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - toc.follow
     - navigation.instant
     - navigation.indexes
     - navigation.tracking
     - content.code.annotate
+    - toc.integrate
   icon:
     repo: fontawesome/brands/github
   logo: media/aws-logo-light.svg

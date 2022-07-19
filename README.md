@@ -80,4 +80,4 @@ Credits for the Lambda Powertools idea go to [DAZN](https://github.com/getndazn)
 
 ## License
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+This library is licensed under the MIT-0 License. See the [LICENSE](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/LICENSE) file.

@@ -10,7 +10,7 @@
     "test": "npm run test:unit",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
-    "test:unit": "jest --group=unit",
+    "test:unit": "jest --group=unit -u",
     "test:e2e": "jest --group=e2e"
   },
   "devDependencies": {

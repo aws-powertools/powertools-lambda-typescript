@@ -14,6 +14,8 @@
     "test:e2e": "if-node-version '>12' jest --testPathPattern=e2e"
   },
   "devDependencies": {
+    "@aws-cdk/cloudformation-diff": "2.24.1",
+    "@aws-cdk/cx-api": "2.24.1",
     "@types/jest": "^26.0.24",
     "@types/node": "10.17.27",
     "aws-cdk": "2.24.1",

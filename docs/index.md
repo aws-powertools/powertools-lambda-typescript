@@ -36,7 +36,7 @@ Powertools is available in the following formats:
 ???+ hint "Support this project by using Lambda Layers :heart:"
     Lambda Layers allow us to understand who uses this library in a non-intrusive way. This helps us justify and gain future investments for other Lambda Powertools languages.
 
-    When using Layers, you can add Lambda Powertools as a dev dependency (or as part of your virtual env) to not impact the development process.
+    When using Layers, you can add Lambda Powertools as a dev dependency to not impact the development process.
 
 
 ### Lambda Layer

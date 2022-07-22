@@ -47,7 +47,7 @@ jobs:
         run: |
           npm ci
       - name: CDK build
-        run: cdk synth --context powerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
+        run: cdk synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
       - name: zip output
         run: zip -r cdk.out.zip cdk.out
       - name: Archive CDK artifacts

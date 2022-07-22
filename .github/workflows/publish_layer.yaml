@@ -11,11 +11,10 @@ on:
         description: "Latest npm published version to rebuild latest docs for, e.g. v1.0.0"
         default: "v1.0.0"
         required: true
-  # TO BE UNCOMMENTED WHEN WORKFLOW IS READY
-  # workflow_run:
-  #   workflows: ["Publish to NPM"]
-  #   types:
-  #     - completed
+  workflow_run:
+    workflows: ["release"]
+    types:
+      - completed
 
 jobs:
   build-layer:

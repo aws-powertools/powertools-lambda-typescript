@@ -1,4 +1,4 @@
-name: Label PR based on title
+name: On new PR
 
 on:
   workflow_run:
@@ -8,8 +8,6 @@ on:
 
 jobs:
   get_pr_details:
-    # Guardrails to only ever run if PR recording workflow was indeed
-    # run in a PR event and ran successfully
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/reusable_export_pr_details.yml
     with:
@@ -17,22 +15,22 @@ jobs:
       workflow_origin: ${{ github.event.repository.full_name }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
-  label_pr:
+  check_related_issue:
     needs: get_pr_details
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: "Label PR based on title"
+      - uses: actions/checkout@v3
+      - name: "Debug workflow_run event"
+        run: echo "${{ github }}"
+      - name: "Ensure related issue is present"
         uses: actions/github-script@v6
         env:
+          PR_BODY: ${{ needs.get_pr_details.outputs.prBody }}
           PR_NUMBER: ${{ needs.get_pr_details.outputs.prNumber }}
-          PR_TITLE: ${{ needs.get_pr_details.outputs.prTitle }}
+          PR_ACTION: ${{ needs.get_pr_details.outputs.prAction }}
+          PR_AUTHOR: ${{ needs.get_pr_details.outputs.prAuthor }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # This safely runs in our base repo, not on fork
-          # thus allowing us to provide a write access token to label based on PR title
-          # and label PR based on semantic title accordingly
           script: |
-            const script = require('.github/scripts/label_pr_based_on_title.js')
+            const script = require('.github/scripts/label_missing_related_issue.js')
             await script({github, context, core})

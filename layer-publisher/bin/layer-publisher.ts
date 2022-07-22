@@ -8,6 +8,6 @@ const SSM_PARAM_LAYER_ARN = '/layers/powertools-layer-arn';
 const app = new cdk.App();
 new LayerPublisherStack(app, 'LayerPublisherStack', {
   powerToolsPackageVersion: app.node.tryGetContext('PowerToolsPackageVersion'),
-  layerName: 'AWSLambdaPowertoolsTypeScript',
+  layerName: 'AWSLambdaPowertoolsNodeJS',
   ssmParameterLayerArn: SSM_PARAM_LAYER_ARN,
 });

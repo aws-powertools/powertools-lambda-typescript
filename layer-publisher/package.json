@@ -14,7 +14,7 @@
     "test:e2e": "jest --testPathPattern=e2e"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.10",
+    "@types/jest": "^26.0.24",
     "@types/node": "10.17.27",
     "aws-cdk": "2.24.1",
     "jest": "^26.4.2",

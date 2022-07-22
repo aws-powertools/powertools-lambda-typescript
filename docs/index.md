@@ -166,7 +166,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
       function_name = "lambda_function_name"
       role          = aws_iam_role.iam_for_lambda.arn
       handler       = "index.test"
-      runtime 		= "nodejs14.x"
+      runtime 		= "nodejs16.x"
       layers 		= ["arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsNodeJS:1"]
 
       source_code_hash = filebase64sha256("lambda_function_payload.zip")

@@ -1,4 +1,3 @@
-# These owners will be the default owners for everything in
-# the repo.
-# TODO: revisit this list
-* @saragerion, @alan-churley, @heitorlessa
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @awslabs/aws-lambda-powertools-typescript

@@ -1,6 +1,8 @@
 {
   "packages": [
-    "packages/*",
+    "packages/tracer",
+    "packages/logger",
+    "packages/metrics",
     "examples/cdk",
     "examples/sam"
   ],

@@ -6,4 +6,5 @@ import { LayerPublisherStack } from '../src/layer-publisher-stack';
 const app = new cdk.App();
 new LayerPublisherStack(app, 'LayerPublisherStack', {
   powerToolsPackageVersion: app.node.tryGetContext('PowerToolsPackageVersion'),
+  layerName: 'AWSLambdaPowertoolsTypeScript'
 });

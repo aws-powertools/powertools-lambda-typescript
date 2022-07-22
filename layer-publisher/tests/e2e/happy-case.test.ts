@@ -1,7 +1,8 @@
 /**
  * Test layer
  *
- * @group e2e/happy-case
+ * @group e2e
+ * 
  */
 
 import * as cdk from 'aws-cdk-lib';
@@ -12,16 +13,21 @@ import { deployStack, destroyStack } from './utils/cdk-cli';
 import { generateUniqueName, invokeFunction } from './utils/e2eUtils';
 import { LEVEL } from './utils/InvocationLogs';
 
-const runtime = lambda.Runtime.ALL.find(r => r.name === process.env.RUNTIME) ?? lambda.Runtime.NODEJS_14_X;
+const runtime = lambda.Runtime.ALL.find((r) => r.name === process.env.RUNTIME) ?? lambda.Runtime.NODEJS_14_X;
 
-const powerToolsPackageVersion = process.env.VERSION;
+const powerToolsPackageVersion = '1.0.1';
 
 const e2eTestLayerPublicationApp = new cdk.App();
 
-const layerStack = new LayerPublisher.LayerPublisherStack(e2eTestLayerPublicationApp, `E2ELayerPublisherStack-${runtime.name.split('.')[0]}`, {
-  layerName: `e2e-tests-layer-${runtime.name.split('.')[0]}`,
-  powerToolsPackageVersion: powerToolsPackageVersion,
-});
+const layerStack = new LayerPublisher.LayerPublisherStack(
+  e2eTestLayerPublicationApp,
+  `E2ELayerPublisherStack-${runtime.name.split('.')[0]}`,
+  {
+    layerName: `e2e-tests-layer-${runtime.name.split('.')[0]}`,
+    powerToolsPackageVersion: powerToolsPackageVersion,
+    ssmParameterLayerArn: '/e2e-tests-layertools-layer-arn',
+  }
+);
 
 test(`The layer Created is usable with ${runtime} runtime lambda`, async () => {
   // GIVEN
@@ -43,13 +49,10 @@ test(`The layer Created is usable with ${runtime} runtime lambda`, async () => {
   } catch (error) {
     console.log(JSON.stringify(invocationLogs));
     throw error;
-  } finally {
+  }
+  finally {
     await destroyStack(e2eTestLayerPublicationApp, consumerStack);
   }
-}, 900000);
-
-afterAll(async () => {
-  await destroyStack(e2eTestLayerPublicationApp, layerStack);
 }, 900000);
 
 const createSampleLambda = (runtime: cdk.aws_lambda.Runtime): { consumerStack: cdk.Stack; functionName: string } => {
@@ -58,22 +61,38 @@ const createSampleLambda = (runtime: cdk.aws_lambda.Runtime): { consumerStack: c
   const consumerStack = new Stack(e2eTestLayerPublicationApp, `${runtime.name.split('.')[0]}ConsumerStack`);
   new lambda.Function(consumerStack, 'ConsumerFunction', {
     code: lambda.Code.fromInline(`
-      const { Logger } = require('@aws-lambda-powertools/logger');
-      const { Metrics } = require('@aws-lambda-powertools/metrics');
-      const { Tracer } = require('@aws-lambda-powertools/tracer');
+    const { Logger } = require('@aws-lambda-powertools/logger');
+    const { Metrics } = require('@aws-lambda-powertools/metrics');
+    const { Tracer } = require('@aws-lambda-powertools/tracer');
 
-      const logger = new Logger({logLevel: 'DEBUG'});
-      const metrics = new Metrics();
-      const tracer = new Tracer();
+    const logger = new Logger({logLevel: 'DEBUG'});
+    const metrics = new Metrics();
+    const tracer = new Tracer();
 
-      exports.handler = function(event, ctx) {
-        logger.debug("Hello World!"); 
-      }`),
+    exports.handler = function(event, ctx) {
+      // check logger lib access
+      logger.debug("Hello World!"); 
+      // Check version
+      try {
+        const fs = require('fs');
+
+        const packageJSON = JSON.parse(fs.readFileSync('/opt/nodejs/node_modules/@aws-lambda-powertools/logger/package.json', {encoding:'utf8', flag:'r'}));
+
+        if (packageJSON.version != process.env.POWERTOOLS_PACKAGE_VERSION) {
+          throw new Error(\`Package version mismatch: \${packageJSON.version} != \${process.env.POWERTOOLS_PACKAGE_VERSION}\`);
+        }
+      } catch (error) {
+        logger.error(error);
+      }
+    }`),
     handler: 'index.handler',
     functionName,
     runtime: runtime,
+    environment: {
+      POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
+    },
     layers: [layerStack.lambdaLayerVersion],
   });
-  
+
   return { consumerStack, functionName };
 };

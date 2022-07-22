@@ -3,9 +3,9 @@
 exports[`Layer  Created 1`] = `
 Object {
   "Outputs": Object {
-    "LambdaPowerToolsForTypeScriptLayerARN": Object {
+    "LatestLayerArn": Object {
       "Export": Object {
-        "Name": "LambdaPowerToolsForTypeScriptLayerARN",
+        "Name": "AWSLambdaPowertoolsTypeScript",
       },
       "Value": Object {
         "Ref": "LambdaPowertoolsLayer733361E9",
@@ -21,6 +21,7 @@ Object {
   },
   "Resources": Object {
     "LambdaPowertoolsLayer733361E9": Object {
+      "DeletionPolicy": "Retain",
       "Properties": Object {
         "CompatibleRuntimes": Array [
           "nodejs12.x",
@@ -31,12 +32,36 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "bfa89cc4c705e04afbdae31236b3b06193ba84a6f2d02489f7e0ed2f6f1c0446.zip",
+          "S3Key": "bf45792cd373a96ae12531e4c439b9ff0d33d3435dd7ec9647736176d26ddc86.zip",
         },
-        "Description": "Lambda Powertools for TypeScript latest version",
+        "Description": "Lambda Powertools for TypeScript version 1.0.1",
+        "LayerName": "AWSLambdaPowertoolsTypeScript",
         "LicenseInfo": "MIT-0",
       },
       "Type": "AWS::Lambda::LayerVersion",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "PublicLayerAccess": Object {
+      "DeletionPolicy": "Retain",
+      "Properties": Object {
+        "Action": "lambda:GetLayerVersion",
+        "LayerVersionArn": Object {
+          "Ref": "LambdaPowertoolsLayer733361E9",
+        },
+        "Principal": "*",
+      },
+      "Type": "AWS::Lambda::LayerVersionPermission",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "VersionArn99E177D3": Object {
+      "Properties": Object {
+        "Name": "/layers/powertools-layer-arn",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "LambdaPowertoolsLayer733361E9",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
     },
   },
   "Rules": Object {

@@ -30,7 +30,7 @@ Core utilities such as Tracer, Logger, Metrics, and Event Handler will be availa
 
 Powertools is available in the following formats:
 
-* **Lambda Layer**: [**arn:aws:lambda:{region}:264025721901:layer:AWSLambdaPowertoolsNodeJS:1**](#){: .copyMe}:clipboard:
+* **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsNodeJS:1**](#){: .copyMe}:clipboard:
 * **NPM**: **`npm install @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics @aws-lambda-powertools/logger`**
 
 ???+ hint "Support this project by using Lambda Layers :heart:"

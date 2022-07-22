@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./layer
+        working-directory: ./layer-publisher
     strategy:
       fail-fast: false
       matrix:
@@ -42,23 +42,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16.12"
-      - name: Setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          cache: "pip"
       - name: install cdk and deps
         run: |
           npm install -g aws-cdk@2.29.0
           cdk --version
       - name: install deps
         run: |
-          pip install -r requirements.txt
+          npm ci
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artefact-name }}
-          path: layer
+          path: layer-publisher
       - name: unzip artefact
         run: unzip cdk.out.zip
       - name: CDK Deploy Layer

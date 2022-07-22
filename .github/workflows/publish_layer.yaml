@@ -45,7 +45,7 @@ jobs:
           cdk --version
       - name: install deps
         run: |
-          pip install -r requirements.txt
+          npm ci
       - name: CDK build
         run: cdk synth --context powerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
       - name: zip output
@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: cdk-layer-artefact
-          path: layer/cdk.out.zip
+          path: layer-publisher/cdk.out.zip
 
   deploy-beta:
     needs:

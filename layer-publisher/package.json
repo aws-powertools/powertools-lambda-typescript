@@ -10,8 +10,8 @@
     "test": "npm run test:unit",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
-    "test:unit": "jest --testPathPattern=unit -u",
-    "test:e2e": "jest --testPathPattern=e2e"
+    "test:unit": "if-node-version '>12' jest --testPathPattern=unit -u",
+    "test:e2e": "if-node-version '>12' jest --testPathPattern=e2e"
   },
   "devDependencies": {
     "@types/jest": "^26.0.24",
@@ -26,6 +26,7 @@
     "aws-cdk-lib": "2.24.1",
     "cdk-lambda-powertools-python-layer": "file:cdk-lambda-powertools-python-layer@0.0.0.jsii.tgz",
     "constructs": "^10.0.0",
+    "if-node-version": "^1.1.1",
     "source-map-support": "^0.5.16"
   }
 }

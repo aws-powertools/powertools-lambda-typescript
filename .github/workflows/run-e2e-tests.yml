@@ -79,21 +79,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [12, 14]
+        version: [12, 14, 16]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
       - name: "Use NodeJS 14"
         uses: actions/setup-node@v3
         with:
-          # Always use version 14 as we use TypeScript target es2020
-          node-version: 14
+          # Always use version 16 as we use TypeScript target es2020
+          node-version: 16
       - name: "Install npm@8.x"
         run: npm i -g npm@next-8
-      - name: "Install monorepo packages"
-        # This installs all the dependencies of ./packages/*
-        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        run: npm ci --foreground-scripts
       - name: "Configure AWS credentials"
         uses: aws-actions/configure-aws-credentials@v1.6.1
         with:
@@ -101,7 +97,7 @@ jobs:
           aws-region: eu-west-1
       - name: "Run layer integration tests"
         run: |
-          npm ci
+          npm ci --foreground-scripts
           RUNTIME=nodejs${{ matrix.version }}.x npm run test:e2e
         working-directory: layer-publisher
 

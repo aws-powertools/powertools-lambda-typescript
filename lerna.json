@@ -1,5 +1,6 @@
 {
   "packages": [
+    "packages/commons",
     "packages/tracer",
     "packages/logger",
     "packages/metrics",

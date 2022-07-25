@@ -21,9 +21,9 @@
 
 ### Related issues, RFCs
 
-<!--- Add here the link to one or more Github Issues or RFCs that are related to this PR. -->
-[#XXXXX](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/XXXXX)  
-[#ZZZZZ](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/ZZZZZ)
+<!--- Add here the number to the Github Issue or RFC that is related to this PR. -->
+<!-- **Issue number:** #123 -->
+**Issue number:** 
 
 ### PR status
 

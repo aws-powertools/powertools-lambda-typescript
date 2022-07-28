@@ -424,7 +424,7 @@ class Tracer extends Utility implements TracerInterface {
         return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {          
           let result;
           try {
-            result = await originalMethod.apply(this, [...args]);
+            result = await originalMethod.apply(target, [...args]);
             this.addResponseAsMetadata(result, originalMethod.name);
           } catch (error) {
             this.addErrorAsMetadata(error as Error); 

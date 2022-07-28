@@ -415,20 +415,20 @@ class Tracer extends Utility implements TracerInterface {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
-
-      descriptor.value = ((...args: unknown[]) => {
+      
+      descriptor.value = (...args: unknown[]) => {
         if (!this.isTracingEnabled()) {
           return originalMethod.apply(target, [...args]);
         }
 
-        return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
-
-          let result: unknown;
+        return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {          
+          let result;
           try {
-            result = await originalMethod.apply(target, [...args]);
+            result = await originalMethod.apply(this, [...args]);
             this.addResponseAsMetadata(result, originalMethod.name);
           } catch (error) {
-            this.addErrorAsMetadata(error as Error);
+            this.addErrorAsMetadata(error as Error); 
+            
             throw error;
           } finally {
             subsegment?.close();
@@ -437,7 +437,7 @@ class Tracer extends Utility implements TracerInterface {
           
           return result;
         });
-      }) ;
+      };
 
       return descriptor;
     };

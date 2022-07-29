@@ -25,9 +25,9 @@ jobs:
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
       - name: Lint
-        run: npm run lint -ws
+        run: npm run lint -w packages/logger -w packages/tracer -w packages/metrics
       - name: Run unit tests
-        run: npm t -ws
+        run: npm t -w packages/logger -w packages/tracer -w packages/metrics
   check-examples:
     runs-on: ubuntu-latest
     env:

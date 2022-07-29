@@ -973,6 +973,42 @@ describe('Class: Tracer', () => {
 
     });
 
+    test('when used as decorator and when calling other methods/props in the class they are called in the orginal scope', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureMethod()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(): Promise<string> {
+          return `otherMethod:${this.otherMethod()}`;
+        }
+
+        @tracer.captureLambdaHandler()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return <TResult>(await this.dummyMethod() as unknown);
+        }
+
+        public otherMethod(): string {
+          return 'otherMethod';
+        }
+
+      }
+
+      // Act / Assess
+      expect(await (new Lambda()).handler({}, context, () => console.log('Lambda invoked!'))).toEqual('otherMethod:otherMethod');
+
+    });
+
   });
 
   describe('Method: captureAWS', () => {

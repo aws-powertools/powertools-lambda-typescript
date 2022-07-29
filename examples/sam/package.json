@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.86",
+    "@types/jest": "^27.5.2",
     "@types/node": "18.0.0",
     "esbuild": "^0.14.23",
     "eslint": "^8.4.0",

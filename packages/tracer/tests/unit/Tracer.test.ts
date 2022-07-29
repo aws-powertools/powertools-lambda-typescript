@@ -984,10 +984,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
 
-        public otherMethod(): string {
-          return 'otherMethod';
-        }
-
         @tracer.captureMethod()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -1000,6 +996,10 @@ describe('Class: Tracer', () => {
         // @ts-ignore
         public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
           return <TResult>(await this.dummyMethod() as unknown);
+        }
+
+        public otherMethod(): string {
+          return 'otherMethod';
         }
 
       }

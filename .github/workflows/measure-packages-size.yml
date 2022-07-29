@@ -1,0 +1,26 @@
+name: Measure packages size
+
+on:
+  workflow_dispatch:
+    inputs:
+      prNumber:
+        description: "PR Number"
+        required: true
+
+jobs:
+  measure-utils-sizes:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+      PR_NUMBER: ${{ inputs.prNumber }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Packages size report
+        uses: flochaz/pkg-size-action@v1.2.15
+        with:
+          build-command: mkdir dist && npm run package -w packages/logger -w packages/tracer -w packages/metrics && npm run package-bundle -w packages/logger -w packages/tracer -w packages/metrics && bash -c "mv ./packages/*/dist/* dist/" && ls dist
+          dist-directory: /dist
+          pr-number: ${{ inputs.prNumber }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

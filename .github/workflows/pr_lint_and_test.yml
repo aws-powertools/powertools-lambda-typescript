@@ -1,9 +1,10 @@
-name: pr-lint-and-test
+name: On PR code update
+
 on:
   pull_request:
     types: [opened, synchronize]
 jobs:
-  on_push:
+  run-unit-tests-on-utils:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
@@ -12,63 +13,40 @@ jobs:
         version: [12, 14, 16]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
-      - name: "Use NodeJS"
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.version }}
-      - name: Install npm@8.x
+      - name: Setup npm
         run: npm i -g npm@next-8
-      - name: "Setup npm"
-        run: |
-          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-      - name: Install monorepo packages
-        # This installs all the dependencies of ./packages/*
+      - name: Install dependencies
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
-      - name: Install CDK example packages
-        # Since we are not managing the CDK examples with npm workspaces we install
-        # the dependencies in a separate step
-        working-directory: ./examples/cdk
-        run: npm ci
-      - name: "Setup SAM"
-        # We use an ad-hoc action so we can specify the SAM CLI version
-        uses: aws-actions/setup-sam@v2
+      - name: Lint
+        run: npm run lint -ws
+      - name: Run unit tests
+        run: npm t -ws
+  check-examples:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        example: ["sam", "cdk"]
+      fail-fast: false
+    defaults:
+      run:
+        working-directory: examples/${{ matrix.example }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
         with:
-          version: 1.49.0
-      - name: Install SAM example packages
-        # Since we are not managing the SAM examples with npm workspaces we install
-        # the dependencies in a separate step
-        working-directory: ./examples/sam
+          node-version: 16
+      - name: Install dependencies
         run: npm ci
-      - name: Run lint
-        run: npm run lerna-lint
       - name: Run tests
-        run: npm run lerna-test
-      - name: Collate Coverage Reports
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        run: |
-          for d in ./packages/*/ ; do
-              mkdir -p coverage
-              if [[ ! -f coverage/lcov.info ]]
-              then
-                  continue
-              fi
-              filename="$d""coverage/lcov.info"
-              targetSource="SF:""$d""src"
-              sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
-          done
-      - name: Report Coverage
-        #Dependabot user will only have read-only perms, so don't try to report coverage
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: romeovs/lcov-reporter-action@v0.3.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ./coverage/lcov.info
-      - name: Packages size report
-        uses: flochaz/pkg-size-action@v1.2.12
-        with:
-          build-command: mkdir dist && npm run lerna-package && npm run lerna-package-bundle && bash -c "mv ./packages/*/dist/* dist/" && ls dist
-          dist-directory: /dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm t

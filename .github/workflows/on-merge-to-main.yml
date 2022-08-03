@@ -1,10 +1,38 @@
-name: on-merge-to-main
+name: On PR merge
+
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch: {}
+  workflow_run:
+    workflows: ["Record PR details"]
+    types:
+      - completed
+
 jobs:
+  get_pr_details:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    uses: ./.github/workflows/reusable_export_pr_details.yml
+    with:
+      record_pr_workflow_id: ${{ github.event.workflow_run.id }}
+      workflow_origin: ${{ github.event.repository.full_name }}
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+  release_label_on_merge:
+    needs: get_pr_details
+    runs-on: ubuntu-latest
+    if: needs.get_pr_details.outputs.prIsMerged == 'true'
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Label PR related issue for release"
+        uses: actions/github-script@v6
+        env:
+          PR_NUMBER: ${{ needs.get_pr_details.outputs.prNumber }}
+          PR_BODY: ${{ needs.get_pr_details.outputs.prBody }}
+          PR_IS_MERGED: ${{ needs.get_pr_details.outputs.prIsMerged }}
+          PR_AUTHOR: ${{ needs.get_pr_details.outputs.prAuthor }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const script = require('.github/scripts/label_related_issue.js')
+            await script({github, context, core})
   publish:
     #########################
     # Force Github action to run only a single job at a time (based on the group name)

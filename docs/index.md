@@ -28,7 +28,7 @@ Core utilities such as Tracer, Logger, Metrics, and Event Handler will be availa
 
 ## Installation
 
-Powertools is available in the following formats:
+You can use Powertools through [AWS Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-concepts.html#gettingstarted-concepts-layer) or install it as your dependency via NPM:
 
 * **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:1**](#){: .copyMe}:clipboard:
 * **NPM**: **`npm install @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics @aws-lambda-powertools/logger`**
@@ -102,6 +102,8 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
     export class SampleFunctionWithLayer extends Construct {
         constructor(scope: Construct, id: string) {
             super(scope, id);
+            // Create a Layer with AWS Lambda Powertools for TypeScript
+
             const powertoolsLayer = lambda.LayerVersion.fromLayerVersionArn(
             this,
             'PowertoolsLayer',
@@ -109,6 +111,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
             );
             new lambda.Function(this, 'Function', {
             runtime: lambda.Runtime.NODEJS_16_X,
+            // Add the Layer to a Lambda function
             layers: [powertoolsLayer],
             code: lambda.Code.fromInline(`
             const { Logger } = require('@aws-lambda-powertools/logger');

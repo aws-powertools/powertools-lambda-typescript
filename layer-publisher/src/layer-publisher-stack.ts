@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
@@ -13,8 +12,8 @@ export interface LayerPublisherStackProps extends StackProps {
 }
 
 export class LayerPublisherStack extends Stack {
-  readonly lambdaLayerVersion: lambda.LayerVersion;
-  constructor(scope: Construct, id: string, props: LayerPublisherStackProps) {
+  public readonly lambdaLayerVersion: lambda.LayerVersion;
+  public constructor(scope: Construct, id: string, props: LayerPublisherStackProps) {
     super(scope, id, props);
 
     this.lambdaLayerVersion = new LambdaPowertoolsLayer(this, 'LambdaPowertoolsLayer', {

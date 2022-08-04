@@ -25,13 +25,11 @@ jobs:
       - name: Cache node modules
         id: cache-node-modules
         uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
         with:
           path: "./node_modules"
           # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
           # if one of them changes the cache is invalidated/discarded
-          key: ${{ matrix.version }}-build-${{ env.cache-name }}-${{ hashFiles('./package-lock.json') }}
+          key: ${{ matrix.version }}-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         # We can skip the install if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -71,15 +69,13 @@ jobs:
       - name: Cache node modules
         id: cache-node-modules
         uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
         with:
           path: "./examples/${{ matrix.example }}/node_modules"
           # Use the combo between example, name, and SHA-256 hash of all example lock files as cache key.
           # It's not possible to use the ${{ matrix.example }} key in the hashFiles fn so
           # if any of the lock files (wich should be fairly similar anyway) changes the cache is
           # invalidated/discarded for all.
-          key: ${{ matrix.example }}-build-${{ env.cache-name }}-${{ hashFiles('./examples/*/package-lock.json') }}
+          key: ${{ matrix.example }}-cache-examples-node-modules-${{ hashFiles('./examples/*/package-lock.json') }}
       - name: Install dependencies
         run: npm ci
       - name: Run tests

@@ -1,4 +1,4 @@
-import type { Logger } from '../Logger';
+import { Logger } from '../Logger';
 import type middy from '@middy/core';
 import { HandlerOptions, LogAttributes } from '../types';
 
@@ -30,34 +30,29 @@ import { HandlerOptions, LogAttributes } from '../types';
 const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions): middy.MiddlewareObj => {
 
   const loggers = target instanceof Array ? target : [target];
-  const persistentAttributes: LogAttributes[] = [];
+  const persistentAttributes: (LogAttributes | undefined)[] = [];
 
   const injectLambdaContextBefore = async (request: middy.Request): Promise<void> => {
     loggers.forEach((logger: Logger) => {
-      logger.addContext(request.context);
+      const initialPersistentAttributes = Logger.injectLambdaContextBefore(logger, request.event, request.context, options);
       if (options && options.clearState === true) {
-        persistentAttributes.push({ ...logger.getPersistentLogAttributes() });
+        persistentAttributes.push(initialPersistentAttributes);
       }
-
-      let shouldLogEvent = undefined;
-      if ( options && options.hasOwnProperty('logEvent') ) {
-        shouldLogEvent = options.logEvent;
-      }
-      logger.logEventIfEnabled(request.event, shouldLogEvent);
     });
   };
 
-  const injectLambdaContextAfter = async (): Promise<void> => {
+  const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
     if (options && options.clearState === true) {
       loggers.forEach((logger: Logger, index: number) => {
-        logger.setPersistentLogAttributes(persistentAttributes[index]);
+        Logger.injectLambdaContextAfterOrOnError(logger, persistentAttributes[index], options);
       });
     }
   };
 
   return {
     before: injectLambdaContextBefore,
-    after: injectLambdaContextAfter
+    after: injectLambdaContextAfterOrOnError,
+    onError: injectLambdaContextAfterOrOnError
   };
 };
 

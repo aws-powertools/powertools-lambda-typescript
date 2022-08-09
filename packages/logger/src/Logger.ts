@@ -275,8 +275,6 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {HandlerMethodDecorator}
    */
   public injectLambdaContext(options?: HandlerOptions): HandlerMethodDecorator {
-    const isClearStateEnabled = options && options.clearState === true;
-
     return (target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
@@ -286,28 +284,41 @@ class Logger extends Utility implements ClassThatLogs {
 
       descriptor.value = (event, context, callback) => {
 
-        let initialPersistentAttributes: LogAttributes = {};
-        if (isClearStateEnabled) {
-          initialPersistentAttributes = { ...this.getPersistentLogAttributes() };
-        }
-
-        this.addContext(context);
-        let shouldLogEvent = undefined;
-        if ( options && options.hasOwnProperty('logEvent') ) {
-          shouldLogEvent = options.logEvent;
-        }
-        this.logEventIfEnabled(event, shouldLogEvent);
+        const initialPersistentAttributes = Logger.injectLambdaContextBefore(this, event, context, options);
 
         /* eslint-disable  @typescript-eslint/no-non-null-assertion */
-        const result = originalMethod!.apply(target, [ event, context, callback ]);
-
-        if (isClearStateEnabled) {
-          this.setPersistentLogAttributes(initialPersistentAttributes);
+        let result: unknown;
+        try {
+          result = originalMethod!.apply(target, [ event, context, callback ]);
+        } catch (error) {
+          throw error;
+        } finally {
+          Logger.injectLambdaContextAfterOrOnError(this, initialPersistentAttributes, options);
         }
 
         return result;
       };
     };
+  }
+
+  public static injectLambdaContextAfterOrOnError(logger: Logger, initialPersistentAttributes: LogAttributes = {}, options?: HandlerOptions): void {
+    if (options && options.clearState === true) {
+      logger.setPersistentLogAttributes(initialPersistentAttributes);
+    }
+  }
+
+  public static injectLambdaContextBefore(logger: Logger, event: unknown, context: Context, options?: HandlerOptions): LogAttributes | undefined {
+    logger.addContext(context);
+
+    let shouldLogEvent = undefined;
+    if (options && options.hasOwnProperty('logEvent')) {
+      shouldLogEvent = options.logEvent;
+    }
+    logger.logEventIfEnabled(event, shouldLogEvent);
+
+    if (options && options.clearState === true) {
+      return { ...logger.getPersistentLogAttributes() };
+    }
   }
 
   /**

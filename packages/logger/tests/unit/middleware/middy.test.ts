@@ -207,6 +207,62 @@ describe('Middy middleware', () => {
 
     });
 
+    test('when enabled and the handler throws, the persistent log attributes added within the handler scope are removed after the invocation ends', async () => {
+
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+        persistentLogAttributes: {
+          foo: 'bar',
+          biz: 'baz'
+        }
+      });
+      const context = {
+        callbackWaitsForEmptyEventLoop: true,
+        functionVersion: '$LATEST',
+        functionName: 'foo-bar-function',
+        memoryLimitInMB: '128',
+        logGroupName: '/aws/lambda/foo-bar-function',
+        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        awsRequestId: 'abcdef123456abcdef123456',
+        getRemainingTimeInMillis: () => 1234,
+        done: () => console.log('Done!'),
+        fail: () => console.log('Failed!'),
+        succeed: () => console.log('Succeeded!'),
+      };
+
+      const lambdaHandler = (event: { user_id: string }): void => {
+        // Only add these persistent for the scope of this lambda handler
+        logger.appendKeys({
+          details: { user_id: event['user_id'] }
+        });
+        logger.debug('This is a DEBUG log with the user_id');
+        logger.debug('This is another DEBUG log with the user_id');
+
+        throw new Error('Unexpected error occurred!');
+      };
+
+      const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { clearState: true }));
+      const persistentAttribs = { ...logger.getPersistentLogAttributes() };
+
+      // Act
+      try {
+        await handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
+      } catch (error) {
+        // Do nothing
+      }
+      const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
+
+      // Assess
+      expect(persistentAttribs).toEqual({
+        foo: 'bar',
+        biz: 'baz'
+      });
+      expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
+
+    });
+
   });
 
   describe('Feature: log event', () => {

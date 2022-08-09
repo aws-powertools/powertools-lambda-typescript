@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "target": "ES2019",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "lib",
+    "strict": true,
+    "inlineSourceMap": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "pretty": true,
+    "baseUrl": "src/",
+    "rootDirs": [ "src/" ],
+    "esModuleInterop": true
+},
+"include": [ "src/**/*" ],
+"exclude": [ "./node_modules", "cdk.out"],
+"watchOptions": {
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents",
+    "fallbackPolling": "dynamicPriority"
+},
+"lib": [ "es2019" ],
+"types": [
+    "jest",
+    "node"
+]
+}

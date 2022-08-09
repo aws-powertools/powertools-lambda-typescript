@@ -67,6 +67,9 @@ jobs:
       # the dependencies in a separate step
       working-directory: ./examples/cdk
       run: npm ci
+    - name: Install Layer publisher app
+      working-directory: ./layer-publisher
+      run: npm ci
     - name: "Setup SAM"
       # We use an ad-hoc action so we can specify the SAM CLI version
       uses: aws-actions/setup-sam@v2

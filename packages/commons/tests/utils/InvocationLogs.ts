@@ -23,8 +23,8 @@ export class InvocationLogs {
   public static LEVEL = LEVEL;
 
   /**
-   * Array of logs from invocation. 
-   * 
+   * Array of logs from invocation.
+   *
    * The first element is START, and the last two elements are END, and REPORT.
    *    [
    *      'START RequestId: c6af9ac6-7b61-11e6-9a41-93e812345678 Version: $LATEST',
@@ -45,13 +45,12 @@ export class InvocationLogs {
 
   /**
    * Find all functional logs whether it contains a given text
-   * @param text 
+   * @param text
    * @param levelToFilter level to filter
-   * @returns 
+   * @returns
    */
   public doesAnyFunctionLogsContains(text: string, levelToFilter?: LEVEL): boolean {
-    const filteredLogs = this.getFunctionLogs(levelToFilter)
-      .filter(log => log.includes(text));
+    const filteredLogs = this.getFunctionLogs(levelToFilter).filter((log) => log.includes(text));
 
     return filteredLogs.length > 0;
   }
@@ -73,7 +72,17 @@ export class InvocationLogs {
     let filteredLogs = this.logs.slice(1, -2);
 
     if (levelToFilter) {
-      filteredLogs = filteredLogs.filter((log) => JSON.parse(log).level == levelToFilter);
+      filteredLogs = filteredLogs.filter((log) => {
+        try {
+          const parsedLog = JSON.parse(log);
+          if (parsedLog.level == levelToFilter) return parsedLog;
+          else return;
+        } catch (error) {
+          // If log is not from structured logging : such as metrics one.
+          if (log.split('\t')[2] == levelToFilter) return log;
+          else return;
+        }
+      });
     }
 
     return filteredLogs;
@@ -81,10 +90,9 @@ export class InvocationLogs {
 
   /**
    * Each of log message contains a JSON with the structured Log object (e.g. {\"cold_start\":true, ..})
-   * @param log 
+   * @param log
    */
   public static parseFunctionLog(log: string): FunctionLog {
     return JSON.parse(log);
   }
-
 }

@@ -1,0 +1,34 @@
+{
+  "name": "layer-publisher",
+  "version": "0.1.0",
+  "bin": {
+    "layer-publisher": "bin/layer-publisher.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "npm run test:unit",
+    "cdk": "cdk",
+    "package": "echo 'Not applicable'",
+    "test:unit": "if-node-version '>12' jest --testPathPattern=unit -u",
+    "test:e2e": "if-node-version '>12' jest --testPathPattern=e2e"
+  },
+  "devDependencies": {
+    "@aws-cdk/cloudformation-diff": "2.25.0",
+    "@aws-cdk/cx-api": "2.25.0",
+    "@types/jest": "^26.0.24",
+    "@types/node": "10.17.27",
+    "aws-cdk": "2.25.0",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.2.0",
+    "ts-node": "^9.0.0",
+    "typescript": "~3.9.7"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.25.0",
+    "cdk-lambda-powertools-python-layer": "file:cdk-lambda-powertools-python-layer@0.0.0.jsii.tgz",
+    "constructs": "^10.0.0",
+    "if-node-version": "^1.1.1",
+    "source-map-support": "^0.5.16"
+  }
+}

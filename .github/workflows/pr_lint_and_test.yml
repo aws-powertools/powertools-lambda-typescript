@@ -44,9 +44,9 @@ jobs:
           npm run build -w packages/commons
           npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
       - name: Lint
-        run: npm run lint -w packages/logger -w packages/tracer -w packages/metrics
+        run: npm run lint -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics
       - name: Run unit tests
-        run: npm t -w packages/logger -w packages/tracer -w packages/metrics
+        run: npm t -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics
   check-examples:
     runs-on: ubuntu-latest
     env:
@@ -80,3 +80,27 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm t
+  check-layer-publisher:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    defaults:  
+      run:
+        working-directory: layer-publisher
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./layer-publisher/node_modules"
+          # Use the combo between example, name, and SHA-256 hash of the layer-publisher lock files as cache key.
+          key: cache-layer-publisher-node-modules-${{ hashFiles('./layer-publisher/*/package-lock.json') }}
+      - name: Install Layer publisher app
+        run: npm ci

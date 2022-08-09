@@ -1,0 +1,81 @@
+name: Deploy layer to all regions
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      latest_published_version:
+        description: "Latest npm published version to rebuild corresponding layer for, e.g. v1.0.2"
+        default: "v1.0.2"
+        required: true
+  # Automatic trigger after release
+  workflow_run:
+    workflows: ["release"]
+    types:
+      - completed
+
+jobs:
+  # Build layer by running cdk synth in layer-publisher directory and uploading cdk.out for deployment
+  build-layer:
+    runs-on: ubuntu-latest
+    if: ${{ (github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch') }}
+    defaults:
+      run:
+        working-directory: ./layer-publisher
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16.12"
+      - name: Set release notes tag
+        run: |
+          RELEASE_INPUT=${{ inputs.latest_published_version }}
+          LATEST_TAG=$(git describe --tag --abbrev=0)
+          RELEASE_TAG_VERSION=${RELEASE_INPUT:-$LATEST_TAG}
+          echo "RELEASE_TAG_VERSION=${RELEASE_TAG_VERSION:1}" >> $GITHUB_ENV
+      - name: install cdk and deps
+        run: |
+          npm install -g aws-cdk@2.29.0
+          cdk --version
+      - name: install deps
+        run: |
+          npm ci
+      - name: CDK build
+        run: cdk synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
+      - name: zip output
+        run: zip -r cdk.out.zip cdk.out
+      - name: Archive CDK artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: cdk-layer-artefact
+          path: layer-publisher/cdk.out.zip
+
+  # Deploy layer to all regions in beta account
+  deploy-beta:
+    needs:
+      - build-layer
+    uses: ./.github/workflows/reusable_deploy_layer_stack.yml
+    with:
+      stage: "BETA"
+      artefact-name: "cdk-layer-artefact"
+    secrets:
+      target-account-role: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
+
+  # Deploy layer to all regions in prod account
+  deploy-prod:
+    needs:
+      - deploy-beta
+    uses: ./.github/workflows/reusable_deploy_layer_stack.yml
+    with:
+      stage: "PROD"
+      artefact-name: "cdk-layer-artefact"
+    secrets:
+      target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}

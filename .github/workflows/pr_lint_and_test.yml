@@ -1,9 +1,10 @@
-name: pr-lint-and-test
+name: On PR code update
+
 on:
   pull_request:
     types: [opened, synchronize]
 jobs:
-  on_push:
+  run-unit-tests-on-utils:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
@@ -12,63 +13,70 @@ jobs:
         version: [12, 14, 16]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
-      - name: "Use NodeJS"
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.version }}
-      - name: Install npm@8.x
+          cache: "npm"
+      - name: Setup npm
         run: npm i -g npm@next-8
-      - name: "Setup npm"
-        run: |
-          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
-      - name: Install monorepo packages
-        # This installs all the dependencies of ./packages/*
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: ${{ matrix.version }}-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        # We can skip the install if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
-      - name: Install CDK example packages
-        # Since we are not managing the CDK examples with npm workspaces we install
-        # the dependencies in a separate step
-        working-directory: ./examples/cdk
-        run: npm ci
-      - name: "Setup SAM"
-        # We use an ad-hoc action so we can specify the SAM CLI version
-        uses: aws-actions/setup-sam@v2
-        with:
-          version: 1.49.0
-      - name: Install SAM example packages
-        # Since we are not managing the SAM examples with npm workspaces we install
-        # the dependencies in a separate step
-        working-directory: ./examples/sam
-        run: npm ci
-      - name: Run lint
-        run: npm run lerna-lint
-      - name: Run tests
-        run: npm run lerna-test
-      - name: Collate Coverage Reports
-        if: ${{ github.actor != 'dependabot[bot]' }}
+      - name: Build packages
+        # If there's a cache hit we still need to manually build the packages
+        # this would otherwise have been done automatically as a part of the
+        # postinstall npm hook
+        if: steps.cache-node-modules.outputs.cache-hit == 'true'
         run: |
-          for d in ./packages/*/ ; do
-              mkdir -p coverage
-              if [[ ! -f coverage/lcov.info ]]
-              then
-                  continue
-              fi
-              filename="$d""coverage/lcov.info"
-              targetSource="SF:""$d""src"
-              sed "s|SF:src|$targetSource|g" $filename >> coverage/lcov.info
-          done
-      - name: Report Coverage
-        #Dependabot user will only have read-only perms, so don't try to report coverage
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: romeovs/lcov-reporter-action@v0.3.1
+          npm run build -w packages/commons
+          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
+      - name: Lint
+        run: npm run lint -w packages/logger -w packages/tracer -w packages/metrics
+      - name: Run unit tests
+        run: npm t -w packages/logger -w packages/tracer -w packages/metrics
+  check-examples:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        example: ["sam", "cdk"]
+      fail-fast: false
+    defaults:
+      run:
+        working-directory: examples/${{ matrix.example }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ./coverage/lcov.info
-      - name: Packages size report
-        uses: flochaz/pkg-size-action@v1.2.12
+          node-version: 16
+          cache: "npm"
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
         with:
-          build-command: mkdir dist && npm run lerna-package && npm run lerna-package-bundle && bash -c "mv ./packages/*/dist/* dist/" && ls dist
-          dist-directory: /dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: "./examples/${{ matrix.example }}/node_modules"
+          # Use the combo between example, name, and SHA-256 hash of all example lock files as cache key.
+          # It's not possible to use the ${{ matrix.example }} key in the hashFiles fn so
+          # if any of the lock files (wich should be fairly similar anyway) changes the cache is
+          # invalidated/discarded for all.
+          key: ${{ matrix.example }}-cache-examples-node-modules-${{ hashFiles('./examples/*/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm t

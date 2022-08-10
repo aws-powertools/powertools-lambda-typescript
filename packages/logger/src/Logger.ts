@@ -284,7 +284,12 @@ class Logger extends Utility implements ClassThatLogs {
 
       descriptor.value = (event, context, callback) => {
 
-        const initialPersistentAttributes = Logger.injectLambdaContextBefore(this, event, context, options);
+        let initialPersistentAttributes = {};
+        if (options && options.clearState === true) {
+          initialPersistentAttributes = { ...this.getPersistentLogAttributes() };
+        }
+
+        Logger.injectLambdaContextBefore(this, event, context, options);
 
         /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         let result: unknown;
@@ -301,13 +306,13 @@ class Logger extends Utility implements ClassThatLogs {
     };
   }
 
-  public static injectLambdaContextAfterOrOnError(logger: Logger, initialPersistentAttributes: LogAttributes = {}, options?: HandlerOptions): void {
+  public static injectLambdaContextAfterOrOnError(logger: Logger, initialPersistentAttributes: LogAttributes, options?: HandlerOptions): void {
     if (options && options.clearState === true) {
       logger.setPersistentLogAttributes(initialPersistentAttributes);
     }
   }
 
-  public static injectLambdaContextBefore(logger: Logger, event: unknown, context: Context, options?: HandlerOptions): LogAttributes | undefined {
+  public static injectLambdaContextBefore(logger: Logger, event: unknown, context: Context, options?: HandlerOptions): void {
     logger.addContext(context);
 
     let shouldLogEvent = undefined;
@@ -315,10 +320,6 @@ class Logger extends Utility implements ClassThatLogs {
       shouldLogEvent = options.logEvent;
     }
     logger.logEventIfEnabled(event, shouldLogEvent);
-
-    if (options && options.clearState === true) {
-      return { ...logger.getPersistentLogAttributes() };
-    }
   }
 
   /**

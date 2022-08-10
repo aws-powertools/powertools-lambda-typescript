@@ -30,14 +30,14 @@ import { HandlerOptions, LogAttributes } from '../types';
 const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions): middy.MiddlewareObj => {
 
   const loggers = target instanceof Array ? target : [target];
-  const persistentAttributes: (LogAttributes | undefined)[] = [];
+  const persistentAttributes: LogAttributes[] = [];
 
   const injectLambdaContextBefore = async (request: middy.Request): Promise<void> => {
     loggers.forEach((logger: Logger) => {
-      const initialPersistentAttributes = Logger.injectLambdaContextBefore(logger, request.event, request.context, options);
       if (options && options.clearState === true) {
-        persistentAttributes.push(initialPersistentAttributes);
+        persistentAttributes.push({ ...logger.getPersistentLogAttributes() });
       }
+      Logger.injectLambdaContextBefore(logger, request.event, request.context, options);
     });
   };
 

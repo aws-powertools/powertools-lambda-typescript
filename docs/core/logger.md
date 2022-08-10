@@ -294,7 +294,7 @@ To remove the keys you added, you can use the `removeKeys` method.
     ```
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="8-12 21-25"
+    ```json hl_lines="7-12 20-25"
     {
         "level": "INFO",
         "message": "This is an INFO log",
@@ -497,7 +497,7 @@ You can append additional data to a single log item by passing objects as additi
     ```
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="7 15-21 28 37"
+    ```json hl_lines="7 15-21 29 37"
     {
         "level": "INFO",
         "message": "This is a log with an extra variable",
@@ -508,7 +508,7 @@ You can append additional data to a single log item by passing objects as additi
     }
     {
         "level": "INFO",
-        "message": "This is a log with 2 extra variables",
+        "message": "This is a log with 3 extra objects",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:06:17.466Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
@@ -574,27 +574,27 @@ The error will be logged with default key name `error`, but you can also pass yo
     ```json hl_lines="7-12 20-25"
     {
         "level": "ERROR",
-        "message": "This is an ERROR log #1",
+        "message": "This is the first error",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:12:39.345Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "error": {
             "name": "Error",
             "location": "/path/to/my/source-code/my-service/handler.ts:18",
-            "message": "This is the first error",
+            "message": "Unexpected error #1",
             "stack": "Error: Unexpected error #1    at lambdaHandler (/path/to/my/source-code/my-service/handler.ts:18:11)    at Object.<anonymous> (/path/to/my/source-code/my-service/handler.ts:35:1)    at Module._compile (node:internal/modules/cjs/loader:1108:14)    at Module.m._compile (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1371:23)    at Module._extensions..js (node:internal/modules/cjs/loader:1137:10)    at Object.require.extensions.<computed> [as .ts] (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1374:12)    at Module.load (node:internal/modules/cjs/loader:973:32)    at Function.Module._load (node:internal/modules/cjs/loader:813:14)    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)    at main (/path/to/my/source-code/node_modules/ts-node/src/bin.ts:331:12)"
         }
     }
     {   
         "level": "ERROR",
-        "message": "This is an ERROR log #2",
+        "message": "This is the second error",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:12:39.377Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "myCustomErrorKey": {
             "name": "Error",
             "location": "/path/to/my/source-code/my-service/handler.ts:24",
-            "message": "This is the second error",
+            "message": "Unexpected error #2",
             "stack": "Error: Unexpected error #2    at lambdaHandler (/path/to/my/source-code/my-service/handler.ts:24:11)    at Object.<anonymous> (/path/to/my/source-code/my-service/handler.ts:35:1)    at Module._compile (node:internal/modules/cjs/loader:1108:14)    at Module.m._compile (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1371:23)    at Module._extensions..js (node:internal/modules/cjs/loader:1137:10)    at Object.require.extensions.<computed> [as .ts] (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1374:12)    at Module.load (node:internal/modules/cjs/loader:973:32)    at Function.Module._load (node:internal/modules/cjs/loader:813:14)    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)    at main (/path/to/my/source-code/node_modules/ts-node/src/bin.ts:331:12)"
         }
     }

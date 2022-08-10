@@ -982,7 +982,7 @@ describe('Class: Logger', () => {
 
     });
 
-    test('when used as decorator with the clear state flag enabled and the handler throws, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
+    test('when used as decorator with the clear state flag enabled and the handler throws an error, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
 
       // Prepare
       const logger = new Logger({
@@ -1014,15 +1014,12 @@ describe('Class: Logger', () => {
 
       const persistentAttribs = { ...logger.getPersistentLogAttributes() };
 
-      // Act
-      try {
+      // Act & Assess
+      const executeLambdaHandler = async (): Promise<void> => {
         await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
-      } catch (error) {
-        // Do nothing
-      }
+      };
+      await expect(executeLambdaHandler()).rejects.toThrow('Unexpected error occurred!');
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
-
-      // Assess
       expect(persistentAttribs).toEqual({
         foo: 'bar',
         biz: 'baz'

@@ -10,6 +10,7 @@ import { Logger } from './../../../src';
 import middy from '@middy/core';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { Console } from 'console';
+import { context as dummyContext } from '../../../../../tests/resources/contexts/hello-world';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
@@ -207,7 +208,7 @@ describe('Middy middleware', () => {
 
     });
 
-    test('when enabled and the handler throws, the persistent log attributes added within the handler scope are removed after the invocation ends', async () => {
+    test('when enabled and the handler throws an error, the persistent log attributes added within the handler scope are removed after the invocation ends', async () => {
 
       // Prepare
       const logger = new Logger({
@@ -243,18 +244,15 @@ describe('Middy middleware', () => {
         throw new Error('Unexpected error occurred!');
       };
 
-      const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { clearState: true }));
       const persistentAttribs = { ...logger.getPersistentLogAttributes() };
+      const handler = middy(lambdaHandler).use(injectLambdaContext(logger, { clearState: true }));
 
-      // Act
-      try {
+      // Act & Assess
+      const executeLambdaHandler = async (): Promise<void> => {
         await handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
-      } catch (error) {
-        // Do nothing
-      }
+      };
+      await expect(executeLambdaHandler()).rejects.toThrow('Unexpected error occurred!');
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
-
-      // Assess
       expect(persistentAttribs).toEqual({
         foo: 'bar',
         biz: 'baz'

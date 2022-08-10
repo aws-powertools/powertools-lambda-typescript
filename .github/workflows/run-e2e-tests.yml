@@ -81,14 +81,14 @@ jobs:
       matrix:
         version: [12, 14, 16]
     steps:
-      - name: "Checkout"
+      - name: Checkout
         uses: actions/checkout@v3
-      - name: "Use NodeJS 14"
+      - name: Use NodeJS
         uses: actions/setup-node@v3
         with:
           # Always use version 16 as we use TypeScript target es2020
           node-version: 16
-      - name: "Install npm@8.x"
+      - name: Install npm@8.x
         run: npm i -g npm@next-8
       - name: "Configure AWS credentials"
         uses: aws-actions/configure-aws-credentials@v1.6.1

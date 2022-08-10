@@ -1,7 +1,6 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
-import { Context } from 'aws-lambda';
 import fs from 'fs';
 
 const SERVICE_NAME = 'e2e-tests-layer-consumer';
@@ -9,7 +8,7 @@ const logger = new Logger({ serviceName: SERVICE_NAME, logLevel: 'DEBUG' });
 const metrics = new Metrics({ serviceName: SERVICE_NAME });
 const tracer = new Tracer({ serviceName: SERVICE_NAME });
 
-exports.handler = function (_event: never, _ctx: Context): void {
+exports.handler = function (_event: never, _ctx: unknown): void {
   // check logger lib access
   logger.injectLambdaContext();
   logger.debug('Hello World!');

@@ -26,7 +26,7 @@ const layerStack = new LayerPublisher.LayerPublisherStack(
   {
     layerName: `e2e-tests-layer-${runtime.name.split('.')[0]}`,
     powerToolsPackageVersion: powerToolsPackageVersion,
-    ssmParameterLayerArn: '/e2e-tests-layertools-layer-arn',
+    ssmParameterLayerArn: `/e2e-tests-layertools-layer-arn-${runtime.name.split('.')[0]}`,
   }
 );
 
@@ -70,6 +70,14 @@ const createSampleLambda = (runtime: cdk.aws_lambda.Runtime): { consumerStack: c
     handler: 'handler',
     functionName,
     runtime: runtime,
+    bundling: {
+      externalModules: [
+        '@aws-lambda-powertools/commons',
+        '@aws-lambda-powertools/logger',
+        '@aws-lambda-powertools/metrics',
+        '@aws-lambda-powertools/tracer'
+      ]
+    },
     environment: {
       POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
     },

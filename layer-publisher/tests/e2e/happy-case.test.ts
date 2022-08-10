@@ -26,7 +26,7 @@ const layerStack = new LayerPublisher.LayerPublisherStack(
   {
     layerName: `e2e-tests-layer-${runtime.name.split('.')[0]}`,
     powerToolsPackageVersion: powerToolsPackageVersion,
-    ssmParameterLayerArn: '/e2e-tests-layertools-layer-arn',
+    ssmParameterLayerArn: `/e2e-tests-layertools-layer-arn-${runtime.name.split('.')[0]}`,
   }
 );
 

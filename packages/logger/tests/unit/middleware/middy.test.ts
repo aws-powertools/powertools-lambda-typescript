@@ -10,7 +10,6 @@ import { Logger } from './../../../src';
 import middy from '@middy/core';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { Console } from 'console';
-import { context as dummyContext } from '../../../../../tests/resources/contexts/hello-world';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);

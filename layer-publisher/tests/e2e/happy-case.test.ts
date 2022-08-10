@@ -70,6 +70,14 @@ const createSampleLambda = (runtime: cdk.aws_lambda.Runtime): { consumerStack: c
     handler: 'handler',
     functionName,
     runtime: runtime,
+    bundling: {
+      externalModules: [
+        '@aws-lambda-powertools/commons',
+        '@aws-lambda-powertools/logger',
+        '@aws-lambda-powertools/metrics',
+        '@aws-lambda-powertools/tracer'
+      ]
+    },
     environment: {
       POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
     },

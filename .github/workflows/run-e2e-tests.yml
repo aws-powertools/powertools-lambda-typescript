@@ -95,6 +95,26 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: eu-west-1
+      - name: Cache node modules for commons
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: 16-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        # We can skip the install if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
+      - name: Build packages
+        # If there's a cache hit we still need to manually build the packages
+        # this would otherwise have been done automatically as a part of the
+        # postinstall npm hook
+        if: steps.cache-node-modules.outputs.cache-hit == 'true'
+        run: |
+          npm run build -w packages/commons
       - name: "Run layer integration tests"
         run: |
           npm ci --foreground-scripts

@@ -1,0 +1,197 @@
+name: Make Release
+on:
+  workflow_dispatch: {}
+concurrency:
+  group: on-release-publish
+jobs:
+  check-examples:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        example: ["sam", "cdk"]
+      fail-fast: false
+    defaults:
+      run:
+        working-directory: examples/${{ matrix.example }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./examples/${{ matrix.example }}/node_modules"
+          # Use the combo between example, name, and SHA-256 hash of all example lock files as cache key.
+          # It's not possible to use the ${{ matrix.example }} key in the hashFiles fn so
+          # if any of the lock files (wich should be fairly similar anyway) changes the cache is
+          # invalidated/discarded for all.
+          key: ${{ matrix.example }}-cache-examples-node-modules-${{ hashFiles('./examples/*/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm t
+  check-layer-publisher:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    defaults:
+      run:
+        working-directory: layer-publisher
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./layer-publisher/node_modules"
+          # Use the combo between example, name, and SHA-256 hash of the layer-publisher lock files as cache key.
+          key: cache-layer-publisher-node-modules-${{ hashFiles('./layer-publisher/*/package-lock.json') }}
+      - name: Install Layer publisher app
+        run: npm ci
+  run-unit-tests-on-utils:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        version: [12, 14, 16]
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.version }}
+          cache: "npm"
+      - name: Setup npm
+        run: npm i -g npm@next-8
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: ${{ matrix.version }}-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        # We can skip the install if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
+      - name: Build packages
+        # If there's a cache hit we still need to manually build the packages
+        # this would otherwise have been done automatically as a part of the
+        # postinstall npm hook
+        if: steps.cache-node-modules.outputs.cache-hit == 'true'
+        run: |
+          npm run build -w packages/commons
+          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
+      - name: Lint
+        run: npm run lint -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics
+      - name: Run unit tests
+        run: npm t -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics
+  publish-npm:
+    needs: [check-examples, check-layer-publisher, run-unit-tests-on-utils]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # Here `token` is needed to avoid incurring in error GH006 Protected  Branch Update Failed,
+          token: ${{ secrets.GH_PUBLISH_TOKEN }}
+          # While `fetch-depth` is used to allow the workflow to later commit & push the changes.
+          fetch-depth: 0
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "npm"
+      - name: Setup npm
+        run: |
+          npm i -g npm@next-8
+          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: 16-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Build packages
+        run: |
+          npm run build -w packages/commons
+          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
+      - name: "Version and publish"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
+          npx lerna version --conventional-commits --force-publish --yes
+          npx lerna publish from-git --no-verify-access --yes
+  publish-docs:
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - name: Set RELEASE_VERSION env var
+        run: |
+          RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
+          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+      - name: Install doc generation dependencies
+        run: |
+          pip install --upgrade pip 
+          pip install -r docs/requirements.txt
+      - name: Setup doc deploy
+        run: |
+          git config --global user.name Docs deploy
+          git config --global user.email docs@dummy.bot.com
+      - name: Build mkdocs site in "gh-pages" branch and push
+        run: |
+          rm -rf site
+          VERSION="${{ env.RELEASE_VERSION }}"
+          ALIAS="latest"
+          echo "Publishing doc for version: $VERSION"
+          mkdocs build
+          mike deploy --push --update-aliases --no-redirect "$VERSION" "$ALIAS"
+          # Set latest version as a default
+          mike set-default --push latest
+      - name: Build API docs
+        run: |
+          rm -rf api
+          npm run docs-generateApiDoc
+      - name: Release API docs to the released version
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api
+          keep_files: true
+          destination_dir: ${{ env.RELEASE_VERSION }}/api
+      - name: Release API docs to the "latest" version
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api
+          keep_files: true
+          destination_dir: latest/api

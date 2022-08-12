@@ -21,8 +21,8 @@
 
 ### Related issues, RFCs
 
-<!--- Add here the number to the Github Issue or RFC that is related to this PR. -->
-<!-- **Issue number:** #123 -->
+<!--- Add here the number (i.e. #42) to the Github Issue or RFC that is related to this PR. -->
+<!--- If no issue is present the PR might get blocked and not be reviewed. -->
 **Issue number:** 
 
 ### PR status

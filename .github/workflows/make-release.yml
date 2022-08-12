@@ -1,0 +1,57 @@
+name: Make Release
+on:
+  workflow_dispatch: {}
+concurrency:
+  group: on-release-publish
+jobs:
+  run-unit-tests:
+    uses: ./.github/workflows/reusable-run-unit-tests.yml
+  publish-npm:
+    needs: run-unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # Here `token` is needed to avoid incurring in error GH006 Protected  Branch Update Failed,
+          token: ${{ secrets.GH_PUBLISH_TOKEN }}
+          # While `fetch-depth` is used to allow the workflow to later commit & push the changes.
+          fetch-depth: 0
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "npm"
+      - name: Setup npm
+        run: |
+          npm i -g npm@next-8
+          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: 16-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Build packages
+        run: |
+          npm run build -w packages/commons
+          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
+      - name: "Version and publish"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
+          npx lerna version --conventional-commits --force-publish --yes
+          npx lerna publish from-git --no-verify-access --yes
+  publish:
+    needs: publish-npm
+    uses: ./.github/workflows/reusable-publish-docs.yml
+    with:
+      workflow_origin: ${{ github.event.repository.full_name }}
+      isRelease: "true"
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}

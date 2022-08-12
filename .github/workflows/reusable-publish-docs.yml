@@ -17,8 +17,6 @@ on:
     secrets:
       token:
         required: true
-concurrency:
-  group: on-release-publish
 
 jobs:
   publish-docs:

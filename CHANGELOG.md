@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.0.2...v1.1.0) (2022-08-12)
+
+
+### Bug Fixes
+
+* **layers:** release process + remove duplicate code ([#1052](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1052)) ([f653c06](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/f653c065bd5586785e482d61d2738549d8ac9fd9))
+* **logger:** fix clearstate bug when lambda handler throws ([#1045](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1045)) ([5ebd1cf](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/5ebd1cf44a2a3b6d99923e5bb942af3327325241))
+* wrong scope in captureMethod ([#1026](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1026)) ([1a06fed](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/1a06fed74db02741c58bc05d8d5fce2e688d7879))
+
+
+### Features
+
+* **build:** publish lib as a Lambda Layer ([#884](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/884)) ([c3a20c6](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c3a20c61380a6b6944807f5abf12c9cafb254325)), closes [#1031](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1031)
+
+
+
+
+
 ## [1.0.2](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.0.1...v1.0.2) (2022-07-19)
 
 **Note:** Version bump only for package aws-lambda-powertools-typescript

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.0.2...v1.1.0) (2022-08-12)
+
+
+### Bug Fixes
+
+* wrong scope in captureMethod ([#1026](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1026)) ([1a06fed](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/1a06fed74db02741c58bc05d8d5fce2e688d7879))
+
+
+
+
+
 ## [1.0.2](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.0.1...v1.0.2) (2022-07-19)
 
 **Note:** Version bump only for package @aws-lambda-powertools/tracer

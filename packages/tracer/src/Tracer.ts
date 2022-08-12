@@ -340,27 +340,36 @@ class Tracer extends Utility implements TracerInterface {
    * @decorator Class
    */
   public captureLambdaHandler(): HandlerMethodDecorator {
-    return (target, _propertyKey, descriptor) => {
+    return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
        */ 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
 
-      descriptor.value = ((event, context, callback) => {
-        if (!this.isTracingEnabled()) {
-          return originalMethod.apply(target, [ event, context, callback ]);
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const that = this;
+      descriptor.value = (function (event, context, callback) {
+        // We know that 'this' is a LambdaHandler because captureLambdaHandler
+        // can only be applied to a LambdaHandler.
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const thisLambdaHandler: LambdaHandler = this;
+
+        if (!that.isTracingEnabled()) {
+          return originalMethod.apply(thisLambdaHandler, [ event, context, callback ]);
         }
 
-        return this.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
-          this.annotateColdStart();
-          this.addServiceNameAnnotation();
+        return that.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
+          that.annotateColdStart();
+          that.addServiceNameAnnotation();
           let result: unknown;
           try {
-            result = await originalMethod.apply(target, [ event, context, callback ]);
-            this.addResponseAsMetadata(result, process.env._HANDLER);
+            result = await originalMethod.apply(thisLambdaHandler, [ event, context, callback ]);
+            that.addResponseAsMetadata(result, process.env._HANDLER);
           } catch (error) {
-            this.addErrorAsMetadata(error as Error);
+            that.addErrorAsMetadata(error as Error);
             throw error;
           } finally {
             subsegment?.close();
@@ -411,23 +420,25 @@ class Tracer extends Utility implements TracerInterface {
    * @decorator Class
    */
   public captureMethod(): MethodDecorator {
-    return (target, _propertyKey, descriptor) => {
+    return (_target, _propertyKey, descriptor) => {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
       
-      descriptor.value = (...args: unknown[]) => {
-        if (!this.isTracingEnabled()) {
-          return originalMethod.apply(target, [...args]);
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const that = this;
+      descriptor.value = function (...args: unknown[]) {
+        if (!that.isTracingEnabled()) {
+          return originalMethod.apply(this, [...args]);
         }
 
-        return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {          
+        return that.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
           let result;
           try {
-            result = await originalMethod.apply(target, [...args]);
-            this.addResponseAsMetadata(result, originalMethod.name);
+            result = await originalMethod.apply(this, [...args]);
+            that.addResponseAsMetadata(result, originalMethod.name);
           } catch (error) {
-            this.addErrorAsMetadata(error as Error); 
+            that.addErrorAsMetadata(error as Error);
             
             throw error;
           } finally {

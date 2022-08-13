@@ -67,7 +67,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * }
  * 
  * export const handlerClass = new Lambda();
- * export const handler = handlerClass.handler; 
+ * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  * 
  * ### Functions usage with manual instrumentation
@@ -334,7 +334,7 @@ class Tracer extends Utility implements TracerInterface {
    * }
    * 
    * export const handlerClass = new Lambda();
-   * export const handler = handlerClass.handler; 
+   * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    * 
    * @decorator Class

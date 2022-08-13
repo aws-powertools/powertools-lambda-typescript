@@ -143,8 +143,11 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     }
      
     export const handlerClass = new Lambda();
-    export const handler = handlerClass.handler;
+    export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
+
+    1. Binding your handler method allows your handler to access `this`.
+
 === "Manual"
 
     ```typescript hl_lines="6 8-9 12-13 19 22 26 28"
@@ -253,8 +256,11 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
     }
      
     export const myFunction = new Lambda();
-    export const handler = myFunction.handler; 
+    export const handler = myFunction.handler.bind(myFunction); // (1)
     ```
+
+    1. Binding your handler method allows your handler to access `this`.
+
 === "Manual"
 
     ```typescript hl_lines="6 8-9 15 18 23 25"

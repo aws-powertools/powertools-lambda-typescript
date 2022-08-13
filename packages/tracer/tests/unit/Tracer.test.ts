@@ -881,7 +881,8 @@ describe('Class: Tracer', () => {
 
       // Act / Assess
       const lambda = new Lambda('someValue');
-      expect(await lambda.handler({}, context, () => console.log('Lambda invoked!'))).toEqual('memberVariable:someValue');
+      const handler = lambda.handler.bind(lambda);
+      expect(await handler({}, context, () => console.log('Lambda invoked!'))).toEqual('memberVariable:someValue');
 
     });
   });

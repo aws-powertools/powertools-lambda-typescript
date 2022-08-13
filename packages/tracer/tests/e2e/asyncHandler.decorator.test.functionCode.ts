@@ -83,4 +83,4 @@ export class MyFunctionWithDecorator {
 }
 
 export const handlerClass = new MyFunctionWithDecorator();
-export const handler = handlerClass.handler;
+export const handler = handlerClass.handler.bind(handlerClass);

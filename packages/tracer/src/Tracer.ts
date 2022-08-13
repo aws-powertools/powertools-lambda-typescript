@@ -349,7 +349,7 @@ class Tracer extends Utility implements TracerInterface {
 
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;
-      // Use a function() {} instead of () => {} an arrow function so that we can
+      // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
       descriptor.value = (function (event, context, callback) {
         // We know that 'this' is a LambdaHandler because captureLambdaHandler

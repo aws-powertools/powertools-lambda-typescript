@@ -1,5 +1,5 @@
 import { Handler } from 'aws-lambda';
-import { Utility } from '@aws-lambda-powertools/commons';
+import { AsyncHandler, SyncHandler, Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
@@ -348,30 +348,26 @@ class Tracer extends Utility implements TracerInterface {
       const originalMethod = descriptor.value!;
 
       // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const that = this;
+      const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
-      descriptor.value = (function (event, context, callback) {
-        // We know that 'this' is a LambdaHandler because captureLambdaHandler
-        // can only be applied to a LambdaHandler.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+      descriptor.value = (function (this: Handler, event, context, callback) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const thisLambdaHandler: LambdaHandler = this;
+        const handlerRef: Handler = this;
 
-        if (!that.isTracingEnabled()) {
-          return originalMethod.apply(thisLambdaHandler, [ event, context, callback ]);
+        if (!tracerRef.isTracingEnabled()) {
+          return originalMethod.apply(handlerRef, [ event, context, callback ]);
         }
 
-        return that.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
-          that.annotateColdStart();
-          that.addServiceNameAnnotation();
+        return tracerRef.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
+          tracerRef.annotateColdStart();
+          tracerRef.addServiceNameAnnotation();
           let result: unknown;
           try {
-            result = await originalMethod.apply(thisLambdaHandler, [ event, context, callback ]);
-            that.addResponseAsMetadata(result, process.env._HANDLER);
+            result = await originalMethod.apply(handlerRef, [ event, context, callback ]);
+            tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
           } catch (error) {
-            that.addErrorAsMetadata(error as Error);
+            tracerRef.addErrorAsMetadata(error as Error);
             throw error;
           } finally {
             subsegment?.close();
@@ -380,7 +376,7 @@ class Tracer extends Utility implements TracerInterface {
           
           return result;
         });
-      }) as Handler;
+      }) as SyncHandler<Handler> | AsyncHandler<Handler>;
 
       return descriptor;
     };
@@ -428,21 +424,21 @@ class Tracer extends Utility implements TracerInterface {
       const originalMethod = descriptor.value!;
       
       // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const that = this;
+      const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
       descriptor.value = function (...args: unknown[]) {
-        if (!that.isTracingEnabled()) {
+        if (!tracerRef.isTracingEnabled()) {
           return originalMethod.apply(this, [...args]);
         }
 
-        return that.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
+        return tracerRef.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
           let result;
           try {
             result = await originalMethod.apply(this, [...args]);
-            that.addResponseAsMetadata(result, originalMethod.name);
+            tracerRef.addResponseAsMetadata(result, originalMethod.name);
           } catch (error) {
-            that.addErrorAsMetadata(error as Error);
+            tracerRef.addErrorAsMetadata(error as Error);
             
             throw error;
           } finally {

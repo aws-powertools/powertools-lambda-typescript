@@ -619,6 +619,33 @@ describe('Class: Metrics', () => {
 
       expect(console.log).toBeCalledTimes(1);
     });
+
+    test('Using decorator should preserve `this` in decorated class', async () => {
+      // Prepare
+      const metrics = new Metrics({ namespace: 'test' });
+
+      // Act
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
+          this.dummyMethod();
+        }
+
+        private dummyMethod(): void {
+          metrics.addMetric('test_name', MetricUnits.Seconds, 1);
+        }
+      }
+      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(console.log).toBeCalledTimes(1);
+    });
   });
 
   describe('Feature: Custom Config Service', () => {

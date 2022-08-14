@@ -156,8 +156,11 @@ Key | Example
     }
 
     export const myFunction = new Lambda();
-    export const handler = myFunction.handler;
+    export const handler = myFunction.handler.bind(myFunction); // (1)
     ```
+
+    1. Binding your handler method allows your handler to access `this` within the class methods.
+
 === "Manual"
 
     ```typescript hl_lines="7"
@@ -234,8 +237,10 @@ This is disabled by default to prevent sensitive info being logged
     }
 
     export const myFunction = new Lambda();
-    export const handler = myFunction.handler;
+    export const handler = myFunction.handler.bind(myFunction); // (1)
     ```
+
+    1. Binding your handler method allows your handler to access `this` within the class methods.
 
 ### Appending persistent additional log keys and values
 
@@ -399,8 +404,10 @@ If you want to make sure that persistent attributes added **inside the handler f
     }
 
     export const myFunction = new Lambda();
-    export const handler = myFunction.handler;
+    export const handler = myFunction.handler.bind(myFunction); // (1)
     ```
+
+    1. Binding your handler method allows your handler to access `this` within the class methods.
 
 In each case, the printed log will look like this:
 

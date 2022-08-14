@@ -1,5 +1,5 @@
 import { Console } from 'console';
-import type { Context } from 'aws-lambda';
+import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
@@ -282,14 +282,18 @@ class Logger extends Utility implements ClassThatLogs {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value;
 
-      descriptor.value = (event, context, callback) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const loggerRef = this;
+      // Use a function() {} instead of an () => {} arrow function so that we can
+      // access `myClass` as `this` in a decorated `myClass.myMethod()`.
+      descriptor.value = (function (this: Handler, event, context, callback) {
 
         let initialPersistentAttributes = {};
         if (options && options.clearState === true) {
-          initialPersistentAttributes = { ...this.getPersistentLogAttributes() };
+          initialPersistentAttributes = { ...loggerRef.getPersistentLogAttributes() };
         }
 
-        Logger.injectLambdaContextBefore(this, event, context, options);
+        Logger.injectLambdaContextBefore(loggerRef, event, context, options);
 
         /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         let result: unknown;
@@ -298,11 +302,11 @@ class Logger extends Utility implements ClassThatLogs {
         } catch (error) {
           throw error;
         } finally {
-          Logger.injectLambdaContextAfterOrOnError(this, initialPersistentAttributes, options);
+          Logger.injectLambdaContextAfterOrOnError(loggerRef, initialPersistentAttributes, options);
         }
 
         return result;
-      };
+      });
     };
   }
 

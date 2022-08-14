@@ -99,8 +99,8 @@ import type {
  *     }
  * }
  *
- * export const myFunction = new Lambda();
- * export const handler = myFunction.handler;
+ * export const handlerClass = new Lambda();
+ * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  *
  * @class

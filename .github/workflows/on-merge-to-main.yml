@@ -21,7 +21,7 @@ jobs:
     uses: ./.github/workflows/reusable-run-unit-tests.yml
   publish:
     needs:
-      [get_pr_details, run-unit-tests, check-examples, check-layer-publisher]
+      [get_pr_details, run-unit-tests]
     uses: ./.github/workflows/reusable-publish-docs.yml
     with:
       workflow_origin: ${{ github.event.repository.full_name }}

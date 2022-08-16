@@ -21,14 +21,14 @@ class Lambda implements LambdaInterface {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public async handler(event: APIGatewayProxyEvent, context: Context): Promise<{requestId: string}> {
-    this.dummyMethod();
+    this.printLogInAllLevels();
     
     return {
       requestId: context.awsRequestId,
     };
   }
 
-  private dummyMethod() : void {
+  private printLogInAllLevels() : void {
     logger.debug(this.logMsg);
     logger.info(this.logMsg);
     logger.warn(this.logMsg);

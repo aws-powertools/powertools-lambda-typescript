@@ -1,5 +1,5 @@
 import { Handler } from 'aws-lambda';
-import { Utility } from '@aws-lambda-powertools/commons';
+import { AsyncHandler, SyncHandler, Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
@@ -67,7 +67,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * }
  * 
  * export const handlerClass = new Lambda();
- * export const handler = handlerClass.handler; 
+ * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  * 
  * ### Functions usage with manual instrumentation
@@ -334,33 +334,40 @@ class Tracer extends Utility implements TracerInterface {
    * }
    * 
    * export const handlerClass = new Lambda();
-   * export const handler = handlerClass.handler; 
+   * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    * 
    * @decorator Class
    */
   public captureLambdaHandler(): HandlerMethodDecorator {
-    return (target, _propertyKey, descriptor) => {
+    return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
        */ 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
 
-      descriptor.value = ((event, context, callback) => {
-        if (!this.isTracingEnabled()) {
-          return originalMethod.apply(target, [ event, context, callback ]);
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const tracerRef = this;
+      // Use a function() {} instead of an () => {} arrow function so that we can
+      // access `myClass` as `this` in a decorated `myClass.myMethod()`.
+      descriptor.value = (function (this: Handler, event, context, callback) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const handlerRef: Handler = this;
+
+        if (!tracerRef.isTracingEnabled()) {
+          return originalMethod.apply(handlerRef, [ event, context, callback ]);
         }
 
-        return this.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
-          this.annotateColdStart();
-          this.addServiceNameAnnotation();
+        return tracerRef.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
+          tracerRef.annotateColdStart();
+          tracerRef.addServiceNameAnnotation();
           let result: unknown;
           try {
-            result = await originalMethod.apply(target, [ event, context, callback ]);
-            this.addResponseAsMetadata(result, process.env._HANDLER);
+            result = await originalMethod.apply(handlerRef, [ event, context, callback ]);
+            tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
           } catch (error) {
-            this.addErrorAsMetadata(error as Error);
+            tracerRef.addErrorAsMetadata(error as Error);
             throw error;
           } finally {
             subsegment?.close();
@@ -369,7 +376,7 @@ class Tracer extends Utility implements TracerInterface {
           
           return result;
         });
-      }) as Handler;
+      }) as SyncHandler<Handler> | AsyncHandler<Handler>;
 
       return descriptor;
     };
@@ -411,23 +418,27 @@ class Tracer extends Utility implements TracerInterface {
    * @decorator Class
    */
   public captureMethod(): MethodDecorator {
-    return (target, _propertyKey, descriptor) => {
+    return (_target, _propertyKey, descriptor) => {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
       
-      descriptor.value = (...args: unknown[]) => {
-        if (!this.isTracingEnabled()) {
-          return originalMethod.apply(target, [...args]);
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const tracerRef = this;
+      // Use a function() {} instead of an () => {} arrow function so that we can
+      // access `myClass` as `this` in a decorated `myClass.myMethod()`.
+      descriptor.value = function (...args: unknown[]) {
+        if (!tracerRef.isTracingEnabled()) {
+          return originalMethod.apply(this, [...args]);
         }
 
-        return this.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {          
+        return tracerRef.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
           let result;
           try {
-            result = await originalMethod.apply(target, [...args]);
-            this.addResponseAsMetadata(result, originalMethod.name);
+            result = await originalMethod.apply(this, [...args]);
+            tracerRef.addResponseAsMetadata(result, originalMethod.name);
           } catch (error) {
-            this.addErrorAsMetadata(error as Error); 
+            tracerRef.addErrorAsMetadata(error as Error);
             
             throw error;
           } finally {

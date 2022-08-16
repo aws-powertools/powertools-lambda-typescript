@@ -854,6 +854,37 @@ describe('Class: Tracer', () => {
 
     });
 
+    test('when used as decorator and when calling the handler, it has access to member variables', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+
+      class Lambda implements LambdaInterface {
+        private readonly memberVariable: string;
+
+        public constructor(memberVariable: string) {
+          this.memberVariable = memberVariable;
+        }
+
+        @tracer.captureLambdaHandler()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return <TResult>(`memberVariable:${this.memberVariable}` as unknown);
+        }
+
+      }
+
+      // Act / Assess
+      const lambda = new Lambda('someValue');
+      const handler = lambda.handler.bind(lambda);
+      expect(await handler({}, context, () => console.log('Lambda invoked!'))).toEqual('memberVariable:someValue');
+
+    });
   });
 
   describe('Method: captureMethod', () => {
@@ -1006,6 +1037,44 @@ describe('Class: Tracer', () => {
 
       // Act / Assess
       expect(await (new Lambda()).handler({}, context, () => console.log('Lambda invoked!'))).toEqual('otherMethod:otherMethod');
+
+    });
+
+    test('when used as decorator and when calling a method in the class, it has access to member variables', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+
+      class Lambda implements LambdaInterface {
+        private readonly memberVariable: string;
+
+        public constructor(memberVariable: string) {
+          this.memberVariable = memberVariable;
+        }
+
+        @tracer.captureMethod()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(): Promise<string> {
+          return `memberVariable:${this.memberVariable}`;
+        }
+
+        @tracer.captureLambdaHandler()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return <TResult>(await this.dummyMethod() as unknown);
+        }
+
+      }
+
+      // Act / Assess
+      const lambda = new Lambda('someValue');
+      expect(await lambda.dummyMethod()).toEqual('memberVariable:someValue');
 
     });
 

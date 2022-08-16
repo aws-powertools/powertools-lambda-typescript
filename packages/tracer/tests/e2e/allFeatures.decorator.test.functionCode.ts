@@ -36,6 +36,12 @@ const tracer = new Tracer({ serviceName: serviceName });
 const dynamoDBv3 = tracer.captureAWSv3Client(new DynamoDBClient({}));
 
 export class MyFunctionWithDecorator {  
+  private readonly returnValue: string;
+
+  public constructor() {
+    this.returnValue = customResponseValue;
+  }
+
   @tracer.captureLambdaHandler()
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -77,9 +83,9 @@ export class MyFunctionWithDecorator {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public myMethod(): string {
-    return customResponseValue;
+    return this.returnValue;
   }
 }
 
 export const handlerClass = new MyFunctionWithDecorator();
-export const handler = handlerClass.handler;
+export const handler = handlerClass.handler.bind(handlerClass);

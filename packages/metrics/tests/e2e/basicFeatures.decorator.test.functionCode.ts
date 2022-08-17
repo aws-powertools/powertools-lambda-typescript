@@ -42,5 +42,5 @@ class Lambda implements LambdaInterface {
   }
 }
 
-export const handlerClass = new Lambda();
+const handlerClass = new Lambda();
 export const handler = handlerClass.handler.bind(handlerClass);

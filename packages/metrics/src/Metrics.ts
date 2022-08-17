@@ -58,7 +58,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *   }
  * }
  *
- * export const handlerClass = new MyFunctionWithDecorator();
+ * const handlerClass = new MyFunctionWithDecorator();
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  *
@@ -221,7 +221,7 @@ class Metrics extends Utility implements MetricsInterface {
    *   }
    * }
    *
-   * export const handlerClass = new MyFunctionWithDecorator();
+   * const handlerClass = new MyFunctionWithDecorator();
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    *

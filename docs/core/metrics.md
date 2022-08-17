@@ -277,7 +277,7 @@ You can add default dimensions to your metrics by passing them as parameters in 
         }
     }
 
-    export const handlerClass = new Lambda();
+    const handlerClass = new Lambda();
     export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
 
@@ -375,7 +375,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
         }
     }
 
-    export const handlerClass = new Lambda();
+    const handlerClass = new Lambda();
     export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
 
@@ -639,7 +639,7 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
         }
     }
 
-    export const handlerClass = new Lambda();
+    const handlerClass = new Lambda();
     export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
 

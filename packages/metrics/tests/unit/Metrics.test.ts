@@ -642,9 +642,13 @@ describe('Class: Metrics', () => {
         }
       }
       await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       // Assess
       expect(console.log).toBeCalledTimes(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toEqual(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].Name).toEqual('test_name');
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].Unit).toEqual('Seconds');
     });
   });
 

@@ -155,7 +155,7 @@ Key | Example
 
     }
 
-    export const myFunction = new Lambda();
+    const myFunction = new Lambda();
     export const handler = myFunction.handler.bind(myFunction); // (1)
     ```
 
@@ -236,7 +236,7 @@ This is disabled by default to prevent sensitive info being logged
 
     }
 
-    export const myFunction = new Lambda();
+    const myFunction = new Lambda();
     export const handler = myFunction.handler.bind(myFunction); // (1)
     ```
 
@@ -403,7 +403,7 @@ If you want to make sure that persistent attributes added **inside the handler f
 
     }
 
-    export const myFunction = new Lambda();
+    const myFunction = new Lambda();
     export const handler = myFunction.handler.bind(myFunction); // (1)
     ```
 

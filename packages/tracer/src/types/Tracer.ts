@@ -26,6 +26,44 @@ type TracerOptions = {
   customConfigService?: ConfigServiceInterface
 };
 
+/**
+ * Options for the captureMethod decorator to be used when decorating a method.
+ *
+ * Usage:
+ * @example
+ * ```typescript
+ * const tracer = new Tracer();
+ *
+ * class MyThing {
+ *   @tracer.captureMethod({ captureResponse: false, captureError: false })
+ *   async myMethod() { ... }
+ * }
+ * ```
+ */
+type TracerCaptureMethodOptions = {
+  captureResponse?: boolean
+  captureError?: boolean
+};
+
+/**
+ * Options for the captureLambdaHandler decorator to be used when decorating a method.
+ *
+ * Usage:
+ * @example
+ * ```typescript
+ * const tracer = new Tracer();
+ *
+ * class MyThing implements LambdaInterface {
+ *   @tracer.captureLambdaHandler({ captureResponse: false, captureError: false })
+ *   async handler() { ... }
+ * }
+ * ```
+ */
+type TracerCaptureLambdaHandlerOptions = {
+  captureResponse?: boolean
+  captureError?: boolean
+};
+
 type HandlerMethodDecorator = (
   target: LambdaInterface,
   propertyKey: string | symbol,
@@ -38,6 +76,8 @@ type MethodDecorator = (target: any, propertyKey: string | symbol, descriptor: T
 
 export {
   TracerOptions,
+  TracerCaptureLambdaHandlerOptions,
+  TracerCaptureMethodOptions,
   HandlerMethodDecorator,
   MethodDecorator
 };

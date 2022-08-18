@@ -648,6 +648,36 @@ describe('Class: Tracer', () => {
     
     });
 
+    test('when used as decorator while captureResponse is set to false, it does not capture the response as metadata', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
+      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureLambdaHandler({ captureResponse: false })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return new Promise((resolve, _reject) => resolve({
+            foo: 'bar'
+          } as unknown as TResult));
+        }
+
+      }
+
+      // Act
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect('metadata' in newSubsegment).toBe(false);
+
+    });
+
     test('when used as decorator and with standard config, it captures the response as metadata', async () => {
       
       // Prepare
@@ -724,6 +754,41 @@ describe('Class: Tracer', () => {
       expect.assertions(6);
 
       delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+
+    });
+
+    test('when used as decorator while captureError is set to false, it does not capture the exceptions', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
+      const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureLambdaHandler({ captureError: false })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          throw new Error('Exception thrown!');
+        }
+
+      }
+
+      // Act & Assess
+      await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '## index.handler',
+      }));
+      expect('cause' in newSubsegment).toBe(false);
+      expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
+      expect(addErrorSpy).toHaveBeenCalledTimes(0);
+      expect.assertions(6);
 
     });
 
@@ -964,6 +1029,52 @@ describe('Class: Tracer', () => {
 
     });
 
+    test('when used as decorator and with captureResponse set to false, it does not capture the response as metadata', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureMethod({ captureResponse: false })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(some: string): Promise<string> {
+          return new Promise((resolve, _reject) => setTimeout(() => resolve(some), 3000));
+        }
+
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
+          const result = await this.dummyMethod('foo bar');
+
+          return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
+        }
+
+      }
+
+      // Act
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('### dummyMethod', expect.anything());
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '### dummyMethod',
+      }));
+      expect(newSubsegment).not.toEqual(expect.objectContaining({
+        metadata:  {
+          'hello-world': {
+            'dummyMethod response': 'foo bar',
+          },
+        }
+      }));
+
+    });
+
     test('when used as decorator and with standard config, it captures the exception correctly', async () => {
 
       // Prepare
@@ -1000,6 +1111,47 @@ describe('Class: Tracer', () => {
       expect('cause' in newSubsegment).toBe(true);
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledWith(new Error('Exception thrown!'), false);
+      expect.assertions(6);
+
+    });
+
+    test('when used as decorator and with captureError set to false, it does not capture the exception', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = createCaptureAsyncFuncMock(tracer.provider);
+      const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
+      const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureMethod({ captureError: false })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(_some: string): Promise<string> {
+          throw new Error('Exception thrown!');
+        }
+
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
+          const result = await this.dummyMethod('foo bar');
+
+          return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
+        }
+
+      }
+
+      // Act / Assess
+      await expect(new Lambda().handler({}, context, () => console.log('Lambda invoked!'))).rejects.toThrowError(Error);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '### dummyMethod',
+      }));
+      expect('cause' in newSubsegment).toBe(false);
+      expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
+      expect(addErrorSpy).toHaveBeenCalledTimes(0);
       expect.assertions(6);
 
     });

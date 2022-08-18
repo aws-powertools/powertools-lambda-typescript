@@ -454,40 +454,6 @@ Use **`POWERTOOLS_TRACER_CAPTURE_ERROR=false`** environment variable to instruct
 
     1. You might **return sensitive** information from exceptions, stack traces you might not control
 
-### Disabling exception capture for targeted methods and handlers
-
-Use the `captureError: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators to instruct Tracer **not** to serialize exceptions as metadata.
-
-=== "method.ts"
-
-    ```typescript hl_lines="5"
-    import { Tracer } from '@aws-lambda-powertools/tracer';
-
-    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-    class MyThing {
-        @tracer.captureMethod({ captureError: false })
-        myMethod(): string {
-            /* ... */
-            return 'foo bar';
-        }
-    }
-    ```
-
-=== "handler.ts"
-
-    ```typescript hl_lines="6"
-    import { Tracer } from '@aws-lambda-powertools/tracer';
-    import { LambdaInterface } from '@aws-lambda-powertools/commons';
-
-    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-    class MyHandler implements LambdaInterface {
-        @tracer.captureLambdaHandler({ captureError: false })
-        async handler(_event: any, _context: any): Promise<void> {
-            /* ... */
-        }
-    }
-    ```
-
 ### Escape hatch mechanism
 
 You can use `tracer.provider` attribute to access all methods provided by the [AWS X-Ray SDK](https://docs.aws.amazon.com/xray-sdk-for-nodejs/latest/reference/AWSXRay.html).

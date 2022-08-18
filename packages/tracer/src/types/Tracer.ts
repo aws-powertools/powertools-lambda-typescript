@@ -35,7 +35,7 @@ type TracerOptions = {
  * const tracer = new Tracer();
  *
  * class MyThing {
- *   @tracer.captureMethod({ captureResponse: false, captureError: false })
+ *   @tracer.captureMethod({ captureResponse: false })
  *   myMethod(): string {
  *     return 'foo bar';
  *   }
@@ -44,7 +44,6 @@ type TracerOptions = {
  */
 type TracerCaptureMethodOptions = {
   captureResponse?: boolean
-  captureError?: boolean
 };
 
 /**
@@ -56,14 +55,13 @@ type TracerCaptureMethodOptions = {
  * const tracer = new Tracer();
  *
  * class MyThing implements LambdaInterface {
- *   @tracer.captureLambdaHandler({ captureResponse: false, captureError: false })
+ *   @tracer.captureLambdaHandler({ captureResponse: false })
  *   async handler(_event: any, _context: any): Promise<void> {}
  * }
  * ```
  */
 type TracerCaptureLambdaHandlerOptions = {
   captureResponse?: boolean
-  captureError?: boolean
 };
 
 type HandlerMethodDecorator = (

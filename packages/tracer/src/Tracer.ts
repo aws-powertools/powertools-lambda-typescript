@@ -370,13 +370,7 @@ class Tracer extends Utility implements TracerInterface {
             }
 
           } catch (error) {
-            if (options?.captureError ?? true) {
-              tracerRef.addErrorAsMetadata(error as Error);
-            } else {
-              // Though we aren't adding the error as metadata, we should still
-              // mark the segment as having an error.
-              tracerRef.getSegment().addErrorFlag();
-            }
+            tracerRef.addErrorAsMetadata(error as Error);
             throw error;
           } finally {
             subsegment?.close();
@@ -449,14 +443,7 @@ class Tracer extends Utility implements TracerInterface {
             }
 
           } catch (error) {
-            if (options?.captureError ?? true) {
-              tracerRef.addErrorAsMetadata(error as Error);
-            } else {
-              // Though we aren't adding the error as metadata, we should still
-              // mark the segment as having an error.
-              tracerRef.getSegment().addErrorFlag();
-            }
-            
+            tracerRef.addErrorAsMetadata(error as Error);
             throw error;
           } finally {
             subsegment?.close();

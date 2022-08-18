@@ -19,7 +19,7 @@ on:
 jobs:
   publish-docs:
     # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
-    if: inputs.workflow_origin == 'dreamorosi/aws-lambda-powertools-typescript' || github.event_name == 'released'
+    # if: inputs.workflow_origin == 'dreamorosi/aws-lambda-powertools-typescript' || github.event_name == 'released'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

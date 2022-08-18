@@ -1,0 +1,11 @@
+name: On PR code update
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  run-unit-tests:
+    uses: ./.github/workflows/reusable-publish-docs.yml
+    with:
+      workflow_origin: ${{ github.event.repository.full_name }}
+      isRelease: "true"

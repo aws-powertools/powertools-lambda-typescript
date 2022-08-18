@@ -1,7 +1,11 @@
 name: Manual publish docs
 
 on:
+  # Triggered manually
   workflow_dispatch: {}
+  # Or triggered as result of a release
+  release:
+    types: released
 
 jobs:
   run-unit-tests:

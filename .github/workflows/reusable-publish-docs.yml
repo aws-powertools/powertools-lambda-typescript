@@ -10,16 +10,18 @@ on:
         required: false
         default: "false"
         type: string
+      isRelease:
+        required: false
+        default: "false"
+        type: string
     secrets:
       token:
         required: true
-  release:
-    types: released
 
 jobs:
   publish-docs:
     # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
-    # if: inputs.workflow_origin == 'dreamorosi/aws-lambda-powertools-typescript' || github.event_name == 'released'
+    if: inputs.workflow_origin == 'dreamorosi/aws-lambda-powertools-typescript'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -55,7 +57,7 @@ jobs:
       # We run this step only when the workflow has been triggered by a release
       # in this case we publish the docs to `/latest`
       - name: Set RELEASE_VERSION env var to `latest`
-        if: ${{ github.event_name == 'released' }}
+        if: ${{ inputs.isRelease == 'true' }}
         run: |
           RELEASE_VERSION=$(git describe --abbrev=0 | sed 's/v//')
           echo "RELEASE_VERSION=${RELEASE_VERSION}"
@@ -65,7 +67,7 @@ jobs:
       # We run this step only when the workflow has been triggered by a PR merge
       # in this case we publish the docs to `/dev`
       - name: Set RELEASE_VERSION env var to `dev`
-        if: ${{ inputs.prIsMerged == 'true' && github.event_name != 'released' }}
+        if: ${{ inputs.prIsMerged == 'true' && input.isRelease != 'isRelease' }}
         run: |
           echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
       - name: Install doc generation dependencies

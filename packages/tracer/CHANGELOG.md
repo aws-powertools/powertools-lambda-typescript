@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 1.2.0 (2022-08-18)
+
+
+### Bug Fixes
+
+* **tracer:** capture method throws errors correctly ([#1016](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1016)) ([fb85238](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/fb8523868e8d5e31c00a017ae1102ed31a0a4245))
+* **tracer:** decorated class methods cannot access `this` ([#1055](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1055)) ([107fa04](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/107fa04148ec86c8a0c0a29b5b2d35a62fe2b4e6))
+* wrong scope in captureMethod ([#1026](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1026)) ([1a06fed](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/1a06fed74db02741c58bc05d8d5fce2e688d7879))
+
+
+### Features
+
+* **all:** nodejs16x support ([#877](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/877)) ([d2b13c9](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/d2b13c945adb1a74b7c5f76d45f28a6979ce6429))
+* **tracer:** auto disable when running inside amplify mock ([#1010](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1010)) ([024d628](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/024d6286f9b9273becce825b5c6ca0db87d4c63a))
+
+
+### Reverts
+
+* Revert "chore(release): v0.12.0-rc.0 [skip ci]" ([9397f1d](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/9397f1d3624eb0bfbeb5e4c2702ae51e558a5b4a))
+* Revert "chore(release): v0.12.0-rc.0 [skip ci]" (#1017) ([51c18da](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/51c18da20db434f8b12f320e5074e3e0a146046e)), closes [#1017](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1017)
+
+
+
+
+
 ## [1.1.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.1.0...v1.1.1) (2022-08-18)
 
 

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 1.2.0 (2022-08-18)
+
+
+### Features
+
+* **all:** nodejs16x support ([#877](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/877)) ([d2b13c9](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/d2b13c945adb1a74b7c5f76d45f28a6979ce6429))
+* **examples:** added sam example to workflows ([#849](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/849)) ([93f1c7b](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/93f1c7b55cb159dfcbbcb41149ccec7fd5db1660))
+
+
+### Reverts
+
+* Revert "chore(release): v0.12.0-rc.0 [skip ci]" ([9397f1d](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/9397f1d3624eb0bfbeb5e4c2702ae51e558a5b4a))
+* Revert "chore(release): v0.12.0-rc.0 [skip ci]" (#1017) ([51c18da](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/51c18da20db434f8b12f320e5074e3e0a146046e)), closes [#1017](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/1017)
+
+
+
+
+
 ## [1.1.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.1.0...v1.1.1) (2022-08-18)
 
 **Note:** Version bump only for package powertools-typescript-sam-example

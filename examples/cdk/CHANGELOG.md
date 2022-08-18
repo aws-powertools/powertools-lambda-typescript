@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 1.2.0 (2022-08-18)
+
+
+### Bug Fixes
+
+* **examples:** fix errors in logger and metrics examples ([#509](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/509)) ([c19b47c](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/c19b47cb4cdb71e0ae404e9302226256d02fb7d5))
+* **metrics:** Rename purgeStoredMetrics() function usage in CDK example ([#424](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/424)) ([02f0eae](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/02f0eae2c378bd5562facf032fb94a25c69f66df))
+* updated CDK examples to remove old references & improve comments ([#439](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/439)) ([4cdaaea](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/4cdaaeaf7fbb24571b194c0e82338fbd216d2dcd))
+
+
+### Features
+
+* **all:** make `@middy/core` optional ([#511](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/511)) ([1107f96](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/1107f96e9b4c678d34ee36757366f150d99be4dc))
+* **all:** nodejs16x support ([#877](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/877)) ([d2b13c9](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/d2b13c945adb1a74b7c5f76d45f28a6979ce6429))
+* **all:** Update to examples use released version (0.2.0) ([#405](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/405)) ([d5e0620](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/d5e0620473f31d0839c027a76a88dcdcb98c84de))
+* **examples:** added sam example to workflows ([#849](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/849)) ([93f1c7b](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/93f1c7b55cb159dfcbbcb41149ccec7fd5db1660))
+* generate new version of doc for each release ([#355](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/355)) ([9f45ee1](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/9f45ee12ceced39acc2cc69934a10f18cb95a161))
+* **logger:** JSDOCS support ([#491](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/491)) ([cd2c2d9](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/cd2c2d93a5822e26d3113a042be1dd0473aa6b2a))
+
+
+### Reverts
+
+* Revert "chore(release): v0.12.0-rc.0 [skip ci]" ([9397f1d](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/9397f1d3624eb0bfbeb5e4c2702ae51e558a5b4a))
+* Revert "chore(release): v0.12.0-rc.0 [skip ci]" (#1017) ([51c18da](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/51c18da20db434f8b12f320e5074e3e0a146046e)), closes [#1017](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/1017)
+* Revert "build(deps-dev): bump aws-cdk from 1.139.0 to 1.143.0 (#532)" (#544) ([e96c9ba](https://github.com/dreamorosi/aws-lambda-powertools-typescript/commit/e96c9ba5bd4f738e5ed7c5850e06856a8c69bff1)), closes [#532](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/532) [#544](https://github.com/dreamorosi/aws-lambda-powertools-typescript/issues/544)
+
+
+
+
+
 ## [1.1.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.1.0...v1.1.1) (2022-08-18)
 
 **Note:** Version bump only for package cdk-app

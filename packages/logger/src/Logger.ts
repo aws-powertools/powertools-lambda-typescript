@@ -1,5 +1,5 @@
 import { Console } from 'console';
-import type { Context } from 'aws-lambda';
+import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
@@ -99,8 +99,8 @@ import type {
  *     }
  * }
  *
- * export const myFunction = new Lambda();
- * export const handler = myFunction.handler;
+ * const handlerClass = new Lambda();
+ * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  *
  * @class
@@ -279,30 +279,33 @@ class Logger extends Utility implements ClassThatLogs {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
        */
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value;
 
-      descriptor.value = (event, context, callback) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const loggerRef = this;
+      // Use a function() {} instead of an () => {} arrow function so that we can
+      // access `myClass` as `this` in a decorated `myClass.myMethod()`.
+      descriptor.value = (function (this: Handler, event, context, callback) {
 
         let initialPersistentAttributes = {};
         if (options && options.clearState === true) {
-          initialPersistentAttributes = { ...this.getPersistentLogAttributes() };
+          initialPersistentAttributes = { ...loggerRef.getPersistentLogAttributes() };
         }
 
-        Logger.injectLambdaContextBefore(this, event, context, options);
+        Logger.injectLambdaContextBefore(loggerRef, event, context, options);
 
         /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         let result: unknown;
         try {
-          result = originalMethod!.apply(target, [ event, context, callback ]);
+          result = originalMethod!.apply(this, [ event, context, callback ]);
         } catch (error) {
           throw error;
         } finally {
-          Logger.injectLambdaContextAfterOrOnError(this, initialPersistentAttributes, options);
+          Logger.injectLambdaContextAfterOrOnError(loggerRef, initialPersistentAttributes, options);
         }
 
         return result;
-      };
+      });
     };
   }
 

@@ -1115,6 +1115,57 @@ describe('Class: Logger', () => {
 
     });
 
+    test('when used as decorator the value of `this` is preserved on the decorated method/class', async () => {
+
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+
+      class LambdaFunction implements LambdaInterface {
+        private readonly memberVariable: string;
+
+        public constructor(memberVariable: string) {
+          this.memberVariable = memberVariable;
+        }
+
+        @logger.injectLambdaContext()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TResult>(_event: unknown, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          this.dummyMethod();
+
+          return;
+        }
+
+        private dummyMethod(): void {
+          logger.info({ message: `memberVariable:${this.memberVariable}` });
+        }
+      }
+
+      // Act
+      const lambda = new LambdaFunction('someValue');
+      const handler = lambda.handler.bind(lambda);
+      await handler({}, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+        function_memory_size: 128,
+        function_name: 'foo-bar-function',
+        function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        level: 'INFO',
+        message: 'memberVariable:someValue',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      }));
+
+    });
+
   });
 
   describe('Method: refreshSampleRateCalculation', () => {

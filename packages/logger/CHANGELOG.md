@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.1.0...v1.1.1) (2022-08-18)
+
+
+### Bug Fixes
+
+* **logger:** decorated class methods cannot access `this` ([#1060](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1060)) ([73990bb](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/73990bbcbbd9d5a6d6f55f553e4fd8f038654fa9))
+
+
+
+
+
 # [1.1.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.0.2...v1.1.0) (2022-08-12)
 
 

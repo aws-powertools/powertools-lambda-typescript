@@ -9,3 +9,5 @@ jobs:
     with:
       workflow_origin: ${{ github.event.repository.full_name }}
       isRelease: "true"
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}

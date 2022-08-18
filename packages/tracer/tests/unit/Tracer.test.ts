@@ -648,36 +648,6 @@ describe('Class: Tracer', () => {
     
     });
 
-    test('when used as decorator while captureResponse is set to false, it does not capture the response as metadata', async () => {
-
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
-      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
-      class Lambda implements LambdaInterface {
-
-        @tracer.captureLambdaHandler({ captureResponse: false })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
-          return new Promise((resolve, _reject) => resolve({
-            foo: 'bar'
-          } as unknown as TResult));
-        }
-
-      }
-
-      // Act
-      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
-
-      // Assess
-      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect('metadata' in newSubsegment).toBe(false);
-
-    });
-
     test('when used as decorator and with standard config, it captures the response as metadata', async () => {
       
       // Prepare

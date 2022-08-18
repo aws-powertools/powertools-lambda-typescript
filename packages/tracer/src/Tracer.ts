@@ -2,7 +2,7 @@ import { Handler } from 'aws-lambda';
 import { AsyncHandler, SyncHandler, Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { HandlerMethodDecorator, TracerOptions, TracerCaptureMethodOptions, TracerCaptureLambdaHandlerOptions, MethodDecorator } from './types';
+import { HandlerMethodDecorator, TracerOptions, TracerCaptureMethodOptions, MethodDecorator } from './types';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
@@ -339,7 +339,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    * @decorator Class
    */
-  public captureLambdaHandler(options?: TracerCaptureLambdaHandlerOptions): HandlerMethodDecorator {
+  public captureLambdaHandler(): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
@@ -365,10 +365,7 @@ class Tracer extends Utility implements TracerInterface {
           let result: unknown;
           try {
             result = await originalMethod.apply(handlerRef, [ event, context, callback ]);
-            if (options?.captureResponse ?? true) {
-              tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
-            }
-
+            tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
           } catch (error) {
             tracerRef.addErrorAsMetadata(error as Error);
             throw error;
@@ -444,6 +441,7 @@ class Tracer extends Utility implements TracerInterface {
 
           } catch (error) {
             tracerRef.addErrorAsMetadata(error as Error);
+            
             throw error;
           } finally {
             subsegment?.close();

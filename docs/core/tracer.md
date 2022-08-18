@@ -414,7 +414,7 @@ Use **`POWERTOOLS_TRACER_CAPTURE_RESPONSE=false`** environment variable to instr
 
 ### Disabling response capture for targeted methods and handlers
 
-Use the `captureResponse: false` option in `tracer.captureMethod()` decorators to instruct Tracer **not** to serialize function responses as metadata.
+Use the `captureResponse: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators to instruct Tracer **not** to serialize function responses as metadata.
 
 === "method.ts"
 
@@ -427,6 +427,21 @@ Use the `captureResponse: false` option in `tracer.captureMethod()` decorators t
         myMethod(): string {
             /* ... */
             return 'foo bar';
+        }
+    }
+    ```
+
+=== "handler.ts"
+
+    ```typescript hl_lines="6"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+    class MyHandler implements LambdaInterface {
+        @tracer.captureLambdaHandler({ captureResponse: false })
+        async handler(_event: any, _context: any): Promise<void> {
+            /* ... */
         }
     }
     ```

@@ -46,6 +46,24 @@ type TracerCaptureMethodOptions = {
   captureResponse?: boolean
 };
 
+/**
+ * Options for the captureLambdaHandler decorator to be used when decorating a method.
+ *
+ * Usage:
+ * @example
+ * ```typescript
+ * const tracer = new Tracer();
+ *
+ * class MyThing implements LambdaInterface {
+ *   @tracer.captureLambdaHandler({ captureResponse: false })
+ *   async handler(_event: any, _context: any): Promise<void> {}
+ * }
+ * ```
+ */
+type TracerCaptureLambdaHandlerOptions = {
+  captureResponse?: boolean
+};
+
 type HandlerMethodDecorator = (
   target: LambdaInterface,
   propertyKey: string | symbol,
@@ -58,6 +76,7 @@ type MethodDecorator = (target: any, propertyKey: string | symbol, descriptor: T
 
 export {
   TracerOptions,
+  TracerCaptureLambdaHandlerOptions,
   TracerCaptureMethodOptions,
   HandlerMethodDecorator,
   MethodDecorator

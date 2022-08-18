@@ -66,7 +66,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *   }
  * }
  * 
- * export const handlerClass = new Lambda();
+ * const handlerClass = new Lambda();
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  * 
@@ -333,7 +333,7 @@ class Tracer extends Utility implements TracerInterface {
    *   }
    * }
    * 
-   * export const handlerClass = new Lambda();
+   * const handlerClass = new Lambda();
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    * 
@@ -410,9 +410,8 @@ class Tracer extends Utility implements TracerInterface {
    *   }
    * }
    * 
-   * export const handlerClass = new Lambda();
-   * export const myMethod = handlerClass.myMethod; 
-   * export const handler = handlerClass.handler; 
+   * const handlerClass = new Lambda();
+   * export const handler = handlerClass.handler.bind(handlerClass);; 
    * ```
    * 
    * @decorator Class

@@ -142,7 +142,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         }
     }
      
-    export const handlerClass = new Lambda();
+    const handlerClass = new Lambda();
     export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
 
@@ -255,8 +255,8 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
         }
     }
      
-    export const myFunction = new Lambda();
-    export const handler = myFunction.handler.bind(myFunction); // (1)
+    const handlerClass = new Lambda();
+    export const handler = myFunction.handler.bind(handlerClass); // (1)
     ```
 
     1. Binding your handler method allows your handler to access `this`.

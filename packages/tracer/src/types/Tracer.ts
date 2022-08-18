@@ -36,7 +36,9 @@ type TracerOptions = {
  *
  * class MyThing {
  *   @tracer.captureMethod({ captureResponse: false, captureError: false })
- *   async myMethod() { ... }
+ *   myMethod(): string {
+ *     return 'foo bar';
+ *   }
  * }
  * ```
  */
@@ -55,7 +57,7 @@ type TracerCaptureMethodOptions = {
  *
  * class MyThing implements LambdaInterface {
  *   @tracer.captureLambdaHandler({ captureResponse: false, captureError: false })
- *   async handler() { ... }
+ *   async handler(_event: any, _context: any): Promise<void> {}
  * }
  * ```
  */

@@ -25,7 +25,6 @@ jobs:
       - name: Setup npm
         run: |
           npm i -g npm@next-8
-          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
       - name: Cache node modules
         id: cache-node-modules
         uses: actions/cache@v3
@@ -46,7 +45,6 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
           npx lerna version --conventional-commits --force-publish --yes
-          npx lerna publish from-git --no-verify-access --yes
   publish:
     needs: publish-npm
     uses: ./.github/workflows/reusable-publish-docs.yml

@@ -100,3 +100,11 @@ jobs:
           publish_dir: ./api
           keep_files: true
           destination_dir: ${{ env.RELEASE_VERSION }}/api
+      - name: Release API docs to latest
+        if: ${{ env.RELEASE_VERSION != 'dev' }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api
+          keep_files: true
+          destination_dir: latest/api

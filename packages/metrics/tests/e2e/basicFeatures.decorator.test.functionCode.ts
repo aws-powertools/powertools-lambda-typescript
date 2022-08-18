@@ -1,6 +1,6 @@
 import { Metrics, MetricUnits } from '../../src';
 import { Context } from 'aws-lambda';
-import { LambdaInterface } from '../../examples/utils/lambda/LambdaInterface';
+import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
 const namespace = process.env.EXPECTED_NAMESPACE ?? 'CdkExample';
 const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
@@ -19,21 +19,28 @@ const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 class Lambda implements LambdaInterface {
 
   @metrics.logMetrics({ captureColdStartMetric: true, defaultDimensions: JSON.parse(defaultDimensions), throwOnEmptyMetrics: true })
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   public async handler(_event: unknown, _context: Context): Promise<void> {
     metrics.addMetric(metricName, metricUnit, parseInt(metricValue));
     metrics.addDimension(
       Object.entries(JSON.parse(extraDimension))[0][0],
       Object.entries(JSON.parse(extraDimension))[0][1] as string,
     );
-  
+
+    this.dummyMethod();
+  }
+
+  private dummyMethod(): void {
     const metricWithItsOwnDimensions = metrics.singleMetric();
     metricWithItsOwnDimensions.addDimension(
       Object.entries(JSON.parse(singleMetricDimension))[0][0],
       Object.entries(JSON.parse(singleMetricDimension))[0][1] as string,
     );
+
     metricWithItsOwnDimensions.addMetric(singleMetricName, singleMetricUnit, parseInt(singleMetricValue));
   }
 }
 
-export const handlerClass = new Lambda();
-export const handler = handlerClass.handler;
+const handlerClass = new Lambda();
+export const handler = handlerClass.handler.bind(handlerClass);

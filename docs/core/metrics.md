@@ -269,14 +269,19 @@ You can add default dimensions to your metrics by passing them as parameters in 
     const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
     const DEFAULT_DIMENSIONS = { 'environment': 'prod', 'foo': 'bar' };
 
-    export class MyFunction implements LambdaInterface {
+    export class Lambda implements LambdaInterface {
         // Decorate your handler class method
         @metrics.logMetrics({ defaultDimensions: DEFAULT_DIMENSIONS })
         public async handler(_event: any, _context: any): Promise<void> {
             metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         }
     }
+
+    const handlerClass = new Lambda();
+    export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
+
+    1. Binding your handler method allows your handler to access `this` within the class methods.
 
 If you'd like to remove them at some point, you can use the `clearDefaultDimensions` method.
 
@@ -362,14 +367,19 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 
     const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
 
-    export class MyFunction implements LambdaInterface {
+    class Lambda implements LambdaInterface {
 
         @metrics.logMetrics()
         public async handler(_event: any, _context: any): Promise<void> {
             metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         }
     }
+
+    const handlerClass = new Lambda();
+    export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
+
+    1. Binding your handler method allows your handler to access `this` within the class methods.
 
 === "Example CloudWatch Logs excerpt"
 
@@ -629,6 +639,8 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
         }
     }
 
-    export const myFunction = new Lambda();
-    export const handler = myFunction.handler;
+    const handlerClass = new Lambda();
+    export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
+
+    1. Binding your handler method allows your handler to access `this` within the class methods.

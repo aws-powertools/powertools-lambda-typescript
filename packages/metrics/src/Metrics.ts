@@ -1,4 +1,4 @@
-import { Callback, Context } from 'aws-lambda';
+import { Callback, Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
@@ -58,8 +58,8 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *   }
  * }
  *
- * export const handlerClass = new MyFunctionWithDecorator();
- * export const handler = handlerClass.handler;
+ * const handlerClass = new MyFunctionWithDecorator();
+ * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  *
  * ### Standard function
@@ -221,8 +221,8 @@ class Metrics extends Utility implements MetricsInterface {
    *   }
    * }
    *
-   * export const handlerClass = new MyFunctionWithDecorator();
-   * export const handler = handlerClass.handler;
+   * const handlerClass = new MyFunctionWithDecorator();
+   * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    *
    * @decorator Class
@@ -236,24 +236,28 @@ class Metrics extends Utility implements MetricsInterface {
       this.setDefaultDimensions(defaultDimensions);
     }
 
-    return (target, _propertyKey, descriptor) => {
+    return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
        */ 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
 
-      descriptor.value = ( async (event: unknown, context: Context, callback: Callback): Promise<unknown> => {
-        this.functionName = context.functionName;
-        if (captureColdStartMetric) this.captureColdStartMetric();
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const metricsRef = this;
+      // Use a function() {} instead of an () => {} arrow function so that we can
+      // access `myClass` as `this` in a decorated `myClass.myMethod()`.
+      descriptor.value = ( async function(this: Handler, event: unknown, context: Context, callback: Callback): Promise<unknown> {
+        metricsRef.functionName = context.functionName;
+        if (captureColdStartMetric) metricsRef.captureColdStartMetric();
           
         let result: unknown;
         try {
-          result = await originalMethod.apply(target, [ event, context, callback ]);
+          result = await originalMethod.apply(this, [ event, context, callback ]);
         } catch (error) {
           throw error;
         } finally {
-          this.publishStoredMetrics();
+          metricsRef.publishStoredMetrics();
         }
           
         return result;

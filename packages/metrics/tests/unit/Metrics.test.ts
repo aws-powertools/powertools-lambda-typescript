@@ -619,6 +619,37 @@ describe('Class: Metrics', () => {
 
       expect(console.log).toBeCalledTimes(1);
     });
+
+    test('Using decorator should preserve `this` in decorated class', async () => {
+      // Prepare
+      const metrics = new Metrics({ namespace: 'test' });
+
+      // Act
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
+          this.dummyMethod();
+        }
+
+        private dummyMethod(): void {
+          metrics.addMetric('test_name', MetricUnits.Seconds, 1);
+        }
+      }
+      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
+
+      // Assess
+      expect(console.log).toBeCalledTimes(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toEqual(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].Name).toEqual('test_name');
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].Unit).toEqual('Seconds');
+    });
   });
 
   describe('Feature: Custom Config Service', () => {

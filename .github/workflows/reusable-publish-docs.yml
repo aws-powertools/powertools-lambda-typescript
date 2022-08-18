@@ -14,9 +14,7 @@ on:
       token:
         required: true
   release:
-    types: [published, released]
-  push:
-    types: [tags]
+    types: released
 
 jobs:
   publish-docs:
@@ -57,7 +55,7 @@ jobs:
       # We run this step only when the workflow has been triggered by a release
       # in this case we publish the docs to `/latest`
       - name: Set RELEASE_VERSION env var to `latest`
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'released' }}
         run: |
           RELEASE_VERSION=$(git describe --abbrev=0 | sed 's/v//')
           echo "RELEASE_VERSION=${RELEASE_VERSION}"
@@ -67,7 +65,7 @@ jobs:
       # We run this step only when the workflow has been triggered by a PR merge
       # in this case we publish the docs to `/dev`
       - name: Set RELEASE_VERSION env var to `dev`
-        if: ${{ inputs.prIsMerged == 'true' && github.event_name != 'push' }}
+        if: ${{ inputs.prIsMerged == 'true' && github.event_name != 'released' }}
         run: |
           echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
       - name: Install doc generation dependencies

@@ -45,11 +45,3 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
           npx lerna version --conventional-commits --force-publish --yes
-  publish:
-    needs: publish-npm
-    uses: ./.github/workflows/reusable-publish-docs.yml
-    with:
-      workflow_origin: ${{ github.event.repository.full_name }}
-      isRelease: "true"
-    secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}

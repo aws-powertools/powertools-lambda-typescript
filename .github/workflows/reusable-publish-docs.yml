@@ -10,13 +10,11 @@ on:
         required: false
         default: "false"
         type: string
-      isRelease:
-        required: false
-        default: "false"
-        type: string
     secrets:
       token:
         required: true
+  release:
+    types: [published]
 
 jobs:
   publish-docs:
@@ -36,8 +34,20 @@ jobs:
         with:
           node-version: "16"
           cache: "npm"
-      - name: Install
-        run: npm ci --foreground-scripts
+      # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+      # if one of them changes the cache is invalidated/discarded
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          key: 16-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+      # Here we assume that there will always be a cache hit because this workflow can be triggered
+      # only after tests have already happened on this same code
+      - name: Build packages
+        run: |
+          npm run build -w packages/commons
+          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -45,7 +55,7 @@ jobs:
       # We run this step only when the workflow has been triggered by a release
       # in this case we publish the docs to `/latest`
       - name: Set RELEASE_VERSION env var to `latest`
-        if: ${{ inputs.isRelease == 'true' }}
+        if: ${{ github.event_name == 'release' }}
         run: |
           RELEASE_VERSION=$(git describe --abbrev=0 | sed 's/v//')
           echo "RELEASE_VERSION=${RELEASE_VERSION}"
@@ -55,19 +65,21 @@ jobs:
       # We run this step only when the workflow has been triggered by a PR merge
       # in this case we publish the docs to `/dev`
       - name: Set RELEASE_VERSION env var to `dev`
-        if: ${{ inputs.prIsMerged == 'true' }}
+        if: ${{ inputs.prIsMerged == 'true' && github.event_name != 'release' }}
         run: |
           echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
       - name: Install doc generation dependencies
+        if: ${{ env.RELEASE_VERSION != '' }}
         run: |
           pip install --upgrade pip 
           pip install -r docs/requirements.txt
       - name: Setup doc deploy
+        if: ${{ env.RELEASE_VERSION != '' }}
         run: |
           git config --global user.name Docs deploy
           git config --global user.email docs@dummy.bot.com
       - name: Publish docs to latest
-        if: ${{ env.RELEASE_VERSION != 'dev' }}
+        if: ${{ env.RELEASE_VERSION != 'dev' && env.RELEASE_VERSION != '' }}
         run: |
           rm -rf site
           mkdocs build
@@ -75,16 +87,18 @@ jobs:
           # Set latest version as a default
           mike set-default --push latest
       - name: Publish docs to dev
-        if: ${{ env.RELEASE_VERSION == 'dev' }}
+        if: ${{ env.RELEASE_VERSION == 'dev' && env.RELEASE_VERSION != '' }}
         run: |
           rm -rf site
           mkdocs build
           mike deploy --push dev
       - name: Build API docs
+        if: ${{ env.RELEASE_VERSION != '' }}
         run: |
           rm -rf api
           npm run docs-generateApiDoc
       - name: Release API docs
+        if: ${{ env.RELEASE_VERSION != '' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -92,7 +106,7 @@ jobs:
           keep_files: true
           destination_dir: ${{ env.RELEASE_VERSION }}/api
       - name: Release API docs to latest
-        if: ${{ env.RELEASE_VERSION != 'dev' }}
+        if: ${{ env.RELEASE_VERSION != 'dev' && env.RELEASE_VERSION != '' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

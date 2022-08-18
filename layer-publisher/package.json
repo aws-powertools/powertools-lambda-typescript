@@ -1,6 +1,6 @@
 {
   "name": "layer-publisher",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "bin": {
     "layer-publisher": "bin/layer-publisher.js"
   },

@@ -8,7 +8,7 @@
     "examples/sam",
     "layer-publisher"
   ],
-  "version": "1.2.4",
+  "version": "1.2.5",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

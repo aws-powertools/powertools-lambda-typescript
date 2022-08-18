@@ -15,7 +15,8 @@ on:
         required: true
   release:
     types: [published, released]
-  push: tags
+  push:
+    types: [tags]
 
 jobs:
   publish-docs:

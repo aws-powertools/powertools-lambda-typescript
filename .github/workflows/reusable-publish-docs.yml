@@ -36,20 +36,8 @@ jobs:
         with:
           node-version: "16"
           cache: "npm"
-      # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
-      # if one of them changes the cache is invalidated/discarded
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@v3
-        with:
-          path: "./node_modules"
-          key: 16-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
-      # Here we assume that there will always be a cache hit because this workflow can be triggered
-      # only after tests have already happened on this same code
-      - name: Build packages
-        run: |
-          npm run build -w packages/commons
-          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
+      - name: Install
+        run: npm ci --foreground-scripts
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

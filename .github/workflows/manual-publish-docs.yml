@@ -5,7 +5,7 @@ on:
   workflow_dispatch: {}
   # Or triggered as result of a release
   release:
-    types: released
+    types: [released]
 
 jobs:
   run-unit-tests:

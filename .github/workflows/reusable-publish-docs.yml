@@ -30,7 +30,15 @@ jobs:
     steps:
       - name: Debug
         run: |
-          echo "${{ inputs.workflow_origin }}"
+          RELEASE_VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
+          EXPLICIT_RELEASE_VERSION=$(echo ${{ inputs.versionNumber }} | sed 's/v//')
+          if [ $EXPLICIT_RELEASE_VERSION != "" ]; then
+            echo "RELEASE_VERSION=${EXPLICIT_RELEASE_VERSION}"
+            echo "RELEASE_VERSION=${EXPLICIT_RELEASE_VERSION}" >> $GITHUB_ENV
+          else
+            echo "RELEASE_VERSION=${RELEASE_VERSION}"
+            echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+          fi
       - name: Debug 2
         if: ${{ inputs.workflow_origin == 'dreamorosi/aws-lambda-powertools-typescript' }}
         run: |

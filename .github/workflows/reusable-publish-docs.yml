@@ -21,11 +21,12 @@ on:
 jobs:
   publish-docs:
     # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
-    if: inputs.workflow_origin == 'awslabs/aws-lambda-powertools-typescript'
-    # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
     # if: inputs.workflow_origin == 'dreamorosi/aws-lambda-powertools-typescript'
     runs-on: ubuntu-latest
     steps:
+      - name: Debug
+        run: |
+          echo "${{ inputs.workflow_origin }}"
       - name: Checkout code
         uses: actions/checkout@v3
         with:

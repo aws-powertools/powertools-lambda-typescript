@@ -79,6 +79,7 @@ export interface ParsedTrace {
 interface TracerTestFunctionParams { 
   stack: Stack
   functionName: string
+  handler?: string
   entry: string
   expectedServiceName: string
   environmentParams: { [key: string]: string }
@@ -237,7 +238,7 @@ const createTracerTestFunction = (params: TracerTestFunctionParams): NodejsFunct
   const func = new NodejsFunction(stack, functionName, {
     entry: entry,
     functionName: functionName,
-    handler: 'handler',
+    handler: params.handler ?? 'handler',
     tracing: Tracing.ACTIVE,
     architecture: Architecture.X86_64,
     memorySize: 256, // Default value (128) will take too long to process

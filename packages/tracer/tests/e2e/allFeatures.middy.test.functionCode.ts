@@ -36,7 +36,7 @@ const refreshAWSSDKImport = (): void => {
 const tracer = new Tracer({ serviceName: serviceName });
 const dynamoDBv3 = tracer.captureAWSv3Client(new DynamoDBClient({}));
 
-export const handler = middy(async (event: CustomEvent, _context: Context): Promise<void> => {
+const testHandler = async (event: CustomEvent, _context: Context): Promise<void> => {
   tracer.putAnnotation('invocation', event.invocation);
   tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
   tracer.putMetadata(customMetadataKey, customMetadataValue);
@@ -63,4 +63,8 @@ export const handler = middy(async (event: CustomEvent, _context: Context): Prom
   } catch (err) {
     throw err;
   }
-}).use(captureLambdaHandler(tracer));
+};
+
+export const handler = middy(testHandler).use(captureLambdaHandler(tracer));
+
+export const handlerWithNoCaptureResponseViaMiddlewareOption = middy(testHandler).use(captureLambdaHandler(tracer, { captureResponse: false }));

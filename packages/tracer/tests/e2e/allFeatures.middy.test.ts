@@ -78,6 +78,13 @@ const uuidFunction3 = v4();
 const functionNameWithTracerDisabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction3, runtime, 'AllFeatures-Middy-TracerDisabled');
 const serviceNameWithTracerDisabled = functionNameWithNoCaptureErrorOrResponse; 
 
+/**
+ * Function #4 doesn't capture response
+ */
+const uuidFunction4 = v4();
+const functionNameWithNoCaptureResponseViaMiddlewareOption = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction4, runtime, 'AllFeatures-Middy-NoCaptureResponse2');
+const serviceNameWithNoCaptureResponseViaMiddlewareOption = functionNameWithNoCaptureResponseViaMiddlewareOption; 
+
 const xray = new AWS.XRay();
 const invocations = 3;
 
@@ -149,6 +156,22 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
     });
     ddbTable.grantWriteData(functionWithTracerDisabled);
 
+    const functionThatDoesNotCaptureResponseViaMiddlewareOption = createTracerTestFunction({
+      stack,
+      functionName: functionNameWithNoCaptureResponseViaMiddlewareOption,
+      entry,
+      handler: 'handlerWithNoCaptureResponseViaMiddlewareOption',
+      expectedServiceName: serviceNameWithNoCaptureResponseViaMiddlewareOption,
+      environmentParams: {
+        TEST_TABLE_NAME: ddbTableName,
+        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
+        POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
+        POWERTOOLS_TRACE_ENABLED: 'true',
+      },
+      runtime
+    });
+    ddbTable.grantWriteData(functionThatDoesNotCaptureResponseViaMiddlewareOption);
+
     await deployStack(integTestApp, stack);
 
     // Act
@@ -156,6 +179,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       invokeAllTestCases(functionNameWithAllFlagsEnabled),
       invokeAllTestCases(functionNameWithNoCaptureErrorOrResponse),
       invokeAllTestCases(functionNameWithTracerDisabled),
+      invokeAllTestCases(functionNameWithNoCaptureResponseViaMiddlewareOption),
     ]);
     
   }, SETUP_TIMEOUT);
@@ -294,6 +318,54 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
         expect(handlerSubsegment.error).toBe(true);
         // Assert that no error was captured on the subsegment
         expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
+      }
+    }
+
+  }, TEST_CASE_TIMEOUT);
+
+  it('should not capture response when the middleware\'s captureResponse is set to false', async () => {
+    
+    const tracesWithNoCaptureResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureResponseViaMiddlewareOption), invocations, 5);
+    
+    expect(tracesWithNoCaptureResponse.length).toBe(invocations);
+
+    // Assess
+    for (let i = 0; i < invocations; i++) {
+      const trace = tracesWithNoCaptureResponse[i];
+
+      /**
+       * Expect the trace to have 5 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       * 3. DynamoDB (AWS::DynamoDB)
+       * 4. DynamoDB Table (AWS::DynamoDB::Table)
+       * 5. Remote call (httpbin.org)
+       */
+      expect(trace.Segments.length).toBe(5);
+      const invocationSubsegment = getInvocationSubsegment(trace);
+      
+      /**
+       * Invocation subsegment should have a subsegment '## index.handlerWithNoCaptureResponseViaMiddlewareOption' (default behavior for PowerTool tracer)
+       * '## index.handlerWithNoCaptureResponseViaMiddlewareOption' subsegment should have 3 subsegments
+       * 1. DynamoDB (PutItem on the table)
+       * 2. DynamoDB (PutItem overhead)
+       * 3. httpbin.org (Remote call)
+       */
+      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+      expect(handlerSubsegment.name).toBe('## index.handlerWithNoCaptureResponseViaMiddlewareOption');
+      expect(handlerSubsegment?.subsegments).toHaveLength(3);
+
+      if (!handlerSubsegment.subsegments) {
+        fail('"## index.handlerWithNoCaptureResponseViaMiddlewareOption" subsegment should have subsegments');
+      }
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
+      expect(subsegments.get('DynamoDB')?.length).toBe(2);
+      expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('other')?.length).toBe(0);
+      
+      const shouldThrowAnError = (i === (invocations - 1));
+      if (shouldThrowAnError) {
+        assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
       }
     }
 

@@ -67,6 +67,12 @@ jobs:
         if: ${{ inputs.prIsMerged == 'true' }}
         run: |
           echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
+      - name: Check RELEASE_VERSION env var
+        if: ${{ env.RELEASE_VERSION == '' }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+              core.setFailed('RELEASE_VERSION env var is empty.')
       - name: Install doc generation dependencies
         run: |
           pip install --upgrade pip 
@@ -75,7 +81,7 @@ jobs:
         run: |
           git config --global user.name Docs deploy
           git config --global user.email docs@dummy.bot.com
-      - name: Publish docs to latest
+      - name: Publish docs to latest if isRelease
         if: ${{ env.RELEASE_VERSION != 'dev' }}
         run: |
           rm -rf site
@@ -100,7 +106,7 @@ jobs:
           publish_dir: ./api
           keep_files: true
           destination_dir: ${{ env.RELEASE_VERSION }}/api
-      - name: Release API docs to latest
+      - name: Release API docs to latest if isRelease
         if: ${{ env.RELEASE_VERSION != 'dev' }}
         uses: peaceiris/actions-gh-pages@v3
         with:

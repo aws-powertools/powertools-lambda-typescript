@@ -18,6 +18,8 @@ jobs:
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
   run-unit-tests:
+    needs: get_pr_details
+    if: ${{ needs.get_pr_details.outputs.prIsMerged == 'true' }}
     uses: ./.github/workflows/reusable-run-unit-tests.yml
   publish:
     needs:

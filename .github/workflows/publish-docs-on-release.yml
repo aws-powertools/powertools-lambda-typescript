@@ -2,7 +2,12 @@ name: Publish docs on release
 
 on:
   # Triggered manually
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      versionNumber:
+        required: true
+        type: string
+        description: "If running this manually please insert a version number that corresponds to the latest published in the GitHub releases (i.e. v1.1.1)"
   # Or triggered as result of a release
   release:
     types: [released]
@@ -13,5 +18,6 @@ jobs:
     with:
       workflow_origin: ${{ github.event.repository.full_name }}
       isRelease: "true"
+      versionNumber: ${{ inputs.versionNumber }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}

@@ -66,8 +66,11 @@ jobs:
       - name: (Conditional) Set RELEASE_VERSION env var to `latest`
         if: ${{ inputs.isRelease == 'true' }}
         run: |
-          RELEASE_VERSION=$(git describe --abbrev=0 | sed 's/v//')
+          RELEASE_VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
           echo "RELEASE_VERSION=${RELEASE_VERSION}"
+          echo "${{ github.ref_name }}"
+          echo "${GITHUB_REF#refs/*/}"
+          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
       # We run this step only when the workflow has been triggered by a PR merge
       # in this case we publish the docs to `/dev`
       - name: (Conditional) Set RELEASE_VERSION env var to `dev`

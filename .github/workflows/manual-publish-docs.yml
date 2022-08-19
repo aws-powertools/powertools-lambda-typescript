@@ -1,8 +1,13 @@
-name: Manual publish docs
+name: Publish docs on release
 
 on:
   # Triggered manually
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      versionNumber:
+        required: true
+        type: string
+        description: "If running this manually please insert a version number that corresponds to the latest published in the GitHub releases (i.e. `1.1.1` - without `v` prefix)"
   # Or triggered as result of a release
   release:
     types: [released]

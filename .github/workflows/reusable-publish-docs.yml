@@ -14,6 +14,10 @@ on:
         required: false
         default: "false"
         type: string
+      versionNumber:
+        required: false
+        default: ""
+        type: string
     secrets:
       token:
         required: true
@@ -67,10 +71,14 @@ jobs:
         if: ${{ inputs.isRelease == 'true' }}
         run: |
           RELEASE_VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
-          echo "RELEASE_VERSION=${RELEASE_VERSION}"
-          echo "${{ github.ref_name }}"
-          echo "${GITHUB_REF#refs/*/}"
-          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+          EXPLICIT_RELEASE_VERSION=$(echo ${{ inputs.versionNumber }}) | sed 's/v//')
+          if [ $EXPLICIT_RELEASE_VERSION != "" ]; then
+            echo "RELEASE_VERSION=${EXPLICIT_RELEASE_VERSION}"
+            echo "RELEASE_VERSION=${EXPLICIT_RELEASE_VERSION}" >> $GITHUB_ENV
+          else
+            echo "RELEASE_VERSION=${RELEASE_VERSION}"
+            echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+          fi
       # We run this step only when the workflow has been triggered by a PR merge
       # in this case we publish the docs to `/dev`
       - name: (Conditional) Set RELEASE_VERSION env var to `dev`

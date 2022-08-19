@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.11](https://github.com/dreamorosi/aws-lambda-powertools-typescript/compare/v1.2.10...v1.2.11) (2022-08-19)
+
+**Note:** Version bump only for package layer-publisher
+
+
+
+
+
 ## [1.2.10](https://github.com/dreamorosi/aws-lambda-powertools-typescript/compare/v1.2.9...v1.2.10) (2022-08-18)
 
 **Note:** Version bump only for package layer-publisher

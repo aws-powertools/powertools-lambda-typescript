@@ -21,7 +21,7 @@ on:
 jobs:
   publish-docs:
     # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
-    if: inputs.workflow_origin == 'awslabs/aws-lambda-powertools-typescript'
+    if: ${{ inputs.workflow_origin == 'awslabs/aws-lambda-powertools-typescript' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -56,14 +56,15 @@ jobs:
           python-version: "3.8"
       # We run this step only when the workflow has been triggered by a release
       # in this case we publish the docs to `/latest`
-      - name: Set RELEASE_VERSION env var to `latest`
+      - name: (Conditional) Set RELEASE_VERSION env var to `latest`
         if: ${{ inputs.isRelease == 'true' }}
         run: |
-          RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
+          RELEASE_VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
+          echo "RELEASE_VERSION=${RELEASE_VERSION}"
           echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
       # We run this step only when the workflow has been triggered by a PR merge
       # in this case we publish the docs to `/dev`
-      - name: Set RELEASE_VERSION env var to `dev`
+      - name: (Conditional) Set RELEASE_VERSION env var to `dev`
         if: ${{ inputs.prIsMerged == 'true' }}
         run: |
           echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
@@ -72,7 +73,7 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
-              core.setFailed('RELEASE_VERSION env var is empty.')
+            core.setFailed('RELEASE_VERSION env var is empty.')
       - name: Install doc generation dependencies
         run: |
           pip install --upgrade pip 

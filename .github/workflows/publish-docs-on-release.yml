@@ -1,0 +1,17 @@
+name: Publish docs on release
+
+on:
+  # Triggered manually
+  workflow_dispatch: {}
+  # Or triggered as result of a release
+  release:
+    types: [released]
+
+jobs:
+  run-unit-tests:
+    uses: ./.github/workflows/reusable-publish-docs.yml
+    with:
+      workflow_origin: ${{ github.event.repository.full_name }}
+      isRelease: "true"
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}

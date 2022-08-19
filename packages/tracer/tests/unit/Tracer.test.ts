@@ -678,6 +678,47 @@ describe('Class: Tracer', () => {
 
     });
 
+    test('when used as decorator while captureResponse is set to true, it captures the response as metadata', async () => {
+      
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureLambdaHandler({ captureResponse: true })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          return new Promise((resolve, _reject) => resolve({
+            foo: 'bar'
+          } as unknown as TResult));
+        }
+            
+      }
+            
+      // Act
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('## index.handler', expect.anything());
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '## index.handler',
+        metadata: {
+          'hello-world': {
+            'index.handler response': {
+              foo: 'bar',
+            },
+          },
+        }
+      }));
+
+    });
+
     test('when used as decorator and with standard config, it captures the response as metadata', async () => {
       
       // Prepare
@@ -1032,6 +1073,50 @@ describe('Class: Tracer', () => {
       }));
       expect(newSubsegment).not.toEqual(expect.objectContaining({
         metadata:  {
+          'hello-world': {
+            'dummyMethod response': 'foo bar',
+          },
+        }
+      }));
+
+    });
+
+    test('when used as decorator and with captureResponse set to true, it does captures the response as metadata', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureMethod()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(some: string): Promise<string> {
+          return new Promise((resolve, _reject) => setTimeout(() => resolve(some), 3000));
+        }
+
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
+          const result = await this.dummyMethod('foo bar');
+          
+          return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
+        }
+
+      }
+
+      // Act
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('### dummyMethod', expect.anything());
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '### dummyMethod',
+        metadata: {
           'hello-world': {
             'dummyMethod response': 'foo bar',
           },

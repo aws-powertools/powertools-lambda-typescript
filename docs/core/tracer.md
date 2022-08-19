@@ -256,7 +256,7 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
     }
      
     const handlerClass = new Lambda();
-    export const handler = myFunction.handler.bind(handlerClass); // (1)
+    export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
 
     1. Binding your handler method allows your handler to access `this`.
@@ -412,38 +412,48 @@ Use **`POWERTOOLS_TRACER_CAPTURE_RESPONSE=false`** environment variable to instr
     2. You might manipulate **streaming objects that can be read only once**; this prevents subsequent calls from being empty
     3. You might return **more than 64K** of data _e.g., `message too long` error_
 
-### Disabling response capture for targeted methods and handlers
-
-Use the `captureResponse: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators, or use the same option in the middy `captureLambdaHander` middleware to instruct Tracer **not** to serialize function responses as metadata.
+Alternatively, use the `captureResponse: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators, or use the same option in the Middy `captureLambdaHander` middleware to instruct Tracer **not** to serialize function responses as metadata.
 
 === "method.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="6"
     import { Tracer } from '@aws-lambda-powertools/tracer';
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-    class MyThing {
-        @tracer.captureMethod({ captureResponse: false })
-        myMethod(): string {
+
+    class Lambda implements LambdaInterface {
+        @tracer.captureMethod({ captureResult: false })
+        public getChargeId(): string {
             /* ... */
             return 'foo bar';
         }
+
+        public async handler(_event: any, _context: any): Promise<void> {
+            /* ... */
+        }
     }
+
+    const handlerClass = new Lambda();
+    export const handler = handlerClass.handler.bind(handlerClass);
     ```
 
 === "handler.ts"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="7"
     import { Tracer } from '@aws-lambda-powertools/tracer';
     import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
     const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-    class MyHandler implements LambdaInterface {
+
+    class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler({ captureResponse: false })
         async handler(_event: any, _context: any): Promise<void> {
             /* ... */
         }
     }
+
+    const handlerClass = new Lambda();
+    export const handler = handlerClass.handler.bind(handlerClass);
     ```
 
 === "middy.ts"

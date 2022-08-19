@@ -27,40 +27,23 @@ type TracerOptions = {
 };
 
 /**
- * Options for the captureMethod decorator to be used when decorating a method.
+ * Options for handler decorators and middleware.
  *
  * Usage:
  * @example
  * ```typescript
  * const tracer = new Tracer();
  *
- * class MyThing {
- *   @tracer.captureMethod({ captureResponse: false })
- *   myMethod(): string {
- *     return 'foo bar';
- *   }
- * }
- * ```
- */
-type TracerCaptureMethodOptions = {
-  captureResponse?: boolean
-};
-
-/**
- * Options for the captureLambdaHandler decorator to be used when decorating a method.
- *
- * Usage:
- * @example
- * ```typescript
- * const tracer = new Tracer();
- *
- * class MyThing implements LambdaInterface {
+ * class Lambda implements LambdaInterface {
  *   @tracer.captureLambdaHandler({ captureResponse: false })
  *   async handler(_event: any, _context: any): Promise<void> {}
  * }
+ *
+ * const handlerClass = new Lambda();
+ * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  */
-type TracerCaptureLambdaHandlerOptions = {
+type HandlerOptions = {
   captureResponse?: boolean
 };
 
@@ -76,8 +59,7 @@ type MethodDecorator = (target: any, propertyKey: string | symbol, descriptor: T
 
 export {
   TracerOptions,
-  TracerCaptureLambdaHandlerOptions,
-  TracerCaptureMethodOptions,
+  HandlerOptions,
   HandlerMethodDecorator,
   MethodDecorator
 };

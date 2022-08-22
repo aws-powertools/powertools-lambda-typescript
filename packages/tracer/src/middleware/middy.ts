@@ -1,7 +1,7 @@
 import type middy from '@middy/core';
 import type { Tracer } from '../Tracer';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
-import { HandlerOptions } from '../types';
+import type { HandlerOptions } from '../types';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.

@@ -1,10 +1,10 @@
-import { Handler } from 'aws-lambda';
 import { AsyncHandler, SyncHandler, Utility } from '@aws-lambda-powertools/commons';
-import { TracerInterface } from '.';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
-import { ProviderService, ProviderServiceInterface } from './provider';
+import { Handler } from 'aws-lambda';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
+import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { ProviderService, ProviderServiceInterface } from './provider';
+import { TracerInterface } from './TracerInterface';
+import { HandlerMethodDecorator, MethodDecorator, TracerOptions } from './types';
 
 /**
  * ## Intro

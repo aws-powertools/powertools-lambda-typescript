@@ -256,7 +256,7 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
     }
      
     const handlerClass = new Lambda();
-    export const handler = myFunction.handler.bind(handlerClass); // (1)
+    export const handler = handlerClass.handler.bind(handlerClass); // (1)
     ```
 
     1. Binding your handler method allows your handler to access `this`.
@@ -411,6 +411,69 @@ Use **`POWERTOOLS_TRACER_CAPTURE_RESPONSE=false`** environment variable to instr
     1. You might **return sensitive** information you don't want it to be added to your traces
     2. You might manipulate **streaming objects that can be read only once**; this prevents subsequent calls from being empty
     3. You might return **more than 64K** of data _e.g., `message too long` error_
+
+Alternatively, use the `captureResponse: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators, or use the same option in the Middy `captureLambdaHander` middleware to instruct Tracer **not** to serialize function responses as metadata.
+
+=== "method.ts"
+
+    ```typescript hl_lines="6"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+
+    class Lambda implements LambdaInterface {
+        @tracer.captureMethod({ captureResult: false })
+        public getChargeId(): string {
+            /* ... */
+            return 'foo bar';
+        }
+
+        public async handler(_event: any, _context: any): Promise<void> {
+            /* ... */
+        }
+    }
+
+    const handlerClass = new Lambda();
+    export const handler = handlerClass.handler.bind(handlerClass);
+    ```
+
+=== "handler.ts"
+
+    ```typescript hl_lines="7"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+    import { LambdaInterface } from '@aws-lambda-powertools/commons';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+
+    class Lambda implements LambdaInterface {
+        @tracer.captureLambdaHandler({ captureResponse: false })
+        async handler(_event: any, _context: any): Promise<void> {
+            /* ... */
+        }
+    }
+
+    const handlerClass = new Lambda();
+    export const handler = handlerClass.handler.bind(handlerClass);
+    ```
+
+=== "middy.ts"
+
+    ```typescript hl_lines="14"
+    import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+    import middy from '@middy/core';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+
+    const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
+        /* ... */
+    };
+
+    // Wrap the handler with middy
+    export const handler = middy(lambdaHandler)
+        // Use the middleware by passing the Tracer instance as a parameter,
+        // but specify the captureResponse option as false.
+        .use(captureLambdaHandler(tracer, { captureResponse: false }));
+    ```
 
 ### Disabling exception auto-capture
 

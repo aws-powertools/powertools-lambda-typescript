@@ -2,7 +2,7 @@ import { Handler } from 'aws-lambda';
 import { AsyncHandler, SyncHandler, Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { HandlerMethodDecorator, TracerOptions, MethodDecorator } from './types';
+import { HandlerMethodDecorator, TracerOptions, HandlerOptions, MethodDecorator } from './types';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
@@ -339,7 +339,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    * @decorator Class
    */
-  public captureLambdaHandler(): HandlerMethodDecorator {
+  public captureLambdaHandler(options?: HandlerOptions): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
@@ -365,7 +365,10 @@ class Tracer extends Utility implements TracerInterface {
           let result: unknown;
           try {
             result = await originalMethod.apply(handlerRef, [ event, context, callback ]);
-            tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
+            if (options?.captureResponse ?? true) {
+              tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
+            }
+
           } catch (error) {
             tracerRef.addErrorAsMetadata(error as Error);
             throw error;
@@ -416,7 +419,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    * @decorator Class
    */
-  public captureMethod(): MethodDecorator {
+  public captureMethod(options?: HandlerOptions): MethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -435,7 +438,9 @@ class Tracer extends Utility implements TracerInterface {
           let result;
           try {
             result = await originalMethod.apply(this, [...args]);
-            tracerRef.addResponseAsMetadata(result, originalMethod.name);
+            if (options?.captureResponse ?? true) {
+              tracerRef.addResponseAsMetadata(result, originalMethod.name);
+            }
           } catch (error) {
             tracerRef.addErrorAsMetadata(error as Error);
             

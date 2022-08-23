@@ -78,6 +78,13 @@ const uuidFunction3 = v4();
 const functionNameWithTracerDisabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction3, runtime, 'AllFeatures-Decorator-TracerDisabled');
 const serviceNameWithTracerDisabled = functionNameWithNoCaptureErrorOrResponse; 
 
+/**
+ * Function #4 disables tracer
+ */
+const uuidFunction4 = v4();
+const functionNameWithCaptureResponseFalse = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction4, runtime, 'AllFeatures-Decorator-CaptureResponseFalse');
+const serviceNameWithCaptureResponseFalse = functionNameWithCaptureResponseFalse;
+
 const xray = new AWS.XRay();
 const invocations = 3;
 
@@ -149,6 +156,22 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     });
     ddbTable.grantWriteData(functionWithTracerDisabled);
 
+    const functionWithCaptureResponseFalse = createTracerTestFunction({
+      stack,
+      functionName: functionNameWithCaptureResponseFalse,
+      handler: 'handlerWithCaptureResponseFalse',
+      entry,
+      expectedServiceName: serviceNameWithCaptureResponseFalse,
+      environmentParams: {
+        TEST_TABLE_NAME: ddbTableName,
+        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
+        POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
+        POWERTOOLS_TRACE_ENABLED: 'true',
+      },
+      runtime
+    });
+    ddbTable.grantWriteData(functionWithCaptureResponseFalse);
+
     await deployStack(integTestApp, stack);
 
     // Act
@@ -156,6 +179,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
       invokeAllTestCases(functionNameWithAllFlagsEnabled),
       invokeAllTestCases(functionNameWithNoCaptureErrorOrResponse),
       invokeAllTestCases(functionNameWithTracerDisabled),
+      invokeAllTestCases(functionNameWithCaptureResponseFalse),
     ]);
     
   }, SETUP_TIMEOUT);
@@ -298,6 +322,62 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
         expect(handlerSubsegment.error).toBe(true);
         // Assert that no error was captured on the subsegment
         expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
+      }
+    }
+
+  }, TEST_CASE_TIMEOUT);
+
+  it('should not capture response when the decorator\'s captureResponse is set to false', async () => {
+
+    const tracesWithCaptureResponseFalse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCaptureResponseFalse), invocations, 5);
+
+    expect(tracesWithCaptureResponseFalse.length).toBe(invocations);
+
+    // Assess
+    for (let i = 0; i < invocations; i++) {
+      const trace = tracesWithCaptureResponseFalse[i];
+
+      /**
+       * Expect the trace to have 5 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       * 3. DynamoDB (AWS::DynamoDB)
+       * 4. DynamoDB Table (AWS::DynamoDB::Table)
+       * 5. Remote call (httpbin.org)
+       */
+      expect(trace.Segments.length).toBe(5);
+      const invocationSubsegment = getInvocationSubsegment(trace);
+
+      /**
+       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for PowerTool tracer)
+       * '## index.handler' subsegment should have 4 subsegments
+       * 1. DynamoDB (PutItem on the table)
+       * 2. DynamoDB (PutItem overhead)
+       * 3. httpbin.org (Remote call)
+       * 4. '### myMethod' (method decorator)
+       */
+      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+      expect(handlerSubsegment.name).toBe('## index.handlerWithCaptureResponseFalse');
+      expect(handlerSubsegment?.subsegments).toHaveLength(4);
+
+      if (!handlerSubsegment.subsegments) {
+        fail('"## index.handlerWithCaptureResponseFalse" subsegment should have subsegments');
+      }
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', '### myMethod' ]);
+      expect(subsegments.get('DynamoDB')?.length).toBe(2);
+      expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('### myMethod')?.length).toBe(1);
+      expect(subsegments.get('other')?.length).toBe(0);
+
+      // No metadata because capturing the response was disabled and that's
+      // the only metadata that could be in the subsegment for the test.
+      const myMethodSegment = subsegments.get('### myMethod')?.[0];
+      expect(myMethodSegment).toBeDefined();
+      expect(myMethodSegment).not.toHaveProperty('metadata');
+
+      const shouldThrowAnError = (i === (invocations - 1));
+      if (shouldThrowAnError) {
+        assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
       }
     }
 

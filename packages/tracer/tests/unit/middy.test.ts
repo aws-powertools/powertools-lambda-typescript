@@ -109,6 +109,59 @@ describe('Middy middleware', () => {
 
     });
 
+    test('when used while captureResponse set to false, it does not capture the response as metadata', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
+      const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+        foo: 'bar'
+      });
+      const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer, { captureResponse: false }));
+
+      // Act
+      await handler({}, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(setSegmentSpy).toHaveBeenCalledTimes(2);
+      expect('metadata' in newSubsegment).toBe(false);
+
+    });
+
+    test('when used while captureResponse set to true, it captures the response as metadata', async () => {
+      
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
+      const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+        foo: 'bar'
+      });
+      const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer, { captureResponse: true }));
+
+      // Act
+      await handler({}, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(setSegmentSpy).toHaveBeenCalledTimes(2);
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        name: '## index.handler',
+        metadata: {
+          'hello-world': {
+            'index.handler response': {
+              foo: 'bar',
+            },
+          },
+        }
+      }));
+
+    });
+
     test('when used with standard config, it captures the response as metadata', async () => {
       
       // Prepare

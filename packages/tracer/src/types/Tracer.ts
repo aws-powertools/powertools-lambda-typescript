@@ -26,6 +26,27 @@ type TracerOptions = {
   customConfigService?: ConfigServiceInterface
 };
 
+/**
+ * Options for handler decorators and middleware.
+ *
+ * Usage:
+ * @example
+ * ```typescript
+ * const tracer = new Tracer();
+ *
+ * class Lambda implements LambdaInterface {
+ *   @tracer.captureLambdaHandler({ captureResponse: false })
+ *   async handler(_event: any, _context: any): Promise<void> {}
+ * }
+ *
+ * const handlerClass = new Lambda();
+ * export const handler = handlerClass.handler.bind(handlerClass);
+ * ```
+ */
+type HandlerOptions = {
+  captureResponse?: boolean
+};
+
 type HandlerMethodDecorator = (
   target: LambdaInterface,
   propertyKey: string | symbol,
@@ -38,6 +59,7 @@ type MethodDecorator = (target: any, propertyKey: string | symbol, descriptor: T
 
 export {
   TracerOptions,
+  HandlerOptions,
   HandlerMethodDecorator,
   MethodDecorator
 };

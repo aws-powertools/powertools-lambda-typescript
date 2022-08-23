@@ -301,7 +301,7 @@ If you do not use the middleware or decorator, you have to flush your metrics ma
 !!! warning "Metric validation"
     If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be thrown:
 
-    * Maximum of 9 dimensions
+    * Maximum of 29 dimensions
     * Namespace is set only once (or none)
     * Metric units must be [supported by CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
 

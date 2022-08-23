@@ -1,4 +1,4 @@
-name: Publish docs
+name: Reusable Publish docs
 
 on:
   workflow_call:
@@ -14,6 +14,10 @@ on:
         required: false
         default: "false"
         type: string
+      versionNumber:
+        required: false
+        default: ""
+        type: string
     secrets:
       token:
         required: true
@@ -21,7 +25,7 @@ on:
 jobs:
   publish-docs:
     # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
-    if: inputs.workflow_origin == 'awslabs/aws-lambda-powertools-typescript'
+    if: ${{ inputs.workflow_origin == 'awslabs/aws-lambda-powertools-typescript' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -56,17 +60,30 @@ jobs:
           python-version: "3.8"
       # We run this step only when the workflow has been triggered by a release
       # in this case we publish the docs to `/latest`
-      - name: Set RELEASE_VERSION env var to `latest`
+      - name: (Conditional) Set RELEASE_VERSION env var to `latest`
         if: ${{ inputs.isRelease == 'true' }}
         run: |
-          RELEASE_VERSION=$(cat packages/commons/package.json | jq '.version' -r)
-          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+          RELEASE_VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
+          EXPLICIT_RELEASE_VERSION=$(echo ${{ inputs.versionNumber }} | sed 's/v//')
+          if [ $EXPLICIT_RELEASE_VERSION != "" ]; then
+            echo "RELEASE_VERSION=${EXPLICIT_RELEASE_VERSION}"
+            echo "RELEASE_VERSION=${EXPLICIT_RELEASE_VERSION}" >> $GITHUB_ENV
+          else
+            echo "RELEASE_VERSION=${RELEASE_VERSION}"
+            echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+          fi
       # We run this step only when the workflow has been triggered by a PR merge
       # in this case we publish the docs to `/dev`
-      - name: Set RELEASE_VERSION env var to `dev`
+      - name: (Conditional) Set RELEASE_VERSION env var to `dev`
         if: ${{ inputs.prIsMerged == 'true' }}
         run: |
           echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
+      - name: Check RELEASE_VERSION env var
+        if: ${{ env.RELEASE_VERSION == '' }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('RELEASE_VERSION env var is empty.')
       - name: Install doc generation dependencies
         run: |
           pip install --upgrade pip 
@@ -75,7 +92,7 @@ jobs:
         run: |
           git config --global user.name Docs deploy
           git config --global user.email docs@dummy.bot.com
-      - name: Publish docs to latest
+      - name: Publish docs to latest if isRelease
         if: ${{ env.RELEASE_VERSION != 'dev' }}
         run: |
           rm -rf site
@@ -100,3 +117,11 @@ jobs:
           publish_dir: ./api
           keep_files: true
           destination_dir: ${{ env.RELEASE_VERSION }}/api
+      - name: Release API docs to latest if isRelease
+        if: ${{ env.RELEASE_VERSION != 'dev' }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api
+          keep_files: true
+          destination_dir: latest/api

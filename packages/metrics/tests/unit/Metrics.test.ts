@@ -13,7 +13,7 @@ import { Metrics, MetricUnits } from '../../src/';
 import { populateEnvironmentVariables } from '../helpers';
 
 const MAX_METRICS_SIZE = 100;
-const MAX_DIMENSION_COUNT = 9;
+const MAX_DIMENSION_COUNT = 29;
 const DEFAULT_NAMESPACE = 'default_namespace';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -371,7 +371,7 @@ describe('Class: Metrics', () => {
       }
     });
 
-    test('Error should be thrown on empty metrics when throwOnEmptyMetrics() is callse', async () => {
+    test('Error should be thrown on empty metrics when throwOnEmptyMetrics() is called', async () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
@@ -459,6 +459,7 @@ describe('Class: Metrics', () => {
     });
 
     test('Should throw an error if the same metric name is added again with a different unit', ()=> {
+      expect.assertions(1);
       const metrics = new Metrics();
       
       metrics.addMetric('test_name', MetricUnits.Count, 2);

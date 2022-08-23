@@ -71,7 +71,7 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-* **AWS Lambda Powertools on Discord**: `#typesript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+* **AWS Lambda Powertools on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
 * **Email**: aws-lambda-powertools-feedback@amazon.com
 
 ## Credits

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.1.1...v1.2.0) (2022-08-23)
+
+
+### Features
+
+* **tracer:** allow disabling result capture for decorators and middleware ([#1065](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1065)) ([c3b9a37](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c3b9a37b6d5885f1750da4f0b226a18734ff0c29))
+
+
+
+
+
 ## [1.1.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.1.0...v1.1.1) (2022-08-18)
 
 

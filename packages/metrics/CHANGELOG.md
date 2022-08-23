@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.1.1...v1.2.0) (2022-08-23)
+
+
+### Features
+
+* **metrics:**  increase maximum dimensions to 29 ([#1072](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1072)) ([7b9a027](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/7b9a0278ccf801a521cab3f74372a4748231fd11))
+
+
+
+
+
 ## [1.1.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.1.0...v1.1.1) (2022-08-18)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

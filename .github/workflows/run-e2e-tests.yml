@@ -1,47 +1,19 @@
-name: run-e2e-tests
+name: Run e2e Tests
+
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      prNumber:
+        description: "(Optional) PR Number. If you specify a value the value of the branch field will be ignored."
+        required: false
+        default: ""
+
 jobs:
-  example-and-package-check:
+  run-e2e-tests-on-utils:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v3
-      - name: "Use NodeJS 16"
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - name: "Install npm@8.x"
-        run: npm i -g npm@next-8
-      - name: "Install monorepo packages"
-        # This installs all the dependencies of ./packages/*
-        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        run: npm ci --foreground-scripts
-      - name: Install CDK example packages
-        # Since we are not managing the CDK examples with npm workspaces we install
-        # the dependencies in a separate step
-        working-directory: ./examples/cdk
-        run: npm ci
-      - name: "Setup SAM"
-        # We use an ad-hoc action so we can specify the SAM CLI version
-        uses: aws-actions/setup-sam@v2
-        with:
-          version: 1.49.0
-      - name: Install SAM example packages
-        # Since we are not managing the SAM examples with npm workspaces we install
-        # the dependencies in a separate step
-        working-directory: ./examples/sam
-        run: npm ci
-      - name: "Test packaging"
-        run: |
-          npm run lerna-package
-          cd examples/cdk
-          npm install ../../packages/**/dist/aws-lambda-powertools-*
-          npm run test
-  package-e2e-tests:
-    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+      PR_NUMBER: ${{ inputs.prNumber }}
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
@@ -51,28 +23,47 @@ jobs:
         version: [12, 14, 16]
       fail-fast: false
     steps:
-      - name: "Checkout"
+      - name: Checkout Repo
         uses: actions/checkout@v3
-      - name: "Use NodeJS"
+      # If we pass a PR Number when triggering the workflow we will retrieve the PR info and get its headSHA
+      - name: Extract PR details
+        id: extract_PR_details
+        if: ${{ inputs.prNumber != '' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('.github/scripts/get_pr_info.js');
+            await script({github, context, core});
+      # Only if a PR Number was passed and the headSHA of the PR extracted,
+      # we checkout the PR at that point in time
+      - name: Checkout PR code
+        if: ${{ inputs.prNumber != '' }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.extract_PR_details.outputs.headSHA }}
+      - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.version }}
-      - name: "Install npm@8.x"
+      - name: Setup npm
         run: npm i -g npm@next-8
-      - name: "Install monorepo packages"
+      - name: Install dependencies
         # This installs all the dependencies of ./packages/*
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
-      - name: "Configure AWS credentials"
+      - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.1
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: eu-west-1
-      - name: "Run packages integration tests"
+      - name: Run integration tests on utils
         run: |
           RUNTIME=nodejs${{ matrix.version }}x npm run test:e2e -w packages/${{ matrix.package }}
   layer-e2e-tests:
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+      PR_NUMBER: ${{ inputs.prNumber }}
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
@@ -81,14 +72,30 @@ jobs:
       matrix:
         version: [12, 14, 16]
     steps:
-      - name: Checkout
+      - name: Checkout Repo
         uses: actions/checkout@v3
-      - name: Use NodeJS
+      # If we pass a PR Number when triggering the workflow we will retrieve the PR info and get its headSHA
+      - name: Extract PR details
+        id: extract_PR_details
+        if: ${{ inputs.prNumber != '' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('.github/scripts/get_pr_info.js');
+            await script({github, context, core});
+      # Only if a PR Number was passed and the headSHA of the PR extracted,
+      # we checkout the PR at that point in time
+      - name: Checkout PR code
+        if: ${{ inputs.prNumber != '' }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.extract_PR_details.outputs.headSHA }}
+      - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
           # Always use version 16 as we use TypeScript target es2020
           node-version: 16
-      - name: Install npm@8.x
+      - name: Setup npm
         run: npm i -g npm@next-8
       - name: "Configure AWS credentials"
         uses: aws-actions/configure-aws-credentials@v1.6.1
@@ -115,9 +122,8 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit == 'true'
         run: |
           npm run build -w packages/commons
-      - name: "Run layer integration tests"
+      - name: Run integration test on layers
         run: |
           npm ci --foreground-scripts
           RUNTIME=nodejs${{ matrix.version }}.x npm run test:e2e
         working-directory: layer-publisher
-

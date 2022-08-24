@@ -1,5 +1,7 @@
 # AWS Lambda Powertools for TypeScript
 
+[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET)
+
 A suite of utilities for AWS Lambda functions to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.
 
 You can use the library in both TypeScript and JavaScript code bases.
@@ -83,7 +85,7 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-* **AWS Developers Slack**: `#lambda-powertools` - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw)**
+* **AWS Lambda Powertools on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
 * **Email**: aws-lambda-powertools-feedback@amazon.com
 
 ## Credits

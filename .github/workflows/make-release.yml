@@ -47,11 +47,3 @@ jobs:
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
           npx lerna version --conventional-commits --force-publish --yes
           npx lerna publish from-git --no-verify-access --yes
-  publish:
-    needs: publish-npm
-    uses: ./.github/workflows/reusable-publish-docs.yml
-    with:
-      workflow_origin: ${{ github.event.repository.full_name }}
-      isRelease: "true"
-    secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}

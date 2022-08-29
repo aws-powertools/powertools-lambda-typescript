@@ -39,25 +39,15 @@ module.exports = async ({github, context, core}) => {
     const { groups: {issue} } = isMatch;
 
     try {
-      core.info(`Auto-labeling related issue ${issue} for release`)
-      await github.rest.issues.addLabels({
+      core.info(`Auto-labeling related issue ${issue} for release`);
+      return await github.rest.issues.addLabels({
         issue_number: issue,
         owner: context.repo.owner,
         repo: context.repo.repo,
-        labels: [LABEL_PENDING_RELEASE]
+        labels: [LABEL_PENDING_RELEASE],
       });
     } catch (error) {
       core.setFailed(`Is this issue number (${issue}) valid? Perhaps a discussion?`);
       throw new Error(error);
     }
-
-    const { groups: {relatedIssueNumber} } = isMatch;
-
-    core.info(`Auto-labeling related issue ${relatedIssueNumber} for release`);
-    return await github.rest.issues.addLabels({
-      issue_number: relatedIssueNumber,
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      labels: [relatedIssueNumber]
-    });
 }

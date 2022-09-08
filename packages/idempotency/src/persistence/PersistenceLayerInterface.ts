@@ -1,8 +1,8 @@
-import { IdempotencyConfig } from '../IdempotencyConfig';
+import { IdempotencyPersistenceConfig } from '../IdempotencyPersistenceConfig';
 import { IdempotencyRecord } from './PersistenceLayer';
 
 interface PersistenceLayerInterface {
-  configure(config: IdempotencyConfig): void
+  configure(config: IdempotencyPersistenceConfig): void
   saveInProgress(): Promise<void>
   saveSuccess(): Promise<void>
   deleteRecord(): Promise<void>

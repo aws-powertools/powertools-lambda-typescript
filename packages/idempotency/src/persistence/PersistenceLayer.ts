@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { IdempotencyConfig } from '../IdempotencyConfig';
+import { IdempotencyPersistenceConfig } from '../IdempotencyPersistenceConfig';
 import { PersistenceLayerInterface } from './PersistenceLayerInterface';
 
 class IdempotencyRecord{
@@ -20,7 +20,7 @@ class IdempotencyRecord{
 
 abstract class PersistenceLayer implements PersistenceLayerInterface {
   public constructor(){}
-  public configure(_config: IdempotencyConfig): void {}
+  public configure(_config: IdempotencyPersistenceConfig): void {}
   public async deleteRecord(): Promise<void> {}
   public async getRecord(): Promise<IdempotencyRecord> {
     return Promise.resolve({} as IdempotencyRecord);

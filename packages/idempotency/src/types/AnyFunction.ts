@@ -1,4 +1,5 @@
-type AnyFunction = <U>(...args: Array<unknown>) => U | void;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFunction<U> = (...args: Array<any>) => Promise<U>;
 
 export {
   AnyFunction

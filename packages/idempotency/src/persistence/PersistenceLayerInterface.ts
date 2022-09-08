@@ -1,4 +1,4 @@
-import { IdempotencyConfig } from './IdempotencyConfig';
+import { IdempotencyConfig } from '../IdempotencyConfig';
 
 interface PersistenceLayerInterface {
   configure(config: IdempotencyConfig): void

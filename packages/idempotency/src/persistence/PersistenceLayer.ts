@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { IdempotencyConfig } from './IdempotencyConfig';
+import { IdempotencyConfig } from '../IdempotencyConfig';
 import { PersistenceLayerInterface } from './PersistenceLayerInterface';
 
 abstract class PersistenceLayer implements PersistenceLayerInterface {
@@ -15,14 +15,6 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
   protected abstract _updateRecord(): void;
 }
 
-class DynamoDBPersistenceLayer extends PersistenceLayer {
-  protected _deleteRecord(): void {}
-  protected _getRecord(): void {}
-  protected _putRecord(): void {}
-  protected _updateRecord(): void {}
-}
-
 export {
-  DynamoDBPersistenceLayer,
   PersistenceLayer
 };

@@ -1,5 +1,5 @@
 import { IdempotencyConfig } from './IdempotencyConfig';
-import { PersistenceLayer } from './PersistenceLayer';
+import { PersistenceLayer } from './persistence/PersistenceLayer';
 
 type IdempotencyOptions = {
   dataKeywordArgument: string

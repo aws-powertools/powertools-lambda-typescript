@@ -1,4 +1,4 @@
-type AnyFunction = <T extends Array<unknown>, U>(...args: T) => U;
+type AnyFunction = <U>(...args: Array<unknown>) => U | void;
 
 export {
   AnyFunction

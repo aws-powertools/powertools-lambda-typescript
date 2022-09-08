@@ -2,31 +2,36 @@
 import { IdempotencyPersistenceConfig } from '../IdempotencyPersistenceConfig';
 import { PersistenceLayerInterface } from './PersistenceLayerInterface';
 
-class IdempotencyRecord{
-  public constructor(){}
+class IdempotencyRecord {
+  public constructor(public idempotencyKey: string,
+    private _status: string = '',
+    public expiryTimestamp: number | undefined,
+    public inProgressExpiryTimestamp: number | undefined,
+    public responseData: string = '',
+    public payloadHash: string | undefined) {}
 
-  public isExpired(): boolean{
+  public isExpired(): boolean {
     return false;
   }
-  
-  public responseJsonAsObject(): Record<string, unknown> | undefined{
+
+  public responseJsonAsObject(): Record<string, unknown> | undefined {
     return;
   }
 
-  public status(): string{
+  public status(): string {
     return '';
   }
 }
 
 abstract class PersistenceLayer implements PersistenceLayerInterface {
-  public constructor(){}
-  public configure(_config: IdempotencyPersistenceConfig): void {}
-  public async deleteRecord(): Promise<void> {}
+  public constructor() { }
+  public configure(_config: IdempotencyPersistenceConfig): void { }
+  public async deleteRecord(): Promise<void> { }
   public async getRecord(): Promise<IdempotencyRecord> {
     return Promise.resolve({} as IdempotencyRecord);
   }
-  public async saveInProgress(): Promise<void> {}
-  public async saveSuccess(): Promise<void> {}
+  public async saveInProgress(): Promise<void> { }
+  public async saveSuccess(): Promise<void> { }
 
   protected abstract _deleteRecord(): Promise<void>;
   protected abstract _getRecord(): Promise<IdempotencyRecord>;

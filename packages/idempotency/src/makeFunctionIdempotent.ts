@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
+import { AnyFunction } from 'types/AnyFunction';
 import { IdempotencyOptions } from './IdempotencyOptions';
 
-const makeFunctionIdempotent = <T>(
-  _fn: () => T,
+const makeFunctionIdempotent = (
+  fn: AnyFunction,
   _options: IdempotencyOptions
-): void => {};
+): AnyFunction => fn;
 
 export { makeFunctionIdempotent };

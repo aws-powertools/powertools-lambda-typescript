@@ -1,11 +1,12 @@
 import { IdempotencyConfig } from '../IdempotencyConfig';
+import { IdempotencyRecord } from './PersistenceLayer';
 
 interface PersistenceLayerInterface {
   configure(config: IdempotencyConfig): void
-  saveInProgress(): void
-  saveSuccess(): void
-  deleteRecord(): void
-  getRecord(): void
+  saveInProgress(): Promise<void>
+  saveSuccess(): Promise<void>
+  deleteRecord(): Promise<void>
+  getRecord(): Promise<IdempotencyRecord>
 }
 
 export { PersistenceLayerInterface };

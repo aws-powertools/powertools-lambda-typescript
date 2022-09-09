@@ -8,18 +8,19 @@ class IdempotencyRecord {
     public inProgressExpiryTimestamp: number | undefined,
     public responseData: string = '',
     public payloadHash: string | undefined) {}
-
+    
+  public getStatus(): string {
+    return '';
+  }
+  
   public isExpired(): boolean {
     return false;
   }
-
+  
   public responseJsonAsObject(): Record<string, unknown> | undefined {
     return;
   }
 
-  public getStatus(): string {
-    return '';
-  }
 }
 
 abstract class PersistenceLayer implements PersistenceLayerInterface {

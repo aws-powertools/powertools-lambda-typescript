@@ -2,8 +2,8 @@
 import { IdempotencyRecord, PersistenceLayer } from './PersistenceLayer';
 
 class DynamoDBPersistenceLayer extends PersistenceLayer {
-  constructor(_tableName: string, _key_attr: string = 'id') {
-    super()
+  public constructor(_tableName: string, _key_attr: string = 'id') {
+    super();
   }
   protected async _deleteRecord(): Promise<void> {}
   protected async _getRecord(): Promise<IdempotencyRecord> {

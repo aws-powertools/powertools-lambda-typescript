@@ -3,7 +3,7 @@ import { PersistenceLayerInterface } from './PersistenceLayerInterface';
 
 class IdempotencyRecord {
   public constructor(public idempotencyKey: string,
-    private _status: string = '',
+    private status: string = '',
     public expiryTimestamp: number | undefined,
     public inProgressExpiryTimestamp: number | undefined,
     public responseData: string = '',
@@ -17,7 +17,7 @@ class IdempotencyRecord {
     return;
   }
 
-  public status(): string {
+  public getStatus(): string {
     return '';
   }
 }
@@ -34,7 +34,7 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
 
   protected abstract _deleteRecord(): Promise<void>;
   protected abstract _getRecord(): Promise<IdempotencyRecord>;
-  protected abstract _putRecord(): Promise<void>;
+  protected abstract _putRecord(record: IdempotencyRecord): Promise<void>;
   protected abstract _updateRecord(): Promise<void>;
 }
 

@@ -1,5 +1,6 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { LayeredFunction } from './example-layer';
 import { ExampleFunction } from './example-function';
 
 export class CdkAppStack extends Stack {
@@ -66,5 +67,9 @@ export class CdkAppStack extends Stack {
       tracingActive: true,
     });
 
+    new LayeredFunction(this, 'MyLayeredFunction', {
+      functionName: 'MyLayeredFunction',
+      tracingActive: true,
+    });
   }
 }

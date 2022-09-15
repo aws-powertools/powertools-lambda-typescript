@@ -1,27 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { IdempotencyRecord } from './IdempotencyRecord';
 import { PersistenceLayerInterface } from './PersistenceLayerInterface';
-
-class IdempotencyRecord {
-  public constructor(public idempotencyKey: string,
-    private status: string = '',
-    public expiryTimestamp: number | undefined,
-    public inProgressExpiryTimestamp: number | undefined,
-    public responseData: string = '',
-    public payloadHash: string | undefined) {}
-    
-  public getStatus(): string {
-    return '';
-  }
-  
-  public isExpired(): boolean {
-    return false;
-  }
-  
-  public responseJsonAsObject(): Record<string, unknown> | undefined {
-    return;
-  }
-
-}
 
 abstract class PersistenceLayer implements PersistenceLayerInterface {
   public constructor() { }

@@ -9,13 +9,13 @@ const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): mi
     metricsInstances.forEach((metrics: Metrics) => {
       metrics.setFunctionName(request.context.functionName);
       const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
-      if (throwOnEmptyMetrics !== undefined) {
+      if (throwOnEmptyMetrics) {
         metrics.throwOnEmptyMetrics();
       }
       if (defaultDimensions !== undefined) {
         metrics.setDefaultDimensions(defaultDimensions);
       }
-      if (captureColdStartMetric !== undefined) {
+      if (captureColdStartMetric) {
         metrics.captureColdStartMetric();
       }
     });

@@ -62,7 +62,7 @@ let startTime: Date;
  * Function #1 is with all flags enabled.
  */
 const uuidFunction1 = v4();
-const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Decoratory-AllFlagsEnabled');
+const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Decorator-AllFlagsEnabled');
 const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled; 
 
 /**
@@ -79,7 +79,7 @@ const functionNameWithTracerDisabled = generateUniqueName(RESOURCE_NAME_PREFIX, 
 const serviceNameWithTracerDisabled = functionNameWithNoCaptureErrorOrResponse; 
 
 /**
- * Function #4 disables tracer
+ * Function #4 disables capture response via decorator options
  */
 const uuidFunction4 = v4();
 const functionNameWithCaptureResponseFalse = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction4, runtime, 'AllFeatures-Decorator-CaptureResponseFalse');

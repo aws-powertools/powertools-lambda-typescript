@@ -275,7 +275,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {HandlerMethodDecorator}
    */
   public injectLambdaContext(options?: HandlerOptions): HandlerMethodDecorator {
-    return (target, _propertyKey, descriptor) => {
+    return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
        */

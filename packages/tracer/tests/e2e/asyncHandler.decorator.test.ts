@@ -55,14 +55,14 @@ let startTime: Date;
  * Function #1 is with all flags enabled.
  */
 const uuidFunction1 = v4();
-const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Decorator-AllFlagsEnabled');
+const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Decorator-Async-AllFlagsEnabled');
 const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled;
 
 /**
  * Function #2 sets a custom subsegment name in the decorated method
  */
 const uuidFunction2 = v4();
-const functionNameWithCustomSubsegmentNameInMethod = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction2, runtime, 'AllFeatures-Decorator-CustomSubsegmentNameInMethod');
+const functionNameWithCustomSubsegmentNameInMethod = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction2, runtime, 'AllFeatures-Decorator-Async-CustomSubsegmentNameInMethod');
 const serviceNameWithCustomSubsegmentNameInMethod = functionNameWithCustomSubsegmentNameInMethod;
 
 const xray = new AWS.XRay();

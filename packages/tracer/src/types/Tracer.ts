@@ -81,7 +81,7 @@ type CaptureLambdaHandlerOptions = {
  *     return 'foo bar';
  *   }
  *
- *   @tracer.captureLambdaHandler({ subSegmentName: '', captureResponse: false })
+ *   @tracer.captureLambdaHandler({ captureResponse: false })
  *   public async handler(_event: any, _context: any): Promise<void> {
  *     this.getChargeId();
  *   }

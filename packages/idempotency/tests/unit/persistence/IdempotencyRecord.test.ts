@@ -29,3 +29,24 @@ describe('Given an idempotency record that is expired', () => {
     });
   });
 });
+
+describe('Given an idempotency record that is not expired', () => {
+  let idempotencyRecord: IdempotencyRecord; 
+  beforeEach(() => {
+    const mockNowBeforeExiryTime = 1487076707000;
+    const expiryTimeAfterNow = 1487076708000;
+    Date.now = jest.fn(() => mockNowBeforeExiryTime);
+    idempotencyRecord = new IdempotencyRecord(mockIdempotencyKey, IdempotencyRecordStatus.INPROGRESS, expiryTimeAfterNow, mockInProgressExpiry, mockData, mockPayloadHash);
+  });
+  describe('When checking the status of the idempotency record', () => {
+    let resultingStatus: IdempotencyRecordStatus;
+    beforeEach(() => {
+      resultingStatus = idempotencyRecord.getStatus();
+    });
+  
+    test('Then the status is EXPIRED', () => {
+      expect(resultingStatus).toEqual(IdempotencyRecordStatus.INPROGRESS); 
+    });
+  });
+});
+  

@@ -1,3 +1,4 @@
+import { IdempotencyInvalidStatusError } from 'Exceptions';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
 
 class IdempotencyRecord {
@@ -6,19 +7,25 @@ class IdempotencyRecord {
     private status: IdempotencyRecordStatus,
     public expiryTimestamp: number | undefined,
     public inProgressExpiryTimestamp: number | undefined,
-    public responseData: string |undefined, 
+    public responseData: Record<string, unknown> |undefined, 
     public payloadHash: string | undefined) {}
       
   public getStatus(): IdempotencyRecordStatus {
-    return this.status;
+    if (this.isExpired()){
+      return IdempotencyRecordStatus.EXPIRED;
+    } else if (Object.values(IdempotencyRecordStatus).includes(this.status)){
+      return this.status;
+    } else {
+      throw new IdempotencyInvalidStatusError();
+    }
   }
     
   public isExpired(): boolean {
-    return false;
+    return this.expiryTimestamp !== undefined && (Date.now() > this.expiryTimestamp);
   }
     
   public responseJsonAsObject(): Record<string, unknown> | undefined {
-    return;
+    return this.responseData;
   } 
 }
 

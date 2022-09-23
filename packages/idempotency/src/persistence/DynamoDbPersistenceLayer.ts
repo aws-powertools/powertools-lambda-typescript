@@ -37,8 +37,9 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
 
     const idempotencyKeyDoesNotExist = 'attribute_not_exists(#id)';
     const idempotencyKeyExpired = '#expiry < :now';
-    const conditionalExpression = `${idempotencyKeyDoesNotExist} OR ${idempotencyKeyExpired}`;
-    await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.key_attr, '#expiry': this.expiry_attr, '#status': this.status_attr }, ExpressionAttributeValues: { ':now': 0, ':now_in_millis': 0, ':inprogress': 'INPROGRESS' }, ConditionExpression: conditionalExpression });
+    const notInProgress = 'NOT #status = :inprogress';
+    const conditionalExpression = `${idempotencyKeyDoesNotExist} OR ${idempotencyKeyExpired} OR ${notInProgress}`;
+    await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.key_attr, '#expiry': this.expiry_attr, '#status': this.status_attr }, ExpressionAttributeValues: { ':now': Date.now(), ':inprogress': 'INPROGRESS' }, ConditionExpression: conditionalExpression });
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {

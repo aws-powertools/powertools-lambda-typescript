@@ -1,4 +1,4 @@
-import { IdempotencyRecordStatus } from 'types/IdempotencyRecordStatus';
+import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
 
 class IdempotencyRecord {
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { DynamoDB, DynamoDBServiceException } from '@aws-sdk/client-dynamodb';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, GetCommandOutput } from '@aws-sdk/lib-dynamodb';
-import { IdempotencyItemAlreadyExistsError, IdempotencyItemNotFoundError } from 'Exceptions';
+import { IdempotencyItemNotFoundError } from '../Exceptions';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
 import { IdempotencyRecord, PersistenceLayer } from './PersistenceLayer';
 
@@ -46,13 +46,7 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
     const idempotencyKeyExpired = '#expiry < :now';
     const notInProgress = 'NOT #status = :inprogress';
     const conditionalExpression = `${idempotencyKeyDoesNotExist} OR ${idempotencyKeyExpired} OR ${notInProgress}`;
-    try {
-      await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.key_attr, '#expiry': this.expiry_attr, '#status': this.status_attr }, ExpressionAttributeValues: { ':now': Date.now(), ':inprogress': IdempotencyRecordStatus.INPROGRESS }, ConditionExpression: conditionalExpression });
-    } catch (err) {
-      if ((err as DynamoDBServiceException).name === 'ConditionalCheckFailedException') {
-        throw new IdempotencyItemAlreadyExistsError();
-      }
-    }
+    await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.key_attr, '#expiry': this.expiry_attr, '#status': this.status_attr }, ExpressionAttributeValues: { ':now': Date.now(), ':inprogress': IdempotencyRecordStatus.INPROGRESS }, ConditionExpression: conditionalExpression });
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
@@ -76,3 +70,4 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
 export {
   DynamoDBPersistenceLayer
 };
+

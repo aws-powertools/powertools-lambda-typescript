@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { PersistenceLayer } from './PersistenceLayer';
-import { IdempotencyRecord } from './IdempotencyRecord';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument, GetCommandOutput } from '@aws-sdk/lib-dynamodb';
+import { IdempotencyItemNotFoundError } from 'Exceptions';
+import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
+import { IdempotencyRecord, PersistenceLayer } from './PersistenceLayer';
 
 class DynamoDBPersistenceLayer extends PersistenceLayer {
   private _table: DynamoDBDocument | undefined;
@@ -27,6 +30,10 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
       }
     );
 
+    if (!output.Item){
+      throw new IdempotencyItemNotFoundError();
+    }
+    
     return new IdempotencyRecord(output.Item?.[this.key_attr], output.Item?.[this.status_attr], output.Item?.[this.expiry_attr], output.Item?.[this.in_progress_expiry_attr], output.Item?.[this.data_attr], undefined);
   }
 

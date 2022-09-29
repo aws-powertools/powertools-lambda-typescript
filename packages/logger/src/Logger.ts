@@ -275,7 +275,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {HandlerMethodDecorator}
    */
   public injectLambdaContext(options?: HandlerOptions): HandlerMethodDecorator {
-    return (target, _propertyKey, descriptor) => {
+    return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
        */
@@ -285,7 +285,7 @@ class Logger extends Utility implements ClassThatLogs {
       const loggerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
-      descriptor.value = (function (this: Handler, event, context, callback) {
+      descriptor.value = (async function (this: Handler, event, context, callback) {
 
         let initialPersistentAttributes = {};
         if (options && options.clearState === true) {
@@ -297,7 +297,7 @@ class Logger extends Utility implements ClassThatLogs {
         /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         let result: unknown;
         try {
-          result = originalMethod!.apply(this, [ event, context, callback ]);
+          result = await originalMethod!.apply(this, [ event, context, callback ]);
         } catch (error) {
           throw error;
         } finally {

@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  run-unit-tests-on-utils:
+  run-linting-check-and-unit-tests:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
@@ -43,7 +43,7 @@ jobs:
         run: |
           npm run build -w packages/commons
           npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
-      - name: Lint
+      - name: Run linting
         run: npm run lint -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics
       - name: Run unit tests
         run: npm t -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics
@@ -80,6 +80,8 @@ jobs:
         # We can skip the install if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+      - name: Run linting
+        run: npm run lint
       - name: Run tests
         run: npm t
   check-layer-publisher:
@@ -108,3 +110,5 @@ jobs:
         # We can skip the install if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+      - name: Run linting
+        run: npm run lint

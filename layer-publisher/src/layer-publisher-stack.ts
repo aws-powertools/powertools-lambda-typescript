@@ -1,6 +1,8 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { LambdaPowertoolsLayer } from 'cdk-lambda-powertools-python-layer';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { CfnLayerVersionPermission } from 'aws-cdk-lib/aws-lambda';

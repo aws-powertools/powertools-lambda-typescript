@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.1...v1.3.0) (2022-09-29)
+
+
+### Bug Fixes
+
+* captureColdStartMetric and throwOnEmptyMetrics when set to false was interpreted as true ([#1090](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1090)) ([127aad4](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/127aad4698412d72368c093812dd4034839119ca))
+* **logger:** wait for decorated method return before clearing out state ([#1087](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1087)) ([133ed3c](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/133ed3c31ce1d99eb8f427f54721896781438ef7))
+
+
+### Features
+
+* **idempotency:** create initial class structure for function idempotency ([#1086](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1086)) ([06fbaae](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/06fbaae4db3825557aa84d40372a53422e42840d))
+
+
+
+
+
 ## [1.2.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.0...v1.2.1) (2022-08-25)
 
 **Note:** Version bump only for package aws-lambda-powertools-typescript

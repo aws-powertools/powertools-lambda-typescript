@@ -3,17 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [1.3.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.1...v1.3.0) (2022-09-29)
-
-
-### Bug Fixes
-
-* **logger:** wait for decorated method return before clearing out state ([#1087](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1087)) ([133ed3c](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/133ed3c31ce1d99eb8f427f54721896781438ef7))
-
-
-
-
-
 ## [1.2.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.0...v1.2.1) (2022-08-25)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger

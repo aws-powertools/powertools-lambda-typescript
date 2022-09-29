@@ -1,5 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run lerna-lint
+npm run lerna-lint-fix
 npm run test

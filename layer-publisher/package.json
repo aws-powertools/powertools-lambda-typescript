@@ -10,6 +10,8 @@
     "test": "npm run test:unit",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
+    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
+    "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "test:unit": "if-node-version '>12' jest --testPathPattern=unit -u",
     "test:e2e": "if-node-version '>12' jest --testPathPattern=e2e"
   },

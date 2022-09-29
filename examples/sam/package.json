@@ -10,6 +10,7 @@
   "scripts": {
     "build": "sam build --beta-features",
     "test": "npm run test:unit",
+    "format": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "package": "echo 'Not applicable'",
     "package-bundle": "echo 'Not applicable'",
     "test:unit": "npm run build && jest",

@@ -23,7 +23,7 @@
     "lerna-package-bundle": "lerna exec -- npm run package-bundle",
     "lerna-build": "lerna exec -- tsc",
     "lerna-lint": "lerna exec -- eslint \"./{src,tests}/**/*.ts ./src/*.ts\"",
-    "lerna-format": "lerna exec -- eslint --fix \"./{src,tests}/**/*.ts ./src/*.ts\"",
+    "lerna-format": "lerna exec -- npm run format",
     "lerna-prepare": "lerna exec -- npm run build",
     "lerna-prepublishOnly": "lerna exec -- npm test && lerna exec -- npm run lint",
     "lerna-preversion": "lerna exec -- npm run lint",

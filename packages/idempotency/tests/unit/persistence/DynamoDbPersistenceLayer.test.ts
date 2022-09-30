@@ -12,10 +12,6 @@ import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordSta
  * @group unit/idempotency/all
  */
 
-describe('Given a idempotency key', () => {
-  ///add test
-});
-
 describe('Class: DynamoDbPersistenceLayer', () => {
   beforeEach(() => {
     jest.clearAllMocks();

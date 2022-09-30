@@ -1,4 +1,4 @@
-import { DynamoDBDocument, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DeleteCommand, DynamoDBDocument, GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 import { IdempotencyItemNotFoundError } from '../../../src/Exceptions';
@@ -122,6 +122,69 @@ describe('Class: DynamoDbPersistenceLayer', () => {
         TableName: tableName, Key: { id: key }
       });
       expect(error).toBeInstanceOf(IdempotencyItemNotFoundError);
+    });
+  });
+
+  describe('Method: _updateRecord', () => {
+    test('when called to update a record', async () => {
+      class TestDynamoPersistenceLayer extends DynamoDBPersistenceLayer {
+        public _updateRecord(record: IdempotencyRecord): Promise<void> {
+          return super._updateRecord(record);
+        }
+      }
+
+      // Prepare
+      const tableName = 'tableName';
+      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+
+      const key = 'key';
+      const status = IdempotencyRecordStatus.EXPIRED;
+      const expiryTimestamp = 0;
+      const inProgressExpiryTimestamp = 0;
+      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const dynamoClient = mockClient(DynamoDBDocument).on(UpdateCommand).resolves({});
+
+      // Act
+      await persistenceLayer._updateRecord(record);
+
+      // Assess
+      expect(dynamoClient).toReceiveCommandWith(UpdateCommand, {
+        TableName: tableName, 
+        Key: { id: key },
+        UpdateExpression: 'SET #status = :status, #expiry = :expiry',
+        ExpressionAttributeNames: { '#status': 'status', '#expiry': 'expiration' },
+        ExpressionAttributeValues: { ':status': IdempotencyRecordStatus.EXPIRED,':expiry': expiryTimestamp },
+      });
+    });
+  });
+
+  describe('Method: _deleteRecord', () => {
+    test('when called with a valid record, record is deleted', async () => {
+      class TestDynamoPersistenceLayer extends DynamoDBPersistenceLayer {
+        public _deleteRecord(record: IdempotencyRecord): Promise<void> {
+          return super._deleteRecord(record);
+        }
+      }
+
+      // Prepare
+      const tableName = 'tableName';
+      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+
+      const key = 'key';
+      const status = IdempotencyRecordStatus.EXPIRED;
+      const expiryTimestamp = 0;
+      const inProgressExpiryTimestamp = 0;
+      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const dynamoClient = mockClient(DynamoDBDocument).on(DeleteCommand).resolves({});
+
+      // Act
+      await persistenceLayer._deleteRecord(record);
+
+      // Assess
+      expect(dynamoClient).toReceiveCommandWith(DeleteCommand, {
+        TableName: tableName, 
+        Key: { id: key }
+      });
     });
   });
 });

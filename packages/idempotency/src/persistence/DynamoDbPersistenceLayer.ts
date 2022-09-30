@@ -34,7 +34,7 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
       throw new IdempotencyItemNotFoundError();
     }
 
-    return new IdempotencyRecord(output.Item?.[this.key_attr], output.Item?.[this.status_attr], output.Item?.[this.expiry_attr], output.Item?.[this.in_progress_expiry_attr], output.Item?.[this.data_attr], undefined);
+    return new IdempotencyRecord(output.Item[this.key_attr], output.Item[this.status_attr], output.Item[this.expiry_attr], output.Item[this.in_progress_expiry_attr], output.Item[this.data_attr], undefined);
   }
 
   protected async _putRecord(_record: IdempotencyRecord): Promise<void> {

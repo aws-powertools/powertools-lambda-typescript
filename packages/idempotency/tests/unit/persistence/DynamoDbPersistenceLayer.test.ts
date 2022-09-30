@@ -13,18 +13,30 @@ import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordSta
  */
 
 describe('Class: DynamoDbPersistenceLayer', () => {
+  class TestDynamoPersistenceLayer extends DynamoDBPersistenceLayer {
+    public _deleteRecord(record: IdempotencyRecord): Promise<void> {
+      return super._deleteRecord(record);
+    }
+
+    public _getRecord(idempotencyKey: string): Promise<IdempotencyRecord> {
+      return super._getRecord(idempotencyKey);
+    }
+
+    public _putRecord(_record: IdempotencyRecord): Promise<void> {
+      return super._putRecord(_record);
+    }
+
+    public _updateRecord(record: IdempotencyRecord): Promise<void> {
+      return super._updateRecord(record);
+    }
+  }
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('Method: _putRecord', () => {
     test('when called with a record that succeeds condition, it puts record in dynamo table', () => {
-      class TestDynamoPersistenceLayer extends DynamoDBPersistenceLayer {
-        public _putRecord(_record: IdempotencyRecord): Promise<void> {
-          return super._putRecord(_record);
-        }
-      }
-
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
@@ -56,12 +68,6 @@ describe('Class: DynamoDbPersistenceLayer', () => {
 
   describe('Method: _getRecord', () => {
     test('when called with a record whose key exists, it gets record', async () => {
-      class TestDynamoPersistenceLayer extends DynamoDBPersistenceLayer {
-        public _getRecord(idempotencyKey: string): Promise<IdempotencyRecord> {
-          return super._getRecord(idempotencyKey);
-        }
-      }
-
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
@@ -90,12 +96,6 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     });
 
     test('when called with a record whose key does not exist, it throws error', async () => {
-      class TestDynamoPersistenceLayer extends DynamoDBPersistenceLayer {
-        public _getRecord(idempotencyKey: string): Promise<IdempotencyRecord> {
-          return super._getRecord(idempotencyKey);
-        }
-      }
-  
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
@@ -123,12 +123,6 @@ describe('Class: DynamoDbPersistenceLayer', () => {
 
   describe('Method: _updateRecord', () => {
     test('when called to update a record', async () => {
-      class TestDynamoPersistenceLayer extends DynamoDBPersistenceLayer {
-        public _updateRecord(record: IdempotencyRecord): Promise<void> {
-          return super._updateRecord(record);
-        }
-      }
-
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
@@ -156,12 +150,6 @@ describe('Class: DynamoDbPersistenceLayer', () => {
 
   describe('Method: _deleteRecord', () => {
     test('when called with a valid record, record is deleted', async () => {
-      class TestDynamoPersistenceLayer extends DynamoDBPersistenceLayer {
-        public _deleteRecord(record: IdempotencyRecord): Promise<void> {
-          return super._deleteRecord(record);
-        }
-      }
-
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer(tableName);

@@ -53,5 +53,9 @@
     "powertools",
     "serverless",
     "nodejs"
-  ]
+  ],
+  "devDependencies": {
+    "aws-sdk-client-mock": "^2.0.0",
+    "aws-sdk-client-mock-jest": "^2.0.0"
+  }
 }

@@ -150,6 +150,41 @@ sam logs -n getAllItemsFunction --stack-name powertools-example --tail
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
 
+## Switch to Lambda Layer
+
+This example bundle all your dependencies in a single JS file thanks to esbuild but you can switch the AWSLambdaPowertoolsTypeScript Layer by:
+1.  specifying the right ARN in `Layers` list under the function's `Properties` 
+1.  instructing esbuild to not bundle `@aws-lambda-powertools` under the function `Metadata/BuildProperties`
+
+Here is the diff of the current sam template leveraging `AWSLambdaPowertoolsTypeScript` layer:
+
+```diff
+diff --git a/examples/sam/template.yaml b/examples/sa/template.yaml
+index 18a5662b..d4e90b55 100644
+--- a/examples/sam/template.yaml
++++ b/examples/sam/template.yaml
+@@ -99,6 +99,8 @@ Resources:
+   putItemFunction:
+     Type: AWS::Serverless::Function
+     Properties:
++      Layers:
++        - arn:aws:lambda:eu-west-3:094274105915:laye:AWSLambdaPowertoolsTypeScript:1
+       Handler: src/put-item.putItemHandler
+       Description: A simple example includes a HTTP ost method to add one item to a DynamoDB table.
+       Policies:
+@@ -124,6 +126,11 @@ Resources:
+       BuildMethod: esbuild
+       BuildProperties:
+         Minify: true
++        External:
++        - '@aws-lambda-powertools/commons'
++        - '@aws-lambda-powertools/logger'
++        - '@aws-lambda-powertools/metrics'
++        - '@aws-lambda-powertools/tracer'
+         Target: "es2020"
+         Sourcemap: true,
+         EntryPoints:
+```
 
 ## Cleanup
 

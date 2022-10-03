@@ -15,10 +15,12 @@ interface LambdaInterface {
 }
 
 type CaptureAsyncFuncMock = jest.SpyInstance<unknown, [name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment]>;
-const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface): CaptureAsyncFuncMock {
+const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface, subsegment?: Subsegment): CaptureAsyncFuncMock {
   return jest.spyOn(provider, 'captureAsyncFunc')
     .mockImplementation(async (methodName, callBackFn) => {
-      const subsegment = new Subsegment(`### ${methodName}`);
+      if (!subsegment) {
+        subsegment = new Subsegment(`### ${methodName}`);
+      }
       jest.spyOn(subsegment, 'flush').mockImplementation(() => null);
       await callBackFn(subsegment);
     });
@@ -1236,6 +1238,67 @@ describe('Class: Tracer', () => {
       // Act / Assess
       const lambda = new Lambda('someValue');
       expect(await lambda.dummyMethod()).toEqual('memberVariable:someValue');
+
+    });
+
+    test('when used as decorator together with another external decorator, the method name is detected properly', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
+
+      // Creating custom external decorator
+      // eslint-disable-next-line func-style
+      function passThrough() {
+        // A decorator that calls the original method.
+        return (
+          _target: unknown,
+          _propertyKey: string,
+          descriptor: PropertyDescriptor
+        ) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const originalMethod = descriptor.value!;
+          descriptor.value = function (...args: unknown[]) {
+            return originalMethod.apply(this, [...args]);
+          };
+        };
+      }
+
+      class Lambda implements LambdaInterface {
+        @tracer.captureMethod()
+        @passThrough()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(): Promise<string> {
+          return `foo`;
+        }
+
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<void> {
+          await this.dummyMethod();
+
+          return;
+        }
+
+      }
+
+      // Act / Assess
+      const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
+      await handler({}, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(newSubsegment).toEqual(expect.objectContaining({
+        metadata: {
+          'hello-world': {
+            // Assess that the method name is added correctly
+            'dummyMethod response': 'foo',
+          },
+        }
+      }));
 
     });
 

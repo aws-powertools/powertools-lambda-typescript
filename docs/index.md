@@ -206,7 +206,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
 If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools`   from being bundled since the packages will be brought by the Layer:
 
-=== "SAM"
+=== "SAM" (check the [doc](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build-typescript.html) for more details)
 
     ```yaml hl_lines="5"
     MyLambdaFunction:
@@ -218,14 +218,14 @@ If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powe
               BuildMethod: esbuild
               BuildProperties:
                 Minify: true
-                External:s
+                External:
                 - '@aws-lambda-powertools/commons'
                 - '@aws-lambda-powertools/logger'
                 - '@aws-lambda-powertools/metrics'
                 - '@aws-lambda-powertools/tracer'
     ```
 
-=== "Serverless framework"
+=== "Serverless framework (check the [doc](https://floydspace.github.io/serverless-esbuild/) for more details)"
 
     ```yaml hl_lines="5"
 	custom:
@@ -237,7 +237,7 @@ If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powe
         - '@aws-lambda-powertools/tracer'
     ```
 
-=== "CDK"
+=== "CDK (check the [doc](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.BundlingOptions.html#externalmodules) for more details)"
 
     ```typescript hl_lines="11 16"
             new awsLambdaNodejs.NodejsFunction(this, 'Function', {

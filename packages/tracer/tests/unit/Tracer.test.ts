@@ -15,10 +15,12 @@ interface LambdaInterface {
 }
 
 type CaptureAsyncFuncMock = jest.SpyInstance<unknown, [name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment]>;
-const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface): CaptureAsyncFuncMock {
+const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface, subsegment?: Subsegment): CaptureAsyncFuncMock {
   return jest.spyOn(provider, 'captureAsyncFunc')
     .mockImplementation(async (methodName, callBackFn) => {
-      const subsegment = new Subsegment(`### ${methodName}`);
+      if (!subsegment) {
+        subsegment = new Subsegment(`### ${methodName}`);
+      }
       jest.spyOn(subsegment, 'flush').mockImplementation(() => null);
       await callBackFn(subsegment);
     });
@@ -1236,6 +1238,50 @@ describe('Class: Tracer', () => {
       // Act / Assess
       const lambda = new Lambda('someValue');
       expect(await lambda.dummyMethod()).toEqual('memberVariable:someValue');
+
+    });
+
+    test('when used as decorator on an async method, the method is awaited correctly', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const subsegmentCloseSpy = jest.spyOn(newSubsegment, 'close').mockImplementation();
+      createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
+
+      class Lambda implements LambdaInterface {
+        @tracer.captureMethod()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(): Promise<void> {
+          return;
+        }
+
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<void> {
+          await this.dummyMethod();
+          this.otherDummyMethod();
+
+          return;
+        }
+
+        public otherDummyMethod(): void {
+          return;
+        }
+
+      }
+      
+      // Act
+      const lambda = new Lambda();
+      const otherDummyMethodSpy = jest.spyOn(lambda, 'otherDummyMethod').mockImplementation();
+      const handler = lambda.handler.bind(lambda);
+      await handler({}, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(subsegmentCloseSpy.mock.invocationCallOrder[0]).toBeLessThan(otherDummyMethodSpy.mock.invocationCallOrder[0]);
 
     });
 

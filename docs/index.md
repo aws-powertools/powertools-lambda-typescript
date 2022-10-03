@@ -204,6 +204,55 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
 	Container Image deployment (OCI) or inline Lambda functions do not support Lambda Layers.
 
+If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools`   from being bundled since the packages will be brought by the Layer:
+
+=== "SAM"
+
+    ```yaml hl_lines="5"
+    MyLambdaFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            ...
+            Metadata: 
+              # Manage esbuild properties
+              BuildMethod: esbuild
+              BuildProperties:
+                Minify: true
+                External:s
+                - '@aws-lambda-powertools/commons'
+                - '@aws-lambda-powertools/logger'
+                - '@aws-lambda-powertools/metrics'
+                - '@aws-lambda-powertools/tracer'
+    ```
+
+=== "Serverless framework"
+
+    ```yaml hl_lines="5"
+	custom:
+    esbuild:
+      external:
+        - '@aws-lambda-powertools/commons'
+        - '@aws-lambda-powertools/logger'
+        - '@aws-lambda-powertools/metrics'
+        - '@aws-lambda-powertools/tracer'
+    ```
+
+=== "CDK"
+
+    ```typescript hl_lines="11 16"
+            new awsLambdaNodejs.NodejsFunction(this, 'Function', {
+              ...
+              bundling: {
+                externalModules: [
+                  '@aws-lambda-powertools/commons',
+                  '@aws-lambda-powertools/logger',
+                  '@aws-lambda-powertools/metrics',
+                  '@aws-lambda-powertools/tracer',
+                ],
+              }
+            });
+    ```
+
 ### NPM Modules
 
 The AWS Lambda Powertools for TypeScript utilities (which from here will be referred as Powertools) follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).

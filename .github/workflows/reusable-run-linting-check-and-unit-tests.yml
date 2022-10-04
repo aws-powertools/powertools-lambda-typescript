@@ -29,16 +29,16 @@ jobs:
           path: "./node_modules"
           # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
           # if one of them changes the cache is invalidated/discarded
-          key: ${{ matrix.version }}-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+          key: ${{ matrix.version }}-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
-        # We can skip the install if there was a cache hit
+        # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
       - name: Build packages
         # If there's a cache hit we still need to manually build the packages
         # this would otherwise have been done automatically as a part of the
-        # postinstall npm hook
+        # post-install npm hook
         if: steps.cache-node-modules.outputs.cache-hit == 'true'
         run: |
           npm run build -w packages/commons
@@ -67,12 +67,8 @@ jobs:
         id: cache-node-modules
         uses: actions/cache@v3
         with:
-          path: "./examples/${{ matrix.example }}/node_modules"
-          # Use the combo between example, name, and SHA-256 hash of all example lock files as cache key.
-          # It's not possible to use the ${{ matrix.example }} key in the hashFiles fn so
-          # if any of the lock files (which should be fairly similar anyway) changes the cache is
-          # invalidated/discarded for all.
-          key: ${{ matrix.example }}-cache-examples-node-modules-${{ hashFiles('./examples/*/package-lock.json') }}
+          path: "./node_modules"
+          key: cache-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -97,9 +93,8 @@ jobs:
         id: cache-node-modules
         uses: actions/cache@v3
         with:
-          path: "./layer-publisher/node_modules"
-          # Use the combo between example, name, and SHA-256 hash of the layer-publisher lock files as cache key.
-          key: cache-layer-publisher-node-modules-${{ hashFiles('./layer-publisher/*/package-lock.json') }}
+          path: "./node_modules"
+          key: cache-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Install Layer publisher
         # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'

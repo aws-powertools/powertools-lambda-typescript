@@ -71,7 +71,7 @@ The following tools need to be installed on your system prior to starting workin
 - [AWS SAM CLI >= 1.49.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
   - AWS SAM CLI is a command line interface for AWS Serverless Application Model (SAM), it's used in one of the examples, and it's part of the pre-push hook.
 - [Docker](https://docs.docker.com/get-docker/)
-  - If you are not planning on making changes to the documentation, you can skip this step.
+  - Docker is used to build documentation and Layer.
 
 First, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository, and then run the following commands to clone and initialize the repository locally.
 

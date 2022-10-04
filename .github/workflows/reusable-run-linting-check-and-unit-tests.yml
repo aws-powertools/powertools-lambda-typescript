@@ -55,9 +55,6 @@ jobs:
       matrix:
         example: ["sam", "cdk"]
       fail-fast: false
-    defaults:
-      run:
-        working-directory: examples/${{ matrix.example }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -73,24 +70,21 @@ jobs:
           path: "./examples/${{ matrix.example }}/node_modules"
           # Use the combo between example, name, and SHA-256 hash of all example lock files as cache key.
           # It's not possible to use the ${{ matrix.example }} key in the hashFiles fn so
-          # if any of the lock files (wich should be fairly similar anyway) changes the cache is
+          # if any of the lock files (which should be fairly similar anyway) changes the cache is
           # invalidated/discarded for all.
           key: ${{ matrix.example }}-cache-examples-node-modules-${{ hashFiles('./examples/*/package-lock.json') }}
       - name: Install dependencies
-        # We can skip the install if there was a cache hit
+        # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm run lerna -- exec npm ci --scope ${{ matrix.example }}-example
       - name: Run linting
         run: npm run lint
       - name: Run tests
-        run: npm t
+        run:  npm run lerna -- run test --scope ${{ matrix.example }}-example
   check-layer-publisher:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
-    defaults:
-      run:
-        working-directory: layer-publisher
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -107,8 +101,8 @@ jobs:
           # Use the combo between example, name, and SHA-256 hash of the layer-publisher lock files as cache key.
           key: cache-layer-publisher-node-modules-${{ hashFiles('./layer-publisher/*/package-lock.json') }}
       - name: Install Layer publisher
-        # We can skip the install if there was a cache hit
+        # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm run lerna -- exec npm ci --scope layer-publisher
       - name: Run linting
-        run: npm run lint
+        run: npm run lerna -- run lint --scope layer-publisher

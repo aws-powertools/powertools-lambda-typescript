@@ -72,7 +72,7 @@ jobs:
       - name: Install dependencies
         # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --foreground-scripts
       - name: Run linting
         run: npm run lerna -- run lint --scope ${{ matrix.example }}-example
       - name: Run tests
@@ -98,6 +98,6 @@ jobs:
       - name: Install Layer publisher
         # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --foreground-scripts
       - name: Run linting
         run: npm run lerna -- run lint --scope layer-publisher

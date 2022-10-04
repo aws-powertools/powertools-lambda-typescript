@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "aws-cdk-lib": "2.25.0",
-    "cdk-lambda-powertools-python-layer": "file:cdk-lambda-powertools-python-layer@0.0.0.jsii.tgz",
     "constructs": "^10.0.0",
     "if-node-version": "^1.1.1",
     "source-map-support": "^0.5.16"

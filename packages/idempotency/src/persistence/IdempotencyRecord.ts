@@ -10,7 +10,7 @@ class IdempotencyRecord {
     public payloadHash: string | undefined) {}
       
   public getStatus(): IdempotencyRecordStatus {
-    return IdempotencyRecordStatus.INPROGRESS;
+    return this.status;
   }
     
   public isExpired(): boolean {

@@ -1330,7 +1330,9 @@ describe('Class: Tracer', () => {
       // Here we assert that the subsegment.close() (inside the finally of decorator) is called before the other otherDummyMethodSpy method
       // that should always be called after the handler has returned. If subsegment.close() is called after it means the
       // decorator is NOT awaiting the method which would cause the test to fail.
-      expect(subsegmentCloseSpy.mock.invocationCallOrder[0]).toBeLessThan(otherDummyMethodSpy.mock.invocationCallOrder[0]);
+const dummyCallOrder = subsegmentCloseSpy.mock.invocationCallOrder[0];
+const otherDummyCallOrder = otherDummyMethodSpy.mock.invocationCallOrder[0];
+expect(dummyCallOrder).toBeLessThan(otherDummyCallOrder);
 
     });
 

@@ -69,7 +69,7 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
 
   private getTable(): DynamoDBDocument {
     if (!this._table)
-      this._table = DynamoDBDocument.from(new DynamoDB({}));
+      this._table = DynamoDBDocument.from(new DynamoDB({}), { marshallOptions: { removeUndefinedValues: true }});
 
     return this._table;
   }

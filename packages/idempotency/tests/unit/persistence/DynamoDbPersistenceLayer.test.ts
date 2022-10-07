@@ -1,7 +1,7 @@
 import { DeleteCommand, DynamoDBDocument, GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
-import { IdempotencyItemNotFoundError } from '../../../src/Exceptions';
+import { IdempotencyItemAlreadyExistsError, IdempotencyItemNotFoundError } from '../../../src/Exceptions';
 import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDbPersistenceLayer';
 import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
 import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordStatus';
@@ -36,7 +36,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
   });
 
   describe('Method: _putRecord', () => {
-    test('when called with a record that succeeds condition, it puts record in dynamo table', () => {
+    test('when called with a record that succeeds condition, it puts record in dynamo table', async () => {
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
@@ -53,7 +53,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).resolves({});
 
       // Act
-      persistenceLayer._putRecord(record);
+      await persistenceLayer._putRecord(record);
 
       // Assess
       expect(dynamoClient).toReceiveCommandWith(PutCommand, {
@@ -63,6 +63,76 @@ describe('Class: DynamoDbPersistenceLayer', () => {
         ExpressionAttributeValues: { ':now': currentDate, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
         ConditionExpression: 'attribute_not_exists(#id) OR #expiry < :now OR NOT #status = :inprogress'
       });
+    });
+
+    test('when called with a record that fails condition, it throws IdempotencyItemAlreadyExistsError', async () => {
+      // Prepare
+      const tableName = 'tableName';
+      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+
+      const key = 'key';
+      const status = IdempotencyRecordStatus.EXPIRED;
+      const expiryTimestamp = 0;
+      const inProgressExpiryTimestamp = 0;
+      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+
+      const currentDate = 1;
+      jest.spyOn(Date, 'now').mockReturnValue(currentDate);
+
+      const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).rejects({ name: 'ConditionalCheckFailedException' });
+
+      // Act
+      let error: unknown;
+      try {
+        await persistenceLayer._putRecord(record);
+      } catch (e){
+        error = e;
+      }
+
+      // Assess
+      expect(dynamoClient).toReceiveCommandWith(PutCommand, {
+        TableName: tableName,
+        Item: { 'id': key, 'expiration': expiryTimestamp, status: status },
+        ExpressionAttributeNames: { '#id': 'id', '#expiry': 'expiration', '#status': 'status' },
+        ExpressionAttributeValues: { ':now': currentDate, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
+        ConditionExpression: 'attribute_not_exists(#id) OR #expiry < :now OR NOT #status = :inprogress'
+      });
+      expect(error).toBeInstanceOf(IdempotencyItemAlreadyExistsError);
+    });
+
+    test('when encountering an unknown error, it throws the causing error', async () => {
+      // Prepare
+      const tableName = 'tableName';
+      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+
+      const key = 'key';
+      const status = IdempotencyRecordStatus.EXPIRED;
+      const expiryTimestamp = 0;
+      const inProgressExpiryTimestamp = 0;
+      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+
+      const currentDate = 1;
+      jest.spyOn(Date, 'now').mockReturnValue(currentDate);
+
+      const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).rejects(new Error());
+
+      // Act
+      let error: unknown;
+      try {
+        await persistenceLayer._putRecord(record);
+      } catch (e){
+        error = e;
+      }
+
+      // Assess
+      expect(dynamoClient).toReceiveCommandWith(PutCommand, {
+        TableName: tableName,
+        Item: { 'id': key, 'expiration': expiryTimestamp, status: status },
+        ExpressionAttributeNames: { '#id': 'id', '#expiry': 'expiration', '#status': 'status' },
+        ExpressionAttributeValues: { ':now': currentDate, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
+        ConditionExpression: 'attribute_not_exists(#id) OR #expiry < :now OR NOT #status = :inprogress'
+      });
+      expect(error).toBe(error);
     });
   });
 

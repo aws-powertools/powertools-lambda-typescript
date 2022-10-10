@@ -9,7 +9,7 @@ The example functions, located in the `src` folder, are invoked automatically, t
 ## Deploying the stack
 
  * Navigate to this location of the repo in your terminal (`examples/cdk`)
- * `npm install`
+ * `npm ci`
  * `npm run cdk deploy --all --profile <YOUR_AWS_PROFILE>`
 
 Note: Prior to deploying you may need to run `cdk bootstrap aws://<YOU_AWS_ACCOUNT_ID>/<AWS_REGION> --profile <YOUR_AWS_PROFILE>` if you have not already bootstrapped your account for CDK.

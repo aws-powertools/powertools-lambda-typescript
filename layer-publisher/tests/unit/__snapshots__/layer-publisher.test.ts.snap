@@ -32,7 +32,7 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "0200f4de9367b7b31ae858ccc10b0d1c8052b9e9a952800745a23029cc8370b4.zip",
+          "S3Key": "dfbb723532549b2040a663602bbe51ab6b3f16dfd063eafc5bbd7e64b13f997d.zip",
         },
         "LayerName": "AWSLambdaPowertoolsTypeScript",
       },

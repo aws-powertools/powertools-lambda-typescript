@@ -34,6 +34,7 @@ import {
   expectedCustomMetadataKey,
   expectedCustomMetadataValue,
   expectedCustomResponseValue,
+  expectedCustomSubSegmentName,
 } from './constants';
 import { 
   assertAnnotation,
@@ -50,9 +51,19 @@ const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'AllFe
 const lambdaFunctionCodeFile = 'asyncHandler.decorator.test.functionCode.ts';
 let startTime: Date;
 
-const uuid = v4();
-const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Decoratory-AllFlagsEnabled');
-const serviceName = functionName; 
+/**
+ * Function #1 is with all flags enabled.
+ */
+const uuidFunction1 = v4();
+const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Decorator-Async-AllFlagsEnabled');
+const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled;
+
+/**
+ * Function #2 sets a custom subsegment name in the decorated method
+ */
+const uuidFunction2 = v4();
+const functionNameWithCustomSubsegmentNameInMethod = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction2, runtime, 'AllFeatures-Decorator-Async-CustomSubsegmentNameInMethod');
+const serviceNameWithCustomSubsegmentNameInMethod = functionNameWithCustomSubsegmentNameInMethod;
 
 const xray = new AWS.XRay();
 const invocations = 3;
@@ -82,9 +93,9 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
     const entry = path.join(__dirname, lambdaFunctionCodeFile);
     const functionWithAllFlagsEnabled = createTracerTestFunction({
       stack,
-      functionName: functionName,
+      functionName: functionNameWithAllFlagsEnabled,
       entry,
-      expectedServiceName: serviceName,
+      expectedServiceName: serviceNameWithAllFlagsEnabled,
       environmentParams: {
         TEST_TABLE_NAME: ddbTableName,
         POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
@@ -95,10 +106,30 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
     });
     ddbTable.grantWriteData(functionWithAllFlagsEnabled);
 
+    const functionWithCustomSubsegmentNameInMethod = createTracerTestFunction({
+      stack,
+      functionName: functionNameWithCustomSubsegmentNameInMethod,
+      handler: 'handlerWithCustomSubsegmentNameInMethod',
+      entry,
+      expectedServiceName: serviceNameWithCustomSubsegmentNameInMethod,
+      environmentParams: {
+        TEST_TABLE_NAME: ddbTableName,
+        EXPECTED_CUSTOM_SUBSEGMENT_NAME: expectedCustomSubSegmentName,
+        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
+        POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
+        POWERTOOLS_TRACE_ENABLED: 'true',
+      },
+      runtime
+    });
+    ddbTable.grantWriteData(functionWithCustomSubsegmentNameInMethod);
+
     await deployStack(integTestApp, stack);
 
     // Act
-    await invokeAllTestCases(functionName);
+    await Promise.all([
+      invokeAllTestCases(functionNameWithAllFlagsEnabled),
+      invokeAllTestCases(functionNameWithCustomSubsegmentNameInMethod),
+    ]);
     
   }, SETUP_TIMEOUT);
 
@@ -110,7 +141,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
 
   it('should generate all custom traces', async () => {
     
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionName), invocations, 5);
+    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
     
     expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
 
@@ -159,7 +190,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
   }, TEST_CASE_TIMEOUT);
 
   it('should have correct annotations and metadata', async () => {
-    const traces = await getTraces(xray, startTime, await getFunctionArn(functionName), invocations, 5);
+    const traces = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
 
     for (let i = 0; i < invocations; i++) {
       const trace = traces[i];
@@ -171,7 +202,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
       assertAnnotation({
         annotations,
         isColdStart,
-        expectedServiceName: serviceName,
+        expectedServiceName: serviceNameWithAllFlagsEnabled,
         expectedCustomAnnotationKey,
         expectedCustomAnnotationValue,
       });
@@ -179,16 +210,66 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
       if (!metadata) {
         fail('metadata is missing');
       }
-      expect(metadata[serviceName][expectedCustomMetadataKey])
+      expect(metadata[serviceNameWithAllFlagsEnabled][expectedCustomMetadataKey])
         .toEqual(expectedCustomMetadataValue);
 
       const shouldThrowAnError = (i === (invocations - 1));
       if (!shouldThrowAnError) {
         // Assert that the metadata object contains the response
-        expect(metadata[serviceName]['index.handler response'])
+        expect(metadata[serviceNameWithAllFlagsEnabled]['index.handler response'])
           .toEqual(expectedCustomResponseValue);
       }
     }
+  }, TEST_CASE_TIMEOUT);
+
+  it('should have a custom name as the subsegment\'s name for the decorated method', async () => {
+    
+    const tracesWhenCustomSubsegmentNameInMethod = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCustomSubsegmentNameInMethod), invocations, 5);
+    
+    expect(tracesWhenCustomSubsegmentNameInMethod.length).toBe(invocations);
+
+    // Assess
+    for (let i = 0; i < invocations; i++) {
+      const trace = tracesWhenCustomSubsegmentNameInMethod[i];
+
+      /**
+       * Expect the trace to have 5 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       * 3. DynamoDB (AWS::DynamoDB)
+       * 4. DynamoDB Table (AWS::DynamoDB::Table)
+       * 5. Remote call (httpbin.org)
+       */
+      expect(trace.Segments.length).toBe(5);
+      const invocationSubsegment = getInvocationSubsegment(trace);
+      
+      /**
+       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for PowerTool tracer)
+       * '## index.handler' subsegment should have 4 subsegments
+       * 1. DynamoDB (PutItem on the table)
+       * 2. DynamoDB (PutItem overhead)
+       * 3. httpbin.org (Remote call)
+       * 4. '### mySubsegment' (method decorator with custom name)
+       */
+      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+      expect(handlerSubsegment.name).toBe('## index.handlerWithCustomSubsegmentNameInMethod');
+      expect(handlerSubsegment?.subsegments).toHaveLength(4);
+
+      if (!handlerSubsegment.subsegments) {
+        fail('"## index.handler" subsegment should have subsegments');
+      }
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', expectedCustomSubSegmentName ]);
+      expect(subsegments.get('DynamoDB')?.length).toBe(2);
+      expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get(expectedCustomSubSegmentName)?.length).toBe(1);
+      expect(subsegments.get('other')?.length).toBe(0);
+      
+      const shouldThrowAnError = (i === (invocations - 1));
+      if (shouldThrowAnError) {
+        assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
+      }
+    }
+
   }, TEST_CASE_TIMEOUT);
 });
 

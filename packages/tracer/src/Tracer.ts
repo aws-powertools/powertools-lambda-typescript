@@ -2,7 +2,7 @@ import { Handler } from 'aws-lambda';
 import { AsyncHandler, SyncHandler, Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { HandlerMethodDecorator, TracerOptions, HandlerOptions, MethodDecorator } from './types';
+import { HandlerMethodDecorator, TracerOptions, MethodDecorator, CaptureLambdaHandlerOptions, CaptureMethodOptions } from './types';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
@@ -338,8 +338,9 @@ class Tracer extends Utility implements TracerInterface {
    * ```
    * 
    * @decorator Class
+   * @param options - (_optional_) Options for the decorator
    */
-  public captureLambdaHandler(options?: HandlerOptions): HandlerMethodDecorator {
+  public captureLambdaHandler(options?: CaptureLambdaHandlerOptions): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
@@ -418,8 +419,9 @@ class Tracer extends Utility implements TracerInterface {
    * ```
    * 
    * @decorator Class
+   * @param options - (_optional_) Options for the decorator
    */
-  public captureMethod(options?: HandlerOptions): MethodDecorator {
+  public captureMethod(options?: CaptureMethodOptions): MethodDecorator {
     return (_target, propertyKey, descriptor) => {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -435,8 +437,9 @@ class Tracer extends Utility implements TracerInterface {
         }
 
         const methodName = String(propertyKey);
+        const subsegmentName = options?.subSegmentName ? options.subSegmentName : `### ${methodName}`;
 
-        return tracerRef.provider.captureAsyncFunc(`### ${methodName}`, async subsegment => {
+        return tracerRef.provider.captureAsyncFunc(subsegmentName, async subsegment => {
           let result;
           try {
             result = await originalMethod.apply(this, [...args]);

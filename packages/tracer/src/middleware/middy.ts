@@ -1,7 +1,7 @@
 import type middy from '@middy/core';
 import type { Tracer } from '../Tracer';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
-import type { HandlerOptions } from '../types';
+import type { CaptureLambdaHandlerOptions } from '../types';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
@@ -25,9 +25,10 @@ import type { HandlerOptions } from '../types';
  * ```
  * 
  * @param target - The Tracer instance to use for tracing
+ * @param options - (_optional_) Options for the middleware
  * @returns middleware object - The middy middleware object
  */
-const captureLambdaHandler = (target: Tracer, options?: HandlerOptions): middy.MiddlewareObj => {
+const captureLambdaHandler = (target: Tracer, options?: CaptureLambdaHandlerOptions): middy.MiddlewareObj => {
   let lambdaSegment: Subsegment | Segment;
 
   const open = (): void => {

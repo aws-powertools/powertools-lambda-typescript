@@ -244,7 +244,7 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
 
     class Lambda implements LambdaInterface {
         // Decorate your class method
-        @tracer.captureMethod()
+        @tracer.captureMethod() // (1)
         public getChargeId(): string {
             /* ... */
             return 'foo bar';
@@ -256,10 +256,11 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
     }
      
     const handlerClass = new Lambda();
-    export const handler = handlerClass.handler.bind(handlerClass); // (1)
+    export const handler = handlerClass.handler.bind(handlerClass); // (2)
     ```
 
-    1. Binding your handler method allows your handler to access `this`.
+    1. You can set a custom name for the subsegment by passing `subSegmentName` to the decorator, like: `@tracer.captureMethod({ subSegmentName: '### myCustomMethod' })`.
+    2. Binding your handler method allows your handler to access `this`.
 
 === "Manual"
 

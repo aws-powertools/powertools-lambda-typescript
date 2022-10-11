@@ -1399,6 +1399,42 @@ describe('Class: Tracer', () => {
 
     });
 
+    test('when used as decorator and with a custom subSegmentName, it sets the correct name for the subsegment', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
+      class Lambda implements LambdaInterface {
+
+        @tracer.captureMethod({ subSegmentName: '#### myCustomMethod' })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(some: string): Promise<string> {
+          return new Promise((resolve, _reject) => setTimeout(() => resolve(some), 3000));
+        }
+
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
+          const result = await this.dummyMethod('foo bar');
+          
+          return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
+        }
+
+      }
+
+      // Act
+      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
+      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('#### myCustomMethod', expect.anything());
+
+    });
+
   });
 
   describe('Method: captureAWS', () => {

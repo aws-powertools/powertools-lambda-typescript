@@ -1,4 +1,4 @@
-import { HandlerMethodDecorator, MethodDecorator } from './types';
+import { CaptureLambdaHandlerOptions, CaptureMethodOptions, HandlerMethodDecorator, MethodDecorator } from './types';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
 interface TracerInterface {
@@ -9,8 +9,8 @@ interface TracerInterface {
   captureAWS<T>(aws: T): void | T
   captureAWSv3Client<T>(service: T): void | T
   captureAWSClient<T>(service: T): void | T
-  captureLambdaHandler(): HandlerMethodDecorator
-  captureMethod(): MethodDecorator
+  captureLambdaHandler(options?: CaptureLambdaHandlerOptions): HandlerMethodDecorator
+  captureMethod(options?: CaptureMethodOptions): MethodDecorator
   getSegment(): Segment | Subsegment
   isTracingEnabled(): boolean
   putAnnotation: (key: string, value: string | number | boolean) => void

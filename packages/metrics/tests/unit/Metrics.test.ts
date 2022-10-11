@@ -371,6 +371,32 @@ describe('Class: Metrics', () => {
       }
     });
 
+    test('Error should not be thrown on empty metrics if throwOnEmptyMetrics is set to false', async () => {
+      expect.assertions(1);
+
+      const metrics = new Metrics({ namespace: 'test' });
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics({ throwOnEmptyMetrics: false })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
+          return;
+        }
+      }
+
+      try {
+        await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      } catch (e) {
+        fail(`Should not throw but got the following Error: ${e}`);
+      }
+      const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
+    });
+
     test('Error should be thrown on empty metrics when throwOnEmptyMetrics() is called', async () => {
       expect.assertions(1);
 

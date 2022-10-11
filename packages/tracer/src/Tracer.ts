@@ -422,7 +422,7 @@ class Tracer extends Utility implements TracerInterface {
    * @param options - (_optional_) Options for the decorator
    */
   public captureMethod(options?: CaptureMethodOptions): MethodDecorator {
-    return (_target, _propertyKey, descriptor) => {
+    return (_target, propertyKey, descriptor) => {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
@@ -436,14 +436,15 @@ class Tracer extends Utility implements TracerInterface {
           return originalMethod.apply(this, [...args]);
         }
 
-        const subsegmentName = options?.subSegmentName ? options.subSegmentName : `### ${originalMethod.name}`;
+        const methodName = String(propertyKey);
+        const subsegmentName = options?.subSegmentName ? options.subSegmentName : `### ${propertyKey}`;
 
         return tracerRef.provider.captureAsyncFunc(subsegmentName, async subsegment => {
           let result;
           try {
             result = await originalMethod.apply(this, [...args]);
             if (options?.captureResponse ?? true) {
-              tracerRef.addResponseAsMetadata(result, originalMethod.name);
+              tracerRef.addResponseAsMetadata(result, methodName);
             }
           } catch (error) {
             tracerRef.addErrorAsMetadata(error as Error);

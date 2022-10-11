@@ -14,7 +14,7 @@ on:
         required: true
   # Automatic trigger after release
   workflow_run:
-    workflows: ["release"]
+    workflows: ["Make Release"]
     types:
       - completed
 

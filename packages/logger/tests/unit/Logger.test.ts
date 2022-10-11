@@ -1166,6 +1166,48 @@ describe('Class: Logger', () => {
 
     });
 
+    test('when used as decorator on an async method, the method is awaited correctly', async () => {
+
+      // Prepare
+      const injectLambdaContextAfterOrOnErrorMock = jest.fn().mockReturnValue('worked');
+      // Temporarily override the cleanup static method so that we can "spy" on it.
+      // This method is always called after the handler has returned in the decorator
+      // implementation.
+      Logger.injectLambdaContextAfterOrOnError = injectLambdaContextAfterOrOnErrorMock;
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+      class LambdaFunction implements LambdaInterface {
+        @logger.injectLambdaContext()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler<TResult>(_event: unknown, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+          await this.dummyMethod();
+          logger.info('This is a DEBUG log');
+
+          return;
+        }
+
+        private async dummyMethod(): Promise<void> {
+          return;
+        }
+      }
+
+      // Act
+      const lambda = new LambdaFunction();
+      const handler = lambda.handler.bind(lambda);
+      await handler({}, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      // Here we assert that the logger.info method is called before the cleanup function that should awlays 
+      // be called after the handler has returned. If logger.info is called after it means the decorator is
+      // NOT awaiting the handler which would cause the test to fail.
+      expect(consoleSpy.mock.invocationCallOrder[0]).toBeLessThan(injectLambdaContextAfterOrOnErrorMock.mock.invocationCallOrder[0]);
+
+    });
+
   });
 
   describe('Method: refreshSampleRateCalculation', () => {

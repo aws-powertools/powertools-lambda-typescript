@@ -958,6 +958,56 @@ describe('Class: Tracer', () => {
       expect(await handler({}, context, () => console.log('Lambda invoked!'))).toEqual('memberVariable:someValue');
 
     });
+
+    test('when used as decorator on an async method, the method is awaited correctly', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+      
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const subsegmentCloseSpy = jest.spyOn(newSubsegment, 'close').mockImplementation();
+      createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
+
+      class Lambda implements LambdaInterface {
+        public async dummyMethod(): Promise<void> {
+          return;
+        }
+
+        @tracer.captureLambdaHandler()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<void> {
+          await this.dummyMethod();
+          this.otherDummyMethod();
+
+          return;
+        }
+
+        public otherDummyMethod(): void {
+          return;
+        }
+
+      }
+      
+      // Act
+      const lambda = new Lambda();
+      const otherDummyMethodSpy = jest.spyOn(lambda, 'otherDummyMethod').mockImplementation();
+      const handler = lambda.handler.bind(lambda);
+      await handler({}, context, () => console.log('Lambda invoked!'));
+
+      // Assess
+      // Here we assert that the otherDummyMethodSpy method is called before the cleanup logic (inside the finally of decorator)
+      // that should always be called after the handler has returned. If otherDummyMethodSpy is called after it means the
+      // decorator is NOT awaiting the handler which would cause the test to fail.
+      const dummyCallOrder = subsegmentCloseSpy.mock.invocationCallOrder[0];
+      const otherDummyCallOrder = otherDummyMethodSpy.mock.invocationCallOrder[0];
+      expect(otherDummyCallOrder).toBeLessThan(dummyCallOrder);
+
+    });
+
   });
 
   describe('Method: captureMethod', () => {
@@ -1238,6 +1288,53 @@ describe('Class: Tracer', () => {
       // Act / Assess
       const lambda = new Lambda('someValue');
       expect(await lambda.dummyMethod()).toEqual('memberVariable:someValue');
+
+    });
+
+    test('when used as decorator on an async method, the method is awaited correctly', async () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
+
+      jest.spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => newSubsegment);
+      setContextMissingStrategy(() => null);
+      const subsegmentCloseSpy = jest.spyOn(newSubsegment, 'close').mockImplementation();
+      createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
+
+      class Lambda implements LambdaInterface {
+        @tracer.captureMethod()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async dummyMethod(): Promise<void> {
+          return;
+        }
+
+        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<void> {
+          await this.dummyMethod();
+          this.otherDummyMethod();
+
+          return;
+        }
+
+        public otherDummyMethod(): void {
+          return;
+        }
+      }
+
+      // Act
+      const lambda = new Lambda();
+      const otherDummyMethodSpy = jest.spyOn(lambda, 'otherDummyMethod').mockImplementation();
+      const handler = lambda.handler.bind(lambda);
+      await handler({}, context, () => console.log('Lambda invoked!'));
+      
+      // Here we assert that the subsegment.close() (inside the finally of decorator) is called before the other otherDummyMethodSpy method
+      // that should always be called after the handler has returned. If subsegment.close() is called after it means the
+      // decorator is NOT awaiting the method which would cause the test to fail.
+      const dummyCallOrder = subsegmentCloseSpy.mock.invocationCallOrder[0];
+      const otherDummyCallOrder = otherDummyMethodSpy.mock.invocationCallOrder[0];
+      expect(dummyCallOrder).toBeLessThan(otherDummyCallOrder);
 
     });
 

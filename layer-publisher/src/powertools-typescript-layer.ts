@@ -32,7 +32,7 @@ export class PowerToolsTypeScriptLayer extends lambda.LayerVersion {
               }
 
               const commands = [
-                'mkdir nodejs && cd $_',
+                'mkdir nodejs && cd nodejs',
                 'npm init -y',
                 `npm install @aws-lambda-powertools/commons@${
                   props?.version ?? 'latest'

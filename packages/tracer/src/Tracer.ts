@@ -437,7 +437,7 @@ class Tracer extends Utility implements TracerInterface {
         }
 
         const methodName = String(propertyKey);
-        const subsegmentName = options?.subSegmentName ? options.subSegmentName : `### ${propertyKey}`;
+        const subsegmentName = options?.subSegmentName ? options.subSegmentName : `### ${methodName}`;
 
         return tracerRef.provider.captureAsyncFunc(subsegmentName, async subsegment => {
           let result;

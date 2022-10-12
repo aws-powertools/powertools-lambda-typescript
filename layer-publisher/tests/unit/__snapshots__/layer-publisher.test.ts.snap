@@ -32,8 +32,9 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "dfbb723532549b2040a663602bbe51ab6b3f16dfd063eafc5bbd7e64b13f997d.zip",
+          "S3Key": "c2f621503b147cecccf2e6cc6df420a8f11ee29ae042d2c1f523cf5db3f47ca2.zip",
         },
+        "Description": "Lambda Powertools for TypeScript version 1.0.1",
         "LayerName": "AWSLambdaPowertoolsTypeScript",
       },
       "Type": "AWS::Lambda::LayerVersion",

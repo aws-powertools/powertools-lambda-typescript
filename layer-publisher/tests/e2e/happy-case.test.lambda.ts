@@ -31,7 +31,7 @@ exports.handler = function (_event: never, _ctx: unknown): void {
 
     if (packageJSON.version != process.env.POWERTOOLS_PACKAGE_VERSION) {
       throw new Error(
-        `Package version mismatch: \${packageJSON.version} != \${process.env.POWERTOOLS_PACKAGE_VERSION}`
+        `Package version mismatch: ${packageJSON.version} != ${process.env.POWERTOOLS_PACKAGE_VERSION}`
       );
     }
   } catch (error) {

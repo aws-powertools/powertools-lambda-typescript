@@ -2,6 +2,7 @@ import * as path from 'path';
 import { aws_lambda as lambda } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { execSync } from 'child_process';
+import { Md5 } from 'ts-md5';
 
 export interface PowerToolsTypeScriptLayerProps {
   /**
@@ -17,10 +18,28 @@ export interface PowerToolsTypeScriptLayerProps {
 
 export class PowerToolsTypeScriptLayer extends lambda.LayerVersion {
   public constructor(scope: Construct, id: string, props?: PowerToolsTypeScriptLayerProps) {
+    const version = props?.version ?? 'latest';
+    console.log(`publishing layer ${props?.layerVersionName} version : ${version}`);
+
+    const commands = [
+      'mkdir nodejs',
+      'cd nodejs',
+      'npm init -y',
+      `npm install --save \
+        @aws-lambda-powertools/commons@${version} \
+        @aws-lambda-powertools/logger@${version} \
+        @aws-lambda-powertools/metrics@${version} \
+        @aws-lambda-powertools/tracer@${version}`,
+      'rm package.json package-lock.json',
+    ];
+    const commandJoined = commands.join(' && ');
+
     super(scope, id, {
       layerVersionName: props?.layerVersionName,
+      description: `Lambda Powertools for TypeScript version ${props?.version}`,
       compatibleRuntimes: [ lambda.Runtime.NODEJS_12_X, lambda.Runtime.NODEJS_14_X, lambda.Runtime.NODEJS_16_X ],
       code: lambda.Code.fromAsset(path.join(__dirname, '.'), {
+        assetHash: Md5.hashStr(commandJoined),
         bundling: {
           image: lambda.Runtime.NODEJS_12_X.bundlingImage,
           local: {
@@ -31,21 +50,7 @@ export class PowerToolsTypeScriptLayer extends lambda.LayerVersion {
                 return false;
               }
 
-              const commands = [
-                'mkdir nodejs && cd nodejs',
-                'npm init -y',
-                `npm install @aws-lambda-powertools/commons@${
-                  props?.version ?? 'latest'
-                } @aws-lambda-powertools/logger@${props?.version ?? 'latest'} @aws-lambda-powertools/metrics@${
-                  props?.version ?? 'latest'
-                } @aws-lambda-powertools/tracer@${props?.version ?? 'latest'}`,
-                'rm package.json package-lock.json',
-                'cd ..',
-                `cp -a nodejs ${outputDir}`,
-                `rm -rf nodejs`,
-              ];
-
-              execSync(commands.join(' && '));
+              execSync(commandJoined, { cwd: outputDir });
 
               return true;
             },

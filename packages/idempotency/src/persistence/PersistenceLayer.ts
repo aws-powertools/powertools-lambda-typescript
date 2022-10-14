@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { createHash, Hash } from 'crypto';
-import { IdempotencyRecordStatus } from 'types/IdempotencyRecordStatus';
+import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
 import { EnvironmentVariablesService } from '../EnvironmentVariablesService';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { PersistenceLayerInterface } from './PersistenceLayerInterface';
@@ -14,16 +14,16 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
 
   private functionName: string = '';
 
-  private hashFunction: Hash;
+  private hashFunction: string;
 
   public constructor() { 
     this.setEnvVarsService();
     this.expiresAfterSeconds = 60 * 60; //one hour is the default expiration
-    this.hashFunction = createHash('md5');
+    this.hashFunction = 'md5';
         
   }
   public configure(functionName: string = ''): void {
-    this.functionName = this.getEnvVarsService().getLambdaFunctionName + '.' + functionName;
+    this.functionName = this.getEnvVarsService().getLambdaFunctionName() + '.' + functionName;
   }
 
   public async deleteRecord(): Promise<void> { }
@@ -38,7 +38,7 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
    */
   public async saveInProgress(data: unknown): Promise<void> { 
     const idempotencyRecord: IdempotencyRecord = 
-    new IdempotencyRecord(this.getHashedIdempotencyKey(JSON.stringify(data)),
+    new IdempotencyRecord(this.getHashedIdempotencyKey(data),
       IdempotencyRecordStatus.INPROGRESS,
       this.getExpiryTimestamp(),
       undefined,
@@ -48,17 +48,20 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
 
     return this._putRecord(idempotencyRecord);
   }
+
   public async saveSuccess(): Promise<void> { }
 
-  protected abstract _deleteRecord(): Promise<void>;
-  protected abstract _getRecord(): Promise<IdempotencyRecord>;
+  protected abstract _deleteRecord(record: IdempotencyRecord): Promise<void>;
+  protected abstract _getRecord(idempotencyKey: string): Promise<IdempotencyRecord>;
   protected abstract _putRecord(record: IdempotencyRecord): Promise<void>;
   protected abstract _updateRecord(record: IdempotencyRecord): Promise<void>;
 
   private generateHash(data: string): string{
-    this.hashFunction.update(data);
+    const hash: Hash = createHash('md5');
+    console.log('the data is: ', data);
+    hash.update(data);
     
-    return this.hashFunction.digest('base64');
+    return hash.digest('base64');
   }
 
   /**
@@ -75,12 +78,12 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
     return currentTime + this.expiresAfterSeconds;
   }
 
-  private getHashedIdempotencyKey(data: string): string {
+  private getHashedIdempotencyKey(data: unknown): string {
     if (!data){
       console.warn('No data found for idempotency key');
     }
     
-    return this.functionName + '#' + this.generateHash(data);
+    return this.functionName + '#' + this.generateHash(JSON.stringify(data));
   }
 
   /**

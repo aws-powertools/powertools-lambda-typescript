@@ -49,7 +49,19 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
     return this._putRecord(idempotencyRecord);
   }
 
-  public async saveSuccess(): Promise<void> { }
+  public async saveSuccess(data: unknown, result: unknown): Promise<void> { 
+    const idempotencyRecord: IdempotencyRecord = 
+    new IdempotencyRecord(this.getHashedIdempotencyKey(data),
+      IdempotencyRecordStatus.COMPLETED,
+      this.getExpiryTimestamp(),
+      undefined,
+      JSON.stringify(result),
+      undefined
+    );
+
+    this._updateRecord(idempotencyRecord);
+
+  }
 
   protected abstract _deleteRecord(record: IdempotencyRecord): Promise<void>;
   protected abstract _getRecord(idempotencyKey: string): Promise<IdempotencyRecord>;

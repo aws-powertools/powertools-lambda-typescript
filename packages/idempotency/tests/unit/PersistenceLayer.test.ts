@@ -14,6 +14,7 @@ jest.mock('crypto', () => ({
 
 const cryptoUpdateMock = jest.fn();
 const cryptoDigestMock = jest.fn();
+const mockDigest = 'hashDigest';
 
 describe('Class: Persistence Layer', ()=> {
 
@@ -34,7 +35,6 @@ describe('Class: Persistence Layer', ()=> {
   }
 
   describe('Method: saveInProgress', ()=> {
-    const mockDigest = 'hashDigest';
     beforeEach(()=> {
       putRecord.mockClear();
       (createHash as jest.MockedFunction<typeof createHash>).mockReturnValue(
@@ -101,6 +101,73 @@ describe('Class: Persistence Layer', ()=> {
 
       await persistenceLayer.saveInProgress('');
       expect(consoleSpy).toHaveBeenCalled();
+    });
+
+  });
+
+  describe('Method: saveSuccess', ()=> {
+    beforeEach(()=> {
+      updateRecord.mockClear();
+      (createHash as jest.MockedFunction<typeof createHash>).mockReturnValue(
+        {
+          update: cryptoUpdateMock,
+          digest: cryptoDigestMock
+        } as unknown as Hash
+      );
+    });
+
+    test('When called it updates the idempotency record to COMPLETED', async () => {
+      const data = 'someData';
+      const result = 'result';
+      const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
+
+      await persistenceLayer.saveSuccess(data, result);
+
+      const savedIdempotencyRecord: IdempotencyRecord = updateRecord.mock.calls[0][0];
+      expect(savedIdempotencyRecord.getStatus()).toBe(IdempotencyRecordStatus.COMPLETED);
+
+    });
+
+    test('When called it generates the idempotency key from the function name and a digest of the md5 hash of the data', async ()=> {
+      const data = 'someData';
+      const result = 'result';
+      const lambdaFunctionName = 'LambdaName';
+      jest.spyOn(EnvironmentVariablesService.prototype, 'getLambdaFunctionName').mockReturnValue(lambdaFunctionName);
+
+      const functionName = 'functionName';
+
+      const expectedIdempotencyKey = lambdaFunctionName + '.' + functionName + '#' + mockDigest;
+      const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure(functionName);
+
+      await persistenceLayer.saveSuccess(data, result);
+
+      const savedIdempotencyRecord: IdempotencyRecord = updateRecord.mock.calls[0][0];
+
+      expect(createHash).toHaveBeenCalledWith(
+        expect.stringMatching('md5'),
+      );
+      expect(cryptoUpdateMock).toHaveBeenCalledWith(expect.stringMatching(data));
+      expect(cryptoDigestMock).toHaveBeenCalledWith(
+        expect.stringMatching('base64')
+      );
+      expect(savedIdempotencyRecord.idempotencyKey).toEqual(expectedIdempotencyKey);
+    });
+
+    test('When called it sets the expiry timestamp to one hour in the future', async ()=> {
+      const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
+      const data = 'someData';
+      const result = 'result';
+      const currentMillisTime = 3000;
+      const currentSeconds = currentMillisTime / 1000;
+      const oneHourSeconds = 60 * 60;
+      jest.spyOn(Date, 'now').mockReturnValue(currentMillisTime);
+
+      await persistenceLayer.saveSuccess(data, result);
+    
+      const savedIdempotencyRecord: IdempotencyRecord = updateRecord.mock.calls[0][0];
+      expect(savedIdempotencyRecord.expiryTimestamp).toEqual(currentSeconds + oneHourSeconds);
+
     });
 
   });

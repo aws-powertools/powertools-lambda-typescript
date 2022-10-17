@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { createHash, Hash } from 'crypto';
+import { BinaryToTextEncoding, createHash, Hash } from 'crypto';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
 import { EnvironmentVariablesService } from '../EnvironmentVariablesService';
 import { IdempotencyRecord } from './IdempotencyRecord';
@@ -14,12 +14,15 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
 
   private functionName: string = '';
 
+  private hashDigest: BinaryToTextEncoding;
+
   private hashFunction: string;
 
   public constructor() { 
     this.setEnvVarsService();
     this.expiresAfterSeconds = 60 * 60; //one hour is the default expiration
     this.hashFunction = 'md5';
+    this.hashDigest = 'base64';
         
   }
   public configure(functionName: string = ''): void {
@@ -27,8 +30,11 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
   }
 
   public async deleteRecord(): Promise<void> { }
-  public async getRecord(): Promise<IdempotencyRecord> {
-    return Promise.resolve({} as IdempotencyRecord);
+  
+  public async getRecord(data: unknown): Promise<IdempotencyRecord> {
+    const idempotencyKey: string = this.getHashedIdempotencyKey(data);
+
+    return this._getRecord(idempotencyKey);
   }
 
   /**
@@ -69,11 +75,10 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
   protected abstract _updateRecord(record: IdempotencyRecord): Promise<void>;
 
   private generateHash(data: string): string{
-    const hash: Hash = createHash('md5');
-    console.log('the data is: ', data);
+    const hash: Hash = createHash(this.hashFunction);
     hash.update(data);
     
-    return hash.digest('base64');
+    return hash.digest(this.hashDigest);
   }
 
   /**

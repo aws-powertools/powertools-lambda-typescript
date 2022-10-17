@@ -171,4 +171,30 @@ describe('Class: Persistence Layer', ()=> {
     });
 
   });
+
+  describe('Method: getRecord', ()=> {
+    beforeEach(()=> {
+      putRecord.mockClear();
+      (createHash as jest.MockedFunction<typeof createHash>).mockReturnValue(
+        {
+          update: cryptoUpdateMock,
+          digest: cryptoDigestMock.mockReturnValue(mockDigest)
+        } as unknown as Hash
+      );
+    });
+    test('When called it gets the record for the idempotency key for the data passed in', ()=> {
+      const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
+      const data = 'someData';
+      const lambdaFunctionName = 'LambdaName';
+      jest.spyOn(EnvironmentVariablesService.prototype, 'getLambdaFunctionName').mockReturnValue(lambdaFunctionName);
+
+      const functionName = 'functionName';
+      const expectedIdempotencyKey = lambdaFunctionName + '.' + functionName + '#' + mockDigest;
+      persistenceLayer.configure(functionName);
+
+      persistenceLayer.getRecord(data);
+
+      expect(getRecord).toHaveBeenCalledWith(expectedIdempotencyKey);
+    });
+  });
 });

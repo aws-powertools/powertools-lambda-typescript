@@ -201,7 +201,7 @@ In each case, the printed log will look like this:
 When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent` or via `POWERTOOLS_LOGGER_LOG_EVENT` env var set to `true`.
 
 ???+ warning
-This is disabled by default to prevent sensitive info being logged
+	This is disabled by default to prevent sensitive info being logged
 
 === "Middy Middleware"
 

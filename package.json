@@ -27,7 +27,7 @@
     "lerna-prepare": "lerna exec -- npm run build",
     "lerna-prepublishOnly": "lerna exec -- npm test && lerna exec -- npm run lint",
     "lerna-preversion": "lerna exec -- npm run lint",
-    "lerna-version": "lerna exec -- npm run format && git add -A src",
+    "lerna-version": "lerna exec -- npm run lint-fix && git add -A src",
     "postversion": "git push && git push --tags",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",
     "docs-buildDockerImage": "docker build -t powertool-typescript/docs ./docs/",

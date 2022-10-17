@@ -1,11 +1,15 @@
-import { ConfigService } from '.';
+import { ConfigServiceInterface } from './ConfigServiceInterface';
+import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
-class EnvironmentVariablesService extends ConfigService {
+class EnvironmentVariablesService extends CommonEnvironmentVariablesService implements ConfigServiceInterface {
 
   // Environment variables
   private awsExecutionEnv = 'AWS_EXECUTION_ENV';
   private samLocalVariable = 'AWS_SAM_LOCAL';
-  private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
+  private tracerCaptureErrorVariable = 'POWERTOOLS_TRACER_CAPTURE_ERROR';
+  private tracerCaptureHTTPsRequestsVariable = 'POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS';
+  private tracerCaptureResponseVariable = 'POWERTOOLS_TRACER_CAPTURE_RESPONSE';
+  private tracingEnabledVariable = 'POWERTOOLS_TRACE_ENABLED';
 
   public get(name: string): string {
     return process.env[name]?.trim() || '';
@@ -40,7 +44,7 @@ class EnvironmentVariablesService extends ConfigService {
   }
 
   public getXrayTraceId(): string {
-    return this.get(this.xRayTraceIdVariable);
+    return super.getXrayTraceId();
   }
 }
 

@@ -19,38 +19,6 @@ describe('Class: EnvironmentVariablesService', () => {
     process.env = ENVIRONMENT_VARIABLES;
   });
 
-  describe('Method: get', () => {
-
-    test('When the variable IS present, it returns the value of a runtime variable', () => {
-
-      // Prepare
-      process.env.CUSTOM_VARIABLE = 'my custom value';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.get('CUSTOM_VARIABLE');
-
-      // Assess
-      expect(value).toEqual('my custom value');
-
-    });
-
-    test('When the variable IS NOT present, it returns an empty string', () => {
-
-      // Prepare
-      delete process.env.CUSTOM_VARIABLE;
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.get('CUSTOM_VARIABLE');
-
-      // Assess
-      expect(value).toEqual('');
-
-    });
-
-  });
-
   describe('Method: getAwsRegion', () => {
 
     test('It returns the value of the environment variable AWS_REGION', () => {
@@ -248,40 +216,6 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(0.01);
-    });
-
-  });
-
-  describe('Method: getServiceName', () => {
-
-    test('It returns the value of the environment variable POWERTOOLS_SERVICE_NAME', () => {
-
-      // Prepare
-      process.env.POWERTOOLS_SERVICE_NAME = 'shopping-cart-api';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getServiceName();
-
-      // Assess
-      expect(value).toEqual('shopping-cart-api');
-    });
-
-  });
-
-  describe('Method: getXrayTraceId', () => {
-
-    test('It returns the value of the environment variable _X_AMZN_TRACE_ID', () => {
-
-      // Prepare
-      process.env._X_AMZN_TRACE_ID = 'abcd123456789';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getXrayTraceId();
-
-      // Assess
-      expect(value).toEqual('abcd123456789');
     });
 
   });

@@ -271,6 +271,23 @@ describe('Class: Tracer', () => {
 
   });
 
+  describe('Method: getRootXrayTraceId', () => {
+
+    test('when called, it returns the X-Ray trace ID', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+
+      // Act
+      const xRayTraceId = tracer.getRootXrayTraceId();
+
+      // Assess
+      expect(xRayTraceId).toBe('1-abcdef12-3456abcdef123456abcdef12');
+
+    });
+
+  });
+
   describe('Method: getSegment', () => {
 
     test('when called outside of a namespace or without parent segment, and tracing is enabled, it throws an error', () => {

@@ -12,6 +12,7 @@ interface TracerInterface {
   captureLambdaHandler(options?: CaptureLambdaHandlerOptions): HandlerMethodDecorator
   captureMethod(options?: CaptureMethodOptions): MethodDecorator
   getSegment(): Segment | Subsegment
+  getRootXrayTraceId(): string
   isTracingEnabled(): boolean
   putAnnotation: (key: string, value: string | number | boolean) => void
   putMetadata: (key: string, value: unknown, namespace?: string | undefined) => void

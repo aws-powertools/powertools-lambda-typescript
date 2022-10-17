@@ -30,7 +30,7 @@ Core utilities such as Tracer, Logger, Metrics, and Event Handler will be availa
 
 You can use Powertools through [AWS Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-concepts.html#gettingstarted-concepts-layer) or install it as your dependency via NPM:
 
-* **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:2**](#){: .copyMe}:clipboard:
+* **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3**](#){: .copyMe}:clipboard:
 * **NPM**: **`npm install @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics @aws-lambda-powertools/logger`**
 
 ???+ hint "Support this project by using Lambda Layers :heart:"
@@ -49,23 +49,23 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
     | Region | Layer ARN
     |--------------------------- | ---------------------------
-    | `us-east-1` | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `us-east-2` | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `us-west-1` | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `us-west-2` | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `ap-south-1` | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `ap-southeast-1` | [arn:aws:lambda:ap-southeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `eu-central-1` | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `eu-west-1` | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `eu-west-2` | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `eu-west-3` | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `eu-north-1` | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `ca-central-1` | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
-    | `sa-east-1` | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2](#){: .copyMe}:clipboard:
+    | `us-east-1` | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `us-east-2` | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `us-west-1` | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `us-west-2` | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `ap-south-1` | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `ap-southeast-1` | [arn:aws:lambda:ap-southeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `eu-central-1` | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `eu-west-1` | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `eu-west-2` | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `eu-west-3` | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `eu-north-1` | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `ca-central-1` | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
+    | `sa-east-1` | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3](#){: .copyMe}:clipboard:
 
 ??? question "Can't find our Lambda Layer for your preferred AWS region?"
     You can use our [CDK Layer Construct](https://github.com/aws-samples/cdk-lambda-powertools-python-layer){target="_blank"}, or NPM like you normally would for any other library.
@@ -79,7 +79,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
         Type: AWS::Serverless::Function
         Properties:
             Layers:
-                - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:2
+                - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
     ```
 
 === "Serverless framework"
@@ -89,7 +89,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 		hello:
 		  handler: lambda_function.lambda_handler
 		  layers:
-			- arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:2
+			- arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
     ```
 
 === "CDK"
@@ -105,7 +105,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
             const powertoolsLayer = lambda.LayerVersion.fromLayerVersionArn(
             this,
             'PowertoolsLayer',
-            `arn:aws:lambda:${cdk.Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:2`
+            `arn:aws:lambda:${cdk.Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3`
             );
             new lambda.Function(this, 'Function', {
             runtime: lambda.Runtime.NODEJS_16_X,
@@ -162,7 +162,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
       role          = aws_iam_role.iam_for_lambda.arn
       handler       = "index.test"
       runtime 		= "nodejs16.x"
-      layers 		= ["arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:2"]
+      layers 		= ["arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3"]
       source_code_hash = filebase64sha256("lambda_function_payload.zip")
     }
     ```
@@ -178,7 +178,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
     ? Do you want to configure advanced settings? Yes
     ...
     ? Do you want to enable Lambda layers for this function? Yes
-    ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2
+    ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
     ❯ amplify push -y
     # Updating an existing function and add the layer
     ❯ amplify update function
@@ -187,7 +187,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
     - Name: <NAME-OF-FUNCTION>
     ? Which setting do you want to update? Lambda layers configuration
     ? Do you want to enable Lambda layers for this function? Yes
-    ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:2
+    ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
     ? Do you want to edit the local lambda function now? No
     ```
 
@@ -195,7 +195,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 	Change `{region}` to your AWS region, e.g. `eu-west-1`
 
     ```bash title="AWS CLI"
-	aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:2 --region {region}
+	aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3 --region {region}
     ```
 
     The pre-signed URL to download this Lambda Layer will be within `Location` key.

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.1...v1.3.0) (2022-10-17)
+
+
+### Features
+
+* publish lib as Lambda Layer ([#1095](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1095)) ([83f6efb](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/83f6efba1db32ba2dc8fff026e258b5de66783e0))
+
+
+### Reverts
+
+* Revert "chore(release): v1.3.0 [skip ci]" ([237b99f](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/237b99f9f6eff5e6e26d779603cf13cd4422c156))
+
+
+
+
+
 ## [1.2.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.0...v1.2.1) (2022-08-25)
 
 **Note:** Version bump only for package cdk-app

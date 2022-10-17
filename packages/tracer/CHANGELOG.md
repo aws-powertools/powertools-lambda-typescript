@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.1...v1.3.0) (2022-10-17)
+
+
+### Bug Fixes
+
+* **all:** update version command to use lint-fix ([#1119](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1119)) ([6f14fb3](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/6f14fb3229882b1dd0c20d18c87a542993432da9))
+* captureMethod correctly detect method name when used with external decorators ([#1109](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1109)) ([a574406](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/a574406134b65c17f56dfb3d3130aa237ece4160))
+
+
+### Features
+
+* **tracer:** specify subsegment name when capturing class method ([#1092](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1092)) ([d4174eb](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/d4174eb7a894215e2d37f306016429de3bde8029))
+
+
+### Reverts
+
+* Revert "chore(release): v1.3.0 [skip ci]" ([237b99f](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/237b99f9f6eff5e6e26d779603cf13cd4422c156))
+
+
+
+
+
 ## [1.2.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.0...v1.2.1) (2022-08-25)
 
 **Note:** Version bump only for package @aws-lambda-powertools/tracer

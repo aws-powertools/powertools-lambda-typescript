@@ -76,10 +76,10 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
     ```yaml hl_lines="5"
     MyLambdaFunction:
-        Type: AWS::Serverless::Function
+      Type: AWS::Serverless::Function
         Properties:
-            Layers:
-                - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
+          Layers:
+            - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
     ```
 
 === "Serverless framework"
@@ -89,56 +89,52 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 		hello:
 		  handler: lambda_function.lambda_handler
 		  layers:
-			- arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
+			  - arn:aws:lambda:${aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
     ```
 
 === "CDK"
 
-    ```typescript hl_lines="11 16"
+    ```typescript hl_lines="13 19"
     import * as cdk from 'aws-cdk-lib';
     import { Construct } from 'constructs';
     import * as lambda from 'aws-cdk-lib/aws-lambda';
+    
     export class SampleFunctionWithLayer extends Construct {
-        constructor(scope: Construct, id: string) {
-            super(scope, id);
-            // Create a Layer with AWS Lambda Powertools for TypeScript
-            const powertoolsLayer = lambda.LayerVersion.fromLayerVersionArn(
-            this,
-            'PowertoolsLayer',
-            `arn:aws:lambda:${cdk.Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3`
-            );
-            new lambda.Function(this, 'Function', {
-            runtime: lambda.Runtime.NODEJS_16_X,
-            // Add the Layer to a Lambda function
-            layers: [powertoolsLayer],
-            code: lambda.Code.fromInline(`
-            const { Logger } = require('@aws-lambda-powertools/logger');
-            const { Metrics } = require('@aws-lambda-powertools/metrics');
-            const { Tracer } = require('@aws-lambda-powertools/tracer');
-            const logger = new Logger({logLevel: 'DEBUG'});
-            const metrics = new Metrics();
-            const tracer = new Tracer();
-            exports.handler = function(event, ctx) {
-                logger.debug("Hello World!"); 
-            }`),
-            handler: 'index.handler',
-            });
-        }
+      constructor(scope: Construct, id: string) {
+        super(scope, id);
+      
+        // Create a Layer with AWS Lambda Powertools for TypeScript
+        const powertoolsLayer = lambda.LayerVersion.fromLayerVersionArn(
+          this,
+          'PowertoolsLayer',
+          `arn:aws:lambda:${cdk.Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3`
+        );
+        
+        new lambda.Function(this, 'Function', {
+          runtime: lambda.Runtime.NODEJS_16_X,
+          // Add the Layer to a Lambda function
+          layers: [powertoolsLayer],
+          code: lambda.Code.fromInline(`...`),
+          handler: 'index.handler',
+        });
+      }
     }
     ```
 
 === "Terraform"
 
-    ```terraform hl_lines="9 38"
+    ```terraform hl_lines="9 36"
     terraform {
       required_version = "~> 1.0.5"
       required_providers {
         aws = "~> 3.50.0"
       }
     }
+
     provider "aws" {
-      region  = "{region}"
+      region  = "{aws::region}"
     }
+
     resource "aws_iam_role" "iam_for_lambda" {
       name = "iam_for_lambda"
       assume_role_policy = <<EOF
@@ -154,15 +150,16 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
             }
           ]
         }
-        EOF
-	}
+      EOF
+	  }
+    
     resource "aws_lambda_function" "test_lambda" {
       filename      = "lambda_function_payload.zip"
       function_name = "lambda_function_name"
       role          = aws_iam_role.iam_for_lambda.arn
-      handler       = "index.test"
+      handler       = "index.handler"
       runtime 		= "nodejs16.x"
-      layers 		= ["arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3"]
+      layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3"]
       source_code_hash = filebase64sha256("lambda_function_payload.zip")
     }
     ```
@@ -178,7 +175,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
     ? Do you want to configure advanced settings? Yes
     ...
     ? Do you want to enable Lambda layers for this function? Yes
-    ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
+    ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
     ❯ amplify push -y
     # Updating an existing function and add the layer
     ❯ amplify update function
@@ -187,15 +184,13 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
     - Name: <NAME-OF-FUNCTION>
     ? Which setting do you want to update? Lambda layers configuration
     ? Do you want to enable Lambda layers for this function? Yes
-    ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
+    ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3
     ? Do you want to edit the local lambda function now? No
     ```
 
 === "Get the Layer .zip contents"
-	Change `{region}` to your AWS region, e.g. `eu-west-1`
-
     ```bash title="AWS CLI"
-	aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3 --region {region}
+	  aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3 --region {region}
     ```
 
     The pre-signed URL to download this Lambda Layer will be within `Location` key.
@@ -206,23 +201,23 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
 If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools`   from being bundled since the packages will be brought by the Layer:
 
-=== "SAM" (check the [doc](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build-typescript.html) for more details)
+=== "SAM (check the [doc](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build-typescript.html) for more details)"
 
     ```yaml hl_lines="5"
     MyLambdaFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            ...
-            Metadata: 
-              # Manage esbuild properties
-              BuildMethod: esbuild
-              BuildProperties:
-                Minify: true
-                External:
-                - '@aws-lambda-powertools/commons'
-                - '@aws-lambda-powertools/logger'
-                - '@aws-lambda-powertools/metrics'
-                - '@aws-lambda-powertools/tracer'
+      Type: AWS::Serverless::Function
+      Properties:
+        ...
+        Metadata: 
+          # Manage esbuild properties
+          BuildMethod: esbuild
+          BuildProperties:
+          Minify: true
+          External:
+            - '@aws-lambda-powertools/commons'
+            - '@aws-lambda-powertools/logger'
+            - '@aws-lambda-powertools/metrics'
+            - '@aws-lambda-powertools/tracer'
     ```
 
 === "Serverless framework (check the [doc](https://floydspace.github.io/serverless-esbuild/) for more details)"
@@ -240,17 +235,17 @@ If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powe
 === "CDK (check the [doc](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.BundlingOptions.html#externalmodules) for more details)"
 
     ```typescript hl_lines="11 16"
-            new awsLambdaNodejs.NodejsFunction(this, 'Function', {
-              ...
-              bundling: {
-                externalModules: [
-                  '@aws-lambda-powertools/commons',
-                  '@aws-lambda-powertools/logger',
-                  '@aws-lambda-powertools/metrics',
-                  '@aws-lambda-powertools/tracer',
-                ],
-              }
-            });
+    new awsLambdaNodejs.NodejsFunction(this, 'Function', {
+      ...
+      bundling: {
+        externalModules: [
+          '@aws-lambda-powertools/commons',
+          '@aws-lambda-powertools/logger',
+          '@aws-lambda-powertools/metrics',
+          '@aws-lambda-powertools/tracer',
+        ],
+      }
+    });
     ```
 
 ### NPM Modules

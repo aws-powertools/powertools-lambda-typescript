@@ -29,8 +29,19 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
     this.functionName = this.getEnvVarsService().getLambdaFunctionName() + '.' + functionName;
   }
 
-  public async deleteRecord(): Promise<void> { }
-  
+  public async deleteRecord(data: unknown): Promise<void> { 
+    const idempotencyRecord: IdempotencyRecord = 
+    new IdempotencyRecord(this.getHashedIdempotencyKey(data),
+      IdempotencyRecordStatus.EXPIRED,
+      undefined,
+      undefined,
+      undefined,
+      undefined
+    );
+    
+    this._deleteRecord(idempotencyRecord);
+  }
+
   public async getRecord(data: unknown): Promise<IdempotencyRecord> {
     const idempotencyKey: string = this.getHashedIdempotencyKey(data);
 

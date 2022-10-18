@@ -197,4 +197,32 @@ describe('Class: Persistence Layer', ()=> {
       expect(getRecord).toHaveBeenCalledWith(expectedIdempotencyKey);
     });
   });
+
+  describe('Method: deleteRecord', ()=> {
+    beforeEach(()=> {
+      putRecord.mockClear();
+      (createHash as jest.MockedFunction<typeof createHash>).mockReturnValue(
+        {
+          update: cryptoUpdateMock,
+          digest: cryptoDigestMock.mockReturnValue(mockDigest)
+        } as unknown as Hash
+      );
+    });
+
+    test('When called it deletes the record with the idempotency key for the data passed in', ()=> {
+      const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
+      const data = 'someData';
+      const lambdaFunctionName = 'LambdaName';
+      jest.spyOn(EnvironmentVariablesService.prototype, 'getLambdaFunctionName').mockReturnValue(lambdaFunctionName);
+
+      const functionName = 'functionName';
+      const expectedIdempotencyKey = lambdaFunctionName + '.' + functionName + '#' + mockDigest;
+      persistenceLayer.configure(functionName);
+
+      persistenceLayer.deleteRecord(data);
+      const deletedIdempotencyRecord: IdempotencyRecord = deleteRecord.mock.calls[0][0];
+
+      expect(deletedIdempotencyRecord.idempotencyKey).toEqual(expectedIdempotencyKey);
+    });
+  });
 });

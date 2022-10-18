@@ -24,10 +24,7 @@
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "package-bundle": "../../package-bundler.sh metrics-bundle ./dist",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
-    "version": "npm run lint-fix && git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push --tags"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/metrics#readme",
   "license": "MIT-0",

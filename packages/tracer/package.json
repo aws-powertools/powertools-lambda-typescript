@@ -21,13 +21,10 @@
     "build": "tsc",
     "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
     "lint-fix": "eslint --fix --ext .ts --no-error-on-unmatched-pattern src tests",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
-    "version": "npm run lint-fix && git add -A src",
-    "postversion": "git push && git push --tags",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
-    "package-bundle": "../../package-bundler.sh tracer-bundle ./dist"
+    "package-bundle": "../../package-bundler.sh tracer-bundle ./dist",
+    "prepare": "npm run build",
+    "postversion": "git push --tags"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
   "license": "MIT-0",

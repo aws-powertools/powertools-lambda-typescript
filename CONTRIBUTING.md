@@ -126,9 +126,8 @@ As mentioned before, tests are split into groups thanks to [jest-runner-groups](
 
 To run unit tests, you can either use:
 
-* npm task `lerna-test:unit` (`npm run lerna-test:unit`) in root folder to run them all
-* npm task `test:unit` (`npm run test:unit`) in module folder (for example: `packages/metrics`) to run the module specific ones
-* jest directly `npx jest --group=unit` in module folder to run the module specific ones (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/class`)
+* `npm test -ws` while in the root folder to run them all
+* `npm test -w packages/metrics` while in the root folder to run the module specific ones
 
 #### e2e tests
 
@@ -156,9 +155,8 @@ See `metrics/tests/e2e/basicFeatures.decorator.test.ts` as an example.
 
 To run e2e tests, you can either use:
 
-* npm task `lerna-test:e2e` (`npm run lerna-test:e2e`) in root folder
-* npm task `test:e2e` (`npm run test:e2e`) in module folder (for example: `packages/metrics`) to run the module specific ones
-* jest directly `npx jest --group=e2e` in module folder. (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=e2e/metrics/decorator`)
+* `npm test:e2e -ws` while in the root folder to run them all
+* `npm test:e2e -w packages/metrics` while in the root folder to run the module specific ones
 
 Three important environment variables can be used:
 
@@ -200,7 +198,7 @@ As part of the repo you will find an examples folder at the root. This folder co
 
 To test your updates with these examples, you just have to:
 
-1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run lerna-package` while in the root folder
+1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run package -ws` while in the root folder
 2. Move to the examples folder of your choice
     ```sh
     cd packages/examples/cdk

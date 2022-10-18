@@ -80,6 +80,29 @@ describe('Class: Persistence Layer', ()=> {
       expect(savedIdempotencyRecord.idempotencyKey).toEqual(expectedIdempotencyKey);
     });
 
+    test('When called without a function name it creates an idempotency key from the Lambda name only and a digest of the md5 hash of the data', async ()=> {
+      const data = 'someData';
+      const lambdaFunctionName = 'LambdaName';
+      jest.spyOn(EnvironmentVariablesService.prototype, 'getLambdaFunctionName').mockReturnValue(lambdaFunctionName);
+
+      const expectedIdempotencyKey = lambdaFunctionName + '.' + '#' + mockDigest;
+      const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure();
+
+      await persistenceLayer.saveInProgress(data);
+
+      const savedIdempotencyRecord: IdempotencyRecord = putRecord.mock.calls[0][0];
+
+      expect(createHash).toHaveBeenCalledWith(
+        expect.stringMatching('md5'),
+      );
+      expect(cryptoUpdateMock).toHaveBeenCalledWith(expect.stringMatching(data));
+      expect(cryptoDigestMock).toHaveBeenCalledWith(
+        expect.stringMatching('base64')
+      );
+      expect(savedIdempotencyRecord.idempotencyKey).toEqual(expectedIdempotencyKey);
+    });
+
     test('When called it sets the expiry timestamp to one hour in the future', async ()=> {
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
       const data = 'someData';

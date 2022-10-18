@@ -1,4 +1,4 @@
-import { IdempotencyRecord } from './PersistenceLayer';
+import { IdempotencyRecord } from './IdempotencyRecord';
 
 interface PersistenceLayerInterface {
   configure(functionName: string): void

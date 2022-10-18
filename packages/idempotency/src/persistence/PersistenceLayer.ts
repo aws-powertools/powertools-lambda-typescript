@@ -125,6 +125,5 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
 }
 
 export {
-  IdempotencyRecord,
   PersistenceLayer
 };

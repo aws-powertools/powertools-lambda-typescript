@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { IdempotencyRecord, PersistenceLayer } from './PersistenceLayer';
+import { PersistenceLayer } from './PersistenceLayer';
+import { IdempotencyRecord } from './IdempotencyRecord';
 
 class DynamoDBPersistenceLayer extends PersistenceLayer {
   public constructor(_tableName: string, _key_attr: string = 'id') {

@@ -4,9 +4,9 @@
  * @group unit/idempotency/all
  */
 import { createHash, Hash } from 'crypto';
-import { EnvironmentVariablesService } from '../../src/EnvironmentVariablesService';
-import { IdempotencyRecord, PersistenceLayer } from '../../src/persistence';
-import { IdempotencyRecordStatus } from '../../src/types/IdempotencyRecordStatus';
+import { EnvironmentVariablesService } from '../../../src/EnvironmentVariablesService';
+import { IdempotencyRecord, PersistenceLayer } from '../../../src/persistence';
+import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordStatus';
 
 jest.mock('crypto', () => ({
   createHash: jest.fn(),

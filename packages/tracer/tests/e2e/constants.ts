@@ -10,4 +10,3 @@ export const expectedCustomMetadataKey = 'myMetadata';
 export const expectedCustomMetadataValue = { bar: 'baz' };
 export const expectedCustomResponseValue = { foo: 'bar' };
 export const expectedCustomErrorMessage = 'An error has occurred';
-export const expectedCustomSubSegmentName = 'mySubsegment';

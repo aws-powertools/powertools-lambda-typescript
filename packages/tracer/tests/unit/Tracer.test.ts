@@ -15,12 +15,10 @@ interface LambdaInterface {
 }
 
 type CaptureAsyncFuncMock = jest.SpyInstance<unknown, [name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment]>;
-const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface, subsegment?: Subsegment): CaptureAsyncFuncMock {
+const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface): CaptureAsyncFuncMock {
   return jest.spyOn(provider, 'captureAsyncFunc')
     .mockImplementation(async (methodName, callBackFn) => {
-      if (!subsegment) {
-        subsegment = new Subsegment(`### ${methodName}`);
-      }
+      const subsegment = new Subsegment(`### ${methodName}`);
       jest.spyOn(subsegment, 'flush').mockImplementation(() => null);
       await callBackFn(subsegment);
     });
@@ -958,56 +956,6 @@ describe('Class: Tracer', () => {
       expect(await handler({}, context, () => console.log('Lambda invoked!'))).toEqual('memberVariable:someValue');
 
     });
-
-    test('when used as decorator on an async method, the method is awaited correctly', async () => {
-
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
-      
-      jest.spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const subsegmentCloseSpy = jest.spyOn(newSubsegment, 'close').mockImplementation();
-      createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
-
-      class Lambda implements LambdaInterface {
-        public async dummyMethod(): Promise<void> {
-          return;
-        }
-
-        @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<void> {
-          await this.dummyMethod();
-          this.otherDummyMethod();
-
-          return;
-        }
-
-        public otherDummyMethod(): void {
-          return;
-        }
-
-      }
-      
-      // Act
-      const lambda = new Lambda();
-      const otherDummyMethodSpy = jest.spyOn(lambda, 'otherDummyMethod').mockImplementation();
-      const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
-
-      // Assess
-      // Here we assert that the otherDummyMethodSpy method is called before the cleanup logic (inside the finally of decorator)
-      // that should always be called after the handler has returned. If otherDummyMethodSpy is called after it means the
-      // decorator is NOT awaiting the handler which would cause the test to fail.
-      const dummyCallOrder = subsegmentCloseSpy.mock.invocationCallOrder[0];
-      const otherDummyCallOrder = otherDummyMethodSpy.mock.invocationCallOrder[0];
-      expect(otherDummyCallOrder).toBeLessThan(dummyCallOrder);
-
-    });
-
   });
 
   describe('Method: captureMethod', () => {
@@ -1288,150 +1236,6 @@ describe('Class: Tracer', () => {
       // Act / Assess
       const lambda = new Lambda('someValue');
       expect(await lambda.dummyMethod()).toEqual('memberVariable:someValue');
-
-    });
-
-    test('when used as decorator on an async method, the method is awaited correctly', async () => {
-
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
-
-      jest.spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const subsegmentCloseSpy = jest.spyOn(newSubsegment, 'close').mockImplementation();
-      createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async dummyMethod(): Promise<void> {
-          return;
-        }
-
-        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<void> {
-          await this.dummyMethod();
-          this.otherDummyMethod();
-
-          return;
-        }
-
-        public otherDummyMethod(): void {
-          return;
-        }
-      }
-
-      // Act
-      const lambda = new Lambda();
-      const otherDummyMethodSpy = jest.spyOn(lambda, 'otherDummyMethod').mockImplementation();
-      const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
-      
-      // Here we assert that the subsegment.close() (inside the finally of decorator) is called before the other otherDummyMethodSpy method
-      // that should always be called after the handler has returned. If subsegment.close() is called after it means the
-      // decorator is NOT awaiting the method which would cause the test to fail.
-      const dummyCallOrder = subsegmentCloseSpy.mock.invocationCallOrder[0];
-      const otherDummyCallOrder = otherDummyMethodSpy.mock.invocationCallOrder[0];
-      expect(dummyCallOrder).toBeLessThan(otherDummyCallOrder);
-
-    });
-
-    test('when used as decorator together with another external decorator, the method name is detected properly', async () => {
-
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
-      jest.spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
-
-      // Creating custom external decorator
-      // eslint-disable-next-line func-style
-      function passThrough() {
-        // A decorator that calls the original method.
-        return (
-          _target: unknown,
-          _propertyKey: string,
-          descriptor: PropertyDescriptor
-        ) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const originalMethod = descriptor.value!;
-          descriptor.value = function (...args: unknown[]) {
-            return originalMethod.apply(this, [...args]);
-          };
-        };
-      }
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureMethod()
-        @passThrough()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async dummyMethod(): Promise<string> {
-          return `foo`;
-        }
-
-        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<void> {
-          await this.dummyMethod();
-
-          return;
-        }
-
-      }
-
-      // Act / Assess
-      const lambda = new Lambda();
-      const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
-
-      // Assess
-      expect(newSubsegment).toEqual(expect.objectContaining({
-        metadata: {
-          'hello-world': {
-            // Assess that the method name is added correctly
-            'dummyMethod response': 'foo',
-          },
-        }
-      }));
-
-    });
-
-    test('when used as decorator and with a custom subSegmentName, it sets the correct name for the subsegment', async () => {
-
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('### dummyMethod');
-      jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
-      jest.spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const captureAsyncFuncSpy = jest.spyOn(tracer.provider, 'captureAsyncFunc');
-      class Lambda implements LambdaInterface {
-
-        @tracer.captureMethod({ subSegmentName: '#### myCustomMethod' })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async dummyMethod(some: string): Promise<string> {
-          return new Promise((resolve, _reject) => setTimeout(() => resolve(some), 3000));
-        }
-
-        public async handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): Promise<TResult> {
-          const result = await this.dummyMethod('foo bar');
-          
-          return new Promise((resolve, _reject) => resolve(result as unknown as TResult));
-        }
-
-      }
-
-      // Act
-      await new Lambda().handler(event, context, () => console.log('Lambda invoked!'));
-
-      // Assess
-      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(captureAsyncFuncSpy).toHaveBeenCalledWith('#### myCustomMethod', expect.anything());
 
     });
 

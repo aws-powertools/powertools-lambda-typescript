@@ -2,7 +2,7 @@ import { Handler } from 'aws-lambda';
 import { AsyncHandler, SyncHandler, Utility } from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { HandlerMethodDecorator, TracerOptions, MethodDecorator, CaptureLambdaHandlerOptions, CaptureMethodOptions } from './types';
+import { HandlerMethodDecorator, TracerOptions, HandlerOptions, MethodDecorator } from './types';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
@@ -338,9 +338,8 @@ class Tracer extends Utility implements TracerInterface {
    * ```
    * 
    * @decorator Class
-   * @param options - (_optional_) Options for the decorator
    */
-  public captureLambdaHandler(options?: CaptureLambdaHandlerOptions): HandlerMethodDecorator {
+  public captureLambdaHandler(options?: HandlerOptions): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
@@ -419,10 +418,9 @@ class Tracer extends Utility implements TracerInterface {
    * ```
    * 
    * @decorator Class
-   * @param options - (_optional_) Options for the decorator
    */
-  public captureMethod(options?: CaptureMethodOptions): MethodDecorator {
-    return (_target, propertyKey, descriptor) => {
+  public captureMethod(options?: HandlerOptions): MethodDecorator {
+    return (_target, _propertyKey, descriptor) => {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
@@ -436,15 +434,12 @@ class Tracer extends Utility implements TracerInterface {
           return originalMethod.apply(this, [...args]);
         }
 
-        const methodName = String(propertyKey);
-        const subsegmentName = options?.subSegmentName ? options.subSegmentName : `### ${methodName}`;
-
-        return tracerRef.provider.captureAsyncFunc(subsegmentName, async subsegment => {
+        return tracerRef.provider.captureAsyncFunc(`### ${originalMethod.name}`, async subsegment => {
           let result;
           try {
             result = await originalMethod.apply(this, [...args]);
             if (options?.captureResponse ?? true) {
-              tracerRef.addResponseAsMetadata(result, methodName);
+              tracerRef.addResponseAsMetadata(result, originalMethod.name);
             }
           } catch (error) {
             tracerRef.addErrorAsMetadata(error as Error);

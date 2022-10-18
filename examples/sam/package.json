@@ -22,6 +22,7 @@
     "@types/aws-lambda": "^8.10.86",
     "@types/jest": "^27.5.2",
     "@types/node": "18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.40.1",
     "esbuild": "^0.14.23",
     "eslint": "^8.4.0",
     "jest": "^27.5.1",

@@ -29,6 +29,11 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
     this.functionName = this.getEnvVarsService().getLambdaFunctionName() + '.' + functionName;
   }
 
+  /**
+   * Deletes a record from the persistence store for the persistence key generated from the data passed in.
+   * 
+   * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
+   */
   public async deleteRecord(data: unknown): Promise<void> { 
     const idempotencyRecord: IdempotencyRecord = 
     new IdempotencyRecord(this.getHashedIdempotencyKey(data),
@@ -41,7 +46,11 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
     
     this._deleteRecord(idempotencyRecord);
   }
-
+  /**
+   * Retrieves idempotency key for the provided data and fetches data for that key from the persistence store
+   * 
+   * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
+   */
   public async getRecord(data: unknown): Promise<IdempotencyRecord> {
     const idempotencyKey: string = this.getHashedIdempotencyKey(data);
 
@@ -66,6 +75,13 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
     return this._putRecord(idempotencyRecord);
   }
 
+  /**
+   * Saves a record of the function completing successfully. This will create a record with a COMPLETED status
+   * and will save the result of the completed function in the idempotency record.
+   * 
+   * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
+   * @param result - the result of the successfully completed function
+   */
   public async saveSuccess(data: unknown, result: unknown): Promise<void> { 
     const idempotencyRecord: IdempotencyRecord = 
     new IdempotencyRecord(this.getHashedIdempotencyKey(data),
@@ -85,6 +101,12 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
   protected abstract _putRecord(record: IdempotencyRecord): Promise<void>;
   protected abstract _updateRecord(record: IdempotencyRecord): Promise<void>;
 
+  /**
+   * Generates a hash of the data and returns the digest of that hash
+   * 
+   * @param data the data payload that will generate the hash
+   * @returns the digest of the generated hash
+   */
   private generateHash(data: string): string{
     const hash: Hash = createHash(this.hashFunction);
     hash.update(data);
@@ -100,12 +122,23 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
     return this.envVarsService;
   }
 
+  /**
+   * Creates the expiry timestamp for the idempotency record
+   * 
+   * @returns the expiry time for the record expressed as number of seconds past the UNIX epoch
+   */
   private getExpiryTimestamp(): number {
     const currentTime: number = Date.now() / 1000;
     
     return currentTime + this.expiresAfterSeconds;
   }
 
+  /**
+   * Generates the idempotency key used to identify records in the persistence store.
+   * 
+   * @param data the data payload that will be hashed to create the hash portion of the idempotency key
+   * @returns the idempotency key
+   */
   private getHashedIdempotencyKey(data: unknown): string {
     if (!data){
       console.warn('No data found for idempotency key');

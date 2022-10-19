@@ -10,12 +10,6 @@
 abstract class ConfigService {
 
   /**
-   * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
-   * @protected
-   */
-  protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
-
-  /**
    * It returns the value of an environment variable that has given name.
    *
    * @param {string} name

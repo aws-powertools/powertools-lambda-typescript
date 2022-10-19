@@ -15,6 +15,11 @@ import { ConfigService } from '.';
  */
 class EnvironmentVariablesService extends ConfigService {
 
+  /**
+   * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
+   * @protected
+   */
+  protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
   // Reserved environment variables
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
 

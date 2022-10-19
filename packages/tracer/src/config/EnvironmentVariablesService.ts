@@ -11,10 +11,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
   private tracerCaptureResponseVariable = 'POWERTOOLS_TRACER_CAPTURE_RESPONSE';
   private tracingEnabledVariable = 'POWERTOOLS_TRACE_ENABLED';
 
-  public get(name: string): string {
-    return process.env[name]?.trim() || '';
-  }
-
   public getAwsExecutionEnv(): string {
     return this.get(this.awsExecutionEnv);
   }
@@ -25,10 +21,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
 
   public getSamLocal(): string {
     return this.get(this.samLocalVariable);
-  }
-
-  public getServiceName(): string {
-    return this.get(this.serviceNameVariable);
   }
 
   public getTracingCaptureError(): string {
@@ -43,9 +35,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
     return this.get(this.tracingEnabledVariable);
   }
 
-  public getXrayTraceId(): string {
-    return super.getXrayTraceId();
-  }
 }
 
 export {

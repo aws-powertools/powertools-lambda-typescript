@@ -684,7 +684,7 @@ describe('Class: Metrics', () => {
       const serviceName = 'Custom Provider Service Name';
       const namespace = 'Custom Provider namespace';
       const customConfigService = {
-        getService: () => serviceName,
+        getServiceName: () => serviceName,
         getNamespace: () => namespace,
       };
 

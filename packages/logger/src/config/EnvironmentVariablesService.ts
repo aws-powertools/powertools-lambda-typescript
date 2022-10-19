@@ -105,24 +105,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
     return (value && value.length > 0) ? Number(value) : undefined;
   }
 
-  /**
-   * It returns the value of the POWERTOOLS_SERVICE_NAME environment variable.
-   *
-   * @returns {string}
-   */
-  public getServiceName(): string {
-    return this.get(this.serviceNameVariable);
-  }
-
-  /**
-   * It returns the value of the _X_AMZN_TRACE_ID environment variable.
-   *
-   * @returns {string}
-   */
-  public getXrayTraceId(): string {
-    return super.getXrayTraceId();
-  }
-
 }
 
 export {

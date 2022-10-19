@@ -19,6 +19,10 @@ tasks:
       sudo ./sam-installation/install
       rm -rf sam-installation aws-sam-cli-linux-*
       cd ../../
+      # Install Layer Publisher
+      cd layer-publisher
+      npm ci
+      cd ../
       # Setup husky hooks
       npm run init-environment
 vscode:

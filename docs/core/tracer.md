@@ -490,7 +490,7 @@ Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [
 
 !!! info "This is commonly useful in two scenarios"
 
-    1. By including the root trace id in your response consumers can use it to correlate requests
+    1. By including the root trace id in your response, consumers can use it to correlate requests
     2. You might want to surface the root trace id to your end users so that they can reference it while contacting customer service
 
 === "index.ts"

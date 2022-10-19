@@ -105,7 +105,7 @@ jobs:
         with:
           path: "./layer-publisher/node_modules"
           # Use the combo between example, name, and SHA-256 hash of the layer-publisher lock files as cache key.
-          key: cache-layer-publisher-node-modules-${{ hashFiles('./layer-publisher/*/package-lock.json') }}
+          key: cache-layer-publisher-node-modules-${{ hashFiles('./layer-publisher/package-lock.json') }}
       - name: Install Layer publisher
         # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'

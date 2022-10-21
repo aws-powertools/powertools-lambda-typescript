@@ -287,7 +287,9 @@ class Metrics extends Utility implements MetricsInterface {
   public publishStoredMetrics(): void {
     const target = this.serializeMetrics();
     console.log(JSON.stringify(target));
-    this.storedMetrics = {};
+    this.clearMetrics();
+    this.clearDimensions();
+    this.clearMetadata();
   }
 
   /**

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for taking the time to help us improve operational excellence.
+        Thank you for taking the time to help us improve this project.
 
         *Future readers*: Please react with 👍 and your use case to help us understand customer demand.
   - type: textarea

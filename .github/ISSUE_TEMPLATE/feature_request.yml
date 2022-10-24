@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest an idea for Lambda Powertools
+title: "Feature request: TITLE"
+labels: ["feature-request", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to suggest an idea to the Lambda Powertools project.
+
+        *Future readers*: Please react with 👍 and your use case to help us understand customer demand.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use case
+      description: Please help us understand your use case or problem you're facing
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Solution/User Experience
+      description: Please share what a good solution would look like to this use case
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative solutions
+      description: Please describe what alternative solutions to this use case, if any
+      render: Markdown
+    validations:
+      required: false
+  - type: checkboxes
+    id: acknowledgment
+    attributes:
+      label: Acknowledgment
+      options:
+        - label: This feature request meets [Lambda Powertools Tenets](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets)
+          required: true
+        - label: Should this be considered in other Lambda Powertools languages? i.e. [Python](https://github.com/awslabs/aws-lambda-powertools-python/), [Java](https://github.com/awslabs/aws-lambda-powertools-java/)
+          required: false
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **Disclaimer**: After creating an issue, please wait until it is triaged and confirmed by a maintainer before implementing it. This will reduce amount of rework and the chance that a pull request gets rejected.

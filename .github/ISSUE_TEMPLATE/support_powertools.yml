@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for becoming a reference customer. Your support means a lot to us. It also helps new customers to know who's using it.
+        Thank you for becoming a reference customer. Your support means a lot to us. It also helps new customers to know who're using Lambda Powertools.
 
         If you would like us to also display your organization's logo, please share a link in the `Company logo` field.
   - type: input

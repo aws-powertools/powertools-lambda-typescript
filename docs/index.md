@@ -222,7 +222,6 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
 	Container Image deployment (OCI) or inline Lambda functions do not support Lambda Layers.
 
-	Lambda Powertools Lambda Layer do not include `pydantic` library - required dependency for the `parser` utility. See [SAR](#sar) option instead.
 
 ## Instrumentation
 

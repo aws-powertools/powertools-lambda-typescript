@@ -68,10 +68,8 @@ These settings will be used across all metrics emitted:
 
 | Setting              | Description                                                                     | Environment variable           | Constructor parameter |
 |----------------------|---------------------------------------------------------------------------------|--------------------------------|-----------------------|
-| **Metric namespace** | Logical container where all metrics will be placed e.g. `serverlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`           |
 | **Service**          | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME`      | `serviceName`         |
-
-For a **complete list** of supported environment variables, refer to [this section](./../index.md#environment-variables).
+| **Metric namespace** | Logical container where all metrics will be placed e.g. `serverlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`           |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics
@@ -299,7 +297,7 @@ Using the Middy middleware or decorator will **automatically validate, serialize
 If you do not use the middleware or decorator, you have to flush your metrics manually.
 
 !!! warning "Metric validation"
-    If metrics are provided, and any of the following criteria are not met, a **`RangeError`** exception will be thrown:
+    If metrics are provided, and any of the following criteria are not met, a **`RangeError`** error will be thrown:
 
     * Maximum of 29 dimensions
     * Namespace is set only once (or none)

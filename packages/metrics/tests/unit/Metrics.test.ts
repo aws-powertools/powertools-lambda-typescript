@@ -80,6 +80,35 @@ describe('Class: Metrics', () => {
       expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
     });
 
+    test('Publish Stored Metrics should clear added dimensions', async () => {
+      const metrics = new Metrics({ namespace: 'test' });
+      const dimensionItem = { name: 'dimensionName', value: 'dimensionValue' };
+
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
+          metrics.addMetric('test_name_1', MetricUnits.Count, 1);
+          metrics.addDimension(dimensionItem.name, dimensionItem.value);
+          metrics.publishStoredMetrics();
+        }
+      }
+
+      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
+
+      expect(console.log).toBeCalledTimes(2);
+      expect(loggedData[0][dimensionItem.name]).toEqual(dimensionItem.value);
+      expect(loggedData[0]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      expect(loggedData[1][dimensionItem.name]).toBeUndefined();
+      expect(loggedData[1]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(0);
+    });
+
     test('Adding more than max dimensions should throw error', () => {
       expect.assertions(1);
       const metrics = new Metrics();
@@ -143,6 +172,33 @@ describe('Class: Metrics', () => {
 
       expect(loggedData[metadataItem.name]).toEqual(metadataItem.value);
       expect(postClearLoggedData[metadataItem.name]).toBeUndefined();
+    });
+
+    test('Publish Stored Metrics should clear metadata', async () => {
+      const metrics = new Metrics({ namespace: 'test' });
+      const metadataItem = { name: 'metaName', value: 'metaValue' };
+
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+          _callback: Callback<TResult>,
+        ): void | Promise<TResult> {
+          metrics.addMetric('test_name_1', MetricUnits.Count, 1);
+          metrics.addMetadata(metadataItem.name, metadataItem.value);
+          metrics.publishStoredMetrics();
+        }
+      }
+
+      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
+
+      expect(console.log).toBeCalledTimes(2);
+      expect(loggedData[0][metadataItem.name]).toEqual(metadataItem.value);
+      expect(loggedData[1][metadataItem.name]).toBeUndefined();
     });
   });
 

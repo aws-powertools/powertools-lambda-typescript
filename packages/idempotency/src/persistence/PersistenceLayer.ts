@@ -82,13 +82,13 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    * @param result - the result of the successfully completed function
    */
-  public async saveSuccess(data: unknown, result: unknown): Promise<void> { 
+  public async saveSuccess(data: unknown, result: Record<string, unknown>): Promise<void> { 
     const idempotencyRecord: IdempotencyRecord = 
     new IdempotencyRecord(this.getHashedIdempotencyKey(data),
       IdempotencyRecordStatus.COMPLETED,
       this.getExpiryTimestamp(),
       undefined,
-      JSON.stringify(result),
+      result,
       undefined
     );
 

@@ -141,7 +141,7 @@ describe('Class: Persistence Layer', ()=> {
 
     test('When called it updates the idempotency record to COMPLETED', async () => {
       const data = 'someData';
-      const result = 'result';
+      const result = {};
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
 
       await persistenceLayer.saveSuccess(data, result);
@@ -153,7 +153,7 @@ describe('Class: Persistence Layer', ()=> {
 
     test('When called it generates the idempotency key from the function name and a digest of the md5 hash of the data', async ()=> {
       const data = 'someData';
-      const result = 'result';
+      const result = {};
       const lambdaFunctionName = 'LambdaName';
       jest.spyOn(EnvironmentVariablesService.prototype, 'getLambdaFunctionName').mockReturnValue(lambdaFunctionName);
 
@@ -180,7 +180,7 @@ describe('Class: Persistence Layer', ()=> {
     test('When called it sets the expiry timestamp to one hour in the future', async ()=> {
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
       const data = 'someData';
-      const result = 'result';
+      const result = {};
       const currentMillisTime = 3000;
       const currentSeconds = currentMillisTime / 1000;
       const oneHourSeconds = 60 * 60;

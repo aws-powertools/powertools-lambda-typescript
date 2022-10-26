@@ -201,9 +201,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
             layers: [
                 pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3`
             ],
-            code: new pulumi.asset.AssetArchive({
-                ".": new pulumi.asset.FileArchive("./app")
-            }),
+            code: new pulumi.asset.FileArchive("lambda_function_payload.zip"),
             tracingConfig: {
                 mode: "Active"
             },

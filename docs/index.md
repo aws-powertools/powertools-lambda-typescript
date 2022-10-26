@@ -207,7 +207,8 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
             },
             runtime: aws.lambda.Runtime.NodeJS16dX,
             handler: "index.handler",
-            role: role.arn
+            role: role.arn,
+            architectures: ["x86_64"]
         });
         ```
 

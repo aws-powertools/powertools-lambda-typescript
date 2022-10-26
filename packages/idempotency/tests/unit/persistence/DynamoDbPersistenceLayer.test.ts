@@ -36,6 +36,13 @@ describe('Class: DynamoDbPersistenceLayer', () => {
   });
 
   describe('Method: _putRecord', () => {
+    const currentDateInMilliseconds = 1000;
+    const currentDateInSeconds = 1;
+
+    beforeEach(() => {
+      jest.spyOn(Date, 'now').mockReturnValue(currentDateInMilliseconds);
+    });
+
     test('when called with a record that succeeds condition, it puts record in dynamo table', async () => {
       // Prepare
       const tableName = 'tableName';
@@ -46,10 +53,6 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
       const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
-
-      const currentDate = 1;
-      jest.spyOn(Date, 'now').mockReturnValue(currentDate);
-
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).resolves({});
 
       // Act
@@ -60,7 +63,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
         TableName: tableName,
         Item: { 'id': key, 'expiration': expiryTimestamp, status: status },
         ExpressionAttributeNames: { '#id': 'id', '#expiry': 'expiration', '#status': 'status' },
-        ExpressionAttributeValues: { ':now': currentDate, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
+        ExpressionAttributeValues: { ':now': currentDateInSeconds, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
         ConditionExpression: 'attribute_not_exists(#id) OR #expiry < :now OR NOT #status = :inprogress'
       });
     });
@@ -75,9 +78,6 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
       const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
-
-      const currentDate = 1;
-      jest.spyOn(Date, 'now').mockReturnValue(currentDate);
 
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).rejects({ name: 'ConditionalCheckFailedException' });
 
@@ -94,7 +94,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
         TableName: tableName,
         Item: { 'id': key, 'expiration': expiryTimestamp, status: status },
         ExpressionAttributeNames: { '#id': 'id', '#expiry': 'expiration', '#status': 'status' },
-        ExpressionAttributeValues: { ':now': currentDate, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
+        ExpressionAttributeValues: { ':now': currentDateInSeconds, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
         ConditionExpression: 'attribute_not_exists(#id) OR #expiry < :now OR NOT #status = :inprogress'
       });
       expect(error).toBeInstanceOf(IdempotencyItemAlreadyExistsError);
@@ -111,9 +111,6 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const inProgressExpiryTimestamp = 0;
       const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
 
-      const currentDate = 1;
-      jest.spyOn(Date, 'now').mockReturnValue(currentDate);
-
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).rejects(new Error());
 
       // Act
@@ -129,7 +126,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
         TableName: tableName,
         Item: { 'id': key, 'expiration': expiryTimestamp, status: status },
         ExpressionAttributeNames: { '#id': 'id', '#expiry': 'expiration', '#status': 'status' },
-        ExpressionAttributeValues: { ':now': currentDate, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
+        ExpressionAttributeValues: { ':now': currentDateInSeconds, ':inprogress': IdempotencyRecordStatus.INPROGRESS },
         ConditionExpression: 'attribute_not_exists(#id) OR #expiry < :now OR NOT #status = :inprogress'
       });
       expect(error).toBe(error);

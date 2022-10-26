@@ -25,7 +25,7 @@ class IdempotencyRecord {
   }
 
   private isExpired(): boolean {
-    return this.expiryTimestamp !== undefined && (Date.now() > this.expiryTimestamp);
+    return this.expiryTimestamp !== undefined && ((Date.now() / 1000) > this.expiryTimestamp);
   }
 }
 

@@ -47,7 +47,7 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
     const notInProgress = 'NOT #status = :inprogress';
     const conditionalExpression = `${idempotencyKeyDoesNotExist} OR ${idempotencyKeyExpired} OR ${notInProgress}`;
     try {
-      await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.key_attr, '#expiry': this.expiry_attr, '#status': this.status_attr }, ExpressionAttributeValues: { ':now': Date.now(), ':inprogress': IdempotencyRecordStatus.INPROGRESS }, ConditionExpression: conditionalExpression });
+      await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.key_attr, '#expiry': this.expiry_attr, '#status': this.status_attr }, ExpressionAttributeValues: { ':now': Date.now() / 1000, ':inprogress': IdempotencyRecordStatus.INPROGRESS }, ConditionExpression: conditionalExpression });
     } catch (e){
       if ((e as DynamoDBServiceException).name === 'ConditionalCheckFailedException'){
         throw new IdempotencyItemAlreadyExistsError();

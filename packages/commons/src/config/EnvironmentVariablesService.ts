@@ -52,8 +52,10 @@ class EnvironmentVariablesService extends ConfigService {
    *
    * @returns {string}
    */
-  public getXrayTraceId(): string {
+  public getXrayTraceId(): string | undefined {
     const xRayTraceId = this.get(this.xRayTraceIdVariable);
+
+    if (xRayTraceId === '') return undefined;
 
     return xRayTraceId.split(';')[0].replace('Root=', '');
   }

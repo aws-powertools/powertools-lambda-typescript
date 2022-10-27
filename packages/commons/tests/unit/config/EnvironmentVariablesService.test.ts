@@ -82,6 +82,31 @@ describe('Class: EnvironmentVariablesService', () => {
       // Assess
       expect(value).toEqual('abcd123456789');
     });
+    test('It returns the value of the Root X-Ray segment ID properly formatted', () => {
+
+      // Prepare
+      process.env._X_AMZN_TRACE_ID = 'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getXrayTraceId();
+
+      // Assess
+      expect(value).toEqual('1-5759e988-bd862e3fe1be46a994272793');
+    });
+
+    test('It returns the value of the Root X-Ray segment ID properly formatted', () => {
+
+      // Prepare
+      delete process.env._X_AMZN_TRACE_ID;
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getXrayTraceId();
+
+      // Assess
+      expect(value).toEqual(undefined);
+    });
 
   });
 

@@ -497,7 +497,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    * @returns string - The root X-Ray trace id.
    */
-  public getRootXrayTraceId(): string {
+  public getRootXrayTraceId(): string | undefined {
     return this.envVarsService.getXrayTraceId();
   }
   

@@ -186,6 +186,32 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
         }
         ```
 
+    === "Pulumi"
+
+        ```typescript hl_lines="11"
+        import * as pulumi from "@pulumi/pulumi";
+        import * as aws from "@pulumi/aws";
+
+        const role = new aws.iam.Role("role", {
+            assumeRolePolicy: aws.iam.assumeRolePolicyForPrincipal(aws.iam.Principals.LambdaPrincipal),
+            managedPolicyArns: [aws.iam.ManagedPolicies.AWSLambdaBasicExecutionRole]
+        });
+
+        const lambdaFunction = new aws.lambda.Function("function", {
+            layers: [
+                pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScript:3`
+            ],
+            code: new pulumi.asset.FileArchive("lambda_function_payload.zip"),
+            tracingConfig: {
+                mode: "Active"
+            },
+            runtime: aws.lambda.Runtime.NodeJS16dX,
+            handler: "index.handler",
+            role: role.arn,
+            architectures: ["x86_64"]
+        });
+        ```
+
     === "Amplify"
 
         ```zsh

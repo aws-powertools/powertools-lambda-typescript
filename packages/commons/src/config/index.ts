@@ -1,2 +1,2 @@
-export * from './ConfigServiceInterface';
+export * from './ConfigService';
 export * from './EnvironmentVariablesService';

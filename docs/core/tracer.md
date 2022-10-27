@@ -484,6 +484,38 @@ Use **`POWERTOOLS_TRACER_CAPTURE_ERROR=false`** environment variable to instruct
 
     1. You might **return sensitive** information from errors, stack traces you might not control
 
+### Access AWS X-Ray Root Trace ID
+
+Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [AWS X-Ray Root Trace ID](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces) corresponds to the current function execution.
+
+!!! info "This is commonly useful in two scenarios"
+
+    1. By including the root trace id in your response, consumers can use it to correlate requests
+    2. You might want to surface the root trace id to your end users so that they can reference it while contacting customer service
+
+=== "index.ts"
+
+    ```typescript hl_lines="9"
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+
+    const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+    
+    export const handler = async (event: unknown, context: Context): Promise<void> => {
+        try {
+        ...
+        } catch (err) {
+            const rootTraceId = tracer.getRootXrayTraceId();
+   
+            // Example of returning an error response
+            return {
+                statusCode: 500,
+                body: `Internal Error - Please contact support and quote the following id: ${rootTraceId}`,
+                headers: { "_X_AMZN_TRACE_ID": rootTraceId },
+            };
+        }
+    };
+    ```
+
 ### Escape hatch mechanism
 
 You can use `tracer.provider` attribute to access all methods provided by the [AWS X-Ray SDK](https://docs.aws.amazon.com/xray-sdk-for-nodejs/latest/reference/AWSXRay.html).

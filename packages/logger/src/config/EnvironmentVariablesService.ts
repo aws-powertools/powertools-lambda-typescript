@@ -1,4 +1,5 @@
-import { ConfigService } from '.';
+import { ConfigServiceInterface } from './ConfigServiceInterface';
+import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
 /**
  * Class EnvironmentVariablesService
@@ -9,28 +10,22 @@ import { ConfigService } from '.';
  * variables that can be set by the developer additionally.
  *
  * @class
- * @extends {ConfigService}
+ * @extends {CommonEnvironmentVariablesService}
+ * @implements {ConfigServiceInterface}
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
  */
-class EnvironmentVariablesService extends ConfigService {
+class EnvironmentVariablesService extends CommonEnvironmentVariablesService implements ConfigServiceInterface {
 
   // Reserved environment variables
   private awsRegionVariable = 'AWS_REGION';
+  private currentEnvironmentVariable = 'ENVIRONMENT';
   private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
   private functionVersionVariable = 'AWS_LAMBDA_FUNCTION_VERSION';
+  private logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
+  private logLevelVariable = 'LOG_LEVEL';
   private memoryLimitInMBVariable = 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE';
-  private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
-
-  /**
-   * It returns the value of an environment variable that has given name.
-   *
-   * @param {string} name
-   * @returns {string}
-   */
-  public get(name: string): string {
-    return process.env[name]?.trim() || '';
-  }
+  private sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
 
   /**
    * It returns the value of the AWS_REGION environment variable.
@@ -85,7 +80,9 @@ class EnvironmentVariablesService extends ConfigService {
    * @returns {boolean}
    */
   public getLogEvent(): boolean {
-    return this.isValueTrue(this.get(this.logEventVariable));
+    const value = this.get(this.logEventVariable);
+
+    return value.toLowerCase() === 'true' || value === '1';
   }
 
   /**
@@ -106,24 +103,6 @@ class EnvironmentVariablesService extends ConfigService {
     const value = this.get(this.sampleRateValueVariable);
 
     return (value && value.length > 0) ? Number(value) : undefined;
-  }
-
-  /**
-   * It returns the value of the POWERTOOLS_SERVICE_NAME environment variable.
-   *
-   * @returns {string}
-   */
-  public getServiceName(): string {
-    return this.get(this.serviceNameVariable);
-  }
-
-  /**
-   * It returns the value of the _X_AMZN_TRACE_ID environment variable.
-   *
-   * @returns {string}
-   */
-  public getXrayTraceId(): string {
-    return this.get(this.xRayTraceIdVariable);
   }
 
 }

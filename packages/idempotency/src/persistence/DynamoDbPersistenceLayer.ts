@@ -3,7 +3,8 @@ import { DynamoDB, DynamoDBServiceException } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, GetCommandOutput } from '@aws-sdk/lib-dynamodb';
 import { IdempotencyItemAlreadyExistsError, IdempotencyItemNotFoundError } from '../Exceptions';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
-import { IdempotencyRecord, PersistenceLayer } from './PersistenceLayer';
+import { PersistenceLayer } from './PersistenceLayer';
+import { IdempotencyRecord } from './IdempotencyRecord';
 
 class DynamoDBPersistenceLayer extends PersistenceLayer {
   private _table: DynamoDBDocument | undefined;
@@ -69,7 +70,7 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
 
   private getTable(): DynamoDBDocument {
     if (!this._table)
-      this._table = DynamoDBDocument.from(new DynamoDB({}), { marshallOptions: { removeUndefinedValues: true }});
+      this._table = DynamoDBDocument.from(new DynamoDB({}), { marshallOptions: { removeUndefinedValues: true } });
 
     return this._table;
   }

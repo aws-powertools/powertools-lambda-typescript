@@ -19,7 +19,7 @@ export class IdempotencyHandler {
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError();
     } else if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS){
-      throw new IdempotencyAlreadyInProgressError(); //TODO: add a param for more description
+      throw new IdempotencyAlreadyInProgressError(`There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`);
     } else {
       return idempotencyRecord.getResponse();
     }

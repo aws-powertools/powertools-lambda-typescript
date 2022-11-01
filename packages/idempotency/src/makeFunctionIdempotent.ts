@@ -5,6 +5,6 @@ import { IdempotencyOptions } from './IdempotencyOptions';
 const makeFunctionIdempotent = <U>(
   fn: AnyFunction<U>,
   _options: IdempotencyOptions
-): (...args: Array<any>) => Promise<U | void> => (...args) => fn(...args);
+): (...args: Array<any>) => Promise<U> | U => (...args) => fn(...args);
 
 export { makeFunctionIdempotent };

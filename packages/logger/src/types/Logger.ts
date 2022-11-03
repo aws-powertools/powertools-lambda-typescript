@@ -74,3 +74,8 @@ export {
   ConstructorOptions,
   HandlerOptions
 };
+
+export const enum LogJsonIndent {
+  PRETTY = 4,
+  COMPACT = 0,
+}

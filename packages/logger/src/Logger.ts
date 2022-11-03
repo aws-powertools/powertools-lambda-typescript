@@ -6,6 +6,7 @@ import { LogItem } from './log';
 import cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { LogJsonIndent } from './types';
 import type {
   ClassThatLogs,
   Environment,
@@ -569,7 +570,10 @@ class Logger extends Utility implements ClassThatLogs {
 
     const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
 
-    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
+    const isDevMode = this.getEnvVarsService().getDevMode();
+    const INDENTATION: LogJsonIndent = isDevMode ? LogJsonIndent.PRETTY : LogJsonIndent.COMPACT;
+
+    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies(), INDENTATION));
   }
 
   /**

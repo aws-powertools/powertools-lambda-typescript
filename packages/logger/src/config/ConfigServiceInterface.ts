@@ -23,6 +23,13 @@ interface ConfigServiceInterface {
   getCurrentEnvironment(): string
 
   /**
+   * It returns the value of the POWERTOOLS_DEV environment variable.
+   *
+   * @returns {boolean}
+   */
+  getDevMode(): boolean
+
+  /**
    * It returns the value of the POWERTOOLS_LOGGER_LOG_EVENT environment variable.
    *
    * @returns {boolean}

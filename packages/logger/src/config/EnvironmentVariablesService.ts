@@ -20,6 +20,7 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
   // Reserved environment variables
   private awsRegionVariable = 'AWS_REGION';
   private currentEnvironmentVariable = 'ENVIRONMENT';
+  private devModeVariable = 'POWERTOOLS_DEV';
   private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
   private functionVersionVariable = 'AWS_LAMBDA_FUNCTION_VERSION';
   private logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
@@ -43,6 +44,17 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
    */
   public getCurrentEnvironment(): string {
     return this.get(this.currentEnvironmentVariable);
+  }
+
+  /**
+   * It returns the value of the POWERTOOLS_DEV environment variable.
+   *
+   * @returns {boolean}
+   */
+  public getDevMode(): boolean {
+    const value = this.get(this.devModeVariable);
+
+    return value.toLowerCase() === 'true' || value === '1';
   }
 
   /**

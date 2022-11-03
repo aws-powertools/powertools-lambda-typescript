@@ -336,6 +336,9 @@ describe('Middy middleware', () => {
         getServiceName(): string {
           return 'my-backend-service';
         },
+        getDevMode(): boolean {
+          return false;
+        },
 
       };
 

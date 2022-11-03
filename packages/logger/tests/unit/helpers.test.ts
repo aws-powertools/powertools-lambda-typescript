@@ -307,7 +307,10 @@ describe('Helper: createLogger function', () => {
         getServiceName(): string {
           return 'my-backend-service';
         },
-
+        getDevMode(): boolean {
+          return false;
+        },
+        
       };
       // Prepare
       const loggerOptions:ConstructorOptions = {

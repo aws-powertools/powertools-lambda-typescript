@@ -220,4 +220,112 @@ describe('Class: EnvironmentVariablesService', () => {
 
   });
 
+  describe('Method: getDevMode', () => {
+
+    test('It returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'true';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getDevMode();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    test('It returns true if the environment variable POWERTOOLS_DEV is "TRUE"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'TRUE';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getDevMode();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    test('It returns true if the environment variable POWERTOOLS_DEV is "1"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_DEV = '1';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getDevMode();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    test('It returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'false';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getDevMode();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    test('It returns false if the environment variable POWERTOOLS_DEV is "FALSE"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'FALSE';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getDevMode();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    test('It returns false if the environment variable POWERTOOLS_DEV is "0"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_DEV = '0';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getDevMode();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    test('It returns false if the environment variable POWERTOOLS_DEV is NOT set', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'somethingsilly';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getDevMode();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    test('It returns false if the environment variable POWERTOOLS_DEV is "somethingsilly"', () => {
+
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'somethingsilly';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getDevMode();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+  });
+
 });

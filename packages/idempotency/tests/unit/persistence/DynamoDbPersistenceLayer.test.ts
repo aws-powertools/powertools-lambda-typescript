@@ -46,7 +46,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when called with a record that succeeds condition, it puts record in dynamo table', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
@@ -71,7 +71,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when called with a record that fails condition, it throws IdempotencyItemAlreadyExistsError', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
@@ -103,7 +103,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when encountering an unknown error, it throws the causing error', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
@@ -137,7 +137,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when called with a record whose key exists, it gets record', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
 
@@ -165,7 +165,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when called with a record whose key does not exist, it throws error', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
   
       const key = 'key';
 
@@ -192,7 +192,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when called to update a record', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
@@ -219,7 +219,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when called with a valid record, record is deleted', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;

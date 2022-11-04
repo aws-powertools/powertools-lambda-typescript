@@ -1,25 +1,36 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { DynamoDB, DynamoDBServiceException } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, GetCommandOutput } from '@aws-sdk/lib-dynamodb';
+import { DynamoPersistenceConstructorOptions } from '../types/DynamoPersistenceConstructorOptions';
 import { IdempotencyItemAlreadyExistsError, IdempotencyItemNotFoundError } from '../Exceptions';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
-import { PersistenceLayer } from './PersistenceLayer';
 import { IdempotencyRecord } from './IdempotencyRecord';
+import { PersistenceLayer } from './PersistenceLayer';
 
 class DynamoDBPersistenceLayer extends PersistenceLayer {
-  private _table: DynamoDBDocument | undefined;
+  private dataAttr: string;
+  private expiryAttr: string;
+  private inProgressExpiryAttr: string;
+  private keyAttr: string;
+  private statusAttr: string;
+  private table: DynamoDBDocument | undefined;
+  private tableName: string;
 
-  public constructor(private tableName: string, private key_attr: string = 'id',
-    private status_attr: string = 'status', private expiry_attr: string = 'expiration',
-    private in_progress_expiry_attr: string = 'in_progress_expiry_attr',
-    private data_attr: string = 'data') {
+  public constructor(constructorOptions: DynamoPersistenceConstructorOptions) {
     super();
+
+    this.tableName = constructorOptions.tableName;
+    this.keyAttr = constructorOptions.keyAttr ?? 'id';
+    this.statusAttr = constructorOptions.statusAttr ?? 'status';
+    this.expiryAttr = constructorOptions.expiryAttr ?? 'expiration';
+    this.inProgressExpiryAttr = constructorOptions.inProgressExpiryAttr ?? 'in_progress_expiry_attr';
+    this.dataAttr = constructorOptions.data_attr ?? 'data';
   }
 
   protected async _deleteRecord(record: IdempotencyRecord): Promise<void> {
     const table: DynamoDBDocument = this.getTable();
     await table.delete({
-      TableName: this.tableName, Key: { [this.key_attr]: record.idempotencyKey }
+      TableName: this.tableName, Key: { [this.keyAttr]: record.idempotencyKey }
     });
   }
 
@@ -27,7 +38,7 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
     const table: DynamoDBDocument = this.getTable();
     const output: GetCommandOutput = await table.get(
       {
-        TableName: this.tableName, Key: { [this.key_attr]: idempotencyKey }
+        TableName: this.tableName, Key: { [this.keyAttr]: idempotencyKey }
       }
     );
 
@@ -35,20 +46,20 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
       throw new IdempotencyItemNotFoundError();
     }
 
-    return new IdempotencyRecord(output.Item[this.key_attr], output.Item[this.status_attr], output.Item[this.expiry_attr], output.Item[this.in_progress_expiry_attr], output.Item[this.data_attr], undefined);
+    return new IdempotencyRecord(output.Item[this.keyAttr], output.Item[this.statusAttr], output.Item[this.expiryAttr], output.Item[this.inProgressExpiryAttr], output.Item[this.dataAttr], undefined);
   }
 
   protected async _putRecord(_record: IdempotencyRecord): Promise<void> {
     const table: DynamoDBDocument = this.getTable();
 
-    const item = { [this.key_attr]: _record.idempotencyKey, [this.expiry_attr]: _record.expiryTimestamp, [this.status_attr]: _record.getStatus() };
+    const item = { [this.keyAttr]: _record.idempotencyKey, [this.expiryAttr]: _record.expiryTimestamp, [this.statusAttr]: _record.getStatus() };
 
     const idempotencyKeyDoesNotExist = 'attribute_not_exists(#id)';
     const idempotencyKeyExpired = '#expiry < :now';
     const notInProgress = 'NOT #status = :inprogress';
     const conditionalExpression = `${idempotencyKeyDoesNotExist} OR ${idempotencyKeyExpired} OR ${notInProgress}`;
     try {
-      await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.key_attr, '#expiry': this.expiry_attr, '#status': this.status_attr }, ExpressionAttributeValues: { ':now': Date.now() / 1000, ':inprogress': IdempotencyRecordStatus.INPROGRESS }, ConditionExpression: conditionalExpression });
+      await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.keyAttr, '#expiry': this.expiryAttr, '#status': this.statusAttr }, ExpressionAttributeValues: { ':now': Date.now() / 1000, ':inprogress': IdempotencyRecordStatus.INPROGRESS }, ConditionExpression: conditionalExpression });
     } catch (e){
       if ((e as DynamoDBServiceException).name === 'ConditionalCheckFailedException'){
         throw new IdempotencyItemAlreadyExistsError();
@@ -62,17 +73,17 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
     const table: DynamoDBDocument = this.getTable();
     await table.update(
       {
-        TableName: this.tableName, Key: { [this.key_attr]: record.idempotencyKey },
-        UpdateExpression: 'SET #status = :status, #expiry = :expiry', ExpressionAttributeNames: { '#status': this.status_attr, '#expiry': this.expiry_attr }, ExpressionAttributeValues: { ':status': record.getStatus(), ':expiry': record.expiryTimestamp }
+        TableName: this.tableName, Key: { [this.keyAttr]: record.idempotencyKey },
+        UpdateExpression: 'SET #status = :status, #expiry = :expiry', ExpressionAttributeNames: { '#status': this.statusAttr, '#expiry': this.expiryAttr }, ExpressionAttributeValues: { ':status': record.getStatus(), ':expiry': record.expiryTimestamp }
       }
     );
   }
 
   private getTable(): DynamoDBDocument {
-    if (!this._table)
-      this._table = DynamoDBDocument.from(new DynamoDB({}), { marshallOptions: { removeUndefinedValues: true } });
+    if (!this.table)
+      this.table = DynamoDBDocument.from(new DynamoDB({}), { marshallOptions: { removeUndefinedValues: true } });
 
-    return this._table;
+    return this.table;
   }
 }
 

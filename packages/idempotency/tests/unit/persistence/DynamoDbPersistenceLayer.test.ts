@@ -176,7 +176,11 @@ describe('Class: DynamoDbPersistenceLayer', () => {
 
       // Assess
       expect(dynamoClient).toReceiveCommandWith(GetCommand, {
-        TableName: tableName, Key: { id: key }
+        TableName: tableName, 
+        Key: { 
+          id: key 
+        },
+        ConsistentRead: true
       });
       expect(record.getStatus()).toEqual(IdempotencyRecordStatus.INPROGRESS);
       expect(record.idempotencyKey).toEqual(key);
@@ -205,7 +209,11 @@ describe('Class: DynamoDbPersistenceLayer', () => {
   
       // Assess
       expect(dynamoClient).toReceiveCommandWith(GetCommand, {
-        TableName: tableName, Key: { id: key }
+        TableName: tableName, 
+        Key: { 
+          id: key 
+        },
+        ConsistentRead: true
       });
       expect(error).toBeInstanceOf(IdempotencyItemNotFoundError);
     });

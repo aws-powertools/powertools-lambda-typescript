@@ -37,7 +37,10 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
     const table: DynamoDBDocument = this.getTable();
     const output: GetCommandOutput = await table.get(
       {
-        TableName: this.tableName, Key: { [this.keyAttr]: idempotencyKey }
+        TableName: this.tableName, Key: { 
+          [this.keyAttr]: idempotencyKey 
+        },
+        ConsistentRead: true
       }
     );
 

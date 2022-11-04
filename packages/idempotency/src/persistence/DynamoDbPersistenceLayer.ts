@@ -45,7 +45,14 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
       throw new IdempotencyItemNotFoundError();
     }
 
-    return new IdempotencyRecord(output.Item[this.keyAttr], output.Item[this.statusAttr], output.Item[this.expiryAttr], output.Item[this.inProgressExpiryAttr], output.Item[this.dataAttr], undefined);
+    return new IdempotencyRecord(
+      output.Item[this.keyAttr], 
+      output.Item[this.statusAttr], 
+      output.Item[this.expiryAttr], 
+      output.Item[this.inProgressExpiryAttr], 
+      output.Item[this.dataAttr], 
+      undefined
+    );
   }
 
   protected async _putRecord(_record: IdempotencyRecord): Promise<void> {
@@ -58,7 +65,21 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
     const notInProgress = 'NOT #status = :inprogress';
     const conditionalExpression = `${idempotencyKeyDoesNotExist} OR ${idempotencyKeyExpired} OR ${notInProgress}`;
     try {
-      await table.put({ TableName: this.tableName, Item: item, ExpressionAttributeNames: { '#id': this.keyAttr, '#expiry': this.expiryAttr, '#status': this.statusAttr }, ExpressionAttributeValues: { ':now': Date.now() / 1000, ':inprogress': IdempotencyRecordStatus.INPROGRESS }, ConditionExpression: conditionalExpression });
+      await table.put({ 
+        TableName: this.tableName, 
+        Item: item, 
+        ExpressionAttributeNames: { 
+          '#id': this.keyAttr, 
+          '#expiry': this.expiryAttr, 
+          '#status': this.statusAttr 
+        }, 
+        ExpressionAttributeValues: {
+          ':now': Date.now() / 1000, 
+          ':inprogress': IdempotencyRecordStatus.INPROGRESS 
+        }, 
+        ConditionExpression: conditionalExpression 
+      }
+      );
     } catch (e){
       if ((e as DynamoDBServiceException).name === 'ConditionalCheckFailedException'){
         throw new IdempotencyItemAlreadyExistsError();
@@ -72,8 +93,19 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
     const table: DynamoDBDocument = this.getTable();
     await table.update(
       {
-        TableName: this.tableName, Key: { [this.keyAttr]: record.idempotencyKey },
-        UpdateExpression: 'SET #status = :status, #expiry = :expiry', ExpressionAttributeNames: { '#status': this.statusAttr, '#expiry': this.expiryAttr }, ExpressionAttributeValues: { ':status': record.getStatus(), ':expiry': record.expiryTimestamp }
+        TableName: this.tableName, 
+        Key: { 
+          [this.keyAttr]: record.idempotencyKey 
+        },
+        UpdateExpression: 'SET #status = :status, #expiry = :expiry', 
+        ExpressionAttributeNames: { 
+          '#status': this.statusAttr, 
+          '#expiry': this.expiryAttr 
+        }, 
+        ExpressionAttributeValues: { 
+          ':status': record.getStatus(), 
+          ':expiry': record.expiryTimestamp 
+        }
       }
     );
   }

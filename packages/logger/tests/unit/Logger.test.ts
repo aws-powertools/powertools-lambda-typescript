@@ -573,6 +573,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1271,6 +1272,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1295,6 +1297,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1321,6 +1324,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1345,6 +1349,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'ERROR',
         logLevelThresholds: {

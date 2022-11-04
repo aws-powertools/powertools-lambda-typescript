@@ -1,5 +1,5 @@
 /**
- * Test Tracer class
+ * Test EnvironmentVariableService class
  *
  * @group unit/idempotency/all
  */
@@ -15,7 +15,7 @@ describe('Class: EnvironmentVariableService', ()=> {
       delete process.env.AWS_LAMBDA_FUNCTION_NAME;
     });
 
-    test('When called it getse the Lambda function name from the environment variable', ()=> {
+    test('When called, it gets the Lambda function name from the environment variable', ()=> {
       const expectedName = process.env.AWS_LAMBDA_FUNCTION_NAME;
 
       const lambdaName = new EnvironmentVariablesService().getLambdaFunctionName();
@@ -23,7 +23,7 @@ describe('Class: EnvironmentVariableService', ()=> {
       expect(lambdaName).toEqual(expectedName);
     });
 
-    test('When called without the environment variable set it returns an empty string', ()=> {
+    test('When called without the environment variable set, it returns an empty string', ()=> {
       delete process.env.AWS_LAMBDA_FUNCTION_NAME;
 
       const lambdaName = new EnvironmentVariablesService().getLambdaFunctionName();

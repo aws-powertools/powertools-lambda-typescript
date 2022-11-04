@@ -2,7 +2,7 @@ import { IdempotencyInvalidStatusError } from '../../../src/Exceptions';
 import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
 import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordStatus';
 /**
- * Test Idempotency Record
+ * Test IdempotencyRecord class
  *
  * @group unit/idempotency/all
  */
@@ -11,7 +11,7 @@ const mockData = undefined;
 const mockInProgressExpiry = 123;
 const mockPayloadHash = '123';
 
-describe('Given an idempotency record that is expired', () => {
+describe('Given an INPROGRESS record that has already expired', () => {
   let idempotencyRecord: IdempotencyRecord;
   beforeEach(() => {
     const mockNowAfterExpiryTime = 1487076708000;

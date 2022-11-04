@@ -1,5 +1,5 @@
 /**
- * Test Tracer class
+ * Test PersistenceLayer class
  *
  * @group unit/idempotency/all
  */
@@ -45,7 +45,7 @@ describe('Class: Persistence Layer', ()=> {
       );
     });
 
-    test('When called it saves an IN_PROGRESS idempotency record', async ()=> {
+    test('When called, it saves an IN_PROGRESS idempotency record via _putRecord()', async ()=> {
       const data = 'someData';
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
 
@@ -55,7 +55,7 @@ describe('Class: Persistence Layer', ()=> {
       expect(savedIdempotencyRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);   
     });
 
-    test('When called it creates an idempotency key from the function name and a digest of the md5 hash of the data', async ()=> {
+    test('When called, it creates an idempotency key from the function name and a digest of the md5 hash of the data', async ()=> {
       const data = 'someData';
       const lambdaFunctionName = 'LambdaName';
       jest.spyOn(EnvironmentVariablesService.prototype, 'getLambdaFunctionName').mockReturnValue(lambdaFunctionName);
@@ -80,7 +80,7 @@ describe('Class: Persistence Layer', ()=> {
       expect(savedIdempotencyRecord.idempotencyKey).toEqual(expectedIdempotencyKey);
     });
 
-    test('When called without a function name it creates an idempotency key from the Lambda name only and a digest of the md5 hash of the data', async ()=> {
+    test('When called without a function name, it creates an idempotency key from the Lambda name only and a digest of the md5 hash of the data', async ()=> {
       const data = 'someData';
       const lambdaFunctionName = 'LambdaName';
       jest.spyOn(EnvironmentVariablesService.prototype, 'getLambdaFunctionName').mockReturnValue(lambdaFunctionName);
@@ -103,7 +103,7 @@ describe('Class: Persistence Layer', ()=> {
       expect(savedIdempotencyRecord.idempotencyKey).toEqual(expectedIdempotencyKey);
     });
 
-    test('When called it sets the expiry timestamp to one hour in the future', async ()=> {
+    test('When called, it sets the expiry timestamp to one hour in the future', async ()=> {
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
       const data = 'someData';
       const currentMillisTime = 3000;
@@ -118,7 +118,7 @@ describe('Class: Persistence Layer', ()=> {
 
     });
 
-    test('When called without data it logs a warning', async ()=> {
+    test('When called without data, it logs a warning', async ()=> {
       const consoleSpy = jest.spyOn(console, 'warn');
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
 
@@ -139,7 +139,7 @@ describe('Class: Persistence Layer', ()=> {
       );
     });
 
-    test('When called it updates the idempotency record to COMPLETED', async () => {
+    test('When called, it updates the idempotency record status to COMPLETED', async () => {
       const data = 'someData';
       const result = {};
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
@@ -151,7 +151,7 @@ describe('Class: Persistence Layer', ()=> {
 
     });
 
-    test('When called it generates the idempotency key from the function name and a digest of the md5 hash of the data', async ()=> {
+    test('When called, it generates the idempotency key from the function name and a digest of the md5 hash of the data', async ()=> {
       const data = 'someData';
       const result = {};
       const lambdaFunctionName = 'LambdaName';
@@ -177,7 +177,7 @@ describe('Class: Persistence Layer', ()=> {
       expect(savedIdempotencyRecord.idempotencyKey).toEqual(expectedIdempotencyKey);
     });
 
-    test('When called it sets the expiry timestamp to one hour in the future', async ()=> {
+    test('When called, it sets the expiry timestamp to one hour in the future', async ()=> {
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
       const data = 'someData';
       const result = {};
@@ -205,7 +205,7 @@ describe('Class: Persistence Layer', ()=> {
         } as unknown as Hash
       );
     });
-    test('When called it gets the record for the idempotency key for the data passed in', ()=> {
+    test('When called, it gets the record for the idempotency key for the data passed in', ()=> {
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
       const data = 'someData';
       const lambdaFunctionName = 'LambdaName';
@@ -232,7 +232,7 @@ describe('Class: Persistence Layer', ()=> {
       );
     });
 
-    test('When called it deletes the record with the idempotency key for the data passed in', ()=> {
+    test('When called, it deletes the record with the idempotency key for the data passed in', ()=> {
       const persistenceLayer: PersistenceLayer = new PersistenceLayerTestClass();
       const data = 'someData';
       const lambdaFunctionName = 'LambdaName';

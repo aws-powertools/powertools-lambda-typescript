@@ -7,7 +7,7 @@ import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
 import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordStatus';
 
 /**
- * Test Dynamo Persistence layer
+  * Test DynamoDBPersistenceLayer class
  *
  * @group unit/idempotency/all
  */
@@ -43,7 +43,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       jest.spyOn(Date, 'now').mockReturnValue(currentDateInMilliseconds);
     });
 
-    test('when called with a record that succeeds condition, it puts record in dynamo table', async () => {
+    test('when called with a record that meets conditions, it puts record in dynamo table', async () => {
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
@@ -68,7 +68,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       });
     });
 
-    test('when called with a record that fails condition, it throws IdempotencyItemAlreadyExistsError', async () => {
+    test('when called with a record that fails any condition, it throws IdempotencyItemAlreadyExistsError', async () => {
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
@@ -134,7 +134,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
   });
 
   describe('Method: _getRecord', () => {
-    test('when called with a record whose key exists, it gets record', async () => {
+    test('when called with a record whose key exists, it gets the correct record', async () => {
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
@@ -162,7 +162,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       expect(record.expiryTimestamp).toEqual(expiryTimestamp);
     });
 
-    test('when called with a record whose key does not exist, it throws error', async () => {
+    test('when called with a record whose key does not exist, it throws IdempotencyItemNotFoundError', async () => {
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
@@ -189,7 +189,7 @@ describe('Class: DynamoDbPersistenceLayer', () => {
   });
 
   describe('Method: _updateRecord', () => {
-    test('when called to update a record', async () => {
+    test('when called to update a record, it resolves successfully', async () => {
       // Prepare
       const tableName = 'tableName';
       const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });

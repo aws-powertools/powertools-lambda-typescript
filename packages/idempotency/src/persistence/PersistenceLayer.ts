@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { BinaryToTextEncoding, createHash, Hash } from 'crypto';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
 import { EnvironmentVariablesService } from '../EnvironmentVariablesService';

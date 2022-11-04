@@ -34,14 +34,10 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    */
   public async deleteRecord(data: unknown): Promise<void> { 
-    const idempotencyRecord: IdempotencyRecord = 
-    new IdempotencyRecord(this.getHashedIdempotencyKey(data),
-      IdempotencyRecordStatus.EXPIRED,
-      undefined,
-      undefined,
-      undefined,
-      undefined
-    );
+    const idempotencyRecord: IdempotencyRecord = new IdempotencyRecord({ 
+      idempotencyKey: this.getHashedIdempotencyKey(data),
+      status: IdempotencyRecordStatus.EXPIRED
+    });
     
     this._deleteRecord(idempotencyRecord);
   }
@@ -63,13 +59,11 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
    */
   public async saveInProgress(data: unknown): Promise<void> { 
     const idempotencyRecord: IdempotencyRecord = 
-    new IdempotencyRecord(this.getHashedIdempotencyKey(data),
-      IdempotencyRecordStatus.INPROGRESS,
-      this.getExpiryTimestamp(),
-      undefined,
-      undefined,
-      undefined
-    );
+    new IdempotencyRecord({
+      idempotencyKey: this.getHashedIdempotencyKey(data),
+      status: IdempotencyRecordStatus.INPROGRESS,
+      expiryTimestamp: this.getExpiryTimestamp()
+    });
 
     return this._putRecord(idempotencyRecord);
   }
@@ -83,13 +77,12 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
    */
   public async saveSuccess(data: unknown, result: Record<string, unknown>): Promise<void> { 
     const idempotencyRecord: IdempotencyRecord = 
-    new IdempotencyRecord(this.getHashedIdempotencyKey(data),
-      IdempotencyRecordStatus.COMPLETED,
-      this.getExpiryTimestamp(),
-      undefined,
-      result,
-      undefined
-    );
+    new IdempotencyRecord({
+      idempotencyKey: this.getHashedIdempotencyKey(data),
+      status: IdempotencyRecordStatus.COMPLETED,
+      expiryTimestamp: this.getExpiryTimestamp(),
+      responseData: result
+    });
 
     this._updateRecord(idempotencyRecord);
 

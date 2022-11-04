@@ -52,7 +52,12 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp
+      });
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).resolves({});
 
       // Act
@@ -77,7 +82,12 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({ 
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp
+      });
 
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).rejects({ name: 'ConditionalCheckFailedException' });
 
@@ -109,7 +119,12 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({ 
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp 
+      });
 
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).rejects(new Error());
 
@@ -145,7 +160,15 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const expiryTimestamp = 10;
       const inProgressExpiryTimestamp = 10;
       const responseData = {};
-      const dynamoClient = mockClient(DynamoDBDocument).on(GetCommand).resolves({ Item: { id: key, status, 'expiration': expiryTimestamp, 'in_progress_expiry_attr': inProgressExpiryTimestamp, data: responseData } });
+      const dynamoClient = mockClient(DynamoDBDocument).on(GetCommand).resolves({ 
+        Item: { 
+          id: key, 
+          status, 
+          'expiration': expiryTimestamp, 
+          'in_progress_expiry_attr': inProgressExpiryTimestamp, 
+          data: responseData 
+        } 
+      });
       jest.spyOn(Date, 'now').mockReturnValue(0);
 
       // Act
@@ -198,7 +221,12 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp
+      });
       const dynamoClient = mockClient(DynamoDBDocument).on(UpdateCommand).resolves({});
 
       // Act
@@ -225,7 +253,12 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({ 
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp
+      });
       const dynamoClient = mockClient(DynamoDBDocument).on(DeleteCommand).resolves({});
 
       // Act

@@ -45,20 +45,23 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
       throw new IdempotencyItemNotFoundError();
     }
 
-    return new IdempotencyRecord(
-      output.Item[this.keyAttr], 
-      output.Item[this.statusAttr], 
-      output.Item[this.expiryAttr], 
-      output.Item[this.inProgressExpiryAttr], 
-      output.Item[this.dataAttr], 
-      undefined
-    );
+    return new IdempotencyRecord({
+      idempotencyKey: output.Item[this.keyAttr], 
+      status: output.Item[this.statusAttr], 
+      expiryTimestamp: output.Item[this.expiryAttr], 
+      inProgressExpiryTimestamp: output.Item[this.inProgressExpiryAttr], 
+      responseData: output.Item[this.dataAttr]
+    });
   }
 
   protected async _putRecord(_record: IdempotencyRecord): Promise<void> {
     const table: DynamoDBDocument = this.getTable();
 
-    const item = { [this.keyAttr]: _record.idempotencyKey, [this.expiryAttr]: _record.expiryTimestamp, [this.statusAttr]: _record.getStatus() };
+    const item = { 
+      [this.keyAttr]: _record.idempotencyKey, 
+      [this.expiryAttr]: _record.expiryTimestamp, 
+      [this.statusAttr]: _record.getStatus()
+    };
 
     const idempotencyKeyDoesNotExist = 'attribute_not_exists(#id)';
     const idempotencyKeyExpired = '#expiry < :now';

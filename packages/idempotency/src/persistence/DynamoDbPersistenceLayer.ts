@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { DynamoDB, DynamoDBServiceException } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, GetCommandOutput } from '@aws-sdk/lib-dynamodb';
 import { DynamoPersistenceConstructorOptions } from '../types/DynamoPersistenceConstructorOptions';

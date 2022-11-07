@@ -287,7 +287,9 @@ class Metrics extends Utility implements MetricsInterface {
   public publishStoredMetrics(): void {
     const target = this.serializeMetrics();
     console.log(JSON.stringify(target));
-    this.storedMetrics = {};
+    this.clearMetrics();
+    this.clearDimensions();
+    this.clearMetadata();
   }
 
   /**
@@ -450,8 +452,8 @@ class Metrics extends Utility implements MetricsInterface {
 
   private setService(service: string | undefined): void {
     const targetService = (service ||
-      this.getCustomConfigService()?.getService() ||
-      this.getEnvVarsService().getService()) as string;
+      this.getCustomConfigService()?.getServiceName() ||
+      this.getEnvVarsService().getServiceName()) as string;
     if (targetService.length > 0) {
       this.addDimension('service', targetService);
     }

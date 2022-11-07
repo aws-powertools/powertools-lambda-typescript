@@ -462,6 +462,44 @@ class Tracer extends Utility implements TracerInterface {
       return descriptor;
     };
   }
+
+  /**
+   * Get the current root AWS X-Ray trace id.
+   * 
+   * Utility method that returns the current AWS X-Ray Root trace id. Useful as correlation id for downstream processes.
+   *
+   * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces
+   * 
+   * @example
+   * ```typescript
+   * import { Tracer } from '@aws-lambda-powertools/tracer';
+   * 
+   * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+   * 
+   * export const handler = async () => {
+   * 
+   *   try {
+   *     ...
+   *   } catch (err) {
+   *     const rootTraceId = tracer.getRootXrayTraceId();
+   *
+   *     // Example of returning an error response
+   *     return {
+   *       statusCode: 500,
+   *       // Include the rootTraceId in the response so we can show a "contact support" button that
+   *       // takes the customer to a customer service form with the trace as additional context.
+   *       body: `Internal Error - Please contact support and quote the following id: ${rootTraceId}`,
+   *       headers: { "_X_AMZN_TRACE_ID": rootTraceId },
+   *     };
+   *   }
+   * }
+   * ```
+   * 
+   * @returns string - The root X-Ray trace id.
+   */
+  public getRootXrayTraceId(): string | undefined {
+    return this.envVarsService.getXrayTraceId();
+  }
   
   /**
    * Get the active segment or subsegment in the current scope.

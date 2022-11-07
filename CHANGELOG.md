@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.3.0...v1.4.0) (2022-10-27)
+
+
+### Bug Fixes
+
+* **metrics:** metadata and dimensions not cleared on publish ([#1129](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1129)) ([b209c30](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/b209c30df92da07875f204f7f211294feea729db))
+
+
+### Features
+
+* **all:** moved EnvService to commons + exposed getXrayTraceId in tracer ([#1123](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1123)) ([c8e3c15](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c8e3c15b64142ebe6f43835a5917ecba26293a32))
+
+
+
+
+
 # [1.3.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.2.1...v1.3.0) (2022-10-17)
 
 

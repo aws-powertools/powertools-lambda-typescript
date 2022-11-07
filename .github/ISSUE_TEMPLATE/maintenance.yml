@@ -1,0 +1,63 @@
+name: Maintenance
+description: Suggest an activity to help address tech debt, governance, and anything internal
+title: "Maintenance: TITLE"
+labels: ["internal", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to help us improve this project.
+
+        *Future readers*: Please react with 👍 and your use case to help us understand customer demand.
+  - type: textarea
+    id: activity
+    attributes:
+      label: Summary
+      description: Please provide an overview in one or two paragraphs
+    validations:
+      required: true
+  - type: textarea
+    id: importance
+    attributes:
+      label: Why is this needed?
+      description: Please help us understand the value so we can prioritize it accordingly
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area does this relate to?
+      multiple: true
+      options:
+        - Automation
+        - Governance
+        - Tests
+        - Types
+        - Tracer
+        - Logger
+        - Metrics
+        - Parameters
+        - Idempotency
+        - Other
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Solution
+      description: If available, please share what a good solution would look like
+    validations:
+      required: false
+  - type: checkboxes
+    id: acknowledgment
+    attributes:
+      label: Acknowledgment
+      options:
+        - label: This request meets [Lambda Powertools Tenets](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets)
+          required: true
+        - label: Should this be considered in other Lambda Powertools languages? i.e. [TypeScript](https://github.com/awslabs/aws-lambda-powertools-typescript/), [Java](https://github.com/awslabs/aws-lambda-powertools-java/)
+          required: false
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **Disclaimer**: After creating an issue, please wait until it is triaged and confirmed by a maintainer before implementing it. This will reduce amount of rework and the chance that a pull request gets rejected.

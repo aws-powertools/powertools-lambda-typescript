@@ -30,11 +30,33 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *   * Context manager to create a one off metric with a different dimension
  *
  * ## Usage
+ * 
+ * ### Functions usage with middleware
+ * 
+ * Using this middleware on your handler function will automatically flush metrics after the function returns or throws an error.
+ * Additionally, you can configure the middleware to easily:
+ * * ensure that at least one metric is emitted before you flush them
+ * * capture a `ColdStart` a metric
+ * * set default dimensions for all your metrics
+ * 
+ * @example
+ * ```typescript
+ * import { Metrics, logMetrics } from '@aws-lambda-powertools/metrics';
+ * import middy from '@middy/core';
+ * 
+ * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+ * 
+ * const lambdaHandler = async (_event: any, _context: any) => {
+ *   ...
+ * };
+ * 
+ * export const handler = middy(lambdaHandler).use(logMetrics(metrics));
+ * ```
  *
  * ### Object oriented way with decorator
  *
  * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the [@metrics.logMetrics()](./_aws_lambda_powertools_metrics.Metrics.html#logMetrics) decorator to automatically:
- *   * create cold start metric
+ *   * capture a `ColdStart` metric
  *   * flush buffered metrics
  *   * throw on empty metrics
  *
@@ -42,23 +64,23 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  *
  * ```typescript
  * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
- * import { Callback, Context } from 'aws-lambda';
+ * import { LambdaInterface } from '@aws-lambda-powertools/commons';
  *
- * const metrics = new Metrics({ namespace:'MyService', serviceName:'withDecorator' });
+ * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
  *
- * export class MyFunctionWithDecorator {
+ * class Lambda implements LambdaInterface {
  *
- *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@metrics* instead of `@metrics.logMetrics`
+ *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@metrics* instead of `@metrics.logMetrics`
  *
  *   @metrics.logMetrics({ captureColdStartMetric: true, throwOnEmptyMetrics: true })
- *   public handler(_event: any, _context: Context, _callback: Callback<any>): void | Promise<void> {
- *    // ...
- *    metrics.addMetric('test-metric', MetricUnits.Count, 10);
- *    // ...
+ *   public handler(_event: any, _context: any): Promise<void> {
+ *     // ...
+ *     metrics.addMetric('test-metric', MetricUnits.Count, 10);
+ *     // ...
  *   }
  * }
  *
- * const handlerClass = new MyFunctionWithDecorator();
+ * const handlerClass = new Lambda();
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  *
@@ -71,7 +93,7 @@ const DEFAULT_NAMESPACE = 'default_namespace';
  * ```typescript
  * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
  *
- * const metrics = new Metrics({ namespace: 'MyService', serviceName: 'MyFunction' });
+ * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
  *
  * export const handler = async (_event: any, _context: any): Promise<void> => {
  *   metrics.captureColdStartMetric();
@@ -164,11 +186,10 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * ```typescript
    * import { Metrics } from '@aws-lambda-powertools/metrics';
-   * import { Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({ namespace:'serverlessAirline', serviceName:'orders' });
+   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
    *
-   * export const handler = async (event: any, context: Context): Promise<void> => {
+   * export const handler = async (event: any, _context: any): Promise<void> => {
    *     metrics.captureColdStartMetric();
    * };
    * ```
@@ -209,19 +230,19 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * ```typescript
    * import { Metrics } from '@aws-lambda-powertools/metrics';
-   * import { Callback, Context } from 'aws-lambda';
+   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
    *
-   * const metrics = new Metrics({ namespace:'CdkExample', serviceName:'withDecorator' });
+   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
    *
-   * export class MyFunctionWithDecorator {
+   * class Lambda implements LambdaInterface {
    *
    *   @metrics.logMetrics({ captureColdStartMetric: true })
-   *   public handler(_event: any, _context: Context, _callback: Callback<any>): void | Promise<any> {
+   *   public handler(_event: any, _context: any): Promise<void> {
    *    // ...
    *   }
    * }
    *
-   * const handlerClass = new MyFunctionWithDecorator();
+   * const handlerClass = new Lambda();
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    *
@@ -276,7 +297,7 @@ class Metrics extends Utility implements MetricsInterface {
    * ```typescript
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    *
-   * const metrics = new Metrics({ namespace: 'CdkExample', serviceName: 'MyFunction' }); // Sets metric namespace, and service as a metric dimension
+   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' }); // Sets metric namespace, and service as a metric dimension
    *
    * export const handler = async (_event: any, _context: any): Promise<void> => {
    *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
@@ -383,11 +404,10 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * ```typescript
    * import { Metrics } from '@aws-lambda-powertools/metrics';
-   * import { Context } from 'aws-lambda';
    *
-   * const metrics = new Metrics({ namespace:'serverlessAirline', serviceName:'orders' });
+   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName:'orders' });
    *
-   * export const handler = async (event: any, context: Context): Promise<void> => {
+   * export const handler = async (_event: any, _context: any): Promise<void> => {
    *     metrics.throwOnEmptyMetrics();
    *     metrics.publishStoredMetrics(); // will throw since no metrics added.
    * };

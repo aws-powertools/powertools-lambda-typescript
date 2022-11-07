@@ -19,14 +19,16 @@ import type { CaptureLambdaHandlerOptions } from '../types';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
- * export const handler = middy(async (_event: any, _context: any) => {
+ * const lambdaHandler = async (_event: any, _context: any) => {
  *   ...
- * }).use(captureLambdaHandler(tracer));
+ * };
+ * 
+ * export const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
  * ```
  * 
  * @param target - The Tracer instance to use for tracing
  * @param options - (_optional_) Options for the middleware
- * @returns middleware object - The middy middleware object
+ * @returns middleware - The middy middleware object
  */
 const captureLambdaHandler = (target: Tracer, options?: CaptureLambdaHandlerOptions): middy.MiddlewareObj => {
   let lambdaSegment: Subsegment | Segment;

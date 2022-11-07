@@ -75,7 +75,7 @@ The `Tracer` utility is instantiated outside of the Lambda handler. In doing thi
 
     // You can also pass the parameter in the constructor
     // const tracer = new Tracer({
-    //     serviceName: "serverlessAirline"
+    //     serviceName: 'serverlessAirline'
     // });
     ```
 
@@ -510,7 +510,7 @@ Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [
             return {
                 statusCode: 500,
                 body: `Internal Error - Please contact support and quote the following id: ${rootTraceId}`,
-                headers: { "_X_AMZN_TRACE_ID": rootTraceId },
+                headers: { '_X_AMZN_TRACE_ID': rootTraceId },
             };
         }
     };

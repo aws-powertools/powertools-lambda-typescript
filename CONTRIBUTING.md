@@ -88,7 +88,7 @@ the [eslint extension](https://marketplace.visualstudio.com/items?itemName=dbaeu
 ### Repo Layout
 
 The AWS Lambda Powertools is a npm project written in [TypeScript](https://www.typescriptlang.org/).
-More specifically, it is a [monorepo managed using lerna](https://github.com/lerna/lerna#about).
+More specifically, it is a [monorepo managed using npm workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces).
 If you're unfamiliar with any of these technologies, it is useful to learn about them and will make understanding the codebase easier but strictly not necessary for simple contributions.
 
 The repo contains `packages/` directory that contains the Powertools utilities modules. For instance, the source code for the Logger utility can be found at the location `packages/logger` and so on.

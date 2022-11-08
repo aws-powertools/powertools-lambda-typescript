@@ -105,7 +105,7 @@ Your Logger will include the following keys to your structured logging (default 
 | **error**: `Object`         | `{ name: "Error", location: "/my-project/handler.ts:18", message: "Unexpected error #1", stack: "[stacktrace]"}` | Optional - An object containing information about the Error passed to the logger                                                                                                                                                |
 
 ???+ info
-    When `POWERTOOLS_DEV` environment variable is present and set to `"true"`, Logger will pretty-print log messages for easier readability. We recommend to use this setting only when debugging on local environments.
+    When `POWERTOOLS_DEV` environment variable is present and set to `"true"` or `"1"`, Logger will pretty-print log messages for easier readability. We recommend to use this setting only when debugging on local environments.
 
 ### Capturing Lambda context info
 

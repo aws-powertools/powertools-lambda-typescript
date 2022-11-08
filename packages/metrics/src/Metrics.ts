@@ -455,7 +455,7 @@ class Metrics extends Utility implements MetricsInterface {
       this.getCustomConfigService()?.getServiceName() ||
       this.getEnvVarsService().getServiceName()) as string;
     if (targetService.length > 0) {
-      this.addDimension('service', targetService);
+      this.setDefaultDimensions({ service: targetService });
     }
   }
 

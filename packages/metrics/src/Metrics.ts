@@ -177,8 +177,8 @@ class Metrics extends Utility implements MetricsInterface {
     if (!this.isColdStart()) return;
     const singleMetric = this.singleMetric();
 
-    if (this.dimensions.service) {
-      singleMetric.addDimension('service', this.dimensions.service);
+    if (this.defaultDimensions.service) {
+      singleMetric.setDefaultDimensions({ service: this.defaultDimensions.service });
     }
     if (this.functionName != null) {
       singleMetric.addDimension('function_name', this.functionName);

@@ -38,9 +38,11 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
- * export const handler = middy(async (_event: any, _context: any) => {
+* const lambdaHandler = async (_event: any, _context: any) => {
  *   ...
- * }).use(captureLambdaHandler(tracer));
+ * };
+ * 
+ * export const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
  * ```
  * 
  * ### Object oriented usage with decorators
@@ -54,12 +56,13 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
+ * import { LambdaInterface } from '@aws-lambda-powertools/commons';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
- * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@tracer* instead of `@tracer.captureLambdaHandler`
+ * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@tracer* instead of `@tracer.captureLambdaHandler`
  * 
- * class Lambda {
+ * class Lambda implements LambdaInterface {
  *   @tracer.captureLambdaHandler()
  *   public handler(event: any, context: any) {
  *     ...
@@ -77,7 +80,6 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
- * import { Segment } from 'aws-xray-sdk-core';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
@@ -93,7 +95,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *
  *   let res;
  *   try {
- *       res = ...
+ *       // ... your own logic goes here
  *       // Add the response as metadata 
  *       tracer.addResponseAsMetadata(res, process.env._HANDLER);
  *   } catch (err) {
@@ -245,11 +247,11 @@ class Tracer extends Utility implements TracerInterface {
    * 
    * @example
    * ```typescript
-   * import { S3 } from "aws-sdk";
+   * import { S3 } from 'aws-sdk';
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * const s3 = tracer.captureAWSClient(new S3({ apiVersion: "2006-03-01" }));
+   * const s3 = tracer.captureAWSClient(new S3({ apiVersion: '2006-03-01' }));
    * 
    * export const handler = async (_event: any, _context: any) => {
    *   ...
@@ -287,7 +289,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    * @example
    * ```typescript
-   * import { S3Client } from "@aws-sdk/client-s3";
+   * import { S3Client } from '@aws-sdk/client-s3';
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
@@ -323,10 +325,11 @@ class Tracer extends Utility implements TracerInterface {
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
+   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
-   * class Lambda {
+   * class Lambda implements LambdaInterface {
    *   @tracer.captureLambdaHandler()
    *   public handler(event: any, context: any) {
    *     ...
@@ -400,10 +403,11 @@ class Tracer extends Utility implements TracerInterface {
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
+   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
-   * class Lambda {
+   * class Lambda implements LambdaInterface {
    *   @tracer.captureMethod()
    *   public myMethod(param: any) {
    *     ...
@@ -477,7 +481,6 @@ class Tracer extends Utility implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
    * export const handler = async () => {
-   * 
    *   try {
    *     ...
    *   } catch (err) {
@@ -489,7 +492,7 @@ class Tracer extends Utility implements TracerInterface {
    *       // Include the rootTraceId in the response so we can show a "contact support" button that
    *       // takes the customer to a customer service form with the trace as additional context.
    *       body: `Internal Error - Please contact support and quote the following id: ${rootTraceId}`,
-   *       headers: { "_X_AMZN_TRACE_ID": rootTraceId },
+   *       headers: { '_X_AMZN_TRACE_ID': rootTraceId },
    *     };
    *   }
    * }
@@ -623,7 +626,7 @@ class Tracer extends Utility implements TracerInterface {
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * import { Segment } from 'aws-xray-sdk-core';
+   * import { Subsegment } from 'aws-xray-sdk-core';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 

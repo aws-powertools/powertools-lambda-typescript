@@ -39,28 +39,12 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger } from "@aws-lambda-powertools/logger";
+ * import { Logger } from '@aws-lambda-powertools/logger';
  *
  * // Logger parameters fetched from the environment variables:
  * const logger = new Logger();
  * ```
- *
- * ### Functions usage with manual instrumentation
- *
- * If you prefer to manually instrument your Lambda handler you can use the methods in the Logger class directly.
- *
- * @example
- * ```typescript
- * import { Logger } from "@aws-lambda-powertools/logger";
- *
- * const logger = new Logger();
- *
- * export const handler = async (_event, context) => {
- *     logger.addContext(context);
- *     logger.info("This is an INFO log with some context");
- * };
- * ```
- *
+ * 
  * ### Functions usage with middleware
  *
  * If you use function-based Lambda handlers you can use the [injectLambdaContext()](#injectLambdaContext)
@@ -68,13 +52,13 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
+ * import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
  * import middy from '@middy/core';
  *
  * const logger = new Logger();
  *
  * const lambdaHandler = async (_event: any, _context: any) => {
- *     logger.info("This is an INFO log with some context");
+ *     logger.info('This is an INFO log with some context');
  * };
  *
  * export const handler = middy(lambdaHandler).use(injectLambdaContext(logger));
@@ -86,21 +70,40 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger } from "@aws-lambda-powertools/logger";
+ * import { Logger } from '@aws-lambda-powertools/logger';
  * import { LambdaInterface } from '@aws-lambda-powertools/commons';
  *
  * const logger = new Logger();
  *
  * class Lambda implements LambdaInterface {
+ * 
+ *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@logger* instead of `@logger.injectLambdaContext`
+ * 
  *     // Decorate your handler class method
  *     @logger.injectLambdaContext()
  *     public async handler(_event: any, _context: any): Promise<void> {
- *         logger.info("This is an INFO log with some context");
+ *         logger.info('This is an INFO log with some context');
  *     }
  * }
  *
  * const handlerClass = new Lambda();
  * export const handler = handlerClass.handler.bind(handlerClass);
+ * ```
+ * 
+ * ### Functions usage with manual instrumentation
+ *
+ * If you prefer to manually instrument your Lambda handler you can use the methods in the Logger class directly.
+ *
+ * @example
+ * ```typescript
+ * import { Logger } from '@aws-lambda-powertools/logger';
+ *
+ * const logger = new Logger();
+ *
+ * export const handler = async (_event, context) => {
+ *     logger.addContext(context);
+ *     logger.info('This is an INFO log with some context');
+ * };
  * ```
  *
  * @class
@@ -269,9 +272,32 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * Method decorator that adds the current Lambda function context as extra
    * information in all log items.
+   * 
    * The decorator can be used only when attached to a Lambda function handler which
    * is written as method of a class, and should be declared just before the handler declaration.
    *
+   * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
+   * function syntax, you should use the middleware instead.
+   * 
+   * @example
+   * ```typescript
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+   *
+   * const logger = new Logger();
+   *
+   * class Lambda implements LambdaInterface {
+   *     // Decorate your handler class method
+   *     @logger.injectLambdaContext()
+   *     public async handler(_event: any, _context: any): Promise<void> {
+   *         logger.info('This is an INFO log with some context');
+   *     }
+   * }
+   *
+   * const handlerClass = new Lambda();
+   * export const handler = handlerClass.handler.bind(handlerClass);
+   * ```
+   * 
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */

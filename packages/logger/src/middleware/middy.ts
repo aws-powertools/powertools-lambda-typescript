@@ -3,7 +3,7 @@ import type middy from '@middy/core';
 import { HandlerOptions, LogAttributes } from '../types';
 
 /**
- * A middy middleware that adds the current Lambda invocation's context inside all log items.
+ * A middy middleware that helps emitting CloudWatch EMF metrics in your logs.
  *
  * Using this middleware on your handler function will automatically add context information to logs, as well as optionally log the event and clear attributes set during the invocation.
  * 

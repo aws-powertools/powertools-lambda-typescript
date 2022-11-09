@@ -5,7 +5,7 @@ concurrency:
   group: on-release-publish
 jobs:
   run-unit-tests:
-    uses: ./.github/workflows/reusable-run-unit-tests.yml
+    uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
   publish-npm:
     needs: run-unit-tests
     runs-on: ubuntu-latest

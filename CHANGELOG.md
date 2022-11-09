@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.4.0...v1.4.1) (2022-11-09)
+
+
+### Bug Fixes
+
+* **metrics:** store service name in defaultDimensions to avoid clearing it ([#1146](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1146)) ([a979202](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/a979202ae0563f8ce00dee98bbf15d0bcfcfd3cc))
+
+
+
+
+
 # [1.4.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.3.0...v1.4.0) (2022-10-27)
 
 

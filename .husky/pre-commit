@@ -1,4 +1,10 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run lerna-lint-fix
+npm run lint-fix -ws
+cd examples/sam && npm run lint-fix
+cd ../..
+cd examples/cdk && npm run lint-fix
+cd ../..
+cd layer-publisher && npm run lint-fix
+cd ..

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "The tracer package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",
@@ -21,13 +21,10 @@
     "build": "tsc",
     "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
     "lint-fix": "eslint --fix --ext .ts --no-error-on-unmatched-pattern src tests",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
-    "version": "npm run lint-fix && git add -A src",
-    "postversion": "git push && git push --tags",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
-    "package-bundle": "../../package-bundler.sh tracer-bundle ./dist"
+    "package-bundle": "../../package-bundler.sh tracer-bundle ./dist",
+    "prepare": "npm run build",
+    "postversion": "git push --tags"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/tracer#readme",
   "license": "MIT-0",
@@ -50,7 +47,7 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^1.4.0",
+    "@aws-lambda-powertools/commons": "^1.4.1",
     "aws-xray-sdk-core": "^3.3.6"
   },
   "keywords": [

@@ -1,6 +1,6 @@
 {
   "name": "sam-example",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -35,9 +35,9 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^1.3.0",
-    "@aws-lambda-powertools/metrics": "^1.3.0",
-    "@aws-lambda-powertools/tracer": "^1.3.0",
+    "@aws-lambda-powertools/logger": "^1.4.0",
+    "@aws-lambda-powertools/metrics": "^1.4.0",
+    "@aws-lambda-powertools/tracer": "^1.4.0",
     "aws-sdk": "^2.1122.0"
   }
 }

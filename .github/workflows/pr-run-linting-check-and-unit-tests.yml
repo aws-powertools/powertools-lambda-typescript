@@ -5,4 +5,4 @@ on:
     types: [opened, synchronize]
 jobs:
   run-unit-tests:
-    uses: ./.github/workflows/reusable-run-unit-tests.yml
+    uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml

@@ -247,14 +247,14 @@ describe('Middy middleware', () => {
             CloudWatchMetrics: [
               {
                 Namespace: 'serverlessAirline',
-                Dimensions: [[ 'environment', 'aws_region', 'service', 'function_name' ]],
+                Dimensions: [[ 'service', 'environment', 'aws_region', 'function_name' ]],
                 Metrics: [{ Name: 'ColdStart', Unit: 'Count' }],
               },
             ],
           },
+          service: 'orders',
           environment: 'prod',
           aws_region: 'eu-west-1',
-          service: 'orders',
           function_name: 'foo-bar-function',
           ColdStart: 1,
         })
@@ -267,14 +267,14 @@ describe('Middy middleware', () => {
             CloudWatchMetrics: [
               {
                 Namespace: 'serverlessAirline',
-                Dimensions: [[ 'environment', 'aws_region', 'service' ]],
+                Dimensions: [[ 'service', 'environment', 'aws_region' ]],
                 Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
               },
             ],
           },
+          service: 'orders',
           environment: 'prod',
           aws_region: 'eu-west-1',
-          service: 'orders',
           successfulBooking: 1,
         })
       );

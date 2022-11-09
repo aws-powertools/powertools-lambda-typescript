@@ -1,6 +1,6 @@
 {
-  "name": "cdk-app",
-  "version": "1.4.0",
+  "name": "cdk-sample",
+  "version": "1.4.1",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -14,8 +14,8 @@
     "build": "tsc --skipLibCheck",
     "watch": "tsc -w",
     "test": "npm run test:unit",
-    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
-    "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
+    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests --resolve-plugins-relative-to .",
+    "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests --resolve-plugins-relative-to .",
     "package": "echo 'Not applicable'",
     "package-bundle": "echo 'Not applicable'",
     "test:unit": "npm run build && jest",
@@ -26,17 +26,22 @@
   "devDependencies": {
     "@types/jest": "^27.4.0",
     "@types/node": "18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.40.1",
+    "@typescript-eslint/parser": "^5.40.1",
     "aws-cdk": "^2.0.0",
     "esbuild": "^0.14.23",
+    "eslint-import-resolver-node": "^0.3.6",
+    "eslint-import-resolver-typescript": "^2.7.1",
+    "eslint-plugin-import": "^2.26.0",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.4",
     "ts-node": "^10.7.0",
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^1.3.0",
-    "@aws-lambda-powertools/metrics": "^1.3.0",
-    "@aws-lambda-powertools/tracer": "^1.3.0",
+    "@aws-lambda-powertools/logger": "^1.4.0",
+    "@aws-lambda-powertools/metrics": "^1.4.0",
+    "@aws-lambda-powertools/tracer": "^1.4.0",
     "@aws-sdk/client-sts": "^3.53.0",
     "@middy/core": "^2.5.6",
     "@types/aws-lambda": "^8.10.86",

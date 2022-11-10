@@ -15,7 +15,7 @@
     "test": "npm t -ws",
     "commit": "commit",
     "package": "npm run package",
-    "setup-local": "npm ci --foreground-scripts && cd examples/cdk && npm ci && cd ../../examples/sam && npm ci && cd ../../layer-publisher && npm ci && cd ../.. && npm run init-environment",
+    "setup-local": "export PROJECT_ROOT=$(pwd) && npm ci --foreground-scripts && cd $PROJECT_ROOT/examples/cdk && npm ci && cd $PROJECT_ROOT/examples/sam && npm ci && cd $PROJECT_ROOT/layer-publisher && npm ci && cd $PROJECT_ROOT/ && npm run init-environment",
     "build": "npm run build -ws",
     "postversion": "git push && git push --tags",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",

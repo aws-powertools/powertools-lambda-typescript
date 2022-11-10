@@ -339,7 +339,9 @@ describe('Middy middleware', () => {
         getDevMode(): boolean {
           return false;
         },
-
+        isValueTrue(): boolean {
+          return true;
+        },
       };
 
       const logger = new Logger({

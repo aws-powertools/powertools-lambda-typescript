@@ -313,6 +313,9 @@ describe('Helper: createLogger function', () => {
         getDevMode(): boolean {
           return false;
         },
+        isValueTrue(): boolean {
+          return true;
+        },
         
       };
       // Prepare

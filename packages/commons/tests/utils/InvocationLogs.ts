@@ -69,7 +69,7 @@ export class InvocationLogs {
    * @returns Array of function logs
    */
   public getFunctionLogs(levelToFilter?: LEVEL): string[] {
-    let filteredLogs = this.logs.slice(1, -2);
+    let filteredLogs = this.logs.slice(1, this.getIdxOfLogThatStartsWith('END RequestId:'));
 
     if (levelToFilter) {
       filteredLogs = filteredLogs.filter((log) => {
@@ -86,6 +86,18 @@ export class InvocationLogs {
     }
 
     return filteredLogs;
+  }
+
+  /**
+   * Return the index of the log entry that starts with a given prefix
+   * @param prefix 
+   * @returns The index of the log entry with that prefix
+   */
+  public getIdxOfLogThatStartsWith(prefix: string): number {
+    const foundLog = this.logs.find((log: string) => log.startsWith(prefix));
+    if (!foundLog) throw new Error(`Unable to find log with prefix ${prefix}`);
+
+    return this.logs.indexOf(foundLog);
   }
 
   /**

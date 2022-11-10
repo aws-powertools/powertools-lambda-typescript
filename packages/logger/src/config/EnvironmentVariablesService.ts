@@ -54,7 +54,7 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
   public getDevMode(): boolean {
     const value = this.get(this.devModeVariable);
 
-    return value.toLowerCase() === 'true' || value === '1';
+    return this.isValueTrue(value);
   }
 
   /**
@@ -93,8 +93,8 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
    */
   public getLogEvent(): boolean {
     const value = this.get(this.logEventVariable);
-
-    return value.toLowerCase() === 'true' || value === '1';
+    
+    return this.isValueTrue(value);
   }
 
   /**
@@ -115,6 +115,18 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
     const value = this.get(this.sampleRateValueVariable);
 
     return (value && value.length > 0) ? Number(value) : undefined;
+  }
+
+  /**
+   * It returns true if the string value represents a boolean true value.
+   *
+   * @param {string} value
+   * @returns boolean
+   */
+  public isValueTrue(value: string): boolean {
+    const truthyValues: string[] = [ '1', 'y', 'yes', 't', 'true', 'on' ];
+
+    return truthyValues.includes(value.toLowerCase());
   }
 
 }

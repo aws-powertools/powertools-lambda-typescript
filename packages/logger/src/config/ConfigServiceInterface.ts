@@ -57,6 +57,14 @@ interface ConfigServiceInterface {
    */
   getServiceName(): string
 
+  /**
+   * It returns true if the string value represents a boolean true value.
+   *
+   * @param {string} value
+   * @returns boolean
+   */
+  isValueTrue(value: string): boolean
+
 }
 
 export {

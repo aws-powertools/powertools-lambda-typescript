@@ -77,6 +77,7 @@ describe('Helper: createLogger function', () => {
         customConfigService: expect.any(EnvironmentVariablesService),
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'WARN',
         console: expect.any(Console),
@@ -117,6 +118,7 @@ describe('Helper: createLogger function', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'INFO',
         console: expect.any(Console),
@@ -238,6 +240,7 @@ describe('Helper: createLogger function', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'INFO',
         console: expect.any(Console),
@@ -307,7 +310,13 @@ describe('Helper: createLogger function', () => {
         getServiceName(): string {
           return 'my-backend-service';
         },
-
+        getDevMode(): boolean {
+          return false;
+        },
+        isValueTrue(): boolean {
+          return true;
+        },
+        
       };
       // Prepare
       const loggerOptions:ConstructorOptions = {

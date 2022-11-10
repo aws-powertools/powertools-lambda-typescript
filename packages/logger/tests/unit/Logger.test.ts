@@ -11,7 +11,7 @@ import * as dummyEvent from '../../../../tests/resources/events/custom/hello-wor
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
-import { ClassThatLogs } from '../../src/types';
+import { ClassThatLogs, LogJsonIndent } from '../../src/types';
 import { Context, Handler } from 'aws-lambda';
 import { Console } from 'console';
 
@@ -573,6 +573,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1271,6 +1272,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1295,6 +1297,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1321,6 +1324,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1345,6 +1349,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
+        logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'ERROR',
         logLevelThresholds: {
@@ -1408,6 +1413,51 @@ describe('Class: Logger', () => {
         }
       },
       ));
+    });
+  });
+
+  describe('Feature: Pretty indentation for a local or non-production environment', () => {
+    
+    test('when the `POWERTOOLS_DEV` env var is SET it makes log output has multiple lines', () => {
+      
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'true';
+      const INDENTATION = LogJsonIndent.PRETTY;
+      const logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+
+      // Act
+      logger.info('Message with pretty identation');
+      
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        level: 'INFO',
+        message: 'Message with pretty identation',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      }, null, INDENTATION));
+    });
+
+    test('when the `POWERTOOLS_DEV` env var is NOT SET it makes log output as one-liner', () => {
+        
+      // Prepare
+      const logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+
+      // Act
+      logger.info('Message without pretty identation');
+      
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+        level: 'INFO',
+        message: 'Message without pretty identation',
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      }));
     });
   });
 

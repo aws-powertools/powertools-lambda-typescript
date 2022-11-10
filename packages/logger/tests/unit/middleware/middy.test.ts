@@ -336,7 +336,12 @@ describe('Middy middleware', () => {
         getServiceName(): string {
           return 'my-backend-service';
         },
-
+        getDevMode(): boolean {
+          return false;
+        },
+        isValueTrue(): boolean {
+          return true;
+        },
       };
 
       const logger = new Logger({

@@ -6,6 +6,7 @@ import { LogItem } from './log';
 import cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { LogJsonIndent } from './types';
 import type {
   ClassThatLogs,
   Environment,
@@ -126,6 +127,8 @@ class Logger extends Utility implements ClassThatLogs {
   private logEvent: boolean = false;
 
   private logFormatter?: LogFormatterInterface;
+
+  private logIndentation: number = LogJsonIndent.COMPACT;
 
   private logLevel?: LogLevel;
 
@@ -595,7 +598,7 @@ class Logger extends Utility implements ClassThatLogs {
 
     const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
 
-    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
+    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies(), this.logIndentation));
   }
 
   /**
@@ -689,6 +692,19 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * If the `POWERTOOLS_DEV' env variable is set,
+   * it adds JSON indentation for pretty printing logs.
+   *
+   * @private
+   * @returns {void}
+   */
+  private setLogIndentation(): void {
+    if (this.getEnvVarsService().getDevMode()) {
+      this.logIndentation = LogJsonIndent.PRETTY;
+    }
+  }
+
+  /**
    * It sets the Logger's instance log level.
    *
    * @private
@@ -757,6 +773,7 @@ class Logger extends Utility implements ClassThatLogs {
     this.setLogFormatter(logFormatter);
     this.setPowertoolLogData(serviceName, environment);
     this.setLogEvent();
+    this.setLogIndentation();
     
     this.addPersistentLogAttributes(persistentLogAttributes);
 

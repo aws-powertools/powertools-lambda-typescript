@@ -23,6 +23,13 @@ interface ConfigServiceInterface {
   getCurrentEnvironment(): string
 
   /**
+   * It returns the value of the POWERTOOLS_DEV environment variable.
+   *
+   * @returns {boolean}
+   */
+  getDevMode(): boolean
+
+  /**
    * It returns the value of the POWERTOOLS_LOGGER_LOG_EVENT environment variable.
    *
    * @returns {boolean}
@@ -49,6 +56,14 @@ interface ConfigServiceInterface {
    * @returns {string}
    */
   getServiceName(): string
+
+  /**
+   * It returns true if the string value represents a boolean true value.
+   *
+   * @param {string} value
+   * @returns boolean
+   */
+  isValueTrue(value: string): boolean
 
 }
 

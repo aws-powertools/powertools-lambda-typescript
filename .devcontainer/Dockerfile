@@ -7,14 +7,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/javascript-node:0-${VARIANT}
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends bash-completion
 
-# [Optional] Uncomment if you want to install an additional version of node using nvm
-# ARG EXTRA_NODE_VERSION=10
-# RUN su node -c "umask 0002 && ./usr/local/share/nvm/nvm.sh && nvm install ${EXTRA_NODE_VERSION}"
-
 RUN wget https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip \
     && unzip aws-sam-cli-linux-x86_64.zip -d sam-installation \
     && sudo ./sam-installation/install \
     && rm -rf sam-installation aws-sam-cli-linux-*
-
-# Global node modules
-RUN su node -c "npm install -g npm-check-updates npm@next-8"

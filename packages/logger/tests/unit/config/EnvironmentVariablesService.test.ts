@@ -119,49 +119,10 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(true);
     });
 
-    test('It returns true if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "TRUE"', () => {
-
-      // Prepare
-      process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'TRUE';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getLogEvent();
-
-      // Assess
-      expect(value).toEqual(true);
-    });
-
-    test('It returns true if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "1"', () => {
-
-      // Prepare
-      process.env.POWERTOOLS_LOGGER_LOG_EVENT = '1';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getLogEvent();
-
-      // Assess
-      expect(value).toEqual(true);
-    });
-
     test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "false"', () => {
 
       // Prepare
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'false';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getLogEvent();
-
-      // Assess
-      expect(value).toEqual(false);
-    });
-
-    test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "0"', () => {
-
-      // Prepare
-      process.env.POWERTOOLS_LOGGER_LOG_EVENT = '0';
       const service = new EnvironmentVariablesService();
 
       // Act
@@ -235,62 +196,10 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(true);
     });
 
-    test('It returns true if the environment variable POWERTOOLS_DEV is "TRUE"', () => {
-
-      // Prepare
-      process.env.POWERTOOLS_DEV = 'TRUE';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getDevMode();
-
-      // Assess
-      expect(value).toEqual(true);
-    });
-
-    test('It returns true if the environment variable POWERTOOLS_DEV is "1"', () => {
-
-      // Prepare
-      process.env.POWERTOOLS_DEV = '1';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getDevMode();
-
-      // Assess
-      expect(value).toEqual(true);
-    });
-
     test('It returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
 
       // Prepare
       process.env.POWERTOOLS_DEV = 'false';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getDevMode();
-
-      // Assess
-      expect(value).toEqual(false);
-    });
-
-    test('It returns false if the environment variable POWERTOOLS_DEV is "FALSE"', () => {
-
-      // Prepare
-      process.env.POWERTOOLS_DEV = 'FALSE';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.getDevMode();
-
-      // Assess
-      expect(value).toEqual(false);
-    });
-
-    test('It returns false if the environment variable POWERTOOLS_DEV is "0"', () => {
-
-      // Prepare
-      process.env.POWERTOOLS_DEV = '0';
       const service = new EnvironmentVariablesService();
 
       // Act
@@ -326,6 +235,33 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(false);
     });
 
+  });
+
+  describe('Method: isValueTrue', () => {
+
+    const valuesToTest: Array<Array<string | boolean>> = [
+      [ '1', true ],
+      [ 'y', true ],
+      [ 'yes', true ],
+      [ 't', true ],
+      [ 'TRUE', true ],
+      [ 'on', true ],
+      [ '', false ],
+      [ 'false', false ],
+      [ 'fasle', false ],
+      [ 'somethingsilly', false ],
+      [ '0', false ]
+    ];
+
+    test.each(valuesToTest)('It takes string "%s" and returns %s', (input, output) => {
+      // Prepare
+      const service = new EnvironmentVariablesService();
+      // Act
+      const value = service.isValueTrue(input as string);
+      // Assess
+      expect(value).toBe(output);
+    });
+    
   });
 
 });

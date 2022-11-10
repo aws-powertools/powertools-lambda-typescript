@@ -7,7 +7,7 @@
 import { Console } from 'console';
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
-import { ConstructorOptions } from '../../src/types';
+import type { ConstructorOptions, LogAttributes, UnformattedAttributes } from '../../src/types';
 import { createLogger, Logger } from './../../src';
 
 describe('Helper: createLogger function', () => {
@@ -143,8 +143,37 @@ describe('Helper: createLogger function', () => {
     test('when a custom logFormatter is passed, returns a Logger instance with the correct proprieties', () => {
 
       // Prepare
+      class MyCustomLogFormatter extends LogFormatter {
+
+        public formatAttributes(attributes: UnformattedAttributes): LogAttributes {
+          return {
+            message: attributes.message,
+            service: attributes.serviceName,
+            environment: attributes.environment,
+            awsRegion: attributes.awsRegion,
+            correlationIds: {
+              awsRequestId: attributes.lambdaContext?.awsRequestId,
+              xRayTraceId: attributes.xRayTraceId
+            },
+            lambdaFunction: {
+              name: attributes.lambdaContext?.functionName,
+              arn: attributes.lambdaContext?.invokedFunctionArn,
+              memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
+              version: attributes.lambdaContext?.functionVersion,
+              coldStart: attributes.lambdaContext?.coldStart,
+            },
+            logLevel: attributes.logLevel,
+            timestamp: this.formatTimestamp(attributes.timestamp),
+            logger: {
+              sampleRateValue: attributes.sampleRateValue,
+            },
+          };
+        }
+    
+      }
+
       const loggerOptions:ConstructorOptions = {
-        logFormatter: expect.any(LogFormatter),
+        logFormatter: expect.any(MyCustomLogFormatter),
       };
 
       // Act
@@ -164,7 +193,7 @@ describe('Helper: createLogger function', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'DEBUG',
-        logFormatter: expect.any(LogFormatter),
+        logFormatter: expect.any(MyCustomLogFormatter),
       }));
     });
 

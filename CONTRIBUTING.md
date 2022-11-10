@@ -76,7 +76,7 @@ The following tools need to be installed on your system prior to starting workin
 First, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository, and then run the following commands to clone and initialize the repository locally.
 
 > **Note**
-> In order for the commands below to work you need Node.js 16.x and npm 8.x
+> In order for the commands below to work you need Node.js `16.x` and npm `8.x`
 
 ```console
 git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git

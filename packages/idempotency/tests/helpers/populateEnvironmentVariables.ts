@@ -1,0 +1,2 @@
+// Reserved variables
+process.env.AWS_REGION = 'us-east-1';

@@ -56,8 +56,8 @@
  * ```
  */
 export class Utility {
-  
   private coldStart: boolean = true;
+  private readonly defaultServiceName: string = 'service_undefined';
 
   public getColdStart(): boolean {
     if (this.coldStart) {
@@ -67,6 +67,10 @@ export class Utility {
     }
 
     return false;
+  }
+
+  public getDefaultServiceName(): string {
+    return this.defaultServiceName;
   }
 
   public isColdStart(): boolean {

@@ -128,7 +128,7 @@ class Tracer extends Utility implements TracerInterface {
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
   
-  private serviceName?: string;
+  private serviceName!: string;
   
   private tracingEnabled: boolean = true;
 
@@ -189,7 +189,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    */
   public addServiceNameAnnotation(): void {
-    if (!this.isTracingEnabled() || this.serviceName === undefined) {
+    if (!this.isTracingEnabled()) {
       return;
     }
     this.putAnnotation('Service', this.serviceName);
@@ -836,6 +836,7 @@ class Tracer extends Utility implements TracerInterface {
 
       return;
     }
+    this.serviceName = this.getDefaultServiceName();
   }
 
   /**

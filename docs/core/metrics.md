@@ -69,7 +69,7 @@ These settings will be used across all metrics emitted:
 | Setting              | Description                                                     | Environment variable          | Default            | Allowed Values | Example            | Constructor parameter |
 |----------------------|-----------------------------------------------------------------|-------------------------------|--------------------|----------------|--------------------|-----------------------|
 | **Service**          | Optionally, sets **service** metric dimension across all metrics| `POWERTOOLS_SERVICE_NAME`     | `service_undefined`| Any string     | `serverlessAirline`| `serviceName`         |
-| **Metric namespace** | Logical container where all metrics will be placed              | `POWERTOOLS_METRICS_NAMESPACE`| `default_namespace`| Any string     | `serverlessAirline`|  `namespace`          |
+| **Metric namespace** | Logical container where all metrics will be placed              | `POWERTOOLS_METRICS_NAMESPACE`| `default_namespace`| Any string     | `serverlessAirline`|  `default_namespace`          |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics

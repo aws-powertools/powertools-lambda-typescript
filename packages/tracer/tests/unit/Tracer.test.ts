@@ -134,21 +134,6 @@ describe('Class: Tracer', () => {
 
     });
 
-    test('when called while a serviceName has not been set, it does nothing', () => {
-
-      // Prepare
-      delete process.env.POWERTOOLS_SERVICE_NAME;
-      const tracer: Tracer = new Tracer();
-      const putAnnotation = jest.spyOn(tracer, 'putAnnotation').mockImplementation(() => null);
-
-      // Act
-      tracer.addServiceNameAnnotation();
-
-      // Assess
-      expect(putAnnotation).toBeCalledTimes(0);
-
-    });
-
   });
 
   describe('Method: addResponseAsMetadata', () => {

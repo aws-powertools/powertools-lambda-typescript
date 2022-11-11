@@ -7,7 +7,7 @@ import { DeleteCommand, DynamoDBDocument, GetCommand, PutCommand, UpdateCommand 
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 import { IdempotencyItemAlreadyExistsError, IdempotencyItemNotFoundError } from '../../../src/Exceptions';
-import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDbPersistenceLayer';
+import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDBPersistenceLayer';
 import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
 import { DynamoPersistenceConstructorOptions } from '../../../src/types/DynamoPersistenceConstructorOptions';
 import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordStatus';

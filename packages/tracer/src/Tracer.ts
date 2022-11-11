@@ -189,7 +189,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    */
   public addServiceNameAnnotation(): void {
-    if (!this.isTracingEnabled()) {
+    if (!this.isTracingEnabled() || this.serviceName === undefined) {
       return;
     }
     this.putAnnotation('Service', this.serviceName);

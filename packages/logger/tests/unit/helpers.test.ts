@@ -46,13 +46,14 @@ describe('Helper: createLogger function', () => {
         },
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
         logLevel: 'DEBUG',
         logFormatter: expect.any(PowertoolLogFormatter),
       }));
 
     });
 
-    test('when no parameters are set, returns a Logger instance with the correct proprieties', () => {
+    test('when no parameters are set, returns a Logger instance with the correct properties', () => {
 
       // Prepare
       const loggerOptions = {
@@ -74,6 +75,7 @@ describe('Helper: createLogger function', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual({
         coldStart: true,
+        defaultServiceName: 'service_undefined',
         customConfigService: expect.any(EnvironmentVariablesService),
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
@@ -100,7 +102,7 @@ describe('Helper: createLogger function', () => {
 
     });
 
-    test('when no constructor parameters and no environment variables are set, returns a Logger instance with the default proprieties', () => {
+    test('when no constructor parameters and no environment variables are set, returns a Logger instance with the default properties', () => {
 
       // Prepare
       const loggerOptions = undefined;
@@ -115,6 +117,7 @@ describe('Helper: createLogger function', () => {
       expect(logger).toEqual({
         coldStart: true,
         customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -138,7 +141,7 @@ describe('Helper: createLogger function', () => {
 
     });
 
-    test('when a custom logFormatter is passed, returns a Logger instance with the correct proprieties', () => {
+    test('when a custom logFormatter is passed, returns a Logger instance with the correct properties', () => {
 
       // Prepare
       const loggerOptions:ConstructorOptions = {
@@ -166,7 +169,7 @@ describe('Helper: createLogger function', () => {
       }));
     });
 
-    test('when a custom serviceName is passed, returns a Logger instance with the correct proprieties', () => {
+    test('when a custom serviceName is passed, returns a Logger instance with the correct properties', () => {
 
       // Prepare
       const loggerOptions:ConstructorOptions = {
@@ -194,7 +197,7 @@ describe('Helper: createLogger function', () => {
       }));
     });
 
-    test('when a custom logLevel is passed, returns a Logger instance with the correct proprieties', () => {
+    test('when a custom logLevel is passed, returns a Logger instance with the correct properties', () => {
 
       // Prepare
       const loggerOptions:ConstructorOptions = {
@@ -236,6 +239,7 @@ describe('Helper: createLogger function', () => {
       expect(logger).toEqual({
         coldStart: true,
         customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -258,7 +262,7 @@ describe('Helper: createLogger function', () => {
       });
     });
 
-    test('when a custom sampleRateValue is passed, returns a Logger instance with the correct proprieties', () => {
+    test('when a custom sampleRateValue is passed, returns a Logger instance with the correct properties', () => {
 
       // Prepare
       const loggerOptions:ConstructorOptions = {
@@ -286,7 +290,7 @@ describe('Helper: createLogger function', () => {
       }));
     });
 
-    test('when a custom customConfigService is passed, returns a Logger instance with the correct proprieties', () => {
+    test('when a custom customConfigService is passed, returns a Logger instance with the correct properties', () => {
 
       const configService: ConfigServiceInterface = {
         get(name: string): string {
@@ -335,7 +339,7 @@ describe('Helper: createLogger function', () => {
       }));
     });
 
-    test('when custom persistentLogAttributes is passed, returns a Logger instance with the correct proprieties', () => {
+    test('when custom persistentLogAttributes is passed, returns a Logger instance with the correct properties', () => {
 
       // Prepare
       const loggerOptions:ConstructorOptions = {
@@ -377,7 +381,7 @@ describe('Helper: createLogger function', () => {
       }));
     });
 
-    test('when A custom environment is passed, returns a Logger instance with the correct proprieties', () => {
+    test('when a custom environment is passed, returns a Logger instance with the correct properties', () => {
 
       // Prepare
       const loggerOptions:ConstructorOptions = {

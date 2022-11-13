@@ -1,4 +1,4 @@
-# Contributing Guidelines
+# Contributing Guidelines <!-- omit in toc -->
 
 Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional
 documentation, we greatly value feedback and contributions from our community.
@@ -6,11 +6,28 @@ documentation, we greatly value feedback and contributions from our community.
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
 information to effectively respond to your bug report or contribution.
 
-## Table of contents
+## Table of contents <!-- omit in toc -->
 
 - [Security issue notifications](#security-issue-notifications)
 - [Code of Conduct](#code-of-conduct)
 - [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
+- [Getting Started](#getting-started)
+  - [Setup](#setup)
+  - [Repo Layout](#repo-layout)
+  - [Tests](#tests)
+    - [Unit tests](#unit-tests)
+      - [Write](#write)
+      - [Run](#run)
+    - [e2e tests](#e2e-tests)
+      - [Set up](#set-up)
+      - [Write](#write-1)
+      - [Run](#run-1)
+      - [Automate](#automate)
+  - [Examples](#examples)
+  - [Local documentation](#local-documentation)
+    - [API reference](#api-reference)
+    - [Docs website](#docs-website)
+  - [Conventions](#conventions)
 - [Contributing via Pull Requests](#contributing-via-pull-requests)
   - [Summary](#summary)
   - [Step 1: Find something to work on](#step-1-find-something-to-work-on)
@@ -18,17 +35,6 @@ information to effectively respond to your bug report or contribution.
   - [Step 3: Work your Magic](#step-3-work-your-magic)
   - [Step 4: Pull Request](#step-4-pull-request)
   - [Step 5: Merge](#step-5-merge)
-- [Getting Started](#getting-started)
-  - [Setup](#setup)
-  - [Repo Layout](#repo-layout)
-  - [Tests](#tests)
-    - [Unit tests](#unit-tests)
-    - [e2e tests](#e2e-tests)
-  - [Examples](#examples)
-  - [Local documentation](#local-documentation)
-    - [API reference](#api-reference)
-    - [Docs website](#docs-website)
-  - [Conventions](#conventions)
 - [Licensing](#licensing)
 
 ## Security issue notifications
@@ -252,13 +258,13 @@ Alternatively you can run these two commands:
 
 ### Conventions
 
-Category | Convention
-------------------------------------------------- | ---------------------------------------------------------------------------------
-**Docstring** |  We use [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) annotations to provide type information and create API references.
-**Style guide** | We use `eslint` to keep our code consistent in terms of style and reducing defects.
-**Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.
-**Git commits** | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.
-**Documentation** | API reference docs are generated from docstrings which should have an Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise.
+| Category          | Convention                                                                                                                                                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Docstring**     | We use [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) annotations to provide type information and create API references.                                                                             |
+| **Style guide**   | We use `eslint` to keep our code consistent in terms of style and reducing defects.                                                                                                                                                    |
+| **Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.                                                                    |
+| **Git commits**   | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.                                                             |
+| **Documentation** | API reference docs are generated from docstrings which should have an Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise. |
 
 ## Contributing via Pull Requests
 

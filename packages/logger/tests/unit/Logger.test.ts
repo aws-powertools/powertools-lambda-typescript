@@ -4,27 +4,22 @@
  * @group unit/logger/all
  */
 
-import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
+import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
 import { ClassThatLogs, LogJsonIndent } from '../../src/types';
-import { Context, Handler } from 'aws-lambda';
+import { Context } from 'aws-lambda';
 import { Console } from 'console';
-
-interface LambdaInterface {
-  handler: Handler
-}
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
 
 describe('Class: Logger', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-
+  const context = dummyContext.helloworldContext;
+  const event = dummyEvent.Custom.CustomEvent;
+  
   beforeEach(() => {
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
@@ -244,7 +239,7 @@ describe('Class: Logger', () => {
           const logger: Logger & { addContext: (context: Context) => void } = createLogger({
             logLevel: 'DEBUG',
           });
-          logger.addContext(dummyContext);
+          logger.addContext(context);
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
 
           // Act
@@ -829,7 +824,7 @@ describe('Class: Logger', () => {
       }
 
       // Act
-      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -865,7 +860,7 @@ describe('Class: Logger', () => {
 
       // Act
       logger.info('An INFO log without context!');
-      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
 
@@ -912,7 +907,7 @@ describe('Class: Logger', () => {
 
       // Act
       logger.info('An INFO log without context!');
-      const actualResult = await new LambdaFunction().handler(dummyEvent, dummyContext);
+      const actualResult = await new LambdaFunction().handler(event, context);
 
       // Assess
 
@@ -971,7 +966,7 @@ describe('Class: Logger', () => {
       const persistentAttribs = { ...logger.getPersistentLogAttributes() };
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
 
       // Assess
@@ -1017,7 +1012,7 @@ describe('Class: Logger', () => {
 
       // Act & Assess
       const executeLambdaHandler = async (): Promise<void> => {
-        await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+        await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
       };
       await expect(executeLambdaHandler()).rejects.toThrow('Unexpected error occurred!');
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
@@ -1050,7 +1045,7 @@ describe('Class: Logger', () => {
       }
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1094,7 +1089,7 @@ describe('Class: Logger', () => {
       }
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1148,7 +1143,7 @@ describe('Class: Logger', () => {
       // Act
       const lambda = new LambdaFunction('someValue');
       const handler = lambda.handler.bind(lambda);
-      await handler({}, dummyContext, () => console.log('Lambda invoked!'));
+      await handler({}, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1198,7 +1193,7 @@ describe('Class: Logger', () => {
       // Act
       const lambda = new LambdaFunction();
       const handler = lambda.handler.bind(lambda);
-      await handler({}, dummyContext, () => console.log('Lambda invoked!'));
+      await handler({}, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1381,7 +1376,7 @@ describe('Class: Logger', () => {
       const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
 
       // Act
-      logger.logEventIfEnabled(dummyEvent);
+      logger.logEventIfEnabled(event);
 
       // Assess
 

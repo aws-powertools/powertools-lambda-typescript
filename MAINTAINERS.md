@@ -1,4 +1,3 @@
-<!--  markdownlint-disable MD043 -->
 ## Table of contents <!-- omit in toc -->
 
 - [Overview](#overview)

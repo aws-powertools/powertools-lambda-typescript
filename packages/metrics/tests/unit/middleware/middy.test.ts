@@ -6,9 +6,6 @@
 
 import { Metrics, MetricUnits, logMetrics } from '../../../../metrics/src';
 import middy from '@middy/core';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import * as event from '../../../../../tests/resources/events/custom/hello-world.json';
 import { ExtraOptions } from '../../../src/types';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -16,6 +13,27 @@ const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
 
 describe('Middy middleware', () => {
+  
+  const dummyEvent = {
+    key1: 'value1',
+    key2: 'value2',
+    key3: 'value3',
+  };
+  const dummyContext = {
+    callbackWaitsForEmptyEventLoop: true,
+    functionVersion: '$LATEST',
+    functionName: 'foo-bar-function',
+    memoryLimitInMB: '128',
+    logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
+    logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+    invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
+    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+    getRemainingTimeInMillis: () => 1234,
+    done: () => console.log('Done!'),
+    fail: () => console.log('Failed!'),
+    succeed: () => console.log('Succeeded!'),
+  };
+  
   beforeEach(() => {
     jest.resetModules();
     consoleSpy.mockClear();
@@ -23,23 +41,6 @@ describe('Middy middleware', () => {
   });
 
   describe('throwOnEmptyMetrics', () => {
-    const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
-    const awsRequestId = getRandomInt().toString();
-
-    const context = {
-      callbackWaitsForEmptyEventLoop: true,
-      functionVersion: '$LATEST',
-      functionName: 'foo-bar-function',
-      memoryLimitInMB: '128',
-      logGroupName: '/aws/lambda/foo-bar-function',
-      logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-      awsRequestId: awsRequestId,
-      getRemainingTimeInMillis: () => 1234,
-      done: () => console.log('Done!'),
-      fail: () => console.log('Failed!'),
-      succeed: () => console.log('Succeeded!'),
-    };
 
     test('should throw on empty metrics if set to true', async () => {
       // Prepare
@@ -52,7 +53,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics, { throwOnEmptyMetrics: true }));
 
       try {
-        await handler(event, context, () => console.log('Lambda invoked!'));
+        await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
       } catch (e) {
         expect((<Error>e).message).toBe('The number of metrics recorded must be higher than zero');
       }
@@ -69,7 +70,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics, { throwOnEmptyMetrics: false }));
 
       try {
-        await handler(event, context, () => console.log('Lambda invoked!'));
+        await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
       } catch (e) {
         fail(`Should not throw but got the following Error: ${e}`);
       }
@@ -86,7 +87,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
       try {
-        await handler(event, context, () => console.log('Lambda invoked!'));
+        await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
       } catch (e) {
         fail(`Should not throw but got the following Error: ${e}`);
       }
@@ -94,23 +95,6 @@ describe('Middy middleware', () => {
   });
 
   describe('captureColdStartMetric', () => {
-    const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
-    const awsRequestId = getRandomInt().toString();
-
-    const context = {
-      callbackWaitsForEmptyEventLoop: true,
-      functionVersion: '$LATEST',
-      functionName: 'foo-bar-function',
-      memoryLimitInMB: '128',
-      logGroupName: '/aws/lambda/foo-bar-function',
-      logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-      awsRequestId: awsRequestId,
-      getRemainingTimeInMillis: () => 1234,
-      done: () => console.log('Done!'),
-      fail: () => console.log('Failed!'),
-      succeed: () => console.log('Succeeded!'),
-    };
 
     test('should capture cold start metric if set to true', async () => {
       // Prepare
@@ -122,8 +106,8 @@ describe('Middy middleware', () => {
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics, { captureColdStartMetric: true }));
 
-      await handler(event, context, () => console.log('Lambda invoked!'));
-      await handler(event, context, () => console.log('Lambda invoked! again'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked! again'));
       const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(5);
@@ -143,8 +127,8 @@ describe('Middy middleware', () => {
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics, { captureColdStartMetric: false }));
 
-      await handler(event, context, () => console.log('Lambda invoked!'));
-      await handler(event, context, () => console.log('Lambda invoked! again'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked! again'));
       const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(loggedData[0]._aws).toBe(undefined);
@@ -160,8 +144,8 @@ describe('Middy middleware', () => {
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
-      await handler(event, context, () => console.log('Lambda invoked!'));
-      await handler(event, context, () => console.log('Lambda invoked! again'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked! again'));
       const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(loggedData[0]._aws).toBe(undefined);
@@ -169,23 +153,6 @@ describe('Middy middleware', () => {
   });
 
   describe('logMetrics', () => {
-    const getRandomInt = (): number => Math.floor(Math.random() * 1000000000);
-    const awsRequestId = getRandomInt().toString();
-
-    const context = {
-      callbackWaitsForEmptyEventLoop: true,
-      functionVersion: '$LATEST',
-      functionName: 'foo-bar-function',
-      memoryLimitInMB: '128',
-      logGroupName: '/aws/lambda/foo-bar-function',
-      logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-      awsRequestId: awsRequestId,
-      getRemainingTimeInMillis: () => 1234,
-      done: () => console.log('Done!'),
-      fail: () => console.log('Failed!'),
-      succeed: () => console.log('Succeeded!'),
-    };
 
     test('when a metrics instance receive multiple metrics with the same name, it prints multiple values in an array format', async () => {
       // Prepare
@@ -199,7 +166,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
       // Act
-      await handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenNthCalledWith(
@@ -236,7 +203,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics, metricsOptions));
 
       // Act
-      await handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenNthCalledWith(
@@ -291,7 +258,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
       // Act
-      await handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenNthCalledWith(
@@ -326,7 +293,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics([metrics], metricsOptions));
 
       // Act
-      await handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenNthCalledWith(

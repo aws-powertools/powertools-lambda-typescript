@@ -4,15 +4,12 @@
  * @group unit/tracer/all
  */
 
+import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Tracer } from '../../src';
-import { Callback, Context, Handler } from 'aws-lambda/handler';
+import { Callback, Context } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
 import { DynamoDB } from 'aws-sdk';
 import { ProviderServiceInterface } from '../../src/provider';
-
-interface LambdaInterface {
-  handler: Handler
-}
 
 type CaptureAsyncFuncMock = jest.SpyInstance<unknown, [name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment]>;
 const createCaptureAsyncFuncMock = function(provider: ProviderServiceInterface, subsegment?: Subsegment): CaptureAsyncFuncMock {
@@ -32,25 +29,8 @@ jest.spyOn(console, 'error').mockImplementation(() => null);
 
 describe('Class: Tracer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const event = {
-    key1: 'value1',
-    key2: 'value2',
-    key3: 'value3',
-  };
-  const context = {
-    callbackWaitsForEmptyEventLoop: true,
-    functionVersion: '$LATEST',
-    functionName: 'foo-bar-function',
-    memoryLimitInMB: '128',
-    logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
-    logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-    invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
-    getRemainingTimeInMillis: () => 1234,
-    done: () => console.log('Done!'),
-    fail: () => console.log('Failed!'),
-    succeed: () => console.log('Succeeded!'),
-  };
+  const context = dummyContext.helloworldContext;
+  const event = dummyEvent.Custom.CustomEvent;
 
   beforeEach(() => {
     jest.clearAllMocks();

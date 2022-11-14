@@ -310,7 +310,7 @@ describe('Helper: createLogger function', () => {
         getServiceName(): string {
           return 'my-backend-service';
         },
-        getDevMode(): boolean {
+        isDevMode(): boolean {
           return false;
         },
         isValueTrue(): boolean {

@@ -1243,6 +1243,7 @@ describe('Class: Logger', () => {
     test('when called, it returns a DISTINCT clone of the logger instance', () => {
 
       // Prepare
+      const INDENTATION = LogJsonIndent.COMPACT;
       const parentLogger = new Logger();
 
       // Act
@@ -1261,7 +1262,10 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(parentLogger === childLogger).toBe(false);
-      expect(parentLogger).toEqual(childLogger);
+      expect(childLogger).toEqual({
+        ...parentLogger,
+        console: expect.any(Console),
+      });
       expect(parentLogger === childLoggerWithPermanentAttributes).toBe(false);
       expect(parentLogger === childLoggerWithSampleRateEnabled).toBe(false);
       expect(parentLogger === childLoggerWithErrorLogLevel).toBe(false);
@@ -1272,7 +1276,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1297,7 +1301,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1324,7 +1328,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1349,7 +1353,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'ERROR',
         logLevelThresholds: {

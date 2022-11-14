@@ -1465,4 +1465,25 @@ describe('Class: Logger', () => {
     });
   });
 
+  describe('Method: setConsole()', () => {
+    
+    test('When the `POWERTOOLS_DEV` env var is SET console object is set to the global node console otherwise to the instance of the internal version of console', () => {
+
+      // Prepare
+      const logger = new Logger();
+      process.env.POWERTOOLS_DEV = 'true';
+      const devLogger = new Logger();
+
+      // Assess
+      expect(devLogger).toEqual({
+        ...devLogger,
+        console: console,
+      });
+      expect(logger).not.toEqual({
+        ...logger,
+        console: console,
+      });
+    });
+  });
+
 });

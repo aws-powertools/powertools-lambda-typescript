@@ -974,4 +974,4 @@ This is a Jest sample that provides the minimum information necessary for Logger
 
 ### Suppress logs with Jest
 
-When unit testing your code with the `POWERTOOLS_DEV` environment variable enabled, you could run Jest with the `--silent` CLI option to make the console readable and clean. It prevents printing messages through the console from tests and logs as well.
+When unit testing your code with [Jest](https://jestjs.io) you can use the `POWERTOOLS_DEV` environment variable in conjunction with the Jest `--silent` CLI option to suppress logs from Logger.

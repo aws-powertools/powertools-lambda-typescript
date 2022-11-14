@@ -575,21 +575,6 @@ class Logger extends Utility implements ClassThatLogs {
 
     return <number> this.powertoolLogData.sampleRateValue;
   }
-
-  /**
-   * It initializes console property as an instance of the internal version of Console() class (PR #748)
-   * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
-   *
-   * @private
-   * @returns {void}
-   */
-  private initConsole(): void {
-    if (!this.getEnvVarsService().isDevMode()) {
-      this.console = new Console({ stdout: process.stdout, stderr: process.stderr });
-    } else {
-      this.console = console;
-    }
-  }
   
   /**
    * It returns true if the provided log level is valid.
@@ -656,6 +641,21 @@ class Logger extends Utility implements ClassThatLogs {
 
       return item;
     };
+  }
+
+  /**
+   * It initializes console property as an instance of the internal version of Console() class (PR #748)
+   * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
+   *
+   * @private
+   * @returns {void}
+   */
+  private setConsole(): void {
+    if (!this.getEnvVarsService().isDevMode()) {
+      this.console = new Console({ stdout: process.stdout, stderr: process.stderr });
+    } else {
+      this.console = console;
+    }
   }
 
   /**
@@ -783,8 +783,7 @@ class Logger extends Utility implements ClassThatLogs {
 
     this.setEnvVarsService();
     // order is important, it uses EngVarsService()
-    this.initConsole();
-    
+    this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setLogLevel(logLevel);
     this.setSampleRateValue(sampleRateValue);

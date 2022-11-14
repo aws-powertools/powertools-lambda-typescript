@@ -1479,6 +1479,8 @@ describe('Class: Logger', () => {
         ...devLogger,
         console: console,
       });
+      // since instances of a class are not equal objects,
+      // we assert the opposite – console is not the global node object
       expect(logger).not.toEqual({
         ...logger,
         console: console,

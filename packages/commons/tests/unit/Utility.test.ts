@@ -12,6 +12,14 @@ describe('Class: Utility', () => {
     jest.resetModules();
   });
 
+  describe('Method: getDefaultServiceName', ()=> {
+    test('it returns the default service name', ()=> {
+      const utility = new Utility();
+
+      expect(utility.getDefaultServiceName).toBe('service_undefined');
+    });
+  });
+
   describe('Method: getColdStart', () => {
 
     test('when called multiple times on the parent class, it returns true the first time, then false afterwards', () => {

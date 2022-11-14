@@ -975,3 +975,7 @@ This is a Jest sample that provides the minimum information necessary for Logger
 ### Suppress logs with Jest
 
 When unit testing your code with [Jest](https://jestjs.io) you can use the `POWERTOOLS_DEV` environment variable in conjunction with the Jest `--silent` CLI option to suppress logs from Logger.
+
+```bash title="Disabling logs while testing with Jest"
+export POWERTOOLS_DEV=true && npx jest --silent
+```

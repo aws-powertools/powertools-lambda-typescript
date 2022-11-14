@@ -94,6 +94,7 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | status/discussing                      | Items that need to be discussed, elaborated, or refined                                        |                                                    |
 | status/on-hold                         | Items that are on hold and will be revisited in the future                                     |                                                    |
 | status/pending-release                 | Merged changes that will be available soon                                                     | Release automation auto-closes/notifies it         |
+| status/completed                       | Items that are complete and have been merged and/or shipped                                    |                                                    |
 | status/rejected                        | This is something we will not be working on. At least, not in the measurable future            |                                                    |
 | status/pending-close-response-required | This issue will be closed soon unless the discussion moves forward                             | Stale Automation                                   |
 | good-first-issue                       | Something that is suitable for those who want to start contributing                            |                                                    |

@@ -807,21 +807,21 @@ class Tracer extends Utility implements TracerInterface {
    * @param serviceName - Name of the service to use
    */
   private setServiceName(serviceName?: string): void {
-    if (serviceName !== undefined && Tracer.isValidServiceName(serviceName)) {
+    if (serviceName !== undefined && this.isValidServiceName(serviceName)) {
       this.serviceName = serviceName;
 
       return;
     }
 
     const customConfigValue = this.getCustomConfigService()?.getServiceName();
-    if (customConfigValue !== undefined && Tracer.isValidServiceName(customConfigValue)) {
+    if (customConfigValue !== undefined && this.isValidServiceName(customConfigValue)) {
       this.serviceName = customConfigValue;
 
       return;
     }
 
     const envVarsValue = this.getEnvVarsService().getServiceName();
-    if (envVarsValue !== undefined && Tracer.isValidServiceName(envVarsValue)) {
+    if (envVarsValue !== undefined && this.isValidServiceName(envVarsValue)) {
       this.serviceName = envVarsValue;
 
       return;

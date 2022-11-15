@@ -69,12 +69,12 @@ export class Utility {
     return false;
   }
 
-  public getDefaultServiceName(): string {
-    return this.defaultServiceName;
-  }
-
   public isColdStart(): boolean {
     return this.getColdStart();
+  }
+
+  protected getDefaultServiceName(): string {
+    return this.defaultServiceName;
   }
 
   /**
@@ -83,8 +83,7 @@ export class Utility {
  * 
  * @param serviceName - Service name to validate
  */
-  public static isValidServiceName(serviceName?: string): boolean {
+  protected isValidServiceName(serviceName?: string): boolean {
     return typeof serviceName === 'string' && serviceName.trim().length > 0;
   }
-
 }

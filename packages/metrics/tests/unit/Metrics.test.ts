@@ -69,7 +69,8 @@ describe('Class: Metrics', () => {
       metrics.addDimension(additionalDimension.name, additionalDimension.value);
       const loggedData = metrics.serializeMetrics();
 
-      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      // Expect the additional dimension, and the service dimension
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
     });
 
@@ -97,15 +98,18 @@ describe('Class: Metrics', () => {
 
       expect(console.log).toBeCalledTimes(2);
       expect(loggedData[0][dimensionItem.name]).toEqual(dimensionItem.value);
-      expect(loggedData[0]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      // Expect the additional dimension, and the service dimension
+      expect(loggedData[0]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData[1][dimensionItem.name]).toBeUndefined();
-      expect(loggedData[1]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(0);
+      // Expect just the service dimension
+      expect(loggedData[1]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
     });
 
     test('Adding more than max dimensions should throw error', () => {
       expect.assertions(1);
       const metrics = new Metrics();
-      for (let x = 0; x < MAX_DIMENSION_COUNT; x++) {
+      // The service dimension is already set, so start from 1
+      for (let x = 1; x < MAX_DIMENSION_COUNT; x++) {
         metrics.addDimension(`Dimension-${x}`, `value-${x}`);
       }
       try {
@@ -123,7 +127,8 @@ describe('Class: Metrics', () => {
       metrics.addDimensions(additionalDimensions);
       const loggedData = metrics.serializeMetrics();
 
-      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+      // Expect the additional dimensions, and the service dimension
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
       Object.keys(additionalDimensions).forEach((key) => {
         expect(loggedData[key]).toEqual(additionalDimensions[key]);
       });
@@ -242,7 +247,8 @@ describe('Class: Metrics', () => {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
           metrics.addDimension(additionalDimension.name, additionalDimension.value);
           const loggedData = metrics.serializeMetrics();
-          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+          // Expect the additional dimensions, and the service dimension
+          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
           expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
           metrics.clearDimensions();
         }
@@ -252,7 +258,8 @@ describe('Class: Metrics', () => {
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(1);
-      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      // Expect the additional dimension, and the service dimension
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('default');
       expect(loggedData.default).toContain('defaultValue');
     });
@@ -654,7 +661,8 @@ describe('Class: Metrics', () => {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
           metrics.addDimension(additionalDimension.name, additionalDimension.value);
           const loggedData = metrics.serializeMetrics();
-          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+          // Expect the additional dimensions, and the service dimension
+          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
           expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
           metrics.clearDimensions();
 
@@ -666,7 +674,8 @@ describe('Class: Metrics', () => {
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(1);
-      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      // Expect the additional dimension, and the service dimension
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('default');
       expect(loggedData.default).toContain('defaultValue');
     });

@@ -119,8 +119,6 @@ class Logger extends Utility implements ClassThatLogs {
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
 
-  private static readonly defaultServiceName: string = 'service_undefined';
-
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
 
@@ -803,7 +801,7 @@ class Logger extends Utility implements ClassThatLogs {
           this.getEnvVarsService().getCurrentEnvironment(),
         sampleRateValue: this.getSampleRateValue(),
         serviceName:
-          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || Logger.defaultServiceName,
+          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || this.getDefaultServiceName(),
       },
       persistentLogAttributes,
     );

@@ -56,8 +56,8 @@
  * ```
  */
 export class Utility {
-  
   private coldStart: boolean = true;
+  private readonly defaultServiceName: string = 'service_undefined';
 
   public getColdStart(): boolean {
     if (this.coldStart) {
@@ -73,4 +73,17 @@ export class Utility {
     return this.getColdStart();
   }
 
+  protected getDefaultServiceName(): string {
+    return this.defaultServiceName;
+  }
+
+  /**
+ * Validate that the service name provided is valid.
+ * Used internally during initialization.
+ * 
+ * @param serviceName - Service name to validate
+ */
+  protected isValidServiceName(serviceName?: string): boolean {
+    return typeof serviceName === 'string' && serviceName.trim().length > 0;
+  }
 }

@@ -114,7 +114,7 @@ describe('Class: Tracer', () => {
 
     });
 
-    test('when called while a serviceName has not been set, it does nothing', () => {
+    test('when called when a serviceName has not been set in the constructor or environment variables, it adds the default service name as an annotation', () => {
 
       // Prepare
       delete process.env.POWERTOOLS_SERVICE_NAME;
@@ -125,7 +125,8 @@ describe('Class: Tracer', () => {
       tracer.addServiceNameAnnotation();
 
       // Assess
-      expect(putAnnotation).toBeCalledTimes(0);
+      expect(putAnnotation).toBeCalledTimes(1);
+      expect(putAnnotation).toBeCalledWith('Service', 'service_undefined');
 
     });
 

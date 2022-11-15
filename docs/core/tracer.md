@@ -50,13 +50,13 @@ The `Tracer` utility must always be instantiated outside of the Lambda handler. 
 
 The library has three optional settings. You can set them as environment variables, or pass them in the constructor:
 
-| Setting                    | Description                                                                                                     | Environment variable                       | Constructor parameter  |
-|----------------------------|-----------------------------------------------------------------------------------------------------------------| -------------------------------------------|------------------------|
-| **Service name**           | Sets an annotation with the **name of the service** across all traces e.g. `serverlessAirline`                  | `POWERTOOLS_SERVICE_NAME`                  | `serviceName`          |
-| **Tracing enabled**        | Enables or disables tracing. By default tracing is enabled when running in AWS Lambda                           | `POWERTOOLS_TRACE_ENABLED`                 | `enabled`              |
-| **Capture HTTPs Requests** | Defines whether HTTPs requests will be traced or not, enabled by default when tracing is also enabled           | `POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS` | `captureHTTPsRequests` |
-| **Capture Response**       | Defines whether functions responses are serialized as metadata, enabled by default when tracing is also enabled | `POWERTOOLS_TRACER_CAPTURE_RESPONSE`       | `captureResult`        |
-| **Capture Errors**         | Defines whether functions errors are serialized as metadata, enabled by default when tracing is also enabled    | `POWERTOOLS_TRACER_CAPTURE_ERROR`          | N/A                    |
+| Setting                    | Description                                                           | Environment variable                       | Default            | Allowed Values   | Example            | Constructor parameter  |
+|----------------------------|-----------------------------------------------------------------------| -------------------------------------------|--------------------|------------------|--------------------|------------------------|
+| **Service name**           | Sets an annotation with the **name of the service** across all traces | `POWERTOOLS_SERVICE_NAME`                  | `service_undefined`| Any string       | `serverlessAirline`| `serviceName`          |
+| **Tracing enabled**        | Enables or disables tracing.                                          | `POWERTOOLS_TRACE_ENABLED`                 | `true             `| `true` or `false`| `false`            | `enabled`              |
+| **Capture HTTPs Requests** | Defines whether HTTPs requests will be traced or not                  | `POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS` | `true`             | `true` or `false`| `false`            | `captureHTTPsRequests` |
+| **Capture Response**       | Defines whether functions responses are serialized as metadata        | `POWERTOOLS_TRACER_CAPTURE_RESPONSE`       | `true`             | `true` or `false`| `false`            | `captureResult`        |
+| **Capture Errors**         | Defines whether functions errors are serialized as metadata           | `POWERTOOLS_TRACER_CAPTURE_ERROR`          | `true`             | `true` or `false`| `false`            | N/A                    |
 
 !!! note
     Before your use this utility, your AWS Lambda function must have [Active Tracing enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html) as well as [have permissions](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html#services-xray-permissions) to send traces to AWS X-Ray

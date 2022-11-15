@@ -473,7 +473,7 @@ class Metrics extends Utility implements MetricsInterface {
   private setService(service: string | undefined): void {
     const targetService = (service ||
       this.getCustomConfigService()?.getServiceName() ||
-      this.getEnvVarsService().getServiceName()) as string;
+      this.getEnvVarsService().getServiceName()) as string || this.getDefaultServiceName();
     if (targetService.length > 0) {
       this.setDefaultDimensions({ service: targetService });
     }

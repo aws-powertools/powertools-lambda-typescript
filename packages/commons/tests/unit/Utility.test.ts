@@ -14,9 +14,19 @@ describe('Class: Utility', () => {
 
   describe('Method: getDefaultServiceName', ()=> {
     test('it should return the default service name', ()=> {
-      const utility = new Utility();
+      class PowerTool extends Utility {
+        public constructor() {
+          super();
+        }
+  
+        public dummyMethod(): string {
+          return this.getDefaultServiceName();
+        }
+      }
 
-      expect(utility.getDefaultServiceName()).toBe('service_undefined');
+      const powertool = new PowerTool();
+      const result = powertool.dummyMethod();
+      expect(result).toBe('service_undefined');
     });
   });
 
@@ -151,15 +161,30 @@ describe('Class: Utility', () => {
   });
 
   describe('Method: isValidServiceName', () => {
+    class PowerTool extends Utility {
+      public constructor() {
+        super();
+      }
+
+      public dummyMethod(name:string): boolean {
+        return this.isValidServiceName(name);
+      }
+    }
     test('it should allow valid strings', ()=> {
+      const powertool = new PowerTool();
       const goodName = 'serverlessAirline';
-      expect(Utility.isValidServiceName(goodName)).toBeTruthy();
+
+      const result = powertool.dummyMethod(goodName);
+      
+      expect(result).toBe(true);  
     });
 
     test('it should not allow empty strings', ()=> {
       const tooShort = '';
+      const powertool = new PowerTool();
+      const result = powertool.dummyMethod(tooShort);
       
-      expect(Utility.isValidServiceName(tooShort)).toBeFalsy();
+      expect(result).toBe(false);
     });
   });
 });

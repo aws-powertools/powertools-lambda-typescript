@@ -782,7 +782,7 @@ class Logger extends Utility implements ClassThatLogs {
     } = options;
 
     this.setEnvVarsService();
-    // order is important, it uses EngVarsService()
+    // order is important, it uses EnvVarsService()
     this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setLogLevel(logLevel);

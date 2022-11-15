@@ -113,7 +113,8 @@ import type {
  */
 class Logger extends Utility implements ClassThatLogs {
 
-  private console = new Console({ stdout: process.stdout, stderr: process.stderr });
+  // console is initialized in the constructor in setOptions()
+  private console!: Console;
 
   private customConfigService?: ConfigServiceInterface;
 
@@ -572,7 +573,7 @@ class Logger extends Utility implements ClassThatLogs {
 
     return <number> this.powertoolLogData.sampleRateValue;
   }
-
+  
   /**
    * It returns true if the provided log level is valid.
    *
@@ -641,6 +642,21 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * It initializes console property as an instance of the internal version of Console() class (PR #748)
+   * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
+   *
+   * @private
+   * @returns {void}
+   */
+  private setConsole(): void {
+    if (!this.getEnvVarsService().isDevMode()) {
+      this.console = new Console({ stdout: process.stdout, stderr: process.stderr });
+    } else {
+      this.console = console;
+    }
+  }
+
+  /**
    * Sets the Logger's customer config service instance, which will be used
    * to fetch environment variables.
    *
@@ -697,7 +713,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   private setLogIndentation(): void {
-    if (this.getEnvVarsService().getDevMode()) {
+    if (this.getEnvVarsService().isDevMode()) {
       this.logIndentation = LogJsonIndent.PRETTY;
     }
   }
@@ -764,6 +780,8 @@ class Logger extends Utility implements ClassThatLogs {
     } = options;
 
     this.setEnvVarsService();
+    // order is important, it uses EnvVarsService()
+    this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setLogLevel(logLevel);
     this.setSampleRateValue(sampleRateValue);

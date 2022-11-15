@@ -971,3 +971,11 @@ This is a Jest sample that provides the minimum information necessary for Logger
 
 !!! tip
     If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/commons/src/samples/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).
+
+### Suppress logs with Jest
+
+When unit testing your code with [Jest](https://jestjs.io) you can use the `POWERTOOLS_DEV` environment variable in conjunction with the Jest `--silent` CLI option to suppress logs from Logger.
+
+```bash title="Disabling logs while testing with Jest"
+export POWERTOOLS_DEV=true && npx jest --silent
+```

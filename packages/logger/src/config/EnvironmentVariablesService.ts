@@ -47,17 +47,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
   }
 
   /**
-   * It returns the value of the POWERTOOLS_DEV environment variable.
-   *
-   * @returns {boolean}
-   */
-  public getDevMode(): boolean {
-    const value = this.get(this.devModeVariable);
-
-    return this.isValueTrue(value);
-  }
-
-  /**
    * It returns the value of the AWS_LAMBDA_FUNCTION_MEMORY_SIZE environment variable.
    *
    * @returns {string}
@@ -115,6 +104,17 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
     const value = this.get(this.sampleRateValueVariable);
 
     return (value && value.length > 0) ? Number(value) : undefined;
+  }
+
+  /**
+   * It returns true if the POWERTOOLS_DEV environment variable is set to truthy value.
+   *
+   * @returns {boolean}
+   */
+  public isDevMode(): boolean {
+    const value = this.get(this.devModeVariable);
+
+    return this.isValueTrue(value);
   }
 
   /**

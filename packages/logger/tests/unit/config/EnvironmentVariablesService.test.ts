@@ -181,7 +181,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
   });
 
-  describe('Method: getDevMode', () => {
+  describe('Method: isDevMode', () => {
 
     test('It returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
 
@@ -190,7 +190,7 @@ describe('Class: EnvironmentVariablesService', () => {
       const service = new EnvironmentVariablesService();
 
       // Act
-      const value = service.getDevMode();
+      const value = service.isDevMode();
 
       // Assess
       expect(value).toEqual(true);
@@ -203,7 +203,7 @@ describe('Class: EnvironmentVariablesService', () => {
       const service = new EnvironmentVariablesService();
 
       // Act
-      const value = service.getDevMode();
+      const value = service.isDevMode();
 
       // Assess
       expect(value).toEqual(false);
@@ -216,7 +216,7 @@ describe('Class: EnvironmentVariablesService', () => {
       const service = new EnvironmentVariablesService();
 
       // Act
-      const value = service.getDevMode();
+      const value = service.isDevMode();
 
       // Assess
       expect(value).toEqual(false);
@@ -229,7 +229,7 @@ describe('Class: EnvironmentVariablesService', () => {
       const service = new EnvironmentVariablesService();
 
       // Act
-      const value = service.getDevMode();
+      const value = service.isDevMode();
 
       // Assess
       expect(value).toEqual(false);

@@ -1239,6 +1239,7 @@ describe('Class: Logger', () => {
     test('when called, it returns a DISTINCT clone of the logger instance', () => {
 
       // Prepare
+      const INDENTATION = LogJsonIndent.COMPACT;
       const parentLogger = new Logger();
 
       // Act
@@ -1257,7 +1258,10 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(parentLogger === childLogger).toBe(false);
-      expect(parentLogger).toEqual(childLogger);
+      expect(childLogger).toEqual({
+        ...parentLogger,
+        console: expect.any(Console),
+      });
       expect(parentLogger === childLoggerWithPermanentAttributes).toBe(false);
       expect(parentLogger === childLoggerWithSampleRateEnabled).toBe(false);
       expect(parentLogger === childLoggerWithErrorLogLevel).toBe(false);
@@ -1269,7 +1273,7 @@ describe('Class: Logger', () => {
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1295,7 +1299,7 @@ describe('Class: Logger', () => {
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1323,7 +1327,7 @@ describe('Class: Logger', () => {
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1349,7 +1353,7 @@ describe('Class: Logger', () => {
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'ERROR',
         logLevelThresholds: {
@@ -1458,6 +1462,29 @@ describe('Class: Logger', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
+    });
+  });
+
+  describe('Method: setConsole()', () => {
+    
+    test('When the `POWERTOOLS_DEV` env var is SET console object is set to the global node console otherwise to the instance of the internal version of console', () => {
+
+      // Prepare
+      const logger = new Logger();
+      process.env.POWERTOOLS_DEV = 'true';
+      const devLogger = new Logger();
+
+      // Assess
+      expect(devLogger).toEqual({
+        ...devLogger,
+        console: console,
+      });
+      // since instances of a class are not equal objects,
+      // we assert the opposite – console is not the global node object
+      expect(logger).not.toEqual({
+        ...logger,
+        console: console,
+      });
     });
   });
 

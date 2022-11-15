@@ -13,7 +13,7 @@ describe('Class: Utility', () => {
   });
 
   describe('Method: getDefaultServiceName', ()=> {
-    test('it returns the default service name', ()=> {
+    test('it should return the default service name', ()=> {
       const utility = new Utility();
 
       expect(utility.getDefaultServiceName()).toBe('service_undefined');

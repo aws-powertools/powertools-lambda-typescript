@@ -84,7 +84,8 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | type/deprecation                       | This item contains code deprecation                                                            |                                                    |
 | type/duplicate                         | This issue is a duplicate of an existing one                                                   | Analytics                                          |
 | type/feature-request                   | Issue requesting new or enhancements to existing features                                      | Issue template                                     |
-| type/feature                           | PRs that introduce new features or minor changes                                               | PR automation                                      |
+| type/feature                           | PRs that introduce new features                                                                | PR automation                                      |
+| type/enhancement                       | PRs that introduce minor changes, usually to existing features                                 | PR automation                                      |
 | type/RFC                               | Technical design documents related to a feature request                                        |                                                    |
 | type/internal                          | PRs that introduce changes in governance, tech debt and chores (linting setup, baseline, etc.) | PR automation                                      |
 | type/tests                             | PRs that add or change tests                                                                   | PR automation                                      |

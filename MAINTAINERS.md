@@ -8,6 +8,7 @@
   - [Uphold Code of Conduct](#uphold-code-of-conduct)
   - [Prioritize Security](#prioritize-security)
   - [Review Pull Requests](#review-pull-requests)
+  - [Merging Pull Requests](#merging-pull-requests)
   - [Triage New Issues](#triage-new-issues)
   - [Triage Bug Reports](#triage-bug-reports)
   - [Triage RFCs](#triage-rfcs)
@@ -68,7 +69,6 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | area/idempotency                       | Items related to the Idempotency Utility                                                       | PR automation                                      |
 | area/parameters                        | Items related to the Parameters Utility                                                        | PR automation                                      |
 | area/automation                        | Items related to automation like GitHub workflows or CI/CD                                     | PR automation                                      |
-| breaking-change                        | Changes that will cause customer impact and need careful triage                                |                                                    |
 | size/XS                                | PRs between 0-9 LOC                                                                            | PR automation                                      |
 | size/S                                 | PRs between 10-29 LOC                                                                          | PR automation                                      |
 | size/M                                 | PRs between 30-99 LOC                                                                          | PR automation                                      |
@@ -89,6 +89,7 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | type/internal                          | PRs that introduce changes in governance, tech debt and chores (linting setup, baseline, etc.) | PR automation                                      |
 | type/tests                             | PRs that add or change tests                                                                   | PR automation                                      |
 | type/dependencies                      | Changes that touch dependencies, e.g. Dependabot, etc.                                         | Issues/PR automation                               |
+| type/breaking-change                   | Changes that will cause customer impact and need careful triage                                |                                                    |
 | status/blocked                         | Items which progress is blocked by external dependency or reason                               |                                                    |
 | status/confirmed                       | Items with clear scope and that are ready for implementation                                   |                                                    |
 | status/discussing                      | Items that need to be discussed, elaborated, or refined                                        |                                                    |
@@ -133,11 +134,17 @@ For issues linked to a PR, our automation should apply the `pending-release` lab
 
 See [Common scenarios](#common-scenarios) section for additional guidance.
 
+### Merging Pull Requests
+
+Before merging a PR make sure that the title reflects the changes being introduced.
+
+This project uses the [squash and merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits) strategy which means commits are squashed into a single commit. Instead of seeing all of a contributor's individual commits from a topic branch, the commits are combined into one commit and merged into the default branch.
+
+This allows you to have control over the commit message although it should match the PR title most of the time. Use and enforce [semantic versioning](https://semver.org/), as these will be used for versioning the next release.
+
 ### Triage New Issues
 
 Manage [labels](#labels), review issues regularly, and create new labels as needed by the project. Remove `triage` label when you're able to confirm the validity of a request, a bug can be reproduced, etc. Give priority to the original author for implementation, unless it is a sensitive task that is best handled by maintainers.
-
-> TODO: This is an area we would like to automate using the new GitHub GraphQL API.
 
 Make sure issues are assigned to our [board of activities](https://github.com/orgs/awslabs/projects/76/) and have the right [status](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/roadmap/#roadmap-status-definition).
 
@@ -174,19 +181,11 @@ Make sure you ask these questions in mind when reviewing:
 
 When necessary, be upfront that the time to review, approve, and implement a RFC can vary - see [Contribution is stuck](#contribution-is-stuck). Some RFCs may be further updated after implementation, as certain areas become clearer.
 
-Some examples using our initial and new RFC templates: #92, #94, #95, #991, #1226
+An example of a successful RFC: [#447](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447)
 
 ### Releasing a new version
 
-Firstly, make sure the commit history in the `develop` branch **(1)** it's up to date, **(2)** commit messages are semantic, and **(3)** commit messages have their respective area, for example `feat(logger): <change>`, `chore(ci): ...`).
-
-**Found typos or unclear commit messages?**
-
-Reword through rebase and push with `--force-with-lease` once you're confident. This will ensure [CHANGELOG](./CHANGELOG.md) is always clear for customers looking to understand what changed in between releases - was that a bug? what new features and for which utility?
-
-**Looks good, what's next?**
-
-The only step is to draft and publish a good release notes, everything else is automated.
+🚧 WIP 🚧
 
 #### Drafting release notes
 
@@ -194,7 +193,7 @@ Visit the [Releases page](https://github.com/awslabs/aws-lambda-powertools-types
 
 Make sure the `tag` field reflects the new version you're releasing, the target branch field is set to `main`, and `release title` matches your tag e.g., `v1.4.1`.
 
-You'll notice we group all changes based on their [labels](#labels) like `feature`, `bug`, `documentation`, etc.
+You'll notice we group all changes based on their [labels](#labels) like `type/feature`, `type/bug`, `type/documentation`, etc.
 
 **I spotted a typo or incorrect grouping - how do I fix it?**
 
@@ -216,13 +215,11 @@ Once you're happy, hit `Publish release` 🎉🎉🎉.
 
 This will kick off the [Publish docs on release](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/workflows/publish-docs-on-release.yml) workflow and within a few minutes you should see the latest version in PyPi, and all issues labeled as `pending-release` will be closed and notified.
 
-> TODO: Include information to verify SAR and Lambda Layers deployment; we're still finalizing Lambda Layer automated deployment in GitHub Actions - ping @am29d when in doubt.
-
 ### Run end to end tests
 
-E2E tests are run on every push to `develop` or manually via [run-e2e-tests workflow](https://github.com/awslabs/aws-lambda-powertools-typescript/actions/workflows/run-e2e-tests.yml).
+E2E tests should be ran before every merge to `main` or manually via [run-e2e-tests workflow](https://github.com/awslabs/aws-lambda-powertools-typescript/actions/workflows/run-e2e-tests.yml) before making a release.
 
-To run locally, you need [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_prerequisites) and an [account bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) (`cdk bootstrap`). With a default AWS CLI profile configured, or `AWS_PROFILE` environment variable set, run `make e2e tests`.
+To run locally, you need [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_prerequisites) and an [account bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) (`cdk bootstrap`). With a default AWS CLI profile configured, or `AWS_PROFILE` environment variable set, run `npm run test:e2e -ws`.
 
 ### Releasing a documentation hotfix
 
@@ -232,7 +229,7 @@ This workflow will update both user guide and API documentation.
 
 ### Maintain Overall Health of the Repo
 
-Keep the `develop` branch at production quality at all times. Backport features as needed. Cut release branches and tags to enable future patches.
+Keep the `main` branch at production quality at all times. If a PR introduces code changes you should make sure that linting and tests are passing before merging.
 
 ### Manage Roadmap
 
@@ -250,7 +247,7 @@ Actions that negatively impact the project will be handled by the admins, in coo
 
 ### Becoming a maintainer
 
-In mid 2023, we will revisit this. We need to improve our understanding of how other projects are doing, their mechanisms to promote key contributors, and how they interact daily.
+In late 2023, we will revisit this. We need to improve our understanding of how other projects are doing, their mechanisms to promote key contributors, and how they interact daily.
 
 We suspect this process might look similar to the [OpenSearch project](https://github.com/opensearch-project/.github/blob/main/MAINTAINERS.md#becoming-a-maintainer).
 
@@ -268,7 +265,7 @@ In other cases, you may have constrained capacity. Use `help=wanted` label when 
 
 ### Insufficient feedback or information
 
-When in doubt, use `need-more-information` or `need-customer-feedback` labels to signal more context and feedback are necessary before proceeding. You can also use `on-hold` label when you expect it might take a while to gather enough information before you can decide.
+When in doubt, use `need-more-information` or `need-customer-feedback` labels to signal more context and feedback are necessary before proceeding. You can also use `status/on-hold` label when you expect it might take a while to gather enough information before you can decide.
 
 ### Crediting contributions
 

@@ -133,10 +133,11 @@ describe('Class: Tracer', () => {
       expect(putAnnotation).toBeCalledWith('Service', 'foo');
 
     });
+
     test('when called when a serviceName has not been set in the constructor or environment variables, it adds the default service name as an annotation', () => {
 
-      process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_SERVICE_NAME : undefined };
       // Prepare
+      delete process.env.POWERTOOLS_SERVICE_NAME;
       const tracer: Tracer = new Tracer();
       const putAnnotation = jest.spyOn(tracer, 'putAnnotation').mockImplementation(() => null);
 

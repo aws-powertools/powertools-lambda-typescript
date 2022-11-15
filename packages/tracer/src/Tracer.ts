@@ -128,6 +128,7 @@ class Tracer extends Utility implements TracerInterface {
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
   
+  // serviceName is always initialized in the constructor in setOptions()
   private serviceName!: string;
   
   private tracingEnabled: boolean = true;

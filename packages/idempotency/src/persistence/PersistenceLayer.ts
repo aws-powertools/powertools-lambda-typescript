@@ -34,7 +34,9 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
    * @param {PersistenceLayerConfigureOptions} options - configuration object for the persistence layer
    */
   public configure(options?: PersistenceLayerConfigureOptions): void {
-    if (options?.functionName && options.functionName.trim() !== '') this.idempotencyKeyPrefix = `${this.idempotencyKeyPrefix}.${options.functionName}`;
+    if (options?.functionName && options.functionName.trim() !== '') {
+      this.idempotencyKeyPrefix = `${this.idempotencyKeyPrefix}.${options.functionName}`;
+    }
   }
 
   /**

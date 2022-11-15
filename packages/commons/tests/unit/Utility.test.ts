@@ -150,4 +150,16 @@ describe('Class: Utility', () => {
 
   });
 
+  describe('Method: isValidServiceName', () => {
+    test('it should allow valid strings', ()=> {
+      const goodName = 'serverlessAirline';
+      expect(Utility.isValidServiceName(goodName)).toBeTruthy();
+    });
+
+    test('it should not allow empty strings', ()=> {
+      const tooShort = '';
+      
+      expect(Utility.isValidServiceName(tooShort)).toBeFalsy();
+    });
+  });
 });

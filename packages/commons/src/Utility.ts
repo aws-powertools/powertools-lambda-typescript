@@ -77,4 +77,14 @@ export class Utility {
     return this.getColdStart();
   }
 
+  /**
+ * Validate that the service name provided is valid.
+ * Used internally during initialization.
+ * 
+ * @param serviceName - Service name to validate
+ */
+  public static isValidServiceName(serviceName?: string): boolean {
+    return typeof serviceName === 'string' && serviceName.trim().length > 0;
+  }
+
 }

@@ -685,16 +685,6 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Validate that the service name provided is valid.
-   * Used internally during initialization.
-   * 
-   * @param serviceName - Service name to validate
-   */
-  private static isValidServiceName(serviceName?: string): boolean {
-    return typeof serviceName === 'string' && serviceName.trim().length > 0;
-  }
-
-  /**
    * Setter for `captureError` based on configuration passed and environment variables.
    * Used internally during initialization.
    */

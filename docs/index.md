@@ -285,8 +285,8 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 
 | Environment variable                         | Description                                                                            | Utility                   | Default               |
 |----------------------------------------------|----------------------------------------------------------------------------------------|---------------------------|-----------------------|
-| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       | `"service_undefined"` |
-| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) | `"default_namespace"`                |
+| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       | `service_undefined` |
+| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) | `default_namespace`                |
 | **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                            | [Tracer](./core/tracer)   | `true`                |
 | **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Captures Lambda or method return as metadata.                                          | [Tracer](./core/tracer)   | `true`                |
 | **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Captures Lambda or method exception as metadata.                                       | [Tracer](./core/tracer)   | `true`                |

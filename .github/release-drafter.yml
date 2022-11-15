@@ -11,7 +11,7 @@ categories:
       - 'type/enhancement'
   - title: '📜 Documentation updates'
     labels:
-      - 'type/documentation'
+      - 'area/documentation'
   - title: '🐛 Bug and hot fixes'
     labels:
       - 'type/bug'

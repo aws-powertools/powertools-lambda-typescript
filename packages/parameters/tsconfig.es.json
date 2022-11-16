@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "noImplicitAny": true,
+        "target": "ES2019",
+        "module": "commonjs",
+        "declaration": true,
+        "declarationMap": true,
+        "outDir": "lib",
+        "strict": true,
+        "inlineSourceMap": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "pretty": true,
+        "baseUrl": "src/",
+        "rootDirs": [ "src/" ]
+    },
+    "include": [ "src/**/*", "examples/**/*", "**/tests/**/*" ],
+    "exclude": [ "./node_modules"],
+    "watchOptions": {
+        "watchFile": "useFsEvents",
+        "watchDirectory": "useFsEvents",
+        "fallbackPolling": "dynamicPriority"
+    },
+    "lib": [ "es2019" ],
+    "types": [
+        "jest",
+        "node"
+    ]
+}

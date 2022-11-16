@@ -8,7 +8,8 @@
     "packages/commons",
     "packages/logger",
     "packages/metrics",
-    "packages/tracer"
+    "packages/tracer",
+    "packages/parameters"
   ],
   "scripts": {
     "init-environment": "husky install",

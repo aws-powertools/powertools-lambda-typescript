@@ -1,13 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { Metrics } from '@aws-lambda-powertools/metrics';
-import { Logger } from '@aws-lambda-powertools/logger';
-import { Tracer } from '@aws-lambda-powertools/tracer';
+import { logger, tracer, metrics } from './common/powertools';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
-
-// Create the PowerTools clients
-const metrics = new Metrics();
-const logger = new Logger();
-const tracer = new Tracer();
 
 // Create DynamoDB DocumentClient and patch it for tracing
 const docClient = tracer.captureAWSClient(new DocumentClient());
@@ -25,7 +18,7 @@ const tableName = process.env.SAMPLE_TABLE;
  *
  */
 
-export const putItemHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+export const handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
   if (event.httpMethod !== 'POST') {
     throw new Error(`putItem only accepts POST method, you tried: ${event.httpMethod}`);
   }

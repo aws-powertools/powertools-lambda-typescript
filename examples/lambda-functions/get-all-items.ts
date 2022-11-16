@@ -1,20 +1,25 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { Metrics } from '@aws-lambda-powertools/metrics';
-import { Logger } from '@aws-lambda-powertools/logger';
-import { Tracer } from '@aws-lambda-powertools/tracer';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import middy from '@middy/core';
+import { logger, tracer, metrics, injectLambdaContext, logMetrics, captureLambdaHandler, } from './common/powertools';
 
-// Create the PowerTools clients
-const metrics = new Metrics();
-const logger = new Logger();
-const tracer = new Tracer();
+// ToDo: DocumentClient tracen
+
+/*
+ *
+ * This example uses the Middy middleware instrumentation.
+ * It is the best choice if your existing code base relies on the Middy middleware engine. 
+ * Powertools offers compatible Middy middleware to make this integration seamless.
+ * Find more Information in the docs: https://awslabs.github.io/aws-lambda-powertools-typescript/
+ * 
+ */
 
 // Create DynamoDB DocumentClient and patch it for tracing
 const docClient = tracer.captureAWSClient(new DocumentClient());
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
-
+ 
 /**
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
@@ -24,7 +29,7 @@ const tableName = process.env.SAMPLE_TABLE;
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
-export const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
   if (event.httpMethod !== 'GET') {
     throw new Error(`getAllItems only accepts GET method, you tried: ${event.httpMethod}`);
   }
@@ -92,3 +97,12 @@ export const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: C
 
   return response;
 };
+
+// Wrap the handler with middy
+export const handler = middy(getAllItemsHandler)
+// Use the middleware by passing the Metrics instance as a parameter
+.use(logMetrics(metrics))
+// Use the middleware by passing the Logger instance as a parameter
+.use(injectLambdaContext(logger))
+// Use the middleware by passing the Tracer instance as a parameter
+.use(captureLambdaHandler(tracer));

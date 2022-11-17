@@ -1,10 +1,8 @@
 import { fromBase64 } from '@aws-sdk/util-base64-node';
-import { GetParameterError, TransformParameterError } from 'Exceptions';
-import type { BaseProviderInterface, ExpirableValueInterface, GetMultipleOptionsInterface, GetOptionsInterface, Key, TransformOptions } from './types';
+import { GetParameterError, TransformParameterError } from './Exceptions';
+import type { BaseProviderInterface, ExpirableValueInterface, GetMultipleOptionsInterface, GetOptionsInterface, TransformOptions } from './types';
 
 const DEFAULT_MAX_AGE_SECS = 5;
-// These providers will be dynamically initialized on first use of the helper functions
-const DEFAULT_PROVIDERS = new Map();
 const TRANSFORM_METHOD_JSON = 'json';
 const TRANSFORM_METHOD_BINARY = 'binary';
 
@@ -23,7 +21,7 @@ class GetMultipleOptions implements GetMultipleOptionsInterface {
   public forceFetch: boolean = false;
   public maxAge: number = DEFAULT_MAX_AGE_SECS;
   public sdkOptions?: unknown;
-  public throwOnTransformError?: boolean = false;
+  public throwOnTransformError: boolean = false;
   public transform?: TransformOptions;
 
   public constructor(options: GetMultipleOptionsInterface) {
@@ -47,13 +45,13 @@ class ExpirableValue implements ExpirableValueInterface {
 }
 
 abstract class BaseProvider implements BaseProviderInterface {
-  public store: Map<Key, ExpirableValue> = new Map;
+  public store: Map<string, ExpirableValue> = new Map;
 
-  private constructor () {
+  public constructor () {
     this.store = new Map();
   }
 
-  public addToCache(key: Key, value: string | Record<string, unknown>, maxAge: number): void {
+  public addToCache(key: string, value: string | Record<string, unknown>, maxAge: number): void {
     if (maxAge <= 0) return;
 
     this.store.set(key, new ExpirableValue(value, maxAge));
@@ -79,10 +77,11 @@ abstract class BaseProvider implements BaseProviderInterface {
    */
   public async get(name: string, options?: GetOptionsInterface): Promise<undefined | string | Record<string, unknown>> {
     const configs = new GetOptions(options);
-    const key = { [name]: configs.transform };
+    const key = [ name, configs.transform ].toString();
 
-    if (!configs.forceFetch && this.hasNotExpiredInCache(key)) {
-      return this.store.get(key)?.value;
+    if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return this.store.get(key)!.value;
     }
 
     let value;
@@ -93,7 +92,7 @@ abstract class BaseProvider implements BaseProviderInterface {
     }
 
     if (value && configs.transform) {
-      value = transformValue(value, configs.transform);
+      value = transformValue(value, configs.transform, true);
     }
 
     if (value) {
@@ -106,10 +105,11 @@ abstract class BaseProvider implements BaseProviderInterface {
 
   public async getMultiple(path: string, options?: GetMultipleOptionsInterface): Promise<undefined | Record<string, unknown>> {
     const configs = new GetMultipleOptions(options || {});
-    const key = { [path]: configs.transform };
+    const key = [ path, configs.transform ].toString();
 
-    if (!configs.forceFetch && this.hasNotExpiredInCache(key)) {
-      return this.store.get(key)?.value as Record<string, unknown>; // In this case we know that if it exists, this key corresponds to a Record
+    if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return this.store.get(key)!.value as Record<string, unknown>; // In this case we know that if it exists, this key corresponds to a Record
     }
 
     let values: Record<string, unknown> = {};
@@ -119,8 +119,8 @@ abstract class BaseProvider implements BaseProviderInterface {
       throw new GetParameterError((error as Error).message);
     }
 
-    if (configs.transform) {
-      values = transformValues(values, configs.transform);
+    if (Object.keys(values) && configs.transform) {
+      values = transformValues(values, configs.transform, configs.throwOnTransformError);
     }
 
     if (Array.from(Object.keys(values)).length !== 0) {
@@ -142,36 +142,48 @@ abstract class BaseProvider implements BaseProviderInterface {
   protected abstract _getMultiple(path: string, sdkOptions?: unknown): Promise<Record<string, string|undefined>>;
 
   /**
-   * Check whether a key has not expired in the cache
+   * Check whether a key has expired in the cache or not
    * 
-   * It returns false if the key is expired or not present in the cache.
+   * It returns true if the key is expired or not present in the cache.
    * 
-   * @param {Key} key - Key to retrieve
+   * @param {string} key - Stringified representation of the key to retrieve
    */
-  private hasNotExpiredInCache(key: Key): boolean {
+  private hasKeyExpiredInCache(key: string): boolean {
     const value = this.store.get(key);
-    if (value) value.isExpired();
+    if (value) {
+      if (value.isExpired()) {
+        this.store.delete(key);
+        
+        return true;
+      }
 
-    return false;
+      return value.isExpired();
+    }
+    
+    return true;
   }
 
 }
 
-const transformValue = (value: string, transform: TransformOptions, throwOnTransformError: boolean = true, key: string = ''): string | Record<string, unknown> | undefined => {
+// TODO: revisit `value` type once we are clearer on the types returned by the various SDKs
+const transformValue = (value: unknown, transform: TransformOptions, throwOnTransformError: boolean, key: string = ''): string | Record<string, unknown> | undefined => {
   try {
     const normalizedTransform = transform.toLowerCase();
     if (
-      normalizedTransform === TRANSFORM_METHOD_JSON ||
-      (normalizedTransform === 'auto' && key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_JSON}`))
+      (normalizedTransform === TRANSFORM_METHOD_JSON ||
+      (normalizedTransform === 'auto' && key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_JSON}`))) &&
+      typeof value === 'string'
     ) {
       return JSON.parse(value) as Record<string, unknown>;
     } else if (
-      normalizedTransform === TRANSFORM_METHOD_BINARY ||
-      (normalizedTransform === 'auto' && key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_BINARY}`))
+      (normalizedTransform === TRANSFORM_METHOD_BINARY ||
+      (normalizedTransform === 'auto' && key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_BINARY}`))) &&
+      typeof value === 'string'
     ) {
       return new TextDecoder('utf-8').decode(fromBase64(value));
     } else {
-      throw Error(`Invalid transform type ${normalizedTransform}.`);
+      // TODO: revisit this type once we are clearer on types returned by SDKs
+      return value as string;
     }
   } catch (error) {
     if (throwOnTransformError)
@@ -181,27 +193,22 @@ const transformValue = (value: string, transform: TransformOptions, throwOnTrans
   }
 };
 
-const transformValues = (value: string | Uint8Array | Record<string, unknown>, transform: TransformOptions, throwOnTransformError: boolean = true): Record<string, unknown> => {
+const transformValues = (value: Record<string, unknown>, transform: TransformOptions, throwOnTransformError: boolean): Record<string, unknown> => {
   const transformedValues: Record<string, unknown> = {};
-  for (const entry in Object.entries(value)) {
-    const [ entryKey, entryValue ] = entry;
+  for (const [ entryKey, entryValue ] of Object.entries(value)) {
     try {
-      transformedValues[entryKey] = transformValue(entryValue, transform, true, entryKey);
+      transformedValues[entryKey] = transformValue(entryValue, transform, throwOnTransformError, entryKey);
     } catch (error) {
       if (throwOnTransformError)
         throw new TransformParameterError(transform, (error as Error).message);
-      transformedValues[entryKey] = undefined;
     }
   }
 
   return transformedValues;
 };
 
-const clearCaches = (): void => DEFAULT_PROVIDERS.clear();
-
 export {
-  clearCaches,
   BaseProvider,
+  ExpirableValue,
   transformValue,
-  DEFAULT_PROVIDERS
 };

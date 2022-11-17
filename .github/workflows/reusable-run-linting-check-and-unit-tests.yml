@@ -42,11 +42,11 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit == 'true'
         run: |
           npm run build -w packages/commons
-          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
+          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics -w packages/parameters
       - name: Run linting
-        run: npm run lint -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics
+        run: npm run lint -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics -w packages/parameters
       - name: Run unit tests
-        run: npm t -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics
+        run: npm t -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics -w packages/parameters
   check-examples:
     runs-on: ubuntu-latest
     env:

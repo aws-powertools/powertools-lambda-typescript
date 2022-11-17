@@ -80,6 +80,7 @@ abstract class BaseProvider implements BaseProviderInterface {
     const key = [ name, configs.transform ].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
+      // If the code enters in this block, then the key must exist & not have been expired
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.store.get(key)!.value;
     }
@@ -108,8 +109,9 @@ abstract class BaseProvider implements BaseProviderInterface {
     const key = [ path, configs.transform ].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
+      // If the code enters in this block, then the key must exist & not have been expired
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return this.store.get(key)!.value as Record<string, unknown>; // In this case we know that if it exists, this key corresponds to a Record
+      return this.store.get(key)!.value as Record<string, unknown>;
     }
 
     let values: Record<string, unknown> = {};

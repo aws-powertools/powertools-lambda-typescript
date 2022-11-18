@@ -3,7 +3,6 @@ import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
-import cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { LogJsonIndent } from './types';
@@ -122,6 +121,8 @@ class Logger extends Utility implements ClassThatLogs {
 
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
+  
+  private initOptions: ConstructorOptions;
 
   private logEvent: boolean = false;
 
@@ -151,7 +152,7 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public constructor(options: ConstructorOptions = {}) {
     super();
-
+    this.initOptions = options;
     this.setOptions(options);
   }
 
@@ -205,7 +206,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {Logger}
    */
   public createChild(options: ConstructorOptions = {}): Logger {
-    return cloneDeep(this).setOptions(options);
+    return new Logger(merge({}, this.initOptions, options));
   }
 
   /**

@@ -78,6 +78,7 @@ describe('Helper: createLogger function', () => {
         defaultServiceName: 'service_undefined',
         customConfigService: expect.any(EnvironmentVariablesService),
         envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: loggerOptions,
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -120,6 +121,7 @@ describe('Helper: createLogger function', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: {},
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -230,7 +232,7 @@ describe('Helper: createLogger function', () => {
     test('when no log level is set, returns a Logger instance with INFO level', () => {
 
       // Prepare
-      const loggerOptions:ConstructorOptions = {};
+      const loggerOptions: ConstructorOptions = {};
       delete process.env.LOG_LEVEL;
 
       // Act
@@ -243,6 +245,7 @@ describe('Helper: createLogger function', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: loggerOptions,
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),

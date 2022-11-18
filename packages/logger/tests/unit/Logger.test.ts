@@ -568,6 +568,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: {},
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1236,6 +1237,110 @@ describe('Class: Logger', () => {
 
   describe('Method: createChild', () => {
 
+    test('Child and grandchild loggers should have all ancestor\'s options', () => {
+      // Prepare
+      const INDENTATION = LogJsonIndent.COMPACT;
+      const loggerOptions = {
+        serviceName: 'parent-service-name',
+        sampleRateValue: 0.01,
+      };
+      const parentLogger = new Logger(loggerOptions);
+      
+      // Act
+      const childLoggerOptions = { sampleRateValue: 1 };
+      const childLogger = parentLogger.createChild(childLoggerOptions);
+
+      const grandchildLoggerOptions = { serviceName: 'grandchild-logger-name' };
+      const grandchildLogger = childLogger.createChild(grandchildLoggerOptions);
+
+      // Assess
+      expect(parentLogger === childLogger).toBe(false);
+      expect(childLogger === grandchildLogger).toBe(false);
+      expect(parentLogger === grandchildLogger).toBe(false);
+
+      expect(parentLogger).toEqual({
+        console: expect.any(Console),
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: loggerOptions,
+        logEvent: false,
+        logIndentation: INDENTATION,
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          sampleRateValue: 0.01,
+          serviceName: 'parent-service-name',
+        },
+      });
+
+      expect(childLogger).toEqual({
+        console: expect.any(Console),
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: { ...loggerOptions, ...childLoggerOptions },
+        logEvent: false,
+        logIndentation: INDENTATION,
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: true,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          sampleRateValue: 1,
+          serviceName: 'parent-service-name',
+        },
+      });
+
+      expect(grandchildLogger).toEqual({
+        console: expect.any(Console),
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: { ...childLoggerOptions ,...grandchildLoggerOptions },
+        logEvent: false,
+        logIndentation: INDENTATION,
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: true,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          sampleRateValue: 1,
+          serviceName: 'grandchild-logger-name',
+        },
+      });
+
+    });
+
     test('when called, it returns a DISTINCT clone of the logger instance', () => {
 
       // Prepare
@@ -1244,17 +1349,23 @@ describe('Class: Logger', () => {
 
       // Act
       const childLogger = parentLogger.createChild();
-      const childLoggerWithPermanentAttributes = parentLogger.createChild({
+
+      const optionsWithPermanentAttributes = {
         persistentLogAttributes: {
           extra: 'This is an attribute that will be logged only by the child logger',
         },
-      });
-      const childLoggerWithSampleRateEnabled = parentLogger.createChild({
+      };
+      const childLoggerWithPermanentAttributes = parentLogger.createChild(optionsWithPermanentAttributes);
+
+      const optionsWithSampleRateEnabled = {
         sampleRateValue: 1, // 100% probability to make sure that the logs are sampled
-      });
-      const childLoggerWithErrorLogLevel = parentLogger.createChild({
+      };
+      const childLoggerWithSampleRateEnabled = parentLogger.createChild(optionsWithSampleRateEnabled);
+
+      const optionsWithErrorLogLevel = {
         logLevel: 'ERROR',
-      });
+      };
+      const childLoggerWithErrorLogLevel = parentLogger.createChild(optionsWithErrorLogLevel);
 
       // Assess
       expect(parentLogger === childLogger).toBe(false);
@@ -1272,6 +1383,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: {},
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1298,6 +1410,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: optionsWithPermanentAttributes,
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1326,6 +1439,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: optionsWithSampleRateEnabled,
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1352,6 +1466,7 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: optionsWithErrorLogLevel,
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),

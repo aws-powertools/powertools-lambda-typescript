@@ -7,7 +7,7 @@ import { GetParameterError, TransformParameterError } from './Exceptions';
 import type { BaseProviderInterface, GetMultipleOptionsInterface, GetOptionsInterface, TransformOptions } from './types';
 
 abstract class BaseProvider implements BaseProviderInterface {
-  public store: Map<string, ExpirableValue>;
+  protected store: Map<string, ExpirableValue>;
 
   public constructor () {
     this.store = new Map();

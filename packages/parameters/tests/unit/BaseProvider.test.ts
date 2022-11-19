@@ -16,12 +16,24 @@ describe('Class: BaseProvider', () => {
   });
 
   class TestProvider extends BaseProvider {
+    public _add(key: string, value: ExpirableValue): void {
+      this.store.set(key, value);
+    }
+    
     public _get(_name: string): Promise<string> {
       throw Error('Not implemented.');
+    }
+
+    public _getKeyTest(key: string): ExpirableValue | undefined {
+      return this.store.get(key);
     }
     
     public _getMultiple(_path: string): Promise<Record<string, string | undefined>> {
       throw Error('Not implemented.');
+    }
+
+    public _getStoreSize(): number {
+      return this.store.size;
     }
   }
 
@@ -31,13 +43,12 @@ describe('Class: BaseProvider', () => {
 
       // Prepare
       const provider = new TestProvider();
-      const addSpy = jest.spyOn(provider.store, 'set');
 
       // Act
       provider.addToCache('my-key', 'value', 0);
 
       // Assess
-      expect(addSpy).toBeCalledTimes(0);
+      expect(provider._getKeyTest('my-key')).toBeUndefined();
 
     });
 
@@ -45,13 +56,14 @@ describe('Class: BaseProvider', () => {
 
       // Prepare
       const provider = new TestProvider();
-      const addSpy = jest.spyOn(provider.store, 'set');
 
       // Act
-      provider.addToCache('my-key', 'value', 5000);
+      provider.addToCache('my-key', 'my-value', 5000);
 
       // Assess
-      expect(addSpy).toBeCalledTimes(1);
+      expect(provider._getKeyTest('my-key')).toEqual(expect.objectContaining({
+        value: 'my-value'
+      }));
 
     });
 
@@ -73,7 +85,7 @@ describe('Class: BaseProvider', () => {
 
       // Prepare
       const provider = new TestProvider();
-      provider.store.set([ 'my-parameter', undefined ].toString(), new ExpirableValue('my-value', 5000));
+      provider._add([ 'my-parameter', undefined ].toString(), new ExpirableValue('my-value', 5000));
   
       // Act
       const values = await provider.get('my-parameter');
@@ -89,7 +101,7 @@ describe('Class: BaseProvider', () => {
       const mockData = 'my-remote-value';
       const provider = new TestProvider();
       jest.spyOn(provider, '_get').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData)));
-      provider.store.set([ 'my-parameter', undefined ].toString(), new ExpirableValue('my-value', 5000));
+      provider._add([ 'my-parameter', undefined ].toString(), new ExpirableValue('my-value', 5000));
   
       // Act
       const values = await provider.get('my-parameter', { forceFetch: true });
@@ -107,7 +119,7 @@ describe('Class: BaseProvider', () => {
       jest.spyOn(provider, '_get').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData)));
       const expirableValue = new ExpirableValue('my-other-value', 0);
       jest.spyOn(expirableValue, 'isExpired').mockImplementation(() => true);
-      provider.store.set([ 'my-path', undefined ].toString(), expirableValue);
+      provider._add([ 'my-path', undefined ].toString(), expirableValue);
   
       // Act
       const values = await provider.get('my-parameter');
@@ -367,7 +379,7 @@ describe('Class: BaseProvider', () => {
 
       // Prepare
       const provider = new TestProvider();
-      provider.store.set([ 'my-path', undefined ].toString(), new ExpirableValue({ 'A': 'my-value' }, 60000));
+      provider._add([ 'my-path', undefined ].toString(), new ExpirableValue({ 'A': 'my-value' }, 60000));
 
       // Act
       const values = await provider.getMultiple('my-path');
@@ -388,7 +400,7 @@ describe('Class: BaseProvider', () => {
       jest.spyOn(provider, '_getMultiple').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData)));
       const expirableValue = new ExpirableValue({ 'B': 'my-other-value' }, 0);
       jest.spyOn(expirableValue, 'isExpired').mockImplementation(() => true);
-      provider.store.set([ 'my-path', undefined ].toString(), expirableValue);
+      provider._add([ 'my-path', undefined ].toString(), expirableValue);
 
       // Act
       const values = await provider.getMultiple('my-path');
@@ -409,13 +421,13 @@ describe('Class: BaseProvider', () => {
 
       // Prepare
       const provider = new TestProvider();
-      const clearSpy = jest.spyOn(provider.store, 'clear');
+      provider._add([ 'my-path', undefined ].toString(), new ExpirableValue({ 'B': 'my-other-value' }, 0));
 
       // Act
       provider.clearCache();
 
       // Assess
-      expect(clearSpy).toBeCalledTimes(1);
+      expect(provider._getStoreSize()).toBe(0);
 
     });
 

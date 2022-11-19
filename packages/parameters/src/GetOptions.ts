@@ -1,6 +1,5 @@
+import { DEFAULT_MAX_AGE_SECS } from './constants';
 import type { GetOptionsInterface, TransformOptions } from './types';
-
-const DEFAULT_MAX_AGE_SECS = 5;
 
 class GetOptions implements GetOptionsInterface {
   public forceFetch: boolean = false;

@@ -2,11 +2,9 @@ import { fromBase64 } from '@aws-sdk/util-base64-node';
 import { GetOptions } from './GetOptions';
 import { GetMultipleOptions } from './GetMultipleOptions';
 import { ExpirableValue } from './ExpirableValue';
+import { TRANSFORM_METHOD_BINARY, TRANSFORM_METHOD_JSON } from './constants';
 import { GetParameterError, TransformParameterError } from './Exceptions';
 import type { BaseProviderInterface, GetMultipleOptionsInterface, GetOptionsInterface, TransformOptions } from './types';
-
-const TRANSFORM_METHOD_JSON = 'json';
-const TRANSFORM_METHOD_BINARY = 'binary';
 
 abstract class BaseProvider implements BaseProviderInterface {
   public store: Map<string, ExpirableValue>;

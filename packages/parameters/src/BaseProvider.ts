@@ -1,48 +1,12 @@
 import { fromBase64 } from '@aws-sdk/util-base64-node';
+import { GetOptions } from './GetOptions';
+import { GetMultipleOptions } from './GetMultipleOptions';
+import { ExpirableValue } from './ExpirableValue';
 import { GetParameterError, TransformParameterError } from './Exceptions';
-import type { BaseProviderInterface, ExpirableValueInterface, GetMultipleOptionsInterface, GetOptionsInterface, TransformOptions } from './types';
+import type { BaseProviderInterface, GetMultipleOptionsInterface, GetOptionsInterface, TransformOptions } from './types';
 
-const DEFAULT_MAX_AGE_SECS = 5;
 const TRANSFORM_METHOD_JSON = 'json';
 const TRANSFORM_METHOD_BINARY = 'binary';
-
-class GetOptions implements GetOptionsInterface {
-  public forceFetch: boolean = false;
-  public maxAge: number = DEFAULT_MAX_AGE_SECS;
-  public sdkOptions?: unknown;
-  public transform?: TransformOptions;
-
-  public constructor(options: GetOptionsInterface = {}) {
-    Object.assign(this, options);
-  }
-}
-
-class GetMultipleOptions implements GetMultipleOptionsInterface {
-  public forceFetch: boolean = false;
-  public maxAge: number = DEFAULT_MAX_AGE_SECS;
-  public sdkOptions?: unknown;
-  public throwOnTransformError: boolean = false;
-  public transform?: TransformOptions;
-
-  public constructor(options: GetMultipleOptionsInterface) {
-    Object.assign(this, options);
-  }
-}
-
-class ExpirableValue implements ExpirableValueInterface {
-  public ttl: number;
-  public value: string | Record<string, unknown>;
-
-  public constructor(value: string | Record<string, unknown>, maxAge: number) {
-    this.value = value;
-    const timeNow = new Date();
-    this.ttl = timeNow.setSeconds(timeNow.getSeconds() + maxAge);
-  }
-
-  public isExpired(): boolean {
-    return this.ttl < Date.now();
-  }
-}
 
 abstract class BaseProvider implements BaseProviderInterface {
   public store: Map<string, ExpirableValue> = new Map;

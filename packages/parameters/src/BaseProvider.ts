@@ -114,15 +114,7 @@ abstract class BaseProvider implements BaseProviderInterface {
    */
   private hasKeyExpiredInCache(key: string): boolean {
     const value = this.store.get(key);
-    if (value) {
-      if (value.isExpired()) {
-        this.store.delete(key);
-        
-        return true;
-      }
-
-      return value.isExpired();
-    }
+    if (value) return value.isExpired();
     
     return true;
   }

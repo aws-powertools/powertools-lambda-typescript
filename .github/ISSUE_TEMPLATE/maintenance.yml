@@ -1,7 +1,7 @@
 name: Maintenance
 description: Suggest an activity to help address tech debt, governance, and anything internal
 title: "Maintenance: TITLE"
-labels: ["internal", "triage"]
+labels: ["type/internal", "triage"]
 body:
   - type: markdown
     attributes:
@@ -32,7 +32,6 @@ body:
         - Automation
         - Governance
         - Tests
-        - Types
         - Tracer
         - Logger
         - Metrics

@@ -1,4 +1,4 @@
-# AWS Lambda Powertools for TypeScript
+# AWS Lambda Powertools for TypeScript <!-- omit in toc -->
 
 [![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET)
 
@@ -6,17 +6,19 @@ A suite of utilities for AWS Lambda functions to ease the adoption of best pract
 
 You can use the library in both TypeScript and JavaScript code bases.
 
-AWS Lambda Powertools for [Python](https://github.com/awslabs/aws-lambda-powertools-python) and  AWS Lambda Powertools for [Java](https://github.com/awslabs/aws-lambda-powertools-java) are also available.
+> Also available in [Python](https://github.com/awslabs/aws-lambda-powertools-python), [Java](https://github.com/awslabs/aws-lambda-powertools-java), and [.NET](https://awslabs.github.io/aws-lambda-powertools-dotnet/).
 
-**[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
+**[Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/roadmap)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
 
-## Table of contents
+## Table of contents <!-- omit in toc -->
 
 - [Features](#features)
 - [Getting started](#getting-started)
   - [Installation](#installation)
+    - [Lambda layers](#lambda-layers)
+    - [NPM modules](#npm-modules)
   - [Examples](#examples)
-  - [Serverless TypeScript Demo](#serverless-typescript-demo-application)
+  - [Serverless TypeScript Demo application](#serverless-typescript-demo-application)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)

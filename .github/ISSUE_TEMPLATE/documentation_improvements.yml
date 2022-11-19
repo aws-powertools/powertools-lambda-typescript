@@ -1,7 +1,7 @@
 name: Documentation improvements
 description: Suggest a documentation update to improve everyone's experience
 title: "Docs: TITLE"
-labels: ["documentation", "triage"]
+labels: ["area/documentation", "triage"]
 body:
   - type: markdown
     attributes:

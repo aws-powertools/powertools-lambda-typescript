@@ -32,7 +32,7 @@
 
 ## Checklist
 
-- [ ] [My changes meet the tenets criteria](https://awslabs.github.io/aws-lambda-powertools-python/#tenets)
+- [ ] [My changes meet the tenets criteria](https://awslabs.github.io/aws-lambda-powertools-typescript/#tenets)
 - [ ] I have performed a *self-review* of my own code
 - [ ] I have *commented* my code where necessary, particularly in areas that should be flagged with a TODO, or hard-to-understand areas
 - [ ] I have made corresponding changes to the *documentation*
@@ -41,7 +41,7 @@
 - [ ] The *code coverage* hasn't decreased
 - [ ] I have *added tests* that prove my change is effective and works
 - [ ] New and existing *unit tests pass* locally and in Github Actions
-- [ ] Any *dependent changes have been merged and published* in downstream module
+- [ ] Any *dependent changes have been merged and published*
 - [ ] The PR title follows the [conventional commit semantics](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/semantic.yml#L2)
 
 ### Breaking change checklist

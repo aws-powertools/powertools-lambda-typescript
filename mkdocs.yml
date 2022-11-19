@@ -2,12 +2,12 @@ site_name: AWS Lambda Powertools for TypeScript
 site_description: AWS Lambda Powertools for TypeScript
 site_author: Amazon Web Services
 repo_url: https://github.com/awslabs/aws-lambda-powertools-typescript
-edit_uri: edit/develop/docs
+edit_uri: edit/main/docs
 
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
-  - Roadmap: https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1" target="_blank
+  - Roadmap: roadmap.md
   - API reference: api/" target="_blank
   - Core utilities:
       - core/tracer.md
@@ -31,14 +31,15 @@ theme:
         icon: material/toggle-switch
         name: Switch to light mode
   features:
+    - header.autohide
     - navigation.sections
     - navigation.expand
     - navigation.top
-    - toc.follow
     - navigation.instant
     - navigation.indexes
     - navigation.tracking
     - content.code.annotate
+    - toc.follow
     - toc.integrate
   icon:
     repo: fontawesome/brands/github
@@ -52,7 +53,6 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.highlight:
       linenums: true
-  - pymdownx.superfences
   - pymdownx.details
   - pymdownx.snippets:
       base_path: "."
@@ -62,7 +62,9 @@ markdown_extensions:
       permalink: true
       toc_depth: 4
   - attr_list
-  - pymdownx.emoji
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.superfences:
       custom_fences:
@@ -75,7 +77,6 @@ copyright: Copyright &copy; 2022 Amazon Web Services
 plugins:
   - git-revision-date
   - search
-  - glightbox
 
 extra_css:
   - stylesheets/extra.css

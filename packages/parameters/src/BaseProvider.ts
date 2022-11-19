@@ -9,7 +9,7 @@ const TRANSFORM_METHOD_JSON = 'json';
 const TRANSFORM_METHOD_BINARY = 'binary';
 
 abstract class BaseProvider implements BaseProviderInterface {
-  public store: Map<string, ExpirableValue> = new Map;
+  public store: Map<string, ExpirableValue>;
 
   public constructor () {
     this.store = new Map();

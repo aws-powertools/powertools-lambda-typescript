@@ -142,7 +142,7 @@ This example bundle all your dependencies in a single JS file thanks to esbuild 
 1.  specifying the right ARN in `Layers` list under the function's `Properties` 
 1.  instructing esbuild to not bundle `@aws-lambda-powertools` under the function `Metadata/BuildProperties`
 
-Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Lambda Powertools for TypeScript layers [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/).
+Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Lambda Powertools for TypeScript layers [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#lambda-layer).
 
 Here is the diff of the current sam template leveraging `AWSLambdaPowertoolsTypeScript` layer:
 

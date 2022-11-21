@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import { logger, tracer, metrics, LambdaInterface } from './common/powertools';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import { dynamodbClientV3, GetItemCommand } from './common/dynamodb-client';
+import got from 'got';
 
 /*
  *
@@ -11,8 +12,8 @@ import { DocumentClient } from 'aws-sdk/clients/dynamodb';
  * 
  */
 
-// Create DynamoDB DocumentClient and patch it for tracing
-const docClient = tracer.captureAWSClient(new DocumentClient());
+// Patch DynamoDB client for tracing
+const docClient = tracer.captureAWSv3Client(dynamodbClientV3);
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
@@ -30,6 +31,8 @@ const tableName = process.env.SAMPLE_TABLE;
 class Lambda implements LambdaInterface {
 
   @tracer.captureLambdaHandler()
+  @logger.injectLambdaContext({ logEvent: true })
+  @metrics.logMetrics()
   public async handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> {
 
     if (event.httpMethod !== 'GET') {
@@ -46,20 +49,34 @@ class Lambda implements LambdaInterface {
     tracer.annotateColdStart();
     tracer.addServiceNameAnnotation();
 
-    // Tracer: Add annotation for the awsRequestId
+    // Tracer: Add awsRequestId as annotation
     tracer.putAnnotation('awsRequestId', context.awsRequestId);
 
     // Metrics: Capture cold start metrics
     metrics.captureColdStartMetric();
 
-    // Logger: Add persistent attributes to each log statement
-    logger.addPersistentLogAttributes({
+    // Logger: Append awsRequestId to each log statement
+    logger.appendKeys({
       awsRequestId: context.awsRequestId,
     });
 
+    // Call the getUuid function
+    const uuid = await this.getUuid();
+
+    // Logger: Append uuid to each log statement
+    logger.appendKeys({ uuid });
+
+    // Tracer: Add uuid as annotation
+    tracer.putAnnotation('uuid', uuid);
+
+    // Metrics: Add uuid as metadata
+    metrics.addMetadata('uuid', uuid);
+
+    // Define response object
+    let response;
+
     // Get the item from the table
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
-    let response;
     try {
       if (!tableName) {
         throw new Error('SAMPLE_TABLE environment variable is not set');
@@ -70,11 +87,14 @@ class Lambda implements LambdaInterface {
       if (!event.pathParameters.id) {
         throw new Error('PathParameter id is missing');
       }
-
-      const data = await docClient.get({
+      const data = await docClient.send(new GetItemCommand({
         TableName: tableName,
-        Key: { id: event.pathParameters.id },
-      }).promise();
+        Key: { id: 
+                {
+                  S: event.pathParameters.id 
+                } 
+            },
+      }));
       const item = data.Item;
       response = {
         statusCode: 200,
@@ -99,6 +119,13 @@ class Lambda implements LambdaInterface {
     logger.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
 
     return response;
+  }
+
+  @tracer.captureMethod()
+  public async getUuid() {
+    // Request a sample random uuid from a webservice
+    const res = await got("https://httpbin.org/uuid");
+    return JSON.parse(res.body).uuid;
   }
 }
 

@@ -1,9 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import middy from '@middy/core';
 import { logger, tracer, metrics, injectLambdaContext, logMetrics, captureLambdaHandler, } from './common/powertools';
-
-// ToDo: DocumentClient tracen
+import { dynamodbClientV3, ScanCommand } from './common/dynamodb-client';
+import got from 'got';
 
 /*
  *
@@ -14,8 +13,8 @@ import { logger, tracer, metrics, injectLambdaContext, logMetrics, captureLambda
  * 
  */
 
-// Create DynamoDB DocumentClient and patch it for tracing
-const docClient = tracer.captureAWSClient(new DocumentClient());
+// Patch DynamoDB client for tracing
+const docClient = tracer.captureAWSv3Client(dynamodbClientV3);
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
@@ -45,29 +44,45 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
   tracer.annotateColdStart();
   tracer.addServiceNameAnnotation();
 
-  // Tracer: Add annotation for the awsRequestId
+  // Tracer: Add awsRequestId as annotation
   tracer.putAnnotation('awsRequestId', context.awsRequestId);
 
   // Metrics: Capture cold start metrics
   metrics.captureColdStartMetric();
 
-  // Logger: Add persistent attributes to each log statement
-  logger.addPersistentLogAttributes({
+  // Logger: Append awsRequestId to each log statement
+  logger.appendKeys({
     awsRequestId: context.awsRequestId,
   });
+
+  // Request a sample random uuid from a webservice
+  const res = await got("https://httpbin.org/uuid");
+  const uuid = JSON.parse(res.body).uuid;
+
+  // Logger: Append uuid to each log statement
+  logger.appendKeys({ uuid });
+
+  // Tracer: Add uuid as annotation
+  tracer.putAnnotation('uuid', uuid);
+
+  // Metrics: Add uuid as metadata
+  metrics.addMetadata('uuid', uuid);
+
+  // Define response object
+  let response;
 
   // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
   // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
-  let response;
   try {
     if (!tableName) {
       throw new Error('SAMPLE_TABLE environment variable is not set');
     }
 
-    const data = await docClient.scan({
+    const data = await docClient.send(new ScanCommand({
       TableName: tableName
-    }).promise();
+    }));
+
     const items = data.Items;
 
     // Logger: All log statements are written to CloudWatch
@@ -103,6 +118,6 @@ export const handler = middy(getAllItemsHandler)
 // Use the middleware by passing the Metrics instance as a parameter
 .use(logMetrics(metrics))
 // Use the middleware by passing the Logger instance as a parameter
-.use(injectLambdaContext(logger))
+.use(injectLambdaContext(logger, { logEvent: true }))
 // Use the middleware by passing the Tracer instance as a parameter
 .use(captureLambdaHandler(tracer));

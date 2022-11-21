@@ -1,0 +1,54 @@
+{
+  "name": "@aws-lambda-powertools/parameters",
+  "version": "1.4.1",
+  "description": "The parameters package for the AWS Lambda Powertools for TypeScript library",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "commit": "commit",
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "test:e2e:nodejs12x": "echo \"Not implemented\"",
+    "test:e2e:nodejs14x": "echo \"Not implemented\"",
+    "test:e2e:nodejs16x": "echo \"Not implemented\"",
+    "test:e2e": "echo \"Not implemented\"",
+    "watch": "jest --watch",
+    "build": "tsc",
+    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
+    "lint-fix": "eslint --fix --ext .ts --no-error-on-unmatched-pattern src tests",
+    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
+    "package-bundle": "../../package-bundler.sh parameters-bundle ./dist",
+    "prepare": "npm run build",
+    "postversion": "git push --tags"
+  },
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/parameters#readme",
+  "license": "MIT-0",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "devDependencies": {},
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+  },
+  "dependencies": {},
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "ssm",
+    "secrets",
+    "serverless",
+    "nodejs"
+  ]
+}

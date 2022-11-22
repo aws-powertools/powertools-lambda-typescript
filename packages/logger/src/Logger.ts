@@ -121,9 +121,6 @@ class Logger extends Utility implements ClassThatLogs {
 
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
-  
-  // initOptions is initialized in the constructor in setOptions()
-  private initOptions!: ConstructorOptions;
 
   private logEvent: boolean = false;
 
@@ -206,9 +203,12 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {Logger}
    */
   public createChild(options: ConstructorOptions = {}): Logger {
-    const childLogger = new Logger(merge({}, this.initOptions, options));
+    const parentsPowertoolsLogData = this.getPowertoolLogData();
+    const childLogger = new Logger(merge({}, parentsPowertoolsLogData, options));
     const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
     childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);
+    const childPowertoolsLogData = childLogger.getPowertoolLogData();
+    childLogger.addToPowertoolLogData(merge({}, parentsPowertoolsLogData, childPowertoolsLogData));
     
     return childLogger;
   }
@@ -686,17 +686,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It initialize and store options, used to create an instance of Logger
-   *
-   * @private
-   * @param {ConstructorOptions} options
-   * @returns {void}
-   */
-  private setInitOptions(options: ConstructorOptions): void {
-    this.initOptions = options;
-  }
-
-  /**
    * If the log event feature is enabled via env variable, it sets a property that tracks whether
    * the event passed to the Lambda function handler should be logged or not.
    *
@@ -795,7 +784,6 @@ class Logger extends Utility implements ClassThatLogs {
       environment,
     } = options;
 
-    this.setInitOptions(options);
     this.setEnvVarsService();
     // order is important, it uses EnvVarsService()
     this.setConsole();

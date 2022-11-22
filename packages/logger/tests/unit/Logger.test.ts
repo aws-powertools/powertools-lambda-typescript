@@ -568,7 +568,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: {},
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1264,7 +1263,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: loggerOptions,
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1291,7 +1289,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: { ...loggerOptions, ...childLoggerOptions },
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1318,7 +1315,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: { ...childLoggerOptions ,...grandchildLoggerOptions },
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1383,7 +1379,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: {},
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1410,7 +1405,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: optionsWithPermanentAttributes,
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1439,7 +1433,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: optionsWithSampleRateEnabled,
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1466,7 +1459,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: optionsWithErrorLogLevel,
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1516,7 +1508,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: {},
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1543,7 +1534,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: {},
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1577,7 +1567,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        initOptions: {},
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
@@ -1601,6 +1590,66 @@ describe('Class: Logger', () => {
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+        },
+      });
+    });
+
+    const context = {
+      callbackWaitsForEmptyEventLoop: true,
+      functionVersion: '$LATEST',
+      functionName: 'foo-bar-function-with-cold-start',
+      memoryLimitInMB: '128',
+      logGroupName: '/aws/lambda/foo-bar-function-with-cold-start',
+      logStreamName: '2021/03/09/[$LATEST]1-5759e988-bd862e3fe1be46a994272793',
+      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
+      awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+      getRemainingTimeInMillis: () => 1234,
+      done: () => console.log('Done!'),
+      fail: () => console.log('Failed!'),
+      succeed: () => console.log('Succeeded!'),
+    };
+
+    test('child logger should have parent\'s context in PowertoolLogData', () => {
+
+      // Prepare
+      const parentLogger = new Logger();
+
+      // Act
+      parentLogger.addContext(context);
+      const childLoggerWithContext = parentLogger.createChild();
+
+      // Assess
+      expect(childLoggerWithContext).toEqual({
+        console: expect.any(Console),
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logEvent: false,
+        logIndentation: 0,
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          lambdaContext: {
+            awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+            coldStart: true,
+            functionName: 'foo-bar-function-with-cold-start',
+            functionVersion: '$LATEST',
+            invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
+            memoryLimitInMB: 128,
+          },
           sampleRateValue: undefined,
           serviceName: 'hello-world',
         },

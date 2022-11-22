@@ -56,7 +56,7 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
   });
 
   // Request a sample random uuid from a webservice
-  const res = await got("https://httpbin.org/uuid");
+  const res = await got('https://httpbin.org/uuid');
   const uuid = JSON.parse(res.body).uuid;
 
   // Logger: Append uuid to each log statement
@@ -116,8 +116,8 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
 // Wrap the handler with middy
 export const handler = middy(getAllItemsHandler)
 // Use the middleware by passing the Metrics instance as a parameter
-.use(logMetrics(metrics))
+  .use(logMetrics(metrics))
 // Use the middleware by passing the Logger instance as a parameter
-.use(injectLambdaContext(logger, { logEvent: true }))
+  .use(injectLambdaContext(logger, { logEvent: true }))
 // Use the middleware by passing the Tracer instance as a parameter
-.use(captureLambdaHandler(tracer));
+  .use(captureLambdaHandler(tracer));

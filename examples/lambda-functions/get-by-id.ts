@@ -30,6 +30,14 @@ const tableName = process.env.SAMPLE_TABLE;
 
 class Lambda implements LambdaInterface {
 
+  @tracer.captureMethod()
+  public async getUuid(): Promise<string> {
+    // Request a sample random uuid from a webservice
+    const res = await got('https://httpbin.org/uuid');
+    
+    return JSON.parse(res.body).uuid;
+  }
+
   @tracer.captureLambdaHandler()
   @logger.injectLambdaContext({ logEvent: true })
   @metrics.logMetrics()
@@ -93,7 +101,7 @@ class Lambda implements LambdaInterface {
                 {
                   S: event.pathParameters.id 
                 } 
-            },
+        },
       }));
       const item = data.Item;
       response = {
@@ -121,12 +129,6 @@ class Lambda implements LambdaInterface {
     return response;
   }
 
-  @tracer.captureMethod()
-  public async getUuid() {
-    // Request a sample random uuid from a webservice
-    const res = await got("https://httpbin.org/uuid");
-    return JSON.parse(res.body).uuid;
-  }
 }
 
 const handlerClass = new Lambda();

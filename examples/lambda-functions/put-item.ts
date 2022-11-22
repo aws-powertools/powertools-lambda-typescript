@@ -56,7 +56,7 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
   });
 
   // Request a sample random uuid from a webservice
-  const res = await got("https://httpbin.org/uuid");
+  const res = await got('https://httpbin.org/uuid');
   const uuid = JSON.parse(res.body).uuid;
 
   // Logger: Append uuid to each log statement
@@ -88,7 +88,7 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
 
     await docClient.send(new PutItemCommand({
       TableName: tableName,
-      Item: { id: {S: id}, name: {S: name} }
+      Item: { id: { S: id }, name: { S: name } }
     }));
     response = {
       statusCode: 200,

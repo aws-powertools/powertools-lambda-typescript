@@ -1489,6 +1489,124 @@ describe('Class: Logger', () => {
 
     });
 
+    test('child logger should have parent\'s keys in persistentLogAttributes', () => {
+
+      // Prepare
+      const INDENTATION = LogJsonIndent.COMPACT;
+      const parentLogger = new Logger();
+      const childLogger = parentLogger.createChild();
+
+      // Act
+      parentLogger.appendKeys({
+        aws_account_id: '123456789012',
+        aws_region: 'eu-west-1',
+        logger: {
+          name: 'aws-lambda-powertool-typescript',
+          version: '0.2.4',
+        },
+        test_key: 'key-for-test'
+      });
+      const childLoggerWithKeys = parentLogger.createChild();
+      childLoggerWithKeys.removeKeys(['test_key']);
+
+      // Assess
+      expect(childLogger).toEqual({
+        console: expect.any(Console),
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: {},
+        logEvent: false,
+        logIndentation: INDENTATION,
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+        },
+      });
+
+      expect(childLoggerWithKeys).toEqual({
+        console: expect.any(Console),
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: {},
+        logEvent: false,
+        logIndentation: INDENTATION,
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: false,
+        persistentLogAttributes: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+        powertoolLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+        },
+      });
+
+      expect(parentLogger).toEqual({
+        console: expect.any(Console),
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        initOptions: {},
+        logEvent: false,
+        logIndentation: INDENTATION,
+        logFormatter: expect.any(PowertoolLogFormatter),
+        logLevel: 'DEBUG',
+        logLevelThresholds: {
+          DEBUG: 8,
+          ERROR: 20,
+          INFO: 12,
+          WARN: 16,
+        },
+        logsSampled: false,
+        persistentLogAttributes: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+          test_key: 'key-for-test',
+        },
+        powertoolLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          sampleRateValue: undefined,
+          serviceName: 'hello-world',
+        },
+      });
+    });
+    
   });
 
   describe('Method: logEventIfEnabled', () => {

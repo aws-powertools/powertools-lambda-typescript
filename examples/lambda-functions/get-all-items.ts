@@ -86,12 +86,6 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
     };
   }
 
-  // Tracer: Close subsegment (the AWS Lambda one is closed automatically)
-  handlerSegment.close(); // (## index.handler)
-
-  // Tracer: Set the facade segment as active again (the one created by AWS Lambda)
-  tracer.setSegment(segment);
-
   // All log statements are written to CloudWatch
   logger.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
 

@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import middy from '@middy/core';
+import { tableName } from './common/constants';
 import { logger, tracer, metrics } from './common/powertools';
 import { logMetrics } from '@aws-lambda-powertools/metrics';
 import { injectLambdaContext } from '@aws-lambda-powertools/logger';
@@ -16,9 +17,6 @@ import got from 'got';
  * Find more Information in the docs: https://awslabs.github.io/aws-lambda-powertools-typescript/
  * 
  */
-
-// Get the DynamoDB table name from environment variables
-const tableName = process.env.SAMPLE_TABLE;
  
 /**
  *
@@ -107,4 +105,4 @@ export const handler = middy(getAllItemsHandler)
 // Use the middleware by passing the Logger instance as a parameter
   .use(injectLambdaContext(logger, { logEvent: true }))
 // Use the middleware by passing the Tracer instance as a parameter
-  .use(captureLambdaHandler(tracer, {captureResponse: false})); // by default the tracer would add the response as metadata on the segment, but there is a chance to hit the 64kb segment size limit. Therefore set captureResponse: false
+  .use(captureLambdaHandler(tracer, { captureResponse: false })); // by default the tracer would add the response as metadata on the segment, but there is a chance to hit the 64kb segment size limit. Therefore set captureResponse: false

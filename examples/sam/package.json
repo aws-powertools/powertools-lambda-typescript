@@ -40,8 +40,7 @@
     "@aws-lambda-powertools/tracer": "^1.4.1",
     "@aws-sdk/client-dynamodb": "^3.214.0",
     "@aws-sdk/lib-dynamodb": "^3.215.0",
-    "@middy/core": "^3.6.2",
-    "aws-sdk": "^2.1258.0",
+    "@middy/core": "2.5.7",
     "got": "^12.5.3"
   }
 }

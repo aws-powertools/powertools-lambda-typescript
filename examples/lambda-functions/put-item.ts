@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { tableName } from './common/constants';
 import { logger, tracer, metrics } from './common/powertools';
 import { docClient } from './common/dynamodb-client';
 import { PutItemCommand } from '@aws-sdk/lib-dynamodb';
@@ -9,9 +10,6 @@ import got from 'got';
  * This example uses the manual instrumentation.
  * 
  */
-
-// Get the DynamoDB table name from environment variables
-const tableName = process.env.SAMPLE_TABLE;
 
 /**
  *

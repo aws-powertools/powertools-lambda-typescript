@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import { logger, tracer, metrics } from './common/powertools';
-import { dynamodbClientV3, PutItemCommand } from './common/dynamodb-client';
+import { docClient } from './common/dynamodb-client';
+import { PutItemCommand } from '@aws-sdk/lib-dynamodb';
 import got from 'got';
 
 /*
@@ -8,9 +9,6 @@ import got from 'got';
  * This example uses the manual instrumentation.
  * 
  */
-
-// Patch DynamoDB client for tracing
-const docClient = tracer.captureAWSv3Client(dynamodbClientV3);
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
@@ -31,7 +29,7 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
   }
 
   // Logger: Log the incoming event
-  logger.info('Incoming Event', event);
+  logger.info('Lambda invocation event', event);
 
   // Tracer: Get facade segment created by AWS Lambda
   const segment = tracer.getSegment();

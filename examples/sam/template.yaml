@@ -115,7 +115,7 @@ Resources:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           NODE_OPTIONS: '--enable-source-maps' # see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
-          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1 # see https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/node-reusing-connections.html
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1 # see https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/node-reusing-connections.html
           SAMPLE_TABLE: !Ref SampleTable
           POWERTOOLS_SERVICE_NAME: getById
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample

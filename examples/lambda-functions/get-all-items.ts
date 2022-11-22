@@ -1,7 +1,11 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import middy from '@middy/core';
-import { logger, tracer, metrics, injectLambdaContext, logMetrics, captureLambdaHandler, } from './common/powertools';
-import { dynamodbClientV3, ScanCommand } from './common/dynamodb-client';
+import { logger, tracer, metrics } from './common/powertools';
+import { logMetrics } from '@aws-lambda-powertools/metrics';
+import { injectLambdaContext } from '@aws-lambda-powertools/logger';
+import { captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+import { docClient } from './common/dynamodb-client';
+import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import got from 'got';
 
 /*
@@ -12,9 +16,6 @@ import got from 'got';
  * Find more Information in the docs: https://awslabs.github.io/aws-lambda-powertools-typescript/
  * 
  */
-
-// Patch DynamoDB client for tracing
-const docClient = tracer.captureAWSv3Client(dynamodbClientV3);
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
@@ -33,22 +34,8 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
     throw new Error(`getAllItems only accepts GET method, you tried: ${event.httpMethod}`);
   }
 
-  // Tracer: Get facade segment created by AWS Lambda
-  const segment = tracer.getSegment();
-
-  // Tracer: Create subsegment for the function & set it as active
-  const handlerSegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
-  tracer.setSegment(handlerSegment);
-
-  // Tracer: Annotate the subsegment with the cold start & serviceName
-  tracer.annotateColdStart();
-  tracer.addServiceNameAnnotation();
-
   // Tracer: Add awsRequestId as annotation
   tracer.putAnnotation('awsRequestId', context.awsRequestId);
-
-  // Metrics: Capture cold start metrics
-  metrics.captureColdStartMetric();
 
   // Logger: Append awsRequestId to each log statement
   logger.appendKeys({
@@ -120,4 +107,4 @@ export const handler = middy(getAllItemsHandler)
 // Use the middleware by passing the Logger instance as a parameter
   .use(injectLambdaContext(logger, { logEvent: true }))
 // Use the middleware by passing the Tracer instance as a parameter
-  .use(captureLambdaHandler(tracer));
+  .use(captureLambdaHandler(tracer, {captureResponse: false})); // by default the tracer would add the response as metadata on the segment, but there is a chance to hit the 64kb segment size limit. Therefore set captureResponse: false

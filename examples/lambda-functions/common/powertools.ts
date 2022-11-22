@@ -1,7 +1,6 @@
-import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
-import { Metrics, logMetrics } from '@aws-lambda-powertools/metrics';
-import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import { Logger } from '@aws-lambda-powertools/logger';
+import { Metrics } from '@aws-lambda-powertools/metrics';
+import { Tracer } from '@aws-lambda-powertools/tracer';
 
 const awsLambdaPowertoolsVersion = '1.4.1';
 
@@ -29,9 +28,5 @@ const tracer = new Tracer();
 export {
   logger,
   metrics,
-  tracer,
-  injectLambdaContext,
-  logMetrics,
-  captureLambdaHandler,
-  LambdaInterface
+  tracer
 };

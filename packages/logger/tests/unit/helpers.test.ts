@@ -230,7 +230,7 @@ describe('Helper: createLogger function', () => {
     test('when no log level is set, returns a Logger instance with INFO level', () => {
 
       // Prepare
-      const loggerOptions:ConstructorOptions = {};
+      const loggerOptions: ConstructorOptions = {};
       delete process.env.LOG_LEVEL;
 
       // Act

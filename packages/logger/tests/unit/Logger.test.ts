@@ -1623,7 +1623,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(childLoggerWithContext).toEqual({
         console: expect.any(Console),
-        coldStart: true,
+        coldStart: false, // This is now false because the `coldStart` attribute has been already accessed once by the `addContext` method
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),

@@ -128,7 +128,8 @@ class Tracer extends Utility implements TracerInterface {
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
   
-  private serviceName?: string;
+  // serviceName is always initialized in the constructor in setOptions()
+  private serviceName!: string;
   
   private tracingEnabled: boolean = true;
 
@@ -189,7 +190,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    */
   public addServiceNameAnnotation(): void {
-    if (!this.isTracingEnabled() || this.serviceName === undefined) {
+    if (!this.isTracingEnabled()) {
       return;
     }
     this.putAnnotation('Service', this.serviceName);
@@ -685,16 +686,6 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Validate that the service name provided is valid.
-   * Used internally during initialization.
-   * 
-   * @param serviceName - Service name to validate
-   */
-  private static isValidServiceName(serviceName?: string): boolean {
-    return typeof serviceName === 'string' && serviceName.trim().length > 0;
-  }
-
-  /**
    * Setter for `captureError` based on configuration passed and environment variables.
    * Used internally during initialization.
    */
@@ -817,25 +808,26 @@ class Tracer extends Utility implements TracerInterface {
    * @param serviceName - Name of the service to use
    */
   private setServiceName(serviceName?: string): void {
-    if (serviceName !== undefined && Tracer.isValidServiceName(serviceName)) {
+    if (serviceName !== undefined && this.isValidServiceName(serviceName)) {
       this.serviceName = serviceName;
 
       return;
     }
 
     const customConfigValue = this.getCustomConfigService()?.getServiceName();
-    if (customConfigValue !== undefined && Tracer.isValidServiceName(customConfigValue)) {
+    if (customConfigValue !== undefined && this.isValidServiceName(customConfigValue)) {
       this.serviceName = customConfigValue;
 
       return;
     }
 
     const envVarsValue = this.getEnvVarsService().getServiceName();
-    if (envVarsValue !== undefined && Tracer.isValidServiceName(envVarsValue)) {
+    if (envVarsValue !== undefined && this.isValidServiceName(envVarsValue)) {
       this.serviceName = envVarsValue;
 
       return;
     }
+    this.serviceName = this.getDefaultServiceName();
   }
 
   /**

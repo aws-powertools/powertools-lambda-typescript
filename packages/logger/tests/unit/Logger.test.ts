@@ -4,27 +4,22 @@
  * @group unit/logger/all
  */
 
-import { context as dummyContext } from '../../../../tests/resources/contexts/hello-world';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
+import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
 import { ClassThatLogs, LogJsonIndent } from '../../src/types';
-import { Context, Handler } from 'aws-lambda';
+import { Context } from 'aws-lambda';
 import { Console } from 'console';
-
-interface LambdaInterface {
-  handler: Handler
-}
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
 
 describe('Class: Logger', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-
+  const context = dummyContext.helloworldContext;
+  const event = dummyEvent.Custom.CustomEvent;
+  
   beforeEach(() => {
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
@@ -244,7 +239,7 @@ describe('Class: Logger', () => {
           const logger: Logger & { addContext: (context: Context) => void } = createLogger({
             logLevel: 'DEBUG',
           });
-          logger.addContext(dummyContext);
+          logger.addContext(context);
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
 
           // Act
@@ -571,6 +566,7 @@ describe('Class: Logger', () => {
         console: expect.any(Console),
         coldStart: false, // This is now false because the `coldStart` attribute has been already accessed once by the `addContext` method
         customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: 0,
@@ -829,7 +825,7 @@ describe('Class: Logger', () => {
       }
 
       // Act
-      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -865,7 +861,7 @@ describe('Class: Logger', () => {
 
       // Act
       logger.info('An INFO log without context!');
-      await new LambdaFunction().handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
 
@@ -912,7 +908,7 @@ describe('Class: Logger', () => {
 
       // Act
       logger.info('An INFO log without context!');
-      const actualResult = await new LambdaFunction().handler(dummyEvent, dummyContext);
+      const actualResult = await new LambdaFunction().handler(event, context);
 
       // Assess
 
@@ -971,7 +967,7 @@ describe('Class: Logger', () => {
       const persistentAttribs = { ...logger.getPersistentLogAttributes() };
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
 
       // Assess
@@ -1017,7 +1013,7 @@ describe('Class: Logger', () => {
 
       // Act & Assess
       const executeLambdaHandler = async (): Promise<void> => {
-        await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+        await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
       };
       await expect(executeLambdaHandler()).rejects.toThrow('Unexpected error occurred!');
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
@@ -1050,7 +1046,7 @@ describe('Class: Logger', () => {
       }
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1094,7 +1090,7 @@ describe('Class: Logger', () => {
       }
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, dummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1148,7 +1144,7 @@ describe('Class: Logger', () => {
       // Act
       const lambda = new LambdaFunction('someValue');
       const handler = lambda.handler.bind(lambda);
-      await handler({}, dummyContext, () => console.log('Lambda invoked!'));
+      await handler({}, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1198,7 +1194,7 @@ describe('Class: Logger', () => {
       // Act
       const lambda = new LambdaFunction();
       const handler = lambda.handler.bind(lambda);
-      await handler({}, dummyContext, () => console.log('Lambda invoked!'));
+      await handler({}, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1243,6 +1239,7 @@ describe('Class: Logger', () => {
     test('when called, it returns a DISTINCT clone of the logger instance', () => {
 
       // Prepare
+      const INDENTATION = LogJsonIndent.COMPACT;
       const parentLogger = new Logger();
 
       // Act
@@ -1261,7 +1258,10 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(parentLogger === childLogger).toBe(false);
-      expect(parentLogger).toEqual(childLogger);
+      expect(childLogger).toEqual({
+        ...parentLogger,
+        console: expect.any(Console),
+      });
       expect(parentLogger === childLoggerWithPermanentAttributes).toBe(false);
       expect(parentLogger === childLoggerWithSampleRateEnabled).toBe(false);
       expect(parentLogger === childLoggerWithErrorLogLevel).toBe(false);
@@ -1270,9 +1270,10 @@ describe('Class: Logger', () => {
         console: expect.any(Console),
         coldStart: true,
         customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1295,9 +1296,10 @@ describe('Class: Logger', () => {
         console: expect.any(Console),
         coldStart: true,
         customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1322,9 +1324,10 @@ describe('Class: Logger', () => {
         console: expect.any(Console),
         coldStart: true,
         customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
@@ -1347,9 +1350,10 @@ describe('Class: Logger', () => {
         console: expect.any(Console),
         coldStart: true,
         customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
-        logIndentation: 0,
+        logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'ERROR',
         logLevelThresholds: {
@@ -1381,7 +1385,7 @@ describe('Class: Logger', () => {
       const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
 
       // Act
-      logger.logEventIfEnabled(dummyEvent);
+      logger.logEventIfEnabled(event);
 
       // Assess
 
@@ -1458,6 +1462,29 @@ describe('Class: Logger', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
+    });
+  });
+
+  describe('Method: setConsole()', () => {
+    
+    test('When the `POWERTOOLS_DEV` env var is SET console object is set to the global node console otherwise to the instance of the internal version of console', () => {
+
+      // Prepare
+      const logger = new Logger();
+      process.env.POWERTOOLS_DEV = 'true';
+      const devLogger = new Logger();
+
+      // Assess
+      expect(devLogger).toEqual({
+        ...devLogger,
+        console: console,
+      });
+      // since instances of a class are not equal objects,
+      // we assert the opposite – console is not the global node object
+      expect(logger).not.toEqual({
+        ...logger,
+        console: console,
+      });
     });
   });
 

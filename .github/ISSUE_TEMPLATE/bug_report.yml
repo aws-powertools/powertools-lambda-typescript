@@ -1,7 +1,7 @@
 name: Bug report
 description: Report a reproducible bug to help us improve
 title: "Bug: TITLE"
-labels: ["bug", "triage"]
+labels: ["type/bug", "triage"]
 body:
   - type: markdown
     attributes:
@@ -76,8 +76,8 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: Debugging logs
-      description: If available, please share [debugging logs](https://awslabs.github.io/aws-lambda-powertools-python/#debug-mode)
+      label: Execution logs
+      description: If available, please share some logs making sure to remove any sensitive data
       render: Shell
     validations:
       required: false

@@ -285,8 +285,8 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 
 | Environment variable                         | Description                                                                            | Utility                   | Default               |
 |----------------------------------------------|----------------------------------------------------------------------------------------|---------------------------|-----------------------|
-| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       | `"service_undefined"` |
-| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) | `None`                |
+| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       | `service_undefined` |
+| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) | `default_namespace`                |
 | **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                            | [Tracer](./core/tracer)   | `true`                |
 | **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Captures Lambda or method return as metadata.                                          | [Tracer](./core/tracer)   | `true`                |
 | **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Captures Lambda or method exception as metadata.                                       | [Tracer](./core/tracer)   | `true`                |
@@ -295,6 +295,8 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 | **POWERTOOLS_LOGGER_SAMPLE_RATE**            | Debug log sampling                                                                     | [Logger](./core/logger)   | `0`                   |
 | **POWERTOOLS_DEV**            | Increase JSON indentation to ease debugging when running functions locally or in a non-production environment                                                                     | [Logger](./core/logger)   | `false`                   |
 | **LOG_LEVEL**                                | Sets logging level                                                                     | [Logger](./core/logger)   | `INFO`                |
+
+Each Utility page provides information on example values and allowed values
 
 ## Tenets
 

@@ -9,6 +9,7 @@
     "packages/logger",
     "packages/metrics",
     "packages/tracer",
+    "packages/parameters",
     "packages/idempotency"
   ],
   "scripts": {

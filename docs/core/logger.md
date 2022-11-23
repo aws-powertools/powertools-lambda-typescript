@@ -52,12 +52,12 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all logs emitted:
 
-| Setting                 | Description                                                                                                                                     | Environment variable            | Constructor parameter |
-|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|-----------------------|
-| **Service name**        | Sets the name of service of which the Lambda function is part of, that will be present across all log statements                                | `POWERTOOLS_SERVICE_NAME`       | `serviceName`         |
-| **Logging level**       | Sets how verbose Logger should be (INFO, by default). Supported values are: `DEBUG`, `INFO`, `WARN`, `ERROR`                                    | `LOG_LEVEL`                     | `logLevel`            |
-| **Log incoming event**  | Whether to log or not the incoming event when using the decorator or middleware. Supported values are: `true`, or `false`, disabled by default  | `POWERTOOLS_LOGGER_LOG_EVENT`   | `logEvent`            |
-| **Debug log sampling**  | Probability that a Lambda invocation will print all the log items regardless of the log level setting. Supported values range from `0.0` to `1` | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `sampleRateValue`     |
+| Setting                 | Description                                                                                                      | Environment variable            | Default Value       | Allowed Values                 | Example Value      | Constructor parameter |
+|-------------------------|------------------------------------------------------------------------------------------------------------------|---------------------------------|---------------------|--------------------------------|--------------------|-----------------------|
+| **Service name**        | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                     | `serverlessAirline`| `serviceName`         |
+| **Logging level**       | Sets how verbose Logger should be                                                                                | `LOG_LEVEL`                     | `info`              |`DEBUG`, `INFO`, `WARN`, `ERROR`| `ERROR`            | `logLevel`            |
+| **Log incoming event**  | Whether to log or not the incoming event when using the decorator or middleware.                                 | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                | `false`            | `logEvent`            |
+| **Debug log sampling**  | Probability that a Lambda invocation will print all the log items regardless of the log level setting.           | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1`                   | `0.5`              | `sampleRateValue`     |
 
 #### Example using AWS Serverless Application Model (SAM)
 
@@ -971,3 +971,11 @@ This is a Jest sample that provides the minimum information necessary for Logger
 
 !!! tip
     If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/commons/src/samples/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).
+
+### Suppress logs with Jest
+
+When unit testing your code with [Jest](https://jestjs.io) you can use the `POWERTOOLS_DEV` environment variable in conjunction with the Jest `--silent` CLI option to suppress logs from Logger.
+
+```bash title="Disabling logs while testing with Jest"
+export POWERTOOLS_DEV=true && npx jest --silent
+```

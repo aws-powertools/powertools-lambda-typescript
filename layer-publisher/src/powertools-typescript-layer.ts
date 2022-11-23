@@ -30,6 +30,7 @@ export class PowerToolsTypeScriptLayer extends lambda.LayerVersion {
         @aws-lambda-powertools/logger@${version} \
         @aws-lambda-powertools/metrics@${version} \
         @aws-lambda-powertools/tracer@${version}`,
+      'rm -rf node_modules/@types',
       'rm package.json package-lock.json',
     ];
     const commandJoined = commands.join(' && ');

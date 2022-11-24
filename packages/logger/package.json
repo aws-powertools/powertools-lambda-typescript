@@ -32,7 +32,6 @@
   "types": "./lib/index.d.ts",
   "typedocMain": "src/index.ts",
   "devDependencies": {
-    "@types/lodash.clonedeep": "^4.5.7",
     "@types/lodash.merge": "^4.6.7",
     "@types/lodash.pickby": "^4.6.7"
   },
@@ -48,7 +47,6 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^1.4.1",
-    "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.2",
     "lodash.pickby": "^4.6.0"
   },

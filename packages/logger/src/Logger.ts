@@ -3,7 +3,6 @@ import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
-import cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { LogJsonIndent } from './types';
@@ -151,7 +150,6 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public constructor(options: ConstructorOptions = {}) {
     super();
-
     this.setOptions(options);
   }
 
@@ -205,7 +203,17 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {Logger}
    */
   public createChild(options: ConstructorOptions = {}): Logger {
-    return cloneDeep(this).setOptions(options);
+    const parentsPowertoolsLogData = this.getPowertoolLogData();
+    const childLogger = new Logger(merge({}, parentsPowertoolsLogData, options));
+    
+    const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
+    childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);
+    
+    if (parentsPowertoolsLogData.lambdaContext) {
+      childLogger.addContext(parentsPowertoolsLogData.lambdaContext as Context);
+    }
+    
+    return childLogger;
   }
 
   /**

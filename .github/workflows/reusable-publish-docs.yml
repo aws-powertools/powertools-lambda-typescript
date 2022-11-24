@@ -48,9 +48,16 @@ jobs:
         with:
           path: "./node_modules"
           key: 16-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
-      # Here we assume that there will always be a cache hit because this workflow can be triggered
-      # only after tests have already happened on this same code
+      - name: Install dependencies
+        # We can skip the installation if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
       - name: Build packages
+        # If there's a cache hit we still need to manually build the packages
+        # this would otherwise have been done automatically as a part of the
+        # post-install npm hook
+        if: steps.cache-node-modules.outputs.cache-hit == 'true'
         run: |
           npm run build -w packages/commons
           npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics

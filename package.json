@@ -9,7 +9,8 @@
     "packages/logger",
     "packages/metrics",
     "packages/tracer",
-    "packages/parameters"
+    "packages/parameters",
+    "packages/idempotency"
   ],
   "scripts": {
     "init-environment": "husky install",

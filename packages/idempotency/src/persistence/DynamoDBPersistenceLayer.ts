@@ -1,5 +1,6 @@
 import { DynamoDB, DynamoDBServiceException } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument, GetCommandOutput } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import type { GetCommandOutput } from '@aws-sdk/lib-dynamodb';
 import { DynamoPersistenceConstructorOptions } from '../types/DynamoPersistenceConstructorOptions';
 import { IdempotencyItemAlreadyExistsError, IdempotencyItemNotFoundError } from '../Exceptions';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
@@ -23,7 +24,7 @@ class DynamoDBPersistenceLayer extends PersistenceLayer {
     this.statusAttr = constructorOptions.statusAttr ?? 'status';
     this.expiryAttr = constructorOptions.expiryAttr ?? 'expiration';
     this.inProgressExpiryAttr = constructorOptions.inProgressExpiryAttr ?? 'in_progress_expiry_attr';
-    this.dataAttr = constructorOptions.data_attr ?? 'data';
+    this.dataAttr = constructorOptions.dataAttr ?? 'data';
   }
 
   protected async _deleteRecord(record: IdempotencyRecord): Promise<void> {

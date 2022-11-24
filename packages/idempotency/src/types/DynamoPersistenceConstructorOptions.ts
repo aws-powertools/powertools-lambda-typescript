@@ -4,7 +4,7 @@ type DynamoPersistenceConstructorOptions = {
   statusAttr?: string
   expiryAttr?: string
   inProgressExpiryAttr?: string
-  data_attr?: string
+  dataAttr?: string
 };
 
 export {

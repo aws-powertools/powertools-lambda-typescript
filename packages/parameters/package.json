@@ -30,7 +30,6 @@
   "license": "MIT-0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "devDependencies": {},
   "files": [
     "lib"
   ],
@@ -41,7 +40,9 @@
   "bugs": {
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@aws-sdk/util-base64-node": "^3.209.0"
+  },
   "keywords": [
     "aws",
     "lambda",

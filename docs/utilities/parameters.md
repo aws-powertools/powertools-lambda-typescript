@@ -364,7 +364,7 @@ import { AppConfigClient } from '@aws-sdk/client-appconfig';
 
 // construct the clients with any custom configuration
 const ssm = new SSMClient({ region: 'us-east-1' });
-const secretsManager = SecretsManagerClient({ region: 'us-west-2' });
+const secretsManager = new SecretsManagerClient({ region: 'us-west-2' });
 const dynamodb = new DynamoDBClient({ region: 'eu-west-1' });
 const appConfig = new AppConfigClient({ region: 'eu-south-2' });
 

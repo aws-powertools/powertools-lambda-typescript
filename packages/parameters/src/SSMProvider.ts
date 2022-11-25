@@ -2,16 +2,33 @@ import { BaseProvider } from './BaseProvider';
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import type { SSMClientConfig, GetParameterCommandInput } from '@aws-sdk/client-ssm';
 
+interface SSMProviderOptionsBase {
+  awsSdkV3Client?: SSMClient
+  sdkConfig?: SSMClientConfig
+}
+
+interface SSMOne extends SSMProviderOptionsBase {
+  awsSdkV3Client?: SSMClient
+  sdkConfig?: never
+}
+
+interface SSMTwo extends SSMProviderOptionsBase {
+  awsSdkV3Client?: never
+  sdkConfig?: SSMClientConfig
+}
+
+type SSMProviderOptions = SSMOne | SSMTwo;
+
 class SSMProvider extends BaseProvider {
   public client: SSMClient;
 
-  public constructor(config: SSMClientConfig = {}) {
+  public constructor(options: SSMProviderOptions = {}) {
     super();
-    this.client = new SSMClient(config);
+    this.client = new SSMClient(options);
   }
 
   protected async _get(name: string, sdkOptions?: Partial<GetParameterCommandInput>): Promise<string | undefined> {
-    const options: Partial<GetParameterCommandInput> = {
+    const options: GetParameterCommandInput = {
       Name: name,
     };
     if (sdkOptions) {

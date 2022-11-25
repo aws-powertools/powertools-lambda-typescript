@@ -37,7 +37,7 @@ class Lambda implements LambdaInterface {
 
   @tracer.captureLambdaHandler({ captureResponse: false }) // by default the tracer would add the response as metadata on the segment, but there is a chance to hit the 64kb segment size limit. Therefore set captureResponse: false
   @logger.injectLambdaContext({ logEvent: true })
-  @metrics.logMetrics({ throwOnEmptyMetrics: true, captureColdStartMetric: true })
+  @metrics.logMetrics({ throwOnEmptyMetrics: false, captureColdStartMetric: true })
   public async handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> {
 
     if (event.httpMethod !== 'GET') {

@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { getAllItemsHandler } from '../src/get-all-items';
-import { getByIdHandler } from '../src/get-by-id';
-import { putItemHandler } from '../src/put-item';
+import { handler as getAllItemsHandler } from '../.aws-sam/build/getAllItemsFunction/get-all-items';
+import { handler as getByIdHandler } from '../.aws-sam/build/getByIdFunction/get-by-id';
+import { handler as putItemHandler } from '../.aws-sam/build/putItemFunction/put-item';
 
 test('getAllItemsHandler function imports & throws correctly', () => {
   expect(getAllItemsHandler({} as APIGatewayProxyEvent, {} as Context)).rejects.toThrow(

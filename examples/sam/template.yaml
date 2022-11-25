@@ -15,7 +15,7 @@ Transform: AWS::Serverless-2016-10-31
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
 Globals:
   Function:
-      Runtime: nodejs18.x
+      Runtime: nodejs16.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -57,8 +57,6 @@ Resources:
       # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
-        External: 
-        - '@aws-sdk'
         Minify: true
         Target: "es2020"
         Sourcemap: true
@@ -95,8 +93,6 @@ Resources:
       # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
-        External: 
-        - '@aws-sdk'
         Minify: true
         Target: "es2020"
         ExperimentalDecorators: true
@@ -134,8 +130,6 @@ Resources:
       # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
-        External: 
-        - '@aws-sdk'
         Minify: true
         Target: "es2020"
         Sourcemap: true

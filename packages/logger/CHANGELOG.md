@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.4.1...v1.5.0) (2022-11-25)
+
+
+### Bug Fixes
+
+* **logger:** merge child logger options correctly ([#1178](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1178)) ([cb91374](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/cb9137436cc3a10d6c869506ddd07e35963ba8b2))
+
+
+### Features
+
+* **logger:** disable logs while testing with `jest --silent` in dev env ([#1165](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1165)) ([6f0c307](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/6f0c30728f31d60433b3afb6983c64110c28d27e))
+* **logger:** pretty printing logs in local and non-prod environment ([#1141](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1141)) ([8d52660](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/8d52660eb6b8324e284421c2484c45d9a0839346))
+
+
+
+
+
 ## [1.4.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.4.0...v1.4.1) (2022-11-09)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger

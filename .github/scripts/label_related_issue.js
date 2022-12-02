@@ -6,7 +6,7 @@ const {
   LABEL_PENDING_RELEASE,
   HANDLE_MAINTAINERS_TEAM,
   PR_IS_MERGED,
-} = require("./constants")
+} = require("./constants");
 
 module.exports = async ({github, context, core}) => {
     if (IGNORE_AUTHORS.includes(PR_AUTHOR)) {

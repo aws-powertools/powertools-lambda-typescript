@@ -1,6 +1,7 @@
 import { BinaryToTextEncoding, createHash, Hash } from 'crypto';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
-import { EnvironmentVariablesService } from '../EnvironmentVariablesService';
+import type { PersistenceLayerConfigureOptions } from '../types/PersistenceLayer';
+import { EnvironmentVariablesService } from '../config';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { PersistenceLayerInterface } from './PersistenceLayerInterface';
 
@@ -10,22 +11,32 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
   private envVarsService!: EnvironmentVariablesService;
 
   private expiresAfterSeconds: number;
-
-  private functionName: string = '';
-
+  
   private hashDigest: BinaryToTextEncoding;
-
+  
   private hashFunction: string;
+  
+  private idempotencyKeyPrefix: string;
 
   public constructor() { 
     this.setEnvVarsService();
     this.expiresAfterSeconds = 60 * 60; //one hour is the default expiration
     this.hashFunction = 'md5';
     this.hashDigest = 'base64';
-        
+    this.idempotencyKeyPrefix = this.getEnvVarsService().getFunctionName();
+
   }
-  public configure(functionName: string = ''): void {
-    this.functionName = this.getEnvVarsService().getLambdaFunctionName() + '.' + functionName;
+
+  /**
+   * Configures the persistence layer by passing the name of the idempotent function. This will be used
+   * in the prefix of the idempotency key
+   * 
+   * @param {PersistenceLayerConfigureOptions} options - configuration object for the persistence layer
+   */
+  public configure(options?: PersistenceLayerConfigureOptions): void {
+    if (options?.functionName && options.functionName.trim() !== '') {
+      this.idempotencyKeyPrefix = `${this.idempotencyKeyPrefix}.${options.functionName}`;
+    }
   }
 
   /**
@@ -136,7 +147,7 @@ abstract class PersistenceLayer implements PersistenceLayerInterface {
       console.warn('No data found for idempotency key');
     }
     
-    return this.functionName + '#' + this.generateHash(JSON.stringify(data));
+    return `${this.idempotencyKeyPrefix}#${this.generateHash(JSON.stringify(data))}`;
   }
 
   /**

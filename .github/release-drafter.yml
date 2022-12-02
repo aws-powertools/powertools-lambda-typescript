@@ -2,28 +2,27 @@ change-template: "* $TITLE (#$NUMBER) by @$AUTHOR"
 categories:
   - title: '⚡ Breaking Changes'
     labels:
-      - 'breaking-change'
+      - 'type/breaking-change'
   - title: '🌟New features and non-breaking changes'
     labels:
-      - 'major'
-      - 'feature'
+      - 'type/feature'
   - title: '🌟 Minor Changes'
     labels:
-      - 'enhancement'
+      - 'type/enhancement'
   - title: '📜 Documentation updates'
     labels:
-      - 'documentation'
+      - 'area/documentation'
   - title: '🐛 Bug and hot fixes'
     labels:
-      - 'bug'
-      - 'fix'
+      - 'type/bug'
+      - 'type/fix'
   - title: '🚒 Deprecations'
     labels:
-      - 'deprecated'
+      - 'type/deprecation'
   - title: '🔧 Maintenance'
     labels:
-      - 'internal'
-      - 'dependencies'
+      - 'type/internal'
+      - 'type/dependencies'
 exclude-labels:
   - 'skip-changelog'
 tag-template: 'v$NEXT_PATCH_VERSION'

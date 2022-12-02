@@ -1,21 +1,19 @@
-const { PR_NUMBER, PR_TITLE, AREAS } = require("./constants");
+const { PR_NUMBER, PR_TITLE } = require("./constants");
 
 module.exports = async ({github, context, core}) => {
-    const FEAT_REGEX = /feat(\((.+)\))?(:.+)/
     const BUG_REGEX = /(fix|bug)(\((.+)\))?(:.+)/
+    const FEAT_REFACTOR_REGEX = /(feat|refactor)(\((.+)\))?(:.+)/
     const DOCS_REGEX = /(docs|doc)(\((.+)\))?(:.+)/
     const CHORE_REGEX = /(chore)(\((.+)\))?(:.+)/
     const DEPRECATED_REGEX = /(deprecated)(\((.+)\))?(:.+)/
-    const REFACTOR_REGEX = /(refactor)(\((.+)\))?(:.+)/
-
+    
     const labels = {
-        "feature": FEAT_REGEX,
-        "bug": BUG_REGEX,
-        "documentation": DOCS_REGEX,
-        "internal": CHORE_REGEX,
-        "enhancement": REFACTOR_REGEX,
-        "deprecated": DEPRECATED_REGEX,
-    };
+        "type/feature": FEAT_REFACTOR_REGEX,
+        "type/bug": BUG_REGEX,
+        "area/documentation": DOCS_REGEX,
+        "type/internal": CHORE_REGEX,
+        "type/deprecation": DEPRECATED_REGEX,
+    }
 
     // Maintenance: We should keep track of modified PRs in case their titles change
     let miss = 0;
@@ -32,19 +30,6 @@ module.exports = async ({github, context, core}) => {
                     repo: context.repo.repo,
                     labels: [label]
                 });
-
-                const area = matches[2]; // second capture group contains the area
-                if (AREAS.indexOf(area) > -1) {
-                    core.info(`Auto-labeling PR ${PR_NUMBER} with area ${area}`);
-                    await github.rest.issues.addLabels({
-                        issue_number: PR_NUMBER,
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        labels: [`area/${area}`],
-                    });
-                } else {
-                    core.debug(`'${PR_TITLE}' didn't match any known area.`);
-                }
 
                 return;
             } else {

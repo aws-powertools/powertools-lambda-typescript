@@ -1,7 +1,7 @@
 /**
   * Test SSMProvider class
  *
- * @group unit/idempotency/all
+ * @group unit/parameters/SSMProvider/class
  */
 import { SSMProvider } from '../../src/SSMProvider';
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';

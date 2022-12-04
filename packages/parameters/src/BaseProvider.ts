@@ -9,6 +9,9 @@ import type { BaseProviderInterface, GetMultipleOptionsInterface, GetOptionsInte
 // These providers are dinamycally intialized on first use of the helper functions
 const DEFAULT_PROVIDERS: Record<string, BaseProvider> = {};
 
+// These providers will be dynamically initialized on first use of the helper functions
+const DEFAULT_PROVIDERS: { [key: string]: BaseProvider } = {};
+
 abstract class BaseProvider implements BaseProviderInterface {
   protected store: Map<string, ExpirableValue>;
 

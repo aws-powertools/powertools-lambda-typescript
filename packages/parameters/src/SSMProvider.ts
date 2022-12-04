@@ -1,6 +1,7 @@
-import { BaseProvider } from './BaseProvider';
+import { BaseProvider, DEFAULT_PROVIDERS } from './BaseProvider';
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import type { SSMClientConfig, GetParameterCommandInput } from '@aws-sdk/client-ssm';
+import type { SSMGetOptionsInterface } from 'types/SSMProvider';
 
 class SSMProvider extends BaseProvider {
   public client: SSMClient;
@@ -27,6 +28,15 @@ class SSMProvider extends BaseProvider {
   }
 }
 
+const getParameter = (name: string, options?: SSMGetOptionsInterface): Promise<undefined | string | Record<string, unknown>> => {
+  if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
+    DEFAULT_PROVIDERS.ssm = new SSMProvider();
+  }
+
+  return DEFAULT_PROVIDERS.ssm.get(name, options);
+};
+
 export {
-  SSMProvider
+  SSMProvider,
+  getParameter,
 };

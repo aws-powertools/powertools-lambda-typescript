@@ -57,6 +57,24 @@ describe('Class: SSMProvider', () => {
 
     });
 
+    test('when called with the decrypt option, the WithDecryption parameter is passed to the sdk client', async () => {
+
+      // Prepare
+      const provider = new SSMProvider();
+      const client = mockClient(SSMClient).on(GetParameterCommand).resolves({});
+      const parameterName = 'foo';
+
+      // Act
+      provider.get(parameterName, { decrypt: true });
+
+      // Assess
+      expect(client).toReceiveCommandWith(GetParameterCommand, {
+        Name: parameterName,
+        WithDecryption: true,
+      });
+
+    });
+
   });
 
   describe('Method: _getMultiple', () => {

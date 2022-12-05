@@ -18,10 +18,15 @@ class IdempotencyAlreadyInProgressError extends Error {
 
 }
 
+class IdempotencyPersistenceLayerError extends Error {
+
+}
+
 export {
   IdempotencyItemNotFoundError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyInvalidStatusError,
   IdempotencyInconsistentStateError,
-  IdempotencyAlreadyInProgressError
+  IdempotencyAlreadyInProgressError,
+  IdempotencyPersistenceLayerError
 };

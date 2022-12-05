@@ -1,12 +1,13 @@
 import { AnyFunction, IdempotencyRecordStatus } from './types';
 import { IdempotencyOptions } from './IdempotencyOptions';
 import { IdempotencyRecord, PersistenceLayerInterface } from 'persistence';
-import { IdempotencyInconsistentStateError, IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError } from 'Exceptions';
+import { IdempotencyInconsistentStateError, IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyPersistenceLayerError } from './Exceptions';
 
 export class IdempotencyHandler {
 //TODO: Think about making it so that all of the inputs considered are part of the "payload"
 //Think about enforement: The payload must be JSON serializable
 //TODO: promise returns vs synchronous
+//TODO: Is there a better name for functionPayload? It is more of the payload as it concerns idempotency, in the sense of what is the "unique" value
 
   private persistenceLayer: PersistenceLayerInterface;
 
@@ -33,9 +34,11 @@ export class IdempotencyHandler {
         const idempotencyRecord: IdempotencyRecord = await this.persistenceLayer.getRecord(this.functionPayload);
 
         return this.determineResultFromIdempotencyRecord(idempotencyRecord);
+      } else {
+        throw new IdempotencyPersistenceLayerError();
       }
     }
 
-    return {};
+    return await this.functiontoMakeIdempotent(...this.args);
   }
 }

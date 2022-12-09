@@ -3,30 +3,25 @@ import { IdempotencyOptions } from './IdempotencyOptions';
 import { IdempotencyRecord, PersistenceLayerInterface } from 'persistence';
 import { IdempotencyInconsistentStateError, IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyPersistenceLayerError } from './Exceptions';
 
-export class IdempotencyHandler {
-//TODO: Think about making it so that all of the inputs considered are part of the "payload"
-//Think about enforement: The payload must be JSON serializable
-//TODO: promise returns vs synchronous
-//TODO: Is there a better name for functionPayload? It is more of the payload as it concerns idempotency, in the sense of what is the "unique" value
-
+export class IdempotencyHandler<U> {
   private persistenceLayer: PersistenceLayerInterface;
 
-  public constructor(private functiontoMakeIdempotent: AnyFunction<unknown>, private functionPayload: unknown, 
+  public constructor(private functiontoMakeIdempotent: AnyFunction<U>, private functionPayload: unknown, 
     private idempotencyOptions: IdempotencyOptions, private args: Array<unknown>) {
     this.persistenceLayer = idempotencyOptions.persistenceStore;
   }
 
-  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Record<string, unknown> | undefined {
+  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U{ //Would need to reduce this in the future to only be the promise
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError();
     } else if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS){
       throw new IdempotencyAlreadyInProgressError(`There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`);
     } else {
-      return idempotencyRecord.getResponse();
+      return this.functiontoMakeIdempotent(...this.args);
     }
   }
 
-  public async process_idempotency(): Promise<unknown>{
+  public async process_idempotency(): Promise<U> {
     try {
       await this.persistenceLayer.saveInProgress(this.functionPayload);
     } catch (e) {
@@ -39,6 +34,6 @@ export class IdempotencyHandler {
       }
     }
 
-    return await this.functiontoMakeIdempotent(...this.args);
+    return this.functiontoMakeIdempotent(...this.args);
   }
 }

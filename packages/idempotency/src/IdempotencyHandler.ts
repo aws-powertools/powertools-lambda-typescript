@@ -11,13 +11,15 @@ export class IdempotencyHandler<U> {
     this.persistenceLayer = idempotencyOptions.persistenceStore;
   }
 
-  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U{ //Would need to reduce this in the future to only be the promise
+  //Would need to reduce this in the future to only be the promise
+  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U{ 
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError();
     } else if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS){
       throw new IdempotencyAlreadyInProgressError(`There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`);
     } else {
-      return this.functiontoMakeIdempotent(...this.args);
+      // Currently recalling the method as this fulfills FR1. FR3 will address using the previously stored value https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447
+      return this.functiontoMakeIdempotent(...this.args); 
     }
   }
 

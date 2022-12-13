@@ -1,8 +1,8 @@
 import { BaseProvider, DEFAULT_PROVIDERS } from './BaseProvider';
 import { SSMClient, GetParameterCommand, paginateGetParametersByPath } from '@aws-sdk/client-ssm';
 import type { SSMClientConfig, GetParameterCommandInput, GetParametersByPathCommandInput } from '@aws-sdk/client-ssm';
-import type { SSMGetOptionsInterface } from 'types/SSMProvider';
-import { PaginationConfiguration } from '@aws-sdk/types';
+import type { SSMGetMultipleOptionsInterface, SSMGetOptionsInterface } from 'types/SSMProvider';
+import type { PaginationConfiguration } from '@aws-sdk/types';
 
 class SSMProvider extends BaseProvider {
   public client: SSMClient;
@@ -71,7 +71,16 @@ const getParameter = (name: string, options?: SSMGetOptionsInterface): Promise<u
   return DEFAULT_PROVIDERS.ssm.get(name, options);
 };
 
+const getParameters = (path: string, options?: SSMGetMultipleOptionsInterface): Promise<undefined | Record<string, unknown>> => {
+  if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
+    DEFAULT_PROVIDERS.ssm = new SSMProvider();
+  }
+
+  return DEFAULT_PROVIDERS.ssm.getMultiple(path, options);
+};
+
 export {
   SSMProvider,
   getParameter,
+  getParameters,
 };

@@ -194,15 +194,15 @@ describe('Class: SSMProvider', () => {
       mockClient(SSMClient).on(GetParametersByPathCommand)
         .resolvesOnce({
           Parameters: [{
-            'Name':'/foo/bar',
-            'Value':'bar',
+            Name:'/foo/bar',
+            Value:'bar',
           }],
           NextToken: 'someToken',
         })
         .resolves({
           Parameters: [{
-            'Name':'/foo/baz',
-            'Value':'baz',
+            Name:'/foo/baz',
+            Value:'baz',
           }]
         });
       const parameterPath = '/foo';

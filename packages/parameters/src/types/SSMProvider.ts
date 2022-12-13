@@ -1,4 +1,4 @@
-import type { GetParameterCommandInput } from '@aws-sdk/client-ssm';
+import type { GetParameterCommandInput, GetParametersByPathCommandInput } from '@aws-sdk/client-ssm';
 import type { TransformOptions } from 'types/BaseProvider';
 
 /**
@@ -19,7 +19,24 @@ interface SSMGetOptionsInterface {
 
 const isSSMGetOptionsInterface = (options: unknown): options is SSMGetOptionsInterface => (options as SSMGetOptionsInterface).decrypt !== undefined;
 
+interface SSMGetMultipleOptionsInterface {
+  maxAge?: number
+  forceFetch?: boolean
+  sdkOptions?: Partial<GetParametersByPathCommandInput>
+  decrypt?: boolean
+  recursive?: boolean
+  transform?: string
+  throwOnTransformError?: boolean
+}
+
+const isSSMGetMultipleOptionsInterface = 
+  (options: unknown): options is SSMGetMultipleOptionsInterface => 
+    (options as SSMGetMultipleOptionsInterface).decrypt !== undefined || 
+    (options as SSMGetMultipleOptionsInterface).recursive !== undefined;
+
 export {
   SSMGetOptionsInterface,
   isSSMGetOptionsInterface,
+  SSMGetMultipleOptionsInterface,
+  isSSMGetMultipleOptionsInterface,
 };

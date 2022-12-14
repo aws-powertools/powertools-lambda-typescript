@@ -13,7 +13,6 @@
     "commit": "commit",
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
-    "test:e2e:nodejs12x": "echo \"Not implemented\"",
     "test:e2e:nodejs14x": "echo \"Not implemented\"",
     "test:e2e:nodejs16x": "echo \"Not implemented\"",
     "test:e2e": "echo \"Not implemented\"",

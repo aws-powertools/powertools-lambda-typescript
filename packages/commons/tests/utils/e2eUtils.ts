@@ -14,10 +14,9 @@ import { InvocationLogs } from './InvocationLogs';
 
 const lambdaClient = new AWS.Lambda();
 
-const testRuntimeKeys = [ 'nodejs12x', 'nodejs14x', 'nodejs16x' ];
+const testRuntimeKeys = [ 'nodejs14x', 'nodejs16x' ];
 export type TestRuntimesKey = typeof testRuntimeKeys[number];
 export const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
-  nodejs12x: Runtime.NODEJS_12_X,
   nodejs14x: Runtime.NODEJS_14_X,
   nodejs16x: Runtime.NODEJS_16_X,
 };

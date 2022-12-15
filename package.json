@@ -80,7 +80,7 @@
     "lib/**/*"
   ],
   "engines": {
-    "node": ">=12"
+    "node": ">=14"
   },
   "dependencies": {
     "hosted-git-info": "^5.0.0"

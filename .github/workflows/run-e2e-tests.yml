@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         package: [logger, metrics, tracer]
-        version: [12, 14, 16]
+        version: [14, 16]
       fail-fast: false
     steps:
       - name: Checkout Repo
@@ -70,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [12, 14, 16]
+        version: [14, 16]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3

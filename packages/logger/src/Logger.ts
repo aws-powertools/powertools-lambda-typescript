@@ -316,7 +316,8 @@ class Logger extends Utility implements ClassThatLogs {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
        */
-      const originalMethod = descriptor.value;
+      /* eslint-disable  @typescript-eslint/no-non-null-assertion */
+      const originalMethod = descriptor.value!;
 
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const loggerRef = this;
@@ -331,10 +332,9 @@ class Logger extends Utility implements ClassThatLogs {
 
         Logger.injectLambdaContextBefore(loggerRef, event, context, options);
 
-        /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         let result: unknown;
         try {
-          result = await originalMethod!.apply(this, [ event, context, callback ]);
+          result = await originalMethod.apply(this, [ event, context, callback ]);
         } catch (error) {
           throw error;
         } finally {

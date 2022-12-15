@@ -38,7 +38,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: "18"
           cache: "npm"
       # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
       # if one of them changes the cache is invalidated/discarded
@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "./node_modules"
-          key: 16-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+          key: 18-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'

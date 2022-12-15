@@ -20,7 +20,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: "18"
           cache: "npm"
       - name: Setup npm
         run: |
@@ -33,7 +33,7 @@ jobs:
           path: "./node_modules"
           # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
           # if one of them changes the cache is invalidated/discarded
-          key: 16-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+          key: 18-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Build packages
         run: |
           npm run build -w packages/commons

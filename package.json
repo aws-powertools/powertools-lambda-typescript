@@ -55,7 +55,7 @@
     "archiver": "^5.3.1",
     "aws-cdk": "^2.55.0",
     "aws-cdk-lib": "^2.55.0",
-    "aws-sdk": "^2.1275.0",
+    "aws-sdk": "^2.1276.0",
     "cdk-assets": "^2.55.0",
     "constructs": "^10.1.190",
     "esbuild": "^0.16.7",

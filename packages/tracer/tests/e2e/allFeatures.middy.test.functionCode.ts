@@ -52,7 +52,7 @@ const testHandler = async (event: CustomEvent, _context: Context): Promise<void>
   try {
     await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
     await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-    await axios.get('https://awslabs.github.io/aws-lambda-powertools-typescript/latest/');
+    await axios.get('https://awslabs.github.io/aws-lambda-powertools-typescript/latest/', { timeout: 5000 });
 
     const res = customResponseValue;
     if (event.throw) {

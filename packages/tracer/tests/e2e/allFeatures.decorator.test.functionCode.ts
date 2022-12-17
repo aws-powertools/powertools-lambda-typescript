@@ -58,7 +58,7 @@ export class MyFunctionBase {
     return Promise.all([
       dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise(),
       dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } })),
-      axios.get('https://awslabs.github.io/aws-lambda-powertools-typescript/latest/'),
+      axios.get('https://awslabs.github.io/aws-lambda-powertools-typescript/latest/', { timeout: 5000 }),
       new Promise((resolve, reject) => {
         setTimeout(() => {
           const res = this.myMethod();

@@ -192,7 +192,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
 
   it('should generate all custom traces', async () => {
     
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
+    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
     
     expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
 
@@ -201,7 +201,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       const trace = tracesWhenAllFlagsEnabled[i];
 
       /**
-       * Expect the trace to have 5 segments:
+       * Expect the trace to have 4 segments:
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB Table (AWS::DynamoDB::Table)
@@ -237,7 +237,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
   }, TEST_CASE_TIMEOUT);
   
   it('should have correct annotations and metadata', async () => {
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
+    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       const trace = tracesWhenAllFlagsEnabled[i];
@@ -271,7 +271,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
 
   it('should not capture error nor response when the flags are false', async () => {
     
-    const tracesWithNoCaptureErrorOrResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureErrorOrResponse), invocations, 5);
+    const tracesWithNoCaptureErrorOrResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureErrorOrResponse), invocations, 4);
     
     expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocations);
 
@@ -321,7 +321,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
 
   it('should not capture response when the middleware\'s captureResponse is set to false', async () => {
     
-    const tracesWithNoCaptureResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureResponseViaMiddlewareOption), invocations, 5);
+    const tracesWithNoCaptureResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureResponseViaMiddlewareOption), invocations, 4);
     
     expect(tracesWithNoCaptureResponse.length).toBe(invocations);
 

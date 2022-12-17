@@ -192,7 +192,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should generate all custom traces', async () => {
     
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
+    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
     
     expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
 
@@ -205,7 +205,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 4. DynamoDB (AWS::DynamoDB)
-       * 5. Remote call (awslabs.github.io)
+       * 4. Remote call (awslabs.github.io)
        */
       expect(trace.Segments.length).toBe(4);
       const invocationSubsegment = getInvocationSubsegment(trace);
@@ -239,7 +239,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
   }, TEST_CASE_TIMEOUT);
   
   it('should have correct annotations and metadata', async () => {
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
+    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       const trace = tracesWhenAllFlagsEnabled[i];
@@ -273,7 +273,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should not capture error nor response when the flags are false', async () => {
     
-    const tracesWithNoCaptureErrorOrResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureErrorOrResponse), invocations, 5);
+    const tracesWithNoCaptureErrorOrResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureErrorOrResponse), invocations, 4);
     
     expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocations);
 
@@ -325,7 +325,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should not capture response when the decorator\'s captureResponse is set to false', async () => {
 
-    const tracesWithCaptureResponseFalse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCaptureResponseFalse), invocations, 5);
+    const tracesWithCaptureResponseFalse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCaptureResponseFalse), invocations, 4);
 
     expect(tracesWithCaptureResponseFalse.length).toBe(invocations);
 
@@ -334,7 +334,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
       const trace = tracesWithCaptureResponseFalse[i];
 
       /**
-       * Expect the trace to have 5 segments:
+       * Expect the trace to have 4 segments:
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)

@@ -127,7 +127,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
-       * 5. Remote call (awslabs.github.io)
+       * 4. Remote call (awslabs.github.io)
        */
       expect(trace.Segments.length).toBe(4);
       const invocationSubsegment = getInvocationSubsegment(trace);

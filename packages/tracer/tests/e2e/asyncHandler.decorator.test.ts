@@ -141,7 +141,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
 
   it('should generate all custom traces', async () => {
     
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
+    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
     
     expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
 
@@ -153,8 +153,8 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
        * Expect the trace to have 4 segments:
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
-       * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (awslabs.github.io)
+       * 3. DynamoDB Table (AWS::DynamoDB::Table)
+       * 4. Remote call (awslabs.github.io)
        */
       expect(trace.Segments.length).toBe(4);
       const invocationSubsegment = getInvocationSubsegment(trace);
@@ -188,7 +188,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
   }, TEST_CASE_TIMEOUT);
 
   it('should have correct annotations and metadata', async () => {
-    const traces = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
+    const traces = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       const trace = traces[i];
@@ -222,7 +222,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
 
   it('should have a custom name as the subsegment\'s name for the decorated method', async () => {
     
-    const tracesWhenCustomSubsegmentNameInMethod = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCustomSubsegmentNameInMethod), invocations, 5);
+    const tracesWhenCustomSubsegmentNameInMethod = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCustomSubsegmentNameInMethod), invocations, 4);
     
     expect(tracesWhenCustomSubsegmentNameInMethod.length).toBe(invocations);
 

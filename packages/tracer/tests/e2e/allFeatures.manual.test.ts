@@ -104,7 +104,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
 
     // Retrieve traces from X-Ray for assertion
     const lambdaFunctionArn = await getFunctionArn(functionName);
-    sortedTraces = await getTraces(xray, startTime, lambdaFunctionArn, invocations, 5);
+    sortedTraces = await getTraces(xray, startTime, lambdaFunctionArn, invocations, 4);
     
   }, SETUP_TIMEOUT);
 

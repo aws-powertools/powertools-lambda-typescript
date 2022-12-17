@@ -10,8 +10,8 @@ const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandard
 const customAnnotationKey = process.env.EXPECTED_CUSTOM_ANNOTATION_KEY ?? 'myAnnotation';
 const customAnnotationValue = process.env.EXPECTED_CUSTOM_ANNOTATION_VALUE ?? 'myValue';
 const customMetadataKey = process.env.EXPECTED_CUSTOM_METADATA_KEY ?? 'myMetadata';
-const customMetadataValue = JSON.parse(process.env.EXPECTED_CUSTOM_METADATA_VALUE) ?? { bar: 'baz' };
-const customResponseValue = JSON.parse(process.env.EXPECTED_CUSTOM_RESPONSE_VALUE) ?? { foo: 'bar' };
+const customMetadataValue = process.env.EXPECTED_CUSTOM_METADATA_VALUE ? JSON.parse(process.env.EXPECTED_CUSTOM_METADATA_VALUE) : { bar: 'baz' };
+const customResponseValue = process.env.EXPECTED_CUSTOM_RESPONSE_VALUE ? JSON.parse(process.env.EXPECTED_CUSTOM_RESPONSE_VALUE) : { foo: 'bar' };
 const customErrorMessage = process.env.EXPECTED_CUSTOM_ERROR_MESSAGE ?? 'An error has occurred';
 const testTableName = process.env.TEST_TABLE_NAME ?? 'TestTable';
 
@@ -52,7 +52,7 @@ const testHandler = async (event: CustomEvent, _context: Context): Promise<void>
   try {
     await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
     await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-    await axios.get('https://httpbin.org/status/200');
+    await axios.get('https://awslabs.github.io/aws-lambda-powertools-typescript/latest/', { timeout: 5000 });
 
     const res = customResponseValue;
     if (event.throw) {

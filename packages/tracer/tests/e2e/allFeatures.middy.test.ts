@@ -206,7 +206,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
        * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (httpbin.org)
+       * 5. Remote call (awslabs.github.io)
        */
       expect(trace.Segments.length).toBe(5);
       const invocationSubsegment = getInvocationSubsegment(trace);
@@ -216,7 +216,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
        * '## index.handler' subsegment should have 3 subsegments
        * 1. DynamoDB (PutItem on the table)
        * 2. DynamoDB (PutItem overhead)
-       * 3. httpbin.org (Remote call)
+       * 3. awslabs.github.io (Remote call)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handler');
@@ -225,9 +225,9 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io' ]);
       expect(subsegments.get('DynamoDB')?.length).toBe(2);
-      expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
       
       const shouldThrowAnError = (i === (invocations - 1));
@@ -287,7 +287,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
        * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (httpbin.org)
+       * 5. Remote call (awslabs.github.io)
        */
       expect(trace.Segments.length).toBe(5);
       const invocationSubsegment = getInvocationSubsegment(trace);
@@ -297,7 +297,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
        * '## index.handler' subsegment should have 3 subsegments
        * 1. DynamoDB (PutItem on the table)
        * 2. DynamoDB (PutItem overhead)
-       * 3. httpbin.org (Remote call)
+       * 3. awslabs.github.io (Remote call)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handler');
@@ -306,9 +306,9 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io' ]);
       expect(subsegments.get('DynamoDB')?.length).toBe(2);
-      expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
       
       const shouldThrowAnError = (i === (invocations - 1));
@@ -339,7 +339,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
        * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (httpbin.org)
+       * 5. Remote call (awslabs.github.io)
        */
       expect(trace.Segments.length).toBe(5);
       const invocationSubsegment = getInvocationSubsegment(trace);
@@ -349,7 +349,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
        * '## index.handlerWithNoCaptureResponseViaMiddlewareOption' subsegment should have 3 subsegments
        * 1. DynamoDB (PutItem on the table)
        * 2. DynamoDB (PutItem overhead)
-       * 3. httpbin.org (Remote call)
+       * 3. awslabs.github.io (Remote call)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handlerWithNoCaptureResponseViaMiddlewareOption');
@@ -358,9 +358,9 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handlerWithNoCaptureResponseViaMiddlewareOption" subsegment should have subsegments');
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org' ]);
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io' ]);
       expect(subsegments.get('DynamoDB')?.length).toBe(2);
-      expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
       
       const shouldThrowAnError = (i === (invocations - 1));

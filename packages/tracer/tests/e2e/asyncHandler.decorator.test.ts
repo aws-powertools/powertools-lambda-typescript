@@ -155,7 +155,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
        * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (httpbin.org)
+       * 5. Remote call (awslabs.github.io)
        */
       expect(trace.Segments.length).toBe(5);
       const invocationSubsegment = getInvocationSubsegment(trace);
@@ -165,7 +165,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
        * '## index.handler' subsegment should have 4 subsegments
        * 1. DynamoDB (PutItem on the table)
        * 2. DynamoDB (PutItem overhead)
-       * 3. httpbin.org (Remote call)
+       * 3. awslabs.github.io (Remote call)
        * 4. '### myMethod' (method decorator)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
@@ -175,9 +175,9 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', '### myMethod' ]);
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io', '### myMethod' ]);
       expect(subsegments.get('DynamoDB')?.length).toBe(2);
-      expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get('### myMethod')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
       
@@ -238,7 +238,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
        * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (httpbin.org)
+       * 5. Remote call (awslabs.github.io)
        */
       expect(trace.Segments.length).toBe(5);
       const invocationSubsegment = getInvocationSubsegment(trace);
@@ -248,7 +248,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
        * '## index.handler' subsegment should have 4 subsegments
        * 1. DynamoDB (PutItem on the table)
        * 2. DynamoDB (PutItem overhead)
-       * 3. httpbin.org (Remote call)
+       * 3. awslabs.github.io (Remote call)
        * 4. '### mySubsegment' (method decorator with custom name)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
@@ -258,9 +258,9 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'httpbin.org', expectedCustomSubSegmentName ]);
+      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io', expectedCustomSubSegmentName ]);
       expect(subsegments.get('DynamoDB')?.length).toBe(2);
-      expect(subsegments.get('httpbin.org')?.length).toBe(1);
+      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get(expectedCustomSubSegmentName)?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
       

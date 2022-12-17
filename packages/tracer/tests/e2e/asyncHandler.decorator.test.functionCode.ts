@@ -59,7 +59,7 @@ export class MyFunctionBase {
     try {
       await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();
       await dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } }));
-      await axios.get('https://httpbin.org/status/200');
+      await axios.get('https://awslabs.github.io/aws-lambda-powertools-typescript/latest/', { timeout: 5000 });
 
       const res = this.myMethod();
       if (event.throw) {

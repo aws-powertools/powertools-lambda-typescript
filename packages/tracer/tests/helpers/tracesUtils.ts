@@ -218,17 +218,14 @@ const splitSegmentsByName = (subsegments: ParsedDocument[], expectedNames: strin
 const invokeAllTestCases = async (functionName: string): Promise<void> => {
   await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
     invocation: 1,
-    sdkV2: 'client',
     throw: false,
   });
   await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
     invocation: 2,
-    sdkV2: 'all', // only second invocation should use captureAll
     throw: false,
   });
   await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
     invocation: 3,
-    sdkV2: 'client', 
     throw: true, // only last invocation should throw
   });
 };

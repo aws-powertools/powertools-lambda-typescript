@@ -1,9 +1,7 @@
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda';
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import AWS from 'aws-sdk';
 import axios from 'axios';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-let AWS = require('aws-sdk');
 
 const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
 const customAnnotationKey = process.env.EXPECTED_CUSTOM_ANNOTATION_KEY ?? 'myAnnotation';
@@ -16,24 +14,12 @@ const testTableName = process.env.TEST_TABLE_NAME ?? 'TestTable';
 
 interface CustomEvent {
   throw: boolean
-  sdkV2: string
   invocation: number
 }
 
-// Function that refreshes imports to ensure that we are instrumenting only one version of the AWS SDK v2 at a time.
-const refreshAWSSDKImport = (): void => {
-  // Clean up the require cache to ensure we're using a newly imported version of the AWS SDK v2
-  for (const key in require.cache) {
-    if (key.indexOf('/aws-sdk/') !== -1) {
-      delete require.cache[key];
-    }
-  }
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  AWS = require('aws-sdk');
-};
-
 const tracer = new Tracer({ serviceName: serviceName });
-const dynamoDBv3 = tracer.captureAWSv3Client(new DynamoDBClient({}));
+tracer.captureAWS(AWS);
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 export class MyFunctionBase {
   private readonly returnValue: string;
@@ -45,19 +31,9 @@ export class MyFunctionBase {
   public handler(event: CustomEvent, _context: Context, _callback: Callback<unknown>): void | Promise<unknown> {
     tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
     tracer.putMetadata(customMetadataKey, customMetadataValue);
-
-    let dynamoDBv2;
-    refreshAWSSDKImport();
-    if (event.sdkV2 === 'client') {
-      dynamoDBv2 = tracer.captureAWSClient(new AWS.DynamoDB.DocumentClient());
-    } else if (event.sdkV2 === 'all') {
-      AWS = tracer.captureAWS(AWS);
-      dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
-    }
     
     return Promise.all([
-      dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise(),
-      dynamoDBv3.send(new PutItemCommand({ TableName: testTableName, Item: { id: { 'S': `${serviceName}-${event.invocation}-sdkv3` } } })),
+      dynamoDB.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise(),
       axios.get('https://awslabs.github.io/aws-lambda-powertools-typescript/latest/', { timeout: 5000 }),
       new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -70,7 +46,7 @@ export class MyFunctionBase {
         }, 2000); // We need to wait for to make sure previous calls are finished
       })
     ])
-      .then(([ _dynamoDBv2Res, _dynamoDBv3Res, _axiosRes, promiseRes ]) => promiseRes)
+      .then(([ _dynamoDBRes, _axiosRes, promiseRes ]) => promiseRes)
       .catch((err) => {
         throw err;
       });

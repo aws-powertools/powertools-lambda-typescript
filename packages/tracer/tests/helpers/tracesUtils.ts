@@ -252,11 +252,7 @@ const createTracerTestFunction = (params: TracerTestFunctionParams): NodejsFunct
       EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
       ...environmentParams,
     },
-    timeout: Duration.seconds(30), // Default value (3 seconds) will time out 
-    bundling: { 
-      // Exclude aws-sdk and use the default one provided by Lambda
-      externalModules: ['aws-sdk'],
-    },
+    timeout: Duration.seconds(30), // Default value (3 seconds) will time out
     runtime: TEST_RUNTIMES[runtime as TestRuntimesKey],
   });
 

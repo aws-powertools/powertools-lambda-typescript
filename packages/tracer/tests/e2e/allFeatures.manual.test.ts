@@ -60,7 +60,7 @@ let sortedTraces: ParsedTrace[];
 const integTestApp = new App();
 let stack: Stack;
 
-describe(`Tracer E2E tests, all features with manual instantiation for runtime: ${runtime}`, () => {
+describe(`Tracer E2E tests, all features with manual instantiation for runtime: nodejs18x`, () => {
 
   beforeAll(async () => {
     

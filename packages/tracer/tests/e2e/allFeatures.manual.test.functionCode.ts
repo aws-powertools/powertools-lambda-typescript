@@ -3,7 +3,9 @@ import { Context } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-let AWS = require('aws-sdk');
+// let AWS = require('aws-sdk');
+import AWS from 'aws-sdk';
+import { default as AWS2 } from 'aws-sdk';
 
 const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
 const customAnnotationKey = process.env.EXPECTED_CUSTOM_ANNOTATION_KEY ?? 'myAnnotation';
@@ -21,7 +23,7 @@ interface CustomEvent {
 }
 
 // Function that refreshes imports to ensure that we are instrumenting only one version of the AWS SDK v2 at a time.
-const refreshAWSSDKImport = (): void => {
+/* const refreshAWSSDKImport = (): void => {
   // Clean up the require cache to ensure we're using a newly imported version of the AWS SDK v2
   for (const key in require.cache) {
     if (key.indexOf('/aws-sdk/') !== -1) {
@@ -30,7 +32,7 @@ const refreshAWSSDKImport = (): void => {
   }
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   AWS = require('aws-sdk');
-};
+}; */
 
 const tracer = new Tracer({ serviceName: serviceName });
 const dynamoDBv3 = tracer.captureAWSv3Client(new DynamoDBClient({}));
@@ -48,12 +50,12 @@ export const handler = async (event: CustomEvent, _context: Context): Promise<vo
   tracer.putMetadata(customMetadataKey, customMetadataValue);
 
   let dynamoDBv2;
-  refreshAWSSDKImport();
+  // refreshAWSSDKImport();
   if (event.sdkV2 === 'client') {
     dynamoDBv2 = tracer.captureAWSClient(new AWS.DynamoDB.DocumentClient());
   } else if (event.sdkV2 === 'all') {
-    AWS = tracer.captureAWS(AWS);
-    dynamoDBv2 = new AWS.DynamoDB.DocumentClient();
+    tracer.captureAWS(AWS2);
+    dynamoDBv2 = new AWS2.DynamoDB.DocumentClient();
   }
   try {
     await dynamoDBv2.put({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv2` } }).promise();

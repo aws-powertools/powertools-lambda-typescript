@@ -41,7 +41,7 @@ import {
   assertAnnotation
 } from '../helpers/traceAssertions';
 
-const runtime: string = process.env.RUNTIME || 'nodejs16x';
+const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -60,7 +60,7 @@ let sortedTraces: ParsedTrace[];
 const integTestApp = new App();
 let stack: Stack;
 
-describe(`Tracer E2E tests, all features with manual instantiation for runtime: ${runtime}`, () => {
+describe(`Tracer E2E tests, all features with manual instantiation for runtime: nodejs18x`, () => {
 
   beforeAll(async () => {
     
@@ -104,7 +104,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
 
     // Retrieve traces from X-Ray for assertion
     const lambdaFunctionArn = await getFunctionArn(functionName);
-    sortedTraces = await getTraces(xray, startTime, lambdaFunctionArn, invocations, 5);
+    sortedTraces = await getTraces(xray, startTime, lambdaFunctionArn, invocations, 4);
     
   }, SETUP_TIMEOUT);
 
@@ -123,32 +123,30 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       const trace = sortedTraces[i];
 
       /**
-       * Expect the trace to have 5 segments:
+       * Expect the trace to have 4 segments:
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
-       * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (awslabs.github.io)
+       * 4. Remote call (awslabs.github.io)
        */
-      expect(trace.Segments.length).toBe(5);
+      expect(trace.Segments.length).toBe(4);
       const invocationSubsegment = getInvocationSubsegment(trace);
       
       /**
-       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for PowerTool tracer)
-       * '## index.handler' subsegment should have 3 subsegments
+       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+       * '## index.handler' subsegment should have 2 subsegments
        * 1. DynamoDB (PutItem on the table)
-       * 2. DynamoDB (PutItem overhead)
-       * 3. awslabs.github.io (Remote call)
+       * 2. awslabs.github.io (Remote call)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handler');
-      expect(handlerSubsegment?.subsegments).toHaveLength(3);
+      expect(handlerSubsegment?.subsegments).toHaveLength(2);
 
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
       const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io' ]);
-      expect(subsegments.get('DynamoDB')?.length).toBe(2);
+      expect(subsegments.get('DynamoDB')?.length).toBe(1);
       expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
       

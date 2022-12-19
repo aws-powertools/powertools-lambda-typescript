@@ -40,7 +40,7 @@ import {
   assertErrorAndFault,
 } from '../helpers/traceAssertions';
 
-const runtime: string = process.env.RUNTIME || 'nodejs16x';
+const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -192,7 +192,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should generate all custom traces', async () => {
     
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
+    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
     
     expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
 
@@ -201,33 +201,31 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
       const trace = tracesWhenAllFlagsEnabled[i];
 
       /**
-       * Expect the trace to have 5 segments:
+       * Expect the trace to have 4 segments:
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
-       * 3. DynamoDB (AWS::DynamoDB)
-       * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (awslabs.github.io)
+       * 4. DynamoDB (AWS::DynamoDB)
+       * 4. Remote call (awslabs.github.io)
        */
-      expect(trace.Segments.length).toBe(5);
+      expect(trace.Segments.length).toBe(4);
       const invocationSubsegment = getInvocationSubsegment(trace);
       
       /**
-       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for PowerTool tracer)
-       * '## index.handler' subsegment should have 4 subsegments
+       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+       * '## index.handler' subsegment should have 3 subsegments
        * 1. DynamoDB (PutItem on the table)
-       * 2. DynamoDB (PutItem overhead)
-       * 3. awslabs.github.io (Remote call)
-       * 4. '### myMethod' (method decorator)
+       * 2. awslabs.github.io (Remote call)
+       * 3. '### myMethod' (method decorator)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handler');
-      expect(handlerSubsegment?.subsegments).toHaveLength(4);
+      expect(handlerSubsegment?.subsegments).toHaveLength(3);
 
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
       const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io', '### myMethod' ]);
-      expect(subsegments.get('DynamoDB')?.length).toBe(2);
+      expect(subsegments.get('DynamoDB')?.length).toBe(1);
       expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get('### myMethod')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
@@ -241,7 +239,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
   }, TEST_CASE_TIMEOUT);
   
   it('should have correct annotations and metadata', async () => {
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 5);
+    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       const trace = tracesWhenAllFlagsEnabled[i];
@@ -275,7 +273,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should not capture error nor response when the flags are false', async () => {
     
-    const tracesWithNoCaptureErrorOrResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureErrorOrResponse), invocations, 5);
+    const tracesWithNoCaptureErrorOrResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureErrorOrResponse), invocations, 4);
     
     expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocations);
 
@@ -284,33 +282,31 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
       const trace = tracesWithNoCaptureErrorOrResponse[i];
 
       /**
-       * Expect the trace to have 5 segments:
+       * Expect the trace to have 4 segments:
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
-       * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (awslabs.github.io)
+       * 4. Remote call (awslabs.github.io)
        */
-      expect(trace.Segments.length).toBe(5);
+      expect(trace.Segments.length).toBe(4);
       const invocationSubsegment = getInvocationSubsegment(trace);
       
       /**
-       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for PowerTool tracer)
-       * '## index.handler' subsegment should have 4 subsegments
+       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+       * '## index.handler' subsegment should have 3 subsegments
        * 1. DynamoDB (PutItem on the table)
-       * 2. DynamoDB (PutItem overhead)
-       * 3. awslabs.github.io (Remote call)
-       * 4. '### myMethod' (method decorator)
+       * 2. awslabs.github.io (Remote call)
+       * 3. '### myMethod' (method decorator)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handler');
-      expect(handlerSubsegment?.subsegments).toHaveLength(4);
+      expect(handlerSubsegment?.subsegments).toHaveLength(3);
 
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handler" subsegment should have subsegments');
       }
       const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io', '### myMethod' ]);
-      expect(subsegments.get('DynamoDB')?.length).toBe(2);
+      expect(subsegments.get('DynamoDB')?.length).toBe(1);
       expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get('### myMethod')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);
@@ -329,7 +325,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should not capture response when the decorator\'s captureResponse is set to false', async () => {
 
-    const tracesWithCaptureResponseFalse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCaptureResponseFalse), invocations, 5);
+    const tracesWithCaptureResponseFalse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCaptureResponseFalse), invocations, 4);
 
     expect(tracesWithCaptureResponseFalse.length).toBe(invocations);
 
@@ -338,33 +334,31 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
       const trace = tracesWithCaptureResponseFalse[i];
 
       /**
-       * Expect the trace to have 5 segments:
+       * Expect the trace to have 4 segments:
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 3. DynamoDB (AWS::DynamoDB)
-       * 4. DynamoDB Table (AWS::DynamoDB::Table)
-       * 5. Remote call (awslabs.github.io)
+       * 4. Remote call (awslabs.github.io)
        */
-      expect(trace.Segments.length).toBe(5);
+      expect(trace.Segments.length).toBe(4);
       const invocationSubsegment = getInvocationSubsegment(trace);
 
       /**
-       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for PowerTool tracer)
-       * '## index.handler' subsegment should have 4 subsegments
+       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+       * '## index.handler' subsegment should have 3 subsegments
        * 1. DynamoDB (PutItem on the table)
-       * 2. DynamoDB (PutItem overhead)
-       * 3. awslabs.github.io (Remote call)
-       * 4. '### myMethod' (method decorator)
+       * 2. awslabs.github.io (Remote call)
+       * 3. '### myMethod' (method decorator)
        */
       const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
       expect(handlerSubsegment.name).toBe('## index.handlerWithCaptureResponseFalse');
-      expect(handlerSubsegment?.subsegments).toHaveLength(4);
+      expect(handlerSubsegment?.subsegments).toHaveLength(3);
 
       if (!handlerSubsegment.subsegments) {
         fail('"## index.handlerWithCaptureResponseFalse" subsegment should have subsegments');
       }
       const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io', '### myMethod' ]);
-      expect(subsegments.get('DynamoDB')?.length).toBe(2);
+      expect(subsegments.get('DynamoDB')?.length).toBe(1);
       expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
       expect(subsegments.get('### myMethod')?.length).toBe(1);
       expect(subsegments.get('other')?.length).toBe(0);

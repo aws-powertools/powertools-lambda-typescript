@@ -7,7 +7,7 @@ import { injectLambdaContext } from '@aws-lambda-powertools/logger';
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer';
 import { docClient } from './common/dynamodb-client';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
-import got from 'got';
+import { default as request } from 'phin';
 
 /*
  *
@@ -15,10 +15,6 @@ import got from 'got';
  * It is the best choice if your existing code base relies on the Middy middleware engine. 
  * Powertools offers compatible Middy middleware to make this integration seamless.
  * Find more Information in the docs: https://awslabs.github.io/aws-lambda-powertools-typescript/
- * 
- */
- 
-/**
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
  * @param {Object} event - API Gateway Lambda Proxy Input Format
@@ -41,8 +37,11 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
   });
 
   // Request a sample random uuid from a webservice
-  const res = await got('https://httpbin.org/uuid');
-  const uuid = JSON.parse(res.body).uuid;
+  const res = await request<{ uuid: string }>({
+    url: 'https://httpbin.org/uuid',
+    parse: 'json',
+  });
+  const { uuid } = res.body;
 
   // Logger: Append uuid to each log statement
   logger.appendKeys({ uuid });
@@ -52,9 +51,6 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
 
   // Metrics: Add uuid as metadata
   metrics.addMetadata('uuid', uuid);
-
-  // Define response object
-  let response;
 
   // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
@@ -67,36 +63,36 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
     const data = await docClient.send(new ScanCommand({
       TableName: tableName
     }));
-
-    const items = data.Items;
+    const { Items: items } = data;
 
     // Logger: All log statements are written to CloudWatch
     logger.debug(`retrieved items: ${items?.length || 0}`);
+    
+    logger.info(`Response ${event.path}`, {
+      statusCode: 200,
+      body: items,
+    });
 
-    response = {
+    return {
       statusCode: 200,
       body: JSON.stringify(items)
     };
   } catch (err) {
     tracer.addErrorAsMetadata(err as Error);
     logger.error('Error reading from table. ' + err);
-    response = {
+    
+    return {
       statusCode: 500,
       body: JSON.stringify({ 'error': 'Error reading from table.' })
     };
   }
-
-  // All log statements are written to CloudWatch
-  logger.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
-
-  return response;
 };
 
 // Wrap the handler with middy
 export const handler = middy(getAllItemsHandler)
-// Use the middleware by passing the Metrics instance as a parameter
+  // Use the middleware by passing the Metrics instance as a parameter
   .use(logMetrics(metrics))
-// Use the middleware by passing the Logger instance as a parameter
+  // Use the middleware by passing the Logger instance as a parameter
   .use(injectLambdaContext(logger, { logEvent: true }))
-// Use the middleware by passing the Tracer instance as a parameter
+  // Use the middleware by passing the Tracer instance as a parameter
   .use(captureLambdaHandler(tracer, { captureResponse: false })); // by default the tracer would add the response as metadata on the segment, but there is a chance to hit the 64kb segment size limit. Therefore set captureResponse: false

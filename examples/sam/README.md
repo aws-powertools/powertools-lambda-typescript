@@ -30,7 +30,7 @@ In addition to the [recommended setup for this project](https://github.com/awsla
 To build and deploy your application for the first time, run the following in your shell:
 
 ```bash
-sam build  --beta-features
+sam build --beta-features
 sam deploy --guided
 ```
 
@@ -57,14 +57,15 @@ Now, let's retrieve all items by running:
 
 ```bash
 curl -XGET https://randomid12345.execute-api.eu-central-1.amazonaws.com/Prod/
-````
+```
 
 And finally, let's retrieve a specific item by running:
 ```bash
-https://randomid12345.execute-api.eu-central-1.amazonaws.com/Prod/myseconditem/
+curl -XGET https://randomid12345.execute-api.eu-central-1.amazonaws.com/Prod/myseconditem/
 ```
 
 ## Observe the outputs in AWS CloudWatch & X-Ray
+
 ### CloudWatch
 
 If we check the logs in CloudWatch, we can see that the logs are structured like this
@@ -86,7 +87,10 @@ filter awsRequestId="bcd50969-3a55-49b6-a997-91798b3f133a"
  | fields timestamp, message
 ````
 ### AWS X-Ray
-As we have enabled tracing for our Lambda-Funtions, we can visit [AWS X-Ray Console](https://console.aws.amazon.com/xray/home#/traces/) and see [traces](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces) and a [service map](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-using-xray-maps.html) for our application.
+
+As we have enabled tracing for our Lambda-Funtions, you can visit [AWS CloudWatch Console](https://console.aws.amazon.com/cloudwatch/) and see [Traces](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces) and a [Service Map](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-using-xray-maps.html) for our application.
+
+You can also use the AWS SAM CLI to retrieve traces by running `sam traces`.
 
 ## Use the SAM CLI to build and test locally
 
@@ -138,41 +142,48 @@ You can find more information and examples about filtering Lambda function logs 
 
 ## Switch to Lambda Layer
 
-This example bundle all your dependencies in a single JS file thanks to esbuild but you can switch the AWSLambdaPowertoolsTypeScript Layer by:
-1.  specifying the right ARN in `Layers` list under the function's `Properties` 
-1.  instructing esbuild to not bundle `@aws-lambda-powertools` under the function `Metadata/BuildProperties`
+In this example we are including AWS Lambda Powertools as a dependency in our function's `package.json`. This is the recommended approach for development and testing. However, for production, you can also use the AWS Lambda Powertools as a Lambda Layer.
 
-Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Lambda Powertools for TypeScript layers [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#lambda-layer).
+To start using the AWS Lambda Powertools as a Lambda Layer, you need to:
+1. Specify the Layer's ARN in `Layers` section under each function's `Properties` section
+2. Instruct `esbuild` to not bundle `@aws-lambda-powertools` under each function's `Metadata/BuildProperties` section
 
-Here is the diff of the current sam template leveraging `AWSLambdaPowertoolsTypeScript` layer:
+To do so, open the `template.yaml` file, and **for each Lambda Function**, update the following sections:
+```diff
+Resources:
+  putItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
++     Layers:
++       - arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6
+      Handler: src/put-item.putItemHandler
+      Description: A simple example includes a HTTP ost method to add one item to a DynamoDB table.
+      Policies:
+```
+
+and:
 
 ```diff
-diff --git a/examples/sam/template.yaml b/examples/sa/template.yaml
-index 18a5662b..d4e90b55 100644
---- a/examples/sam/template.yaml
-+++ b/examples/sam/template.yaml
-@@ -99,6 +99,8 @@ Resources:
-   putItemFunction:
-     Type: AWS::Serverless::Function
-     Properties:
-+      Layers:
-+        - arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:5
-       Handler: src/put-item.putItemHandler
-       Description: A simple example includes a HTTP ost method to add one item to a DynamoDB table.
-       Policies:
-@@ -124,6 +126,11 @@ Resources:
-       BuildMethod: esbuild
-       BuildProperties:
-         Minify: true
-+        External:
-+        - '@aws-lambda-powertools/commons'
-+        - '@aws-lambda-powertools/logger'
-+        - '@aws-lambda-powertools/metrics'
-+        - '@aws-lambda-powertools/tracer'
-         Target: "es2020"
-         Sourcemap: true,
-         EntryPoints:
+Metadata: 
+  # Manage esbuild properties
+  BuildMethod: esbuild
+  BuildProperties:
+    BuildMethod: esbuild
+    BuildProperties:
+      Minify: true
+      Target: "ES2020"
+      Sourcemap: true
+      External:
+        - "@aws-sdk/lib-dynamodb"
+        - "@aws-sdk/client-dynamodb"
++       - "@aws-lambda-powertools/commons"
++       - "@aws-lambda-powertools/logger'
++       - "@aws-lambda-powertools/metrics"
++       - "@aws-lambda-powertools/tracer"
+      EntryPoints:
 ```
+
+Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Lambda Powertools for TypeScript layers [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#lambda-layer).
 
 ## Cleanup
 

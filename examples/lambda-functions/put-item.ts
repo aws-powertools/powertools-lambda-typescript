@@ -1,19 +1,15 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { Metrics } from '@aws-lambda-powertools/metrics';
-import { Logger } from '@aws-lambda-powertools/logger';
-import { Tracer } from '@aws-lambda-powertools/tracer';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import { tableName } from './common/constants';
+import { logger, tracer, metrics } from './common/powertools';
+import { docClient } from './common/dynamodb-client';
+import { PutItemCommand } from '@aws-sdk/lib-dynamodb';
+import got from 'got';
 
-// Create the PowerTools clients
-const metrics = new Metrics();
-const logger = new Logger();
-const tracer = new Tracer();
-
-// Create DynamoDB DocumentClient and patch it for tracing
-const docClient = tracer.captureAWSClient(new DocumentClient());
-
-// Get the DynamoDB table name from environment variables
-const tableName = process.env.SAMPLE_TABLE;
+/*
+ *
+ * This example uses the manual instrumentation.
+ * 
+ */
 
 /**
  *
@@ -25,10 +21,14 @@ const tableName = process.env.SAMPLE_TABLE;
  *
  */
 
-export const putItemHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+export const handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
   if (event.httpMethod !== 'POST') {
     throw new Error(`putItem only accepts POST method, you tried: ${event.httpMethod}`);
   }
+
+  // Logger: Log the incoming event
+  logger.info('Lambda invocation event', event);
+
   // Tracer: Get facade segment created by AWS Lambda
   const segment = tracer.getSegment();
 
@@ -40,20 +40,35 @@ export const putItemHandler = async (event: APIGatewayProxyEvent, context: Conte
   tracer.annotateColdStart();
   tracer.addServiceNameAnnotation();
 
-  // Tracer: Add annotation for the awsRequestId
+  // Tracer: Add awsRequestId as annotation
   tracer.putAnnotation('awsRequestId', context.awsRequestId);
 
   // Metrics: Capture cold start metrics
   metrics.captureColdStartMetric();
 
-  // Logger: Add persistent attributes to each log statement
-  logger.addPersistentLogAttributes({
+  // Logger: Append awsRequestId to each log statement
+  logger.appendKeys({
     awsRequestId: context.awsRequestId,
   });
 
+  // Request a sample random uuid from a webservice
+  const res = await got('https://httpbin.org/uuid');
+  const uuid = JSON.parse(res.body).uuid;
+
+  // Logger: Append uuid to each log statement
+  logger.appendKeys({ uuid });
+
+  // Tracer: Add uuid as annotation
+  tracer.putAnnotation('uuid', uuid);
+
+  // Metrics: Add uuid as metadata
+  metrics.addMetadata('uuid', uuid);
+
+  // Define response object
+  let response;
+
   // Creates a new item, or replaces an old item with a new item
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
-  let response;
   try {
     if (!tableName) {
       throw new Error('SAMPLE_TABLE environment variable is not set');
@@ -67,10 +82,10 @@ export const putItemHandler = async (event: APIGatewayProxyEvent, context: Conte
     const id = body.id;
     const name = body.name;
 
-    await docClient.put({
+    await docClient.send(new PutItemCommand({
       TableName: tableName,
-      Item: { id: id, name: name }
-    }).promise();
+      Item: { id: { S: id }, name: { S: name } }
+    }));
     response = {
       statusCode: 200,
       body: JSON.stringify(body)

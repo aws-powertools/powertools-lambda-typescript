@@ -10,21 +10,7 @@ This project includes the following files and folders:
 
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
-If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit.  
-The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started.
-
-* [CLion](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [GoLand](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [IntelliJ](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [WebStorm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [Rider](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [PhpStorm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [PyCharm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [RubyMine](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [DataGrip](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [VS Code](https://docs.aws.amazon.com/toolkit-for-vscode/latest/userguide/welcome.html)
-* [Visual Studio](https://docs.aws.amazon.com/toolkit-for-visual-studio/latest/user-guide/welcome.html)
-
+**Note**
 You will need to have a valid AWS Account in order to deploy these resources. These resources may incur costs to your AWS Account. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
 ## Prepare the project
@@ -156,6 +142,8 @@ This example bundle all your dependencies in a single JS file thanks to esbuild 
 1.  specifying the right ARN in `Layers` list under the function's `Properties` 
 1.  instructing esbuild to not bundle `@aws-lambda-powertools` under the function `Metadata/BuildProperties`
 
+Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Lambda Powertools for TypeScript layers [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#lambda-layer).
+
 Here is the diff of the current sam template leveraging `AWSLambdaPowertoolsTypeScript` layer:
 
 ```diff
@@ -168,7 +156,7 @@ index 18a5662b..d4e90b55 100644
      Type: AWS::Serverless::Function
      Properties:
 +      Layers:
-+        - arn:aws:lambda:eu-west-3:094274105915:laye:AWSLambdaPowertoolsTypeScript:1
++        - arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:5
        Handler: src/put-item.putItemHandler
        Description: A simple example includes a HTTP ost method to add one item to a DynamoDB table.
        Policies:

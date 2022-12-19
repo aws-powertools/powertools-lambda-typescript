@@ -13,7 +13,8 @@
       "moduleResolution": "node",
       "resolveJsonModule": true,
       "pretty": true,
-      "esModuleInterop": true
+      "esModuleInterop": true,
+      "allowJs": true
   },
   "exclude": [ "./node_modules"],
   "watchOptions": {

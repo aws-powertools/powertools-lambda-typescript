@@ -31,7 +31,7 @@ Resources:
   getAllItemsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/get-all-items.getAllItemsHandler
+      Handler: src/get-all-items.handler
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -41,6 +41,8 @@ Resources:
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
+          NODE_OPTIONS: '--enable-source-maps' # see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1 # see https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/node-reusing-connections.html
           SAMPLE_TABLE: !Ref SampleTable
           POWERTOOLS_SERVICE_NAME: getAllItems
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
@@ -57,7 +59,7 @@ Resources:
       BuildProperties:
         Minify: true
         Target: "es2020"
-        Sourcemap: true,
+        Sourcemap: true
         EntryPoints: 
         - src/get-all-items.ts
 
@@ -65,7 +67,7 @@ Resources:
   getByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/get-by-id.getByIdHandler
+      Handler: src/get-by-id.handler
       Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -75,6 +77,8 @@ Resources:
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
+          NODE_OPTIONS: '--enable-source-maps' # see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1 # see https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/node-reusing-connections.html
           SAMPLE_TABLE: !Ref SampleTable
           POWERTOOLS_SERVICE_NAME: getById
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
@@ -91,7 +95,8 @@ Resources:
       BuildProperties:
         Minify: true
         Target: "es2020"
-        Sourcemap: true,
+        ExperimentalDecorators: true
+        Sourcemap: true
         EntryPoints: 
         - src/get-by-id.ts
 
@@ -99,7 +104,7 @@ Resources:
   putItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/put-item.putItemHandler
+      Handler: src/put-item.handler
       Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -109,6 +114,8 @@ Resources:
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
+          NODE_OPTIONS: '--enable-source-maps' # see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1 # see https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/node-reusing-connections.html
           SAMPLE_TABLE: !Ref SampleTable
           POWERTOOLS_SERVICE_NAME: getById
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
@@ -125,7 +132,7 @@ Resources:
       BuildProperties:
         Minify: true
         Target: "es2020"
-        Sourcemap: true,
+        Sourcemap: true
         EntryPoints: 
         - src/put-item.ts
 

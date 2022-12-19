@@ -2,7 +2,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
-const awsLambdaPowertoolsVersion = '1.4.1';
+const awsLambdaPowertoolsVersion = '1.5.0';
 
 const defaultValues = {
   region: process.env.AWS_REGION || 'N/A',

@@ -12,34 +12,41 @@ class SSMProvider extends BaseProvider {
     this.client = new SSMClient(config);
   }
 
-  protected async _get(name: string, sdkOptions?: Partial<GetParameterCommandInput>): Promise<string | undefined> {
-    const options: GetParameterCommandInput = {
+  protected async _get(name: string, options?: SSMGetOptionsInterface): Promise<string | undefined> {
+    const sdkOptions: GetParameterCommandInput = {
       Name: name,
     };
-    if (sdkOptions) {
-      Object.assign(options, sdkOptions);
+    if (options) {
+      if (options.hasOwnProperty('decrypt')) sdkOptions.WithDecryption = options.decrypt;
+      if (options.hasOwnProperty('sdkOptions')) {
+        Object.assign(sdkOptions, options.sdkOptions);
+      }
     }
-    const result = await this.client.send(new GetParameterCommand(options));
+    const result = await this.client.send(new GetParameterCommand(sdkOptions));
 
     return result.Parameter?.Value;
   }
 
-  protected async _getMultiple(path: string, sdkOptions?: Partial<GetParametersByPathCommandInput>): Promise<Record<string, string | undefined>> {
-    const options: GetParametersByPathCommandInput = {
+  protected async _getMultiple(path: string, options?: SSMGetMultipleOptionsInterface): Promise<Record<string, string | undefined>> {
+    const sdkOptions: GetParametersByPathCommandInput = {
       Path: path,
     };
     const paginationOptions: PaginationConfiguration = {
       client: this.client
     };
-    if (sdkOptions) {
-      Object.assign(options, sdkOptions);
-      if (sdkOptions.MaxResults) {
-        paginationOptions.pageSize = sdkOptions.MaxResults;
+    if (options) {
+      if (options.hasOwnProperty('decrypt')) sdkOptions.WithDecryption = options.decrypt;
+      if (options.hasOwnProperty('recursive')) sdkOptions.Recursive = options.recursive;
+      if (options.hasOwnProperty('sdkOptions')) {
+        Object.assign(sdkOptions, options.sdkOptions);
+        if (sdkOptions.MaxResults) {
+          paginationOptions.pageSize = sdkOptions.MaxResults;
+        }
       }
     }
-
+    
     const parameters: Record<string, string | undefined> = {};
-    for await (const page of paginateGetParametersByPath(paginationOptions, options)) {
+    for await (const page of paginateGetParametersByPath(paginationOptions, sdkOptions)) {
       for (const parameter of page.Parameters || []) {
         /**
          * Standardize the parameter name

@@ -17,8 +17,6 @@ interface SSMGetOptionsInterface {
   transform?: TransformOptions
 }
 
-const isSSMGetOptionsInterface = (options: unknown): options is SSMGetOptionsInterface => (options as SSMGetOptionsInterface).decrypt !== undefined;
-
 interface SSMGetMultipleOptionsInterface {
   maxAge?: number
   forceFetch?: boolean
@@ -29,14 +27,7 @@ interface SSMGetMultipleOptionsInterface {
   throwOnTransformError?: boolean
 }
 
-const isSSMGetMultipleOptionsInterface = 
-  (options: unknown): options is SSMGetMultipleOptionsInterface => 
-    (options as SSMGetMultipleOptionsInterface).decrypt !== undefined || 
-    (options as SSMGetMultipleOptionsInterface).recursive !== undefined;
-
 export {
   SSMGetOptionsInterface,
-  isSSMGetOptionsInterface,
   SSMGetMultipleOptionsInterface,
-  isSSMGetMultipleOptionsInterface,
 };

@@ -1,4 +1,5 @@
 import type { GetParameterCommandInput, GetParametersByPathCommandInput } from '@aws-sdk/client-ssm';
+import { ExpirableValue } from 'BaseProvider';
 import type { TransformOptions } from 'types/BaseProvider';
 
 /**
@@ -27,7 +28,33 @@ interface SSMGetMultipleOptionsInterface {
   throwOnTransformError?: boolean
 }
 
+interface SSMGetParametersByNameOptionsInterface {
+  maxAge?: number
+  throwOnError?: boolean
+  decrypt?: boolean
+  transform?: TransformOptions
+}
+
+type SSMSplitBatchAndDecryptParametersOutputType = {
+  batch: Record<string, SSMGetParametersByNameOptionsInterface>
+  decrypt: Record<string, SSMGetParametersByNameOptionsInterface>
+} & { [key: string]: SSMGetParametersByNameOptionsInterface };
+
+interface SSMGetParametersByNameOutputInterface {
+  response: Record<string, unknown>
+  errors: string[]
+}
+
+type SSMGetParametersByNameFromCacheOutputType = {
+  cached: Record<string, ExpirableValue | undefined>
+  toFetch: Record<string, ExpirableValue | undefined>
+} & { [key: string]: SSMGetParametersByNameOptionsInterface };
+
 export {
   SSMGetOptionsInterface,
   SSMGetMultipleOptionsInterface,
+  SSMGetParametersByNameOptionsInterface,
+  SSMSplitBatchAndDecryptParametersOutputType,
+  SSMGetParametersByNameOutputInterface,
+  SSMGetParametersByNameFromCacheOutputType,
 };

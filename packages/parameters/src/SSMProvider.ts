@@ -1,5 +1,5 @@
 import { BaseProvider, DEFAULT_PROVIDERS, transformValue } from './BaseProvider';
-import { GetParameterError } from 'Exceptions';
+import { GetParameterError } from './Exceptions';
 import { DEFAULT_MAX_AGE_SECS } from './constants';
 import { SSMClient, GetParameterCommand, paginateGetParametersByPath, GetParametersCommand } from '@aws-sdk/client-ssm';
 import type {

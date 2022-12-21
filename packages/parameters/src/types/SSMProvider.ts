@@ -47,7 +47,7 @@ interface SSMGetParametersByNameOutputInterface {
 
 type SSMGetParametersByNameFromCacheOutputType = {
   cached: Record<string, ExpirableValue | undefined>
-  toFetch: Record<string, ExpirableValue | undefined>
+  toFetch: Record<string, SSMGetParametersByNameOptionsInterface>
 } & { [key: string]: SSMGetParametersByNameOptionsInterface };
 
 export {

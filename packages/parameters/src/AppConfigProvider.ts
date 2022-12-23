@@ -15,6 +15,7 @@ class AppConfigProvider extends BaseProvider {
   private application?: string;
   private environment?: string;
   private token: string | undefined;
+  private latestConfiguration: string | undefined;
 
   /**
    * It initializes the AppConfigProvider class with an optional set of options like region: 'us-west-1'.
@@ -77,7 +78,11 @@ class AppConfigProvider extends BaseProvider {
     const utf8decoder = new TextDecoder();
     const value = configuration ? utf8decoder.decode(configuration) : undefined;
 
-    return value;
+    if (value) {
+      this.latestConfiguration = value;
+    }
+
+    return this.latestConfiguration;
   }
 
   /**

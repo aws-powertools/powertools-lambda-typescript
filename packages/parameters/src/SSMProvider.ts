@@ -56,7 +56,7 @@ class SSMProvider extends BaseProvider {
    * @param {Record<string, unknown>[]} parameters - List of parameter names, and any optional overrides
    * 
    */
-  public async getParametersByName(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, options: SSMGetParametersByNameOptionsInterface): Promise<Record<string, unknown>> {
+  public async getParametersByName(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, options?: SSMGetParametersByNameOptionsInterface): Promise<Record<string, unknown>> {
     const configs = { ...{
       decrypt: false,
       maxAge: DEFAULT_MAX_AGE_SECS,
@@ -372,8 +372,17 @@ const getParameters = (path: string, options?: SSMGetMultipleOptionsInterface): 
   return DEFAULT_PROVIDERS.ssm.getMultiple(path, options);
 };
 
+const getParametersByName = (parameters: Record<string, SSMGetParametersByNameOptionsInterface>, options?: SSMGetParametersByNameOptionsInterface): Promise<Record<string, unknown>> => {
+  if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
+    DEFAULT_PROVIDERS.ssm = new SSMProvider();
+  }
+
+  return (DEFAULT_PROVIDERS.ssm as SSMProvider).getParametersByName(parameters, options);
+};
+
 export {
   SSMProvider,
   getParameter,
   getParameters,
+  getParametersByName,
 };

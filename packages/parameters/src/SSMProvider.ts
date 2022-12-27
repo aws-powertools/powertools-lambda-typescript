@@ -183,7 +183,7 @@ class SSMProvider extends BaseProvider {
 
     // Fetch each possible batch param from cache and return if entire batch is cached
     const { cached, toFetch } = await this.getParametersByNameFromCache(parameters);
-    if (Object.keys(cached).length > Object.keys(parameters).length) {
+    if (Object.keys(cached).length >= Object.keys(parameters).length) {
       results.response = cached;
 
       return results;
@@ -208,8 +208,10 @@ class SSMProvider extends BaseProvider {
 
     for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
       const cacheKey = [ parameterName, parameterOptions.transform ].toString();
-      if (!super.hasKeyExpiredInCache(cacheKey)) {
-        results.cached[parameterName] = super.store.get(cacheKey);
+      if (!this.hasKeyExpiredInCache(cacheKey)) {
+        // Since we know the key exists in the cache, we can safely use the non-null assertion operator
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        results.cached[parameterName] = this.store.get(cacheKey)!.value;
       } else {
         results.toFetch[parameterName] = parameterOptions;
       }
@@ -291,7 +293,7 @@ class SSMProvider extends BaseProvider {
     };
 
     for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
-      const overrides = parameterOptions || {};
+      const overrides = parameterOptions;
       overrides.transform = overrides.transform || configs.transform;
 
       if (!overrides.hasOwnProperty('decrypt')) {
@@ -338,11 +340,13 @@ class SSMProvider extends BaseProvider {
       // NOTE: if transform is set, we do it before caching to reduce number of operations
       if (parameterValue && parameterOptions.transform) {
         value = transformValue(parameterValue, parameterOptions.transform, throwOnError);
+      } else if (parameterValue) {
+        value = parameterValue;
       }
 
       if (value) {
         const cacheKey = [ parameterName, parameterOptions.transform ].toString();
-        super.addToCache(cacheKey, value, parameterOptions.maxAge || DEFAULT_MAX_AGE_SECS);
+        this.addToCache(cacheKey, value, parameterOptions.maxAge || DEFAULT_MAX_AGE_SECS);
       }
 
       results[parameterName] = value;

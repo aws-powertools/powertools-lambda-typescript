@@ -1,5 +1,4 @@
 import type { GetParameterCommandInput, GetParametersByPathCommandInput } from '@aws-sdk/client-ssm';
-import { ExpirableValue } from 'BaseProvider';
 import type { TransformOptions } from 'types/BaseProvider';
 
 /**
@@ -24,7 +23,7 @@ interface SSMGetMultipleOptionsInterface {
   sdkOptions?: Partial<GetParametersByPathCommandInput>
   decrypt?: boolean
   recursive?: boolean
-  transform?: string
+  transform?: TransformOptions
   throwOnTransformError?: boolean
 }
 
@@ -46,7 +45,7 @@ interface SSMGetParametersByNameOutputInterface {
 }
 
 type SSMGetParametersByNameFromCacheOutputType = {
-  cached: Record<string, ExpirableValue | undefined>
+  cached: Record<string, string | Record<string, unknown>>
   toFetch: Record<string, SSMGetParametersByNameOptionsInterface>
 } & { [key: string]: SSMGetParametersByNameOptionsInterface };
 

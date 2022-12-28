@@ -22,12 +22,16 @@ interface DynamoDBProviderOptions {
   clientConfig?: DynamoDBClientConfig
 }
 
-interface DynamoDBGetOptionsInterface {
-  maxAge?: number
-  forceFetch?: boolean
-  decrypt?: boolean
-  transform?: TransformOptions
-  sdkOptions?: Partial<GetItemCommandInput>
+/**
+ * Options for the DynamoDBProvider get method.
+ * 
+ * @interface DynamoDBGetOptionsInterface
+ * @extends {GetOptionsInterface}
+ * @property {boolean} decrypt - If true, the parameter will be decrypted.
+ * @property {Partial<GetItemCommandInput>} sdkOptions - Options for the AWS SDK.
+ */
+interface DynamoDBGetOptionsInterface extends GetBaseOptionsInterface {
+  sdkOptions?: Omit<Partial<GetItemCommandInput>, 'Key' | 'TableName' | 'ProjectionExpression'>
 }
 
 interface DynamoDBGetMultipleOptionsInterface extends GetMultipleBaseOptionsInterface {

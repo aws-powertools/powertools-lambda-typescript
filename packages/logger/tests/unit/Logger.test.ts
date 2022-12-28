@@ -13,7 +13,7 @@ import { Context } from 'aws-lambda';
 import { Console } from 'console';
 
 const mockDate = new Date(1466424490000);
-const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
+const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Class: Logger', () => {
   const ENVIRONMENT_VARIABLES = process.env;

@@ -218,17 +218,14 @@ const splitSegmentsByName = (subsegments: ParsedDocument[], expectedNames: strin
 const invokeAllTestCases = async (functionName: string): Promise<void> => {
   await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
     invocation: 1,
-    sdkV2: 'client',
     throw: false,
   });
   await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
     invocation: 2,
-    sdkV2: 'all', // only second invocation should use captureAll
     throw: false,
   });
   await invokeFunction(functionName, 1, 'SEQUENTIAL', { 
     invocation: 3,
-    sdkV2: 'client', 
     throw: true, // only last invocation should throw
   });
 };
@@ -252,11 +249,7 @@ const createTracerTestFunction = (params: TracerTestFunctionParams): NodejsFunct
       EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
       ...environmentParams,
     },
-    timeout: Duration.seconds(30), // Default value (3 seconds) will time out 
-    bundling: { 
-      // Exclude aws-sdk and use the default one provided by Lambda
-      externalModules: ['aws-sdk'],
-    },
+    timeout: Duration.seconds(30), // Default value (3 seconds) will time out
     runtime: TEST_RUNTIMES[runtime as TestRuntimesKey],
   });
 

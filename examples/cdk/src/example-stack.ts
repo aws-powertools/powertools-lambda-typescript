@@ -1,79 +1,91 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Stack, StackProps, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import path from 'path';
-import { ExampleFunction } from './example-function';
+import { Table, BillingMode, AttributeType } from 'aws-cdk-lib/aws-dynamodb';
+import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Runtime, Tracing, LayerVersion } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
+
+const commonProps: Partial<NodejsFunctionProps> = {
+  runtime: Runtime.NODEJS_18_X,
+  tracing: Tracing.ACTIVE,
+  timeout: Duration.seconds(30),
+  logRetention: RetentionDays.ONE_DAY,
+  environment: {
+    NODE_OPTIONS: '--enable-source-maps', // see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
+    POWERTOOLS_SERVICE_NAME: 'items-store',
+    POWERTOOLS_METRICS_NAMESPACE: 'PowertoolsCDKExample',
+    LOG_LEVEL: 'DEBUG'
+  },
+  bundling: {
+    externalModules: [
+      '@aws-sdk/lib-dynamodb',
+      '@aws-sdk/client-dynamodb',
+      '@aws-lambda-powertools/commons',
+      '@aws-lambda-powertools/logger',
+      '@aws-lambda-powertools/tracer',
+      '@aws-lambda-powertools/metrics',
+    ],
+  },
+  layers: [],
+};
 
 export class CdkAppStack extends Stack {
   public constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    new ExampleFunction(this, 'MyFunction', {
-      functionName: 'MyFunction',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'MyFunctionWithDecorator', {
-      functionName: 'MyFunctionWithDecorator',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'MyFunctionWithMiddy', {
-      functionName: 'MyFunctionWithMiddy',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'Tracer.Disabled', {
-      functionName: 'Tracer.Disabled',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'Tracer.Middleware', {
-      functionName: 'Tracer.Middleware',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'Tracer.Decorator', {
-      functionName: 'Tracer.Decorator',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'Tracer.Manual', {
-      functionName: 'Tracer.Manual',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'Tracer.PatchAllAWSSDK', {
-      functionName: 'Tracer.PatchAllAWSSDK',
-      tracingActive: true,
-    });
-    
-    new ExampleFunction(this, 'Tracer.PatchAWSSDKv2', {
-      functionName: 'Tracer.PatchAWSSDKv2',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'Tracer.PatchAWSSDKv3', {
-      functionName: 'Tracer.PatchAWSSDKv3',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'Tracer.CaptureResponseDisabled', {
-      functionName: 'Tracer.CaptureResponseDisabled',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'Tracer.CaptureErrorDisabled', {
-      functionName: 'Tracer.CaptureErrorDisabled',
-      tracingActive: true,
-    });
-
-    new ExampleFunction(this, 'MyLayeredFunction', {
-      functionName: 'MyLayeredFunction',
-      tracingActive: true,
-      useLayer: true,
-      fnProps: {
-        entry: path.join(__dirname, 'example-function.MyFunction.ts')
+    const table = new Table(this, 'Table', {
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      partitionKey: {
+        type: AttributeType.STRING,
+        name: 'id',
       }
     });
+
+    commonProps.layers?.push(
+      LayerVersion.fromLayerVersionArn(
+        this,
+        'powertools-layer',
+        `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6`)
+    );
+
+    const putItemFn = new NodejsFunction(this, 'put-item-fn', {
+      ...commonProps,
+      entry: './functions/put-item.ts',
+      handler: 'handler',
+    });
+    putItemFn.addEnvironment('SAMPLE_TABLE', table.tableName);
+    table.grantWriteData(putItemFn);
+
+    const getAllItemsFn = new NodejsFunction(this, 'get-all-items-fn', {
+      ...commonProps,
+      entry: './functions/get-all-items.ts',
+      handler: 'handler',
+    });
+    getAllItemsFn.addEnvironment('SAMPLE_TABLE', table.tableName);
+    table.grantReadData(getAllItemsFn);
+
+    const getByIdFn = new NodejsFunction(this, 'get-by-id-fn', {
+      ...commonProps,
+      entry: './functions/get-by-id.ts',
+      handler: 'handler',
+    });
+    getByIdFn.addEnvironment('SAMPLE_TABLE', table.tableName);
+    table.grantReadData(getByIdFn);
+
+    const api = new RestApi(this, 'items-api', {
+      restApiName: 'Items Service',
+      description: 'This service serves items.',
+    });
+
+    const itemPutIntegration = new LambdaIntegration(putItemFn);
+    api.root.addMethod('POST', itemPutIntegration);
+
+    const itemsIntegration = new LambdaIntegration(getAllItemsFn);
+    api.root.addMethod('GET', itemsIntegration);
+
+    const item = api.root.addResource('{id}');
+    const itemIntegration = new LambdaIntegration(getByIdFn);
+    item.addMethod('GET', itemIntegration);
   }
 }

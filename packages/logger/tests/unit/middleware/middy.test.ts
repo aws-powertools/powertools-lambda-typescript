@@ -12,7 +12,7 @@ import { PowertoolLogFormatter } from '../../../src/formatter';
 import { Console } from 'console';
 
 const mockDate = new Date(1466424490000);
-const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
+const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Middy middleware', () => {
 

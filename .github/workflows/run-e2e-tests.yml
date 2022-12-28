@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         package: [logger, metrics, tracer]
-        version: [14, 16]
+        version: [14, 16, 18]
       fail-fast: false
     steps:
       - name: Checkout Repo
@@ -70,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [14, 16]
+        version: [14, 16, 18]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -93,8 +93,8 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
-          # Always use version 16 as we use TypeScript target es2020
-          node-version: 16
+          # Always use version 18
+          node-version: 18
       - name: Setup npm
         run: npm i -g npm@next-8
       - name: "Configure AWS credentials"

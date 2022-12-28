@@ -1,4 +1,3 @@
-import pickBy from 'lodash.pickby';
 import merge from 'lodash.merge';
 import { LogItemInterface } from '.';
 import { LogAttributes } from '../types';
@@ -31,7 +30,14 @@ class LogItem implements LogItemInterface {
   }
 
   public removeEmptyKeys(attributes: LogAttributes): LogAttributes {
-    return pickBy(attributes, (value) => value !== undefined && value !== '' && value !== null);
+    const newAttributes: LogAttributes = {};
+    for (const key in attributes) {
+      if (attributes[key] !== undefined && attributes[key] !== '' && attributes[key] !== null) {
+        newAttributes[key] = attributes[key];
+      }
+    }
+    
+    return newAttributes;
   }
 
   public setAttributes(attributes: LogAttributes): void {

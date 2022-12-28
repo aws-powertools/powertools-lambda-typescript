@@ -571,6 +571,30 @@ describe('Class: Logger', () => {
     
         });
 
+        test('when a logged item has empty string, null, or undefined values, it removes it', () => {
+
+          // Prepare
+          const logger = new Logger();
+          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const message = `This is an ${methodOfLogger} log with empty, null, and undefined values`;
+          const logItem = { value: 42, emptyValue: '', undefinedValue: undefined, nullValue: null };
+          
+          // Act
+          logger[methodOfLogger](message, logItem);
+    
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: methodOfLogger.toUpperCase(),
+            message: message,
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+            value: 42,
+          }));
+    
+        });
+
       });
     });
 

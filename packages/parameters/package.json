@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "The parameters package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",

@@ -60,7 +60,7 @@ abstract class BaseProvider implements BaseProviderInterface {
     }
 
     if (value && configs.transform) {
-      value = transformValue(value, configs.transform, true);
+      value = transformValue(value, configs.transform, true, name);
     }
 
     if (value) {

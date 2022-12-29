@@ -1,19 +1,11 @@
-import type { TransformOptions } from './BaseProvider';
+import type { GetOptionsInterface } from './BaseProvider';
 import type { SecretsManagerClientConfig, GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
-
-// TODO: move this to BaseProvider.ts
-interface GetBaseOptionsInterface {
-  maxAge?: number
-  forceFetch?: boolean
-  decrypt?: boolean
-  transform?: TransformOptions
-}
 
 interface SecretsProviderOptions {
   clientConfig?: SecretsManagerClientConfig
 }
 
-interface SecretsGetOptionsInterface extends GetBaseOptionsInterface {
+interface SecretsGetOptionsInterface extends GetOptionsInterface {
   sdkOptions?: Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>
 }
 

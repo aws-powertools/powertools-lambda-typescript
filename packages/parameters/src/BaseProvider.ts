@@ -132,7 +132,7 @@ abstract class BaseProvider implements BaseProviderInterface {
 
 }
 
-const transformValue = (value: string | Uint8Array | undefined, transform: TransformOptions, throwOnTransformError: boolean, key: string = ''): string | Record<string, unknown> | undefined => {
+const transformValue = (value: string | Uint8Array | undefined, transform: TransformOptions, throwOnTransformError: boolean, key: string): string | Record<string, unknown> | undefined => {
   try {
     const normalizedTransform = transform.toLowerCase();
     if (

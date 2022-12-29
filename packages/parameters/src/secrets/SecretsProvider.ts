@@ -1,4 +1,4 @@
-import { BaseProvider } from './BaseProvider';
+import { BaseProvider } from '../BaseProvider';
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import type { SecretsProviderOptions, SecretsGetOptionsInterface } from 'types/SecretsProvider';

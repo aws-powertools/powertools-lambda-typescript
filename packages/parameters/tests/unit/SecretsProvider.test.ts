@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/SecretsProvider/class
  */
-import { SecretsProvider } from '../../src/SecretsProvider';
+import { SecretsProvider } from '../../src/secrets';
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import { mockClient } from 'aws-sdk-client-mock';

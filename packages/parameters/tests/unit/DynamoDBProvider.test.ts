@@ -1,18 +1,14 @@
 /**
-   * Test DynamoDBProvider class
-  *
-  * @group unit/parameters/DynamoDBProvider/class
-  */
+ * Test DynamoDBProvider class
+ *
+ * @group unit/parameters/DynamoDBProvider/class
+ */
 import { DynamoDBProvider } from '../../src/DynamoDBProvider';
 import { DynamoDBClient, GetItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb';
 import type { GetItemCommandInput, QueryCommandInput } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
-/* import type {
-  DynamoDBGetOptionsInterface,
-  DynamoDBGetMultipleOptionsInterface,
-} from '../../src/types/DynamoDBProvider'; */
 
 describe('Class: DynamoDBProvider', () => {
 

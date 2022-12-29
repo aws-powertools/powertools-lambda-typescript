@@ -1,18 +1,5 @@
-import type { TransformOptions } from './BaseProvider';
+import type { GetOptionsInterface, GetMultipleOptionsInterface } from './BaseProvider';
 import type { GetItemCommandInput, QueryCommandInput, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
-
-// TODO: move this to BaseProvider.ts
-interface GetBaseOptionsInterface {
-  maxAge?: number
-  forceFetch?: boolean
-  decrypt?: boolean
-  transform?: TransformOptions
-}
-
-// TODO: move this to BaseProvider.ts
-interface GetMultipleBaseOptionsInterface extends GetBaseOptionsInterface {
-  throwOnTransformError?: boolean
-}
 
 interface DynamoDBProviderOptions {
   tableName: string
@@ -30,11 +17,11 @@ interface DynamoDBProviderOptions {
  * @property {boolean} decrypt - If true, the parameter will be decrypted.
  * @property {Partial<GetItemCommandInput>} sdkOptions - Options for the AWS SDK.
  */
-interface DynamoDBGetOptionsInterface extends GetBaseOptionsInterface {
+interface DynamoDBGetOptionsInterface extends GetOptionsInterface {
   sdkOptions?: Omit<Partial<GetItemCommandInput>, 'Key' | 'TableName' | 'ProjectionExpression'>
 }
 
-interface DynamoDBGetMultipleOptionsInterface extends GetMultipleBaseOptionsInterface {
+interface DynamoDBGetMultipleOptionsInterface extends GetMultipleOptionsInterface {
   sdkOptions?: Partial<QueryCommandInput>
 }
 

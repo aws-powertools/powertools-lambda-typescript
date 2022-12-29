@@ -29,6 +29,14 @@ class SSMProvider extends BaseProvider {
     this.client = new SSMClient(config);
   }
 
+  public async get(name: string, options?: SSMGetOptionsInterface | undefined): Promise<string | Record<string, unknown> | undefined> {
+    return super.get(name, options);
+  }
+
+  public async getMultiple(path: string, options?: SSMGetMultipleOptionsInterface | undefined): Promise<undefined | Record<string, unknown>> {
+    return super.getMultiple(path, options);
+  }
+
   /**
    * Retrieve multiple parameter values by name from SSM or cache.
    * 
@@ -211,7 +219,7 @@ class SSMProvider extends BaseProvider {
       if (!this.hasKeyExpiredInCache(cacheKey)) {
         // Since we know the key exists in the cache, we can safely use the non-null assertion operator
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        results.cached[parameterName] = this.store.get(cacheKey)!.value;
+        results.cached[parameterName] = this.store.get(cacheKey)!.value as Record<string, string | Record<string, unknown>>;
       } else {
         results.toFetch[parameterName] = parameterOptions;
       }

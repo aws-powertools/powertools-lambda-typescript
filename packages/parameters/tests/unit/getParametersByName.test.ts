@@ -1,10 +1,10 @@
 /**
-  * Test getParametersByName function
+ * Test getParametersByName function
  *
- * @group unit/parameters/SSMProvider/getParametersByName/function
+ * @group unit/parameters/ssm/getParametersByName/function
  */
 import { DEFAULT_PROVIDERS } from '../../src/BaseProvider';
-import { SSMProvider, getParametersByName } from '../../src/SSMProvider';
+import { SSMProvider, getParametersByName } from '../../src/ssm';
 
 describe('Function: getParametersByName', () => {
 

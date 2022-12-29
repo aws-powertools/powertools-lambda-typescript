@@ -1,6 +1,6 @@
-import { BaseProvider, DEFAULT_PROVIDERS, transformValue } from './BaseProvider';
-import { GetParameterError } from './Exceptions';
-import { DEFAULT_MAX_AGE_SECS } from './constants';
+import { BaseProvider, DEFAULT_PROVIDERS, transformValue } from '../BaseProvider';
+import { GetParameterError } from '../Exceptions';
+import { DEFAULT_MAX_AGE_SECS } from '../constants';
 import { SSMClient, GetParameterCommand, paginateGetParametersByPath, GetParametersCommand } from '@aws-sdk/client-ssm';
 import type {
   SSMClientConfig,
@@ -339,7 +339,7 @@ class SSMProvider extends BaseProvider {
       let value;
       // NOTE: if transform is set, we do it before caching to reduce number of operations
       if (parameterValue && parameterOptions.transform) {
-        value = transformValue(parameterValue, parameterOptions.transform, throwOnError);
+        value = transformValue(parameterValue, parameterOptions.transform, throwOnError, parameterName);
       } else if (parameterValue) {
         value = parameterValue;
       }
@@ -356,33 +356,7 @@ class SSMProvider extends BaseProvider {
   }
 }
 
-const getParameter = (name: string, options?: SSMGetOptionsInterface): Promise<undefined | string | Record<string, unknown>> => {
-  if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
-    DEFAULT_PROVIDERS.ssm = new SSMProvider();
-  }
-
-  return DEFAULT_PROVIDERS.ssm.get(name, options);
-};
-
-const getParameters = (path: string, options?: SSMGetMultipleOptionsInterface): Promise<undefined | Record<string, unknown>> => {
-  if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
-    DEFAULT_PROVIDERS.ssm = new SSMProvider();
-  }
-
-  return DEFAULT_PROVIDERS.ssm.getMultiple(path, options);
-};
-
-const getParametersByName = (parameters: Record<string, SSMGetParametersByNameOptionsInterface>, options?: SSMGetParametersByNameOptionsInterface): Promise<Record<string, unknown>> => {
-  if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
-    DEFAULT_PROVIDERS.ssm = new SSMProvider();
-  }
-
-  return (DEFAULT_PROVIDERS.ssm as SSMProvider).getParametersByName(parameters, options);
-};
-
 export {
   SSMProvider,
-  getParameter,
-  getParameters,
-  getParametersByName,
+  DEFAULT_PROVIDERS,
 };

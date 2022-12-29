@@ -1,9 +1,9 @@
 /**
-  * Test SSMProvider class
+ * Test SSMProvider class
  *
- * @group unit/parameters/SSMProvider/class
+ * @group unit/parameters/ssm/class
  */
-import { SSMProvider } from '../../src/SSMProvider';
+import { SSMProvider } from '../../src/ssm';
 import {
   SSMClient,
   GetParameterCommand,

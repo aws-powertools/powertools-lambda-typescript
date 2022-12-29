@@ -1,5 +1,5 @@
 import type { GetParameterCommandInput, GetParametersByPathCommandInput } from '@aws-sdk/client-ssm';
-import type { TransformOptions } from 'types/BaseProvider';
+import type { GetOptionsInterface, GetMultipleOptionsInterface, TransformOptions } from './BaseProvider';
 
 /**
  * Options for the SSMProvider get method.
@@ -9,21 +9,15 @@ import type { TransformOptions } from 'types/BaseProvider';
  * @property {boolean} decrypt - If true, the parameter will be decrypted.
  * @property {Partial<GetParameterCommandInput>} sdkOptions - Options for the AWS SDK.
  */
-interface SSMGetOptionsInterface {
-  maxAge?: number
-  sdkOptions?: Partial<GetParameterCommandInput>
-  forceFetch?: boolean
+interface SSMGetOptionsInterface extends GetOptionsInterface {
   decrypt?: boolean
-  transform?: TransformOptions
+  sdkOptions?: Partial<GetParameterCommandInput>
 }
 
-interface SSMGetMultipleOptionsInterface {
-  maxAge?: number
-  forceFetch?: boolean
+interface SSMGetMultipleOptionsInterface extends GetMultipleOptionsInterface {
   sdkOptions?: Partial<GetParametersByPathCommandInput>
   decrypt?: boolean
   recursive?: boolean
-  transform?: TransformOptions
   throwOnTransformError?: boolean
 }
 

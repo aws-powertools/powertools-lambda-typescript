@@ -1,10 +1,10 @@
 /**
-  * Test getParameter function
+ * Test getParameter function
  *
- * @group unit/parameters/SSMProvider/getParameter/function
+ * @group unit/parameters/ssm/getParameter/function
  */
 import { DEFAULT_PROVIDERS } from '../../src/BaseProvider';
-import { SSMProvider, getParameter } from '../../src/SSMProvider';
+import { SSMProvider, getParameter } from '../../src/ssm';
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';

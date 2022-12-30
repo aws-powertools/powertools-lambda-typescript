@@ -29,11 +29,17 @@ class SSMProvider extends BaseProvider {
     this.client = new SSMClient(config);
   }
 
-  public async get(name: string, options?: SSMGetOptionsInterface | undefined): Promise<string | Record<string, unknown> | undefined> {
+  public async get(
+    name: string,
+    options?: SSMGetOptionsInterface | undefined
+  ): Promise<string | Record<string, unknown> | undefined> {
     return super.get(name, options);
   }
 
-  public async getMultiple(path: string, options?: SSMGetMultipleOptionsInterface | undefined): Promise<undefined | Record<string, unknown>> {
+  public async getMultiple(
+    path: string,
+    options?: SSMGetMultipleOptionsInterface | undefined
+  ): Promise<undefined | Record<string, unknown>> {
     return super.getMultiple(path, options);
   }
 
@@ -64,7 +70,10 @@ class SSMProvider extends BaseProvider {
    * @param {Record<string, unknown>[]} parameters - List of parameter names, and any optional overrides
    * 
    */
-  public async getParametersByName(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, options?: SSMGetParametersByNameOptionsInterface): Promise<Record<string, unknown>> {
+  public async getParametersByName(
+    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    options?: SSMGetParametersByNameOptionsInterface
+  ): Promise<Record<string, unknown>> {
     const configs = { ...{
       decrypt: false,
       maxAge: DEFAULT_MAX_AGE_SECS,
@@ -76,14 +85,23 @@ class SSMProvider extends BaseProvider {
     // NOTE: We fail early to avoid unintended graceful errors being replaced with their '_errors' param values
     SSMProvider.throwIfErrorsKeyIsPresent(parameters, this.errorsKey, configs.throwOnError);
 
-    const { parametersToFetchInBatch, parametersToDecrypt } = SSMProvider.splitBatchAndDecryptParameters(parameters, configs);
+    const {
+      parametersToFetchInBatch,
+      parametersToDecrypt
+    } = SSMProvider.splitBatchAndDecryptParameters(parameters, configs);
     // NOTE: We need to find out whether all parameters must be decrypted or not to know which API to use
     // Logic:
     // GetParameters API -> When decrypt is used for all parameters in the the batch
     // GetParameter  API -> When decrypt is used for one or more in the batch
     if (Object.keys(parametersToDecrypt).length !== Object.keys(parameters).length) {
-      const { response: decryptResponse, errors: decryptErrors } = await this.getParametersByNameWithDecryptOption(parametersToDecrypt, configs.throwOnError);
-      const { response: batchResponse, errors: batchErrors } = await this.getParametersBatchByName(parametersToFetchInBatch, configs.throwOnError, false);
+      const {
+        response: decryptResponse,
+        errors: decryptErrors
+      } = await this.getParametersByNameWithDecryptOption(parametersToDecrypt, configs.throwOnError);
+      const {
+        response: batchResponse,
+        errors: batchErrors
+      } = await this.getParametersBatchByName(parametersToFetchInBatch, configs.throwOnError, false);
       
       response = { ...decryptResponse, ...batchResponse };
       // Fail-fast disabled, let's aggregate errors under "_errors" key so they can handle gracefully
@@ -91,7 +109,10 @@ class SSMProvider extends BaseProvider {
         response[this.errorsKey] = [ ...decryptErrors, ...batchErrors ];
       }
     } else {
-      const { response: batchResponse, errors: batchErrors } = await this.getParametersBatchByName(parametersToDecrypt, configs.throwOnError, true);
+      const {
+        response: batchResponse,
+        errors: batchErrors
+      } = await this.getParametersBatchByName(parametersToDecrypt, configs.throwOnError, true);
       
       response = batchResponse;
       // Fail-fast disabled, let's aggregate errors under "_errors" key so they can handle gracefully
@@ -103,7 +124,10 @@ class SSMProvider extends BaseProvider {
     return response;
   }
 
-  protected async _get(name: string, options?: SSMGetOptionsInterface): Promise<string | undefined> {
+  protected async _get(
+    name: string,
+    options?: SSMGetOptionsInterface
+  ): Promise<string | undefined> {
     const sdkOptions: GetParameterCommandInput = {
       Name: name,
     };
@@ -118,7 +142,10 @@ class SSMProvider extends BaseProvider {
     return result.Parameter?.Value;
   }
 
-  protected async _getMultiple(path: string, options?: SSMGetMultipleOptionsInterface): Promise<Record<string, string | undefined>> {
+  protected async _getMultiple(
+    path: string,
+    options?: SSMGetMultipleOptionsInterface
+  ): Promise<Record<string, string | undefined>> {
     const sdkOptions: GetParametersByPathCommandInput = {
       Path: path,
     };
@@ -160,12 +187,11 @@ class SSMProvider extends BaseProvider {
     return parameters;
   }
 
-  protected async _getParametersByName(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
-    const results: SSMGetParametersByNameOutputInterface = {
-      response: {},
-      errors: [],
-    };
-
+  protected async _getParametersByName(
+    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    throwOnError: boolean,
+    decrypt: boolean
+  ): Promise<SSMGetParametersByNameOutputInterface> {
     const sdkOptions: GetParametersCommandInput = {
       Names: Object.keys(parameters),
     };
@@ -174,68 +200,95 @@ class SSMProvider extends BaseProvider {
     }
     
     const result = await this.client.send(new GetParametersCommand(sdkOptions));
-    results.errors = SSMProvider.handleAnyInvalidGetParameterErrors(result, throwOnError);
-    results.response = this.transformAndCacheGetParametersResponse(result, parameters, throwOnError);
+    const errors = SSMProvider.handleAnyInvalidGetParameterErrors(result, throwOnError);
+    const response = this.transformAndCacheGetParametersResponse(
+      result,
+      parameters,
+      throwOnError
+    );
 
-    return results;
+    return {
+      response,
+      errors,
+    };
   }
 
   /**
    * Slice batch and fetch parameters using GetPrameters API by max permissible batch size
    */
-  protected async getParametersBatchByName(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
-    const results: SSMGetParametersByNameOutputInterface = {
-      response: {},
-      errors: [],
-    };
+  protected async getParametersBatchByName(
+    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    throwOnError: boolean,
+    decrypt: boolean
+  ): Promise<SSMGetParametersByNameOutputInterface> {
+    let response: Record<string, unknown> = {};
+    let errors: string[] = [];
 
     // Fetch each possible batch param from cache and return if entire batch is cached
     const { cached, toFetch } = await this.getParametersByNameFromCache(parameters);
     if (Object.keys(cached).length >= Object.keys(parameters).length) {
-      results.response = cached;
+      response = cached;
 
-      return results;
+      return {
+        response,
+        errors,
+      };
     }
 
     // Slice batch by max permitted GetParameters call and retrieve the ones that are not cached
-    const { response: batchResponse, errors: batchErrors } = await this.getParametersByNameInChunks(toFetch, throwOnError, decrypt);
-    results.response = { ...cached, ...batchResponse };
-    results.errors = batchErrors;
+    const {
+      response: batchResponse,
+      errors: batchErrors
+    } = await this.getParametersByNameInChunks(toFetch, throwOnError, decrypt);
+    response = { ...cached, ...batchResponse };
+    errors = batchErrors;
 
-    return results;
+    return {
+      response,
+      errors,
+    };
   }
 
   /**
    * Fetch each parameter from batch that hasn't expired from cache
    */
-  protected async getParametersByNameFromCache(parameters: Record<string, SSMGetParametersByNameOptionsInterface>): Promise<SSMGetParametersByNameFromCacheOutputType> {
-    const results: SSMGetParametersByNameFromCacheOutputType = {
-      cached: {},
-      toFetch: {},
-    };
+  protected async getParametersByNameFromCache(
+    parameters: Record<string, SSMGetParametersByNameOptionsInterface>
+  ): Promise<SSMGetParametersByNameFromCacheOutputType> {
+    const cached: Record<string, string | Record<string, unknown>> = {};
+    const toFetch: Record<string, SSMGetParametersByNameOptionsInterface> = {};
 
     for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
       const cacheKey = [ parameterName, parameterOptions.transform ].toString();
       if (!this.hasKeyExpiredInCache(cacheKey)) {
         // Since we know the key exists in the cache, we can safely use the non-null assertion operator
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        results.cached[parameterName] = this.store.get(cacheKey)!.value as Record<string, string | Record<string, unknown>>;
+        cached[parameterName] = this.store.get(cacheKey)!.value as Record<string, string | Record<string, unknown>>;
       } else {
-        results.toFetch[parameterName] = parameterOptions;
+        toFetch[parameterName] = parameterOptions;
       }
     }
 
-    return results;
+    return {
+      cached,
+      toFetch,
+    };
   }
 
-  protected async getParametersByNameInChunks(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
-    const results: SSMGetParametersByNameOutputInterface = {
-      response: {},
-      errors: [],
-    };
+  protected async getParametersByNameInChunks(
+    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    throwOnError: boolean,
+    decrypt: boolean
+  ): Promise<SSMGetParametersByNameOutputInterface> {
+    let response: Record<string, unknown> = {};
+    let errors: string[] = [];
     
     // Slice object into chunks of max permissible batch size
-    const chunks = Object.entries(parameters).reduce((acc, [ parameterName, parameterOptions ], index) => {
+    const chunks = Object.entries(parameters).reduce((
+      acc,
+      [ parameterName, parameterOptions ],
+      index
+    ) => {
       const chunkIndex = Math.floor(index / this.maxGetParametersItems);
       if (!acc[chunkIndex]) {
         acc[chunkIndex] = {};
@@ -247,43 +300,59 @@ class SSMProvider extends BaseProvider {
 
     // Fetch each chunk and merge results
     for (const chunk of chunks) {
-      const { response: chunkResponse, errors: chunkErrors } = await this._getParametersByName(chunk, throwOnError, decrypt);
-      results.response = { ...results.response, ...chunkResponse };
-      results.errors = [ ...results.errors, ...chunkErrors ];
+      const {
+        response: chunkResponse,
+        errors: chunkErrors
+      } = await this._getParametersByName(chunk, throwOnError, decrypt);
+      
+      response = { ...response, ...chunkResponse };
+      errors = [ ...errors, ...chunkErrors ];
     }
 
-    return results;
+    return {
+      response,
+      errors,
+    };
   }
 
-  protected async getParametersByNameWithDecryptOption(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean): Promise<SSMGetParametersByNameOutputInterface> {
-    const results: SSMGetParametersByNameOutputInterface = {
-      response: {},
-      errors: [],
-    };
+  protected async getParametersByNameWithDecryptOption(
+    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    throwOnError: boolean
+  ): Promise<SSMGetParametersByNameOutputInterface> {
+    const response: Record<string, unknown> = {};
+    const errors: string[] = [];
 
     for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
       try {
-        results.response[parameterName] = await this._get(parameterName, parameterOptions);
+        response[parameterName] = await this._get(parameterName, parameterOptions);
       } catch (error) {
         if (throwOnError) {
           throw error;
         }
-        results.errors.push(parameterName);
+        errors.push(parameterName);
       }
     }
 
-    return results;
+    return {
+      response,
+      errors,
+    };
   }
 
   /**
    * Handle any invalid parameters returned by GetParameters API
    * GetParameters is non-atomic. Failures don't always reflect in exceptions so we need to collect.
    */
-  protected static handleAnyInvalidGetParameterErrors(result: GetParametersCommandOutput, throwOnError: boolean): string[] {
+  protected static handleAnyInvalidGetParameterErrors(
+    result: GetParametersCommandOutput,
+    throwOnError: boolean
+  ): string[] {
     const errors: string[] = [];
     if (result.InvalidParameters && result.InvalidParameters.length > 0) {
       if (throwOnError) {
-        throw new GetParameterError(`Failed to fetch parameters: ${result.InvalidParameters.join(', ')}`);
+        throw new GetParameterError(
+          `Failed to fetch parameters: ${result.InvalidParameters.join(', ')}`
+        );
       }
       errors.push(...result.InvalidParameters);
     }
@@ -294,11 +363,12 @@ class SSMProvider extends BaseProvider {
   /**
    * Split parameters that can be fetched by GetParameters vs GetParameter.
    */
-  protected static splitBatchAndDecryptParameters(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, configs: SSMGetParametersByNameOptionsInterface): SSMSplitBatchAndDecryptParametersOutputType {
-    const splitParameters: SSMSplitBatchAndDecryptParametersOutputType = {
-      parametersToFetchInBatch: {},
-      parametersToDecrypt: {},
-    };
+  protected static splitBatchAndDecryptParameters(
+    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    configs: SSMGetParametersByNameOptionsInterface
+  ): SSMSplitBatchAndDecryptParametersOutputType {
+    const parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptionsInterface> = {};
+    const parametersToDecrypt: Record<string, SSMGetParametersByNameOptionsInterface> = {};
 
     for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
       const overrides = parameterOptions;
@@ -312,13 +382,16 @@ class SSMProvider extends BaseProvider {
       }
 
       if (overrides.decrypt) {
-        splitParameters.parametersToDecrypt[parameterName] = overrides;
+        parametersToDecrypt[parameterName] = overrides;
       } else {
-        splitParameters.parametersToFetchInBatch[parameterName] = overrides;
+        parametersToFetchInBatch[parameterName] = overrides;
       }
     }
 
-    return splitParameters;
+    return {
+      parametersToFetchInBatch,
+      parametersToDecrypt,
+    };
   }
 
   /**
@@ -328,14 +401,24 @@ class SSMProvider extends BaseProvider {
    * @param {string} reservedParameter 
    * @param {boolean} throwOnError 
    */
-  protected static throwIfErrorsKeyIsPresent(parameters: Record<string, unknown>, reservedParameter: string, throwOnError: boolean): void {
+  protected static throwIfErrorsKeyIsPresent(
+    parameters: Record<string, unknown>,
+    reservedParameter: string,
+    throwOnError: boolean
+  ): void {
     if (!throwOnError && parameters.hasOwnProperty(reservedParameter)) {
-      throw new GetParameterError(`You cannot fetch a parameter named ${reservedParameter} in graceful error mode.`);
+      throw new GetParameterError(
+        `You cannot fetch a parameter named ${reservedParameter} in graceful error mode.`
+      );
     }
   }
 
-  protected transformAndCacheGetParametersResponse(response: GetParametersCommandOutput, parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean): Record<string, unknown> {
-    const results: Record<string, unknown> = {};
+  protected transformAndCacheGetParametersResponse(
+    response: GetParametersCommandOutput,
+    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    throwOnError: boolean
+  ): Record<string, unknown> {
+    const processedParameters: Record<string, unknown> = {};
 
     for (const parameter of response.Parameters || []) {
       // If the parameter is present in the response, then it has a Name
@@ -347,20 +430,29 @@ class SSMProvider extends BaseProvider {
       let value;
       // NOTE: if transform is set, we do it before caching to reduce number of operations
       if (parameterValue && parameterOptions.transform) {
-        value = transformValue(parameterValue, parameterOptions.transform, throwOnError, parameterName);
+        value = transformValue(
+          parameterValue,
+          parameterOptions.transform,
+          throwOnError,
+          parameterName
+        );
       } else if (parameterValue) {
         value = parameterValue;
       }
 
       if (value) {
         const cacheKey = [ parameterName, parameterOptions.transform ].toString();
-        this.addToCache(cacheKey, value, parameterOptions.maxAge || DEFAULT_MAX_AGE_SECS);
+        this.addToCache(
+          cacheKey,
+          value,
+          parameterOptions.maxAge || DEFAULT_MAX_AGE_SECS
+        );
       }
 
-      results[parameterName] = value;
+      processedParameters[parameterName] = value;
     }
 
-    return results;
+    return processedParameters;
   }
 }
 

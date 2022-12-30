@@ -5,7 +5,7 @@
  */
 
 import { BaseProvider, ExpirableValue, GetParameterError, TransformParameterError } from '../../src';
-import { toBase64 } from '@aws-sdk/util-base64-node';
+import { toBase64 } from '@aws-sdk/util-base64';
 
 const encoder = new TextEncoder();
 
@@ -76,7 +76,7 @@ describe('Class: BaseProvider', () => {
       // Prepare
       const provider = new TestProvider();
 
-      // Act / Assess
+      // Act & Assess
       await expect(provider.get('my-parameter')).rejects.toThrowError(GetParameterError);
 
     });
@@ -154,7 +154,7 @@ describe('Class: BaseProvider', () => {
       const provider = new TestProvider();
       jest.spyOn(provider, '_get').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData)));
 
-      // Act / Assess
+      // Act & Assess
       await expect(provider.get('my-parameter', { transform: 'json' })).rejects.toThrowError(TransformParameterError);
 
     });
@@ -181,8 +181,40 @@ describe('Class: BaseProvider', () => {
       const provider = new TestProvider();
       jest.spyOn(provider, '_get').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData)));
 
-      // Act / Assess
+      // Act & Assess
       await expect(provider.get('my-parameter', { transform: 'binary' })).rejects.toThrowError(TransformParameterError);
+
+    });
+    
+    test('when called with no transform, and the value is a valid binary, it returns the binary as-is', async () => {
+
+      // Prepare
+      const mockData = encoder.encode('my-value');
+      const provider = new TestProvider();
+      jest.spyOn(provider, '_get').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData as unknown as string)));
+
+      // Act
+      const value = await provider.get('my-parameter');
+
+      // Assess
+      expect(value).toBeInstanceOf(Uint8Array);
+      expect(value).toEqual(mockData);
+
+    });
+    
+    test('when called with a binary transform, and the value is a valid binary, it returns the decoded value', async () => {
+
+      // Prepare
+      const mockData = encoder.encode('my-value');
+      const provider = new TestProvider();
+      jest.spyOn(provider, '_get').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData as unknown as string)));
+
+      // Act
+      const value = await provider.get('my-parameter', { transform: 'binary' });
+
+      // Assess
+      expect(typeof value).toBe('string');
+      expect(value).toEqual('my-value');
 
     });
 
@@ -195,7 +227,7 @@ describe('Class: BaseProvider', () => {
       const provider = new TestProvider();
       jest.spyOn(provider, '_getMultiple').mockImplementation(() => new Promise((_resolve, reject) => reject(new Error('Some error.'))));
 
-      // Act / Assess
+      // Act & Assess
       await expect(provider.getMultiple('my-parameter')).rejects.toThrowError(GetParameterError);
 
     });
@@ -267,7 +299,7 @@ describe('Class: BaseProvider', () => {
       const provider = new TestProvider();
       jest.spyOn(provider, '_getMultiple').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData)));
 
-      // Act / Assess
+      // Act & Assess
       await expect(provider.getMultiple('my-path', { transform: 'json', throwOnTransformError: true })).rejects.toThrowError(TransformParameterError);
 
     });
@@ -316,7 +348,7 @@ describe('Class: BaseProvider', () => {
       const provider = new TestProvider();
       jest.spyOn(provider, '_getMultiple').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData)));
 
-      // Act / Assess
+      // Act & Assess
       await expect(provider.getMultiple('my-path', { transform: 'binary', throwOnTransformError: true })).rejects.toThrowError(TransformParameterError);
 
     });

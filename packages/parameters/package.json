@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "The parameters package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",
@@ -15,6 +15,7 @@
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e:nodejs14x": "echo \"Not implemented\"",
     "test:e2e:nodejs16x": "echo \"Not implemented\"",
+    "test:e2e:nodejs18x": "echo \"Not implemented\"",
     "test:e2e": "echo \"Not implemented\"",
     "watch": "jest --watch",
     "build": "tsc",
@@ -41,7 +42,7 @@
     "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
   },
   "dependencies": {
-    "@aws-sdk/util-base64-node": "^3.209.0"
+    "@aws-sdk/util-base64": "^3.208.0"
   },
   "keywords": [
     "aws",

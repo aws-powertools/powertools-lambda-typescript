@@ -16,12 +16,12 @@ interface GetMultipleOptionsInterface {
 }
 
 interface ExpirableValueInterface {
-  value: string | Record<string, unknown>
+  value: string | Uint8Array | Record<string, unknown>
   ttl: number
 }
 
 interface BaseProviderInterface {
-  get(name: string, options?: GetOptionsInterface): Promise<undefined | string | Record<string, unknown>>
+  get(name: string, options?: GetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>>
   getMultiple(path: string, options?: GetMultipleOptionsInterface): Promise<void | Record<string, unknown>>
 }
 

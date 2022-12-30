@@ -4,11 +4,11 @@
   "name": "Node.js",
   "build": {
     "dockerfile": "Dockerfile",
-    // Update 'VARIANT' to pick a Node version: 16, 14.
+    // Update 'VARIANT' to pick a Node version: 18, 16, 14.
     // Append -bullseye or -buster to pin to an OS version.
     // Use -bullseye variants on local arm64/Apple Silicon.
     "args": {
-      "VARIANT": "16-bullseye"
+      "VARIANT": "18-bullseye"
     }
   },
   // Set *default* container specific settings.json values on container create.

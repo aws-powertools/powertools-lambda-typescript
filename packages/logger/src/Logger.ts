@@ -569,6 +569,37 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * When the data added in the log item contains object references or BigInt values,
+   * `JSON.stringify()` can't handle them and instead throws errors:
+   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
+   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
+   * @private
+   */
+  private getReplacer(): (key: string, value: LogAttributes | Error | bigint) => void {
+    const references = new WeakSet();
+  
+    return (key, value) => {
+      let item = value;
+      if (item instanceof Error) {
+        item = this.getLogFormatter().formatError(item);
+      }
+      if (typeof item === 'bigint') {
+        return item.toString();
+      }
+      if (typeof item === 'object' && value !== null) {
+        if (references.has(item)) {
+          return;
+        }
+        references.add(item);
+      }
+  
+      return item;
+    };
+  }
+
+  /**
    * It returns the numeric sample rate value.
    *
    * @private
@@ -605,7 +636,7 @@ class Logger extends Utility implements ClassThatLogs {
 
     const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
 
-    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies(), this.logIndentation));
+    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.getReplacer(), this.logIndentation));
   }
 
   /**
@@ -620,33 +651,6 @@ class Logger extends Utility implements ClassThatLogs {
       return;
     }
     this.printLog(logLevel, this.createAndPopulateLogItem(logLevel, input, extraInput));
-  }
-
-  /**
-   * When the data added in the log item contains object references,
-   * JSON.stringify() doesn't try to solve them and instead throws an error: TypeError: cyclic object value.
-   * To mitigate this issue, this method will find and remove all cyclic references.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
-   * @private
-   */
-  private removeCircularDependencies(): (key: string, value: LogAttributes | Error) => void {
-    const references = new WeakSet();
-
-    return (key, value) => {
-      let item = value;
-      if (item instanceof Error) {
-        item = this.getLogFormatter().formatError(item);
-      }
-      if (typeof item === 'object' && value !== null) {
-        if (references.has(item)) {
-          return;
-        }
-        references.add(item);
-      }
-
-      return item;
-    };
   }
 
   /**

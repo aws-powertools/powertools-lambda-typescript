@@ -15,7 +15,7 @@ Transform: AWS::Serverless-2016-10-31
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
 Globals:
   Function:
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -31,7 +31,7 @@ Resources:
   getAllItemsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/get-all-items.getAllItemsHandler
+      Handler: src/get-all-items.handler
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -41,8 +41,10 @@ Resources:
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
+          NODE_OPTIONS: '--enable-source-maps' # see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1 # see https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/node-reusing-connections.html
           SAMPLE_TABLE: !Ref SampleTable
-          POWERTOOLS_SERVICE_NAME: getAllItems
+          POWERTOOLS_SERVICE_NAME: items-store
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
           LOG_LEVEL: Debug
       Events:
@@ -56,16 +58,19 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2020"
-        Sourcemap: true,
-        EntryPoints: 
-        - src/get-all-items.ts
+        Target: "ES2020"
+        Sourcemap: true
+        External:
+          - "@aws-sdk/lib-dynamodb"
+          - "@aws-sdk/client-dynamodb"
+        EntryPoints:
+          - src/get-all-items.ts
 
   # This is a Lambda function config associated with the source code: get-by-id.js
   getByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/get-by-id.getByIdHandler
+      Handler: src/get-by-id.handler
       Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -75,8 +80,10 @@ Resources:
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
+          NODE_OPTIONS: '--enable-source-maps' # see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1 # see https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/node-reusing-connections.html
           SAMPLE_TABLE: !Ref SampleTable
-          POWERTOOLS_SERVICE_NAME: getById
+          POWERTOOLS_SERVICE_NAME: items-store
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
           LOG_LEVEL: Debug
       Events:
@@ -90,16 +97,20 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2020"
-        Sourcemap: true,
-        EntryPoints: 
-        - src/get-by-id.ts
+        Target: "ES2020"
+        ExperimentalDecorators: true
+        Sourcemap: true
+        External:
+          - "@aws-sdk/lib-dynamodb"
+          - "@aws-sdk/client-dynamodb"
+        EntryPoints:
+          - src/get-by-id.ts
 
   # This is a Lambda function config associated with the source code: put-item.js
   putItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/put-item.putItemHandler
+      Handler: src/put-item.handler
       Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
@@ -109,8 +120,10 @@ Resources:
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
+          NODE_OPTIONS: '--enable-source-maps' # see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1 # see https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/node-reusing-connections.html
           SAMPLE_TABLE: !Ref SampleTable
-          POWERTOOLS_SERVICE_NAME: getById
+          POWERTOOLS_SERVICE_NAME: items-store
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
           LOG_LEVEL: Debug
       Events:
@@ -124,10 +137,13 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2020"
-        Sourcemap: true,
+        Target: "ES2020"
+        Sourcemap: true
+        External:
+          - "@aws-sdk/lib-dynamodb"
+          - "@aws-sdk/client-dynamodb"
         EntryPoints: 
-        - src/put-item.ts
+          - src/put-item.ts
 
   # DynamoDB table to store item: {id: <ID>, name: <NAME>}
   SampleTable:
@@ -137,7 +153,14 @@ Resources:
         Name: id
         Type: String
 
+  Api:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub ${AWS::StackName}-api
+      Description: "Example API"
+
+
 Outputs:
   WebEndpoint:
     Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

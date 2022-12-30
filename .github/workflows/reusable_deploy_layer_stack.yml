@@ -62,7 +62,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "16.12"
+          node-version: "18"
       - name: install cdk and deps
         run: |
           npm install -g aws-cdk@2.29.0

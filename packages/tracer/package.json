@@ -15,6 +15,7 @@
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
     "test:e2e:nodejs16x": "RUNTIME=nodejs16x jest --group=e2e",
+    "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
     "build": "tsc",
@@ -30,9 +31,10 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.100.0",
+    "@aws-sdk/client-dynamodb": "^3.231.0",
     "@types/promise-retry": "^1.1.3",
-    "axios": "^0.27.2",
+    "aws-sdk": "^2.1276.0",
+    "axios": "^1.2.1",
     "promise-retry": "^2.0.1"
   },
   "files": [
@@ -47,7 +49,7 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^1.5.0",
-    "aws-xray-sdk-core": "^3.3.6"
+    "aws-xray-sdk-core": "^3.4.0"
   },
   "keywords": [
     "aws",

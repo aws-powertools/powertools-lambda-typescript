@@ -29,8 +29,8 @@ interface SSMGetParametersByNameOptionsInterface {
 }
 
 type SSMSplitBatchAndDecryptParametersOutputType = {
-  batch: Record<string, SSMGetParametersByNameOptionsInterface>
-  decrypt: Record<string, SSMGetParametersByNameOptionsInterface>
+  parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptionsInterface>
+  parametersToDecrypt: Record<string, SSMGetParametersByNameOptionsInterface>
 } & { [key: string]: SSMGetParametersByNameOptionsInterface };
 
 interface SSMGetParametersByNameOutputInterface {

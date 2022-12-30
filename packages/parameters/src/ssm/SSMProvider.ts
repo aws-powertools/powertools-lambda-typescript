@@ -76,14 +76,14 @@ class SSMProvider extends BaseProvider {
     // NOTE: We fail early to avoid unintended graceful errors being replaced with their '_errors' param values
     SSMProvider.throwIfErrorsKeyIsPresent(parameters, this.errorsKey, configs.throwOnError);
 
-    const { batch, decrypt } = SSMProvider.splitBatchAndDecryptParameters(parameters, configs);
+    const { parametersToFetchInBatch, parametersToDecrypt } = SSMProvider.splitBatchAndDecryptParameters(parameters, configs);
     // NOTE: We need to find out whether all parameters must be decrypted or not to know which API to use
     // Logic:
     // GetParameters API -> When decrypt is used for all parameters in the the batch
     // GetParameter  API -> When decrypt is used for one or more in the batch
-    if (Object.keys(decrypt).length !== Object.keys(parameters).length) {
-      const { response: decryptResponse, errors: decryptErrors } = await this.getParametersByNameWithDecryptOption(decrypt, configs.throwOnError);
-      const { response: batchResponse, errors: batchErrors } = await this.getParametersBatchByName(batch, configs.throwOnError, false);
+    if (Object.keys(parametersToDecrypt).length !== Object.keys(parameters).length) {
+      const { response: decryptResponse, errors: decryptErrors } = await this.getParametersByNameWithDecryptOption(parametersToDecrypt, configs.throwOnError);
+      const { response: batchResponse, errors: batchErrors } = await this.getParametersBatchByName(parametersToFetchInBatch, configs.throwOnError, false);
       
       response = { ...decryptResponse, ...batchResponse };
       // Fail-fast disabled, let's aggregate errors under "_errors" key so they can handle gracefully
@@ -91,7 +91,7 @@ class SSMProvider extends BaseProvider {
         response[this.errorsKey] = [ ...decryptErrors, ...batchErrors ];
       }
     } else {
-      const { response: batchResponse, errors: batchErrors } = await this.getParametersBatchByName(decrypt, configs.throwOnError, true);
+      const { response: batchResponse, errors: batchErrors } = await this.getParametersBatchByName(parametersToDecrypt, configs.throwOnError, true);
       
       response = batchResponse;
       // Fail-fast disabled, let's aggregate errors under "_errors" key so they can handle gracefully
@@ -296,8 +296,8 @@ class SSMProvider extends BaseProvider {
    */
   protected static splitBatchAndDecryptParameters(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, configs: SSMGetParametersByNameOptionsInterface): SSMSplitBatchAndDecryptParametersOutputType {
     const splitParameters: SSMSplitBatchAndDecryptParametersOutputType = {
-      batch: {},
-      decrypt: {},
+      parametersToFetchInBatch: {},
+      parametersToDecrypt: {},
     };
 
     for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
@@ -312,9 +312,9 @@ class SSMProvider extends BaseProvider {
       }
 
       if (overrides.decrypt) {
-        splitParameters.decrypt[parameterName] = overrides;
+        splitParameters.parametersToDecrypt[parameterName] = overrides;
       } else {
-        splitParameters.batch[parameterName] = overrides;
+        splitParameters.parametersToFetchInBatch[parameterName] = overrides;
       }
     }
 

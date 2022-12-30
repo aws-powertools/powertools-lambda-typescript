@@ -939,7 +939,10 @@ describe('Class: SSMProvider', () => {
         super();
       }
 
-      public splitBatchAndDecryptParameters(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, configs: SSMGetParametersByNameOptionsInterface): SSMSplitBatchAndDecryptParametersOutputType {
+      public splitBatchAndDecryptParameters(
+        parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+        configs: SSMGetParametersByNameOptionsInterface
+      ): SSMSplitBatchAndDecryptParametersOutputType {
         return SSMProvider.splitBatchAndDecryptParameters(parameters, configs);
       }
     }
@@ -956,11 +959,14 @@ describe('Class: SSMProvider', () => {
       };
 
       // Act
-      const { batch: notToDecrypt, decrypt } = provider.splitBatchAndDecryptParameters(parameters, {});
+      const {
+        parametersToFetchInBatch,
+        parametersToDecrypt
+      } = provider.splitBatchAndDecryptParameters(parameters, {});
       
       // Assess
-      expect(decrypt).toEqual({});
-      expect(notToDecrypt).toEqual({
+      expect(parametersToDecrypt).toEqual({});
+      expect(parametersToFetchInBatch).toEqual({
         '/foo/bar': {},
         '/foo/baz': {
           maxAge: 1000,
@@ -983,16 +989,19 @@ describe('Class: SSMProvider', () => {
       };
 
       // Act
-      const { batch: notToDecrypt, decrypt } = provider.splitBatchAndDecryptParameters(parameters, {});
+      const {
+        parametersToFetchInBatch,
+        parametersToDecrypt
+      } = provider.splitBatchAndDecryptParameters(parameters, {});
       
       // Assess
-      expect(decrypt).toEqual({
+      expect(parametersToDecrypt).toEqual({
         '/foo/bar': {
           decrypt: true,
           transform: undefined
         },
       });
-      expect(notToDecrypt).toEqual({
+      expect(parametersToFetchInBatch).toEqual({
         '/foo/baz': {
           decrypt: false,
           transform: undefined
@@ -1015,20 +1024,23 @@ describe('Class: SSMProvider', () => {
       };
 
       // Act
-      const { batch: notToDecrypt, decrypt } = provider.splitBatchAndDecryptParameters(parameters, {
+      const {
+        parametersToFetchInBatch,
+        parametersToDecrypt
+      } = provider.splitBatchAndDecryptParameters(parameters, {
         decrypt: false,
         maxAge: 2000,
       });
       
       // Assess
-      expect(decrypt).toEqual({
+      expect(parametersToDecrypt).toEqual({
         '/foo/bar': {
           decrypt: true,
           maxAge: 2000,
           transform: undefined
         },
       });
-      expect(notToDecrypt).toEqual({
+      expect(parametersToFetchInBatch).toEqual({
         '/foo/baz': {
           decrypt: false,
           maxAge: 1000,

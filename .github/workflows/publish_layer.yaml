@@ -34,7 +34,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "16.12"
+          node-version: "18"
       - name: Set release notes tag
         run: |
           RELEASE_INPUT=${{ inputs.latest_published_version }}

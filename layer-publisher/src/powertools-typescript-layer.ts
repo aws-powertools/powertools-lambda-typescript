@@ -38,7 +38,7 @@ export class PowerToolsTypeScriptLayer extends lambda.LayerVersion {
     super(scope, id, {
       layerVersionName: props?.layerVersionName,
       description: `Lambda Powertools for TypeScript version ${props?.version}`,
-      compatibleRuntimes: [ lambda.Runtime.NODEJS_14_X, lambda.Runtime.NODEJS_16_X ],
+      compatibleRuntimes: [ lambda.Runtime.NODEJS_14_X, lambda.Runtime.NODEJS_16_X, lambda.Runtime.NODEJS_18_X ],
       code: lambda.Code.fromAsset(path.join(__dirname, '.'), {
         assetHash: Md5.hashStr(commandJoined),
         bundling: {

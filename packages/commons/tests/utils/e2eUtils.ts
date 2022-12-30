@@ -14,11 +14,12 @@ import { InvocationLogs } from './InvocationLogs';
 
 const lambdaClient = new AWS.Lambda();
 
-const testRuntimeKeys = [ 'nodejs14x', 'nodejs16x' ];
+const testRuntimeKeys = [ 'nodejs14x', 'nodejs16x', 'nodejs18x' ];
 export type TestRuntimesKey = typeof testRuntimeKeys[number];
 export const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
   nodejs14x: Runtime.NODEJS_14_X,
   nodejs16x: Runtime.NODEJS_16_X,
+  nodejs18x: Runtime.NODEJS_18_X,
 };
 
 export type StackWithLambdaFunctionOptions = {

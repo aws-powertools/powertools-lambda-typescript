@@ -71,12 +71,12 @@ The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [
 
 The following tools need to be installed on your system prior to starting working on a pull request:
 
-- [Node.js >= 16.x](https://nodejs.org/download/release/latest-v16.x/)
+- [Node.js >= 18.x](https://nodejs.org/download/release/latest-v18.x/)
   - We recommend using a version in [Active LTS](https://nodejs.org/en/about/releases/)
   - If you use [nvm](https://github.com/nvm-sh/nvm#nvmrc) or [fnm](https://github.com/Schniz/fnm) you can install the latest LTS version with `nvm use` or `fnm use` respectively. Both will use the `.nvmrc` file in the project's root.
 - [npm 8.x](https://www.npmjs.com/)
   - After installing Node.js, you can install `npm` with `npm install -g npm@next-8` 
-- [AWS SAM CLI >= 1.49.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- [AWS SAM CLI >= 1.65.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
   - AWS SAM CLI is a command line interface for AWS Serverless Application Model (SAM), it's used in one of the examples, and it's part of the pre-push hook.
 - [Docker](https://docs.docker.com/get-docker/)
   - Docker is used to build documentation and Layer.
@@ -84,7 +84,7 @@ The following tools need to be installed on your system prior to starting workin
 First, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository, and then run the following commands to clone and initialize the repository locally.
 
 > **Note**
-> In order for the commands below to work you need Node.js `16.x` and npm `8.x`
+> In order for the commands below to work you need Node.js `18.x` and npm `8.x`
 
 ```console
 git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
@@ -272,7 +272,7 @@ Contributions via pull requests are much appreciated.
 
 ### Summary
 
-* This project uses `node@16.x` and `npm@8.x` for development (see [Setup](#setup)).
+* This project uses `node@18.x` and `npm@8.x` for development (see [Setup](#setup)).
 * Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed changes. A PR without a related issue or discussion has a high risk of being rejected. We are very appreciative and thankful for your time and efforts, and we want to make sure they are not wasted.
 * After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request.
 * When opening a PR, make sure to follow the checklist inside the pull request template.

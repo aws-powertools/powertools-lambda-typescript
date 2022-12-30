@@ -1,4 +1,4 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from 'BaseProvider';
+import { BaseProvider, DEFAULT_PROVIDERS } from './BaseProvider';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,
@@ -12,34 +12,38 @@ import type { AppConfigGetOptionsInterface } from './types/AppConfigProvider';
 
 class AppConfigProvider extends BaseProvider {
   public client: AppConfigDataClient;
-  private application?: string;
-  private environment?: string;
+  private application: string;
+  private environment: string;
+  private latestConfiguration: Uint8Array | undefined;
   private token: string | undefined;
-  private latestConfiguration: string | undefined;
 
   /**
-   * It initializes the AppConfigProvider class with an optional set of options like region: 'us-west-1'.
+   * It initializes the AppConfigProvider class'.
    * *
-   * @param {AppConfigDataClientConfig} options
+   * @param {AppConfigGetOptionsInterface} config
    */
-  public constructor(options: AppConfigGetOptionsInterface = {}) {
+  public constructor(options: AppConfigGetOptionsInterface) {
     super();
-    this.client = new AppConfigDataClient(options.config || {});
-    this.environment = options.environment;
-    this.application = options.application || 'service_undefined'; // TODO: get value from ENV VARIABLES
+    this.client = new AppConfigDataClient(options.clientConfig || {});
+    this.application = options?.sdkOptions?.application || 'app_undefined'; // TODO: make it optional when we add retrieving from env var
+    this.environment = options?.sdkOptions?.environment || 'env_undefined';
+  }
+
+  public async get(name: string, options?: AppConfigGetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>> {
+    return super.get(name, options);
   }
 
   /**
    * Retrieve a parameter value from AWS App config.
    *
    * @param {string} name - Name of the configuration
-   * @param {StartConfigurationSessionCommandInput} [sdkOptions] - SDK options to propagate to `StartConfigurationSession` API call
-   * @returns {Promise<string | undefined>}
+   * @param {AppConfigGetOptionsInterface} options - SDK options to propagate to `StartConfigurationSession` API call
+   * @returns {Promise<Uint8Array | undefined>}
    */
   protected async _get(
     name: string,
     options?: AppConfigGetOptionsInterface
-  ): Promise<string | undefined> {
+  ): Promise<Uint8Array | undefined> {
     /**
      * The new AppConfig APIs require two API calls to return the configuration
      * First we start the session and after that we retrieve the configuration
@@ -48,10 +52,11 @@ class AppConfigProvider extends BaseProvider {
     if (!this.token) {
       const sessionOptions: StartConfigurationSessionCommandInput = {
         ConfigurationProfileIdentifier: name,
-        EnvironmentIdentifier: this.environment,
-        ApplicationIdentifier: this.application,
+        EnvironmentIdentifier: this.application,
+        ApplicationIdentifier: this.environment,
       };
-      if (options && options.hasOwnProperty('sdkOptions')) {
+
+      if (options?.sdkOptions) {
         Object.assign(sessionOptions, options.sdkOptions);
       }
 
@@ -68,18 +73,12 @@ class AppConfigProvider extends BaseProvider {
     });
     const response = await this.client.send(getConfigurationCommand);
 
-    //  Should we cache and flush the token after 24 hours?
-    //  NextPollConfigurationToken expires in 24 hours after the last request and causes `BadRequestException`
     this.token = response.NextPollConfigurationToken;
 
     const configuration = response.Configuration;
 
-    // should we convert Uint8Array to string?
-    const utf8decoder = new TextDecoder();
-    const value = configuration ? utf8decoder.decode(configuration) : undefined;
-
-    if (value) {
-      this.latestConfiguration = value;
+    if (configuration) {
+      this.latestConfiguration = configuration;
     }
 
     return this.latestConfiguration;
@@ -91,8 +90,8 @@ class AppConfigProvider extends BaseProvider {
    * @throws Not Implemented Error.
    */
   protected async _getMultiple(
-    path: string,
-    sdkOptions?: Partial<GetLatestConfigurationCommandInput>
+    _path: string,
+    _sdkOptions?: Partial<GetLatestConfigurationCommandInput>
   ): Promise<Record<string, string | undefined>> {
     return this._notImplementedError();
   }
@@ -104,8 +103,8 @@ class AppConfigProvider extends BaseProvider {
 
 const getAppConfig = (
   name: string,
-  options?: AppConfigGetOptionsInterface
-): Promise<undefined | string | Record<string, unknown>> => {
+  options: AppConfigGetOptionsInterface
+): Promise<undefined | string | Uint8Array | Record<string, unknown>> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('appconfig')) {
     DEFAULT_PROVIDERS.appconfig = new AppConfigProvider(options);
   }

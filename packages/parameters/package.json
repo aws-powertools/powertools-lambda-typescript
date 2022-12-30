@@ -52,5 +52,11 @@
     "secrets",
     "serverless",
     "nodejs"
-  ]
+  ],
+  "devDependencies": {
+    "@aws-sdk/client-appconfigdata": "^3.241.0",
+    "@aws-sdk/types": "^3.226.0",
+    "aws-sdk-client-mock": "^2.0.1",
+    "aws-sdk-client-mock-jest": "^2.0.1"
+  }
 }

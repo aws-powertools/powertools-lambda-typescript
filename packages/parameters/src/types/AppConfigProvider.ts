@@ -1,4 +1,6 @@
-import type { StartConfigurationSessionCommandInput, AppConfigDataClientConfig } from '@aws-sdk/client-appconfigdata';
+import type {
+  AppConfigDataClientConfig,
+} from '@aws-sdk/client-appconfigdata';
 import type { GetOptionsInterface } from 'types/BaseProvider';
 
 /**
@@ -6,13 +8,16 @@ import type { GetOptionsInterface } from 'types/BaseProvider';
  *
  * @interface AppConfigGetOptionsInterface
  * @extends {GetOptionsInterface}
- * @property {Partial<StartConfigurationSessionCommandInput>} sdkOptions - Options for the AWS SDK.
+ * @property {} [clientConfig] - optional configuration to pass during client initialization
+ * @property {} sdkOptions - required options to start configuration session.
  */
-interface AppConfigGetOptionsInterface extends Omit<GetOptionsInterface, 'sdkOptions'> {
-  application?: string
-  config?: AppConfigDataClientConfig
-  environment?: string
-  sdkOptions?: Partial<StartConfigurationSessionCommandInput>
+interface AppConfigGetOptionsInterface
+  extends Omit<GetOptionsInterface, 'sdkOptions'> {
+  clientConfig?: AppConfigDataClientConfig
+  sdkOptions?: {
+    application: string
+    environment: string
+  }
 }
 
 export { AppConfigGetOptionsInterface };

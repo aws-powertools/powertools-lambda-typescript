@@ -1,5 +1,13 @@
-import type { GetParameterCommandInput, GetParametersByPathCommandInput } from '@aws-sdk/client-ssm';
+import type {
+  SSMClientConfig,
+  GetParameterCommandInput,
+  GetParametersByPathCommandInput
+} from '@aws-sdk/client-ssm';
 import type { GetOptionsInterface, GetMultipleOptionsInterface, TransformOptions } from './BaseProvider';
+
+interface SSMProviderOptionsInterface {
+  clientConfig: SSMClientConfig
+}
 
 /**
  * Options for the SSMProvider get method.
@@ -31,7 +39,7 @@ interface SSMGetParametersByNameOptionsInterface {
 type SSMSplitBatchAndDecryptParametersOutputType = {
   parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptionsInterface>
   parametersToDecrypt: Record<string, SSMGetParametersByNameOptionsInterface>
-} & { [key: string]: SSMGetParametersByNameOptionsInterface };
+};
 
 interface SSMGetParametersByNameOutputInterface {
   response: Record<string, unknown>
@@ -41,9 +49,10 @@ interface SSMGetParametersByNameOutputInterface {
 type SSMGetParametersByNameFromCacheOutputType = {
   cached: Record<string, string | Record<string, unknown>>
   toFetch: Record<string, SSMGetParametersByNameOptionsInterface>
-} & { [key: string]: SSMGetParametersByNameOptionsInterface };
+};
 
 export {
+  SSMProviderOptionsInterface,
   SSMGetOptionsInterface,
   SSMGetMultipleOptionsInterface,
   SSMGetParametersByNameOptionsInterface,

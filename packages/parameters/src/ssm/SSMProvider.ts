@@ -1,15 +1,20 @@
 import { BaseProvider, DEFAULT_PROVIDERS, transformValue } from '../BaseProvider';
 import { GetParameterError } from '../Exceptions';
 import { DEFAULT_MAX_AGE_SECS } from '../constants';
-import { SSMClient, GetParameterCommand, paginateGetParametersByPath, GetParametersCommand } from '@aws-sdk/client-ssm';
+import {
+  SSMClient,
+  GetParameterCommand,
+  paginateGetParametersByPath,
+  GetParametersCommand
+} from '@aws-sdk/client-ssm';
 import type {
-  SSMClientConfig,
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
   GetParametersCommandInput,
   GetParametersCommandOutput,
 } from '@aws-sdk/client-ssm';
 import type {
+  SSMProviderOptionsInterface,
   SSMGetMultipleOptionsInterface,
   SSMGetOptionsInterface,
   SSMGetParametersByNameOutputInterface,
@@ -24,9 +29,9 @@ class SSMProvider extends BaseProvider {
   protected errorsKey = '_errors';
   protected maxGetParametersItems = 10;
 
-  public constructor(config: SSMClientConfig = {}) {
+  public constructor(config?: SSMProviderOptionsInterface) {
     super();
-    this.client = new SSMClient(config);
+    this.client = new SSMClient(config?.clientConfig || {});
   }
 
   public async get(

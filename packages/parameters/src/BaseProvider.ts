@@ -39,7 +39,7 @@ abstract class BaseProvider implements BaseProviderInterface {
    * this should be an acceptable tradeoff.
    * 
    * @param {string} name - Parameter name
-   * @param {GetOptionsInterface|DynamoDBGetOptionsInterface} options - Options to configure maximum age, trasformation, AWS SDK options, or force fetch
+   * @param {GetOptionsInterface|SecretsGetOptionsInterface} options - Options to configure maximum age, trasformation, AWS SDK options, or force fetch
    */
   public async get(name: string, options?: SecretsGetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>>;
   public async get(name: string, options?: GetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>> {

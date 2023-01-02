@@ -121,6 +121,19 @@ export const handler = async (_event, _context): Promise<void> => {
 };
 ```
 
+### Fetching secrets
+
+You can fetch secrets stored in Secrets Manager using `getSecrets`.
+
+```typescript hl_lines="1 5" title="Fetching secrets"
+import { getSecret } from '@aws-lambda-powertools/parameters';
+
+export const handler = async (_event, _context): Promise<void> => {
+    // Retrieve a single secret
+    const value = getSecret('my-secret');
+};
+```
+
 ## Advanced
 
 ### Adjusting cache TTL
@@ -175,8 +188,8 @@ For greater flexibility such as configuring the underlying SDK client used by bu
 import { SSMProvider } from '@aws-lambda-powertools/parameters';
 import type { SSMClientConfig } from '@aws-sdk/client-ssm';
 
-const sdkConfig: SSMClientConfig = { region: 'us-east-1' };
-const parameters = new SSMProvider({ sdkConfig });
+const clientConfig: SSMClientConfig = { region: 'us-east-1' };
+const parameters = new SSMProvider({ clientConfig });
 
 export const handler = async (_event, _context): Promise<void> => {
 	// Retrieve a single parameter
@@ -207,6 +220,20 @@ export const handler = async (_event, _context): Promise<void> => {
 
 	const noRecursiveValues = parameters.getMultiple('/my/path/prefix', { recursive: false });
 };
+```
+
+#### SecretsProvider
+
+```typescript hl_lines="5 9" title="Example with SecretsProvider for further extensibility"
+import { SecretsProvider } from '@aws-lambda-powertools/parameters';
+import type { SecretsManagerClientConfig } from '@aws-sdk/client-secretsmanager';
+
+const clientConfig: SecretsManagerClientConfig = { region: 'us-east-1' };
+const secrets = new SecretsProvider({ clientConfig });
+
+export const handler = async (_event, _context): Promise<void> => {
+	// Retrieve a single secret
+  const value = secrets.getSecret('my-secret');
 ```
 
 ### Deserializing values with transform parameter
@@ -315,15 +342,18 @@ The return of `parameters.getMultiple('/param', transform: 'auto');` call will b
 
 You can use arbitrary keyword arguments to pass it directly to the underlying SDK method.
 
-```typescript hl_lines="7 9" title="Specify a VersionId for a secret"
-import { SecretsManagerProvider } from '@aws-lambda-powertools/parameters';
+```typescript hl_lines="8 12" title="Specify a VersionId for a secret"
+import { SecretsProvider } from '@aws-lambda-powertools/parameters';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 
-const secrets = new SecretsManagerProvider();
+const secrets = new SecretsProvider();
 
 export const handler = async (_event, _context): Promise<void> => {
-		const sdkOptions: GetSecretValueCommandInput = { VersionId: 'e62ec170-6b01-48c7-94f3-d7497851a8d2' };
-	  // The 'VersionId' argument will be passed to the underlying `GetSecretValueCommand` call.
+		const sdkOptions: GetSecretValueCommandInput = {
+      VersionId: 'e62ec170-6b01-48c7-94f3-d7497851a8d2'
+    };
+	  // The 'VersionId' argument will be passed to the underlying
+    // `GetSecretValueCommand` call.
 	  const value = secrets.get('my-secret', { sdkOptions });
 };
 ```
@@ -379,7 +409,7 @@ const appConfigProvider = new AppConfigProvider({ awsSdkV3Client: appConfig, env
 
 ### Customizing AWS SDK v3 configuration
 
-The **`sdkConfig`** parameter enables you to pass in a custom [config object](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/configuring-the-jssdk.html) when constructing any of the built-in provider classes.
+The **`clientConfig`** parameter enables you to pass in a custom [config object](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/configuring-the-jssdk.html) when constructing any of the built-in provider classes.
 
 ???+ tip
 	You can use a custom session for retrieving parameters cross-account/region and for snapshot testing.
@@ -391,8 +421,8 @@ The **`sdkConfig`** parameter enables you to pass in a custom [config object](ht
 import { SSMProvider } from '@aws-lambda-powertools/parameters';
 import type { SSMClientConfig } from '@aws-sdk/client-ssm';
 
-const sdkConfig: SSMClientConfig = { region: 'us-east-1' };
-const parameters = new SSMProvider({ sdkConfig });
+const clientConfig: SSMClientConfig = { region: 'us-east-1' };
+const parameters = new SSMProvider({ clientConfig });
 
 export const handler = async (_event, _context): Promise<void> => {
 	  // Retrieve a single parameter

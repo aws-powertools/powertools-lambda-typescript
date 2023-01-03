@@ -295,7 +295,7 @@ export const handler = async (_event, _context): Promise<void> => {
     }
 
 	  try {
-		  // This will throw a TransformParameterError error
+		  // This will throw a TransformParameterError
 		  const values = parameters.getMultiple('/param', { transform: 'json', throwOnTransformError: true });
 	  } catch (err) {
 		  //...
@@ -376,12 +376,12 @@ Here is the mapping between this utility's functions and methods and the underly
 
 You can use `awsSdkV3Client` parameter via any of the available [Provider Classes](#built-in-provider-class).
 
-| Provider                                | Client                          |
-| --------------------------------------- | ------------------------------- |
-| [SSMProvider](#ssmprovider)             | `new boto3.client("ssm")`       |
-| [SecretsProvider](#secretsprovider)     | `new boto3.client("secrets")`   |
-| [AppConfigProvider](#appconfigprovider) | `new boto3.client("appconfig")` |
-| [DynamoDBProvider](#dynamodbprovider)   | `new DynamoDBClient();`         |
+| Provider                                | Client                        |
+| --------------------------------------- | ----------------------------- |
+| [SSMProvider](#ssmprovider)             | `new SSMClient();`            |
+| [SecretsProvider](#secretsprovider)     | `new SecretsManagerClient();` |
+| [AppConfigProvider](#appconfigprovider) | `new AppConfigDataClient();`  |
+| [DynamoDBProvider](#dynamodbprovider)   | `new DynamoDBClient();`       |
 
 Bringing them together in a single code snippet would look like this:
 

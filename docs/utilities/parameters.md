@@ -236,6 +236,117 @@ export const handler = async (_event, _context): Promise<void> => {
   const value = secrets.getSecret('my-secret');
 ```
 
+#### DynamoDBProvider
+
+The DynamoDB Provider does not have any high-level functions, as it needs to know the name of the DynamoDB table containing the parameters.
+
+**DynamoDB table structure for single parameters**
+
+For single parameters, you must use `id` as the [partition key](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html#HowItWorks.CoreComponents.PrimaryKey) for that table.
+
+???+ example
+
+	DynamoDB table with `id` partition key and `value` as attribute
+
+ | id           | value    |
+ | ------------ | -------- |
+ | my-parameter | my-value |
+
+With this table, `dynamodbProvider.get('my-param')` will return `my-value`.
+
+=== "index.ts"
+	```typescript hl_lines="3 7"
+  import { DynamoDBProvider } from '@aws-lambda-powertools/parameters';
+
+  const dynamodbProvider = new DynamoDBProvider({ tableName: 'my-table' });
+
+	export const handler = async (_event, _context): Promise<void> => {
+		// Retrieve a value from DynamoDB
+		const value = dynamodbProvider.get('my-parameter');
+	```
+
+=== "DynamoDB Local example"
+	You can initialize the DynamoDB provider pointing to [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) using the `endpoint` field in the `clientConfig` parameter:
+
+	```typescript hl_lines="3"
+	import { DynamoDBProvider } from '@aws-lambda-powertools/parameters';
+
+  const dynamodbProvider = new DynamoDBProvider({
+    tableName: 'my-table',
+    clientConfig: {
+      endpoint: 'http://localhost:8000'
+    }
+  });
+	```
+
+**DynamoDB table structure for multiple values parameters**
+
+You can retrieve multiple parameters sharing the same `id` by having a sort key named `sk`.
+
+???+ example
+
+	DynamoDB table with `id` primary key, `sk` as sort key` and `value` as attribute
+
+ | id          | sk      | value      |
+ | ----------- | ------- | ---------- |
+ | my-hash-key | param-a | my-value-a |
+ | my-hash-key | param-b | my-value-b |
+ | my-hash-key | param-c | my-value-c |
+
+With this table, `dynamodbProvider.getMultiple('my-hash-key')` will return a dictionary response in the shape of `sk:value`.
+
+=== "index.ts"
+	```typescript hl_lines="3 8"
+	import { DynamoDBProvider } from '@aws-lambda-powertools/parameters';
+
+	const dynamodbProvider = new DynamoDBProvider({ tableName: 'my-table' });
+
+	export const handler = async (_event, _context): Promise<void> => {
+		// Retrieve multiple values by performing a Query on the DynamoDB table
+		// This returns a dict with the sort key attribute as dict key.
+		const parameters = dynamodbProvider.getMultiple('my-hash-key');
+    for (const [ key, value ] of Object.entries(values)) {
+        // key: param-a
+        // value: my-value-a
+        console.log(`${key}: ${value}`);
+    }
+	```
+
+=== "parameters dict response"
+
+	```json
+	{
+		"param-a": "my-value-a",
+		"param-b": "my-value-b",
+		"param-c": "my-value-c"
+	}
+	```
+
+**Customizing DynamoDBProvider**
+
+DynamoDB provider can be customized at initialization to match your table structure:
+
+| Parameter     | Mandatory | Default | Description                                                                                               |
+| ------------- | --------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| **tableName** | **Yes**   | *(N/A)* | Name of the DynamoDB table containing the parameter values.                                               |
+| **keyAttr**   | No        | `id`    | Hash key for the DynamoDB table.                                                                          |
+| **sortAttr**  | No        | `sk`    | Range key for the DynamoDB table. You don't need to set this if you don't use the `getMultiple()` method. |
+| **valueAttr** | No        | `value` | Name of the attribute containing the parameter value.                                                     |
+
+```typescript hl_lines="3-8" title="Customizing DynamoDBProvider to suit your table design"
+import { DynamoDBProvider } from '@aws-lambda-powertools/parameters';
+
+const dynamodbProvider = new DynamoDBProvider(
+	tableName='my-table',
+	keyAttr='MyKeyAttr',
+	sortAttr='MySortAttr',
+	valueAttr='MyvalueAttr'
+)
+
+export const handler = async (_event, _context): Promise<void> => {
+	const value = dynamodbProvider.get('my-parameter')
+```
+
 ### Deserializing values with transform parameter
 
 For parameters stored in JSON or Base64 format, you can use the `transform` argument for deserialization.

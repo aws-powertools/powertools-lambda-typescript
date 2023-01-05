@@ -5,7 +5,6 @@ import { ExpirableValue } from './ExpirableValue';
 import { TRANSFORM_METHOD_BINARY, TRANSFORM_METHOD_JSON } from './constants';
 import { GetParameterError, TransformParameterError } from './Exceptions';
 import type { BaseProviderInterface, GetMultipleOptionsInterface, GetOptionsInterface, TransformOptions } from './types';
-import type { SecretsGetOptionsInterface } from './types/SecretsProvider';
 
 // These providers are dinamycally intialized on first use of the helper functions
 const DEFAULT_PROVIDERS: Record<string, BaseProvider> = {};
@@ -39,9 +38,8 @@ abstract class BaseProvider implements BaseProviderInterface {
    * this should be an acceptable tradeoff.
    * 
    * @param {string} name - Parameter name
-   * @param {GetOptionsInterface|SecretsGetOptionsInterface} options - Options to configure maximum age, trasformation, AWS SDK options, or force fetch
+   * @param {GetOptionsInterface} options - Options to configure maximum age, trasformation, AWS SDK options, or force fetch
    */
-  public async get(name: string, options?: SecretsGetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>>;
   public async get(name: string, options?: GetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>> {
     const configs = new GetOptions(options);
     const key = [ name, configs.transform ].toString();

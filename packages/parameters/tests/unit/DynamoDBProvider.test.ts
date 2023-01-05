@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/DynamoDBProvider/class
  */
-import { DynamoDBProvider } from '../../src/DynamoDBProvider';
+import { DynamoDBProvider } from '../../src/dynamodb';
 import { DynamoDBClient, GetItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb';
 import type { GetItemCommandInput, QueryCommandInput } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
@@ -132,6 +132,43 @@ describe('Class: DynamoDBProvider', () => {
 
     });
 
+    test('when called with sdkOptions that override arguments passed to the method, it gets the parameter using the arguments', async () => {
+
+      // Prepare
+      const provider = new DynamoDBProvider({
+        tableName: 'test-table',
+      });
+      const parameterName = 'foo';
+      const parameterValue = 'bar';
+      const client = mockClient(DynamoDBClient).on(GetItemCommand).resolves({
+        Item: marshall({
+          id: parameterName,
+          value: parameterValue,
+        })  
+      });
+
+      // Act
+      await provider.get(parameterName, {
+        sdkOptions: {
+          TableName: 'override-table',
+          Key: marshall({
+            id: 'override-name',
+          }),
+          ProjectionExpression: 'override-value',
+        } as unknown as GetItemCommandInput,
+      });
+
+      // Assess
+      expect(client).toReceiveCommandWith(GetItemCommand, {
+        TableName: 'test-table',
+        Key: marshall({
+          id: parameterName,
+        }),
+        ProjectionExpression: 'value',
+      });
+
+    });
+
   });
 
   describe('Method: _getMultiple', () => {
@@ -146,17 +183,17 @@ describe('Class: DynamoDBProvider', () => {
       const client = mockClient(DynamoDBClient).on(QueryCommand).resolves({
         Items: [
           marshall({
-            id: 'foo',
+            id: parameterPath,
             sk: 'a',
             value: 'parameter-a'
           }),
           marshall({
-            id: 'foo',
+            id: parameterPath,
             sk: 'b',
             value: 'parameter-b'
           }),
           marshall({
-            id: 'foo',
+            id: parameterPath,
             sk: 'c',
             value: 'parameter-c'
           }),
@@ -196,17 +233,17 @@ describe('Class: DynamoDBProvider', () => {
       const client = mockClient(DynamoDBClient).on(QueryCommand).resolves({
         Items: [
           marshall({
-            key: 'foo',
+            key: parameterPath,
             sort: 'a',
             val: 'parameter-a'
           }),
           marshall({
-            key: 'foo',
+            key: parameterPath,
             sort: 'b',
             val: 'parameter-b'
           }),
           marshall({
-            key: 'foo',
+            key: parameterPath,
             sort: 'c',
             val: 'parameter-c'
           }),
@@ -243,17 +280,17 @@ describe('Class: DynamoDBProvider', () => {
       const client = mockClient(DynamoDBClient).on(QueryCommand).resolves({
         Items: [
           marshall({
-            id: 'foo',
+            id: parameterPath,
             sk: 'a',
             value: 'parameter-a'
           }),
           marshall({
-            id: 'foo',
+            id: parameterPath,
             sk: 'b',
             value: 'parameter-b'
           }),
           marshall({
-            id: 'foo',
+            id: parameterPath,
             sk: 'c',
             value: 'parameter-c'
           }),
@@ -277,7 +314,6 @@ describe('Class: DynamoDBProvider', () => {
         }),
         ProjectionExpression: 'sk, value',
         ConsistentRead: true,
-        Limit: 10,
       });
       expect(parameters).toEqual({
         a: 'parameter-a',
@@ -298,31 +334,31 @@ describe('Class: DynamoDBProvider', () => {
         .resolvesOnce({
           Items: [
             marshall({
-              id: 'foo',
+              id: parameterPath,
               sk: 'a',
               value: 'parameter-a'
             }),
             marshall({
-              id: 'foo',
+              id: parameterPath,
               sk: 'b',
               value: 'parameter-b'
             }),
           ],
           LastEvaluatedKey: marshall({
-            id: 'foo',
+            id: parameterPath,
             sk: 'b',
           }),
         })
         .resolvesOnce({
           Items: [
             marshall({
-              id: 'foo',
+              id: parameterPath,
               sk: 'c',
               value: 'parameter-c'
             }),
           ],
           LastEvaluatedKey: marshall({
-            id: 'foo',
+            id: parameterPath,
             sk: 'c',
           }),
         })
@@ -340,108 +376,54 @@ describe('Class: DynamoDBProvider', () => {
 
     });
 
-  });
-
-  describe('Method: isGetItemCommandInput', () => {
-
-    class DummyProvider extends DynamoDBProvider {
-      public isGetItemCommandInput(options: GetItemCommandInput | QueryCommandInput): options is GetItemCommandInput {
-        return super.isGetItemCommandInput(options);
-      }
-    }
-
-    test('when called with a valid GetItemCommandInput, it returns true', () => {
+    test('when called with sdkOptions that override arguments or internals, it discards the ones passed in sdkOptions and leaves others untouched', async () => {
 
       // Prepare
-      const provider = new DummyProvider({
+      const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
-
-      // Act & Assess
-      expect(provider.isGetItemCommandInput({
-        TableName: 'test-table',
-        Key: marshall({
-          id: 'foo',
-        }),
-      })).toBe(true);
-
-    });
-
-    test('when called with a valid QueryCommandInput, it returns false', () => {
-
-      // Prepare
-      const provider = new DummyProvider({
-        tableName: 'test-table',
+      const parameterPath = 'foo';
+      const client = mockClient(DynamoDBClient).on(QueryCommand).resolves({
+        Items: [
+          marshall({
+            id: parameterPath,
+            sk: 'a',
+            value: 'parameter-a'
+          }),
+          marshall({
+            id: parameterPath,
+            sk: 'b',
+            value: 'parameter-b'
+          }),
+          marshall({
+            id: parameterPath,
+            sk: 'c',
+            value: 'parameter-c'
+          }),
+        ],
       });
 
-      // Act & Assess
-      expect(provider.isGetItemCommandInput({
+      // Act
+      await provider.getMultiple(parameterPath, {
+        sdkOptions: {
+          KeyConditionExpression: `key = :myKey`,
+          ExpressionAttributeValues: marshall({
+            ':myKey': 'foo',
+          }),
+          ConsistentRead: true,
+          ProjectionExpression: 'sort, val',
+          Limit: 10,
+        } as unknown as QueryCommandInput,
+      });
+      
+      // Assess
+      expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
         KeyConditionExpression: `id = :key`,
         ExpressionAttributeValues: marshall({
-          ':key': 'foo',
+          ':key': parameterPath,
         }),
-      })).toBe(false);
-
-    });
-
-  });
-
-  describe('Method: removeNonOverridableOptions', () => {
-
-    class DummyProvider extends DynamoDBProvider {
-      public removeNonOverridableOptions(options: GetItemCommandInput | QueryCommandInput): void {
-        super.removeNonOverridableOptions(options);
-      }
-    }
-
-    test('when called with a valid GetItemCommandInput, it removes the non-overridable options', () => {
-
-      // Prepare
-      const provider = new DummyProvider({
-        tableName: 'test-table',
-      });
-      const options: GetItemCommandInput = {
-        TableName: 'test-table',
-        Key: marshall({
-          id: 'foo',
-        }),
-        ConsistentRead: true,
         ProjectionExpression: 'sk, value',
-      };
-
-      // Act
-      provider.removeNonOverridableOptions(options);
-
-      // Assess
-      expect(options).toEqual({
-        ConsistentRead: true,
-      });
-
-    });
-
-    test('when called with a valid QueryCommandInput, it removes the non-overridable options', () => {
-
-      // Prepare
-      const provider = new DummyProvider({
-        tableName: 'test-table',
-      });
-      const options: QueryCommandInput = {
-        TableName: 'test-table',
-        KeyConditionExpression: `id = :key`,
-        ExpressionAttributeValues: marshall({
-          ':key': 'foo',
-        }),
-        ConsistentRead: true,
-        ProjectionExpression: 'sk, value',
-        Limit: 10,
-      };
-
-      // Act
-      provider.removeNonOverridableOptions(options);
-
-      // Assess
-      expect(options).toEqual({
         ConsistentRead: true,
         Limit: 10,
       });

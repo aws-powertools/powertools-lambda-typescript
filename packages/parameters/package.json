@@ -54,8 +54,10 @@
     "@aws-sdk/client-appconfigdata": "^3.241.0",
     "@aws-sdk/client-secrets-manager": "^3.238.0",
     "@aws-sdk/client-ssm": "^3.244.0",
-    "@aws-sdk/types": "^3.226.0",
     "aws-sdk-client-mock": "^2.0.1",
     "aws-sdk-client-mock-jest": "^2.0.1"
+  },
+  "dependencies": {
+    "@aws-sdk/util-base64": "^3.208.0"
   }
 }

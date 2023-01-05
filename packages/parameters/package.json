@@ -52,5 +52,10 @@
     "secrets",
     "serverless",
     "nodejs"
-  ]
+  ],
+  "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.238.0",
+    "aws-sdk-client-mock": "^2.0.1",
+    "aws-sdk-client-mock-jest": "^2.0.1"
+  }
 }

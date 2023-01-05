@@ -7,11 +7,7 @@ interface GetOptionsInterface {
   transform?: TransformOptions
 }
 
-interface GetMultipleOptionsInterface {
-  maxAge?: number
-  forceFetch?: boolean
-  sdkOptions?: unknown
-  transform?: string
+interface GetMultipleOptionsInterface extends GetOptionsInterface {
   throwOnTransformError?: boolean
 }
 

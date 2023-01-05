@@ -26,6 +26,16 @@ class SecretsProvider extends BaseProvider {
     return super.get(name, options);
   }
 
+  /**
+   * Retrieving multiple parameter values is not supported with AWS Secrets Manager.
+   */
+  public async getMultiple(
+    path: string,
+    _options?: unknown
+  ): Promise<undefined | Record<string, unknown>> {
+    return super.getMultiple(path);
+  }
+
   protected async _get(
     name: string,
     options?: SecretsGetOptionsInterface

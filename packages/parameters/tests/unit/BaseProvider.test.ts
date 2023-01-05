@@ -111,7 +111,7 @@ describe('Class: BaseProvider', () => {
 
     });
 
-    test('when called and values cached are expired, it returns the remote values', async () => {
+    test('when called and cached value is expired, it returns the remote value', async () => {
 
       // Prepare
       const mockData = 'my-remote-value';

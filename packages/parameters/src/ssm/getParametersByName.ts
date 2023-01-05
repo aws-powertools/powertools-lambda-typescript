@@ -1,5 +1,5 @@
 import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
-import type { SSMGetParametersByNameOptionsInterface } from 'types/SSMProvider';
+import type { SSMGetParametersByNameOptionsInterface } from '../types/SSMProvider';
 
 const getParametersByName = (
   parameters: Record<string, SSMGetParametersByNameOptionsInterface>,

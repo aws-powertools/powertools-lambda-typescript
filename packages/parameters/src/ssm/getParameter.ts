@@ -1,5 +1,5 @@
 import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
-import type { SSMGetOptionsInterface } from 'types/SSMProvider';
+import type { SSMGetOptionsInterface } from '../types/SSMProvider';
 
 const getParameter = (
   name: string,
@@ -9,7 +9,7 @@ const getParameter = (
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
-  return DEFAULT_PROVIDERS.ssm.get(name, options);
+  return (DEFAULT_PROVIDERS.ssm as SSMProvider).get(name, options);
 };
 
 export {

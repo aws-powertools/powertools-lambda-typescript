@@ -38,7 +38,7 @@ class SSMProvider extends BaseProvider {
     name: string,
     options?: SSMGetOptionsInterface | undefined
   ): Promise<string | Record<string, unknown> | undefined> {
-    return super.get(name, options);
+    return super.get(name, options) as Promise<string | Record<string, unknown> | undefined>;
   }
 
   public async getMultiple(

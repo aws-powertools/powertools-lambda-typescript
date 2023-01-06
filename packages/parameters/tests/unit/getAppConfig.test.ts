@@ -15,7 +15,7 @@ import {
 } from '@aws-sdk/client-appconfigdata';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
-import type { getAppConfigCombinedInterface } from '../../src/types/AppConfigProvider';
+import type { GetAppConfigCombinedInterface } from '../../src/types/AppConfigProvider';
 
 describe('Function: getAppConfig', () => {
   const client = mockClient(AppConfigDataClient);
@@ -28,7 +28,7 @@ describe('Function: getAppConfig', () => {
 
   test('when called and a default provider doesn\'t exist, it instantiates one and returns the value', async () => {
     // Prepare
-    const options: getAppConfigCombinedInterface = {
+    const options: GetAppConfigCombinedInterface = {
       application: 'MyApp',
       environment: 'MyAppProdEnv',
     };
@@ -59,7 +59,7 @@ describe('Function: getAppConfig', () => {
 
   test('when called and a default provider exists, it uses it and returns the value', async () => {
     // Prepare
-    const options: getAppConfigCombinedInterface = {
+    const options: GetAppConfigCombinedInterface = {
       application: 'MyApp',
       environment: 'MyAppProdEnv',
     };
@@ -92,7 +92,7 @@ describe('Function: getAppConfig', () => {
 
   test('when called with transform: \'binary\' option, it returns string value', async () => {
     // Prepare
-    const options: getAppConfigCombinedInterface = {
+    const options: GetAppConfigCombinedInterface = {
       application: 'MyApp',
       environment: 'MyAppProdEnv',
       transform: 'binary',

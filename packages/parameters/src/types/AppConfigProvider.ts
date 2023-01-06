@@ -39,12 +39,12 @@ interface AppConfigGetOptionsInterface extends Omit<GetOptionsInterface, 'sdkOpt
  * @interface getAppConfigCombinedInterface
  * @extends {AppConfigProviderOptions, AppConfigGetOptionsInterface}
  */
-interface getAppConfigCombinedInterface
-  extends AppConfigProviderOptions,
+interface GetAppConfigCombinedInterface
+  extends Omit<AppConfigProviderOptions, 'clientConfig'>,
   AppConfigGetOptionsInterface {}
 
 export {
   AppConfigProviderOptions,
   AppConfigGetOptionsInterface,
-  getAppConfigCombinedInterface,
+  GetAppConfigCombinedInterface,
 };

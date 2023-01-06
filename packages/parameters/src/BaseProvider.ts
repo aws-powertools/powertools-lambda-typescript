@@ -58,7 +58,7 @@ abstract class BaseProvider implements BaseProviderInterface {
     }
 
     if (value && configs.transform) {
-      value = transformValue(value, configs.transform, true);
+      value = transformValue(value, configs.transform, true, name);
     }
 
     if (value) {
@@ -99,6 +99,20 @@ abstract class BaseProvider implements BaseProviderInterface {
   }
 
   /**
+   * Check whether a key has expired in the cache or not
+   * 
+   * It returns true if the key is expired or not present in the cache.
+   * 
+   * @param {string} key - Stringified representation of the key to retrieve
+   */
+  public hasKeyExpiredInCache(key: string): boolean {
+    const value = this.store.get(key);
+    if (value) return value.isExpired();
+    
+    return true;
+  }
+
+  /**
    * Retrieve parameter value from the underlying parameter store
    * 
    * @param {string} name - Parameter name
@@ -114,23 +128,9 @@ abstract class BaseProvider implements BaseProviderInterface {
    */
   protected abstract _getMultiple(path: string, options?: unknown): Promise<Record<string, string | undefined>>;
 
-  /**
-   * Check whether a key has expired in the cache or not
-   * 
-   * It returns true if the key is expired or not present in the cache.
-   * 
-   * @param {string} key - Stringified representation of the key to retrieve
-   */
-  private hasKeyExpiredInCache(key: string): boolean {
-    const value = this.store.get(key);
-    if (value) return value.isExpired();
-
-    return true;
-  }
-
 }
 
-const transformValue = (value: string | Uint8Array | undefined, transform: TransformOptions, throwOnTransformError: boolean, key: string = ''): string | Record<string, unknown> | undefined => {
+const transformValue = (value: string | Uint8Array | undefined, transform: TransformOptions, throwOnTransformError: boolean, key: string): string | Record<string, unknown> | undefined => {
   try {
     const normalizedTransform = transform.toLowerCase();
     if (

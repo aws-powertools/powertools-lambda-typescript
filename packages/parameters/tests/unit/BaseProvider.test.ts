@@ -111,7 +111,7 @@ describe('Class: BaseProvider', () => {
 
     });
 
-    test('when called and values cached are expired, it returns the remote values', async () => {
+    test('when called and cached value is expired, it returns the remote value', async () => {
 
       // Prepare
       const mockData = 'my-remote-value';
@@ -215,6 +215,21 @@ describe('Class: BaseProvider', () => {
       // Assess
       expect(typeof value).toBe('string');
       expect(value).toEqual('my-value');
+
+    });
+    
+    test('when called with an auto transform, and the value is a valid JSON, it returns the parsed value', async () => {
+
+      // Prepare
+      const mockData = JSON.stringify({ foo: 'bar' });
+      const provider = new TestProvider();
+      jest.spyOn(provider, '_get').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData)));
+
+      // Act
+      const value = await provider.get('my-parameter.json', { transform: 'auto' });
+
+      // Assess
+      expect(value).toStrictEqual({ foo: 'bar' });
 
     });
 

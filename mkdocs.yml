@@ -21,12 +21,13 @@ theme:
   palette:
     - scheme: default
       primary: deep orange
+      accent: deep orange
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: teal
+      primary: deep orange
+      accent: deep orange
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
@@ -41,6 +42,7 @@ theme:
     - content.code.annotate
     - toc.follow
     - toc.integrate
+    - announce.dismiss
   icon:
     repo: fontawesome/brands/github
   logo: media/aws-logo-light.svg
@@ -88,3 +90,9 @@ extra:
   version:
     provider: mike
     default: latest
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/awslabs/aws-lambda-powertools-typescript
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/B8zZKbbyET
+      name: Join our Discord Server!

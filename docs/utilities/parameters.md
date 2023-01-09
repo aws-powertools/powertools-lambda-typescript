@@ -72,12 +72,7 @@ This utility requires additional permissions to work as expected.
 You can retrieve a single parameter using the `getParameter` high-level function.
 
 ```typescript hl_lines="1 5" title="Fetching a single parameter from SSM"
-import { getParameter } from '@aws-lambda-powertools/parameters/ssm';
-
-export const handler = async (_event, _context): Promise<void> => {
-  // Retrieve a single parameter
-  const parameter = await getParameter('/my/parameter');
-};
+--8<-- "docs/snippets/parameters/getParameter.ts"
 ```
 
 For multiple parameters, you can use either:
@@ -88,38 +83,13 @@ For multiple parameters, you can use either:
 === "getParameters"
 
     ```typescript hl_lines="1 8" title="Fetching multiple parameters by path from SSM"
-    import { getParameters } from '@aws-lambda-powertools/parameters/ssm';
-
-    export const handler = async (_event, _context): Promise<void> => {
-      /**
-       * Retrieve multiple parameters from a path prefix recursively.
-       * This returns an object with the parameter name as key
-       */ 
-      const parameters = await getParameters('/my/path/prefix');
-      for (const [ key, value ] of Object.entries(parameters)) {
-        console.log(`${key}: ${value}`);
-      }
-    };
+    --8<-- "docs/snippets/parameters/getParameters.ts"
     ```
 
 === "getParametersByName"
 
     ```typescript hl_lines="1 4-6 11" title="Fetching multiple parameters by names from SSM"
-    import { getParametersByName } from '@aws-lambda-powertools/parameters/ssm';
-
-    const props = {
-		  '/develop/service/commons/telemetry/config': { maxAge: 300, transform: 'json' },
-		  '/no_cache_param': { maxAge: 0 },
-		  '/develop/service/payment/api/capture/url': {}, // When empty or undefined, it uses default values
-    };
-
-    export const handler = async (_event, _context): Promise<void> => {
-		  // This returns an object with the parameter name as key
-		  const parameters = await getParametersByName(props, { maxAge: 60 });
-		  for (const [ key, value ] of Object.entries(parameters)) {
-		    console.log(`${key}: ${value}`);
-		  }
-    };
+    --8<-- "docs/snippets/parameters/getParametersByName.ts"
     ```
 
 ???+ tip "`getParametersByName` supports graceful error handling"
@@ -132,28 +102,7 @@ For multiple parameters, you can use either:
 	* Throw `GetParameterError` if any of your parameters is named `_errors`
 
 ```typescript hl_lines="1 4-5 10 15"
-import { getParametersByName } from '@aws-lambda-powertools/parameters/ssm';
-
-const props = {
-  '/develop/service/commons/telemetry/config': { maxAge: 300, transform: 'json' },
-  '/this/param/does/not/exist': {}, // <- Example of non-existent parameter
-};
-
-export const handler = async (_event, _context): Promise<void> => {
-  const {
-    _errors: errors,
-    ...parameters
-  } = await getParametersByName(props, { throwOnError: false });
-	
-  // Handle gracefully, since `/this/param/does/not/exist` will only be available in `_errors`
-  if (errors && errors.length) {
-    console.error(`Unable to retrieve parameters: ${errors.join(',')}`);
-  }
-
-  for (const [ key, value ] of Object.entries(parameters)) {
-    console.log(`${key}: ${value}`);
-  }
-};
+--8<-- "docs/snippets/parameters/getParametersByNameGracefulErrorHandling.ts"
 ```
 
 ### Fetching secrets
@@ -161,12 +110,7 @@ export const handler = async (_event, _context): Promise<void> => {
 You can fetch secrets stored in Secrets Manager using `getSecrets`.
 
 ```typescript hl_lines="1 5" title="Fetching secrets"
-import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
-
-export const handler = async (_event, _context): Promise<void> => {
-  // Retrieve a single secret
-  const secret = await getSecret('my-secret');
-};
+--8<-- "docs/snippets/parameters/getSecret.ts"
 ```
 
 ### Fetching app configurations
@@ -176,15 +120,7 @@ You can fetch application configurations in AWS AppConfig using `getAppConfig`.
 The following will retrieve the latest version and store it in the cache.
 
 ```typescript hl_lines="1 5-8" title="Fetching latest config from AppConfig"
-import { getAppConfig } from '@aws-lambda-powertools/parameters/appconfig';
-
-export const handler = async (_event, _context): Promise<void> => {
-  // Retrieve a configuration, latest version
-  const config = await getAppConfig('my-configuration', {
-    environment: 'my-env',
-    application: 'my-app'
-  });
-};
+--8<-- "docs/snippets/parameters/getAppConfig.ts"
 ```
 
 ## Advanced
@@ -199,20 +135,7 @@ By default, we cache parameters retrieved in-memory for 5 seconds.
 You can adjust how long we should keep values in cache by using the param `maxAge`, when using  `get()` or `getMultiple()` methods across all providers.
 
 ```typescript hl_lines="7 10" title="Caching parameters values in memory for longer than 5 seconds"
-import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-
-const parametersProvider = new SSMProvider();
-
-export const handler = async (_event, _context): Promise<void> => {
-  // Retrieve a single parameter
-  const parameter = await parametersProvider.get('/my/parameter', { maxAge: 60 }); // 1 minute
-
-  // Retrieve multiple parameters from a path prefix
-  const parameters = await parametersProvider.getMultiple('/my/path/prefix', { maxAge: 120 }); // 2 minutes
-  for (const [ key, value ] of Object.entries(parameters)) {
-    console.log(`${key}: ${value}`);
-  }
-};
+--8<-- "docs/snippets/parameters/adjustingCacheTTL.ts"
 ```
 
 ### Always fetching the latest
@@ -220,12 +143,7 @@ export const handler = async (_event, _context): Promise<void> => {
 If you'd like to always ensure you fetch the latest parameter from the store regardless if already available in cache, use the `forceFetch` parameter.
 
 ```typescript hl_lines="5" title="Forcefully fetching the latest parameter whether TTL has expired or not"
-import { getParameter } from '@aws-lambda-powertools/parameters/ssm';
-
-export const handler = async (_event, _context): Promise<void> => {
-  // Retrieve a single parameter
-  const parameter = await getParameter('/my/parameter', { forceFetch: true });
-};
+--8<-- "docs/snippets/parameters/forceFetch.ts"
 ```
 
 ### Built-in provider class
@@ -238,22 +156,7 @@ For greater flexibility such as configuring the underlying SDK client used by bu
 #### SSMProvider
 
 ```typescript hl_lines="4-5" title="Example with SSMProvider for further extensibility"
-import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-import type { SSMClientConfig } from '@aws-sdk/client-ssm';
-
-const clientConfig: SSMClientConfig = { region: 'us-east-1' };
-const parametersProvider = new SSMProvider({ clientConfig });
-
-export const handler = async (_event, _context): Promise<void> => {
-  // Retrieve a single parameter
-  const parameter = await parametersProvider.get('/my/parameter');
-
-  // Retrieve multiple parameters from a path prefix
-  const parameters = await parametersProvider.getMultiple('/my/path/prefix');
-  for (const [ key, value ] of Object.entries(parameters)) {
-    console.log(`${key}: ${value}`);
-  }
-};
+--8<-- "docs/snippets/parameters/ssmProvider.ts"
 ```
 
 The AWS Systems Manager Parameter Store provider supports two additional arguments for the `get()` and `getMultiple()` methods:
@@ -264,30 +167,13 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 | **recursive** | `true`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
 
 ```typescript hl_lines="6 8" title="Example with get() and getMultiple()"
-import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-
-const parametersProvider = new SSMProvider();
-
-export const handler = async (_event, _context): Promise<void> => {
-  const decryptedValue = await parametersProvider.get('/my/encrypted/parameter', { decrypt: true });
-
-  const noRecursiveValues = await parametersProvider.getMultiple('/my/path/prefix', { recursive: false });
-};
+--8<-- "docs/snippets/parameters/ssmProviderDecryptAndRecursive.ts"
 ```
 
 #### SecretsProvider
 
 ```typescript hl_lines="4-5" title="Example with SecretsProvider for further extensibility"
-import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
-import type { SecretsManagerClientConfig } from '@aws-sdk/client-secretsmanager';
-
-const clientConfig: SecretsManagerClientConfig = { region: 'us-east-1' };
-const secretsProvider = new SecretsProvider({ clientConfig });
-
-export const handler = async (_event, _context): Promise<void> => {
-	// Retrieve a single secret
-  const secret = await secretsProvider.get('my-secret');
-};
+--8<-- "docs/snippets/parameters/secretsProvider.ts"
 ```
 
 #### AppConfigProvider
@@ -300,20 +186,7 @@ The AWS AppConfig provider requires two arguments when initialized:
 | **environment** | Yes                      | _(N/A)_                                | The environment that corresponds to your current config. |
 
 ```typescript hl_lines="4 8" title="Example with AppConfigProvider for further extensibility"
-import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
-import type { AppConfigDataClientConfig } from '@aws-sdk/client-appconfigdata';
-
-const clientConfig: AppConfigDataClientConfig = { region: 'us-east-1' };
-const configsProvider = new AppConfigProvider({
-  application: 'my-app',
-	environment: 'my-env',
-	clientConfig,
-});
-
-export const handler = async (_event, _context): Promise<void> => {
-  // Retrieve a config
-  const config = await configsProvider.get('my-config');
-};
+--8<-- "docs/snippets/parameters/appConfigProvider.ts"
 ```
 
 #### DynamoDBProvider
@@ -336,28 +209,14 @@ With this table, `await dynamoDBProvider.get('my-param')` will return `my-value`
 
 === "handler.ts"
 	```typescript hl_lines="3 7"
-	import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
-
-	const dynamoDBProvider = new DynamoDBProvider({ tableName: 'my-table' });
-
-	export const handler = async (_event, _context): Promise<void> => {
-	  // Retrieve a value from DynamoDB
-	  const value = await dynamoDBProvider.get('my-parameter');
-	};
+	--8<-- "docs/snippets/parameters/dynamoDBProvider.ts"
 	```
 
 === "DynamoDB Local example"
 	You can initialize the DynamoDB provider pointing to [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) using the `endpoint` field in the `clientConfig` parameter:
 
 	```typescript hl_lines="5-7"
-	import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
-
-	const dynamoDBProvider = new DynamoDBProvider({
-	  tableName: 'my-table',
-	  clientConfig: {
-	    endpoint: 'http://localhost:8000'
-	  },
-	});
+	--8<-- "docs/snippets/parameters/dynamoDBProviderLocal.ts"
 	```
 
 **DynamoDB table structure for multiple values parameters**
@@ -378,22 +237,7 @@ With this table, `await dynamoDBProvider.getMultiple('my-hash-key')` will return
 
 === "handler.ts"
 	```typescript hl_lines="3 10"
-	import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
-
-	const dynamoDBProvider = new DynamoDBProvider({ tableName: 'my-table' });
-
-	export const handler = async (_event, _context): Promise<void> => {
-	  /**
-	   * Retrieve multiple values by performing a Query on the DynamoDB table.
-	   * This returns a dict with the sort key attribute as dict key.
-	   */
-	  const values = await dynamoDBProvider.getMultiple('my-hash-key');
-	  for (const [ key, value ] of Object.entries(values)) {
-	    // key: param-a
-	    // value: my-value-a
-	    console.log(`${key}: ${value}`);
-	  }
-	};
+	--8<-- "docs/snippets/parameters/dynamoDBProviderMultiple.ts"
 	```
 
 === "values response object"
@@ -418,18 +262,7 @@ DynamoDB provider can be customized at initialization to match your table struct
 | **valueAttr** | No        | `value` | Name of the attribute containing the parameter value.                                                     |
 
 ```typescript hl_lines="3-8" title="Customizing DynamoDBProvider to suit your table design"
-import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
-
-const dynamoDBProvider = new DynamoDBProvider({
-  tableName:'my-table',
-  keyAttr:'key',
-  sortAttr:'sort',
-  valueAttr:'val'
-});
-
-export const handler = async (_event, _context): Promise<void> => {
-  const value = await dynamoDBProvider.get('my-parameter');
-};
+--8<-- "docs/snippets/parameters/dynamoDBProviderCustomizeTable.ts"
 ```
 
 ### Deserializing values with transform parameter
@@ -441,26 +274,12 @@ For parameters stored in JSON or Base64 format, you can use the `transform` argu
 
 === "High level functions"
 	```typescript hl_lines="4"
-	import { getParameter } from '@aws-lambda-powertools/parameters/ssm';
-
-	export const handler = async (_event, _context): Promise<void> => {
-	  const valueFromJson = await getParameter('/my/json/parameter', { transform: 'json' });
-	};
+	--8<-- "docs/snippets/parameters/transform.ts"
 	```
 
 === "Providers"
 	```typescript hl_lines="7 10"
-	import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
-
-	const secretsProvider = new SecretsProvider();
-
-	export const handler = async (_event, _context): Promise<void> => {
-	  // Transform a JSON string
-	  const json = await secretsProvider.get('my-secret-json', { transform: 'json' });
-
-	  // Transform a Base64 encoded string (e.g. binary)
-	  const binary = await secretsProvider.getMultiple('my-secret-binary', { transform: 'binary' });
-	};
+	--8<-- "docs/snippets/parameters/transformProvider.ts"
 	```
 
 #### Partial transform failures with `getMultiple()`
@@ -472,32 +291,7 @@ You can override this by setting the `throwOnTransformError` argument to `true`.
 For example, if you have three parameters, */param/a*, */param/b* and */param/c*, but */param/c* is malformed:
 
 ```typescript hl_lines="19-22" title="Throwing TransformParameterError at first malformed parameter"
-import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-
-const parametersProvider = new SSMProvider();
-
-export const handler = async (_event, _context): Promise<void> => {
-  /**
-   * This will display:
-   * /param/a: [some value]
-   * /param/b: [some value]
-   * /param/c: undefined
-   */
-  const parameters = await parametersProvider.getMultiple('/param', { transform: 'json' });
-  for (const [ key, value ] of Object.entries(parameters)) {
-    console.log(`${key}: ${value}`);
-  }
-
-  try {
-    // This will throw a TransformParameterError
-    const parameters2 = await parametersProvider.getMultiple('/param', {
-      transform: 'json',
-      throwOnTransformError: true
-    });
-  } catch (err) {
-    console.error(err);
-  }
-};
+--8<-- "docs/snippets/parameters/transformPartialFailures.ts"
 ```
 
 #### Auto-transform values on suffix
@@ -510,13 +304,7 @@ You can do this with a single request by using `transform: 'auto'`. This will in
     `transform: 'auto'` feature is available across all providers, including the high level functions.
 
 ```typescript hl_lines="6" title="Deserializing parameter values based on their suffix"
-import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-
-const parametersProvider = new SSMProvider();
-
-export const handler = async (_event, _context): Promise<void> => {
-  const values = await parametersProvider.getMultiple('/param', { transform: 'auto' });
-};
+--8<-- "docs/snippets/parameters/transformAuto.ts"
 ```
 
 For example, if you have two parameters with the following suffixes `.json` and `.binary`:
@@ -540,21 +328,7 @@ The return of `await parametersProvider.getMultiple('/param', transform: 'auto')
 You can use a special `sdkOptions` object argument to pass any supported option directly to the underlying SDK method.
 
 ```typescript hl_lines="8 14" title="Specify a VersionId for a secret"
-import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
-import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
-
-const secretsProvider = new SecretsProvider();
-
-export const handler = async (_event, _context): Promise<void> => {
-  const sdkOptions: GetSecretValueCommandInput = {
-    VersionId: 'e62ec170-6b01-48c7-94f3-d7497851a8d2'
-  };
-  /**
-   * The 'VersionId' argument will be passed to the underlying
-   * `GetSecretValueCommand` call.
-   */
-  const secret = await secretsProvider.get('my-secret', { sdkOptions });
-};
+--8<-- "docs/snippets/parameters/sdkOptions.ts"
 ```
 
 Here is the mapping between this utility's functions and methods and the underlying SDK:
@@ -588,46 +362,22 @@ You can use the `awsSdkV3Client` parameter via any of the available [Provider Cl
 
 === "SSMProvider"
 	```typescript hl_lines="5 7"
-	import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-	import { SSMClient } from '@aws-sdk/client-ssm';
-
-	// construct your clients with any custom configuration
-	const ssmClient = new SSMClient({ region: 'us-east-1' });
-	// pass the client to the provider
-	const parametersProvider = new SSMProvider({ awsSdkV3Client: ssmClient });
+	--8<-- "docs/snippets/parameters/ssmProviderCustomClient.ts"
 	```
 
 === "SecretsProvider"
 	```typescript hl_lines="5 7"
-	import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
-	import { SSMClient } from '@aws-sdk/client-secrets-manager';
-
-	// construct your clients with any custom configuration
-	const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' });
-	// pass the client to the provider
-	const secretsProvider = new SecretsProvider({ awsSdkV3Client: secretsManagerClient });
+	--8<-- "docs/snippets/parameters/secretsProviderCustomClient.ts"
 	```
 
 === "AppConfigProvider"
 	```typescript hl_lines="5 7"
-	import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
-	import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
-
-	// construct your clients with any custom configuration
-	const appConfigClient = new AppConfigDataClient({ region: 'us-east-1' });
-	// pass the client to the provider
-	const configsProvider = new AppConfigProvider({ awsSdkV3Client: appConfigClient });
+	--8<-- "docs/snippets/parameters/appConfigProviderCustomClient.ts"
 	```
 
 === "DynamoDBProvider"
 	```typescript hl_lines="5 7"
-	import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
-	import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-
-	// construct your clients with any custom configuration
-	const dynamoDBClient = new DynamoDBClient({ region: 'us-east-1' });
-	// pass the client to the provider
-	const valuesProvider = new DynamoDBProvider({ awsSdkV3Client: dynamoDBClient });
+	--8<-- "docs/snippets/parameters/dynamoDBProviderCustomClient.ts"
 	```
 
 ### Customizing AWS SDK v3 configuration
@@ -641,14 +391,5 @@ The **`clientConfig`** parameter enables you to pass in a custom [config object]
 
 
 ```typescript hl_lines="2 4-5"
-import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-import type { SSMClientConfig } from '@aws-sdk/client-ssm';
-
-const clientConfig: SSMClientConfig = { region: 'us-east-1' };
-const parametersProvider = new SSMProvider({ clientConfig });
-
-export const handler = async (_event, _context): Promise<void> => {
-  // Retrieve a single parameter
-  const value = await parametersProvider.get('/my/parameter');
-};
+--8<-- "docs/snippets/parameters/clientConfig.ts"
 ```

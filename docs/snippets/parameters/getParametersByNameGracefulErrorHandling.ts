@@ -1,11 +1,14 @@
 import { getParametersByName } from '@aws-lambda-powertools/parameters/ssm';
+import type {
+  SSMGetParametersByNameOptionsInterface
+} from '@aws-lambda-powertools/parameters/ssm';
 
-const props = {
+const props: Record<string, SSMGetParametersByNameOptionsInterface> = {
   '/develop/service/commons/telemetry/config': { maxAge: 300, transform: 'json' },
   '/this/param/does/not/exist': {}, // <- Example of non-existent parameter
 };
 
-export const handler = async (_event, _context): Promise<void> => {
+export const handler = async (): Promise<void> => {
   const {
     _errors: errors,
     ...parameters

@@ -6,7 +6,7 @@ const ssmClient = new SSMClient({ region: 'us-east-1' });
 // pass the client to the provider
 const parametersProvider = new SSMProvider({ awsSdkV3Client: ssmClient });
 
-export const handler = async (_event, _context): Promise<void> => {
+export const handler = async (): Promise<void> => {
   // Retrieve a single parameter
   const parameter = await parametersProvider.get('/my/parameter');
   console.log(parameter);

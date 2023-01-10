@@ -6,7 +6,7 @@ const dynamoDBClient = new DynamoDBClient({ region: 'us-east-1' });
 // pass the client to the provider
 const valuesProvider = new DynamoDBProvider({ awsSdkV3Client: dynamoDBClient });
 
-export const handler = async (_event, _context): Promise<void> => {
+export const handler = async (): Promise<void> => {
   // Retrieve a single value
   const value = await valuesProvider.get('my-value');
   console.log(value);

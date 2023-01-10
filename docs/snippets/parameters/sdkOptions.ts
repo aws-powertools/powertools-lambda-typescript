@@ -3,7 +3,7 @@ import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager
 
 const secretsProvider = new SecretsProvider();
 
-export const handler = async (_event, _context): Promise<void> => {
+export const handler = async (): Promise<void> => {
   const sdkOptions: Partial<GetSecretValueCommandInput> = {
     VersionId: 'e62ec170-6b01-48c7-94f3-d7497851a8d2'
   };

@@ -6,7 +6,7 @@ description: Utility
 ???+ warning
 	This page refers to an **unreleased and upcoming utility**. Please refer to this [GitHub milestone](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/8) for the latest updates.
 
-The parameters utility provides high-level functions to retrieve one or multiple parameter values from [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html){target="_blank"}, [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/){target="_blank"}, [AWS AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html){target="_blank"}, [Amazon DynamoDB](https://aws.amazon.com/dynamodb/){target="_blank"}, or your own parameter store.
+The Parameters utility provides high-level functions to retrieve one or multiple parameter values from [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html){target="_blank"}, [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html){target="_blank"}, [AWS AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html){target="_blank"}, [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html){target="_blank"}, or your own parameter store.
 
 ## Key features
 
@@ -17,7 +17,7 @@ The parameters utility provides high-level functions to retrieve one or multiple
 
 ## Getting started
 
-By default, we fetch parameters from System Manager Parameter Store (SSM), secrets from Secrets Manager, and application configuration from AppConfig. Additionally, we support a DynamoDB provider to retrieve arbitrary parameters from your tables.
+The Parameters Utility helps to retrieve parameters from the System Manager Parameter Store (SSM), secrets from the Secrets Manager, and application configuration from AppConfig. Additionally, the utility also offers support for a DynamoDB provider, enabling the retrieval of arbitrary parameters from specified tables.
 
 ### Installation
 
@@ -88,20 +88,20 @@ For multiple parameters, you can use either:
 
 === "getParametersByName"
 
-    ```typescript hl_lines="1 4-6 11" title="Fetching multiple parameters by names from SSM"
+    ```typescript hl_lines="1-4 7-9 14" title="Fetching multiple parameters by names from SSM"
     --8<-- "docs/snippets/parameters/getParametersByName.ts"
     ```
 
 ???+ tip "`getParametersByName` supports graceful error handling"
-	By default, we will throw a `GetParameterError` when any parameter fails to be fetched. You can override it by setting `throwOnError: false`.
+	By default, the provider will throw a `GetParameterError` when any parameter fails to be fetched. You can override it by setting `throwOnError: false`.
 
-	When disabled, we take the following actions:
+	When disabled, instead the provider will take the following actions:
 
 	* Add failed parameter name in the `_errors` key, _e.g._, `{ _errors: [ '/param1', '/param2' ] }`
 	* Keep only successful parameter names and their values in the response
 	* Throw `GetParameterError` if any of your parameters is named `_errors`
 
-```typescript hl_lines="1 4-5 10 15"
+```typescript hl_lines="1-4 7-8 13 15 18"
 --8<-- "docs/snippets/parameters/getParametersByNameGracefulErrorHandling.ts"
 ```
 
@@ -130,9 +130,9 @@ The following will retrieve the latest version and store it in the cache.
 ???+ tip
 	`maxAge` parameter is also available in high level functions like `getParameter`, `getSecret`, etc.
 
-By default, we cache parameters retrieved in-memory for 5 seconds.
+By default, the provider will cache parameters retrieved in-memory for 5 seconds.
 
-You can adjust how long we should keep values in cache by using the param `maxAge`, when using  `get()` or `getMultiple()` methods across all providers.
+You can adjust how long values should be kept in cache by using the param `maxAge`, when using  `get()` or `getMultiple()` methods across all providers.
 
 ```typescript hl_lines="7 10" title="Caching parameters values in memory for longer than 5 seconds"
 --8<-- "docs/snippets/parameters/adjustingCacheTTL.ts"
@@ -163,7 +163,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 
 | Parameter     | Default | Description                                                                                   |
 | ------------- | ------- | --------------------------------------------------------------------------------------------- |
-| **decrypt**   | `false` | Will automatically decrypt the parameter.                                                     |
+| **decrypt**   | `false` | Will automatically decrypt the parameter (see required [IAM Permissions](#iam-permissions)).  |
 | **recursive** | `true`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
 
 ```typescript hl_lines="6 8" title="Example with get() and getMultiple()"
@@ -307,10 +307,11 @@ You can do this with a single request by using `transform: 'auto'`. This will in
 --8<-- "docs/snippets/parameters/transformAuto.ts"
 ```
 
-For example, if you have two parameters with the following suffixes `.json` and `.binary`:
+For example, if you have three parameters: two with the following suffixes `.json` and `.binary` and one without any suffix:
 
 | Parameter name  | Parameter value      |
 | --------------- | -------------------- |
+| /param/a        | [some encoded value] |
 | /param/a.json   | [some encoded value] |
 | /param/a.binary | [some encoded value] |
 
@@ -318,10 +319,13 @@ The return of `await parametersProvider.getMultiple('/param', transform: 'auto')
 
 ```json
 {
-  "a.json": [some value],
-  "b.binary": [some value]
+  "a": [some encoded value],
+  "a.json": [some decoded value],
+  "b.binary": [some decoded value]
 }
 ```
+
+The two parameters with a suffix will be decoded, while the one without a suffix will be returned as is.
 
 ### Passing additional SDK arguments
 
@@ -333,18 +337,18 @@ You can use a special `sdkOptions` object argument to pass any supported option 
 
 Here is the mapping between this utility's functions and methods and the underlying SDK:
 
-| Provider            | Function/Method                | Client name                       | Function name                                                                                                                                                   |
-| ------------------- | ------------------------------ | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SSM Parameter Store | `getParameter`                 | `@aws-sdk/client-ssm`             | [GetParameterCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametercommand.html)                               |
-| SSM Parameter Store | `getParameters`                | `@aws-sdk/client-ssm`             | [GetParametersByPathCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametersbypathcommand.html)                 |
-| SSM Parameter Store | `SSMProvider.get`              | `@aws-sdk/client-ssm`             | [GetParameterCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametercommand.html)                               |
-| SSM Parameter Store | `SSMProvider.getMultiple`      | `@aws-sdk/client-ssm`             | [GetParametersByPathCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametersbypathcommand.html)                 |
-| Secrets Manager     | `getSecret`                    | `@aws-sdk/client-secrets-manager` | [GetSecretValueCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/classes/getsecretvaluecommand.html)               |
-| Secrets Manager     | `SecretsProvider.get`          | `@aws-sdk/client-secrets-manager` | [GetSecretValueCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/classes/getsecretvaluecommand.html)               |
-| AppConfig           | `AppConfigProvider.get`        | `@aws-sdk/client-appconfigdata`   | [GetLatestConfigurationCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/getlatestconfigurationcommand.html) |
-| AppConfig           | `getAppConfig`                 | `@aws-sdk/client-appconfigdata`   | [GetLatestConfigurationCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/getlatestconfigurationcommand.html) |
-| DynamoDB            | `DynamoDBProvider.get`         | `@aws-sdk/client-dynamodb`        | [GetItemCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/getitemcommand.html)                                    |
-| DynamoDB            | `DynamoDBProvider.getMultiple` | `@aws-sdk/client-dynamodb`        | [QueryCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/querycommand.html)                                        |
+| Provider            | Function/Method                | Client name                       | Function name                                                                                                                                                                                                                                                                                                                           |
+| ------------------- | ------------------------------ | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SSM Parameter Store | `getParameter`                 | `@aws-sdk/client-ssm`             | [GetParameterCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametercommand.html)                                                                                                                                                                                                       |
+| SSM Parameter Store | `getParameters`                | `@aws-sdk/client-ssm`             | [GetParametersByPathCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametersbypathcommand.html)                                                                                                                                                                                         |
+| SSM Parameter Store | `SSMProvider.get`              | `@aws-sdk/client-ssm`             | [GetParameterCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametercommand.html)                                                                                                                                                                                                       |
+| SSM Parameter Store | `SSMProvider.getMultiple`      | `@aws-sdk/client-ssm`             | [GetParametersByPathCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametersbypathcommand.html)                                                                                                                                                                                         |
+| Secrets Manager     | `getSecret`                    | `@aws-sdk/client-secrets-manager` | [GetSecretValueCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/classes/getsecretvaluecommand.html)                                                                                                                                                                                       |
+| Secrets Manager     | `SecretsProvider.get`          | `@aws-sdk/client-secrets-manager` | [GetSecretValueCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/classes/getsecretvaluecommand.html)                                                                                                                                                                                       |
+| AppConfig           | `AppConfigProvider.get`        | `@aws-sdk/client-appconfigdata`   | [StartConfigurationSessionCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/startconfigurationsessioncommand.html) & [GetLatestConfigurationCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/getlatestconfigurationcommand.html) |
+| AppConfig           | `getAppConfig`                 | `@aws-sdk/client-appconfigdata`   | [StartConfigurationSessionCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/startconfigurationsessioncommand.html) & [GetLatestConfigurationCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/getlatestconfigurationcommand.html) |
+| DynamoDB            | `DynamoDBProvider.get`         | `@aws-sdk/client-dynamodb`        | [GetItemCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/getitemcommand.html)                                                                                                                                                                                                            |
+| DynamoDB            | `DynamoDBProvider.getMultiple` | `@aws-sdk/client-dynamodb`        | [QueryCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/querycommand.html)                                                                                                                                                                                                                |
 
 ### Bring your own AWS SDK v3 client
 

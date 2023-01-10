@@ -6,7 +6,7 @@ const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' });
 // pass the client to the provider
 const secretsProvider = new SecretsProvider({ awsSdkV3Client: secretsManagerClient });
 
-export const handler = async (_event, _context): Promise<void> => {
+export const handler = async (): Promise<void> => {
   // Retrieve a single secret
   const secret = await secretsProvider.get('my-secret');
   console.log(secret);

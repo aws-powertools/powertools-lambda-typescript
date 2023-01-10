@@ -2,7 +2,7 @@ import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
 
 const secretsProvider = new SecretsProvider();
 
-export const handler = async (_event, _context): Promise<void> => {
+export const handler = async (): Promise<void> => {
   // Transform a JSON string
   const json = await secretsProvider.get('my-secret-json', { transform: 'json' });
   console.log(json);

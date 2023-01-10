@@ -45,7 +45,6 @@
     "@aws-cdk/cloudformation-diff": "^2.55.0",
     "@aws-cdk/cx-api": "^2.55.0",
     "@commitlint/cli": "^17.3.0",
-    "@middy/core": "^3.6.2",
     "@types/aws-lambda": "^8.10.109",
     "@types/jest": "^29.2.4",
     "@types/node": "^18.11.15",

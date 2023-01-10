@@ -21,7 +21,7 @@ import type {
   SSMGetParametersByNameOptionsInterface,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
-} from 'types/SSMProvider';
+} from '../types/SSMProvider';
 import type { PaginationConfiguration } from '@aws-sdk/types';
 
 class SSMProvider extends BaseProvider {

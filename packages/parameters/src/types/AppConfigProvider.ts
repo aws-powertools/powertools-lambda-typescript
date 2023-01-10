@@ -43,7 +43,7 @@ interface GetAppConfigCombinedInterface
   extends Omit<AppConfigProviderOptions, 'clientConfig'>,
   AppConfigGetOptionsInterface {}
 
-export {
+export type {
   AppConfigProviderOptions,
   AppConfigGetOptionsInterface,
   GetAppConfigCombinedInterface,

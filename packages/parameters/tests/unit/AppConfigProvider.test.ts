@@ -4,7 +4,7 @@
  * @group unit/parameters/AppConfigProvider/class
  */
 import { AppConfigProvider } from '../../src/appconfig/index';
-
+import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,
@@ -12,7 +12,6 @@ import {
 } from '@aws-sdk/client-appconfigdata';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
-import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider';
 
 describe('Class: AppConfigProvider', () => {
   const client = mockClient(AppConfigDataClient);

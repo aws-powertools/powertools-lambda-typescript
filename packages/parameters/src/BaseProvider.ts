@@ -65,7 +65,6 @@ abstract class BaseProvider implements BaseProviderInterface {
       this.addToCache(key, value, configs.maxAge);
     }
 
-    // TODO: revisit return type once providers are implemented, it might be missing binary when not transformed
     return value;
   }
 
@@ -94,7 +93,6 @@ abstract class BaseProvider implements BaseProviderInterface {
       this.addToCache(key, values, configs.maxAge);
     }
 
-    // TODO: revisit return type once providers are implemented, it might be missing something
     return values;
   }
 

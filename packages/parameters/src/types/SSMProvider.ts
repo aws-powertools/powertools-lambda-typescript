@@ -3,7 +3,11 @@ import type {
   GetParameterCommandInput,
   GetParametersByPathCommandInput
 } from '@aws-sdk/client-ssm';
-import type { GetOptionsInterface, GetMultipleOptionsInterface, TransformOptions } from './BaseProvider';
+import type {
+  GetOptionsInterface,
+  GetMultipleOptionsInterface,
+  TransformOptions
+} from './BaseProvider';
 
 interface SSMProviderOptionsInterface {
   clientConfig: SSMClientConfig
@@ -51,7 +55,7 @@ type SSMGetParametersByNameFromCacheOutputType = {
   toFetch: Record<string, SSMGetParametersByNameOptionsInterface>
 };
 
-export {
+export type {
   SSMProviderOptionsInterface,
   SSMGetOptionsInterface,
   SSMGetMultipleOptionsInterface,

@@ -21,7 +21,7 @@ interface BaseProviderInterface {
   getMultiple(path: string, options?: GetMultipleOptionsInterface): Promise<void | Record<string, unknown>>
 }
 
-export {
+export type {
   GetOptionsInterface,
   GetMultipleOptionsInterface,
   BaseProviderInterface,

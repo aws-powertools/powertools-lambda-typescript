@@ -1,6 +1,9 @@
 import { Logger } from '../Logger';
-import type middy from '@middy/core';
 import { HandlerOptions, LogAttributes } from '../types';
+import type {
+  MiddlewareLikeObj,
+  MiddyLikeRequest
+} from '@aws-lambda-powertools/commons';
 
 /**
  * A middy middleware that helps emitting CloudWatch EMF metrics in your logs.
@@ -26,12 +29,12 @@ import { HandlerOptions, LogAttributes } from '../types';
  * @param options - (_optional_) Options for the middleware
  * @returns - The middy middleware object
  */
-const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions): middy.MiddlewareObj => {
+const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions): MiddlewareLikeObj => {
 
   const loggers = target instanceof Array ? target : [target];
   const persistentAttributes: LogAttributes[] = [];
 
-  const injectLambdaContextBefore = async (request: middy.Request): Promise<void> => {
+  const injectLambdaContextBefore = async (request: MiddyLikeRequest): Promise<void> => {
     loggers.forEach((logger: Logger) => {
       if (options && options.clearState === true) {
         persistentAttributes.push({ ...logger.getPersistentLogAttributes() });

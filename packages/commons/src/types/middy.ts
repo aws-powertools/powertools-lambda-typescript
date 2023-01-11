@@ -7,7 +7,7 @@ import { Context } from 'aws-lambda';
  * and use `tsc` to compile their code will get an error if we import from @middy/core, see #1068.
  * Given that we use a subset of the @middy/core types, we can define them here and avoid the dependency.
  */
-interface Request<TEvent = unknown, TResult = unknown, TErr = Error, TContext extends Context = Context> {
+type Request<TEvent = unknown, TResult = unknown, TErr = Error, TContext extends Context = Context> = {
   event: TEvent
   context: TContext
   response: TResult | null
@@ -15,19 +15,19 @@ interface Request<TEvent = unknown, TResult = unknown, TErr = Error, TContext ex
   internal: {
     [key: string]: unknown
   }
-}
+};
 
 declare type MiddlewareFn<TEvent = unknown, TResult = unknown, TErr = Error, TContext extends Context = Context> = (request: Request<TEvent, TResult, TErr, TContext>) => unknown;
 
-export interface MiddlewareLikeObj<TEvent = unknown, TResult = unknown, TErr = Error, TContext extends Context = Context> {
+export type MiddlewareLikeObj<TEvent = unknown, TResult = unknown, TErr = Error, TContext extends Context = Context> = {
   before?: MiddlewareFn<TEvent, TResult, TErr, TContext>
   after?: MiddlewareFn<TEvent, TResult, TErr, TContext>
   onError?: MiddlewareFn<TEvent, TResult, TErr, TContext>
-}
+};
 
-export interface MiddyLikeRequest {
+export type MiddyLikeRequest = {
   event: unknown
   context: Context
   response: unknown | null
   error: Error | null
-}
+};

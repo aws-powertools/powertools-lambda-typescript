@@ -16,13 +16,13 @@
     "test:e2e": "if-node-version '>12' jest --testPathPattern=e2e"
   },
   "devDependencies": {
-    "@aws-cdk/cloudformation-diff": "2.55.0",
-    "@aws-cdk/cx-api": "2.55.0",
+    "@aws-cdk/cloudformation-diff": "^2.55.0",
+    "@aws-cdk/cx-api": "^2.55.0",
     "@types/jest": "^29.2.4",
     "@types/node": "18.11.15",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
-    "aws-cdk": "2.55.0",
+    "aws-cdk": "^2.55.0",
     "eslint": "^8.29.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^3.5.2",
@@ -33,7 +33,7 @@
     "typescript": "4.9.4"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.55.0",
+    "aws-cdk-lib": "^2.55.0",
     "constructs": "^10.1.190",
     "if-node-version": "^1.1.1",
     "source-map-support": "^0.5.21",

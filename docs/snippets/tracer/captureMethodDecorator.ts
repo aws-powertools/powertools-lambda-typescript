@@ -6,7 +6,7 @@ const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 class Lambda implements LambdaInterface {
     // Decorate your class method
     @tracer.captureMethod() // (1)
-    public getChargeId(): string {
+    public async getChargeId(): Promise<string> {
         /* ... */
         return 'foo bar';
     }

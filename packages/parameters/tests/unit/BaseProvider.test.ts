@@ -9,7 +9,7 @@ import {
   GetParameterError,
   TransformParameterError
 } from '../../src';
-import { toBase64 } from '@aws-sdk/util-base64';
+import { toBase64 } from '@aws-sdk/util-base64-node';
 
 const encoder = new TextEncoder();
 

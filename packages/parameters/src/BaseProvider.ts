@@ -1,4 +1,4 @@
-import { fromBase64 } from '@aws-sdk/util-base64';
+import { fromBase64 } from '@aws-sdk/util-base64-node';
 import { GetOptions } from './GetOptions';
 import { GetMultipleOptions } from './GetMultipleOptions';
 import { ExpirableValue } from './ExpirableValue';

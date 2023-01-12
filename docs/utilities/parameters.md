@@ -43,7 +43,7 @@ Depending on the provider you want to use, install the library and the correspon
 
 === "DynamoDBProvider"
 	```bash
-	npm install @aws-lambda-powertools/parameters @aws-sdk/client-dynamodb
+	npm install @aws-lambda-powertools/parameters @aws-sdk/client-dynamodb @aws-sdk/util-dynamodb
 	```
 
 ???+ tip

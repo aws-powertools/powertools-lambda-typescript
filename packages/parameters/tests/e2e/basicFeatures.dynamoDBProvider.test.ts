@@ -41,7 +41,6 @@ const lambdaFunctionCodeFile = 'basicFeatures.dynamoDBProvider.test.functionCode
 const dynamoDBClient = new DynamoDBClient({});
 
 const invocationCount = 1;
-// const startTime = new Date();
 
 // Parameters to be used by Parameters in the Lambda function
 const tableGet = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider-Table-Get');
@@ -60,7 +59,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: nodejs18x`, () =>
   let invocationLogs: InvocationLogs[];
 
   beforeAll(async () => {
-    // GIVEN a stack
+    // Create a stack with a Lambda function
     stack = createStackWithLambdaFunction({
       app: integTestApp,
       stackName: stackName,
@@ -135,6 +134,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: nodejs18x`, () =>
       ddbTabelGetMultipleCustomKeys,
     ]));
 
+    // Deploy the stack
     await deployStack(integTestApp, stack);
 
     // Seed tables with test data

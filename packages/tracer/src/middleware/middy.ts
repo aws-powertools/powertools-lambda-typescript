@@ -1,7 +1,10 @@
-import type middy from '@middy/core';
 import type { Tracer } from '../Tracer';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 import type { CaptureLambdaHandlerOptions } from '../types';
+import type {
+  MiddlewareLikeObj,
+  MiddyLikeRequest
+} from '@aws-lambda-powertools/commons';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
@@ -30,7 +33,7 @@ import type { CaptureLambdaHandlerOptions } from '../types';
  * @param options - (_optional_) Options for the middleware
  * @returns middleware - The middy middleware object
  */
-const captureLambdaHandler = (target: Tracer, options?: CaptureLambdaHandlerOptions): middy.MiddlewareObj => {
+const captureLambdaHandler = (target: Tracer, options?: CaptureLambdaHandlerOptions): MiddlewareLikeObj => {
   let lambdaSegment: Subsegment | Segment;
 
   const open = (): void => {
@@ -53,7 +56,7 @@ const captureLambdaHandler = (target: Tracer, options?: CaptureLambdaHandlerOpti
     }
   };
   
-  const captureLambdaHandlerAfter = async (request: middy.Request): Promise<void> => {
+  const captureLambdaHandlerAfter = async (request: MiddyLikeRequest): Promise<void> => {
     if (target.isTracingEnabled()) {
       if (options?.captureResponse ?? true) {
         target.addResponseAsMetadata(request.response, process.env._HANDLER);
@@ -62,7 +65,7 @@ const captureLambdaHandler = (target: Tracer, options?: CaptureLambdaHandlerOpti
     }
   };
   
-  const captureLambdaHandlerError = async (request: middy.Request): Promise<void> => {
+  const captureLambdaHandlerError = async (request: MiddyLikeRequest): Promise<void> => {
     if (target.isTracingEnabled()) {
       target.addErrorAsMetadata(request.error as Error);
       close();

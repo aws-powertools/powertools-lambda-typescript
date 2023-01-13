@@ -1,6 +1,9 @@
 import type { Metrics } from '../Metrics';
-import type middy from '@middy/core';
 import type { ExtraOptions } from '../types';
+import type {
+  MiddlewareLikeObj,
+  MiddyLikeRequest
+} from '@aws-lambda-powertools/commons';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
@@ -29,10 +32,10 @@ import type { ExtraOptions } from '../types';
  * @param options - (_optional_) Options for the middleware
  * @returns middleware - The middy middleware object
  */
-const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): middy.MiddlewareObj => {
+const logMetrics = (target: Metrics | Metrics[], options: ExtraOptions = {}): MiddlewareLikeObj => {
   const metricsInstances = target instanceof Array ? target : [target];
 
-  const logMetricsBefore = async (request: middy.Request): Promise<void> => {
+  const logMetricsBefore = async (request: MiddyLikeRequest): Promise<void> => {
     metricsInstances.forEach((metrics: Metrics) => {
       metrics.setFunctionName(request.context.functionName);
       const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;

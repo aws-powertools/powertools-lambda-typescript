@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.5.0...v1.5.1) (2023-01-13)
+
+
+### Bug Fixes
+
+* **logger:** logger throws TypeError when log item has BigInt value ([#1201](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1201)) ([a09e4df](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/a09e4dfbb2cef062c1178de3e3dbc2583aef7a91))
+* **parameters:** types in BaseProvider + added getMultiple alias to SecretsProvider ([#1214](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1214)) ([32bd7e8](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/32bd7e8694fa74a63993eded236af8d84c2dc752))
+
+
+### Features
+
+* **parameters:** AppConfigProvider ([#1200](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1200)) ([fecedb9](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/fecedb9e8446a008dca2927ba7aec16d54b34685))
+* **parameters:** DynamoDBProvider support ([#1202](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1202)) ([db94850](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/db94850b536dc92fcd11ce2a5f68412bed9c1feb))
+* **parameters:** SecretsProvider support ([#1206](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1206)) ([02516b7](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/02516b7315c3c6df7bed51768381313e7942b215))
+* **parameters:** SSMProvider support ([#1187](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1187)) ([2e4bb76](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/2e4bb76773222ecbe44ec22633445e06199fc8b1))
+
+
+
+
+
 # [1.5.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.4.1...v1.5.0) (2022-11-25)
 
 

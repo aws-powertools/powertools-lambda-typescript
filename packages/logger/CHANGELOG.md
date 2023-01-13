@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.5.0...v1.5.1) (2023-01-13)
+
+
+### Bug Fixes
+
+* **logger:** logger throws TypeError when log item has BigInt value ([#1201](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1201)) ([a09e4df](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/a09e4dfbb2cef062c1178de3e3dbc2583aef7a91))
+
+
+
+
+
 # [1.5.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.4.1...v1.5.0) (2022-11-25)
 
 

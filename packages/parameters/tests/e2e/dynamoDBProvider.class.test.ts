@@ -1,7 +1,7 @@
 /**
- * Test DynamoDBProvider basic features
+ * Test DynamoDBProvider class
  *
- * @group e2e/parameters/dynamodb/basicFeatures
+ * @group e2e/parameters/dynamodb/class
  */
 import path from 'path';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';

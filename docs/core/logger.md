@@ -37,13 +37,7 @@ The `Logger` utility must always be instantiated outside the Lambda handler. By 
 === "handler.ts"
 
     ```typescript hl_lines="1 3"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    const logger = new Logger({ serviceName: 'serverlessAirline' });
-
-    export const handler = async (_event, _context): Promise<void> => {
-        // ...
-    };
+    --8<-- "docs/snippets/logger/basicUsage.ts"
     ```
 
 ### Utility settings
@@ -64,16 +58,7 @@ These settings will be used across all logs emitted:
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    // Logger parameters fetched from the environment variables (see template.yaml tab)
-    const logger = new Logger();
-
-    // You can also pass the parameters in the constructor
-    // const logger = new Logger({
-    //     logLevel: 'WARN',
-    //     serviceName: 'serverlessAirline'
-    // });
+    --8<-- "docs/snippets/logger/sam.ts"
     ```
 
 === "template.yaml"
@@ -128,38 +113,13 @@ Key | Example
         Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
 
     ```typescript hl_lines="1-2 10-11"
-    import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
-    import middy from '@middy/core';
-
-    const logger = new Logger();
-
-    const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
-        logger.info('This is an INFO log with some context');
-    };
-
-    export const handler = middy(lambdaHandler)
-        .use(injectLambdaContext(logger));
+    --8<-- "docs/snippets/logger/middy.ts"
     ```
 
 === "Decorator"
 
     ```typescript hl_lines="8"
-    import { Logger } from '@aws-lambda-powertools/logger';
-    import { LambdaInterface } from '@aws-lambda-powertools/commons';
-
-    const logger = new Logger();
-    
-    class Lambda implements LambdaInterface {
-        // Decorate your handler class method
-        @logger.injectLambdaContext()
-        public async handler(_event: any, _context: any): Promise<void> {
-            logger.info('This is an INFO log with some context');
-        }
-
-    }
-
-    const myFunction = new Lambda();
-    export const handler = myFunction.handler.bind(myFunction); // (1)
+    --8<-- "docs/snippets/logger/decorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -167,17 +127,7 @@ Key | Example
 === "Manual"
 
     ```typescript hl_lines="7"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    const logger = new Logger();
-
-    export const handler = async (_event, context): Promise<void> => {
-    
-        logger.addContext(context);
-        
-        logger.info('This is an INFO log with some context');
-
-    };
+    --8<-- "docs/snippets/logger/manual.ts"
     ```
 
 In each case, the printed log will look like this:
@@ -209,38 +159,13 @@ When debugging in non-production environments, you can instruct Logger to log th
 === "Middy Middleware"
 
     ```typescript hl_lines="11"
-    import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
-    import middy from '@middy/core';
-
-    const logger = new Logger();
-
-    const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
-        logger.info('This is an INFO log with some context');
-    };
-
-    export const handler = middy(lambdaHandler)
-        .use(injectLambdaContext(logger, { logEvent: true }));
+    --8<-- "docs/snippets/logger/eventMiddy.ts"
     ```
 
 === "Decorator"
 
     ```typescript hl_lines="8"
-    import { Logger } from '@aws-lambda-powertools/logger';
-    import { LambdaInterface } from '@aws-lambda-powertools/commons';
-
-    const logger = new Logger();
-    
-    class Lambda implements LambdaInterface {
-        // Set the log event flag to true
-        @logger.injectLambdaContext({ logEvent: true })
-        public async handler(_event: any, _context: any): Promise<void> {
-            logger.info('This is an INFO log with some context');
-        }
-
-    }
-
-    const myFunction = new Lambda();
-    export const handler = myFunction.handler.bind(myFunction); // (1)
+    --8<-- "docs/snippets/logger/eventDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -258,47 +183,7 @@ To remove the keys you added, you can use the `removeKeys` method.
 === "handler.ts"
 
     ```typescript hl_lines="5-13 17-25 30"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    // Add persistent log keys via the constructor
-    const logger = new Logger({
-        persistentLogAttributes: { 
-            aws_account_id: '123456789012',
-            aws_region: 'eu-west-1',
-            logger: {
-                name: '@aws-lambda-powertools/logger',
-                version: '0.0.1',
-            },
-            extra_key: "some-value"
-        }
-    });
-
-    // OR add persistent log keys to an existing Logger instance with the appendKeys method:
-    // logger.appendKeys({
-    //     aws_account_id: '123456789012',
-    //     aws_region: 'eu-west-1',
-    //     logger: {
-    //         name: '@aws-lambda-powertools/logger',
-    //         version: '0.0.1',
-    //     },
-    //     extra_key: "some-value"
-    // });    
-
-    export const handler = async (_event: any, _context: any): Promise<unknown> => {
-
-        // If you don't want to log the "extra_key" attribute in your logs, you can remove it
-        logger.removeKeys(["extra_key"])
-    
-        // This info log will print all extra custom attributes added above
-        // Extra attributes: logger object with name and version of the logger library, awsAccountId, awsRegion
-        logger.info('This is an INFO log');
-        logger.info('This is another INFO log');
-        
-        return {
-            foo: 'bar'
-        };
-    
-    };
+    --8<-- "docs/snippets/logger/appendKeys.ts"
     ```
 === "Example CloudWatch Logs excerpt"
 
@@ -345,69 +230,13 @@ If you want to make sure that persistent attributes added **inside the handler f
 === "Middy Middleware"
 
     ```typescript hl_lines="27"
-    import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
-    import middy from '@middy/core';
-
-    // Persistent attributes added outside the handler will be 
-    // cached across invocations
-    const logger = new Logger({
-        logLevel: 'DEBUG',
-        persistentLogAttributes: {
-            foo: "bar",
-            biz: "baz"
-        }
-    });
-
-    const lambdaHandler = async (event: { special_key: string }, _context: any): Promise<void> => {
-        // Persistent attributes added inside the handler will NOT be cached
-        // across invocations
-        if (event['special_key'] === '123456') {
-            logger.appendKeys({
-                details: { special_key: event['special_key'] }
-            });
-        }
-        logger.debug('This is a DEBUG log');
-    };
-
-    // Enable the clear state flag
-    export const handler = middy(lambdaHandler)
-        .use(injectLambdaContext(logger, { clearState: true }));
+    --8<-- "docs/snippets/logger/clearStateMiddy.ts"
     ```
 
 === "Decorator"
 
     ```typescript hl_lines="16"
-    import { Logger } from '@aws-lambda-powertools/logger';
-    import { LambdaInterface } from '@aws-lambda-powertools/commons';
-
-    // Persistent attributes added outside the handler will be 
-    // cached across invocations
-    const logger = new Logger({
-        logLevel: 'DEBUG',
-        persistentLogAttributes: {
-            foo: "bar",
-            biz: "baz"
-        }
-    });
-    
-    class Lambda implements LambdaInterface {
-        // Enable the clear state flag
-        @logger.injectLambdaContext({ clearState: true })
-        public async handler(_event: any, _context: any): Promise<void> {
-            // Persistent attributes added inside the handler will NOT be cached
-            // across invocations
-            if (event['special_key'] === '123456'){
-                logger.appendKeys({
-                    details: { special_key: '123456' }
-                });
-            }
-            logger.debug('This is a DEBUG log');
-        }
-
-    }
-
-    const myFunction = new Lambda();
-    export const handler = myFunction.handler.bind(myFunction); // (1)
+    --8<-- "docs/snippets/logger/clearStateDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -466,44 +295,7 @@ You can append additional data to a single log item by passing objects as additi
 === "handler.ts"
 
     ```typescript hl_lines="14 18-20 24 32"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    const logger = new Logger();
-    
-    export const handler = async (event: any, _context: any): Promise<unknown> => {
-    
-        const myImportantVariable = {
-            foo: 'bar'
-        };
-        
-        // Log additional data in single log items
-        
-        // As second parameter
-        logger.info('This is a log with an extra variable', { data: myImportantVariable });
-        
-        // You can also pass multiple parameters containing arbitrary objects
-        logger.info('This is a log with 3 extra objects',
-            { data: myImportantVariable },
-            { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } },
-            { lambdaEvent: event }
-        );
-
-        // Simply pass a string for logging additional data
-        logger.info('This is a log with additional string value', 'string value');
-
-        // Directly passing an object containing both the message and the additional info
-        const logObject = {
-            message: 'This is a log message',
-            additionalValue: 42
-        };
-
-        logger.info(logObject);
-        
-        return {
-            foo: 'bar'
-        };
-    
-    };
+    --8<-- "docs/snippets/logger/extraData.ts"
     ```
 === "Example CloudWatch Logs excerpt"
 
@@ -556,27 +348,7 @@ The error will be logged with default key name `error`, but you can also pass yo
 === "handler.ts"
 
     ```typescript hl_lines="11 18"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    const logger = new Logger();
-    
-    export const handler = async (_event: any, _context: any): Promise<void> => {
-    
-        try {
-            throw new Error('Unexpected error #1');
-        } catch (error) {
-            // Log information about the error using the default "error" key
-            logger.error('This is the first error', error as Error);
-        }
-
-        try {
-            throw new Error('Unexpected error #2');
-        } catch (error) {
-            // Log information about the error using a custom "myCustomErrorKey" key
-            logger.error('This is the second error', { myCustomErrorKey: error as Error } );
-        }
-    
-    };
+    --8<-- "docs/snippets/logger/logError.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -624,27 +396,7 @@ This can be useful for example if you want to enable multiple Loggers with diffe
 === "handler.ts"
 
     ```typescript hl_lines="9-11 18-19"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    // With this logger, all the INFO logs will be printed
-    const logger = new Logger({
-        logLevel: 'INFO'
-    });
-
-    // With this logger, only the ERROR logs will be printed
-    const childLogger = logger.createChild({
-        logLevel: 'ERROR'
-    });
-    
-    export const handler = async (_event: any, _context: any): Promise<void> => {
-    
-        logger.info('This is an INFO log, from the parent logger');
-        logger.error('This is an ERROR log, from the parent logger');
-        
-        childLogger.info('This is an INFO log, from the child logger');
-        childLogger.error('This is an ERROR log, from the child logger');
-    
-    };
+    --8<-- "docs/snippets/logger/createChild.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -693,30 +445,7 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
 === "handler.ts"
 
     ```typescript hl_lines="6"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    // Notice the log level set to 'ERROR'
-    const logger = new Logger({
-        logLevel: 'ERROR',
-        sampleRateValue: 0.5
-    });
-    
-    export const handler = async (_event: any, _context: any): Promise<void> => {
-
-        // This log item (equal to log level 'ERROR') will be printed to standard output
-        // in all Lambda invocations
-        logger.error('This is an ERROR log');
-
-        // These log items (below the log level 'ERROR') have ~50% chance 
-        // of being printed in a Lambda invocation
-        logger.debug('This is a DEBUG log that has 50% chance of being printed');
-        logger.info('This is an INFO log that has 50% chance of being printed');
-        logger.warn('This is a WARN log that has 50% chance of being printed');
-        
-        // Optional: refresh sample rate calculation on runtime
-        // logger.refreshSampleRateCalculation();
-
-    };
+    --8<-- "docs/snippets/logger/logSampling.ts"
     ```
 
 === "Example CloudWatch Logs excerpt - Invocation #1"
@@ -826,30 +555,7 @@ You can customize the structure (keys and values) of your log items by passing a
 === "handler.ts"
 
     ```typescript hl_lines="2 5"
-    import { Logger } from '@aws-lambda-powertools/logger';
-    import { MyCompanyLogFormatter } from './utils/formatters/MyCompanyLogFormatter';
-
-    const logger = new Logger({
-        logFormatter: new MyCompanyLogFormatter(),
-        logLevel: 'DEBUG',
-        serviceName: 'serverlessAirline',
-        sampleRateValue: 0.5,
-        persistentLogAttributes: {
-            awsAccountId: process.env.AWS_ACCOUNT_ID,
-            logger: {
-                name: '@aws-lambda-powertools/logger',
-                version: '0.0.1'
-            }
-        },
-    });
-    
-    export const handler = async (event, context): Promise<void> => {
-
-        logger.addContext(context);
-
-        logger.info('This is an INFO log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
-
-    };
+    --8<-- "docs/snippets/logger/bringYourOwnFormatterHandler.ts"
     ```
 
 This is how the `MyCompanyLogFormatter` (dummy name) would look like:
@@ -857,44 +563,7 @@ This is how the `MyCompanyLogFormatter` (dummy name) would look like:
 === "utils/formatters/MyCompanyLogFormatter.ts"
 
     ```typescript
-    import { LogFormatter } from '@aws-lambda-powertools/logger';
-    import { LogAttributes, UnformattedAttributes } from '@aws-lambda-powertools/logger/lib/types';
-    
-    // Replace this line with your own type
-    type MyCompanyLog = LogAttributes;
-    
-    class MyCompanyLogFormatter extends LogFormatter {
-    
-        public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
-            return {
-                message: attributes.message,
-                service: attributes.serviceName,
-                environment: attributes.environment,
-                awsRegion: attributes.awsRegion,
-                correlationIds: {
-                    awsRequestId: attributes.lambdaContext?.awsRequestId,
-                    xRayTraceId: attributes.xRayTraceId
-                },
-                lambdaFunction: {
-                    name: attributes.lambdaContext?.functionName,
-                    arn: attributes.lambdaContext?.invokedFunctionArn,
-                    memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
-                    version: attributes.lambdaContext?.functionVersion,
-                    coldStart: attributes.lambdaContext?.coldStart,
-                },
-                logLevel: attributes.logLevel,
-                timestamp: this.formatTimestamp(attributes.timestamp), // You can extend this function
-                logger: {
-                    sampleRateValue: attributes.sampleRateValue,
-                },
-            };
-        }
-        
-    }
-    
-    export {
-        MyCompanyLogFormatter
-    };
+    --8<-- "docs/snippets/logger/bringYourOwnFormatterClass.ts"
     ```
 
 This is how the printed log would look:
@@ -940,33 +609,7 @@ This is a Jest sample that provides the minimum information necessary for Logger
 === "handler.test.ts"
 
     ```typescript
-
-    const dummyContext = {
-        callbackWaitsForEmptyEventLoop: true,
-        functionVersion: '$LATEST',
-        functionName: 'foo-bar-function',
-        memoryLimitInMB: '128',
-        logGroupName: '/aws/lambda/foo-bar-function',
-        logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-        invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-        awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-        getRemainingTimeInMillis: () => 1234,
-        done: () => console.log('Done!'),
-        fail: () => console.log('Failed!'),
-        succeed: () => console.log('Succeeded!'),
-    };
-
-    describe('MyUnitTest', () => {
-
-        test('Lambda invoked successfully', async () => {
-        
-            const testEvent = { test: 'test' };
-            await handler(testEvent, dummyContext);
-
-        });
-
-    });
-
+    --8<-- "docs/snippets/logger/unitTesting.ts"
     ```
 
 !!! tip

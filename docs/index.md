@@ -26,7 +26,7 @@ You can use Powertools in both TypeScript and JavaScript code bases.
 
 Powertools is available in the following formats:
 
-* **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6**](#){: .copyMe}:clipboard:
+* **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7**](#){: .copyMe}:clipboard:
 * **npm**: **`npm install @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics @aws-lambda-powertools/logger`**
 
 ### Lambda Layer
@@ -37,25 +37,25 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
 ??? note "Note: Click to expand and copy any regional Lambda Layer ARN"
 
-    | Region | Layer ARN
-    |--------------------------- | ---------------------------
-    | `us-east-1` | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `us-east-2` | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `us-west-1` | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `us-west-2` | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `ap-south-1` | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `ap-southeast-1` | [arn:aws:lambda:ap-southeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `eu-central-1` | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `eu-west-1` | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `eu-west-2` | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `eu-west-3` | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `eu-north-1` | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `ca-central-1` | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
-    | `sa-east-1` | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:6](#){: .copyMe}:clipboard:
+    | Region           | Layer ARN                                                                                                   |
+    | ---------------- | ----------------------------------------------------------------------------------------------------------- |
+    | `us-east-1`      | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:      |
+    | `us-east-2`      | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:      |
+    | `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:      |
+    | `us-west-2`      | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:      |
+    | `ap-south-1`     | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:     |
+    | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard: |
+    | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard: |
+    | `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard: |
+    | `ap-southeast-1` | [arn:aws:lambda:ap-southeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard: |
+    | `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard: |
+    | `eu-central-1`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:   |
+    | `eu-west-1`      | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:      |
+    | `eu-west-2`      | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:      |
+    | `eu-west-3`      | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:      |
+    | `eu-north-1`     | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:     |
+    | `ca-central-1`   | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:   |
+    | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:7](#){: .copyMe}:clipboard:      |
 
 ??? note "Note: Click to expand and copy code snippets for popular frameworks"
     
@@ -66,7 +66,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
           Type: AWS::Serverless::Function
             Properties:
               Layers:
-                - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6
+                - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7
         ```
 
         If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools` from being bundled since the packages will be already present the Layer:
@@ -97,7 +97,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
           hello:
             handler: lambda_function.lambda_handler
             layers:
-              - arn:aws:lambda:${aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6
+              - arn:aws:lambda:${aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7
         ```
 
         If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools` from being bundled since the packages will be already present the Layer:
@@ -129,7 +129,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
             const powertoolsLayer = lambda.LayerVersion.fromLayerVersionArn(
               this,
               'PowertoolsLayer',
-              `arn:aws:lambda:${cdk.Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6`
+              `arn:aws:lambda:${cdk.Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7`
             );
             
             new lambda.Function(this, 'Function', {
@@ -181,7 +181,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
           role          = ...
           handler       = "index.handler"
           runtime 		= "nodejs16.x"
-          layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6"]
+          layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7"]
           source_code_hash = filebase64sha256("lambda_function_payload.zip")
         }
         ```
@@ -199,7 +199,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
         const lambdaFunction = new aws.lambda.Function("function", {
             layers: [
-                pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6`
+                pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7`
             ],
             code: new pulumi.asset.FileArchive("lambda_function_payload.zip"),
             tracingConfig: {
@@ -223,7 +223,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
         ? Do you want to configure advanced settings? Yes
         ...
         ? Do you want to enable Lambda layers for this function? Yes
-        ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6
+        ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7
         ❯ amplify push -y
         
         # Updating an existing function and add the layer
@@ -233,13 +233,13 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
         - Name: <NAME-OF-FUNCTION>
         ? Which setting do you want to update? Lambda layers configuration
         ? Do you want to enable Lambda layers for this function? Yes
-        ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6
+        ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7
         ? Do you want to edit the local lambda function now? No
         ```
 
     === "Get the Layer .zip contents"
         ```bash title="AWS CLI"
-        aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6 --region {region}
+        aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:7 --region {region}
         ```
 
         The pre-signed URL to download this Lambda Layer will be within `Location` key.
@@ -272,29 +272,29 @@ If instead you want to see Powertools for TypeScript in a slightly more complex 
 
 Core utilities such as Tracing, Logging, and Metrics will be available across all Lambda Powertools languages. Additional utilities are subjective to each language ecosystem and customer demand.
 
-| Utility                                           | Description                                                                                                   |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [Tracer](./core/tracer.md)                        | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions   |
-| [Logger](./core/logger.md)                        | Structured logging made easier, and a middleware to enrich structured logging with key Lambda context details |
-| [Metrics](./core/metrics.md)                      | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)                             |
+| Utility                      | Description                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [Tracer](./core/tracer.md)   | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions   |
+| [Logger](./core/logger.md)   | Structured logging made easier, and a middleware to enrich structured logging with key Lambda context details |
+| [Metrics](./core/metrics.md) | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)                             |
 
 ## Environment variables
 
 ???+ info
 	Explicit parameters take precedence over environment variables
 
-| Environment variable                         | Description                                                                            | Utility                   | Default               |
-|----------------------------------------------|----------------------------------------------------------------------------------------|---------------------------|-----------------------|
-| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       | `service_undefined` |
-| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) | `default_namespace`                |
-| **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                            | [Tracer](./core/tracer)   | `true`                |
-| **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Captures Lambda or method return as metadata.                                          | [Tracer](./core/tracer)   | `true`                |
-| **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Captures Lambda or method exception as metadata.                                       | [Tracer](./core/tracer)   | `true`                |
-| **POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS** | Captures HTTP(s) requests as segments.                                                 | [Tracer](./core/tracer)   | `true`                |
-| **POWERTOOLS_LOGGER_LOG_EVENT**              | Logs incoming event                                                                    | [Logger](./core/logger)   | `false`               |
-| **POWERTOOLS_LOGGER_SAMPLE_RATE**            | Debug log sampling                                                                     | [Logger](./core/logger)   | `0`                   |
-| **POWERTOOLS_DEV**            | Increase JSON indentation to ease debugging when running functions locally or in a non-production environment                                                                     | [Logger](./core/logger)   | `false`                   |
-| **LOG_LEVEL**                                | Sets logging level                                                                     | [Logger](./core/logger)   | `INFO`                |
+| Environment variable                         | Description                                                                                                   | Utility                   | Default             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------- |
+| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging                        | All                       | `service_undefined` |
+| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                                               | [Metrics](./core/metrics) | `default_namespace` |
+| **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                                                   | [Tracer](./core/tracer)   | `true`              |
+| **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Captures Lambda or method return as metadata.                                                                 | [Tracer](./core/tracer)   | `true`              |
+| **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Captures Lambda or method exception as metadata.                                                              | [Tracer](./core/tracer)   | `true`              |
+| **POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS** | Captures HTTP(s) requests as segments.                                                                        | [Tracer](./core/tracer)   | `true`              |
+| **POWERTOOLS_LOGGER_LOG_EVENT**              | Logs incoming event                                                                                           | [Logger](./core/logger)   | `false`             |
+| **POWERTOOLS_LOGGER_SAMPLE_RATE**            | Debug log sampling                                                                                            | [Logger](./core/logger)   | `0`                 |
+| **POWERTOOLS_DEV**                           | Increase JSON indentation to ease debugging when running functions locally or in a non-production environment | [Logger](./core/logger)   | `false`             |
+| **LOG_LEVEL**                                | Sets logging level                                                                                            | [Logger](./core/logger)   | `INFO`              |
 
 Each Utility page provides information on example values and allowed values
 

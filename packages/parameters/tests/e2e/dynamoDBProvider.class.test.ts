@@ -54,6 +54,82 @@ const valueAttr = 'val';
 const integTestApp = new App();
 let stack: Stack;
 
+/**
+ * This test suite deploys a CDK stack with a Lambda function and a number of DynamoDB tables.
+ * The function code uses the Parameters utility to retrieve values from the DynamoDB tables.
+ * It then logs the values to CloudWatch Logs as JSON.
+ * 
+ * Once the stack is deployed, the Lambda function is invoked and the CloudWatch Logs are retrieved.
+ * The logs are then parsed and the values are compared to the expected values in each test case.
+ * 
+ * The tables are populated with data before the Lambda function is invoked. These tables and values
+ * allow to test the different use cases of the DynamoDBProvider class.
+ * 
+ * The tables are:
+ * 
+ * - Table-Get: a table with a single partition key (id) and attribute (value)
+ * +-----------------+----------------------+
+ * |       id        |        value         |
+ * +-----------------+----------------------+
+ * | my-param        | foo                  |
+ * | my-param-json   | "{\"foo\": \"bar\"}" |
+ * | my-param-binary | "YmF6"               |
+ * +-----------------+----------------------+
+ * 
+ * - Table-GetMultiple: a table with a partition key (id) and a sort key (sk) and attribute (value)
+ * +-------------------+---------------+----------------------+
+ * |        id         |      sk       |        value         |
+ * +-------------------+---------------+----------------------+
+ * | my-params         | config        | bar                  |
+ * | my-params         | key           | baz                  |
+ * | my-encoded-params | config.json   | "{\"foo\": \"bar\"}" |
+ * | my-encoded-params | config.binary | "YmF6"               |
+ * +-------------------+---------------+----------------------+
+ * 
+ * - Table-GetCustomKeys: a table with a single partition key (key) and attribute (val)
+ * +-----------------+----------------------+
+ * |       key       |         val          |
+ * +-----------------+----------------------+
+ * | my-param        | foo                  |
+ * +-----------------+----------------------+
+ * 
+ * - Table-GetMultipleCustomKeys: a table with a partition key (key) and a sort key (sort) and attribute (val)
+ * +-------------------+---------------+----------------------+
+ * |        key        |     sort      |         val          |
+ * +-------------------+---------------+----------------------+
+ * | my-params         | config        | bar                  |
+ * | my-params         | key           | baz                  |
+ * +-------------------+---------------+----------------------+
+ * 
+ * The tests are:
+ * 
+ * Test 1
+ * Get a single parameter with default options (keyAttr: 'id', valueAttr: 'value') from table Table-Get
+ * 
+ * Test 2
+ * Get multiple parameters with default options (keyAttr: 'id', sortAttr: 'sk', valueAttr: 'value') from table Table-GetMultiple
+ * 
+ * Test 3
+ * Get a single parameter with custom options (keyAttr: 'key', valueAttr: 'val') from table Table-GetCustomKeys
+ * 
+ * Test 4
+ * Get multiple parameters with custom options (keyAttr: 'key', sortAttr: 'sort', valueAttr: 'val') from table Table-GetMultipleCustomKeys
+ * 
+ * Test 5
+ * Get a single JSON parameter with default options (keyAttr: 'id', valueAttr: 'value') and transform from table Table-Get
+ * 
+ * Test 6
+ * Get a single binrary parameter with default options (keyAttr: 'id', valueAttr: 'value') and transform it from table Table-Get
+ * 
+ * Test 7
+ * Get multiple JSON and binary parameters with default options (keyAttr: 'id', sortAttr: 'sk', valueAttr: 'value') and transform them automatically from table Table-GetMultiple
+ * 
+ * Test 8
+ * Get a parameter twice and check that the value is cached. This uses a custom SDK client that counts the number of calls to DynamoDB.
+ * 
+ * Test 9
+ * Get a cached parameter and force retrieval. This also uses the same custom SDK client that counts the number of calls to DynamoDB.
+ */
 describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () => {
 
   let invocationLogs: InvocationLogs[];

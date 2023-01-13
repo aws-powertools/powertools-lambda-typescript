@@ -1,6 +1,7 @@
 import { Context } from 'aws-lambda';
 import { DynamoDBProvider } from '../../src/dynamodb';
 import { TinyLogger } from '../helpers/tinyLogger';
+// # TODO: Uncomment code below once #1222 is fixed
 /*
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
@@ -38,8 +39,8 @@ const providerGetMultipleCustomKeys = new DynamoDBProvider({
   sortAttr,
   valueAttr,
 });
+// # TODO: Uncomment code below once #1222 is fixed
 /* 
-# TODO: Uncomment this code once the following issue is fixed: #1222
 // Provider test 8, 9
 const customClient = new DynamoDBClient({});
 providerWithMiddleware.middlewareStack.use(middleware);
@@ -156,6 +157,7 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     });
   }
 
+  // # TODO: Uncomment code below once #1222 is fixed
   /**
    * Test 8 - get a parameter twice, second time should be cached
    *  

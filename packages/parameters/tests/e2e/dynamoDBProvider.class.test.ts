@@ -329,6 +329,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     });
 
+    // TODO: implement tests for the following cases once #1222 is merged:
     // Test 8 - get a parameter twice, second time should be cached
     // Test 9 - get a parameter once more but with forceFetch = true
 

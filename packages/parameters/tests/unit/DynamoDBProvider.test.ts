@@ -59,7 +59,10 @@ describe('Class: DynamoDBProvider', () => {
         Key: marshall({
           id: parameterName,
         }),
-        ProjectionExpression: 'value',
+        ExpressionAttributeNames: {
+          '#value': 'value',
+        },
+        ProjectionExpression: '#value',
       });
       expect(parameter).toEqual(parameterValue);
 
@@ -91,7 +94,10 @@ describe('Class: DynamoDBProvider', () => {
         Key: marshall({
           key: parameterName,
         }),
-        ProjectionExpression: 'val',
+        ExpressionAttributeNames: {
+          '#value': 'val',
+        },
+        ProjectionExpression: '#value',
       });
       expect(parameter).toEqual(parameterValue);
 
@@ -125,7 +131,10 @@ describe('Class: DynamoDBProvider', () => {
         Key: marshall({
           id: parameterName,
         }),
-        ProjectionExpression: 'value',
+        ExpressionAttributeNames: {
+          '#value': 'value',
+        },
+        ProjectionExpression: '#value',
         ConsistentRead: true,
       });
       expect(parameter).toEqual(parameterValue);
@@ -164,7 +173,10 @@ describe('Class: DynamoDBProvider', () => {
         Key: marshall({
           id: parameterName,
         }),
-        ProjectionExpression: 'value',
+        ExpressionAttributeNames: {
+          '#value': 'value',
+        },
+        ProjectionExpression: '#value',
       });
 
     });
@@ -206,11 +218,16 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `id = :key`,
+        KeyConditionExpression: `#key = :key`,
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
-        ProjectionExpression: 'sk, value',
+        ExpressionAttributeNames: {
+          '#key': 'id',
+          '#sk': 'sk',
+          '#value': 'value'
+        },
+        ProjectionExpression: '#sk, #value',
       });
       expect(parameters).toEqual({
         a: 'parameter-a',
@@ -256,11 +273,16 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `key = :key`,
+        KeyConditionExpression: `#key = :key`,
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
-        ProjectionExpression: 'sort, val',
+        ExpressionAttributeNames: {
+          '#key': 'key',
+          '#sk': 'sort',
+          '#value': 'val'
+        },
+        ProjectionExpression: '#sk, #value',
       });
       expect(parameters).toEqual({
         a: 'parameter-a',
@@ -308,11 +330,16 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `id = :key`,
+        KeyConditionExpression: `#key = :key`,
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
-        ProjectionExpression: 'sk, value',
+        ExpressionAttributeNames: {
+          '#key': 'id',
+          '#sk': 'sk',
+          '#value': 'value'
+        },
+        ProjectionExpression: '#sk, #value',
         ConsistentRead: true,
       });
       expect(parameters).toEqual({
@@ -419,11 +446,16 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `id = :key`,
+        KeyConditionExpression: `#key = :key`,
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
-        ProjectionExpression: 'sk, value',
+        ExpressionAttributeNames: {
+          '#key': 'id',
+          '#sk': 'sk',
+          '#value': 'value'
+        },
+        ProjectionExpression: '#sk, #value',
         ConsistentRead: true,
         Limit: 10,
       });

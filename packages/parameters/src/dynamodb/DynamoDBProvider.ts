@@ -49,7 +49,10 @@ class DynamoDBProvider extends BaseProvider {
       ...(options?.sdkOptions || {}),
       TableName: this.tableName,
       Key: marshall({ [this.keyAttr]: name }),
-      ProjectionExpression: this.valueAttr,
+      ProjectionExpression: '#value',
+      ExpressionAttributeNames: {
+        '#value': this.valueAttr,
+      }
     };
     const result = await this.client.send(new GetItemCommand(sdkOptions));
 
@@ -63,9 +66,14 @@ class DynamoDBProvider extends BaseProvider {
     const sdkOptions: QueryCommandInput = {
       ...(options?.sdkOptions || {}),
       TableName: this.tableName,
-      KeyConditionExpression: `${this.keyAttr} = :key`,
+      KeyConditionExpression: '#key = :key',
       ExpressionAttributeValues: marshall({ ':key': path }),
-      ProjectionExpression: `${this.sortAttr}, ${this.valueAttr}`,
+      ExpressionAttributeNames: {
+        '#key': this.keyAttr,
+        '#sk': this.sortAttr,
+        '#value': this.valueAttr,
+      },
+      ProjectionExpression: '#sk, #value',
     };
     const paginationOptions: PaginationConfiguration = {
       client: this.client,

@@ -36,17 +36,17 @@ if (!isValidRuntimeKey(runtime)) {
 const uuid = v4();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider');
-const lambdaFunctionCodeFile = 'basicFeatures.dynamoDBProvider.test.functionCode.ts';
+const lambdaFunctionCodeFile = 'dynamoDBProvider.class.test.functionCode.ts';
 
 const dynamoDBClient = new DynamoDBClient({});
 
 const invocationCount = 1;
 
 // Parameters to be used by Parameters in the Lambda function
-const tableGet = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider-Table-Get');
-const tableGetMultiple = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider-Table-GetMultiple');
-const tableGetCustomkeys = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider-Table-GetCustomKeys');
-const tableGetMultipleCustomkeys = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider-Table-GetMultipleCustomKeys');
+const tableGet = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Table-Get');
+const tableGetMultiple = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Table-GetMultiple');
+const tableGetCustomkeys = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Table-GetCustomKeys');
+const tableGetMultipleCustomkeys = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Table-GetMultipleCustomKeys');
 const keyAttr = 'key';
 const sortAttr = 'sort';
 const valueAttr = 'val';
@@ -54,7 +54,7 @@ const valueAttr = 'val';
 const integTestApp = new App();
 let stack: Stack;
 
-describe(`parameters E2E tests (dynamoDBProvider) for runtime: nodejs18x`, () => {
+describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () => {
 
   let invocationLogs: InvocationLogs[];
 
@@ -116,6 +116,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: nodejs18x`, () =>
     const ddbTabelGetMultipleCustomKeys = createDynamoDBTable({
       stack,
       id: 'Table-getMultipleCustomKeys',
+      tableName: tableGetMultipleCustomkeys,
       partitionKey: {
         name: keyAttr,
         type: AttributeType.STRING
@@ -306,7 +307,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: nodejs18x`, () =>
     it('should retrieve a single parameter with binary transform', async () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[4]);
+      const testLog = InvocationLogs.parseFunctionLog(logs[5]);
 
       expect(testLog).toStrictEqual({
         test: 'get-binary-transform',
@@ -319,7 +320,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: nodejs18x`, () =>
     it('should retrieve multiple parameters with auto transforms', async () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[5]);
+      const testLog = InvocationLogs.parseFunctionLog(logs[6]);
 
       expect(testLog).toStrictEqual({
         test: 'get-multiple-auto-transform',

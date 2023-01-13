@@ -147,7 +147,7 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     logger.log({
       test: 'get-multiple-auto-transform',
       value:
-        `${typeof parametersValuesAuto.config},${parametersValuesAuto.key}` // should be object,string
+        `${typeof parametersValuesAuto['config.json']},${typeof parametersValuesAuto['key.binary']}` // should be object,string
     });
   } catch (err) {
     logger.log({

@@ -8,7 +8,7 @@ A suite of utilities for AWS Lambda functions running on the Node.js runtime, to
 You can use Powertools in both TypeScript and JavaScript code bases.
 
 ???+ tip
-    Powertools is also available for [Python](https://awslabs.github.io/aws-lambda-powertools-python/){target="_blank"}, [Java](https://awslabs.github.io/aws-lambda-powertools-java/latest/){target="_blank"}, and [.NET](https://awslabs.github.io/aws-lambda-powertools-dotnet/){target="_blank"}
+    Powertools is also available for [Python](https://awslabs.github.io/aws-lambda-powertools-python/){target="_blank"}, [Java](https://awslabs.github.io/aws-lambda-powertools-java/){target="_blank"}, and [.NET](https://awslabs.github.io/aws-lambda-powertools-dotnet/){target="_blank"}
 
 ??? hint "Support this project by becoming a reference customer, sharing your work, or using Layers :heart:"
 

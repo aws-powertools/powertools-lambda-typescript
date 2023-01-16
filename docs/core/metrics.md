@@ -125,7 +125,7 @@ You can call `addMetric()` with the same name multiple times. The values will be
 
 === "addMetric() with the same name"
 
-    ```typescript hl_lines="8 10"
+    ```typescript hl_lines="7 9"
     --8<-- "docs/snippets/metrics/multiValueMetrics.ts"
     ```
 === "Example CloudWatch Logs excerpt"

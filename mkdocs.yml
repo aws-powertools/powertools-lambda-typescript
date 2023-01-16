@@ -79,6 +79,10 @@ copyright: Copyright &copy; 2023 Amazon Web Services
 plugins:
   - git-revision-date
   - search
+  - exclude:
+      glob:
+        - snippets/node_modules/*
+        - snippets/package.json
 
 extra_css:
   - stylesheets/extra.css

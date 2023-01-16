@@ -10,7 +10,8 @@
     "packages/metrics",
     "packages/tracer",
     "packages/parameters",
-    "packages/idempotency"
+    "packages/idempotency",
+    "docs/snippets"
   ],
   "scripts": {
     "init-environment": "husky install",
@@ -21,8 +22,8 @@
     "build": "npm run build -ws",
     "postversion": "git push && git push --tags",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",
-    "docs-buildDockerImage": "docker build -t powertool-typescript/docs ./docs/",
-    "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertool-typescript/docs",
+    "docs-buildDockerImage": "docker build -t powertools-typescript/docs ./docs/",
+    "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertools-typescript/docs",
     "docs-api-build-run": "npm run docs-generateApiDoc && npx live-server api",
     "docs-generateApiDoc": "typedoc .",
     "docs-runLocalApiDoc": "npx live-server api"

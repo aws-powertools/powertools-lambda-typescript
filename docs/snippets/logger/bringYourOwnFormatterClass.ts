@@ -1,24 +1,37 @@
-import { Logger } from '@aws-lambda-powertools/logger';
-import { MyCompanyLogFormatter } from './utils/formatters/MyCompanyLogFormatter';
+import { LogFormatter } from "@aws-lambda-powertools/logger";
+import {
+  LogAttributes,
+  UnformattedAttributes,
+} from "@aws-lambda-powertools/logger/lib/types";
 
-const logger = new Logger({
-    logFormatter: new MyCompanyLogFormatter(),
-    logLevel: 'DEBUG',
-    serviceName: 'serverlessAirline',
-    sampleRateValue: 0.5,
-    persistentLogAttributes: {
-        awsAccountId: process.env.AWS_ACCOUNT_ID,
-        logger: {
-            name: '@aws-lambda-powertools/logger',
-            version: '0.0.1'
-        }
-    },
-});
+// Replace this line with your own type
+type MyCompanyLog = LogAttributes;
 
-export const handler = async (event, context): Promise<void> => {
+class MyCompanyLogFormatter extends LogFormatter {
+  public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
+    return {
+      message: attributes.message,
+      service: attributes.serviceName,
+      environment: attributes.environment,
+      awsRegion: attributes.awsRegion,
+      correlationIds: {
+        awsRequestId: attributes.lambdaContext?.awsRequestId,
+        xRayTraceId: attributes.xRayTraceId,
+      },
+      lambdaFunction: {
+        name: attributes.lambdaContext?.functionName,
+        arn: attributes.lambdaContext?.invokedFunctionArn,
+        memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
+        version: attributes.lambdaContext?.functionVersion,
+        coldStart: attributes.lambdaContext?.coldStart,
+      },
+      logLevel: attributes.logLevel,
+      timestamp: this.formatTimestamp(attributes.timestamp), // You can extend this function
+      logger: {
+        sampleRateValue: attributes.sampleRateValue,
+      },
+    };
+  }
+}
 
-    logger.addContext(context);
-
-    logger.info('This is an INFO log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
-
-};
+export { MyCompanyLogFormatter };

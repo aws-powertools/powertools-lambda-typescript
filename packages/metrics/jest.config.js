@@ -1,4 +1,8 @@
 module.exports = {
+  displayName: {
+    name: 'AWS Lambda Powertools utility: METRICS',
+    color: 'green',
+  },
   'runner': 'groups',
   'preset': 'ts-jest',
   'transform': {
@@ -33,4 +37,7 @@ module.exports = {
     'json-summary',
     'text',
     'lcov' ],
+  'setupFiles': [
+    '<rootDir>/tests/helpers/populateEnvironmentVariables.ts'
+  ]
 };

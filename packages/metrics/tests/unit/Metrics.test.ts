@@ -7,7 +7,6 @@
 import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Context, Callback } from 'aws-lambda';
 import { Metrics, MetricUnits } from '../../src/';
-import { populateEnvironmentVariables } from '../helpers';
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 29;
@@ -20,7 +19,7 @@ interface LooseObject {
 }
 
 describe('Class: Metrics', () => {
-  const originalEnvironmentVariables = process.env;
+  const ENVIRONMENT_VARIABLES = process.env;
   const context = dummyContext.helloworldContext;
   const event = dummyEvent.Custom.CustomEvent;
 
@@ -29,12 +28,7 @@ describe('Class: Metrics', () => {
   });
 
   beforeAll(() => {
-    populateEnvironmentVariables();
-  });
-
-  afterEach(() => {
-    process.env = originalEnvironmentVariables;
-    delete process.env.POWERTOOLS_SERVICE_NAME;
+    process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
   describe('Feature: Dimensions logging', () => {

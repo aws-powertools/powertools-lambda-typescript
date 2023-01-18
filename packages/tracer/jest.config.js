@@ -1,7 +1,7 @@
 module.exports = {
   displayName: {
     name: 'AWS Lambda Powertools utility: TRACER',
-    color: 'cyan',
+    color: 'white',
   },
   'runner': 'groups',
   'preset': 'ts-jest',

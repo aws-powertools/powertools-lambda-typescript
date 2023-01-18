@@ -4,7 +4,6 @@
  * @group e2e/parameters/dynamodb/class
  */
 import path from 'path';
-import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, Aspects } from 'aws-cdk-lib';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
@@ -138,10 +137,9 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     // Create a stack with a Lambda function
     stack = createStackWithLambdaFunction({
       app: integTestApp,
-      stackName: stackName,
-      functionName: functionName,
+      stackName,
+      functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
-      tracing: Tracing.ACTIVE,
       environment: {
         UUID: uuid,
 
@@ -154,7 +152,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
         SORT_ATTR: sortAttr,
         VALUE_ATTR: valueAttr,
       },
-      runtime: runtime,
+      runtime,
     });
 
     // Create the DynamoDB tables

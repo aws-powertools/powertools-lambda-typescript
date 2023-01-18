@@ -144,13 +144,12 @@ class SSMProvider extends BaseProvider {
     options?: SSMGetOptionsInterface
   ): Promise<string | undefined> {
     const sdkOptions: GetParameterCommandInput = {
+      ...(options?.sdkOptions || {}),
       Name: name,
     };
     if (options) {
-      if (options.hasOwnProperty('decrypt')) sdkOptions.WithDecryption = options.decrypt;
-      if (options.hasOwnProperty('sdkOptions')) {
-        Object.assign(sdkOptions, options.sdkOptions);
-      }
+      if (options.hasOwnProperty('decrypt'))
+        sdkOptions.WithDecryption = options.decrypt;
     }
     const result = await this.client.send(new GetParameterCommand(sdkOptions));
 
@@ -162,19 +161,19 @@ class SSMProvider extends BaseProvider {
     options?: SSMGetMultipleOptionsInterface
   ): Promise<Record<string, string | undefined>> {
     const sdkOptions: GetParametersByPathCommandInput = {
+      ...(options?.sdkOptions || {}),
       Path: path,
     };
     const paginationOptions: PaginationConfiguration = {
       client: this.client
     };
     if (options) {
-      if (options.hasOwnProperty('decrypt')) sdkOptions.WithDecryption = options.decrypt;
-      if (options.hasOwnProperty('recursive')) sdkOptions.Recursive = options.recursive;
-      if (options.hasOwnProperty('sdkOptions')) {
-        Object.assign(sdkOptions, options.sdkOptions);
-        if (sdkOptions.MaxResults) {
-          paginationOptions.pageSize = sdkOptions.MaxResults;
-        }
+      if (options.hasOwnProperty('decrypt'))
+        sdkOptions.WithDecryption = options.decrypt;
+      if (options.hasOwnProperty('recursive'))
+        sdkOptions.Recursive = options.recursive;
+      if (sdkOptions.MaxResults) {
+        paginationOptions.pageSize = sdkOptions.MaxResults;
       }
     }
     

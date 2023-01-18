@@ -1,4 +1,8 @@
 module.exports = {
+  displayName: {
+    name: 'AWS Lambda Powertools utility: COMMONS',
+    color: 'red',
+  },
   'preset': 'ts-jest',
   'transform': {
     '^.+\\.ts?$': 'ts-jest',

@@ -1,7 +1,7 @@
 module.exports = {
   displayName: {
     name: 'AWS Lambda Powertools utility: IDEMPOTENCY',
-    color: 'blue',
+    color: 'yellow',
   },
   'runner': 'groups',
   'preset': 'ts-jest',

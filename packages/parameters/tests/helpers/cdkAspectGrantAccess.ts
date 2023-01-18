@@ -3,6 +3,7 @@ import { IConstruct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 /**
  * An aspect that grants access to resources to a Lambda function.
@@ -19,9 +20,9 @@ import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
  * @see {@link https://docs.aws.amazon.com/cdk/v2/guide/aspects.html|CDK Docs - Aspects}
  */
 export class ResourceAccessGranter implements IAspect {
-  private readonly resources: Table[] | Secret[];
+  private readonly resources: Table[] | Secret[] | StringParameter[];
 
-  public constructor(resources: Table[] | Secret[]) {
+  public constructor(resources: Table[] | Secret[] | StringParameter[]) {
     this.resources = resources;
   }
 
@@ -30,11 +31,14 @@ export class ResourceAccessGranter implements IAspect {
     if (node instanceof NodejsFunction) {
 
       // Grant access to the resources
-      this.resources.forEach((resource: Table | Secret) => {
+      this.resources.forEach((resource: Table | Secret | StringParameter) => {
 
         if (resource instanceof Table) {
           resource.grantReadData(node);
-        } else if (resource instanceof Secret) {
+        } else if (
+          resource instanceof Secret ||
+          resource instanceof StringParameter
+        ) {
           resource.grantRead(node);
         }
 

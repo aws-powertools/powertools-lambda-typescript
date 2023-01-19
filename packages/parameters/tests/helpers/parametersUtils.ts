@@ -4,7 +4,6 @@ import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Key } from 'aws-cdk-lib/aws-kms';
 import { StringParameter, IStringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Table, TableProps, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 

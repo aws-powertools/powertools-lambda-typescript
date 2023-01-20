@@ -9,25 +9,21 @@ import { IdempotencyRecord, PersistenceLayer } from '../../src/persistence';
 import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
 import { AnyIdempotentFunction, IdempotencyRecordStatus } from '../../src/types';
 import { IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyInconsistentStateError, IdempotencyPersistenceLayerError } from '../../src/Exceptions';
-// jest.mock('../../src/persistence');
+
 const mockSaveInProgress = jest.spyOn(PersistenceLayer.prototype, 'saveInProgress').mockImplementation();
 const mockGetRecord = jest.spyOn(PersistenceLayer.prototype, 'getRecord').mockImplementation();
 
-const deleteRecord = jest.fn();
-const getRecord = jest.fn();
-const putRecord = jest.fn();
-const updateRecord = jest.fn();
-
 class PersistenceLayerTestClass extends PersistenceLayer {
-  protected _deleteRecord = deleteRecord;
-  protected _getRecord = getRecord;
-  protected _putRecord = putRecord;
-  protected _updateRecord = updateRecord;
+  protected _deleteRecord = jest.fn();
+  protected _getRecord = jest.fn();
+  protected _putRecord = jest.fn();
+  protected _updateRecord = jest.fn();
 }
 
 describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
   describe('Given options for idempotency', (options: IdempotencyOptions = { persistenceStore: new PersistenceLayerTestClass(), dataKeywordArgument: 'testingKey' }) => {
-    const inputRecord = { testingKey: 'thisWillBeSaved', otherKey: 'thisWillNot' };
+    const keyValueToBeSaved = 'thisWillBeSaved';
+    const inputRecord = { testingKey: keyValueToBeSaved, otherKey: 'thisWillNot' };
     describe('When wrapping a function with no previous executions', () => {
       let resultingFunction: AnyIdempotentFunction<string>;
       beforeEach(async () => {
@@ -36,7 +32,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
 
       test('Then it will save the record to IN_PROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith('thisWillBeSaved');
+        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
 
       test('Then it will call the function that was wrapped with the whole input record', () => {
@@ -59,11 +55,11 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
   
       test('Then it will attempt to save the record to IN_PROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith('thisWillBeSaved');
+        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
   
       test('Then it will get the previous execution record', () => {
-        expect(mockGetRecord).toBeCalledWith('thisWillBeSaved');
+        expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
       });
 
       test('Then an IdempotencyAlreadyInProgressError is thrown', ()=> {
@@ -86,11 +82,11 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
     
       test('Then it will attempt to save the record to IN_PROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith('thisWillBeSaved');
+        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
     
       test('Then it will get the previous execution record', () => {
-        expect(mockGetRecord).toBeCalledWith('thisWillBeSaved');
+        expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
       });
   
       test('Then an IdempotencyInconsistentStateError is thrown', ()=> {
@@ -108,11 +104,11 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
     
       test('Then it will attempt to save the record to IN_PROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith('thisWillBeSaved');
+        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
     
       test('Then it will get the previous execution record', () => {
-        expect(mockGetRecord).toBeCalledWith('thisWillBeSaved');
+        expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
       });
 
       //This should be the saved record once FR3 is complete https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447
@@ -135,7 +131,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
       
       test('Then it will attempt to save the record to IN_PROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith('thisWillBeSaved');
+        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
     
       test('Then an IdempotencyPersistenceLayerError is thrown', ()=> {

@@ -10,5 +10,5 @@ type AnyIdempotentFunction<U> = (record: Record<string,any>) => Promise<U>;
 export {
   // AnyFunction,
   AnyFunctionWithRecord,
-  AnyIdempotentFunction as AnyIdempotencyFunction
+  AnyIdempotentFunction
 };

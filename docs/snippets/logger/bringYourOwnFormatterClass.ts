@@ -1,8 +1,8 @@
-import { LogFormatter } from "@aws-lambda-powertools/logger";
+import { LogFormatter } from '@aws-lambda-powertools/logger';
 import {
   LogAttributes,
   UnformattedAttributes,
-} from "@aws-lambda-powertools/logger/lib/types";
+} from '@aws-lambda-powertools/logger/lib/types';
 
 // Replace this line with your own type
 type MyCompanyLog = LogAttributes;

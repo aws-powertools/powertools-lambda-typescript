@@ -4,5 +4,5 @@ const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orde
 metrics.setDefaultDimensions({ 'environment': 'prod', 'foo': 'bar' });
 
 export const handler = async (event: any, _context: any): Promise<void> => {
-    metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+  metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
 };

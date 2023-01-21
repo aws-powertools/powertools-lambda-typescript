@@ -4,9 +4,9 @@ import middy from '@middy/core';
 const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
 
 const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
-    metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-    metrics.addMetadata('bookingId', '7051cd10-6283-11ec-90d6-0242ac120003');
+  metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+  metrics.addMetadata('bookingId', '7051cd10-6283-11ec-90d6-0242ac120003');
 };
 
 export const handler = middy(lambdaHandler)
-    .use(logMetrics(metrics));
+  .use(logMetrics(metrics));

@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     browser: false,
     es2020: true,
@@ -64,4 +65,15 @@ module.exports = {
     quotes: [ 'error', 'single', { allowTemplateLiterals: true } ],
     semi: [ 'error', 'always' ]
   },
+  overrides:[
+    {
+      files:['docs/snippets/**/*.ts'],
+      rules:{
+        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-unused-vars': 'warn',
+        '@typescript-eslint/explicit-member-accessibility': 'warn',
+        '@typescript-eslint/no-var-requires': 'warn'
+      }
+    }
+  ]
 };

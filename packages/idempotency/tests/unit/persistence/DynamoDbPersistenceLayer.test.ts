@@ -7,7 +7,7 @@ import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
 import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordStatus';
 
 /**
- * Test Dynamo Persistence layer
+  * Test DynamoDBPersistenceLayer class
  *
  * @group unit/idempotency/all
  */
@@ -43,16 +43,21 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       jest.spyOn(Date, 'now').mockReturnValue(currentDateInMilliseconds);
     });
 
-    test('when called with a record that succeeds condition, it puts record in dynamo table', async () => {
+    test('when called with a record that meets conditions, it puts record in dynamo table', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp
+      });
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).resolves({});
 
       // Act
@@ -68,16 +73,21 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       });
     });
 
-    test('when called with a record that fails condition, it throws IdempotencyItemAlreadyExistsError', async () => {
+    test('when called with a record that fails any condition, it throws IdempotencyItemAlreadyExistsError', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({ 
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp
+      });
 
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).rejects({ name: 'ConditionalCheckFailedException' });
 
@@ -103,13 +113,18 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when encountering an unknown error, it throws the causing error', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({ 
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp 
+      });
 
       const dynamoClient = mockClient(DynamoDBDocument).on(PutCommand).rejects(new Error());
 
@@ -134,10 +149,10 @@ describe('Class: DynamoDbPersistenceLayer', () => {
   });
 
   describe('Method: _getRecord', () => {
-    test('when called with a record whose key exists, it gets record', async () => {
+    test('when called with a record whose key exists, it gets the correct record', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
 
@@ -145,7 +160,15 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       const expiryTimestamp = 10;
       const inProgressExpiryTimestamp = 10;
       const responseData = {};
-      const dynamoClient = mockClient(DynamoDBDocument).on(GetCommand).resolves({ Item: { id: key, status, 'expiration': expiryTimestamp, 'in_progress_expiry_attr': inProgressExpiryTimestamp, data: responseData } });
+      const dynamoClient = mockClient(DynamoDBDocument).on(GetCommand).resolves({ 
+        Item: { 
+          id: key, 
+          status, 
+          'expiration': expiryTimestamp, 
+          'in_progress_expiry_attr': inProgressExpiryTimestamp, 
+          data: responseData 
+        } 
+      });
       jest.spyOn(Date, 'now').mockReturnValue(0);
 
       // Act
@@ -153,7 +176,11 @@ describe('Class: DynamoDbPersistenceLayer', () => {
 
       // Assess
       expect(dynamoClient).toReceiveCommandWith(GetCommand, {
-        TableName: tableName, Key: { id: key }
+        TableName: tableName, 
+        Key: { 
+          id: key 
+        },
+        ConsistentRead: true
       });
       expect(record.getStatus()).toEqual(IdempotencyRecordStatus.INPROGRESS);
       expect(record.idempotencyKey).toEqual(key);
@@ -162,10 +189,10 @@ describe('Class: DynamoDbPersistenceLayer', () => {
       expect(record.expiryTimestamp).toEqual(expiryTimestamp);
     });
 
-    test('when called with a record whose key does not exist, it throws error', async () => {
+    test('when called with a record whose key does not exist, it throws IdempotencyItemNotFoundError', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
   
       const key = 'key';
 
@@ -182,23 +209,32 @@ describe('Class: DynamoDbPersistenceLayer', () => {
   
       // Assess
       expect(dynamoClient).toReceiveCommandWith(GetCommand, {
-        TableName: tableName, Key: { id: key }
+        TableName: tableName, 
+        Key: { 
+          id: key 
+        },
+        ConsistentRead: true
       });
       expect(error).toBeInstanceOf(IdempotencyItemNotFoundError);
     });
   });
 
   describe('Method: _updateRecord', () => {
-    test('when called to update a record', async () => {
+    test('when called to update a record, it resolves successfully', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp
+      });
       const dynamoClient = mockClient(DynamoDBDocument).on(UpdateCommand).resolves({});
 
       // Act
@@ -219,13 +255,18 @@ describe('Class: DynamoDbPersistenceLayer', () => {
     test('when called with a valid record, record is deleted', async () => {
       // Prepare
       const tableName = 'tableName';
-      const persistenceLayer = new TestDynamoPersistenceLayer(tableName);
+      const persistenceLayer = new TestDynamoPersistenceLayer({ tableName });
 
       const key = 'key';
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const inProgressExpiryTimestamp = 0;
-      const record = new IdempotencyRecord(key, status, expiryTimestamp, inProgressExpiryTimestamp, undefined, undefined);
+      const record = new IdempotencyRecord({ 
+        idempotencyKey: key, 
+        status, 
+        expiryTimestamp, 
+        inProgressExpiryTimestamp
+      });
       const dynamoClient = mockClient(DynamoDBDocument).on(DeleteCommand).resolves({});
 
       // Act

@@ -92,7 +92,6 @@
     "node": ">=12"
   },
   "dependencies": {
-    "@aws-sdk/lib-dynamodb": "^3.170.0",
     "hosted-git-info": "^5.0.0"
   }
 }

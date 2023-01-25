@@ -1,14 +1,23 @@
+import { IdempotencyRecordOptions } from 'types/IdempotencyRecordOptions';
 import { IdempotencyInvalidStatusError } from '../Exceptions';
 import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
 
 class IdempotencyRecord {
+  public expiryTimestamp: number | undefined;
+  public idempotencyKey: string;
+  public inProgressExpiryTimestamp: number | undefined;
+  public payloadHash: string | undefined;
+  public responseData: Record<string, unknown> | undefined;
+  private status: IdempotencyRecordStatus;
 
-  public constructor(public idempotencyKey: string,
-    private status: IdempotencyRecordStatus,
-    public expiryTimestamp: number | undefined,
-    public inProgressExpiryTimestamp: number | undefined,
-    public responseData: Record<string, unknown> | undefined,
-    public payloadHash: string | undefined) { }
+  public constructor(constructorOptions: IdempotencyRecordOptions) { 
+    this.idempotencyKey = constructorOptions.idempotencyKey;
+    this.expiryTimestamp = constructorOptions.expiryTimestamp;
+    this.inProgressExpiryTimestamp = constructorOptions.inProgressExpiryTimestamp;
+    this.responseData = constructorOptions.responseData;
+    this.payloadHash = constructorOptions.payloadHash;
+    this.status = constructorOptions.status;
+  }
 
   public getResponse(): Record<string, unknown> | undefined {
     return this.responseData;

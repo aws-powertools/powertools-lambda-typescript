@@ -1,3 +1,4 @@
+import { LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
@@ -9,7 +10,7 @@ class Lambda implements LambdaInterface {
     return 'foo bar';
   }
 
-  public async handler(_event: any, _context: any): Promise<void> {
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
     /* ... */
   }
 }

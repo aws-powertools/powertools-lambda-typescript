@@ -11,8 +11,8 @@ class Lambda implements LambdaInterface {
     return 'foo bar';
   }
 
-  public async handler(_event: any, _context: any): Promise<void> {
-    /* ... */
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
+    await this.getChargeId();
   }
 }
  

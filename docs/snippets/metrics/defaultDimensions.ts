@@ -6,6 +6,6 @@ const metrics = new Metrics({
   defaultDimensions: { 'environment': 'prod', 'foo': 'bar' } 
 });
 
-export const handler = async (_event: any, _context: any): Promise<void> => {
+export const handler = async (_event: unknown, _context: unknown): Promise<void> => {
   metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
 };

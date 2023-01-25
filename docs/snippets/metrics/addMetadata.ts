@@ -3,7 +3,7 @@ import middy from '@middy/core';
 
 const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
 
-const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
+const lambdaHandler = async (_event: unknown, _context: unknown): Promise<void> => {
   metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
   metrics.addMetadata('bookingId', '7051cd10-6283-11ec-90d6-0242ac120003');
 };

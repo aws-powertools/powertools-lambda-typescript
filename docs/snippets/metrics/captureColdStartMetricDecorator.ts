@@ -6,7 +6,7 @@ const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orde
 export class MyFunction implements LambdaInterface {
 
   @metrics.logMetrics({ captureColdStartMetric: true })
-  public async handler(_event: any, _context: any): Promise<void> {
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
     metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
   }
 }

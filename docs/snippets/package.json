@@ -25,9 +25,9 @@
   "devDependencies": {
     "@aws-sdk/client-appconfigdata": "^3.245.0",
     "@aws-sdk/client-dynamodb": "^3.245.0",
-    "@aws-sdk/client-s3": "^3.254.0",
     "@aws-sdk/client-secrets-manager": "^3.250.0",
     "@aws-sdk/client-ssm": "^3.245.0",
-    "@aws-sdk/util-dynamodb": "^3.245.0"
+    "@aws-sdk/util-dynamodb": "^3.245.0",
+    "axios": "^1.2.4"
   }
 }

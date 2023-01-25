@@ -24,7 +24,7 @@ const logger = new Logger({
 //     extra_key: "some-value"
 // });    
 
-export const handler = async (_event: any, _context: any): Promise<unknown> => {
+export const handler = async (_event: unknown, _context: unknown): Promise<unknown> => {
 
   // If you don't want to log the "extra_key" attribute in your logs, you can remove it
   logger.removeKeys(['extra_key']);

@@ -6,7 +6,7 @@ const logger = new Logger();
 class Lambda implements LambdaInterface {
   // Decorate your handler class method
   @logger.injectLambdaContext()
-  public async handler(_event: any, _context: any): Promise<void> {
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
     logger.info('This is an INFO log with some context');
   }
 

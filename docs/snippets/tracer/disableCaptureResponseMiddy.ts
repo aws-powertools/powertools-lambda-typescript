@@ -3,7 +3,7 @@ import middy from '@middy/core';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
+const lambdaHandler = async (_event: unknown, _context: unknown): Promise<void> => {
   /* ... */
 };
 

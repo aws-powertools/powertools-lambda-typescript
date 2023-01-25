@@ -3,8 +3,8 @@ import middy from '@middy/core'; // (1)
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
-  /* ... */
+const lambdaHandler = async (_event: unknown, _context: unknown): Promise<void> => {
+  tracer.putAnnotation('successfulBooking', true);
 };
 
 // Wrap the handler with middy

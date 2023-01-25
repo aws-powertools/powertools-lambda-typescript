@@ -5,8 +5,8 @@ const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
 class Lambda implements LambdaInterface {
   @tracer.captureLambdaHandler({ captureResponse: false })
-  async handler(_event: any, _context: any): Promise<void> {
-    /* ... */
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
+    tracer.getSegment();
   }
 }
 

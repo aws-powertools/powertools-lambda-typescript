@@ -27,8 +27,7 @@ const getChargeId = async (): Promise<unknown> => {
   return res;
 };
 
-export const handler = async (_event: any, _context: any): Promise<void> => {
-  const chargeId = getChargeId();
-  const payment = collectPayment(chargeId);
-  /* ... */
+export const handler = async (_event: unknown, _context: unknown): Promise<void> => {
+  await getChargeId();
+  
 };

@@ -2,7 +2,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 
 const logger = new Logger();
 
-export const handler = async (event: any, _context: any): Promise<unknown> => {
+export const handler = async (event: unknown, _context: unknown): Promise<unknown> => {
 
   const myImportantVariable = {
     foo: 'bar'

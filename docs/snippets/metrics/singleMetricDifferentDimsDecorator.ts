@@ -6,7 +6,7 @@ const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orde
 class Lambda implements LambdaInterface {
 
   @metrics.logMetrics()
-  public async handler(_event: any, _context: any): Promise<void> {
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
     metrics.addDimension('metricUnit', 'milliseconds');
     // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
     metrics.addMetric('latency', MetricUnits.Milliseconds, 56);

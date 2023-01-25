@@ -3,7 +3,7 @@ import middy from '@middy/core';
 
 const logger = new Logger();
 
-const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
+const lambdaHandler = async (_event: unknown, _context: unknown): Promise<void> => {
   logger.info('This is an INFO log with some context');
 };
 

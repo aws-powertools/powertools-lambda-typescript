@@ -6,7 +6,7 @@ const logger = new Logger({
   sampleRateValue: 0.5
 });
 
-export const handler = async (_event: any, _context: any): Promise<void> => {
+export const handler = async (_event: unknown, _context: unknown): Promise<void> => {
 
   // This log item (equal to log level 'ERROR') will be printed to standard output
   // in all Lambda invocations

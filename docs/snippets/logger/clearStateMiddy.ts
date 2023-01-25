@@ -11,7 +11,7 @@ const logger = new Logger({
   }
 });
 
-const lambdaHandler = async (event: { special_key: string }, _context: any): Promise<void> => {
+const lambdaHandler = async (event: { special_key: string }, _context: unknown): Promise<void> => {
   // Persistent attributes added inside the handler will NOT be cached
   // across invocations
   if (event['special_key'] === '123456') {

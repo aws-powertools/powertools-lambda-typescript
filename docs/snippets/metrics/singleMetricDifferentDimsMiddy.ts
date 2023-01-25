@@ -3,7 +3,7 @@ import middy from '@middy/core';
 
 const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
 
-const lambdaHandler = async (_event: any, _context: any): Promise<void> => {
+const lambdaHandler = async (_event: unknown, _context: unknown): Promise<void> => {
   metrics.addDimension('metricUnit', 'milliseconds');
   // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
   metrics.addMetric('latency', MetricUnits.Milliseconds, 56);

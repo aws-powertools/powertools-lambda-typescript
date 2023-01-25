@@ -2,7 +2,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 
 const logger = new Logger();
 
-export const handler = async (_event: any, _context: any): Promise<void> => {
+export const handler = async (_event: unknown, _context: unknown): Promise<void> => {
 
   try {
     throw new Error('Unexpected error #1');

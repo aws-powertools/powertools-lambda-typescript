@@ -14,7 +14,7 @@ const logger = new Logger({
 class Lambda implements LambdaInterface {
   // Enable the clear state flag
   @logger.injectLambdaContext({ clearState: true })
-  public async handler(_event: any, _context: any): Promise<void> {
+  public async handler(event: unknown, _context: unknown): Promise<void> {
     // Persistent attributes added inside the handler will NOT be cached
     // across invocations
     if (event['special_key'] === '123456'){

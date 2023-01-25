@@ -2,16 +2,13 @@
 
 import { AnyFunctionWithRecord, IdempotencyRecordStatus } from './types';
 import { IdempotencyOptions } from './IdempotencyOptions';
-import { IdempotencyRecord, PersistenceLayerInterface } from 'persistence';
+import { IdempotencyRecord } from 'persistence';
 import { IdempotencyInconsistentStateError, IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyPersistenceLayerError } from './Exceptions';
 
 export class IdempotencyHandler<U> {
-  private persistenceLayer: PersistenceLayerInterface;
 
   public constructor(private functiontoMakeIdempotent: AnyFunctionWithRecord<U>, private functionPayloadToBeHashed: unknown, 
-    private idempotencyOptions: IdempotencyOptions, private fullFunctionPayload: Record<string, any>) {
-    this.persistenceLayer = idempotencyOptions.persistenceStore;
-  }
+    private idempotencyOptions: IdempotencyOptions, private fullFunctionPayload: Record<string, any>) {}
 
   public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U{ 
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
@@ -26,10 +23,10 @@ export class IdempotencyHandler<U> {
 
   public async process_idempotency(): Promise<U> {
     try {
-      await this.persistenceLayer.saveInProgress(this.functionPayloadToBeHashed);
+      await this.idempotencyOptions.persistenceStore.saveInProgress(this.functionPayloadToBeHashed);
     } catch (e) {
       if (e instanceof IdempotencyItemAlreadyExistsError) {
-        const idempotencyRecord: IdempotencyRecord = await this.persistenceLayer.getRecord(this.functionPayloadToBeHashed);
+        const idempotencyRecord: IdempotencyRecord = await this.idempotencyOptions.persistenceStore.getRecord(this.functionPayloadToBeHashed);
 
         return this.determineResultFromIdempotencyRecord(idempotencyRecord);
       } else {

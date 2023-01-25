@@ -13,7 +13,6 @@ export class IdempotencyHandler<U> {
     this.persistenceLayer = idempotencyOptions.persistenceStore;
   }
 
-  //Would need to reduce this in the future to only be the promise since we need to call persistence store
   public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U{ 
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError();

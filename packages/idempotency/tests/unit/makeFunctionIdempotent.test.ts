@@ -21,6 +21,7 @@ class PersistenceLayerTestClass extends PersistenceLayer {
 }
 
 describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
+  beforeEach(()=> jest.clearAllMocks());
   describe('Given options for idempotency', (options: IdempotencyOptions = { persistenceStore: new PersistenceLayerTestClass(), dataKeywordArgument: 'testingKey' }) => {
     const keyValueToBeSaved = 'thisWillBeSaved';
     const inputRecord = { testingKey: keyValueToBeSaved, otherKey: 'thisWillNot' };
@@ -62,6 +63,10 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
         expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
       });
 
+      test('Then the function that was wrapped is not called again', () => {
+        expect(functionToWrap).not.toBeCalled();
+      });
+
       test('Then an IdempotencyAlreadyInProgressError is thrown', ()=> {
         expect(resultingError).toBeInstanceOf(IdempotencyAlreadyInProgressError);
       });
@@ -87,6 +92,10 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
     
       test('Then it will get the previous execution record', () => {
         expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
+      });
+
+      test('Then the function that was wrapped is not called again', () => {
+        expect(functionToWrap).not.toBeCalled();
       });
   
       test('Then an IdempotencyInconsistentStateError is thrown', ()=> {

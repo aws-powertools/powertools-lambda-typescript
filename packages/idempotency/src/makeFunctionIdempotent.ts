@@ -1,10 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AnyFunction } from './types/AnyFunction';
+import { AnyFunctionWithRecord, AnyIdempotentFunction } from './types/AnyFunction';
 import { IdempotencyOptions } from './IdempotencyOptions';
+import { IdempotencyHandler } from './IdempotencyHandler';
 
-const makeFunctionIdempotent = <U>(
-  fn: AnyFunction<U>,
-  _options: IdempotencyOptions
-): (...args: Array<any>) => Promise<U | void> => (...args) => fn(...args);
+const makeFunctionIdempotent = function <U>(
+  fn: AnyFunctionWithRecord<U>,
+  options: IdempotencyOptions
+): AnyIdempotentFunction<U> {
+  const wrappedFunction: AnyIdempotentFunction<U> = function (record: Record<string, any>): Promise<U> {
+    const idempotencyHandler: IdempotencyHandler<U> = new IdempotencyHandler<U>(fn, record[options.dataKeywordArgument], options, record);
+
+    return idempotencyHandler.process_idempotency();
+  };
+
+  return wrappedFunction;
+};
 
 export { makeFunctionIdempotent };

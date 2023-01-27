@@ -1,0 +1,8 @@
+name: On PR code update
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+jobs:
+  run-unit-tests:
+    uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml

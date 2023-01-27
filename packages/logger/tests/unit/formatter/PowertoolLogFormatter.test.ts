@@ -11,7 +11,7 @@ import { UnformattedAttributes } from '../../../src/types';
 describe('Class: PowertoolLogFormatter', () => {
 
   const mockDate = new Date(1466424490000);
-  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
+  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
   beforeEach(() => {
     dateSpy.mockClear();

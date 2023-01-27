@@ -20,7 +20,7 @@ jobs:
   run-unit-tests:
     needs: get_pr_details
     if: ${{ needs.get_pr_details.outputs.prIsMerged == 'true' }}
-    uses: ./.github/workflows/reusable-run-unit-tests.yml
+    uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
   publish:
     needs:
       [get_pr_details, run-unit-tests]

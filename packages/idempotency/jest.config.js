@@ -1,7 +1,7 @@
 module.exports = {
   displayName: {
     name: 'AWS Lambda Powertools utility: IDEMPOTENCY',
-    color: 'cyan',
+    color: 'yellow',
   },
   'runner': 'groups',
   'preset': 'ts-jest',
@@ -25,6 +25,7 @@ module.exports = {
   'coveragePathIgnorePatterns': [
     '/node_modules/',
     '/types/',
+    'src/makeFunctionIdempotent.ts', // TODO: remove this once makeFunctionIdempotent is implemented
   ],
   'coverageThreshold': {
     'global': {

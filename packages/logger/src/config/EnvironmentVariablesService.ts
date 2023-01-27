@@ -20,6 +20,7 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
   // Reserved environment variables
   private awsRegionVariable = 'AWS_REGION';
   private currentEnvironmentVariable = 'ENVIRONMENT';
+  private devModeVariable = 'POWERTOOLS_DEV';
   private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
   private functionVersionVariable = 'AWS_LAMBDA_FUNCTION_VERSION';
   private logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
@@ -81,8 +82,8 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
    */
   public getLogEvent(): boolean {
     const value = this.get(this.logEventVariable);
-
-    return value.toLowerCase() === 'true' || value === '1';
+    
+    return this.isValueTrue(value);
   }
 
   /**
@@ -103,6 +104,29 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
     const value = this.get(this.sampleRateValueVariable);
 
     return (value && value.length > 0) ? Number(value) : undefined;
+  }
+
+  /**
+   * It returns true if the POWERTOOLS_DEV environment variable is set to truthy value.
+   *
+   * @returns {boolean}
+   */
+  public isDevMode(): boolean {
+    const value = this.get(this.devModeVariable);
+
+    return this.isValueTrue(value);
+  }
+
+  /**
+   * It returns true if the string value represents a boolean true value.
+   *
+   * @param {string} value
+   * @returns boolean
+   */
+  public isValueTrue(value: string): boolean {
+    const truthyValues: string[] = [ '1', 'y', 'yes', 't', 'true', 'on' ];
+
+    return truthyValues.includes(value.toLowerCase());
   }
 
 }

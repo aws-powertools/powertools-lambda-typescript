@@ -2,12 +2,12 @@ site_name: AWS Lambda Powertools for TypeScript
 site_description: AWS Lambda Powertools for TypeScript
 site_author: Amazon Web Services
 repo_url: https://github.com/awslabs/aws-lambda-powertools-typescript
-edit_uri: edit/develop/docs
+edit_uri: edit/main/docs
 
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
-  - Roadmap: https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1" target="_blank
+  - Roadmap: roadmap.md
   - API reference: api/" target="_blank
   - Core utilities:
       - core/tracer.md
@@ -21,25 +21,28 @@ theme:
   palette:
     - scheme: default
       primary: deep orange
+      accent: deep orange
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: teal
+      primary: deep orange
+      accent: deep orange
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
   features:
+    - header.autohide
     - navigation.sections
     - navigation.expand
     - navigation.top
-    - toc.follow
     - navigation.instant
     - navigation.indexes
     - navigation.tracking
     - content.code.annotate
+    - toc.follow
     - toc.integrate
+    - announce.dismiss
   icon:
     repo: fontawesome/brands/github
   logo: media/aws-logo-light.svg
@@ -52,7 +55,6 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.highlight:
       linenums: true
-  - pymdownx.superfences
   - pymdownx.details
   - pymdownx.snippets:
       base_path: "."
@@ -62,7 +64,9 @@ markdown_extensions:
       permalink: true
       toc_depth: 4
   - attr_list
-  - pymdownx.emoji
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.superfences:
       custom_fences:
@@ -70,12 +74,15 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
 
-copyright: Copyright &copy; 2022 Amazon Web Services
+copyright: Copyright &copy; 2023 Amazon Web Services
 
 plugins:
   - git-revision-date
   - search
-  - glightbox
+  - exclude:
+      glob:
+        - snippets/node_modules/*
+        - snippets/package.json
 
 extra_css:
   - stylesheets/extra.css
@@ -87,3 +94,9 @@ extra:
   version:
     provider: mike
     default: latest
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/awslabs/aws-lambda-powertools-typescript
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/B8zZKbbyET
+      name: Join our Discord Server!

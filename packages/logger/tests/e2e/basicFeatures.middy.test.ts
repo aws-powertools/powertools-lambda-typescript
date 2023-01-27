@@ -27,7 +27,7 @@ import {
   TEARDOWN_TIMEOUT
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || 'nodejs16x';
+const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);

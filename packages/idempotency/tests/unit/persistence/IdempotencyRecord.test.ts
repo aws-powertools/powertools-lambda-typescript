@@ -1,11 +1,12 @@
-import { IdempotencyInvalidStatusError } from '../../../src/Exceptions';
-import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
-import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordStatus';
 /**
  * Test IdempotencyRecord class
  *
  * @group unit/idempotency/all
  */
+import { IdempotencyInvalidStatusError } from '../../../src/Exceptions';
+import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
+import { IdempotencyRecordStatus } from '../../../src/types/IdempotencyRecordStatus';
+
 const mockIdempotencyKey = '123';
 const mockData = undefined;
 const mockInProgressExpiry = 123;

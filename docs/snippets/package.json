@@ -1,0 +1,32 @@
+{
+  "name": "docs",
+  "version": "0.0.1",
+  "description": "A collection code snippets for the AWS Lambda Powertools for TypeScript docs",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "scripts": {
+    "test": "echo 'Not Applicable'",
+    "test:e2e": "echo 'Not Applicable'",
+    "build": "echo 'Not Applicable'",
+    "lint": "echo 'Not Applicable'",
+    "lint-fix": "echo 'Not Applicable'"
+  },
+  "license": "MIT-0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+  },
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
+  "devDependencies": {
+    "@aws-sdk/client-appconfigdata": "^3.245.0",
+    "@aws-sdk/client-dynamodb": "^3.245.0",
+    "@aws-sdk/client-secrets-manager": "^3.250.0",
+    "@aws-sdk/client-ssm": "^3.245.0",
+    "@aws-sdk/util-dynamodb": "^3.245.0"
+  }
+}

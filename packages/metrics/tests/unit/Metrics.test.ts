@@ -4,13 +4,9 @@
  * @group unit/metrics/class
  */
 
-import { ContextExamples as dummyContext, LambdaInterface } from '@aws-lambda-powertools/commons';
+import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Context, Callback } from 'aws-lambda';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import * as dummyEvent from '../../../../tests/resources/events/custom/hello-world.json';
 import { Metrics, MetricUnits } from '../../src/';
-import { populateEnvironmentVariables } from '../helpers';
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 29;
@@ -22,26 +18,17 @@ interface LooseObject {
   [key: string]: string
 }
 
-type DummyEvent = {
-  key1: string
-  key2: string
-  key3: string
-};
-
 describe('Class: Metrics', () => {
-  const originalEnvironmentVariables = process.env;
+  const ENVIRONMENT_VARIABLES = process.env;
+  const context = dummyContext.helloworldContext;
+  const event = dummyEvent.Custom.CustomEvent;
 
   beforeEach(() => {
     consoleSpy.mockClear();
   });
 
   beforeAll(() => {
-    populateEnvironmentVariables();
-  });
-
-  afterEach(() => {
-    process.env = originalEnvironmentVariables;
-    delete process.env.POWERTOOLS_SERVICE_NAME;
+    process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
   describe('Feature: Dimensions logging', () => {
@@ -76,7 +63,8 @@ describe('Class: Metrics', () => {
       metrics.addDimension(additionalDimension.name, additionalDimension.value);
       const loggedData = metrics.serializeMetrics();
 
-      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      // Expect the additional dimension, and the service dimension
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
     });
 
@@ -99,20 +87,23 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(2);
       expect(loggedData[0][dimensionItem.name]).toEqual(dimensionItem.value);
-      expect(loggedData[0]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      // Expect the additional dimension, and the service dimension
+      expect(loggedData[0]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData[1][dimensionItem.name]).toBeUndefined();
-      expect(loggedData[1]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(0);
+      // Expect just the service dimension
+      expect(loggedData[1]._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
     });
 
     test('Adding more than max dimensions should throw error', () => {
       expect.assertions(1);
       const metrics = new Metrics();
-      for (let x = 0; x < MAX_DIMENSION_COUNT; x++) {
+      // The service dimension is already set, so start from 1
+      for (let x = 1; x < MAX_DIMENSION_COUNT; x++) {
         metrics.addDimension(`Dimension-${x}`, `value-${x}`);
       }
       try {
@@ -130,7 +121,8 @@ describe('Class: Metrics', () => {
       metrics.addDimensions(additionalDimensions);
       const loggedData = metrics.serializeMetrics();
 
-      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+      // Expect the additional dimensions, and the service dimension
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
       Object.keys(additionalDimensions).forEach((key) => {
         expect(loggedData[key]).toEqual(additionalDimensions[key]);
       });
@@ -193,7 +185,7 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(2);
@@ -227,7 +219,7 @@ describe('Class: Metrics', () => {
           }
         }
 
-        await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+        await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       } catch (e) {
         expect((<Error>e).message).toBe('Max dimension count hit');
       }
@@ -249,17 +241,19 @@ describe('Class: Metrics', () => {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
           metrics.addDimension(additionalDimension.name, additionalDimension.value);
           const loggedData = metrics.serializeMetrics();
-          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+          // Expect the additional dimensions, and the service dimension
+          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
           expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
           metrics.clearDimensions();
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(1);
-      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      // Expect the additional dimension, and the service dimension
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('default');
       expect(loggedData.default).toContain('defaultValue');
     });
@@ -283,7 +277,7 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(1);
@@ -297,13 +291,13 @@ describe('Class: Metrics', () => {
     test('Cold start metric should only be written out once and flushed automatically', async () => {
       const metrics = new Metrics({ namespace: 'test' });
 
-      const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
+      const handler = async (_event: unknown, _context: Context): Promise<void> => {
         // Should generate only one log
         metrics.captureColdStartMetric();
       };
 
-      await handler(dummyEvent, dummyContext.helloworldContext);
-      await handler(dummyEvent, dummyContext.helloworldContext);
+      await handler(event, context);
+      await handler(event, context);
       const loggedData = [JSON.parse(consoleSpy.mock.calls[0][0])];
 
       expect(console.log).toBeCalledTimes(1);
@@ -329,8 +323,8 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked again!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked again!'));
       const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(3);
@@ -356,7 +350,7 @@ describe('Class: Metrics', () => {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
         }
       }
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(2);
@@ -364,7 +358,7 @@ describe('Class: Metrics', () => {
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].Name).toBe('ColdStart');
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].Unit).toBe('Count');
       expect(loggedData.service).toBe(serviceName);
-      expect(loggedData.function_name).toBe(dummyContext.helloworldContext.functionName);
+      expect(loggedData.function_name).toBe(context.functionName);
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('service');
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('function_name');
       expect(loggedData.ColdStart).toBe(1);
@@ -373,8 +367,8 @@ describe('Class: Metrics', () => {
     test('Cold should still log, without a function name', async () => {
       const serviceName = 'test-service';
       const metrics = new Metrics({ namespace: 'test', serviceName: serviceName });
-      const newDummyContext = JSON.parse(JSON.stringify(dummyContext));
-      delete newDummyContext.functionName;
+      const newContext = JSON.parse(JSON.stringify(context));
+      delete newContext.functionName;
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics({ captureColdStartMetric: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -388,7 +382,7 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, newDummyContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, newContext, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(2);
@@ -421,7 +415,7 @@ describe('Class: Metrics', () => {
       }
 
       try {
-        await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+        await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       } catch (e) {
         expect((<Error>e).message).toBe('The number of metrics recorded must be higher than zero');
       }
@@ -445,7 +439,7 @@ describe('Class: Metrics', () => {
       }
 
       try {
-        await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+        await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       } catch (e) {
         fail(`Should not throw but got the following Error: ${e}`);
       }
@@ -457,14 +451,14 @@ describe('Class: Metrics', () => {
       expect.assertions(1);
 
       const metrics = new Metrics({ namespace: 'test' });
-      const handler = async (_event: DummyEvent, _context: Context): Promise<void> => {
+      const handler = async (_event: unknown, _context: Context): Promise<void> => {
         metrics.throwOnEmptyMetrics();
         // Logic goes here
         metrics.publishStoredMetrics();
       };
 
       try {
-        await handler(dummyEvent, dummyContext.helloworldContext);
+        await handler(event, context);
       } catch (e) {
         expect((<Error>e).message).toBe('The number of metrics recorded must be higher than zero');
       }
@@ -490,7 +484,7 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(2);
@@ -591,7 +585,7 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
     });
 
     test('Publish Stored Metrics should log and clear', async () => {
@@ -610,7 +604,7 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       const loggedData = [ JSON.parse(consoleSpy.mock.calls[0][0]), JSON.parse(consoleSpy.mock.calls[1][0]) ];
 
       expect(console.log).toBeCalledTimes(2);
@@ -640,7 +634,7 @@ describe('Class: Metrics', () => {
       }
 
       // Act
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext);
+      await new LambdaFunction().handler(event, context);
 
       // Assess
       expect(console.log).toBeCalledTimes(1);
@@ -661,7 +655,8 @@ describe('Class: Metrics', () => {
           metrics.addMetric('test_name', MetricUnits.Seconds, 10);
           metrics.addDimension(additionalDimension.name, additionalDimension.value);
           const loggedData = metrics.serializeMetrics();
-          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+          // Expect the additional dimensions, and the service dimension
+          expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
           expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
           metrics.clearDimensions();
 
@@ -669,11 +664,12 @@ describe('Class: Metrics', () => {
         }
       }
 
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext);
+      await new LambdaFunction().handler(event, context);
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       expect(console.log).toBeCalledTimes(1);
-      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(1);
+      // Expect the additional dimension, and the service dimension
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0]).toContain('default');
       expect(loggedData.default).toContain('defaultValue');
     });
@@ -695,7 +691,7 @@ describe('Class: Metrics', () => {
       }
 
       try {
-        await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+        await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       } catch (error) {
         // DO NOTHING
       }
@@ -724,7 +720,7 @@ describe('Class: Metrics', () => {
           metrics.addMetric('test_name', MetricUnits.Seconds, 1);
         }
       }
-      await new LambdaFunction().handler(dummyEvent, dummyContext.helloworldContext, () => console.log('Lambda invoked!'));
+      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
 
       // Assess

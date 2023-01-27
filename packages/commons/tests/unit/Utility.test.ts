@@ -12,6 +12,24 @@ describe('Class: Utility', () => {
     jest.resetModules();
   });
 
+  describe('Method: getDefaultServiceName', ()=> {
+    test('it should return the default service name', ()=> {
+      class PowerTool extends Utility {
+        public constructor() {
+          super();
+        }
+  
+        public dummyMethod(): string {
+          return this.getDefaultServiceName();
+        }
+      }
+
+      const powertool = new PowerTool();
+      const result = powertool.dummyMethod();
+      expect(result).toBe('service_undefined');
+    });
+  });
+
   describe('Method: getColdStart', () => {
 
     test('when called multiple times on the parent class, it returns true the first time, then false afterwards', () => {
@@ -142,4 +160,31 @@ describe('Class: Utility', () => {
 
   });
 
+  describe('Method: isValidServiceName', () => {
+    class PowerTool extends Utility {
+      public constructor() {
+        super();
+      }
+
+      public dummyMethod(name:string): boolean {
+        return this.isValidServiceName(name);
+      }
+    }
+    test('it should allow valid strings', ()=> {
+      const powertool = new PowerTool();
+      const goodName = 'serverlessAirline';
+
+      const result = powertool.dummyMethod(goodName);
+      
+      expect(result).toBe(true);  
+    });
+
+    test('it should not allow empty strings', ()=> {
+      const tooShort = '';
+      const powertool = new PowerTool();
+      const result = powertool.dummyMethod(tooShort);
+      
+      expect(result).toBe(false);
+    });
+  });
 });

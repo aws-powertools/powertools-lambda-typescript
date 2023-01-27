@@ -30,6 +30,7 @@ export class PowerToolsTypeScriptLayer extends lambda.LayerVersion {
         @aws-lambda-powertools/logger@${version} \
         @aws-lambda-powertools/metrics@${version} \
         @aws-lambda-powertools/tracer@${version}`,
+      'rm -rf node_modules/@types',
       'rm package.json package-lock.json',
     ];
     const commandJoined = commands.join(' && ');
@@ -37,11 +38,11 @@ export class PowerToolsTypeScriptLayer extends lambda.LayerVersion {
     super(scope, id, {
       layerVersionName: props?.layerVersionName,
       description: `Lambda Powertools for TypeScript version ${props?.version}`,
-      compatibleRuntimes: [ lambda.Runtime.NODEJS_12_X, lambda.Runtime.NODEJS_14_X, lambda.Runtime.NODEJS_16_X ],
+      compatibleRuntimes: [ lambda.Runtime.NODEJS_14_X, lambda.Runtime.NODEJS_16_X, lambda.Runtime.NODEJS_18_X ],
       code: lambda.Code.fromAsset(path.join(__dirname, '.'), {
         assetHash: Md5.hashStr(commandJoined),
         bundling: {
-          image: lambda.Runtime.NODEJS_12_X.bundlingImage,
+          image: lambda.Runtime.NODEJS_14_X.bundlingImage,
           local: {
             tryBundle(outputDir: string) {
               try {

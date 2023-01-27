@@ -38,9 +38,11 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
- * export const handler = middy(async (_event: any, _context: any) => {
+* const lambdaHandler = async (_event: any, _context: any) => {
  *   ...
- * }).use(captureLambdaHandler(tracer));
+ * };
+ * 
+ * export const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
  * ```
  * 
  * ### Object oriented usage with decorators
@@ -54,12 +56,13 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
+ * import { LambdaInterface } from '@aws-lambda-powertools/commons';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
- * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/39371 and might show as *@tracer* instead of `@tracer.captureLambdaHandler`
+ * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@tracer* instead of `@tracer.captureLambdaHandler`
  * 
- * class Lambda {
+ * class Lambda implements LambdaInterface {
  *   @tracer.captureLambdaHandler()
  *   public handler(event: any, context: any) {
  *     ...
@@ -77,7 +80,6 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
- * import { Segment } from 'aws-xray-sdk-core';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
@@ -93,7 +95,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *
  *   let res;
  *   try {
- *       res = ...
+ *       // ... your own logic goes here
  *       // Add the response as metadata 
  *       tracer.addResponseAsMetadata(res, process.env._HANDLER);
  *   } catch (err) {
@@ -126,7 +128,8 @@ class Tracer extends Utility implements TracerInterface {
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
   
-  private serviceName?: string;
+  // serviceName is always initialized in the constructor in setOptions()
+  private serviceName!: string;
   
   private tracingEnabled: boolean = true;
 
@@ -187,7 +190,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    */
   public addServiceNameAnnotation(): void {
-    if (!this.isTracingEnabled() || this.serviceName === undefined) {
+    if (!this.isTracingEnabled()) {
       return;
     }
     this.putAnnotation('Service', this.serviceName);
@@ -245,11 +248,11 @@ class Tracer extends Utility implements TracerInterface {
    * 
    * @example
    * ```typescript
-   * import { S3 } from "aws-sdk";
+   * import { S3 } from 'aws-sdk';
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * const s3 = tracer.captureAWSClient(new S3({ apiVersion: "2006-03-01" }));
+   * const s3 = tracer.captureAWSClient(new S3({ apiVersion: '2006-03-01' }));
    * 
    * export const handler = async (_event: any, _context: any) => {
    *   ...
@@ -287,7 +290,7 @@ class Tracer extends Utility implements TracerInterface {
    * 
    * @example
    * ```typescript
-   * import { S3Client } from "@aws-sdk/client-s3";
+   * import { S3Client } from '@aws-sdk/client-s3';
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
@@ -323,10 +326,11 @@ class Tracer extends Utility implements TracerInterface {
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
+   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
-   * class Lambda {
+   * class Lambda implements LambdaInterface {
    *   @tracer.captureLambdaHandler()
    *   public handler(event: any, context: any) {
    *     ...
@@ -400,10 +404,11 @@ class Tracer extends Utility implements TracerInterface {
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
+   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
-   * class Lambda {
+   * class Lambda implements LambdaInterface {
    *   @tracer.captureMethod()
    *   public myMethod(param: any) {
    *     ...
@@ -477,7 +482,6 @@ class Tracer extends Utility implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
    * export const handler = async () => {
-   * 
    *   try {
    *     ...
    *   } catch (err) {
@@ -489,7 +493,7 @@ class Tracer extends Utility implements TracerInterface {
    *       // Include the rootTraceId in the response so we can show a "contact support" button that
    *       // takes the customer to a customer service form with the trace as additional context.
    *       body: `Internal Error - Please contact support and quote the following id: ${rootTraceId}`,
-   *       headers: { "_X_AMZN_TRACE_ID": rootTraceId },
+   *       headers: { '_X_AMZN_TRACE_ID': rootTraceId },
    *     };
    *   }
    * }
@@ -623,7 +627,7 @@ class Tracer extends Utility implements TracerInterface {
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * import { Segment } from 'aws-xray-sdk-core';
+   * import { Subsegment } from 'aws-xray-sdk-core';
    * 
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * 
@@ -679,16 +683,6 @@ class Tracer extends Utility implements TracerInterface {
    */
   private isLambdaSamCli(): boolean {
     return this.getEnvVarsService().getSamLocal() !== '';
-  }
-
-  /**
-   * Validate that the service name provided is valid.
-   * Used internally during initialization.
-   * 
-   * @param serviceName - Service name to validate
-   */
-  private static isValidServiceName(serviceName?: string): boolean {
-    return typeof serviceName === 'string' && serviceName.trim().length > 0;
   }
 
   /**
@@ -814,25 +808,26 @@ class Tracer extends Utility implements TracerInterface {
    * @param serviceName - Name of the service to use
    */
   private setServiceName(serviceName?: string): void {
-    if (serviceName !== undefined && Tracer.isValidServiceName(serviceName)) {
+    if (serviceName !== undefined && this.isValidServiceName(serviceName)) {
       this.serviceName = serviceName;
 
       return;
     }
 
     const customConfigValue = this.getCustomConfigService()?.getServiceName();
-    if (customConfigValue !== undefined && Tracer.isValidServiceName(customConfigValue)) {
+    if (customConfigValue !== undefined && this.isValidServiceName(customConfigValue)) {
       this.serviceName = customConfigValue;
 
       return;
     }
 
     const envVarsValue = this.getEnvVarsService().getServiceName();
-    if (envVarsValue !== undefined && Tracer.isValidServiceName(envVarsValue)) {
+    if (envVarsValue !== undefined && this.isValidServiceName(envVarsValue)) {
       this.serviceName = envVarsValue;
 
       return;
     }
+    this.serviceName = this.getDefaultServiceName();
   }
 
   /**

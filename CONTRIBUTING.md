@@ -1,4 +1,4 @@
-# Contributing Guidelines
+# Contributing Guidelines <!-- omit in toc -->
 
 Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional
 documentation, we greatly value feedback and contributions from our community.
@@ -6,11 +6,28 @@ documentation, we greatly value feedback and contributions from our community.
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
 information to effectively respond to your bug report or contribution.
 
-## Table of contents
+## Table of contents <!-- omit in toc -->
 
 - [Security issue notifications](#security-issue-notifications)
 - [Code of Conduct](#code-of-conduct)
 - [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
+- [Getting Started](#getting-started)
+  - [Setup](#setup)
+  - [Repo Layout](#repo-layout)
+  - [Tests](#tests)
+    - [Unit tests](#unit-tests)
+      - [Write](#write)
+      - [Run](#run)
+    - [e2e tests](#e2e-tests)
+      - [Set up](#set-up)
+      - [Write](#write-1)
+      - [Run](#run-1)
+      - [Automate](#automate)
+  - [Examples](#examples)
+  - [Local documentation](#local-documentation)
+    - [API reference](#api-reference)
+    - [Docs website](#docs-website)
+  - [Conventions](#conventions)
 - [Contributing via Pull Requests](#contributing-via-pull-requests)
   - [Summary](#summary)
   - [Step 1: Find something to work on](#step-1-find-something-to-work-on)
@@ -18,17 +35,6 @@ information to effectively respond to your bug report or contribution.
   - [Step 3: Work your Magic](#step-3-work-your-magic)
   - [Step 4: Pull Request](#step-4-pull-request)
   - [Step 5: Merge](#step-5-merge)
-- [Getting Started](#getting-started)
-  - [Setup](#setup)
-  - [Repo Layout](#repo-layout)
-  - [Tests](#tests)
-    - [Unit tests](#unit-tests)
-    - [e2e tests](#e2e-tests)
-  - [Examples](#examples)
-  - [Local documentation](#local-documentation)
-    - [API reference](#api-reference)
-    - [Docs website](#docs-website)
-  - [Conventions](#conventions)
 - [Licensing](#licensing)
 
 ## Security issue notifications
@@ -55,25 +61,30 @@ reported the issue. Please try to include as much information as you can. Detail
 ## Getting Started
 
 The following steps describe how to set up the AWS Lambda Powertools for TypeScript repository on your local machine.
-The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [Codespaces](https://github.com/features/codespaces) for your development.
+
+The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [GitHub CodeSpaces](https://github.com/features/codespaces) for your development. To quickly get up and running you can click one of these button to open a cloned version of this repo with all of the prerequisites and dependencies installed:
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/awslabs/aws-lambda-powertools-typescript)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=305501331)
 
 ### Setup
 
 The following tools need to be installed on your system prior to starting working on a pull request:
 
-- [Node.js >= 16.x](https://nodejs.org/download/release/latest-v16.x/)
+- [Node.js >= 18.x](https://nodejs.org/download/release/latest-v18.x/)
   - We recommend using a version in [Active LTS](https://nodejs.org/en/about/releases/)
   - If you use [nvm](https://github.com/nvm-sh/nvm#nvmrc) or [fnm](https://github.com/Schniz/fnm) you can install the latest LTS version with `nvm use` or `fnm use` respectively. Both will use the `.nvmrc` file in the project's root.
 - [npm 8.x](https://www.npmjs.com/)
   - After installing Node.js, you can install `npm` with `npm install -g npm@next-8` 
-- [AWS SAM CLI >= 1.49.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- [AWS SAM CLI >= 1.65.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
   - AWS SAM CLI is a command line interface for AWS Serverless Application Model (SAM), it's used in one of the examples, and it's part of the pre-push hook.
 - [Docker](https://docs.docker.com/get-docker/)
   - Docker is used to build documentation and Layer.
 
 First, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository, and then run the following commands to clone and initialize the repository locally.
+
+> **Note**
+> In order for the commands below to work you need Node.js `18.x` and npm `8.x`
 
 ```console
 git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
@@ -88,7 +99,7 @@ the [eslint extension](https://marketplace.visualstudio.com/items?itemName=dbaeu
 ### Repo Layout
 
 The AWS Lambda Powertools is a npm project written in [TypeScript](https://www.typescriptlang.org/).
-More specifically, it is a [monorepo managed using lerna](https://github.com/lerna/lerna#about).
+More specifically, it is a [monorepo managed using npm workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces).
 If you're unfamiliar with any of these technologies, it is useful to learn about them and will make understanding the codebase easier but strictly not necessary for simple contributions.
 
 The repo contains `packages/` directory that contains the Powertools utilities modules. For instance, the source code for the Logger utility can be found at the location `packages/logger` and so on.
@@ -126,9 +137,8 @@ As mentioned before, tests are split into groups thanks to [jest-runner-groups](
 
 To run unit tests, you can either use:
 
-* npm task `lerna-test:unit` (`npm run lerna-test:unit`) in root folder to run them all
-* npm task `test:unit` (`npm run test:unit`) in module folder (for example: `packages/metrics`) to run the module specific ones
-* jest directly `npx jest --group=unit` in module folder to run the module specific ones (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/metrics/class`)
+* `npm test -ws` while in the root folder to run them all
+* `npm test -w packages/metrics` while in the root folder to run the module specific ones
 
 #### e2e tests
 
@@ -156,9 +166,8 @@ See `metrics/tests/e2e/basicFeatures.decorator.test.ts` as an example.
 
 To run e2e tests, you can either use:
 
-* npm task `lerna-test:e2e` (`npm run lerna-test:e2e`) in root folder
-* npm task `test:e2e` (`npm run test:e2e`) in module folder (for example: `packages/metrics`) to run the module specific ones
-* jest directly `npx jest --group=e2e` in module folder. (You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=e2e/metrics/decorator`)
+* `npm test:e2e -ws` while in the root folder to run them all
+* `npm test:e2e -w packages/metrics` while in the root folder to run the module specific ones
 
 Three important environment variables can be used:
 
@@ -200,7 +209,7 @@ As part of the repo you will find an examples folder at the root. This folder co
 
 To test your updates with these examples, you just have to:
 
-1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run lerna-package` while in the root folder
+1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run package -ws` while in the root folder
 2. Move to the examples folder of your choice
     ```sh
     cd packages/examples/cdk
@@ -249,13 +258,13 @@ Alternatively you can run these two commands:
 
 ### Conventions
 
-Category | Convention
-------------------------------------------------- | ---------------------------------------------------------------------------------
-**Docstring** |  We use [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) annotations to provide type information and create API references.
-**Style guide** | We use `eslint` to keep our code consistent in terms of style and reducing defects.
-**Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.
-**Git commits** | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.
-**Documentation** | API reference docs are generated from docstrings which should have an Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise.
+| Category          | Convention                                                                                                                                                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Docstring**     | We use [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) annotations to provide type information and create API references.                                                                             |
+| **Style guide**   | We use `eslint` to keep our code consistent in terms of style and reducing defects.                                                                                                                                                    |
+| **Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.                                                                    |
+| **Git commits**   | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.                                                             |
+| **Documentation** | API reference docs are generated from docstrings which should have an Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise. |
 
 ## Contributing via Pull Requests
 
@@ -263,7 +272,7 @@ Contributions via pull requests are much appreciated.
 
 ### Summary
 
-* This project uses `node@16.x` and `npm@8.x` for development (see [Setup](#setup)).
+* This project uses `node@18.x` and `npm@8.x` for development (see [Setup](#setup)).
 * Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed changes. A PR without a related issue or discussion has a high risk of being rejected. We are very appreciative and thankful for your time and efforts, and we want to make sure they are not wasted.
 * After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request.
 * When opening a PR, make sure to follow the checklist inside the pull request template.

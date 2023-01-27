@@ -3,9 +3,9 @@ import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
 import { LogItem } from './log';
-import cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { LogJsonIndent } from './types';
 import type {
   ClassThatLogs,
   Environment,
@@ -39,28 +39,12 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger } from "@aws-lambda-powertools/logger";
+ * import { Logger } from '@aws-lambda-powertools/logger';
  *
  * // Logger parameters fetched from the environment variables:
  * const logger = new Logger();
  * ```
- *
- * ### Functions usage with manual instrumentation
- *
- * If you prefer to manually instrument your Lambda handler you can use the methods in the Logger class directly.
- *
- * @example
- * ```typescript
- * import { Logger } from "@aws-lambda-powertools/logger";
- *
- * const logger = new Logger();
- *
- * export const handler = async (_event, context) => {
- *     logger.addContext(context);
- *     logger.info("This is an INFO log with some context");
- * };
- * ```
- *
+ * 
  * ### Functions usage with middleware
  *
  * If you use function-based Lambda handlers you can use the [injectLambdaContext()](#injectLambdaContext)
@@ -68,13 +52,13 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger, injectLambdaContext } from "@aws-lambda-powertools/logger";
+ * import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
  * import middy from '@middy/core';
  *
  * const logger = new Logger();
  *
  * const lambdaHandler = async (_event: any, _context: any) => {
- *     logger.info("This is an INFO log with some context");
+ *     logger.info('This is an INFO log with some context');
  * };
  *
  * export const handler = middy(lambdaHandler).use(injectLambdaContext(logger));
@@ -86,21 +70,40 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger } from "@aws-lambda-powertools/logger";
+ * import { Logger } from '@aws-lambda-powertools/logger';
  * import { LambdaInterface } from '@aws-lambda-powertools/commons';
  *
  * const logger = new Logger();
  *
  * class Lambda implements LambdaInterface {
+ * 
+ *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@logger* instead of `@logger.injectLambdaContext`
+ * 
  *     // Decorate your handler class method
  *     @logger.injectLambdaContext()
  *     public async handler(_event: any, _context: any): Promise<void> {
- *         logger.info("This is an INFO log with some context");
+ *         logger.info('This is an INFO log with some context');
  *     }
  * }
  *
  * const handlerClass = new Lambda();
  * export const handler = handlerClass.handler.bind(handlerClass);
+ * ```
+ * 
+ * ### Functions usage with manual instrumentation
+ *
+ * If you prefer to manually instrument your Lambda handler you can use the methods in the Logger class directly.
+ *
+ * @example
+ * ```typescript
+ * import { Logger } from '@aws-lambda-powertools/logger';
+ *
+ * const logger = new Logger();
+ *
+ * export const handler = async (_event, context) => {
+ *     logger.addContext(context);
+ *     logger.info('This is an INFO log with some context');
+ * };
  * ```
  *
  * @class
@@ -109,13 +112,12 @@ import type {
  */
 class Logger extends Utility implements ClassThatLogs {
 
-  private console = new Console({ stdout: process.stdout, stderr: process.stderr });
+  // console is initialized in the constructor in setOptions()
+  private console!: Console;
 
   private customConfigService?: ConfigServiceInterface;
 
   private static readonly defaultLogLevel: LogLevel = 'INFO';
-
-  private static readonly defaultServiceName: string = 'service_undefined';
 
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
@@ -123,6 +125,8 @@ class Logger extends Utility implements ClassThatLogs {
   private logEvent: boolean = false;
 
   private logFormatter?: LogFormatterInterface;
+
+  private logIndentation: number = LogJsonIndent.COMPACT;
 
   private logLevel?: LogLevel;
 
@@ -146,7 +150,6 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public constructor(options: ConstructorOptions = {}) {
     super();
-
     this.setOptions(options);
   }
 
@@ -200,7 +203,17 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {Logger}
    */
   public createChild(options: ConstructorOptions = {}): Logger {
-    return cloneDeep(this).setOptions(options);
+    const parentsPowertoolsLogData = this.getPowertoolLogData();
+    const childLogger = new Logger(merge({}, parentsPowertoolsLogData, options));
+    
+    const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
+    childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);
+    
+    if (parentsPowertoolsLogData.lambdaContext) {
+      childLogger.addContext(parentsPowertoolsLogData.lambdaContext as Context);
+    }
+    
+    return childLogger;
   }
 
   /**
@@ -269,9 +282,32 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * Method decorator that adds the current Lambda function context as extra
    * information in all log items.
+   * 
    * The decorator can be used only when attached to a Lambda function handler which
    * is written as method of a class, and should be declared just before the handler declaration.
    *
+   * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
+   * function syntax, you should use the middleware instead.
+   * 
+   * @example
+   * ```typescript
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+   *
+   * const logger = new Logger();
+   *
+   * class Lambda implements LambdaInterface {
+   *     // Decorate your handler class method
+   *     @logger.injectLambdaContext()
+   *     public async handler(_event: any, _context: any): Promise<void> {
+   *         logger.info('This is an INFO log with some context');
+   *     }
+   * }
+   *
+   * const handlerClass = new Lambda();
+   * export const handler = handlerClass.handler.bind(handlerClass);
+   * ```
+   * 
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */
@@ -280,7 +316,8 @@ class Logger extends Utility implements ClassThatLogs {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
        */
-      const originalMethod = descriptor.value;
+      /* eslint-disable  @typescript-eslint/no-non-null-assertion */
+      const originalMethod = descriptor.value!;
 
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const loggerRef = this;
@@ -295,10 +332,9 @@ class Logger extends Utility implements ClassThatLogs {
 
         Logger.injectLambdaContextBefore(loggerRef, event, context, options);
 
-        /* eslint-disable  @typescript-eslint/no-non-null-assertion */
         let result: unknown;
         try {
-          result = await originalMethod!.apply(this, [ event, context, callback ]);
+          result = await originalMethod.apply(this, [ event, context, callback ]);
         } catch (error) {
           throw error;
         } finally {
@@ -533,6 +569,37 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * When the data added in the log item contains object references or BigInt values,
+   * `JSON.stringify()` can't handle them and instead throws errors:
+   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
+   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
+   * @private
+   */
+  private getReplacer(): (key: string, value: LogAttributes | Error | bigint) => void {
+    const references = new WeakSet();
+  
+    return (key, value) => {
+      let item = value;
+      if (item instanceof Error) {
+        item = this.getLogFormatter().formatError(item);
+      }
+      if (typeof item === 'bigint') {
+        return item.toString();
+      }
+      if (typeof item === 'object' && value !== null) {
+        if (references.has(item)) {
+          return;
+        }
+        references.add(item);
+      }
+  
+      return item;
+    };
+  }
+
+  /**
    * It returns the numeric sample rate value.
    *
    * @private
@@ -545,7 +612,7 @@ class Logger extends Utility implements ClassThatLogs {
 
     return <number> this.powertoolLogData.sampleRateValue;
   }
-
+  
   /**
    * It returns true if the provided log level is valid.
    *
@@ -569,7 +636,7 @@ class Logger extends Utility implements ClassThatLogs {
 
     const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
 
-    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.removeCircularDependencies()));
+    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.getReplacer(), this.logIndentation));
   }
 
   /**
@@ -587,30 +654,18 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * When the data added in the log item contains object references,
-   * JSON.stringify() doesn't try to solve them and instead throws an error: TypeError: cyclic object value.
-   * To mitigate this issue, this method will find and remove all cyclic references.
+   * It initializes console property as an instance of the internal version of Console() class (PR #748)
+   * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
    *
-   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
    * @private
+   * @returns {void}
    */
-  private removeCircularDependencies(): (key: string, value: LogAttributes | Error) => void {
-    const references = new WeakSet();
-
-    return (key, value) => {
-      let item = value;
-      if (item instanceof Error) {
-        item = this.getLogFormatter().formatError(item);
-      }
-      if (typeof item === 'object' && value !== null) {
-        if (references.has(item)) {
-          return;
-        }
-        references.add(item);
-      }
-
-      return item;
-    };
+  private setConsole(): void {
+    if (!this.getEnvVarsService().isDevMode()) {
+      this.console = new Console({ stdout: process.stdout, stderr: process.stderr });
+    } else {
+      this.console = console;
+    }
   }
 
   /**
@@ -660,6 +715,19 @@ class Logger extends Utility implements ClassThatLogs {
    */
   private setLogFormatter(logFormatter?: LogFormatterInterface): void {
     this.logFormatter = logFormatter || new PowertoolLogFormatter();
+  }
+
+  /**
+   * If the `POWERTOOLS_DEV' env variable is set,
+   * it adds JSON indentation for pretty printing logs.
+   *
+   * @private
+   * @returns {void}
+   */
+  private setLogIndentation(): void {
+    if (this.getEnvVarsService().isDevMode()) {
+      this.logIndentation = LogJsonIndent.PRETTY;
+    }
   }
 
   /**
@@ -724,6 +792,8 @@ class Logger extends Utility implements ClassThatLogs {
     } = options;
 
     this.setEnvVarsService();
+    // order is important, it uses EnvVarsService()
+    this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setLogLevel(logLevel);
     this.setSampleRateValue(sampleRateValue);
@@ -731,6 +801,7 @@ class Logger extends Utility implements ClassThatLogs {
     this.setLogFormatter(logFormatter);
     this.setPowertoolLogData(serviceName, environment);
     this.setLogEvent();
+    this.setLogIndentation();
     
     this.addPersistentLogAttributes(persistentLogAttributes);
 
@@ -760,7 +831,7 @@ class Logger extends Utility implements ClassThatLogs {
           this.getEnvVarsService().getCurrentEnvironment(),
         sampleRateValue: this.getSampleRateValue(),
         serviceName:
-          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || Logger.defaultServiceName,
+          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || this.getDefaultServiceName(),
       },
       persistentLogAttributes,
     );

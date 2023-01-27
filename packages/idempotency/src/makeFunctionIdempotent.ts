@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyFunctionWithRecord, AnyIdempotentFunction } from './types/AnyFunction';
-import { IdempotencyOptions } from './IdempotencyOptions';
+import { IdempotencyOptions } from './types/IdempotencyOptions';
 import { IdempotencyHandler } from './IdempotencyHandler';
 
 const makeFunctionIdempotent = function <U>(

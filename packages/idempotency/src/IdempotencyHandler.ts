@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { AnyFunctionWithRecord, IdempotencyRecordStatus } from './types';
-import { IdempotencyOptions } from './IdempotencyOptions';
+import { IdempotencyOptions } from './types/IdempotencyOptions';
 import { IdempotencyRecord } from 'persistence';
 import { IdempotencyInconsistentStateError, IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyPersistenceLayerError } from './Exceptions';
 

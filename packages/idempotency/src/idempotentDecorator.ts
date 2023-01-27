@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IdempotencyOptions } from './IdempotencyOptions';
+import { IdempotencyOptions } from './types/IdempotencyOptions';
 import { IdempotencyHandler } from './IdempotencyHandler';
 
 const idempotent = function (options: IdempotencyOptions) {

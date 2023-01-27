@@ -4,7 +4,7 @@
  * @group unit/idempotency/all
  */
 
-import { IdempotencyOptions } from '../../src/IdempotencyOptions';
+import { IdempotencyOptions } from '../../src/types/IdempotencyOptions';
 import { IdempotencyRecord, PersistenceLayer } from '../../src/persistence';
 import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
 import { AnyIdempotentFunction, IdempotencyRecordStatus, IdempotencyRecordOptions } from '../../src/types';

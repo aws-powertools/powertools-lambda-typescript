@@ -19,8 +19,17 @@ class DynamoDBProvider extends BaseProvider {
   public constructor(config: DynamoDBProviderOptions) {
     super();
 
-    const clientConfig = config.clientConfig || {};
-    this.client = new DynamoDBClient(clientConfig);
+    if (config?.awsSdkV3Client) {
+      if (config?.awsSdkV3Client instanceof DynamoDBClient) {
+        this.client = config.awsSdkV3Client;
+      } else {
+        throw Error('Not a valid DynamoDBClient provided');
+      }
+    } else {
+      const clientConfig = config?.clientConfig || {};
+      this.client = new DynamoDBClient(clientConfig);
+    }
+
     this.tableName = config.tableName;
     if (config.keyAttr) this.keyAttr = config.keyAttr;
     if (config.sortAttr) this.sortAttr = config.sortAttr;

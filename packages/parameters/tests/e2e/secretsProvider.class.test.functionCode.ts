@@ -1,7 +1,6 @@
 import { Context } from 'aws-lambda';
 import { SecretsProvider } from '../../lib/secrets';
 import { TinyLogger } from '../helpers/tinyLogger';
-import { transform } from 'esbuild';
 import { SecretsGetOptionsInterface } from '../../lib/types';
 
 const logger = new TinyLogger();
@@ -15,7 +14,7 @@ const secretNameBinaryWithSuffix = process.env.SECRET_NAME_BINARY_WITH_SUFFIX ||
 
 const _call_get = async (paramName: string, testName: string, options?: SecretsGetOptionsInterface) : Promise<void> => {
   try {
-    if (!transform) {
+    if (!options) {
       const parameterValue = await provider.get(paramName);
       logger.log({
         test: testName,

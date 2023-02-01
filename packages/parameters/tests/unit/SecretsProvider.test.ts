@@ -6,6 +6,7 @@
 import { SecretsProvider } from '../../src/secrets';
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
+import type { SecretsProviderOptions } from '../../src/types/SecretsProvider';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 
@@ -17,6 +18,79 @@ describe('Class: SecretsProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('Method: constructor', () => {
+    test('when the class instantiates without SDK client and client config it has default options', async () => {
+      
+      // Prepare
+      const options: SecretsProviderOptions = {};
+
+      // Act
+      const provider = new SecretsProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'Secrets Manager',
+        })
+      );
+    });
+
+    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+
+      // Prepare
+      const options: SecretsProviderOptions = {
+        clientConfig: {
+          serviceId: 'with-client-config',
+        },
+      };
+
+      // Act
+      const provider = new SecretsProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'with-client-config',
+        })
+      );
+    });
+
+    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+      
+      // Prepare
+      const awsSdkV3Client = new SecretsManagerClient({
+        serviceId: 'with-custom-sdk-client',
+      });
+
+      const options: SecretsProviderOptions = {
+        awsSdkV3Client: awsSdkV3Client,
+      };
+
+      // Act
+      const provider = new SecretsProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'with-custom-sdk-client',
+        })
+      );
+    });
+
+    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+      // Prepare
+      const awsSdkV3Client = {};
+      const options: SecretsProviderOptions = {
+        awsSdkV3Client: awsSdkV3Client as SecretsManagerClient,
+      };
+
+      // Act & Assess
+      expect(() => {
+        new SecretsProvider(options);
+      }).toThrow();
+    });
   });
 
   describe('Method: _get', () => {

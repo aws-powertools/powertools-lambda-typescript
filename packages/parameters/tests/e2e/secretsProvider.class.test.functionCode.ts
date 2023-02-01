@@ -47,7 +47,7 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   // Test 5 get single param with transform auto binary
   await _call_get(secretNameBinaryWithSuffix, 'get-transform-auto-binary', { transform: 'auto' });
 
-  // TOOD: add more tests once we can pass sdk configuration to the provider
+  // TOOD: add more tests once we can pass sdk configuration to the provider, after #1222 closed
 
 };
 

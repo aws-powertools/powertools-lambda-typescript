@@ -1,4 +1,5 @@
 import type {
+  SSMClient,
   SSMClientConfig,
   GetParameterCommandInput,
   GetParametersByPathCommandInput
@@ -9,9 +10,17 @@ import type {
   TransformOptions
 } from './BaseProvider';
 
-interface SSMProviderOptionsInterface {
-  clientConfig: SSMClientConfig
+interface SSMProviderOptionsWithClientConfig {
+  clientConfig?: SSMClientConfig
+  awsSdkV3Client?: never
 }
+
+interface SSMProviderOptionsWithClientInstance {
+  awsSdkV3Client?: SSMClient
+  clientConfig?: never
+}
+
+type SSMProviderOptions = SSMProviderOptionsWithClientConfig | SSMProviderOptionsWithClientInstance;
 
 /**
  * Options for the SSMProvider get method.
@@ -56,7 +65,7 @@ type SSMGetParametersByNameFromCacheOutputType = {
 };
 
 export type {
-  SSMProviderOptionsInterface,
+  SSMProviderOptions,
   SSMGetOptionsInterface,
   SSMGetMultipleOptionsInterface,
   SSMGetParametersByNameOptionsInterface,

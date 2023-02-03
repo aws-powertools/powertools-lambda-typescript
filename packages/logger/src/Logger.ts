@@ -209,7 +209,7 @@ class Logger extends Utility implements ClassThatLogs {
       logFormatter: this.getLogFormatter(),
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
-    const childLogger = new Logger(merge({}, parentsOptions, parentsPowertoolsLogData, options));
+    const childLogger = new Logger(merge(parentsOptions, parentsPowertoolsLogData, options));
     
     const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
     childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);

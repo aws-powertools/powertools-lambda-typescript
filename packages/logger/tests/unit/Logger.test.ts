@@ -1788,6 +1788,7 @@ describe('Class: Logger', () => {
       expect(childLogger).toEqual({
         ...parentLogger,
         console: expect.any(Console),
+        logsSampled: expect.any(Boolean),
       });
 
       expect(childLogger).toEqual(

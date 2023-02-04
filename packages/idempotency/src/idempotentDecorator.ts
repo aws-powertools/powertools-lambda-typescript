@@ -8,7 +8,7 @@ const idempotent = function (options: IdempotencyOptions) {
     descriptor.value = function(record: Record<string, any>){
       const idempotencyHandler: IdempotencyHandler<unknown> = new IdempotencyHandler<unknown>(childFunction, record[options.dataKeywordArgument], options, record);
         
-      return idempotencyHandler.process_idempotency();
+      return idempotencyHandler.processIdempotency();
     };
   
     return descriptor;

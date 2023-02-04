@@ -7,21 +7,21 @@ import { IdempotencyInconsistentStateError, IdempotencyItemAlreadyExistsError, I
 
 export class IdempotencyHandler<U> {
 
-  public constructor(private functiontoMakeIdempotent: AnyFunctionWithRecord<U>, private functionPayloadToBeHashed: unknown, 
+  public constructor(private functionToMakeIdempotent: AnyFunctionWithRecord<U>, private functionPayloadToBeHashed: unknown, 
     private idempotencyOptions: IdempotencyOptions, private fullFunctionPayload: Record<string, any>) {}
 
   public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U{ 
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
-      throw new IdempotencyInconsistentStateError();
+      throw new IdempotencyInconsistentStateError('Item has expired during processing and may not longer be valid.');
     } else if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS){
       throw new IdempotencyAlreadyInProgressError(`There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`);
     } else {
       // Currently recalling the method as this fulfills FR1. FR3 will address using the previously stored value https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447
-      return this.functiontoMakeIdempotent(this.fullFunctionPayload); 
+      return this.functionToMakeIdempotent(this.fullFunctionPayload); 
     }
   }
 
-  public async process_idempotency(): Promise<U> {
+  public async processIdempotency(): Promise<U> {
     try {
       await this.idempotencyOptions.persistenceStore.saveInProgress(this.functionPayloadToBeHashed);
     } catch (e) {
@@ -34,6 +34,6 @@ export class IdempotencyHandler<U> {
       }
     }
 
-    return this.functiontoMakeIdempotent(this.fullFunctionPayload);
+    return this.functionToMakeIdempotent(this.fullFunctionPayload);
   }
 }

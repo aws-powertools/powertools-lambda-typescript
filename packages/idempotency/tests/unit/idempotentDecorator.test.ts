@@ -41,7 +41,7 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
       classWithFunction.testing(inputRecord);
     });
 
-    test('Then it will save the record to IN_PROGRESS', () => {
+    test('Then it will save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
     });
 
@@ -50,7 +50,7 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
     });
   });
 
-  describe('When decorating a function with previous execution that is IN_PROGRESS', () => {
+  describe('When decorating a function with previous execution that is INPROGRESS', () => {
     let resultingError: Error;
     beforeEach(async () => {
       mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
@@ -66,7 +66,7 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
       }
     });
 
-    test('Then it will attempt to save the record to IN_PROGRESS', () => {
+    test('Then it will attempt to save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
     });
 
@@ -99,7 +99,7 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
       }
     });
 
-    test('Then it will attempt to save the record to IN_PROGRESS', () => {
+    test('Then it will attempt to save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
     });
 
@@ -127,7 +127,7 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
       await classWithFunction.testing(inputRecord);
     });
 
-    test('Then it will attempt to save the record to IN_PROGRESS', () => {
+    test('Then it will attempt to save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
     });
 
@@ -152,7 +152,7 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
       }
     });
 
-    test('Then it will attempt to save the record to IN_PROGRESS', () => {
+    test('Then it will attempt to save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
     });
 

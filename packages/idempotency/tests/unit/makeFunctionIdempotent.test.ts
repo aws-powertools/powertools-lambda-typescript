@@ -32,7 +32,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
         await resultingFunction(inputRecord);
       });
 
-      test('Then it will save the record to IN_PROGRESS', () => {
+      test('Then it will save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
 
@@ -41,7 +41,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
     });
 
-    describe('When wrapping a function with previous execution that is IN_PROGRESS', () => {
+    describe('When wrapping a function with previous execution that is INPROGRESS', () => {
       let resultingFunction: AnyIdempotentFunction<string>;
       let resultingError: Error;
       beforeEach(async () => {
@@ -59,7 +59,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
         }
       });
   
-      test('Then it will attempt to save the record to IN_PROGRESS', () => {
+      test('Then it will attempt to save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
   
@@ -94,7 +94,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
         }
       });
     
-      test('Then it will attempt to save the record to IN_PROGRESS', () => {
+      test('Then it will attempt to save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
     
@@ -124,7 +124,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
         await resultingFunction(inputRecord);
       });
     
-      test('Then it will attempt to save the record to IN_PROGRESS', () => {
+      test('Then it will attempt to save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
     
@@ -151,7 +151,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
         }
       });
       
-      test('Then it will attempt to save the record to IN_PROGRESS', () => {
+      test('Then it will attempt to save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
     

@@ -14,6 +14,7 @@ import type { GetParametersCommandOutput } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 import type {
+  SSMProviderOptions,
   SSMGetParametersByNameFromCacheOutputType,
   SSMGetParametersByNameOptionsInterface,
   SSMSplitBatchAndDecryptParametersOutputType,
@@ -28,6 +29,79 @@ describe('Class: SSMProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('Method: constructor', () => {
+    test('when the class instantiates without SDK client and client config it has default options', async () => {
+      
+      // Prepare
+      const options: SSMProviderOptions = {};
+
+      // Act
+      const provider = new SSMProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'SSM',
+        })
+      );
+    });
+
+    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+
+      // Prepare
+      const options: SSMProviderOptions = {
+        clientConfig: {
+          serviceId: 'with-client-config',
+        },
+      };
+
+      // Act
+      const provider = new SSMProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'with-client-config',
+        })
+      );
+    });
+
+    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+      
+      // Prepare
+      const awsSdkV3Client = new SSMClient({
+        serviceId: 'with-custom-sdk-client',
+      });
+
+      const options: SSMProviderOptions = {
+        awsSdkV3Client: awsSdkV3Client,
+      };
+
+      // Act
+      const provider = new SSMProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'with-custom-sdk-client',
+        })
+      );
+    });
+
+    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+      // Prepare
+      const awsSdkV3Client = {};
+      const options: SSMProviderOptions = {
+        awsSdkV3Client: awsSdkV3Client as SSMClient,
+      };
+
+      // Act & Assess
+      expect(() => {
+        new SSMProvider(options);
+      }).toThrow();
+    });
   });
 
   describe('Method: getParametersByName', () => {

@@ -14,7 +14,7 @@ import type {
   GetParametersCommandOutput,
 } from '@aws-sdk/client-ssm';
 import type {
-  SSMProviderOptionsInterface,
+  SSMProviderOptions,
   SSMGetMultipleOptionsInterface,
   SSMGetOptionsInterface,
   SSMGetParametersByNameOutputInterface,
@@ -29,9 +29,19 @@ class SSMProvider extends BaseProvider {
   protected errorsKey = '_errors';
   protected maxGetParametersItems = 10;
 
-  public constructor(config?: SSMProviderOptionsInterface) {
+  public constructor(config?: SSMProviderOptions) {
     super();
-    this.client = new SSMClient(config?.clientConfig || {});
+
+    if (config?.awsSdkV3Client) {
+      if (config?.awsSdkV3Client instanceof SSMClient) {
+        this.client = config.awsSdkV3Client;
+      } else {
+        throw Error('Not a valid SSMClient provided');
+      }
+    } else {
+      const clientConfig = config?.clientConfig || {};
+      this.client = new SSMClient(clientConfig);
+    }
   }
 
   public async get(

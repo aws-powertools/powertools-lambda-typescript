@@ -1,9 +1,17 @@
 import type { GetOptionsInterface } from './BaseProvider';
-import type { SecretsManagerClientConfig, GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
+import type { SecretsManagerClient, SecretsManagerClientConfig, GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 
-interface SecretsProviderOptions {
+interface SecretsProviderOptionsWithClientConfig {
   clientConfig?: SecretsManagerClientConfig
+  awsSdkV3Client?: never
 }
+
+interface SecretsProviderOptionsWithClientInstance {
+  awsSdkV3Client?: SecretsManagerClient
+  clientConfig?: never
+}
+
+type SecretsProviderOptions = SecretsProviderOptionsWithClientConfig | SecretsProviderOptionsWithClientInstance;
 
 interface SecretsGetOptionsInterface extends GetOptionsInterface {
   sdkOptions?: Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>

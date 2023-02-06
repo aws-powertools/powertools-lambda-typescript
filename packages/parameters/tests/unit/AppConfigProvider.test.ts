@@ -21,6 +21,85 @@ describe('Class: AppConfigProvider', () => {
     jest.clearAllMocks();
   });
 
+  describe('Method: constructor', () => {
+    test('when the class instantiates without SDK client and client config it has default options', async () => {
+      // Prepare
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+      };
+
+      // Act
+      const provider = new AppConfigProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'AppConfigData',
+        })
+      );
+    });
+
+    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+      // Prepare
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+        clientConfig: {
+          serviceId: 'with-client-config',
+        },
+      };
+
+      // Act
+      const provider = new AppConfigProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'with-client-config',
+        })
+      );
+    });
+
+    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+      // Prepare
+      const awsSdkV3Client = new AppConfigDataClient({
+        serviceId: 'with-custom-sdk-client',
+      });
+
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+        awsSdkV3Client: awsSdkV3Client,
+      };
+
+      // Act
+      const provider = new AppConfigProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'with-custom-sdk-client',
+        })
+      );
+    });
+
+    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+      // Prepare
+      const awsSdkV3Client = {};
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+        awsSdkV3Client: awsSdkV3Client as AppConfigDataClient,
+      };
+
+      // Act & Assess
+      expect(() => {
+        new AppConfigProvider(options);
+      }).toThrow();
+    });
+  });
+
   describe('Method: _get', () => {
     test('when called with name and options, it returns binary configuration', async () => {
       // Prepare

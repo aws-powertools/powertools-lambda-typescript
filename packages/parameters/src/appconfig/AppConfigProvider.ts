@@ -23,7 +23,16 @@ class AppConfigProvider extends BaseProvider {
    */
   public constructor(options: AppConfigProviderOptions) {
     super();
-    this.client = new AppConfigDataClient(options.clientConfig || {});
+    if (options?.awsSdkV3Client) {
+      if (options?.awsSdkV3Client instanceof AppConfigDataClient) {
+        this.client = options.awsSdkV3Client;
+      } else {
+        throw Error('Not a valid AppConfigDataClient provided');
+      }
+    } else {
+      this.client = new AppConfigDataClient(options.clientConfig || {});
+    }
+    
     if (!options?.application && !process.env['POWERTOOLS_SERVICE_NAME']) {
       throw new Error(
         'Application name is not defined or POWERTOOLS_SERVICE_NAME is not set'

@@ -10,8 +10,23 @@ class IdempotencyInvalidStatusError extends Error {
 
 }
 
+class IdempotencyInconsistentStateError extends Error {
+
+}
+
+class IdempotencyAlreadyInProgressError extends Error {
+
+}
+
+class IdempotencyPersistenceLayerError extends Error {
+
+}
+
 export {
   IdempotencyItemNotFoundError,
   IdempotencyItemAlreadyExistsError,
-  IdempotencyInvalidStatusError
+  IdempotencyInvalidStatusError,
+  IdempotencyInconsistentStateError,
+  IdempotencyAlreadyInProgressError,
+  IdempotencyPersistenceLayerError
 };

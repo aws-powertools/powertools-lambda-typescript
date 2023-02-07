@@ -33,7 +33,7 @@ jobs:
       - name: Packages size report
         uses: flochaz/pkg-size-action@v2.0.0
         with:
-          build-command: mkdir dist && npm run package -w packages/logger -w packages/tracer -w packages/metrics -w packages/commons && npm run package-bundle -w packages/logger -w packages/tracer -w packages/metrics -w packages/commons && bash -c "mv ./packages/*/dist/* dist/" && ls dist
+          build-command: mkdir dist && npm run package -w packages/logger -w packages/tracer -w packages/metrics -w packages/commons -w packages/parameters && npm run package-bundle -w packages/logger -w packages/tracer -w packages/metrics -w packages/commons -w packages/parameters && bash -c "mv ./packages/*/dist/* dist/" && ls dist
           dist-directory: /dist
           pr-number: ${{ inputs.prNumber }}
         env:

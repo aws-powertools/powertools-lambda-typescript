@@ -1,4 +1,5 @@
-// import { Tracer } from '@aws-lambda-powertools/tracer';
+import { Tracer } from '@aws-lambda-powertools/tracer';
+import AWS from 'aws-sdk';
 
-// const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-// const AWS = tracer.captureAWS(require('aws-sdk'));
+const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+tracer.captureAWS(AWS);

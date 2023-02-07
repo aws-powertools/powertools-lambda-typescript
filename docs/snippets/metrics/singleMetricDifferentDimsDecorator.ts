@@ -5,17 +5,17 @@ const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orde
 
 class Lambda implements LambdaInterface {
 
-    @metrics.logMetrics()
-    public async handler(_event: any, _context: any): Promise<void> {
-        metrics.addDimension('metricUnit', 'milliseconds');
-        // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
-        metrics.addMetric('latency', MetricUnits.Milliseconds, 56);
+  @metrics.logMetrics()
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
+    metrics.addDimension('metricUnit', 'milliseconds');
+    // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
+    metrics.addMetric('latency', MetricUnits.Milliseconds, 56);
     
-        const singleMetric = metrics.singleMetric();
-        // This metric will have the "metricType" dimension, and no "metricUnit" dimension:
-        singleMetric.addDimension('metricType', 'business');
-        singleMetric.addMetric('orderSubmitted', MetricUnits.Count, 1);
-    }
+    const singleMetric = metrics.singleMetric();
+    // This metric will have the "metricType" dimension, and no "metricUnit" dimension:
+    singleMetric.addDimension('metricType', 'business');
+    singleMetric.addMetric('orderSubmitted', MetricUnits.Count, 1);
+  }
 }
 
 const handlerClass = new Lambda();

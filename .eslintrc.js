@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     browser: false,
     es2020: true,
@@ -63,5 +64,5 @@ module.exports = {
     'prefer-arrow-callback': 'error',
     quotes: [ 'error', 'single', { allowTemplateLiterals: true } ],
     semi: [ 'error', 'always' ]
-  },
+  }
 };

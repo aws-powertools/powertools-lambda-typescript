@@ -5,10 +5,10 @@ const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orde
 
 class Lambda implements LambdaInterface {
 
-    @metrics.logMetrics()
-    public async handler(_event: any, _context: any): Promise<void> {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-    }
+  @metrics.logMetrics()
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
+    metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+  }
 }
 
 const handlerClass = new Lambda();

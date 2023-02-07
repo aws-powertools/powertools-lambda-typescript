@@ -10,8 +10,8 @@
     "test": "echo 'Not Applicable'",
     "test:e2e": "echo 'Not Applicable'",
     "build": "echo 'Not Applicable'",
-    "lint": "echo 'Not Applicable'",
-    "lint-fix": "echo 'Not Applicable'"
+    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern logger tracer metrics parameters",
+    "lint-fix": "eslint --fix --ext .ts --no-error-on-unmatched-pattern logger tracer metrics parameters"
   },
   "license": "MIT-0",
   "repository": {
@@ -27,6 +27,7 @@
     "@aws-sdk/client-dynamodb": "^3.245.0",
     "@aws-sdk/client-secrets-manager": "^3.250.0",
     "@aws-sdk/client-ssm": "^3.245.0",
-    "@aws-sdk/util-dynamodb": "^3.245.0"
+    "@aws-sdk/util-dynamodb": "^3.245.0",
+    "axios": "^1.2.4"
   }
 }

@@ -4,11 +4,11 @@ import { LambdaInterface } from '@aws-lambda-powertools/commons';
 const logger = new Logger();
 
 class Lambda implements LambdaInterface {
-    // Set the log event flag to true
-    @logger.injectLambdaContext({ logEvent: true })
-    public async handler(_event: any, _context: any): Promise<void> {
-        logger.info('This is an INFO log with some context');
-    }
+  // Set the log event flag to true
+  @logger.injectLambdaContext({ logEvent: true })
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
+    logger.info('This is an INFO log with some context');
+  }
 
 }
 

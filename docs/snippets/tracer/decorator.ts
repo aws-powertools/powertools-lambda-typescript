@@ -4,11 +4,11 @@ import { LambdaInterface } from '@aws-lambda-powertools/commons';
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
 class Lambda implements LambdaInterface {
-    // Decorate your handler class method
-    @tracer.captureLambdaHandler()
-    public async handler(_event: any, _context: any): Promise<void> {
-        /* ... */
-    }
+  // Decorate your handler class method
+  @tracer.captureLambdaHandler()
+  public async handler(_event: unknown, _context: unknown): Promise<void> {
+    tracer.getSegment();
+  }
 }
  
 const handlerClass = new Lambda();

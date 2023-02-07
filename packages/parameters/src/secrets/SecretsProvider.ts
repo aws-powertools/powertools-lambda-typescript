@@ -15,8 +15,17 @@ class SecretsProvider extends BaseProvider {
   public constructor (config?: SecretsProviderOptions) {
     super();
 
-    const clientConfig = config?.clientConfig || {};
-    this.client = new SecretsManagerClient(clientConfig);
+    if (config?.awsSdkV3Client) {
+      if (config?.awsSdkV3Client instanceof SecretsManagerClient) {
+        this.client = config.awsSdkV3Client;
+      } else {
+        throw Error('Not a valid SecretsManagerClient provided');
+      }
+    } else {
+      const clientConfig = config?.clientConfig || {};
+      this.client = new SecretsManagerClient(clientConfig);
+    }
+    
   }
 
   public async get(

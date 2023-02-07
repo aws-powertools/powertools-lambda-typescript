@@ -34,7 +34,6 @@ describe('Class: DynamoDBPersistenceLayer', () => {
     public _updateRecord(record: IdempotencyRecord): Promise<void> {
       return super._updateRecord(record);
     }
-
   }
 
   beforeEach(() => {

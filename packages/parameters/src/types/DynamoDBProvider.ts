@@ -1,13 +1,24 @@
 import type { GetOptionsInterface, GetMultipleOptionsInterface } from './BaseProvider';
-import type { GetItemCommandInput, QueryCommandInput, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
+import type { DynamoDBClient, GetItemCommandInput, QueryCommandInput, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
 
-interface DynamoDBProviderOptions {
+interface DynamoDBProviderOptionsBaseInterface {
   tableName: string
   keyAttr?: string
   sortAttr?: string
   valueAttr?: string
-  clientConfig?: DynamoDBClientConfig
 }
+
+interface DynamoDBProviderOptionsWithClientConfig extends DynamoDBProviderOptionsBaseInterface {
+  clientConfig?: DynamoDBClientConfig
+  awsSdkV3Client?: never
+}
+
+interface DynamoDBProviderOptionsWithClientInstance extends DynamoDBProviderOptionsBaseInterface {
+  awsSdkV3Client?: DynamoDBClient
+  clientConfig?: never
+}
+
+type DynamoDBProviderOptions = DynamoDBProviderOptionsWithClientConfig | DynamoDBProviderOptionsWithClientInstance;
 
 /**
  * Options for the DynamoDBProvider get method.

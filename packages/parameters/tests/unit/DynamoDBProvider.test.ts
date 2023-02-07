@@ -6,6 +6,7 @@
 import { DynamoDBProvider } from '../../src/dynamodb';
 import { DynamoDBClient, GetItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb';
 import type { GetItemCommandInput, QueryCommandInput } from '@aws-sdk/client-dynamodb';
+import type { DynamoDBProviderOptions } from '../../src/types/DynamoDBProvider';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
@@ -14,6 +15,84 @@ describe('Class: DynamoDBProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('Method: constructor', () => {
+    test('when the class instantiates without SDK client and client config it has default options', async () => {
+      
+      // Prepare
+      const options: DynamoDBProviderOptions = {
+        tableName: 'test-table',
+      };
+
+      // Act
+      const provider = new DynamoDBProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'DynamoDB',
+        })
+      );
+    });
+
+    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+
+      // Prepare
+      const options: DynamoDBProviderOptions = {
+        tableName: 'test-table',
+        clientConfig: {
+          serviceId: 'with-client-config',
+        },
+      };
+
+      // Act
+      const provider = new DynamoDBProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'with-client-config',
+        })
+      );
+    });
+
+    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+      
+      // Prepare
+      const awsSdkV3Client = new DynamoDBClient({
+        serviceId: 'with-custom-sdk-client',
+      });
+
+      const options: DynamoDBProviderOptions = {
+        tableName: 'test-table',
+        awsSdkV3Client: awsSdkV3Client,
+      };
+
+      // Act
+      const provider = new DynamoDBProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'with-custom-sdk-client',
+        })
+      );
+    });
+
+    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+      // Prepare
+      const awsSdkV3Client = {};
+      const options: DynamoDBProviderOptions = {
+        tableName: 'test-table',
+        awsSdkV3Client: awsSdkV3Client as DynamoDBClient,
+      };
+
+      // Act & Assess
+      expect(() => {
+        new DynamoDBProvider(options);
+      }).toThrow();
+    });
   });
 
   describe('Method: _get', () => {

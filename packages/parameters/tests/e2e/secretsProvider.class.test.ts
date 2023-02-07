@@ -31,6 +31,7 @@ const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'se
 const lambdaFunctionCodeFile = 'secretsProvider.class.test.functionCode.ts';
 
 const secretNamePlain = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretPlain');
+const secretNamePlainCached = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretPlainCached');
 const secretNameObject = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretObject');
 const secretNameBinary = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretBinary');
 const secretNameObjectWithSuffix = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretObject.json');
@@ -58,10 +59,12 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
         SECRET_NAME_OBJECT: secretNameObject,
         SECRET_NAME_BINARY: secretNameBinary,
         SECRET_NAME_OBJECT_WITH_SUFFIX: secretNameObjectWithSuffix,
-        SECRET_NAME_BINARY_WITH_SUFFIX: secretNameBinaryWithSuffix
+        SECRET_NAME_BINARY_WITH_SUFFIX: secretNameBinaryWithSuffix,
+        SECRET_NAME_PLAIN_CACHED: secretNamePlainCached,
       },
       runtime: runtime
     });
+
     const secretString = new Secret(stack, 'testSecretPlain', {
       secretName: secretNamePlain,
       secretStringValue: SecretValue.unsafePlainText('foo')
@@ -91,7 +94,13 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
       secretStringValue: SecretValue.unsafePlainText('Zm9v') // 'foo' encoded in base64
     });
 
-    Aspects.of(stack).add(new ResourceAccessGranter([ secretString, secretObject, secretBinary, secretObjectWithSuffix, secretBinaryWithSuffix ]));
+    const secretStringCached = new Secret(stack, 'testSecretStringCached', {
+      secretName: secretNamePlainCached,
+      secretStringValue: SecretValue.unsafePlainText('foo')
+    });
+
+    Aspects.of(stack).add(new ResourceAccessGranter([ secretString, secretObject, secretBinary, secretObjectWithSuffix, secretBinaryWithSuffix, secretStringCached ]));
+
     await deployStack(integTestApp, stack);
 
     invocationLogs = await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
@@ -148,6 +157,26 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
     expect(testLog).toStrictEqual({
       test: 'get-transform-auto-binary',
       value: 'foo'
+    });
+  });
+
+  it('should retrieve single parameter cached', async () => {
+    const logs = invocationLogs[0].getFunctionLogs();
+    const testLogFirst = InvocationLogs.parseFunctionLog(logs[5]);
+
+    expect(testLogFirst).toStrictEqual({
+      test: 'get-plain-cached',
+      value: 1
+    });
+  });
+
+  it('should retrieve single parameter twice without caching', async () => {
+    const logs = invocationLogs[0].getFunctionLogs();
+    const testLogFirst = InvocationLogs.parseFunctionLog(logs[6]);
+
+    expect(testLogFirst).toStrictEqual({
+      test: 'get-plain-force',
+      value: 1
     });
   });
 

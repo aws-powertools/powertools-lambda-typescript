@@ -176,7 +176,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
 
     expect(testLogFirst).toStrictEqual({
       test: 'get-plain-force',
-      value: 1
+      value: 2
     });
   });
 

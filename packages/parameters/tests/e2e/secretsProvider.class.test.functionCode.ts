@@ -77,6 +77,7 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   // get parameter twice, but force fetch 2nd time, we count number of SDK requests and  check that we made two API calls
   try {
     middleware.counter = 0;
+    providerWithMiddleware.clearCache();
     await providerWithMiddleware.get(secretNamePlainChached);
     await providerWithMiddleware.get(secretNamePlainChached, { forceFetch: true });
     logger.log({

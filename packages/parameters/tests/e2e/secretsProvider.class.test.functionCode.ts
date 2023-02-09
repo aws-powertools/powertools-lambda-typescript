@@ -43,7 +43,7 @@ const _call_get = async (paramName: string, testName: string, options?: SecretsG
 
 export const handler = async (_event: unknown, _context: Context): Promise<void> => {
 
-  // Test 1 get single secrt as plaintext
+  // Test 1 get single secret as plaintext
   await _call_get(secretNamePlain, 'get-plain');
 
   // Test 2 get single secret with transform json

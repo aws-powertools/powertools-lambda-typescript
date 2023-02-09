@@ -203,8 +203,13 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {Logger}
    */
   public createChild(options: ConstructorOptions = {}): Logger {
+    const parentsOptions = {
+      logLevel: this.getLogLevel(),
+      customConfigService: this.getCustomConfigService(),
+      logFormatter: this.getLogFormatter(),
+    };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
-    const childLogger = new Logger(merge({}, parentsPowertoolsLogData, options));
+    const childLogger = new Logger(merge(parentsOptions, parentsPowertoolsLogData, options));
     
     const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
     childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);

@@ -8,7 +8,7 @@ import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface 
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
-import { ClassThatLogs, LogJsonIndent } from '../../src/types';
+import { ClassThatLogs, LogJsonIndent, ConstructorOptions } from '../../src/types';
 import { Context } from 'aws-lambda';
 import { Console } from 'console';
 
@@ -1297,7 +1297,7 @@ describe('Class: Logger', () => {
 
   describe('Method: createChild', () => {
 
-    test('Child and grandchild loggers should have all ancestor\'s options', () => {
+    test('child and grandchild loggers should have all ancestor\'s options', () => {
       // Prepare
       const INDENTATION = LogJsonIndent.COMPACT;
       const loggerOptions = {
@@ -1398,7 +1398,7 @@ describe('Class: Logger', () => {
 
     });
 
-    test('when called, it returns a DISTINCT clone of the logger instance', () => {
+    test('child logger should be a DISTINCT clone of the logger instance', () => {
 
       // Prepare
       const INDENTATION = LogJsonIndent.COMPACT;
@@ -1715,6 +1715,94 @@ describe('Class: Logger', () => {
           serviceName: 'hello-world',
         },
       });
+    });
+
+    test('child logger should have parent\'s logFormatter', () => {
+
+      // Prepare
+      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      const parentLogger = new Logger({
+        logFormatter: new MyCustomLogFormatter()
+      });
+
+      // Act
+      const childLoggerWithParentLogFormatter = parentLogger.createChild();
+
+      // Assess
+      expect(childLoggerWithParentLogFormatter).toEqual(
+        expect.objectContaining({
+          logFormatter: expect.any(MyCustomLogFormatter),
+        })
+      );
+    });
+
+    test('child logger with custom logFormatter in options should have provided logFormatter', () => {
+
+      // Prepare
+      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      const parentLogger = new Logger();
+
+      // Act
+      const childLoggerWithCustomLogFormatter = parentLogger.createChild({
+        logFormatter: new MyCustomLogFormatter()
+      });
+
+      // Assess
+      expect(parentLogger).toEqual(
+        expect.objectContaining({
+          logFormatter: expect.any(PowertoolLogFormatter),
+        })
+      );
+
+      expect(childLoggerWithCustomLogFormatter).toEqual(
+        expect.objectContaining({
+          logFormatter: expect.any(MyCustomLogFormatter),
+        })
+      );
+    });
+
+    test('child logger should have exact same attributes as the parent logger created with all non-default options', () => {
+
+      // Prepare
+      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {}
+
+      const options: ConstructorOptions = {
+        logLevel: 'ERROR',
+        serviceName: 'test-service-name',
+        sampleRateValue: 0.77,
+        logFormatter: new MyCustomLogFormatter(),
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+        persistentLogAttributes: {
+          aws_account_id: '1234567890',
+          aws_region: 'eu-west-1',
+        },
+        environment: 'local'
+      };
+      const parentLogger = new Logger(options);
+
+      // Act
+      const childLogger = parentLogger.createChild();
+
+      // Assess
+      expect(childLogger).toEqual({
+        ...parentLogger,
+        console: expect.any(Console),
+        logsSampled: expect.any(Boolean),
+      });
+
+      expect(childLogger).toEqual(
+        expect.objectContaining({
+          logFormatter: expect.any(MyCustomLogFormatter),
+        })
+      );
+
+      expect(childLogger).toEqual(
+        expect.objectContaining({
+          customConfigService: expect.any(MyCustomEnvironmentVariablesService),
+        })
+      );
+      
     });
     
   });

@@ -23,7 +23,8 @@ Before deploying this example install the npm dependencies:
 npm i
 ```
 
-In addition to the [recommended setup for this project](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/CONTRIBUTING.md#setup), you'll need the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html). 
+> **Note**
+> In order to run this example you'll need [AWS SAM CLI version 1.65 or later](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html). If you have an older version of the AWS SAM CLI, see [Upgrading the AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/manage-sam-cli-versions.html#manage-sam-cli-versions-upgrade).
 
 ## Deploy the sample application
 

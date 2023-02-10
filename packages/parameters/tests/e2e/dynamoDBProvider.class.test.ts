@@ -374,7 +374,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
       expect(testLog).toStrictEqual({
         test: 'get-json-transform',
-        value: 'object',
+        value: { foo: 'bar' },
       });
 
     });
@@ -387,7 +387,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
       expect(testLog).toStrictEqual({
         test: 'get-binary-transform',
-        value: 'string', // as opposed to Uint8Array
+        value: 'baz',
       });
 
     });
@@ -400,15 +400,40 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
       expect(testLog).toStrictEqual({
         test: 'get-multiple-auto-transform',
-        value: 'object,string',
+        value: {
+          'config.json': { foo: 'bar' },
+          'key.binary': 'baz',
+        },
+      });
+
+    });
+    
+    // Test 8 - Get a parameter twice and check that the value is cached.
+    it('should retrieve multiple parameters with auto transforms', async () => {
+
+      const logs = invocationLogs[0].getFunctionLogs();
+      const testLog = InvocationLogs.parseFunctionLog(logs[7]);
+
+      expect(testLog).toStrictEqual({
+        test: 'get-cached',
+        value: 1,
       });
 
     });
 
-    // TODO: implement tests for the following cases once #1222 is merged:
-    // Test 8 - get a parameter twice, second time should be cached
-    // Test 9 - get a parameter once more but with forceFetch = true
+    // Test 9 - Get a cached parameter and force retrieval.
+    it('should retrieve multiple parameters with auto transforms', async () => {
 
+      const logs = invocationLogs[0].getFunctionLogs();
+      const testLog = InvocationLogs.parseFunctionLog(logs[8]);
+
+      expect(testLog).toStrictEqual({
+        test: 'get-forced',
+        value: 2,
+      });
+
+    });
+    
   });
 
   afterAll(async () => {

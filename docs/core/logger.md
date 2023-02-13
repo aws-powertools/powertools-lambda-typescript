@@ -390,8 +390,9 @@ The error will be logged with default key name `error`, but you can also pass yo
 
 ### Using multiple Logger instances across your code
 
-Logger supports quick instance cloning via the `createChild` method.
-This can be useful for example if you want to enable multiple Loggers with different logging levels in the same Lambda invocation.
+The `createChild` method of the Logger allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings that can be set through the constructor, including [the default settings](#utility-settings), any [persistent attributes](#appending-persistent-additional-log-keys-and-values), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).
+
+The following example shows how to activate multiple Loggers and inherit the service name and persistent attributes while specifying different logging levels within a single Lambda invocation. As the result, only ERROR logs with all the inherited attributes will be displayed in CloudWatch Logs from the child logger.
 
 === "handler.ts"
 
@@ -407,6 +408,7 @@ This can be useful for example if you want to enable multiple Loggers with diffe
         "message": "This is an INFO log, from the parent logger",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.667Z",
+        "aws_account_id":"123456789012","aws_region":"eu-west-1",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
@@ -414,6 +416,7 @@ This can be useful for example if you want to enable multiple Loggers with diffe
         "message": "This is an ERROR log, from the parent logger",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.670Z",
+        "aws_account_id":"123456789012","aws_region":"eu-west-1",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
@@ -421,6 +424,7 @@ This can be useful for example if you want to enable multiple Loggers with diffe
         "message": "This is an ERROR log, from the child logger",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.670Z",
+        "aws_account_id":"123456789012","aws_region":"eu-west-1",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
@@ -597,6 +601,9 @@ This is how the printed log would look:
             "awsAccountId": "123456789012"
         }
     ```
+
+!!! tip "Custom Log formatter and Child loggers"
+    It is not necessary to pass the `LogFormatter` each time a [child logger](#using-multiple-logger-instances-across-your-code) is created. The parent's LogFormatter will be inherited by the child logger.
 
 ## Testing your code
 

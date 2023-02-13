@@ -408,7 +408,8 @@ The following example shows how to activate multiple Loggers and inherit the ser
         "message": "This is an INFO log, from the parent logger",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.667Z",
-        "aws_account_id":"123456789012","aws_region":"eu-west-1",
+        "aws_account_id":"123456789012",
+        "aws_region":"eu-west-1",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
@@ -416,7 +417,8 @@ The following example shows how to activate multiple Loggers and inherit the ser
         "message": "This is an ERROR log, from the parent logger",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.670Z",
-        "aws_account_id":"123456789012","aws_region":"eu-west-1",
+        "aws_account_id":"123456789012",
+        "aws_region":"eu-west-1",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     {
@@ -424,7 +426,8 @@ The following example shows how to activate multiple Loggers and inherit the ser
         "message": "This is an ERROR log, from the child logger",
         "service": "serverlessAirline",
         "timestamp": "2021-12-12T22:32:54.670Z",
-        "aws_account_id":"123456789012","aws_region":"eu-west-1",
+        "aws_account_id":"123456789012",
+        "aws_region":"eu-west-1",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```

@@ -17,9 +17,16 @@ export const middleware = {
   applyToStack: (stack) => {
     // Middleware added to mark start and end of an complete API call.
     stack.add(
-      (next, _context) => async (args) => {
-        // Increment counter
-        middleware.counter++;
+      (next, context) => async (args) => {
+        // We only want to count API calls to retrieve data,
+        // not the StartConfigurationSessionCommand
+        if (
+          context.clientName !== 'AppConfigDataClient' ||
+          context.commandName !== 'StartConfigurationSessionCommand'
+        ) {
+          // Increment counter
+          middleware.counter++;
+        }
 
         // Call next middleware
         return await next(args);

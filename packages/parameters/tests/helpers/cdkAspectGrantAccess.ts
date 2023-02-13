@@ -1,8 +1,10 @@
-import { IAspect } from 'aws-cdk-lib';
+import { IAspect, Stack } from 'aws-cdk-lib';
 import { IConstruct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { CfnDeployment } from 'aws-cdk-lib/aws-appconfig';
 
 /**
  * An aspect that grants access to resources to a Lambda function.
@@ -19,9 +21,9 @@ import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
  * @see {@link https://docs.aws.amazon.com/cdk/v2/guide/aspects.html|CDK Docs - Aspects}
  */
 export class ResourceAccessGranter implements IAspect {
-  private readonly resources: Table[] | Secret[];
+  private readonly resources: Table[] | Secret[] | CfnDeployment[];
 
-  public constructor(resources: Table[] | Secret[]) {
+  public constructor(resources: Table[] | Secret[] | CfnDeployment[]) {
     this.resources = resources;
   }
 
@@ -30,12 +32,29 @@ export class ResourceAccessGranter implements IAspect {
     if (node instanceof NodejsFunction) {
 
       // Grant access to the resources
-      this.resources.forEach((resource: Table | Secret) => {
+      this.resources.forEach((resource: Table | Secret | CfnDeployment) => {
 
         if (resource instanceof Table) {
           resource.grantReadData(node);
         } else if (resource instanceof Secret) {
           resource.grantRead(node);
+        } else if (resource instanceof CfnDeployment) {
+          const appConfigConfigurationArn = Stack.of(node).formatArn({
+            service: 'appconfig',
+            resource: `application/${resource.applicationId}/environment/${resource.environmentId}/configuration/${resource.configurationProfileId}`,
+          });
+
+          node.addToRolePolicy(
+            new PolicyStatement({
+              actions: [
+                'appconfig:StartConfigurationSession',
+                'appconfig:GetLatestConfiguration',
+              ],
+              resources: [
+                appConfigConfigurationArn,
+              ],
+            }),
+          );
         }
 
       });

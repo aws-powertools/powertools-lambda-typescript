@@ -12,7 +12,7 @@ import {
   HTTPMethod,
 } from './types';
 import { BaseProxyEvent } from './types/BaseProxyEvent';
-import { LambdaContext } from './types/LambdaContext';
+import { Context as LambdaContext } from 'aws-lambda';
 
 enum ProxyEventType {
   APIGatewayProxyEvent = 'APIGatewayProxyEvent',

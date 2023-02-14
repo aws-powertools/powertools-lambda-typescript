@@ -11,7 +11,8 @@
     "packages/tracer",
     "packages/parameters",
     "packages/idempotency",
-    "docs/snippets"
+    "docs/snippets",
+    "packages/event-handler"
   ],
   "scripts": {
     "init-environment": "husky install",

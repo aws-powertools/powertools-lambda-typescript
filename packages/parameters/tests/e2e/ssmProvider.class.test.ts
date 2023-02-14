@@ -104,7 +104,7 @@ let stack: Stack;
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
  */
-describe(`parameters E2E tests (dynamoDBProvider) for runtime: nodejs18x`, () => {
+describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
 
   let invocationLogs: InvocationLogs[];
 
@@ -322,7 +322,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: nodejs18x`, () =>
         value: 2
       });
 
-    });
+    }, TEST_CASE_TIMEOUT);
 
   });
 

@@ -4,7 +4,7 @@
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | This AWS Lambda Powertools for TypeScript utility is currently released as beta developer preview and is intended strictly for feedback and testing purposes only.  <br/>This version is not stable, and significant breaking changes might incur before going [before the GA release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/10). | _ |
 
-A suite of utilities for AWS Lambda functions to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.
+Powertools is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#features).
 
 You can use the library in both TypeScript and JavaScript code bases.
 

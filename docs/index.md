@@ -3,7 +3,7 @@ title: Homepage
 description: AWS Lambda Powertools for TypeScript
 ---
 
-A suite of utilities for AWS Lambda functions running on the Node.js runtime, to ease adopting best practices such as tracing, structured logging, custom metrics, [**and more**](#features).
+Powertools is a developer toolkit to implement Serverless [best practices and increase developer velocity](#features).
 
 You can use Powertools in both TypeScript and JavaScript code bases.
 

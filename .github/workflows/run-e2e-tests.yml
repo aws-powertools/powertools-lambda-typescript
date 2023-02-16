@@ -122,5 +122,17 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit == 'true'
         run: |
           npm run build -w packages/commons
+      - name: Create layer files
+        run: |
+          rm -rf tmp/nodejs
+          mkdir -p tmp/nodejs
+          cd tmp/nodejs
+          npm i \
+            @aws-lambda-powertools/logger@latest \
+            @aws-lambda-powertools/metrics@latest \
+            @aws-lambda-powertools/tracer@$latest
+          rm -rf node_modules/@types \
+            package.json
+            package-lock.json
       - name: Run integration test on layers
         run: RUNTIME=nodejs${{ matrix.version }}.x npm run test:e2e -w layer-publisher

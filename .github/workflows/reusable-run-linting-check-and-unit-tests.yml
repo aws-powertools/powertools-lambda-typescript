@@ -119,6 +119,18 @@ jobs:
           npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics & npm run build -w packages/parameters & npm run build -w packages/idempotency & npm run build -w docs/snippets -w layer-publisher
       - name: Run linting
         run: npm run lint -w layer-publisher
+      - name: Create layer files
+        run: |
+          rm -rf tmp/nodejs
+          mkdir -p tmp/nodejs
+          cd tmp/nodejs
+          npm i \
+            @aws-lambda-powertools/logger@latest \
+            @aws-lambda-powertools/metrics@latest \
+            @aws-lambda-powertools/tracer@$latest
+          rm -rf node_modules/@types \
+            package.json
+            package-lock.json
       - name: Run tests
         run: npm t -w layer-publisher
   check-docs-snippets:

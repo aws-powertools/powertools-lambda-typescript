@@ -27,7 +27,7 @@ export class PowertoolsTypeScriptLayer extends LayerVersion {
         Runtime.NODEJS_16_X,
         Runtime.NODEJS_18_X
       ],
-      code: Code.fromAsset('tmp', {
+      code: Code.fromAsset('../tmp', {
         assetHash: Md5.hashStr(version),
         bundling: {
           image: Runtime.NODEJS_14_X.bundlingImage,

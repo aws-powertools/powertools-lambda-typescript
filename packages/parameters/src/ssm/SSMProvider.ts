@@ -147,10 +147,8 @@ class SSMProvider extends BaseProvider {
       ...(options?.sdkOptions || {}),
       Name: name,
     };
-    if (options) {
-      if (options.hasOwnProperty('decrypt'))
-        sdkOptions.WithDecryption = options.decrypt;
-    }
+    sdkOptions.WithDecryption = options?.decrypt !== undefined ?
+      options.decrypt : sdkOptions.WithDecryption;
     const result = await this.client.send(new GetParameterCommand(sdkOptions));
 
     return result.Parameter?.Value;
@@ -167,15 +165,12 @@ class SSMProvider extends BaseProvider {
     const paginationOptions: PaginationConfiguration = {
       client: this.client
     };
-    if (options) {
-      if (options.hasOwnProperty('decrypt'))
-        sdkOptions.WithDecryption = options.decrypt;
-      if (options.hasOwnProperty('recursive'))
-        sdkOptions.Recursive = options.recursive;
-      if (sdkOptions.MaxResults) {
-        paginationOptions.pageSize = sdkOptions.MaxResults;
-      }
-    }
+    sdkOptions.WithDecryption = options?.decrypt !== undefined ?
+      options.decrypt : sdkOptions.WithDecryption;
+    sdkOptions.Recursive = options?.recursive !== undefined ?
+      options.recursive : sdkOptions.Recursive;
+    paginationOptions.pageSize = sdkOptions.MaxResults !== undefined ?
+      sdkOptions.MaxResults : undefined;
     
     const parameters: Record<string, string | undefined> = {};
     for await (const page of paginateGetParametersByPath(paginationOptions, sdkOptions)) {
@@ -388,13 +383,11 @@ class SSMProvider extends BaseProvider {
       const overrides = parameterOptions;
       overrides.transform = overrides.transform || configs.transform;
 
-      if (!overrides.hasOwnProperty('decrypt')) {
-        overrides.decrypt = configs.decrypt;
-      }
-      if (!overrides.hasOwnProperty('maxAge')) {
-        overrides.maxAge = configs.maxAge;
-      }
-
+      overrides.decrypt = overrides.decrypt !== undefined ?
+        overrides.decrypt : configs.decrypt;
+      overrides.maxAge = overrides.maxAge !== undefined ?
+        overrides.maxAge : configs.maxAge;
+      
       if (overrides.decrypt) {
         parametersToDecrypt[parameterName] = overrides;
       } else {

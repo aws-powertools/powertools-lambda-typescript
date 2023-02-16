@@ -11,7 +11,7 @@ import {
 const client = new SSMClient({});
 
 /**
- * Create a new SSM SecureString parameter, overwriting any existing parameter with the same name if it exists.
+ * Create a new SSM SecureString parameter.
  */
 const createResource = async (event: CloudFormationCustomResourceEvent): Promise<void> => {
   const { ResourceProperties } = event;
@@ -21,7 +21,6 @@ const createResource = async (event: CloudFormationCustomResourceEvent): Promise
     Name,
     Value,
     Type: 'SecureString',
-    Overwrite: true,
   }));
 };
 
@@ -44,12 +43,12 @@ const deleteResource = async (event: CloudFormationCustomResourceEvent): Promise
  * We need a custom resource because CDK does not support creating SSM SecureString parameters.
  */
 export const handler = async (event: CloudFormationCustomResourceEvent, _context: Context): Promise<void> => {
-  if (event.RequestType === 'Create' || event.RequestType === 'Update') {
+  if (event.RequestType === 'Create') {
     await createResource(event);
   } else if (event.RequestType === 'Delete') {
     await deleteResource(event);
   } else {
-    console.error('Unknown request type', event);
-    throw new Error('Unknown request type');
+    console.error('Unknown or unsupported request type', event);
+    throw new Error('Unknown or unsupported request type');
   }
 };

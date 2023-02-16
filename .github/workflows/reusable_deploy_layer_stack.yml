@@ -63,19 +63,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "18"
-      - name: install cdk and deps
-        run: |
-          npm install -g aws-cdk@2.55.0
-          cdk --version
       - name: install deps
-        run: |
-          npm ci
+        run: npm ci
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artefact-name }}
           path: layer-publisher
-      - name: unzip artefact
+      - name: unzip artifact
         run: unzip cdk.out.zip
       - name: CDK Deploy Layer
         run: cdk deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose

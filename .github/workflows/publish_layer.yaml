@@ -23,9 +23,6 @@ jobs:
   build-layer:
     runs-on: ubuntu-latest
     if: ${{ (github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch') }}
-    defaults:
-      run:
-        working-directory: ./layer-publisher
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -41,13 +38,10 @@ jobs:
           LATEST_TAG=$(git describe --tag --abbrev=0)
           RELEASE_TAG_VERSION=${RELEASE_INPUT:-$LATEST_TAG}
           echo "RELEASE_TAG_VERSION=${RELEASE_TAG_VERSION:1}" >> $GITHUB_ENV
-      - name: install cdk and deps
-        run: |
-          npm install -g aws-cdk@2.55.0
-          cdk --version
       - name: install deps
-        run: |
-          npm ci
+        run: npm ci
+      - name: Change folder
+        run: cd layer-publisher
       - name: CDK build
         run: cdk synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
       - name: zip output
@@ -55,7 +49,7 @@ jobs:
       - name: Archive CDK artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: cdk-layer-artefact
+          name: cdk-layer-artifact
           path: layer-publisher/cdk.out.zip
 
   # Deploy layer to all regions in beta account
@@ -65,7 +59,7 @@ jobs:
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
     with:
       stage: "BETA"
-      artefact-name: "cdk-layer-artefact"
+      artefact-name: "cdk-layer-artifact"
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
 
@@ -76,6 +70,6 @@ jobs:
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
     with:
       stage: "PROD"
-      artefact-name: "cdk-layer-artefact"
+      artefact-name: "cdk-layer-artifact"
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}

@@ -1,38 +1,38 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Layer  Created 1`] = `
-Object {
-  "Outputs": Object {
-    "LatestLayerArn": Object {
-      "Export": Object {
+{
+  "Outputs": {
+    "LatestLayerArn": {
+      "Export": {
         "Name": "AWSLambdaPowertoolsTypeScript",
       },
-      "Value": Object {
+      "Value": {
         "Ref": "LambdaPowertoolsLayer733361E9",
       },
     },
   },
-  "Parameters": Object {
-    "BootstrapVersion": Object {
+  "Parameters": {
+    "BootstrapVersion": {
       "Default": "/cdk-bootstrap/hnb659fds/version",
       "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
-  "Resources": Object {
-    "LambdaPowertoolsLayer733361E9": Object {
+  "Resources": {
+    "LambdaPowertoolsLayer733361E9": {
       "DeletionPolicy": "Retain",
-      "Properties": Object {
-        "CompatibleRuntimes": Array [
-          "nodejs12.x",
+      "Properties": {
+        "CompatibleRuntimes": [
           "nodejs14.x",
           "nodejs16.x",
+          "nodejs18.x",
         ],
-        "Content": Object {
-          "S3Bucket": Object {
+        "Content": {
+          "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "dbdb3f66eaeed03649521bf73dbcdd95a713086afccbac3f57fa407ffb76bdaa.zip",
+          "S3Key": "503ad69de28d5c29848b356e48699efb350cedbeeb57ad624e7713b1c063f18b.zip",
         },
         "Description": "Lambda Powertools for TypeScript version 1.0.1",
         "LayerName": "AWSLambdaPowertoolsTypeScript",
@@ -40,11 +40,11 @@ Object {
       "Type": "AWS::Lambda::LayerVersion",
       "UpdateReplacePolicy": "Retain",
     },
-    "PublicLayerAccess": Object {
+    "PublicLayerAccess": {
       "DeletionPolicy": "Retain",
-      "Properties": Object {
+      "Properties": {
         "Action": "lambda:GetLayerVersion",
-        "LayerVersionArn": Object {
+        "LayerVersionArn": {
           "Ref": "LambdaPowertoolsLayer733361E9",
         },
         "Principal": "*",
@@ -52,33 +52,33 @@ Object {
       "Type": "AWS::Lambda::LayerVersionPermission",
       "UpdateReplacePolicy": "Retain",
     },
-    "VersionArn99E177D3": Object {
-      "Properties": Object {
+    "VersionArn99E177D3": {
+      "Properties": {
         "Name": "/layers/powertools-layer-arn",
         "Type": "String",
-        "Value": Object {
+        "Value": {
           "Ref": "LambdaPowertoolsLayer733361E9",
         },
       },
       "Type": "AWS::SSM::Parameter",
     },
   },
-  "Rules": Object {
-    "CheckBootstrapVersion": Object {
-      "Assertions": Array [
-        Object {
-          "Assert": Object {
-            "Fn::Not": Array [
-              Object {
-                "Fn::Contains": Array [
-                  Array [
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
                     "1",
                     "2",
                     "3",
                     "4",
                     "5",
                   ],
-                  Object {
+                  {
                     "Ref": "BootstrapVersion",
                   },
                 ],

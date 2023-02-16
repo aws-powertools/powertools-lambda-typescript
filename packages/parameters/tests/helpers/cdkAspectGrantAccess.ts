@@ -2,7 +2,7 @@ import { IAspect } from 'aws-cdk-lib';
 import { IConstruct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter, IStringParameter } from 'aws-cdk-lib/aws-ssm';
 
@@ -48,6 +48,7 @@ export class ResourceAccessGranter implements IAspect {
           // Grant access also to the path of the parameter
           node.addToRolePolicy(
             new PolicyStatement({
+              effect: Effect.ALLOW,
               actions: [
                 'ssm:GetParametersByPath',
               ],

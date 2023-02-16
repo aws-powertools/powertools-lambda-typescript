@@ -44,8 +44,9 @@ const environmentName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 
 const deploymentStrategyName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'immediate');
 const freeFormJsonName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormJson');
 const freeFormYamlName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormYaml');
-const freeFormPlainTextName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormPlainText');
-const featureFlagJsonName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'featureFlagJson');
+const freeFormPlainTextNameA = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormPlainTextA');
+const freeFormPlainTextNameB = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormPlainTextB');
+const featureFlagName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'featureFlag');
 
 const freeFormJsonValue = {
   foo: 'bar',
@@ -53,7 +54,7 @@ const freeFormJsonValue = {
 const freeFormYamlValue = `foo: bar
 `;
 const freeFormPlainTextValue = 'foo';
-const featureFlagJsonValue = {
+const featureFlagValue = {
   version: '1',
   flags: {
     myFeatureFlag: {
@@ -84,8 +85,8 @@ let stack: Stack;
  * The parameters created are:
  * - Free-form JSON
  * - Free-form YAML
- * - Free-form plain text
- * - Feature flag JSON
+ * - 2x Free-form plain text
+ * - Feature flag
  * 
  * These parameters allow to retrieve the values and test some transformations.
  * 
@@ -104,7 +105,7 @@ let stack: Stack;
  * get a free-form plain text and apply binary transformation (should return a string)
  * 
  * Test 5
- * get a feature flag JSON and apply binary transformation (should return a stringified JSON)
+ * get a feature flag and apply binary transformation (should return a stringified JSON)
  * 
  * Test 6
  * get parameter twice with middleware, which counts the number of requests, 
@@ -134,8 +135,9 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
         ENVIRONMENT_NAME: environmentName,
         FREEFORM_JSON_NAME: freeFormJsonName,
         FREEFORM_YAML_NAME: freeFormYamlName,
-        FREEFORM_PLAIN_TEXT_NAME: freeFormPlainTextName,
-        FEATURE_FLAG_JSON_NAME: featureFlagJsonName,
+        FREEFORM_PLAIN_TEXT_NAME_A: freeFormPlainTextNameA,
+        FREEFORM_PLAIN_TEXT_NAME_B: freeFormPlainTextNameB,
+        FEATURE_FLAG_NAME: featureFlagName,
       },
       runtime,
     });
@@ -178,39 +180,57 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
         contentType: 'application/x-yaml',
       }
     });
+    freeFormYaml.node.addDependency(freeFormJson);
 
-    const freeFormPlainText = createAppConfigConfigurationProfile({
+    const freeFormPlainTextA = createAppConfigConfigurationProfile({
       stack,
       application,
       environment,
       deploymentStrategy,
-      name: freeFormPlainTextName,
+      name: freeFormPlainTextNameA,
       type: 'AWS.Freeform',
       content: {
         content: freeFormPlainTextValue,
         contentType: 'text/plain',
       }
     });
-
-    const featureFlagJson = createAppConfigConfigurationProfile({
+    freeFormPlainTextA.node.addDependency(freeFormYaml);
+    
+    const freeFormPlainTextB = createAppConfigConfigurationProfile({
       stack,
       application,
       environment,
       deploymentStrategy,
-      name: featureFlagJsonName,
+      name: freeFormPlainTextNameB,
+      type: 'AWS.Freeform',
+      content: {
+        content: freeFormPlainTextValue,
+        contentType: 'text/plain',
+      }
+    });
+    freeFormPlainTextB.node.addDependency(freeFormPlainTextA);
+
+    const featureFlag = createAppConfigConfigurationProfile({
+      stack,
+      application,
+      environment,
+      deploymentStrategy,
+      name: featureFlagName,
       type: 'AWS.AppConfig.FeatureFlags',
       content: {
-        content: JSON.stringify(featureFlagJsonValue),
+        content: JSON.stringify(featureFlagValue),
         contentType: 'application/json',
       }
     });
+    featureFlag.node.addDependency(freeFormPlainTextB);
 
     // Grant access to the Lambda function to the AppConfig resources.
     Aspects.of(stack).add(new ResourceAccessGranter([
       freeFormJson,
       freeFormYaml,
-      freeFormPlainText,
-      featureFlagJson,
+      freeFormPlainTextA,
+      freeFormPlainTextB,
+      featureFlag,
     ]));
 
     // Deploy the stack
@@ -231,7 +251,11 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
       expect(testLog).toStrictEqual({
         test: 'get',
-        value: encoder.encode(freeFormPlainTextName),
+        value: JSON.parse(
+          JSON.stringify(
+            encoder.encode(freeFormPlainTextValue)
+          )
+        ),
       });
 
     });
@@ -278,7 +302,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
     });
     
-    // Test 5 - get a feature flag JSON and apply binary transformation
+    // Test 5 - get a feature flag and apply binary transformation
     // (should return a stringified JSON)
     it('should retrieve single feature flag parameter with binary transformation', () => {
       
@@ -286,8 +310,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
       const testLog = InvocationLogs.parseFunctionLog(logs[4]);
 
       expect(testLog).toStrictEqual({
-        test: 'get-feature-flag-json-binary',
-        value: JSON.stringify(featureFlagJsonValue.values),
+        test: 'get-feature-flag-binary',
+        value: JSON.stringify(featureFlagValue.values),
       });
 
     });

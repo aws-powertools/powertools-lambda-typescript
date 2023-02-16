@@ -16,8 +16,9 @@ const application = process.env.APPLICATION_NAME || 'my-app';
 const environment = process.env.ENVIRONMENT_NAME || 'my-env';
 const freeFormJsonName = process.env.FREEFORM_JSON_NAME || 'freeform-json';
 const freeFormYamlName = process.env.FREEFORM_YAML_NAME || 'freeform-yaml';
-const freeFormPlainTextName = process.env.FREEFORM_PLAIN_TEXT_NAME || 'freeform-plain-text';
-const featureFlagJsonName = process.env.FEATURE_FLAG_JSON_NAME || 'feature-flag-json';
+const freeFormPlainTextNameA = process.env.FREEFORM_PLAIN_TEXT_NAME_A || 'freeform-plain-text';
+const freeFormPlainTextNameB = process.env.FREEFORM_PLAIN_TEXT_NAME_B || 'freeform-plain-text';
+const featureFlagName = process.env.FEATURE_FLAG_NAME || 'feature-flag';
 
 const defaultProvider = new AppConfigProvider({
   application,
@@ -65,7 +66,7 @@ const _call_get = async (
 
 export const handler = async (_event: unknown, _context: Context): Promise<void> => {
   // Test 1 - get a single parameter as-is (no transformation)
-  await _call_get(freeFormPlainTextName, 'get');
+  await _call_get(freeFormPlainTextNameA, 'get');
 
   // Test 2 - get a free-form JSON and apply binary transformation (should return a stringified JSON)
   await _call_get(freeFormJsonName, 'get-freeform-json-binary', { transform: 'binary' });
@@ -74,18 +75,18 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   await _call_get(freeFormYamlName, 'get-freeform-yaml-binary', { transform: 'binary' });
 
   // Test 4 - get a free-form plain text and apply binary transformation (should return a string)
-  await _call_get(freeFormPlainTextName, 'get-freeform-plain-text-binary', { transform: 'binary' });
+  await _call_get(freeFormPlainTextNameB, 'get-freeform-plain-text-binary', { transform: 'binary' });
 
-  // Test 5 - get a feature flag JSON and apply binary transformation (should return a stringified JSON)
-  await _call_get(featureFlagJsonName, 'get-feature-flag-json-binary', { transform: 'binary' });
+  // Test 5 - get a feature flag and apply binary transformation (should return a stringified JSON)
+  await _call_get(featureFlagName, 'get-feature-flag-binary', { transform: 'binary' });
 
   // Test 6
   // get parameter twice with middleware, which counts the number of requests, we check later if we only called AppConfig API once
   try {
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
-    await providerWithMiddleware.get(freeFormPlainTextName);
-    await providerWithMiddleware.get(freeFormPlainTextName);
+    await providerWithMiddleware.get(freeFormPlainTextNameA);
+    await providerWithMiddleware.get(freeFormPlainTextNameA);
     logger.log({
       test: 'get-cached',
       value: middleware.counter // should be 1
@@ -102,8 +103,8 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   try {
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
-    await providerWithMiddleware.get(freeFormPlainTextName);
-    await providerWithMiddleware.get(freeFormPlainTextName, { forceFetch: true });
+    await providerWithMiddleware.get(freeFormPlainTextNameA);
+    await providerWithMiddleware.get(freeFormPlainTextNameA, { forceFetch: true });
     logger.log({
       test: 'get-forced',
       value: middleware.counter // should be 2

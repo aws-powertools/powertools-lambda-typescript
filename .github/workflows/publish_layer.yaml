@@ -38,12 +38,22 @@ jobs:
           LATEST_TAG=$(git describe --tag --abbrev=0)
           RELEASE_TAG_VERSION=${RELEASE_INPUT:-$LATEST_TAG}
           echo "RELEASE_TAG_VERSION=${RELEASE_TAG_VERSION:1}" >> $GITHUB_ENV
-      - name: install deps
+      - name: Install deps
         run: npm ci
-      - name: Change folder
-        run: cd layer-publisher
+      - name: Create layer files
+        run: |
+          rm -rf tmp/nodejs
+          mkdir -p tmp/nodejs
+          cd tmp/nodejs
+          npm i \
+            @aws-lambda-powertools/logger@$RELEASE_TAG_VERSION \
+            @aws-lambda-powertools/metrics@$RELEASE_TAG_VERSION \
+            @aws-lambda-powertools/tracer@$RELEASE_TAG_VERSION
+          rm -rf node_modules/@types \
+            package.json
+            package-lock.json
       - name: CDK build
-        run: cdk synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
+        run: npm run cdk -w layer-publisher -- synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
       - name: zip output
         run: zip -r cdk.out.zip cdk.out
       - name: Archive CDK artifacts
@@ -59,7 +69,7 @@ jobs:
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
     with:
       stage: "BETA"
-      artefact-name: "cdk-layer-artifact"
+      artifact-name: "cdk-layer-artifact"
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
 
@@ -70,6 +80,6 @@ jobs:
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
     with:
       stage: "PROD"
-      artefact-name: "cdk-layer-artifact"
+      artifact-name: "cdk-layer-artifact"
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}

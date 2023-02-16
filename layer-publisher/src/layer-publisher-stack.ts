@@ -1,9 +1,9 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { CfnLayerVersionPermission } from 'aws-cdk-lib/aws-lambda';
-import { PowerToolsTypeScriptLayer } from './powertools-typescript-layer';
+import { PowertoolsTypeScriptLayer } from './powertools-typescript-layer';
 
 export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string
@@ -12,11 +12,11 @@ export interface LayerPublisherStackProps extends StackProps {
 }
 
 export class LayerPublisherStack extends Stack {
-  public readonly lambdaLayerVersion: lambda.LayerVersion;
+  public readonly lambdaLayerVersion: LayerVersion;
   public constructor(scope: Construct, id: string, props: LayerPublisherStackProps) {
     super(scope, id, props);
 
-    this.lambdaLayerVersion = new PowerToolsTypeScriptLayer(this, 'LambdaPowertoolsLayer', {
+    this.lambdaLayerVersion = new PowertoolsTypeScriptLayer(this, 'LambdaPowertoolsLayer', {
       layerVersionName: props?.layerName,
       version: props?.powerToolsPackageVersion,
     });

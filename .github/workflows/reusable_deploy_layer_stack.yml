@@ -10,7 +10,7 @@ on:
       stage:
         required: true
         type: string
-      artefact-name:
+      artifact-name:
         required: true
         type: string
     secrets:
@@ -68,9 +68,9 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ inputs.artefact-name }}
+          name: ${{ inputs.artifact-name }}
           path: layer-publisher
       - name: unzip artifact
         run: unzip cdk.out.zip
       - name: CDK Deploy Layer
-        run: cdk deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose
+        run: npm run cdk -w layer-publisher -- deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose

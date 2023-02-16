@@ -128,6 +128,7 @@ jobs:
             @aws-lambda-powertools/logger@latest \
             @aws-lambda-powertools/metrics@latest \
             @aws-lambda-powertools/tracer@$latest
+          ls
           rm -rf node_modules/@types \
             package.json
             package-lock.json

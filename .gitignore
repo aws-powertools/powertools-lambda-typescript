@@ -45,4 +45,4 @@ site
 !/examples/sam/src/handlers/COPY_LAMBDA_FUNCTIONS_HERE
 
 # Layer temp files
-tmp/nodejs
+tmp

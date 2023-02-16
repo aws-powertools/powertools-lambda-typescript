@@ -13,10 +13,11 @@ import * as LayerPublisher from '../../src/layer-publisher-stack';
 import { deployStack, destroyStack } from '../../../packages/commons/tests/utils/cdk-cli';
 import { generateUniqueName, invokeFunction } from '../../../packages/commons/tests/utils/e2eUtils';
 import { LEVEL } from '../../../packages/commons/tests/utils/InvocationLogs';
+import packageJson from '../../package.json';
 
 const runtime = lambda.Runtime.ALL.find((r) => r.name === process.env.RUNTIME) ?? lambda.Runtime.NODEJS_14_X;
 
-const powerToolsPackageVersion = '1.0.1';
+const powerToolsPackageVersion = packageJson.version;
 
 const e2eTestLayerPublicationApp = new cdk.App();
 

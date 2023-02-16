@@ -2,7 +2,7 @@ import { IAspect, Stack } from 'aws-cdk-lib';
 import { IConstruct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { CfnDeployment } from 'aws-cdk-lib/aws-appconfig';
 
@@ -46,6 +46,7 @@ export class ResourceAccessGranter implements IAspect {
 
           node.addToRolePolicy(
             new PolicyStatement({
+              effect: Effect.ALLOW,
               actions: [
                 'appconfig:StartConfigurationSession',
                 'appconfig:GetLatestConfiguration',

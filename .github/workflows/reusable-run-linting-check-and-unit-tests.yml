@@ -124,6 +124,7 @@ jobs:
           rm -rf tmp/nodejs
           mkdir -p tmp/nodejs
           cd tmp/nodejs
+          npm init -y
           npm i \
             @aws-lambda-powertools/logger@latest \
             @aws-lambda-powertools/metrics@latest \

@@ -45,12 +45,13 @@ jobs:
           rm -rf tmp/nodejs
           mkdir -p tmp/nodejs
           cd tmp/nodejs
+          npm init -y
           npm i \
             @aws-lambda-powertools/logger@$RELEASE_TAG_VERSION \
             @aws-lambda-powertools/metrics@$RELEASE_TAG_VERSION \
             @aws-lambda-powertools/tracer@$RELEASE_TAG_VERSION
           rm -rf node_modules/@types \
-            package.json
+            package.json \
             package-lock.json
       - name: CDK build
         run: npm run cdk -w layer-publisher -- synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Layer  Created 1`] = `
+exports[`Layer Created 1`] = `
 {
   "Outputs": {
     "LatestLayerArn": {
@@ -32,9 +32,9 @@ exports[`Layer  Created 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "503ad69de28d5c29848b356e48699efb350cedbeeb57ad624e7713b1c063f18b.zip",
+          "S3Key": "02695fa751b4d79fb6eaea375c8f92416802c843204d917f10f9b43c8247672d.zip",
         },
-        "Description": "Lambda Powertools for TypeScript version 1.0.1",
+        "Description": "AWS Lambda Powertools for TypeScript version 1.0.1",
         "LayerName": "AWSLambdaPowertoolsTypeScript",
       },
       "Type": "AWS::Lambda::LayerVersion",

@@ -56,7 +56,7 @@ describe('Helper: createLogger function', () => {
     test('when no parameters are set, returns a Logger instance with the correct properties', () => {
 
       // Prepare
-      const loggerOptions = {
+      const loggerOptions: ConstructorOptions = {
         logLevel: 'WARN',
         serviceName: 'my-lambda-service',
         sampleRateValue: 1,

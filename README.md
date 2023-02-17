@@ -2,7 +2,7 @@
 
 [![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET)
 
-A suite of utilities for AWS Lambda functions to ease the adoption of best practices such as tracing, structured logging, custom metrics, and more.
+Powertools is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#features).
 
 You can use the library in both TypeScript and JavaScript code bases.
 

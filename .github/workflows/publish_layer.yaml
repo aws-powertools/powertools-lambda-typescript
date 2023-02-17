@@ -53,20 +53,10 @@ jobs:
         run: npm ci --foreground-scripts
       - name: Create layer files
         run: |
-          rm -rf tmp/nodejs
-          mkdir -p tmp/nodejs
-          cd tmp/nodejs
-          npm init -y
-          npm i \
-            @aws-lambda-powertools/logger@$RELEASE_TAG_VERSION \
-            @aws-lambda-powertools/metrics@$RELEASE_TAG_VERSION \
-            @aws-lambda-powertools/tracer@$RELEASE_TAG_VERSION
-          rm -rf node_modules/@types \
-            package.json \
-            package-lock.json
-          cd ../..
+          export VERSION=$RELEASE_TAG_VERSION
+          bash .github/scripts/setup_tmp_layer_files.sh
       - name: CDK build
-        run: npm run cdk -w layers -- synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
+        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
       - name: zip output
         run: zip -r cdk.out.zip cdk.out
       - name: Archive CDK artifacts

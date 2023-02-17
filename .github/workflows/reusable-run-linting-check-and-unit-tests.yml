@@ -113,18 +113,8 @@ jobs:
         run: npm run lint -w layers
       - name: Create layer files
         run: |
-          rm -rf tmp/nodejs
-          mkdir -p tmp/nodejs
-          cd tmp/nodejs
-          npm init -y
-          npm i \
-            @aws-lambda-powertools/logger@latest \
-            @aws-lambda-powertools/metrics@latest \
-            @aws-lambda-powertools/tracer@$latest
-          rm -rf node_modules/@types \
-            package.json \
-            package-lock.json
-          cd ../..
+          export VERSION=latest
+          bash .github/scripts/setup_tmp_layer_files.sh
       - name: Run tests
         run: npm run test:unit -w layers
   check-docs-snippets:

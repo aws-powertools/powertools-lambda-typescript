@@ -109,16 +109,8 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
-      - name: Build packages
-        # If there's a cache hit we still need to manually build the packages
-        # this would otherwise have been done automatically as a part of the
-        # post-install npm hook
-        if: steps.cache-node-modules.outputs.cache-hit == 'true'
-        run: |
-          npm run build -w packages/commons
-          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics & npm run build -w packages/parameters & npm run build -w packages/idempotency & npm run build -w docs/snippets -w layer-publisher
       - name: Run linting
-        run: npm run lint -w layer-publisher
+        run: npm run lint -w layers
       - name: Create layer files
         run: |
           rm -rf tmp/nodejs
@@ -132,8 +124,9 @@ jobs:
           rm -rf node_modules/@types \
             package.json \
             package-lock.json
+          cd ../..
       - name: Run tests
-        run: npm t -w layer-publisher
+        run: npm run test:unit -w layers
   check-docs-snippets:
     runs-on: ubuntu-latest
     env:

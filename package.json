@@ -12,7 +12,7 @@
     "packages/parameters",
     "packages/idempotency",
     "docs/snippets",
-    "layer-publisher"
+    "layers"
   ],
   "scripts": {
     "init-environment": "husky install",

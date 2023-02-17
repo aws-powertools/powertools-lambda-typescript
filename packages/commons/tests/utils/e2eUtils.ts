@@ -6,8 +6,12 @@
  * to interact with services. 
 */
 import { App, CfnOutput, Stack } from 'aws-cdk-lib';
-import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
+import {
+  NodejsFunction,
+  NodejsFunctionProps
+} from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import * as AWS from 'aws-sdk';
 
 import { InvocationLogs } from './InvocationLogs';
@@ -31,6 +35,8 @@ export type StackWithLambdaFunctionOptions = {
   environment: {[key: string]: string}
   logGroupOutputKey?: string
   runtime: string
+  bundling?: NodejsFunctionProps['bundling']
+  layers?: NodejsFunctionProps['layers']
 };
 
 type FunctionPayload = {[key: string]: string | boolean | number};
@@ -40,12 +46,15 @@ export const isValidRuntimeKey = (runtime: string): runtime is TestRuntimesKey =
 export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOptions): Stack => {
   
   const stack = new Stack(params.app, params.stackName);
-  const testFunction = new lambda.NodejsFunction(stack, `testFunction`, {
+  const testFunction = new NodejsFunction(stack, `testFunction`, {
     functionName: params.functionName,
     entry: params.functionEntry,
     tracing: params.tracing,
     environment: params.environment,
     runtime: TEST_RUNTIMES[params.runtime as TestRuntimesKey],
+    bundling: params.bundling,
+    layers: params.layers,
+    logRetention: RetentionDays.ONE_DAY,
   });
 
   if (params.logGroupOutputKey) {

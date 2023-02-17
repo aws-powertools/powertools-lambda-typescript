@@ -1,20 +1,20 @@
 {
-  "name": "layer-publisher",
+  "name": "layers",
   "version": "1.5.1",
   "bin": {
-    "layer-publisher": "bin/layer-publisher.js"
+    "layer": "bin/layers.js"
   },
   "description": "This CDK app is meant to be used to publish Powertools for TypeScript Lambda Layer. It is composed of a single stack deploying the Layer into the target account.",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "npm run test:unit",
+    "test": "echo 'Not applicable'",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
     "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
     "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
-    "test:unit": "jest --testPathPattern=unit -u",
-    "test:e2e": "jest --testPathPattern=e2e"
+    "test:unit": "jest --group=unit",
+    "test:e2e": "RUNTIME=nodejs14x jest --group=e2e"
   },
   "repository": {
     "type": "git",
@@ -30,7 +30,6 @@
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
   "devDependencies": {
-    "source-map-support": "^0.5.21",
-    "ts-md5": "^1.3.1"
+    "source-map-support": "^0.5.21"
   }
 }

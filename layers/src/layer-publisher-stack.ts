@@ -1,4 +1,9 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  CfnOutput,
+  RemovalPolicy,
+  Stack,
+  StackProps
+} from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import {
   LayerVersion,
@@ -10,7 +15,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string
-  readonly powerToolsPackageVersion?: string
+  readonly powertoolsPackageVersion?: string
   readonly ssmParameterLayerArn: string
 }
 
@@ -19,13 +24,13 @@ export class LayerPublisherStack extends Stack {
   public constructor(scope: Construct, id: string, props: LayerPublisherStackProps) {
     super(scope, id, props);
 
-    const { layerName, powerToolsPackageVersion } = props;
+    const { layerName, powertoolsPackageVersion } = props;
 
-    console.log(`publishing layer ${layerName} version : ${powerToolsPackageVersion}`);
+    console.log(`publishing layer ${layerName} version : ${powertoolsPackageVersion}`);
 
     this.lambdaLayerVersion = new LayerVersion(this, 'LambdaPowertoolsLayer', {
       layerVersionName: props?.layerName,
-      description: `AWS Lambda Powertools for TypeScript version ${powerToolsPackageVersion}`,
+      description: `AWS Lambda Powertools for TypeScript version ${powertoolsPackageVersion}`,
       compatibleRuntimes: [
         Runtime.NODEJS_14_X,
         Runtime.NODEJS_16_X,

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Layer Created 1`] = `
+exports[`Class: LayerPublisherStack creates the stack with a layer in it 1`] = `
 {
   "Outputs": {
     "LatestLayerArn": {

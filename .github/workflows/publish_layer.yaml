@@ -38,8 +38,19 @@ jobs:
           LATEST_TAG=$(git describe --tag --abbrev=0)
           RELEASE_TAG_VERSION=${RELEASE_INPUT:-$LATEST_TAG}
           echo "RELEASE_TAG_VERSION=${RELEASE_TAG_VERSION:1}" >> $GITHUB_ENV
-      - name: Install deps
-        run: npm ci
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        # We can skip the installation if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
       - name: Create layer files
         run: |
           rm -rf tmp/nodejs
@@ -53,15 +64,16 @@ jobs:
           rm -rf node_modules/@types \
             package.json \
             package-lock.json
+          cd ../..
       - name: CDK build
-        run: npm run cdk -w layer-publisher -- synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
+        run: npm run cdk -w layers -- synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
       - name: zip output
         run: zip -r cdk.out.zip cdk.out
       - name: Archive CDK artifacts
         uses: actions/upload-artifact@v3
         with:
           name: cdk-layer-artifact
-          path: layer-publisher/cdk.out.zip
+          path: layers/cdk.out.zip
 
   # Deploy layer to all regions in beta account
   deploy-beta:

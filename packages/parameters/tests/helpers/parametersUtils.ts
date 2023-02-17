@@ -131,7 +131,7 @@ const createAppConfigConfigurationProfile = (options: CreateAppConfigConfigurati
     deploymentStrategyId: deploymentStrategy.ref,
     environmentId: environment.ref,
   });
-}
+};
 
 export type CreateSecureStringProviderOptions = {
   stack: Stack

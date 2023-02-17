@@ -26,8 +26,28 @@ describe('Class: LayerPublisherStack', () => {
     const template = Template.fromStack(stack);
 
     // Assess
-    expect(template).toMatchSnapshot();
+    template.resourceCountIs('AWS::Lambda::LayerVersion', 1);
+    template.hasResourceProperties('AWS::Lambda::LayerVersion', {
+      CompatibleRuntimes: [
+        'nodejs14.x',
+        'nodejs16.x',
+        'nodejs18.x'
+      ],
+      Description: 'AWS Lambda Powertools for TypeScript version 1.0.1',
+      LayerName: 'AWSLambdaPowertoolsTypeScript',
+    });
 
+    template.resourceCountIs('AWS::Lambda::LayerVersionPermission', 1);
+    template.hasResourceProperties('AWS::Lambda::LayerVersionPermission', {
+      Action: 'lambda:GetLayerVersion',
+      Principal: '*',
+    });
+
+    template.resourceCountIs('AWS::SSM::Parameter', 1);
+    template.hasResourceProperties('AWS::SSM::Parameter', {
+      Name: '/layers/powertools-layer-arn',
+      Type: 'String',
+    });
   });
 
 });

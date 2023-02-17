@@ -1,10 +1,10 @@
 import { ContextMissingStrategy } from 'aws-xray-sdk-core/dist/lib/context_utils';
 import { Namespace } from 'cls-hooked';
 import { ProviderServiceInterface } from '.';
-import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, captureHTTPsGlobal, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger, Logger } from 'aws-xray-sdk-core';
+import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, captureHTTPsGlobal, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setStreamingThreshold, setDaemonAddress, setLogger, Logger } from 'aws-xray-sdk-core';
 
 class ProviderService implements ProviderServiceInterface {
-  
+
   public captureAWS<T>(awssdk: T): T {
     return captureAWS(awssdk);
   }
@@ -45,7 +45,7 @@ class ProviderService implements ProviderServiceInterface {
   public setContextMissingStrategy(strategy: unknown): void {
     setContextMissingStrategy(strategy as ContextMissingStrategy);
   }
-
+  
   public setDaemonAddress(address: string): void {
     setDaemonAddress(address);
   }
@@ -56,6 +56,10 @@ class ProviderService implements ProviderServiceInterface {
   
   public setSegment(segment: Segment | Subsegment): void {
     setSegment(segment);
+  }
+
+  public setStreamingThreshold(threshold: number): void {
+    setStreamingThreshold(threshold);
   }
 
 }

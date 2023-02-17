@@ -14,6 +14,8 @@ interface ProviderServiceInterface {
 
   setContextMissingStrategy(strategy: unknown): void
 
+  setStreamingThreshold(threshold: number): void
+
   captureAWS<T>(awsservice: T): T
 
   captureAWSClient<T>(awsservice: T): T

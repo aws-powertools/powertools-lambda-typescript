@@ -249,6 +249,16 @@ You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HT
 
 ## Advanced
 
+### Configure streaming threshold
+
+By default, the SDK is configured to have a threshold of 100 subsegments per segment. This is because the UDP packet maximum size is ~65 kb, and larger segments might trigger the 'Segment too large to send' error.
+
+To remedy this, the SDK automatically sends the completed subsegments to the daemon when the threshold is breached. Additionally, subsegments that complete when over the threshold automatically send themselves. If a subsegment is sent out of band, it is pruned from the segment object. The full segment is reconstructed on the service side. You can change the threshold as needed.
+
+`tracer.setStreamingThreshold(10)`
+
+Subsegments can be marked as in_progress when sent to the daemon. The SDK is telling the service to anticipate the asynchronous subsegment to be received out of band when it has completed. When received, the in_progress subsegment is discarded in favor of the completed subsegment.
+
 ### Disabling response auto-capture
 
 Use **`POWERTOOLS_TRACER_CAPTURE_RESPONSE=false`** environment variable to instruct Tracer **not** to serialize function responses as metadata.

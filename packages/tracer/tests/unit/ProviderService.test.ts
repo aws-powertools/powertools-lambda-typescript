@@ -5,7 +5,7 @@
  */
 
 import { ProviderService } from '../../src/provider';
-import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureHTTPsGlobal, captureFunc, getNamespace, getSegment, setContextMissingStrategy, setDaemonAddress, setLogger, setSegment, Subsegment } from 'aws-xray-sdk-core';
+import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureHTTPsGlobal, captureFunc, getNamespace, getSegment, setContextMissingStrategy, setDaemonAddress, setLogger, setSegment, Subsegment, setStreamingThreshold } from 'aws-xray-sdk-core';
 import http from 'http';
 import https from 'https';
 
@@ -21,7 +21,8 @@ jest.mock('aws-xray-sdk-core', () => ({
   setContextMissingStrategy: jest.fn(),
   setDaemonAddress: jest.fn(),
   setLogger: jest.fn(),
-  setSegment: jest.fn()
+  setSegment: jest.fn(),
+  setStreamingThreshold: jest.fn()
 }));
 
 describe('Class: ProviderService', () => {
@@ -263,6 +264,24 @@ describe('Class: ProviderService', () => {
     
     });
     
+  });
+
+  describe('Method: setStreamingThreshold', () => {
+
+    test('when called, it forwards the correct parameter, and call the correct function', () => {
+
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.setStreamingThreshold(0);
+
+      // Assess
+      expect(setStreamingThreshold).toHaveBeenCalledTimes(1);
+      expect(setStreamingThreshold).toHaveBeenCalledWith(0);
+
+    });
+
   });
 
 });

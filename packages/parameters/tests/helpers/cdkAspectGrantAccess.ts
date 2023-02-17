@@ -56,7 +56,7 @@ export class ResourceAccessGranter implements IAspect {
               ],
               resources: [
                 resource.parameterArn.split(':').slice(0, -1).join(':'),
-                ],
+              ],
             }),
           );
         } else if (resource instanceof CfnDeployment) {

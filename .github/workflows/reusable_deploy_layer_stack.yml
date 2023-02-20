@@ -10,7 +10,7 @@ on:
       stage:
         required: true
         type: string
-      artefact-name:
+      artifact-name:
         required: true
         type: string
     secrets:
@@ -20,9 +20,6 @@ on:
 jobs:
   deploy-cdk-stack:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./layer-publisher
     strategy:
       fail-fast: false
       matrix:
@@ -63,19 +60,25 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "18"
-      - name: install cdk and deps
-        run: |
-          npm install -g aws-cdk@2.55.0
-          cdk --version
-      - name: install deps
-        run: |
-          npm ci
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        # We can skip the installation if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ inputs.artefact-name }}
-          path: layer-publisher
-      - name: unzip artefact
+          name: ${{ inputs.artifact-name }}
+          path: layers
+      - name: Unzip artifact
         run: unzip cdk.out.zip
-      - name: CDK Deploy Layer
-        run: cdk deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose
+      - name: Deploy Layer
+        run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose

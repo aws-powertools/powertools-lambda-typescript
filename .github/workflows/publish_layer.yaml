@@ -23,9 +23,6 @@ jobs:
   build-layer:
     runs-on: ubuntu-latest
     if: ${{ (github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch') }}
-    defaults:
-      run:
-        working-directory: ./layer-publisher
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -41,22 +38,32 @@ jobs:
           LATEST_TAG=$(git describe --tag --abbrev=0)
           RELEASE_TAG_VERSION=${RELEASE_INPUT:-$LATEST_TAG}
           echo "RELEASE_TAG_VERSION=${RELEASE_TAG_VERSION:1}" >> $GITHUB_ENV
-      - name: install cdk and deps
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        # We can skip the installation if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
+      - name: Create layer files
         run: |
-          npm install -g aws-cdk@2.55.0
-          cdk --version
-      - name: install deps
-        run: |
-          npm ci
+          export VERSION=$RELEASE_TAG_VERSION
+          bash .github/scripts/setup_tmp_layer_files.sh
       - name: CDK build
-        run: cdk synth --context PowerToolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
+        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
       - name: zip output
         run: zip -r cdk.out.zip cdk.out
       - name: Archive CDK artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: cdk-layer-artefact
-          path: layer-publisher/cdk.out.zip
+          name: cdk-layer-artifact
+          path: layers/cdk.out.zip
 
   # Deploy layer to all regions in beta account
   deploy-beta:
@@ -65,7 +72,7 @@ jobs:
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
     with:
       stage: "BETA"
-      artefact-name: "cdk-layer-artefact"
+      artifact-name: "cdk-layer-artifact"
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
 
@@ -76,6 +83,6 @@ jobs:
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
     with:
       stage: "PROD"
-      artefact-name: "cdk-layer-artefact"
+      artifact-name: "cdk-layer-artifact"
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}

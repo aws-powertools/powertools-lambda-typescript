@@ -6,6 +6,14 @@ import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { StringParameter, IStringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Table, TableProps, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
+import {
+  CfnApplication,
+  CfnConfigurationProfile,
+  CfnDeployment,
+  CfnDeploymentStrategy,
+  CfnEnvironment,
+  CfnHostedConfigurationVersion,
+} from 'aws-cdk-lib/aws-appconfig';
 
 export type CreateDynamoDBTableOptions = {
   stack: Stack
@@ -21,6 +29,108 @@ const createDynamoDBTable = (options: CreateDynamoDBTableOptions): Table => {
   };
 
   return new Table(stack, id, props);
+};
+
+export type AppConfigResourcesOptions = {
+  stack: Stack
+  applicationName: string
+  environmentName: string
+  deploymentStrategyName: string
+};
+
+type AppConfigResourcesOutput = {
+  application: CfnApplication
+  environment: CfnEnvironment
+  deploymentStrategy: CfnDeploymentStrategy
+};
+
+/**
+ * Utility function to create the base resources for an AppConfig application.
+ */
+const createBaseAppConfigResources = (options: AppConfigResourcesOptions): AppConfigResourcesOutput => {
+  const {
+    stack,
+    applicationName,
+    environmentName,
+    deploymentStrategyName,
+  } = options;
+
+  // create a new app config application.
+  const application = new CfnApplication(
+    stack,
+    'application',
+    {
+      name: applicationName,
+    }
+  );
+
+  const environment = new CfnEnvironment(stack, 'environment', {
+    name: environmentName,
+    applicationId: application.ref,
+  });
+
+  const deploymentStrategy = new CfnDeploymentStrategy(stack, 'deploymentStrategy', {
+    name: deploymentStrategyName,
+    deploymentDurationInMinutes: 0,
+    growthFactor: 100,
+    replicateTo: 'NONE',
+    finalBakeTimeInMinutes: 0,
+  });
+
+  return {
+    application,
+    environment,
+    deploymentStrategy,
+  };
+};
+
+export type CreateAppConfigConfigurationProfileOptions = {
+  stack: Stack
+  name: string
+  application: CfnApplication
+  environment: CfnEnvironment
+  deploymentStrategy: CfnDeploymentStrategy
+  type: 'AWS.Freeform' | 'AWS.AppConfig.FeatureFlags'
+  content: {
+    contentType: 'application/json' | 'application/x-yaml' | 'text/plain'
+    content: string
+  }
+};
+
+/**
+ * Utility function to create an AppConfig configuration profile and deployment.
+ */
+const createAppConfigConfigurationProfile = (options: CreateAppConfigConfigurationProfileOptions): CfnDeployment => {
+  const {
+    stack,
+    name,
+    application,
+    environment,
+    deploymentStrategy,
+    type,
+    content,
+  } = options;
+  
+  const configProfile = new CfnConfigurationProfile(stack, `${name}-configProfile`, {
+    name,
+    applicationId: application.ref,
+    locationUri: 'hosted',
+    type,
+  });
+
+  const configVersion = new CfnHostedConfigurationVersion(stack, `${name}-configVersion`, {
+    applicationId: application.ref,
+    configurationProfileId: configProfile.ref,
+    ...content
+  });
+
+  return new CfnDeployment(stack, `${name}-deployment`, {
+    applicationId: application.ref,
+    configurationProfileId: configProfile.ref,
+    configurationVersion: configVersion.ref,
+    deploymentStrategyId: deploymentStrategy.ref,
+    environmentId: environment.ref,
+  });
 };
 
 export type CreateSecureStringProviderOptions = {
@@ -93,6 +203,8 @@ const createSSMSecureString = (options: CreateSSMSecureStringOptions): IStringPa
 
 export {
   createDynamoDBTable,
+  createBaseAppConfigResources,
+  createAppConfigConfigurationProfile,
   createSSMSecureString,
   createSecureStringProvider,
 };

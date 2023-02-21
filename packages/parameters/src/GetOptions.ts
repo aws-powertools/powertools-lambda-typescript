@@ -1,6 +1,11 @@
 import { DEFAULT_MAX_AGE_SECS } from './constants';
 import type { GetOptionsInterface, TransformOptions } from './types';
 
+/**
+ * Options for the `get` method.
+ * 
+ * It merges the default options with the provided options.
+ */
 class GetOptions implements GetOptionsInterface {
   public forceFetch: boolean = false;
   public maxAge: number = DEFAULT_MAX_AGE_SECS;

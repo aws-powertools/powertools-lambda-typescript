@@ -9,6 +9,25 @@ import type { BaseProviderInterface, GetMultipleOptionsInterface, GetOptionsInte
 // These providers are dinamycally intialized on first use of the helper functions
 const DEFAULT_PROVIDERS: Record<string, BaseProvider> = {};
 
+/**
+ * Base class for all providers.
+ * 
+ * As an abstract class, it should not be used directly, but rather extended by other providers.
+ * 
+ * It implements the common logic for all providers, such as caching, transformation, etc.
+ * Each provider that extends this class must implement the `_get` and `_getMultiple` abstract methods.
+ *
+ * These methods are responsible for retrieving the values from the underlying parameter store. They are
+ * called by the `get` and `getMultiple` methods, which are responsible for caching and transformation.
+ * 
+ * If there are multiple calls to the same parameter but in a different transform, they will be stored multiple times.
+ * This allows us to optimize by transforming the data only once per retrieval, thus there is no need to transform cached values multiple times.
+ * 
+ * However, this means that we need to make multiple calls to the underlying parameter store if we need to return it in different transforms.
+ * 
+ * Since the number of supported transform is small and the probability that a given parameter will always be used in a specific transform,
+ * this should be an acceptable tradeoff.
+ */
 abstract class BaseProvider implements BaseProviderInterface {
   protected store: Map<string, ExpirableValue>;
 
@@ -16,26 +35,28 @@ abstract class BaseProvider implements BaseProviderInterface {
     this.store = new Map();
   }
 
+  /**
+   * Add a value to the cache.
+   * 
+   * @param {string} key - Key of the cached value
+   * @param {string | Uint8Array | Record<string, unknown>} value - Value to be cached
+   * @param {number} maxAge - Maximum age in seconds for the value to be cached
+   */
   public addToCache(key: string, value: string | Uint8Array | Record<string, unknown>, maxAge: number): void {
     if (maxAge <= 0) return;
 
     this.store.set(key, new ExpirableValue(value, maxAge));
   }
 
+  /**
+   * Clear the cache.
+   */
   public clearCache(): void {
     this.store.clear();
   }
 
   /**
-   * Retrieve a parameter value or return the cached value
-   * 
-   * If there are multiple calls to the same parameter but in a different transform, they will be stored multiple times.
-   * This allows us to optimize by transforming the data only once per retrieval, thus there is no need to transform cached values multiple times.
-   * 
-   * However, this means that we need to make multiple calls to the underlying parameter store if we need to return it in different transforms.
-   * 
-   * Since the number of supported transform is small and the probability that a given parameter will always be used in a specific transform,
-   * this should be an acceptable tradeoff.
+   * Retrieve a parameter value or return the cached value.
    * 
    * @param {string} name - Parameter name
    * @param {GetOptionsInterface} options - Options to configure maximum age, trasformation, AWS SDK options, or force fetch
@@ -68,6 +89,13 @@ abstract class BaseProvider implements BaseProviderInterface {
     return value;
   }
 
+  /**
+   * Retrieve multiple parameter values or return the cached values.
+   * 
+   * @param {string} path - Parameters path
+   * @param {GetMultipleOptionsInterface} options - Options to configure maximum age, trasformation, AWS SDK options, or force fetch
+   * @returns 
+   */
   public async getMultiple(path: string, options?: GetMultipleOptionsInterface): Promise<undefined | Record<string, unknown>> {
     const configs = new GetMultipleOptions(options || {});
     const key = [ path, configs.transform ].toString();
@@ -97,7 +125,7 @@ abstract class BaseProvider implements BaseProviderInterface {
   }
 
   /**
-   * Check whether a key has expired in the cache or not
+   * Check whether a key has expired in the cache or not.
    * 
    * It returns true if the key is expired or not present in the cache.
    * 
@@ -111,7 +139,7 @@ abstract class BaseProvider implements BaseProviderInterface {
   }
 
   /**
-   * Retrieve parameter value from the underlying parameter store
+   * Retrieve parameter value from the underlying parameter store.
    * 
    * @param {string} name - Parameter name
    * @param {unknown} options - Options to pass to the underlying implemented method
@@ -119,7 +147,7 @@ abstract class BaseProvider implements BaseProviderInterface {
   protected abstract _get(name: string, options?: unknown): Promise<string | Uint8Array | undefined>;
 
   /**
-   * Retrieve multiple parameter values from the underlying parameter store
+   * Retrieve multiple parameter values from the underlying parameter store.
    * 
    * @param {string} path - Parameter name
    * @param {unknown} options - Options to pass to the underlying implementated method
@@ -128,6 +156,16 @@ abstract class BaseProvider implements BaseProviderInterface {
 
 }
 
+/**
+ * Utility function to transform a value.
+ * 
+ * It supports JSON and binary transformations, as well as an 'auto' mode that will try to transform the value based on the key.
+ * 
+ * @param {string | Uint8Array | undefined} value - Value to be transformed
+ * @param {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'
+ * @param {boolean} throwOnTransformError - Whether to throw an error if the transformation fails, when transforming multiple values this can be set to false
+ * @param {string} key - Key of the value to be transformed, used to determine the transformation method when using 'auto'
+ */
 const transformValue = (value: string | Uint8Array | undefined, transform: TransformOptions, throwOnTransformError: boolean, key: string): string | Record<string, unknown> | undefined => {
   try {
     const normalizedTransform = transform.toLowerCase();
@@ -159,6 +197,15 @@ const transformValue = (value: string | Uint8Array | undefined, transform: Trans
   }
 };
 
+/**
+ * Utility function to transform multiple values.
+ * 
+ * It iterates over the values and applies the transformation to each one by calling the `transformValue` function.
+ * 
+ * @param {Record<string, string | undefined>} value - Values to be transformed
+ * @param {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'
+ * @param {boolean} throwOnTransformError - Whether to throw an error if the transformation fails, when transforming multiple values this can be set to false
+ */
 const transformValues = (value: Record<string, string | undefined>, transform: TransformOptions, throwOnTransformError: boolean): Record<string, string | Record<string, unknown> | undefined> => {
   const transformedValues: Record<string, string | Record<string, unknown> | undefined> = {};
   for (const [ entryKey, entryValue ] of Object.entries(value)) {

@@ -1,5 +1,5 @@
 import { Stack, RemovalPolicy, CustomResource, Duration } from 'aws-cdk-lib';
-import { Provider } from 'aws-cdk-lib/custom-resources';
+import { PhysicalResourceId, Provider } from 'aws-cdk-lib/custom-resources';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -14,6 +14,11 @@ import {
   CfnEnvironment,
   CfnHostedConfigurationVersion,
 } from 'aws-cdk-lib/aws-appconfig';
+import {
+  AwsCustomResource,
+  AwsCustomResourcePolicy
+} from 'aws-cdk-lib/custom-resources';
+import { marshall } from '@aws-sdk/util-dynamodb';
 
 export type CreateDynamoDBTableOptions = {
   stack: Stack
@@ -201,10 +206,37 @@ const createSSMSecureString = (options: CreateSSMSecureStringOptions): IStringPa
   return param;
 };
 
+export type PutDynamoDBItemOptions = {
+  stack: Stack
+  id: string
+  table: Table
+  item: Record<string, unknown>
+};
+
+const putDynamoDBItem = async (options: PutDynamoDBItemOptions): Promise<void> => {
+  const { stack, id, table, item } = options;
+
+  new AwsCustomResource(stack, id, {
+    onCreate: {
+      service: 'DynamoDB',
+      action: 'putItem',
+      parameters: {
+        TableName: table.tableName,
+        Item: marshall(item),
+      },
+      physicalResourceId: PhysicalResourceId.of(id),
+    },
+    policy: AwsCustomResourcePolicy.fromSdkCalls({
+      resources: [table.tableArn],
+    }),
+  });
+};
+
 export {
   createDynamoDBTable,
   createBaseAppConfigResources,
   createAppConfigConfigurationProfile,
   createSSMSecureString,
   createSecureStringProvider,
+  putDynamoDBItem,
 };

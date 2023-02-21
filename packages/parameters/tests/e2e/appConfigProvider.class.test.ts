@@ -114,6 +114,11 @@ let stack: Stack;
  * Test 7
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
+ * 
+ * Note: To avoid race conditions, we add a dependency between each pair of configuration profiles.
+ * This allows us to influence the order of creation and ensure that each configuration profile
+ * is created after the previous one. This is necessary because we share the same AppConfig
+ * application and environment for all tests.
  */
 describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () => {
 

@@ -6,7 +6,6 @@
 import path from 'path';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, Aspects } from 'aws-cdk-lib';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { v4 } from 'uuid';
 import { 
   generateUniqueName, 

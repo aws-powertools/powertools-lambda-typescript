@@ -11,8 +11,19 @@ interface SecretsProviderOptionsWithClientInstance {
   clientConfig?: never
 }
 
+/**
+ * Options to configure the SecretsProvider.
+ */
 type SecretsProviderOptions = SecretsProviderOptionsWithClientConfig | SecretsProviderOptionsWithClientInstance;
 
+/**
+ * Options to configure the retrieval of a secret.
+ * 
+ * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
+ * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property {Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>} sdkOptions - Options to pass to the underlying SDK.
+ * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
+ */
 interface SecretsGetOptionsInterface extends GetOptionsInterface {
   sdkOptions?: Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>
 }

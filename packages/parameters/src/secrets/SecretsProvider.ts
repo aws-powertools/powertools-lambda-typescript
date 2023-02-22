@@ -33,7 +33,7 @@ import type {
  * const secretsProvider = new SecretsProvider();
  * 
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a single secret
+ *   // Retrieve a secret
  *   const secret = await secretsProvider.get('my-secret');
  * };
  * ```
@@ -54,8 +54,8 @@ import type {
  * const secretsProvider = new SecretsProvider();
  * 
  * export const handler = async (): Promise<void> => {
- *  // Retrieve a single secret and cache it for 10 seconds
- *  const secret = await secretsProvider.get('my-secret', { maxAge: 10 });
+ *   // Retrieve a secret and cache it for 10 seconds
+ *   const secret = await secretsProvider.get('my-secret', { maxAge: 10 });
  * };
  * ```
  * 
@@ -68,7 +68,7 @@ import type {
  * const secretsProvider = new SecretsProvider();
  * 
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a single secret and always fetch the latest value
+ *   // Retrieve a secret and always fetch the latest value
  *   const secret = await secretsProvider.get('my-secret', { forceFetch: true });
  * };
  * ```
@@ -84,8 +84,8 @@ import type {
  * const secretsProvider = new SecretsProvider();
  * 
  * export const handler = async (): Promise<void> => {
- *  // Retrieve a single secret and deserialize it as JSON
- *  const secret = await secretsProvider.get('my-secret', { transform: 'json' });
+ *   // Retrieve a secret and parse it as JSON
+ *   const secret = await secretsProvider.get('my-secret', { transform: 'json' });
  * };
  * ```
  * 
@@ -100,7 +100,7 @@ import type {
  * const secretsProvider = new SecretsProvider();
  * 
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a single secret and pass extra options to the AWS SDK v3 for JavaScript client
+ *   // Retrieve a secret and pass extra options to the AWS SDK v3 for JavaScript client
  *   const secret = await secretsProvider.get('my-secret', {
  *     sdkOptions: {
  *       VersionId: 1,
@@ -152,6 +152,11 @@ import type {
 class SecretsProvider extends BaseProvider {
   public client: SecretsManagerClient;
 
+  /**
+   * It initializes the SecretsProvider class.
+   * 
+   * @param {SecretsProviderOptions} config - The configuration object.
+   */
   public constructor (config?: SecretsProviderOptions) {
     super();
 
@@ -178,7 +183,7 @@ class SecretsProvider extends BaseProvider {
    * const secretsProvider = new SecretsProvider();
    * 
    * export const handler = async (): Promise<void> => {
-   *   // Retrieve a single secret
+   *   // Retrieve a secret
    *   const secret = await secretsProvider.get('my-secret');
    * };
    * ```
@@ -186,13 +191,14 @@ class SecretsProvider extends BaseProvider {
    * You can customize the retrieval of the secret by passing options to the function:
    * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
    * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `base64`
+   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
    * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
    * 
    * For usage examples check {@link SecretsProvider}.
    * 
    * @param {string} name - The name of the secret
    * @param {SecretsGetOptionsInterface} options - Options to customize the retrieval of the secret
+   * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
   public async get(
     name: string,
@@ -211,6 +217,12 @@ class SecretsProvider extends BaseProvider {
     return super.getMultiple(path);
   }
 
+  /**
+   * Retrieve a configuration from AWS AppConfig.
+   *
+   * @param {string} name - Name of the configuration or its ID
+   * @param {SecretsGetOptionsInterface} options - SDK options to propagate to the AWS SDK v3 for JavaScript client
+   */
   protected async _get(
     name: string,
     options?: SecretsGetOptionsInterface
@@ -229,6 +241,8 @@ class SecretsProvider extends BaseProvider {
 
   /**
    * Retrieving multiple parameter values is not supported with AWS Secrets Manager.
+   * 
+   * @throws Not Implemented Error.
    */
   protected async _getMultiple(
     _path: string,

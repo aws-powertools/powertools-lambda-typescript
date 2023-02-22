@@ -24,7 +24,7 @@ import type { SecretsGetOptionsInterface } from '../types/SecretsProvider';
  * import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
  * 
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a single secret
+ *   // Retrieve a secret
  *   const secret = await getSecret('my-secret');
  * };
  * ```
@@ -41,8 +41,8 @@ import type { SecretsGetOptionsInterface } from '../types/SecretsProvider';
  * import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
  * 
  * export const handler = async (): Promise<void> => {
- *  // Retrieve a single secret and cache it for 10 seconds
- *  const secret = await getSecret('my-secret', { maxAge: 10 });
+ *   // Retrieve a secret and cache it for 10 seconds
+ *   const secret = await getSecret('my-secret', { maxAge: 10 });
  * };
  * ```
  * 
@@ -53,22 +53,23 @@ import type { SecretsGetOptionsInterface } from '../types/SecretsProvider';
  * import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
  * 
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a single secret and always fetch the latest value
+ *   // Retrieve a secret and always fetch the latest value
  *   const secret = await getSecret('my-secret', { forceFetch: true });
  * };
  * ```
  * 
  * ### Transformations
  * 
- * For parameters stored in JSON or Base64 format, you can use the transform argument for deserialization.
+ * For parameters stored as JSON or base64-encoded strings, you can use the transform argument set to `json` or `binary` for deserialization.
  * 
  * @example
  * ```typescript
  * import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
  * 
  * export const handler = async (): Promise<void> => {
- *  // Retrieve a single secret and deserialize it as JSON
- *  const secret = await getSecret('my-secret', { transform: 'json' });
+ *   // Retrieve a secret and parse it as JSON
+ *   const secret = await getSecret('my-secret', { transform: 'json' });
+ * };
  * ```
  * 
  * ### Extra SDK options
@@ -80,7 +81,7 @@ import type { SecretsGetOptionsInterface } from '../types/SecretsProvider';
  * import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
  * 
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a single secret and pass extra options to the AWS SDK v3 for JavaScript client
+ *   // Retrieve a secret and pass extra options to the AWS SDK v3 for JavaScript client
  *   const secret = await getSecret('my-secret', {
  *     sdkOptions: {
  *       VersionId: 1,

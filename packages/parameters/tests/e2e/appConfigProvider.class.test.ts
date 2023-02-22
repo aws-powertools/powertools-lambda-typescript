@@ -5,6 +5,7 @@
   */
 import path from 'path';
 import { App, Stack, Aspects } from 'aws-cdk-lib';
+import { toBase64 } from '@aws-sdk/util-base64-node';
 import { v4 } from 'uuid';
 import { 
   generateUniqueName, 
@@ -44,8 +45,7 @@ const environmentName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 
 const deploymentStrategyName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'immediate');
 const freeFormJsonName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormJson');
 const freeFormYamlName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormYaml');
-const freeFormPlainTextNameA = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormPlainTextA');
-const freeFormPlainTextNameB = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormPlainTextB');
+const freeFormBase64PlainTextName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'freeFormBase64PlainText');
 const featureFlagName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'featureFlag');
 
 const freeFormJsonValue = {
@@ -85,7 +85,7 @@ let stack: Stack;
  * The parameters created are:
  * - Free-form JSON
  * - Free-form YAML
- * - 2x Free-form plain text
+ * - Free-form plain text base64-encoded string
  * - Feature flag
  * 
  * These parameters allow to retrieve the values and test some transformations.
@@ -93,25 +93,22 @@ let stack: Stack;
  * The tests are:
  * 
  * Test 1
- * get a single parameter as-is (no transformation)
+ * get a single parameter as-is (no transformation - should return an Uint8Array)
  * 
  * Test 2
- * get a free-form JSON and apply binary transformation (should return a stringified JSON)
+ * get a free-form JSON and apply json transformation (should return an object)
  * 
  * Test 3
- * get a free-form YAML and apply binary transformation (should return a string-encoded YAML)
+ * get a free-form base64-encoded plain text and apply binary transformation (should return a decoded string)
  * 
  * Test 4
- * get a free-form plain text and apply binary transformation (should return a string)
+ * get a feature flag and apply json transformation (should return an object)
  * 
  * Test 5
- * get a feature flag and apply binary transformation (should return a stringified JSON)
- * 
- * Test 6
  * get parameter twice with middleware, which counts the number of requests, 
  * we check later if we only called AppConfig API once
  * 
- * Test 7
+ * Test 6
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
  * 
@@ -140,8 +137,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
         ENVIRONMENT_NAME: environmentName,
         FREEFORM_JSON_NAME: freeFormJsonName,
         FREEFORM_YAML_NAME: freeFormYamlName,
-        FREEFORM_PLAIN_TEXT_NAME_A: freeFormPlainTextNameA,
-        FREEFORM_PLAIN_TEXT_NAME_B: freeFormPlainTextNameB,
+        FREEFORM_BASE64_ENCODED_PLAIN_TEXT_NAME: freeFormBase64PlainTextName,
         FEATURE_FLAG_NAME: featureFlagName,
       },
       runtime,
@@ -187,33 +183,19 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     });
     freeFormYaml.node.addDependency(freeFormJson);
 
-    const freeFormPlainTextA = createAppConfigConfigurationProfile({
+    const freeFormBase64PlainText = createAppConfigConfigurationProfile({
       stack,
       application,
       environment,
       deploymentStrategy,
-      name: freeFormPlainTextNameA,
+      name: freeFormBase64PlainTextName,
       type: 'AWS.Freeform',
       content: {
-        content: freeFormPlainTextValue,
+        content: toBase64(new TextEncoder().encode(freeFormPlainTextValue)),
         contentType: 'text/plain',
       }
     });
-    freeFormPlainTextA.node.addDependency(freeFormYaml);
-    
-    const freeFormPlainTextB = createAppConfigConfigurationProfile({
-      stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: freeFormPlainTextNameB,
-      type: 'AWS.Freeform',
-      content: {
-        content: freeFormPlainTextValue,
-        contentType: 'text/plain',
-      }
-    });
-    freeFormPlainTextB.node.addDependency(freeFormPlainTextA);
+    freeFormBase64PlainText.node.addDependency(freeFormYaml);
 
     const featureFlag = createAppConfigConfigurationProfile({
       stack,
@@ -227,14 +209,13 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
         contentType: 'application/json',
       }
     });
-    featureFlag.node.addDependency(freeFormPlainTextB);
+    featureFlag.node.addDependency(freeFormBase64PlainText);
 
     // Grant access to the Lambda function to the AppConfig resources.
     Aspects.of(stack).add(new ResourceAccessGranter([
       freeFormJson,
       freeFormYaml,
-      freeFormPlainTextA,
-      freeFormPlainTextB,
+      freeFormBase64PlainText,
       featureFlag,
     ]));
 
@@ -248,8 +229,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
   describe('AppConfigProvider usage', () => {
 
-    // Test 1 - get a single parameter as-is (no transformation)
-    it('should retrieve single parameter', () => {
+    // Test 1 - get a single parameter as-is (no transformation - should return an Uint8Array)
+    it('should retrieve single parameter as-is', () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
       const testLog = InvocationLogs.parseFunctionLog(logs[0]);
@@ -258,75 +239,59 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
         test: 'get',
         value: JSON.parse(
           JSON.stringify(
-            encoder.encode(freeFormPlainTextValue)
+            encoder.encode(freeFormYamlValue)
           )
         ),
       });
 
     });
 
-    // Test 2 - get a free-form JSON and apply binary transformation
-    // (should return a stringified JSON)
-    it('should retrieve single free-form JSON parameter with binary transformation', () => {
+    // Test 2 - get a free-form JSON and apply json transformation (should return an object)
+    it('should retrieve a free-form JSON parameter with JSON transformation', () => {
       
       const logs = invocationLogs[0].getFunctionLogs();
       const testLog = InvocationLogs.parseFunctionLog(logs[1]);
 
       expect(testLog).toStrictEqual({
         test: 'get-freeform-json-binary',
-        value: JSON.stringify(freeFormJsonValue),
+        value: freeFormJsonValue,
       });
 
     });
     
-    // Test 3 - get a free-form YAML and apply binary transformation
-    // (should return a string-encoded YAML)
-    it('should retrieve single free-form YAML parameter with binary transformation', () => {
+    // Test 3 - get a free-form base64-encoded plain text and apply binary transformation 
+    // (should return a decoded string)
+    it('should retrieve a base64-encoded plain text parameter with binary transformation', () => {
       
       const logs = invocationLogs[0].getFunctionLogs();
       const testLog = InvocationLogs.parseFunctionLog(logs[2]);
 
       expect(testLog).toStrictEqual({
-        test: 'get-freeform-yaml-binary',
-        value: freeFormYamlValue,
-      });
-
-    });
-    
-    // Test 4 - get a free-form plain text and apply binary transformation
-    // (should return a string)
-    it('should retrieve single free-form plain text parameter with binary transformation', () => {
-      
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[3]);
-
-      expect(testLog).toStrictEqual({
-        test: 'get-freeform-plain-text-binary',
+        test: 'get-freeform-base64-plaintext-binary',
         value: freeFormPlainTextValue,
       });
 
     });
     
-    // Test 5 - get a feature flag and apply binary transformation
-    // (should return a stringified JSON)
-    it('should retrieve single feature flag parameter with binary transformation', () => {
+    // Test 4 - get a feature flag and apply json transformation (should return an object)
+    it('should retrieve a feature flag parameter with JSON transformation', () => {
       
       const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[4]);
+      const testLog = InvocationLogs.parseFunctionLog(logs[3]);
 
       expect(testLog).toStrictEqual({
         test: 'get-feature-flag-binary',
-        value: JSON.stringify(featureFlagValue.values),
+        value: featureFlagValue.values,
       });
 
     });
-
-    // Test 6 - get parameter twice with middleware, which counts the number
+    
+    // Test 5 - get parameter twice with middleware, which counts the number
     // of requests, we check later if we only called AppConfig API once
     it('should retrieve single parameter cached', () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[5]);
+      const testLog = InvocationLogs.parseFunctionLog(logs[4]);
 
       expect(testLog).toStrictEqual({
         test: 'get-cached',
@@ -335,12 +300,12 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
     }, TEST_CASE_TIMEOUT);
     
-    // Test 7 - get parameter twice, but force fetch 2nd time,
+    // Test 6 - get parameter twice, but force fetch 2nd time,
     // we count number of SDK requests and  check that we made two API calls
     it('should retrieve single parameter twice without caching', async () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[6]);
+      const testLog = InvocationLogs.parseFunctionLog(logs[5]);
 
       expect(testLog).toStrictEqual({
         test: 'get-forced',

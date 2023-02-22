@@ -73,10 +73,10 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   // Test 3 - get a free-form base64-encoded plain text and apply binary transformation (should return a decoded string)
   await _call_get(freeFormBase64encodedPlainText, 'get-freeform-base64-plaintext-binary', { transform: 'binary' });
 
-  // Test 5 - get a feature flag and apply json transformation (should return an object)
+  // Test 4 - get a feature flag and apply json transformation (should return an object)
   await _call_get(featureFlagName, 'get-feature-flag-binary', { transform: 'json' });
 
-  // Test 6
+  // Test 5
   // get parameter twice with middleware, which counts the number of requests, we check later if we only called AppConfig API once
   try {
     providerWithMiddleware.clearCache();
@@ -94,7 +94,7 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     });
   }
 
-  // Test 7
+  // Test 6
   // get parameter twice, but force fetch 2nd time, we count number of SDK requests and check that we made two API calls
   try {
     providerWithMiddleware.clearCache();

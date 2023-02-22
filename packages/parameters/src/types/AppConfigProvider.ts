@@ -59,7 +59,10 @@ type AppConfigProviderOptions = AppConfigProviderOptionsWithClientConfig | AppCo
  *
  * @interface AppConfigGetOptionsInterface
  * @extends {GetOptionsInterface}
+ * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
+ * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
  * @property {StartConfigurationSessionCommandInput} [sdkOptions] - Required options to start configuration session.
+ * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  */
 interface AppConfigGetOptionsInterface extends Omit<GetOptionsInterface, 'sdkOptions'> {
   sdkOptions?: Omit<

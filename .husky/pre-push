@@ -2,9 +2,9 @@
 . "$(dirname "$0")/_/husky.sh"
 
 npm t \
-  -w packages/commons && \
-  -w packages/logger && \
-  -w packages/metrics && \
-  -w packages/tracer && \
-  -w packages/idempotency && \
+  -w packages/commons \
+  -w packages/logger \
+  -w packages/metrics \
+  -w packages/tracer \
+  -w packages/idempotency \
   -w packages/parameters

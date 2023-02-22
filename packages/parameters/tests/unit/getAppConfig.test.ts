@@ -16,11 +16,11 @@ import {
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 import type { GetAppConfigCombinedInterface } from '../../src/types/AppConfigProvider';
+import { toBase64 } from '@aws-sdk/util-base64-node';
 
 describe('Function: getAppConfig', () => {
   const client = mockClient(AppConfigDataClient);
   const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -103,8 +103,8 @@ describe('Function: getAppConfig', () => {
       'AYADeNgfsRxdKiJ37A12OZ9vN2cAXwABABVhd3MtY3J5cHRvLXB1YmxpYy1rZXkAREF1RzlLMTg1Tkx2Wjk4OGV2UXkyQ1';
     const mockNextToken =
       'ImRmyljpZnxt7FfxeEOE5H8xQF1SfOlWZFnHujbzJmIvNeSAAA8/qA9ivK0ElRMwpvx96damGxt125XtMkmYf6a0OWSqnBw==';
-    const mockData = encoder.encode('myAppConfiguration');
-    const decodedData = decoder.decode(mockData);
+    const expectedValue = 'my-value';
+    const mockData = encoder.encode(toBase64(encoder.encode(expectedValue)));
 
     client
       .on(StartConfigurationSessionCommand)
@@ -121,6 +121,6 @@ describe('Function: getAppConfig', () => {
     const result = await getAppConfig(name, options);
 
     // Assess
-    expect(result).toBe(decodedData);
+    expect(result).toBe(expectedValue);
   });
 });

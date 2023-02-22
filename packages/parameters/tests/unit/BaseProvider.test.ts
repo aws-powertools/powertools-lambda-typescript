@@ -206,19 +206,15 @@ describe('Class: BaseProvider', () => {
 
     });
     
-    test('when called with a binary transform, and the value is a valid binary, it returns the decoded value', async () => {
+    test('when called with a binary transform, and the value is a valid binary but NOT base64 encoded, it throws', async () => {
 
       // Prepare
       const mockData = encoder.encode('my-value');
       const provider = new TestProvider();
       jest.spyOn(provider, '_get').mockImplementation(() => new Promise((resolve, _reject) => resolve(mockData as unknown as string)));
 
-      // Act
-      const value = await provider.get('my-parameter', { transform: 'binary' });
-
-      // Assess
-      expect(typeof value).toBe('string');
-      expect(value).toEqual('my-value');
+      // Act & Assess
+      await expect(provider.get('my-parameter', { transform: 'binary' })).rejects.toThrowError(TransformParameterError);
 
     });
     

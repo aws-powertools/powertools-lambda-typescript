@@ -73,6 +73,7 @@ jobs:
     with:
       stage: "BETA"
       artifact-name: "cdk-layer-artifact"
+      latest_published_version: ${{ inputs.latest_published_version }}
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
 
@@ -84,5 +85,6 @@ jobs:
     with:
       stage: "PROD"
       artifact-name: "cdk-layer-artifact"
+      latest_published_version: ${{ inputs.latest_published_version }}
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}

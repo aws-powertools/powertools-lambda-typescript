@@ -131,6 +131,11 @@ abstract class BaseProvider implements BaseProviderInterface {
 const transformValue = (value: string | Uint8Array | undefined, transform: TransformOptions, throwOnTransformError: boolean, key: string): string | Record<string, unknown> | undefined => {
   try {
     const normalizedTransform = transform.toLowerCase();
+
+    if (value instanceof Uint8Array) {
+      value = new TextDecoder('utf-8').decode(value);
+    }
+
     if (
       (normalizedTransform === TRANSFORM_METHOD_JSON ||
         (normalizedTransform === 'auto' && key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_JSON}`))) &&
@@ -139,15 +144,12 @@ const transformValue = (value: string | Uint8Array | undefined, transform: Trans
       return JSON.parse(value) as Record<string, unknown>;
     } else if (
       (normalizedTransform === TRANSFORM_METHOD_BINARY ||
-        (normalizedTransform === 'auto' && key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_BINARY}`)))
+        (normalizedTransform === 'auto' && key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_BINARY}`))) &&
+      typeof value === 'string'
     ) {
-      if (typeof value === 'string') {
-        return new TextDecoder('utf-8').decode(fromBase64(value));
-      } else {
-        return new TextDecoder('utf-8').decode(value);
-      }
+      return new TextDecoder('utf-8').decode(fromBase64(value));
     } else {
-      return value as string;
+      return value;
     }
   } catch (error) {
     if (throwOnTransformError)

@@ -8,9 +8,9 @@ import type { GetOptionsInterface } from 'types/BaseProvider';
 /**
  * Base interface for AppConfigProviderOptions.
  *
- *  @interface
- *  @property {string} environment - The environment ID or the environment name.
- *  @property {string} [application] - The application ID or the application name.
+ * @interface
+ * @property {string} environment - The environment ID or the environment name.
+ * @property {string} [application] - The application ID or the application name.
  */
 interface AppConfigProviderOptionsBaseInterface {
   environment: string
@@ -20,10 +20,10 @@ interface AppConfigProviderOptionsBaseInterface {
 /**
  * Interface for AppConfigProviderOptions with clientConfig property.
  *
- *  @interface
- *  @extends AppConfigProviderOptionsBaseInterface
- *  @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
- *  @property {never} [awsSdkV3Client] - This property should never be passed.
+ * @interface
+ * @extends AppConfigProviderOptionsBaseInterface
+ * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
+ * @property {never} [awsSdkV3Client] - This property should never be passed.
  */
 interface AppConfigProviderOptionsWithClientConfig extends AppConfigProviderOptionsBaseInterface {
   clientConfig?: AppConfigDataClientConfig

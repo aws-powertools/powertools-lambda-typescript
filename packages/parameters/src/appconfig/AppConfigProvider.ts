@@ -56,7 +56,7 @@ import type {
  * 
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a configuration profile and cache it for 10 seconds
- *   const encodedConfig = await configProvider.get('my-config');
+ *   const encodedConfig = await configProvider.get('my-config', { maxAge: 10 });
  *   const config = new TextDecoder('utf-8').decode(encodedConfig);
  * };
  * ```
@@ -140,7 +140,7 @@ import type {
  * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
  * 
  * const configProvider = new AppConfigProvider({
- *  clientConfig: { region: 'eu-west-1' },
+ *   clientConfig: { region: 'eu-west-1' },
  * });
  * ```
  * 
@@ -155,17 +155,13 @@ import type {
  * 
  * const client = new AppConfigDataClient({ region: 'eu-west-1' });
  * const configProvider = new AppConfigProvider({
- *  awsSdkV3Client: client,
+ *   awsSdkV3Client: client,
  * });
  * ```
  * 
  * This object must be an instance of the [AWS SDK v3 for JavaScript AppConfig Data client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/appconfigdataclient.html).
  *
  * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
- *
- * @param {string} name - The name of the configuration profile or its ID
- * @param {GetAppConfigCombinedInterface} options - Options to configure the provider
- * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
 class AppConfigProvider extends BaseProvider {
   public client: AppConfigDataClient;
@@ -201,7 +197,7 @@ class AppConfigProvider extends BaseProvider {
   }
 
   /**
-   * Retrieve a secret from AWS AppConfig.
+   * Retrieve a configuration profile from AWS AppConfig.
    * 
    * @example
    * ```typescript
@@ -216,7 +212,7 @@ class AppConfigProvider extends BaseProvider {
    * };
    * ```
    * 
-   * You can customize the retrieval of the secret by passing options to the function:
+   * You can customize the retrieval of the configuration profile by passing options to the function:
    * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
    * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
    * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`

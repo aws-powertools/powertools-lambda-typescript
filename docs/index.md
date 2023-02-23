@@ -37,14 +37,14 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
 ??? note "Note: Click to expand and copy any regional Lambda Layer ARN"
 
-                                                                                     | Region           | Layer ARN                                                                                                   |
+    | Region           | Layer ARN                                                                                                   |
     | ---------------- | ----------------------------------------------------------------------------------------------------------- |
     | `us-east-1`      | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
     | `us-east-2`      | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
     | `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
     | `us-west-2`      | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
     | `ap-south-1`     | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:     |
-    | `ap-east-1`      | [arn:aws:lambda:ap-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:     |
+    | `ap-east-1`      | [arn:aws:lambda:ap-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
     | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard: |
     | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard: |
     | `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard: |
@@ -58,12 +58,12 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
     | `eu-west-2`      | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
     | `eu-west-3`      | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
     | `eu-north-1`     | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:     |
-    | `eu-south-1`     | [arn:aws:lambda:eu-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
-    | `eu-south-2`     | [arn:aws:lambda:eu-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
+    | `eu-south-1`     | [arn:aws:lambda:eu-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:     |
+    | `eu-south-2`     | [arn:aws:lambda:eu-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:     |
     | `ca-central-1`   | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:   |
     | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
-    | `af-south-1`     | [arn:aws:lambda:af-south-11:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
-    | `me-south-1`     | [arn:aws:lambda:me-south-11:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:      |
+    | `af-south-1`     | [arn:aws:lambda:af-south-11:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:    |
+    | `me-south-1`     | [arn:aws:lambda:me-south-11:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:    |
 
 ??? note "Note: Click to expand and copy code snippets for popular frameworks"
     

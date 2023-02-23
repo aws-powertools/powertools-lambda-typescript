@@ -137,7 +137,7 @@ import type { SSMGetMultipleOptionsInterface } from '../types/SSMProvider';
  * @param {SSMGetMultipleOptionsInterface} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
-const getParameterss = (
+const getParameters = (
   path: string,
   options?: SSMGetMultipleOptionsInterface
 ): Promise<undefined | Record<string, unknown>> => {
@@ -149,5 +149,5 @@ const getParameterss = (
 };
 
 export {
-  getParameterss,
+  getParameters,
 };

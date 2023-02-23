@@ -61,7 +61,7 @@ type AppConfigProviderOptions = AppConfigProviderOptionsWithClientConfig | AppCo
  * @extends {GetOptionsInterface}
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
  * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {StartConfigurationSessionCommandInput} [sdkOptions] - Required options to start configuration session.
+ * @property {StartConfigurationSessionCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  */
 interface AppConfigGetOptionsInterface extends Omit<GetOptionsInterface, 'sdkOptions'> {

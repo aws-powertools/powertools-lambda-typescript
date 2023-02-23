@@ -36,3 +36,23 @@ PS: You can force
 ```sh 
 RUNTIME=node12.x VERSION=0.9.0 npm run test:e2e
 ```
+
+
+# How to add new region
+
+* activate new region in your TEST and PROD accounts
+* bootstrap a CDKToolkit stack in the new region
+```shell
+ cdk bootstrap aws://AWS_ACCOUNT/NEW_REGION   
+```
+* build the layer folder from the project root directory
+```shell
+bash ./.github/scripts/setup_tmp_layer_files.sh 
+```
+* deploy the first layer version to the new region, make sure to set the NEW_REGION in your AWS CLI configuration correctly, otherwise you will deploy to the wrong region
+```shell
+npm run cdk -w layers -- deploy --app cdk.out --context region=NEW_REGION 'LayerPublisherStack' --require-approval never --verbose 
+```
+* Run the bumper script to bring all layers to the same version across all regions
+* Add new region to the worklflow in `./github/workflows/reusable_deploy_layer_stack.yml`
+* Document new region in `docs/index.md`

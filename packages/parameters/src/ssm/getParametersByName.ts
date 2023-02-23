@@ -160,7 +160,7 @@ import type {
  * @param {SSMGetParametersByNameOptionsInterface} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
-const getParametersByNameByName = (
+const getParametersByName = (
   parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
   options?: SSMGetParametersByNameOptionsInterface
 ): Promise<Record<string, unknown> & { _errors?: string[] }> => {
@@ -172,5 +172,5 @@ const getParametersByNameByName = (
 };
 
 export {
-  getParametersByNameByName,
+  getParametersByName,
 };

@@ -21,7 +21,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for AppConfig:
  * 
  * ```sh
- * npm install @aws-lambda-powertools/parameters @aws-sdk/client-dynamodb
+ * npm install @aws-lambda-powertools/parameters @aws-sdk/client-dynamodb @aws-sdk/util-dynamodb
  * ```
  *
  * ## Basic usage
@@ -100,7 +100,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  * 
  * ### Transformations
  * 
- * For configurations stored as freeform JSON, Freature Flag, you can use the transform argument for deserialization. This will return a JavaScript object instead of a string.
+ * For values stored as JSON you can use the transform argument for deserialization. This will return a JavaScript object instead of a string.
  * 
  * @example
  * ```typescript
@@ -152,6 +152,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *   // Retrieve multiple values and automatically detect the transformation to apply
  *   const values = await tableProvider.getMultiple('my-values-path', { transform: 'auto' });
  * };
+ * ```
  * 
  * ### Custom key names
  * 
@@ -237,7 +238,7 @@ class DynamoDBProvider extends BaseProvider {
 
   /**
    * It initializes the DynamoDBProvider class.
-   * *
+   *
    * @param {DynamoDBProviderOptions} config - The configuration object.
    */
   public constructor(config: DynamoDBProviderOptions) {
@@ -337,7 +338,7 @@ class DynamoDBProvider extends BaseProvider {
    * Retrieve an item from Amazon DynamoDB.
    *
    * @param {string} name - Key of the item to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetOptionsInterface} options - SDK options to propagate to `GetItemCommand` API call
+   * @param {DynamoDBGetOptionsInterface} options - Options to customize the retrieval
    */
   protected async _get(
     name: string,
@@ -361,7 +362,7 @@ class DynamoDBProvider extends BaseProvider {
    * Retrieve multiple items from Amazon DynamoDB.
    * 
    * @param {string} path - The path of the values to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetMultipleOptionsInterface} options - Options to configure the provider
+   * @param {DynamoDBGetMultipleOptionsInterface} options - Options to customize the retrieval
    */
   protected async _getMultiple(
     path: string,

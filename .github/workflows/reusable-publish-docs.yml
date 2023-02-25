@@ -1,22 +1,28 @@
 name: Reusable Publish docs
 
+env:
+  BRANCH: main
+  ORIGIN: awslabs/aws-lambda-powertools-typescript
+
+
 on:
   workflow_call:
     inputs:
-      workflow_origin: # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
+      version:
+        description: "Version to build and publish docs (1.28.0, develop)"
         required: true
         type: string
-      prIsMerged:
-        required: false
-        default: "false"
+      alias:
+        description: "Alias to associate version (latest, stage)"
+        required: true
         type: string
-      isRelease:
+      detached_mode:
+        description: "Whether it's running in git detached mode to ensure git is sync'd"
         required: false
-        default: "false"
-        type: string
-      versionNumber:
-        required: false
-        default: ""
+        default: false
+        type: boolean
+      workflow_origin: # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
+        required: true
         type: string
     secrets:
       token:
@@ -65,32 +71,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.8"
-      # We run this step only when the workflow has been triggered by a release
-      # in this case we publish the docs to `/latest`
-      - name: (Conditional) Set RELEASE_VERSION env var to `latest`
-        if: ${{ inputs.isRelease == 'true' }}
-        run: |
-          RELEASE_VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
-          EXPLICIT_RELEASE_VERSION=$(echo ${{ inputs.versionNumber }} | sed 's/v//')
-          if [ $EXPLICIT_RELEASE_VERSION != "" ]; then
-            echo "RELEASE_VERSION=${EXPLICIT_RELEASE_VERSION}"
-            echo "RELEASE_VERSION=${EXPLICIT_RELEASE_VERSION}" >> $GITHUB_ENV
-          else
-            echo "RELEASE_VERSION=${RELEASE_VERSION}"
-            echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
-          fi
-      # We run this step only when the workflow has been triggered by a PR merge
-      # in this case we publish the docs to `/dev`
-      - name: (Conditional) Set RELEASE_VERSION env var to `dev`
-        if: ${{ inputs.prIsMerged == 'true' }}
-        run: |
-          echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
-      - name: Check RELEASE_VERSION env var
-        if: ${{ env.RELEASE_VERSION == '' }}
-        uses: actions/github-script@v3
-        with:
-          script: |
-            core.setFailed('RELEASE_VERSION env var is empty.')
       - name: Install doc generation dependencies
         run: |
           pip install --upgrade pip 
@@ -98,35 +78,41 @@ jobs:
       - name: Setup doc deploy
         run: |
           git config --global user.name Docs deploy
-          git config --global user.email docs@dummy.bot.com
-      - name: Publish docs to latest if isRelease
-        if: ${{ env.RELEASE_VERSION != 'dev' }}
+          git config --global user.email aws-devax-open-source@amazon.com
+      - name: Git refresh tip (detached mode)
+        # Git Detached mode (release notes) doesn't have origin
+        if: ${{ inputs.detached_mode }}
+        run: |
+          git config pull.rebase true
+          git config remote.origin.url >&- || git remote add origin https://github.com/"$ORIGIN"
+          git pull origin "$BRANCH"
+      - name: Build docs website and API reference
+        run: |
+          make release-docs VERSION="$VERSION" ALIAS="$ALIAS"
+          poetry run mike set-default --push latest
+      - name: Build docs website and API reference
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
         run: |
           rm -rf site
           mkdocs build
-          mike deploy --push --update-aliases --no-redirect "${{ env.RELEASE_VERSION }}" "latest"
+          mike deploy --push --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }}"
           # Set latest version as a default
           mike set-default --push latest
-      - name: Publish docs to dev
-        if: ${{ env.RELEASE_VERSION == 'dev' }}
-        run: |
-          rm -rf site
-          mkdocs build
-          mike deploy --push dev
-      - name: Build API docs
-        run: |
-          rm -rf api
-          npm run docs-generateApiDoc
+
       - name: Release API docs
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
+        env:
+          VERSION: ${{ inputs.version }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./api
           keep_files: true
-          destination_dir: ${{ env.RELEASE_VERSION }}/api
-      - name: Release API docs to latest if isRelease
-        if: ${{ env.RELEASE_VERSION != 'dev' }}
-        uses: peaceiris/actions-gh-pages@v3
+          destination_dir: ${{ env.VERSION }}/api
+      - name: Release API docs to latest
+        if: ${{ input.alias == 'latest' }}
+        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./api

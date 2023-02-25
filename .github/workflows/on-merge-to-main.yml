@@ -21,15 +21,6 @@ jobs:
     needs: get_pr_details
     if: ${{ needs.get_pr_details.outputs.prIsMerged == 'true' }}
     uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
-  publish:
-    needs:
-      [get_pr_details, run-unit-tests]
-    uses: ./.github/workflows/reusable-publish-docs.yml
-    with:
-      workflow_origin: ${{ github.event.repository.full_name }}
-      prIsMerged: ${{ needs.get_pr_details.outputs.prIsMerged }}
-    secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}
   update-release-draft:
     needs: publish
     runs-on: ubuntu-latest

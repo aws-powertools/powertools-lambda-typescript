@@ -12,11 +12,18 @@ on:
         description: "Latest npm published version to rebuild corresponding layer for, e.g. v1.0.2"
         default: "v1.0.2"
         required: true
-  # Automatic trigger after release
-  workflow_run:
-    workflows: ["Make Release"]
-    types:
-      - completed
+
+  workflow_call:
+    inputs:
+      latest_published_version:
+        type: string
+        description: "Latest npm published version to rebuild latest docs for, e.g. 2.0.0, 2.0.0a1 (pre-release)"
+        required: true
+      pre_release:
+        description: "Publishes documentation using a pre-release tag (2.0.0a1)."
+        default: false
+        type: boolean
+        required: false
 
 jobs:
   # Build layer by running cdk synth in layer-publisher directory and uploading cdk.out for deployment
@@ -73,6 +80,7 @@ jobs:
     with:
       stage: "BETA"
       artifact-name: "cdk-layer-artifact"
+      latest_published_version: ${{ inputs.latest_published_version }}
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
 
@@ -84,5 +92,33 @@ jobs:
     with:
       stage: "PROD"
       artifact-name: "cdk-layer-artifact"
+      latest_published_version: ${{ inputs.latest_published_version }}
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
+
+  prepare_docs_alias:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      DOCS_ALIAS: ${{ steps.set-alias.outputs.DOCS_ALIAS }}
+    steps:
+      - name: Set docs alias
+        id: set-alias
+        run: |
+          DOCS_ALIAS=latest
+          if [[ "${{ inputs.pre_release }}" == true ]] ; then
+            DOCS_ALIAS=alpha
+          fi
+          echo DOCS_ALIAS="$DOCS_ALIAS" >> "$GITHUB_OUTPUT"
+
+  release-docs:
+    needs: [ prod, prepare_docs_alias ]
+    permissions:
+      contents: write
+      pages: write
+    uses: ./.github/workflows/reusable_publish_docs.yml
+    with:
+      version: ${{ inputs.latest_published_version }}
+      alias: ${{ needs.prepare_docs_alias.outputs.DOCS_ALIAS }}
+      detached_mode: true

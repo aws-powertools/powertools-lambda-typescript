@@ -1,0 +1,24 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "examples/**"
+
+jobs:
+  release-docs:
+    needs: changelog
+    permissions:
+      contents: write
+      pages: write
+    uses: ./.github/workflows/reusable-publish-docs.yml
+    with:
+      workflow_origin: ${{ github.event.repository.full_name }}
+      version: dev
+      alias: stage
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}

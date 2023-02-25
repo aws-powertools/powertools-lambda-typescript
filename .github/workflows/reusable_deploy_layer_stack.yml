@@ -8,14 +8,21 @@ on:
   workflow_call:
     inputs:
       stage:
+        description: "Deployment stage (BETA, PROD)"
         required: true
         type: string
       artifact-name:
+        description: "CDK Layer artifact name to download"
+        required: true
+        type: string
+      latest_published_version:
+        description: "Latest version that is published"
         required: true
         type: string
     secrets:
       target-account-role:
         required: true
+
 
 jobs:
   deploy-cdk-stack:
@@ -84,4 +91,24 @@ jobs:
       - name: Unzip artifact
         run: unzip cdk.out.zip
       - name: Deploy Layer
-        run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose
+        run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose --outputs-file cdk-outputs.json
+      - name: Store latest Layer ARN
+        if: ${{ inputs.stage == 'PROD' }}
+        run: |
+          mkdir cdk-layer-stack
+          jq -r -c '.LayerPublisherStack.LatestLayerArn' cdk-outputs.json > cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+          cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+      - name: Save Layer ARN artifact
+        if: ${{ inputs.stage == 'PROD' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: cdk-layer-stack
+          path: ./layer/cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.
+          if-no-files-found: error
+          retention-days: 1
+  update_v2_layer_arn_docs:
+    needs: deploy-cdk-stack
+    if: ${{ inputs.stage == 'PROD' }}
+    uses: ./.github/workflows/reusable_update_layer_arn_docs.yml
+    with:
+      latest_published_version: ${{ inputs.latest_published_version }}

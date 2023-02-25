@@ -11,6 +11,7 @@ import { Logger } from './../../../src';
 import middy from '@middy/core';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { Console } from 'console';
+import { Context } from 'aws-lambda';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -352,6 +353,54 @@ describe('Middy middleware', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
+    });
+
+    test('when logEvent and clearState are both TRUE, and the logger has persistent attributes, any key added in the handler is cleared properly', async () => {
+
+      const logger = new Logger({
+        persistentLogAttributes: {
+          version: '1.0.0',
+        }
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+      const handler = middy(async (event: { foo: string }, _context: Context) => {
+        logger.appendKeys({ foo: event.foo });
+      }).use(injectLambdaContext(logger, { logEvent: true, clearState: true }));
+
+      await handler({ foo: 'bar' }, {} as Context);
+      await handler({ foo: 'baz' }, {} as Context);
+      await handler({ foo: 'biz' }, {} as Context);
+      await handler({ foo: 'buz' }, {} as Context);
+      await handler({ foo: 'boz' }, {} as Context);
+
+      expect(consoleSpy).toBeCalledTimes(5);
+      for (let i = 1; i === 5; i++) {
+        expect(consoleSpy).toHaveBeenNthCalledWith(
+          i,
+          expect.stringContaining('\"message\":\"Lambda invocation event\"'),
+        );
+        expect(consoleSpy).toHaveBeenNthCalledWith(
+          i,
+          expect.stringContaining('\"version\":\"1.0.0\"'),
+        );
+      }
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        2,
+        expect.not.stringContaining('\"foo\":\"bar\"')
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        3,
+        expect.not.stringContaining('\"foo\":\"baz\"')
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        4,
+        expect.not.stringContaining('\"foo\":\"biz\"')
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        5,
+        expect.not.stringContaining('\"foo\":\"buz\"')
+      );
+
     });
 
   });

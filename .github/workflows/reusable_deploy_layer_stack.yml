@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       artifact-name:
-        description: "CDK Layer Artefact name to download"
+        description: "CDK Layer artifact name to download"
         required: true
         type: string
       latest_published_version:
@@ -106,11 +106,6 @@ jobs:
           path: ./layer/cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.
           if-no-files-found: error
           retention-days: 1
-
-
-
-
-
   update_v2_layer_arn_docs:
     needs: deploy-cdk-stack
     if: ${{ inputs.stage == 'PROD' }}

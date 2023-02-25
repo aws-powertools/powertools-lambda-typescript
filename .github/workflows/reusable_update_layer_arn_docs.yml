@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 env:
-  BRANCH: develop
+  BRANCH: main
 
 jobs:
   publish_layer_arn:

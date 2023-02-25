@@ -2,7 +2,7 @@ name: Reusable Publish docs
 
 env:
   BRANCH: main
-  ORIGIN: awslabs/aws-lambda-powertools-python
+  ORIGIN: awslabs/aws-lambda-powertools-typescript
 
 
 on:

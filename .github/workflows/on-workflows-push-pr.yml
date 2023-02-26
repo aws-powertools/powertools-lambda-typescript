@@ -1,0 +1,32 @@
+name: Lockdown untrusted workflows
+
+on:
+  push:
+    paths:
+      - ".github/workflows/**"
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+
+jobs:
+  enforce_pinned_workflows:
+    name: Harden Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Ensure 3rd party workflows have SHA pinned
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@b9ddf6a5153efe6fb94f071c8915175afdce60fa # v2.1.0
+        with:
+          # Trusted GitHub Actions and/or organizations
+          allowlist: |
+            aws-actions/
+            actions/checkout
+            actions/github-script
+            actions/setup-node
+            actions/setup-python
+            actions/upload-artifact
+            actions/download-artifact
+            github/codeql-action/init
+            github/codeql-action/analyze
+            dependabot/fetch-metadata

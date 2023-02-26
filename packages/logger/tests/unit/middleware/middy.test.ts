@@ -18,6 +18,8 @@ const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 describe('Middy middleware', () => {
 
   const ENVIRONMENT_VARIABLES = process.env;
+  const context = dummyContext.helloworldContext;
+  const event = dummyEvent.Custom.CustomEvent;
 
   beforeEach(() => {
     jest.resetModules();
@@ -43,7 +45,7 @@ describe('Middy middleware', () => {
         }).use(injectLambdaContext(logger));
 
         // Act
-        await handler(dummyEvent.Custom.CustomEvent, dummyContext.helloworldContext);
+        await handler(event, context);
 
         // Assess
         expect(logger).toEqual(expect.objectContaining({
@@ -82,7 +84,7 @@ describe('Middy middleware', () => {
         }).use(injectLambdaContext([ logger, anotherLogger ]));
 
         // Act
-        await handler(dummyEvent.Custom.CustomEvent, dummyContext.helloworldContext);
+        await handler(event, context);
 
         // Assess
         const expectation = expect.objectContaining({
@@ -141,7 +143,7 @@ describe('Middy middleware', () => {
       const persistentAttribsBeforeInvocation = { ...logger.getPersistentLogAttributes() };
       
       // Act
-      await handler(dummyEvent.Custom.CustomEvent, dummyContext.helloworldContext);
+      await handler(event, context);
       
       // Assess
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
@@ -176,7 +178,7 @@ describe('Middy middleware', () => {
       const persistentAttribsBeforeInvocation = { ...logger.getPersistentLogAttributes() };
       
       // Act & Assess
-      await expect(handler(dummyEvent.Custom.CustomEvent, dummyContext.helloworldContext))
+      await expect(handler(event, context))
         .rejects.toThrow();
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
       expect(persistentAttribsBeforeInvocation).toEqual({
@@ -201,7 +203,7 @@ describe('Middy middleware', () => {
       }).use(injectLambdaContext(logger , { logEvent: true }));
 
       // Act
-      await handler(dummyEvent.Custom.CustomEvent, dummyContext.helloworldContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(2);
@@ -264,7 +266,7 @@ describe('Middy middleware', () => {
       }).use(injectLambdaContext(logger , { logEvent: true }));
       
       // Act
-      await handler(dummyEvent.Custom.CustomEvent, dummyContext.helloworldContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(2);
@@ -299,7 +301,7 @@ describe('Middy middleware', () => {
       }).use(injectLambdaContext(logger));
       
       // Act
-      await handler(dummyEvent.Custom.CustomEvent, dummyContext.helloworldContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(2);
@@ -334,7 +336,7 @@ describe('Middy middleware', () => {
       }).use(injectLambdaContext(logger, { logEvent: false }));
       
       // Act
-      await handler(dummyEvent.Custom.CustomEvent, dummyContext.helloworldContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);

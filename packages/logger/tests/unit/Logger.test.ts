@@ -3,8 +3,10 @@
  *
  * @group unit/logger/all
  */
-
-import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface } from '@aws-lambda-powertools/commons';
+import {
+  ContextExamples as dummyContext,
+  Events as dummyEvent, LambdaInterface
+} from '@aws-lambda-powertools/commons';
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
@@ -16,6 +18,7 @@ const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Class: Logger', () => {
+
   const ENVIRONMENT_VARIABLES = process.env;
   const context = dummyContext.helloworldContext;
   const event = dummyEvent.Custom.CustomEvent;
@@ -45,6 +48,7 @@ describe('Class: Logger', () => {
     ) => {
 
       describe('Feature: log level', () => {
+
         const methodOfLogger = method as keyof ClassThatLogs;
 
         test('when the Logger\'s log level is DEBUG, it ' + debugAction + ' print to stdout', () => {
@@ -207,7 +211,7 @@ describe('Class: Logger', () => {
 
       });
 
-      describe('Feature: capture Lambda context information and add it in the printed logs', () => {
+      describe('Feature: inject context', () => {
 
         const methodOfLogger = method as keyof ClassThatLogs;
 
@@ -231,6 +235,7 @@ describe('Class: Logger', () => {
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           }));
+
         });
 
         test('when the Lambda context is captured, it returns a valid ' + method.toUpperCase() + ' log', () => {
@@ -398,7 +403,9 @@ describe('Class: Logger', () => {
               }
             }
           }));
+
         });
+
       });
 
       describe('Feature: persistent log attributes', () => {
@@ -433,6 +440,7 @@ describe('Class: Logger', () => {
             aws_account_id: '123456789012',
             aws_region: 'eu-west-1',
           }));
+
         });
 
       });
@@ -463,6 +471,7 @@ describe('Class: Logger', () => {
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           }));
+
         });
 
         test('when the `_X_AMZN_TRACE_ID` environment variable is NOT set it parses it correctly and adds the Trace ID to the log', () => {
@@ -487,6 +496,7 @@ describe('Class: Logger', () => {
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
           }));
+
         });
 
       });
@@ -533,7 +543,7 @@ describe('Class: Logger', () => {
 
         });
 
-        test('when a logged item has BigInt value, it doen\'t throw TypeError', () => {
+        test('when a logged item has BigInt value, it doesn\'t throw TypeError', () => {
 
           // Prepare
           const logger = new Logger();
@@ -600,28 +610,13 @@ describe('Class: Logger', () => {
 
   describe('Method: addContext', () => {
 
-    const baseContext = {
-      callbackWaitsForEmptyEventLoop: true,
-      functionVersion: '$LATEST',
-      functionName: 'foo-bar-function-with-cold-start',
-      memoryLimitInMB: '128',
-      logGroupName: '/aws/lambda/foo-bar-function-with-cold-start',
-      logStreamName: '2021/03/09/[$LATEST]1-5759e988-bd862e3fe1be46a994272793',
-      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
-      awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-      getRemainingTimeInMillis: () => 1234,
-      done: () => console.log('Done!'),
-      fail: () => console.log('Failed!'),
-      succeed: () => console.log('Succeeded!'),
-    };
-
-    test('when called during a COLD START invocation, it populates the logger\'s PowertoolLogData object with coldstart set to true', () => {
+    test('when called during a cold start invocation, it populates the logger\'s PowertoolLogData object with coldStart set to TRUE', () => {
 
       // Prepare
       const logger = new Logger();
 
       // Act
-      logger.addContext(baseContext);
+      logger.addContext(context);
 
       // Assess
       expect(logger).toEqual({
@@ -648,23 +643,25 @@ describe('Class: Logger', () => {
           lambdaContext: {
             awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
             coldStart: true,
-            functionName: 'foo-bar-function-with-cold-start',
+            functionName: 'foo-bar-function',
             functionVersion: '$LATEST',
-            invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
+            invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
             memoryLimitInMB: 128,
           },
           sampleRateValue: undefined,
           serviceName: 'hello-world',
         },
+
       });
+
     });
 
     test('when called with a context object, the object is not mutated', () => {
 
       // Prepare
       const logger = new Logger();
-      const context1 = { ...baseContext, awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678' };
-      const context2 = { ...baseContext, awsRequestId: 'd40c98a9-91c4-478c-a179-433c4b978289' };
+      const context1 = { ...context, awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678' };
+      const context2 = { ...context, awsRequestId: 'd40c98a9-91c4-478c-a179-433c4b978289' };
 
       // Act
       logger.addContext(context1);
@@ -673,14 +670,15 @@ describe('Class: Logger', () => {
       // Assess
       expect(context1.awsRequestId).toEqual('c6af9ac6-7b61-11e6-9a41-93e812345678');
       expect(context2.awsRequestId).toEqual('d40c98a9-91c4-478c-a179-433c4b978289');
+
     });
 
     test('when called multiple times, the newer values override earlier values', () => {
 
       // Prepare
       const logger = new Logger();
-      const context1 = { ...baseContext, awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678' };
-      const context2 = { ...baseContext, awsRequestId: 'd40c98a9-91c4-478c-a179-433c4b978289' };
+      const context1 = { ...context, awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678' };
+      const context2 = { ...context, awsRequestId: 'd40c98a9-91c4-478c-a179-433c4b978289' };
 
       // Act
       logger.addContext(context1);
@@ -696,7 +694,9 @@ describe('Class: Logger', () => {
           })
         })
       );
+
     });
+
   });
 
   describe('Method: appendKeys', () => {
@@ -727,6 +727,7 @@ describe('Class: Logger', () => {
           },
         },
       }));
+
     });
 
     test('when called with user-provided attribute objects, the objects are not mutated', () => {
@@ -743,6 +744,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(attributes1).toEqual({ keyOne: 'abc' });
       expect(attributes2).toEqual({ keyTwo: 'def' });
+
     });
 
     test('when called multiple times, the newer values override earlier values', () => {
@@ -764,7 +766,9 @@ describe('Class: Logger', () => {
           duplicateKey: 'two'
         }
       }));
+
     });
+
   });
 
   describe('Method: removeKeys', () => {
@@ -794,6 +798,7 @@ describe('Class: Logger', () => {
           },
         },
       }));
+
     });
 
     test('when called with non-existing keys, the logger\'s property persistentLogAttributes is not mutated and it does not throw an error', () => {
@@ -825,6 +830,7 @@ describe('Class: Logger', () => {
           },
         },
       }));
+
     });
 
     test('when called multiple times with the same keys, the outcome is the same', () => {
@@ -853,6 +859,7 @@ describe('Class: Logger', () => {
           },
         },
       }));
+
     });
 
   });
@@ -860,11 +867,10 @@ describe('Class: Logger', () => {
   describe('Method: injectLambdaContext', () => {
 
     beforeEach(() => {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(console, 'log').mockImplementation(() => { });
+      jest.spyOn(console, 'log').mockImplementation(() => ({}));
     });
 
-    test('when used as decorator, it returns a function with the correct scope of the decorated class', async () => {
+    test('it returns a decorated method with the correct scope of the decorated class', async () => {
 
       // Prepare
 
@@ -875,7 +881,7 @@ describe('Class: Logger', () => {
         @logger.injectLambdaContext()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           this.myClassMethod();
         }
 
@@ -884,9 +890,11 @@ describe('Class: Logger', () => {
         }
 
       }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
 
       // Act
-      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -905,7 +913,7 @@ describe('Class: Logger', () => {
 
     });
 
-    test('when used as decorator, it returns a function that captures Lambda\'s context information and adds it in the printed logs', async () => {
+    test('it captures Lambda\'s context information and adds it in the printed logs', async () => {
 
       // Prepare
       const logger = new Logger();
@@ -915,14 +923,16 @@ describe('Class: Logger', () => {
         @logger.injectLambdaContext()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           logger.info('This is an INFO log with some context');
         }
       }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
 
       // Act
       logger.info('An INFO log without context!');
-      await new LambdaFunction().handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(event, context);
 
       // Assess
 
@@ -949,7 +959,7 @@ describe('Class: Logger', () => {
 
     });
 
-    test('when used as decorator on an async handler without context, it returns a function that captures Lambda\'s context information and adds it in the printed logs', async () => {
+    test('it captures Lambda\'s context information and adds it in the printed logs for async methods', async () => {
 
       // Prepare
       const expectedReturnValue = 'Lambda invoked!';
@@ -966,10 +976,12 @@ describe('Class: Logger', () => {
           return expectedReturnValue;
         }
       }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
 
       // Act
       logger.info('An INFO log without context!');
-      const actualResult = await new LambdaFunction().handler(event, context);
+      const actualResult = await handler(event, context);
 
       // Assess
 
@@ -997,7 +1009,7 @@ describe('Class: Logger', () => {
 
     });
 
-    test('when used as decorator with the clear state flag enabled, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
+    test('when clearState is enabled, the persistent log attributes added in the handler are cleared when the method returns', async () => {
 
       // Prepare
       const logger = new Logger({
@@ -1007,40 +1019,38 @@ describe('Class: Logger', () => {
           biz: 'baz'
         }
       });
-
-      type CustomEvent = { user_id: string };
-
       class LambdaFunction implements LambdaInterface {
 
         @logger.injectLambdaContext({ clearState: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TResult>(event: CustomEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           // Only add these persistent for the scope of this lambda handler
           logger.appendKeys({
-            details: { user_id: event['user_id'] }
+            details: { user_id: '1234' }
           });
           logger.debug('This is a DEBUG log with the user_id');
           logger.debug('This is another DEBUG log with the user_id');
         }
       }
-
-      const persistentAttribs = { ...logger.getPersistentLogAttributes() };
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+      const persistentAttribsBeforeInvocation = { ...logger.getPersistentLogAttributes() };
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
+      await handler(event, context);
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
 
       // Assess
-      expect(persistentAttribs).toEqual({
+      expect(persistentAttribsBeforeInvocation).toEqual({
         foo: 'bar',
         biz: 'baz'
       });
-      expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
+      expect(persistentAttribsAfterInvocation).toEqual(persistentAttribsBeforeInvocation);
 
     });
 
-    test('when used as decorator with the clear state flag enabled and the handler throws an error, the persistent log attributes added in the handler are removed after the handler\'s code is executed', async () => {
+    test('when clearState is enabled, the persistent log attributes added in the handler are cleared when the method throws', async () => {
 
       // Prepare
       const logger = new Logger({
@@ -1050,18 +1060,15 @@ describe('Class: Logger', () => {
           biz: 'baz'
         }
       });
-
-      type CustomEvent = { user_id: string };
-
       class LambdaFunction implements LambdaInterface {
 
         @logger.injectLambdaContext({ clearState: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TResult>(event: CustomEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           // Only add these persistent for the scope of this lambda handler
           logger.appendKeys({
-            details: { user_id: event['user_id'] }
+            details: { user_id: '1234' }
           });
           logger.debug('This is a DEBUG log with the user_id');
           logger.debug('This is another DEBUG log with the user_id');
@@ -1069,45 +1076,42 @@ describe('Class: Logger', () => {
           throw new Error('Unexpected error occurred!');
         }
       }
-
-      const persistentAttribs = { ...logger.getPersistentLogAttributes() };
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+      const persistentAttribsBeforeInvocation = { ...logger.getPersistentLogAttributes() };
 
       // Act & Assess
-      const executeLambdaHandler = async (): Promise<void> => {
-        await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
-      };
-      await expect(executeLambdaHandler()).rejects.toThrow('Unexpected error occurred!');
+      await expect(handler(event, context)).rejects.toThrow();
       const persistentAttribsAfterInvocation = { ...logger.getPersistentLogAttributes() };
-      expect(persistentAttribs).toEqual({
+      expect(persistentAttribsBeforeInvocation).toEqual({
         foo: 'bar',
         biz: 'baz'
       });
-      expect(persistentAttribsAfterInvocation).toEqual(persistentAttribs);
+      expect(persistentAttribsAfterInvocation).toEqual(persistentAttribsBeforeInvocation);
 
     });
 
-    test('when used as decorator with the log event flag enabled, it logs the event', async () => {
+    test('when logEvent is enabled, it logs the event in the first log', async () => {
 
       // Prepare
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
       const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
-
-      type CustomEvent = { user_id: string };
-
       class LambdaFunction implements LambdaInterface {
 
         @logger.injectLambdaContext({ logEvent: true })
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TResult>(_event: CustomEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<void> {
           return;
         }
       }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1123,13 +1127,15 @@ describe('Class: Logger', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         event: {
-          user_id: '123456'
+          key1: 'value1',
+          key2: 'value2',
+          key3: 'value3'
         }
       }));
 
     });
 
-    test('when used as decorator without options, but POWERTOOLS_LOGGER_LOG_EVENT env var is set to true, it logs the event', async () => {
+    test('when logEvent is enabled via POWERTOOLS_LOGGER_LOG_EVENT env var, it logs the event', async () => {
 
       // Prepare
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
@@ -1138,20 +1144,20 @@ describe('Class: Logger', () => {
       });
       const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
 
-      type CustomEvent = { user_id: string };
-
       class LambdaFunction implements LambdaInterface {
 
         @logger.injectLambdaContext()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TResult>(_event: CustomEvent, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<void> {
           return;
         }
       }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
 
       // Act
-      await new LambdaFunction().handler({ user_id: '123456' }, context, () => console.log('Lambda invoked!'));
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1167,13 +1173,15 @@ describe('Class: Logger', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         event: {
-          user_id: '123456'
+          key1: 'value1',
+          key2: 'value2',
+          key3: 'value3'
         }
       }));
 
     });
 
-    test('when used as decorator the value of `this` is preserved on the decorated method/class', async () => {
+    test('it preserves the value of `this` of the decorated method/class', async () => {
 
       // Prepare
       const logger = new Logger({
@@ -1191,7 +1199,7 @@ describe('Class: Logger', () => {
         @logger.injectLambdaContext()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public handler<TResult>(_event: unknown, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<void> {
           this.dummyMethod();
 
           return;
@@ -1201,11 +1209,11 @@ describe('Class: Logger', () => {
           logger.info({ message: `memberVariable:${this.memberVariable}` });
         }
       }
-
-      // Act
       const lambda = new LambdaFunction('someValue');
       const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
+
+      // Act
+      await handler({}, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
@@ -1224,7 +1232,7 @@ describe('Class: Logger', () => {
 
     });
 
-    test('when used as decorator on an async method, the method is awaited correctly', async () => {
+    test('it awaits the decorated method correctly', async () => {
 
       // Prepare
       const injectLambdaContextAfterOrOnErrorMock = jest.fn().mockReturnValue('worked');
@@ -1270,7 +1278,7 @@ describe('Class: Logger', () => {
 
   describe('Method: refreshSampleRateCalculation', () => {
 
-    test('when called, it recalculates whether the current Lambda invocation\'s logs will be printed or not', () => {
+    test('it recalculates whether the current Lambda invocation\'s logs will be printed or not', () => {
 
       // Prepare
       const logger = new Logger({
@@ -1302,7 +1310,7 @@ describe('Class: Logger', () => {
       const INDENTATION = LogJsonIndent.COMPACT;
       const loggerOptions = {
         serviceName: 'parent-service-name',
-        sampleRateValue: 0.01,
+        sampleRateValue: 0,
       };
       const parentLogger = new Logger(loggerOptions);
       
@@ -1339,7 +1347,7 @@ describe('Class: Logger', () => {
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: 0.01,
+          sampleRateValue: undefined,
           serviceName: 'parent-service-name',
         },
       });
@@ -1655,22 +1663,8 @@ describe('Class: Logger', () => {
           serviceName: 'hello-world',
         },
       });
-    });
 
-    const context = {
-      callbackWaitsForEmptyEventLoop: true,
-      functionVersion: '$LATEST',
-      functionName: 'foo-bar-function-with-cold-start',
-      memoryLimitInMB: '128',
-      logGroupName: '/aws/lambda/foo-bar-function-with-cold-start',
-      logStreamName: '2021/03/09/[$LATEST]1-5759e988-bd862e3fe1be46a994272793',
-      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
-      awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-      getRemainingTimeInMillis: () => 1234,
-      done: () => console.log('Done!'),
-      fail: () => console.log('Failed!'),
-      succeed: () => console.log('Succeeded!'),
-    };
+    });
 
     test('child logger should have parent\'s context in PowertoolLogData', () => {
 
@@ -1706,15 +1700,16 @@ describe('Class: Logger', () => {
           lambdaContext: {
             awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
             coldStart: true,
-            functionName: 'foo-bar-function-with-cold-start',
+            functionName: 'foo-bar-function',
             functionVersion: '$LATEST',
-            invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function-with-cold-start',
+            invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
             memoryLimitInMB: 128,
           },
           sampleRateValue: undefined,
           serviceName: 'hello-world',
         },
       });
+
     });
 
     test('child logger should have parent\'s logFormatter', () => {
@@ -1734,6 +1729,7 @@ describe('Class: Logger', () => {
           logFormatter: expect.any(MyCustomLogFormatter),
         })
       );
+
     });
 
     test('child logger with custom logFormatter in options should have provided logFormatter', () => {
@@ -1759,6 +1755,7 @@ describe('Class: Logger', () => {
           logFormatter: expect.any(MyCustomLogFormatter),
         })
       );
+
     });
 
     test('child logger should have exact same attributes as the parent logger created with all non-default options', () => {
@@ -1819,8 +1816,8 @@ describe('Class: Logger', () => {
       logger.logEventIfEnabled(event);
 
       // Assess
-
       expect(consoleSpy).toBeCalledTimes(0);
+
     });
 
     test('When the feature is enabled via overwrite flag, it DOES log the event', () => {
@@ -1848,6 +1845,7 @@ describe('Class: Logger', () => {
         }
       },
       ));
+
     });
   });
 
@@ -1873,6 +1871,7 @@ describe('Class: Logger', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }, null, INDENTATION));
+
     });
 
     test('when the `POWERTOOLS_DEV` env var is NOT SET it makes log output as one-liner', () => {
@@ -1893,7 +1892,9 @@ describe('Class: Logger', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       }));
+
     });
+
   });
 
   describe('Method: setConsole()', () => {
@@ -1916,7 +1917,9 @@ describe('Class: Logger', () => {
         ...logger,
         console: console,
       });
+
     });
+
   });
 
 });

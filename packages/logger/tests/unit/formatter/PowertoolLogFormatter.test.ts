@@ -3,7 +3,6 @@
  *
  * @group unit/logger/all
  */
-
 import { AssertionError, strictEqual } from 'assert';
 import { PowertoolLogFormatter } from '../../../src/formatter';
 import { UnformattedAttributes } from '../../../src/types';
@@ -19,7 +18,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
   describe('Method: formatAttributes', () => {
 
-    test('When optional parameters DO NOT have a value set, it returns an object with expected structure and values', () => {
+    test('when optional parameters DO NOT have a value set, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -51,9 +50,10 @@ describe('Class: PowertoolLogFormatter', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       });
+
     });
 
-    test('When optional parameters DO have a value set, it returns an object with expected structure and values', () => {
+    test('when optional parameters DO have a value set, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -94,19 +94,18 @@ describe('Class: PowertoolLogFormatter', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       });
+
     });
 
   });
 
   describe('Method: formatError', () => {
 
-    test('When an error of type Error is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type Error is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
       const shouldThrow = (): void => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         throw new Error('Ouch!');
       };
 
@@ -126,13 +125,15 @@ describe('Class: PowertoolLogFormatter', () => {
       }
 
       expect(shouldThrow).toThrowError(expect.any(Error));
+
     });
 
-    test('When an error of type ReferenceError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type ReferenceError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
       const shouldThrow = (): void => {
+        // This is a reference error purposely to test the formatter
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         doesNotExist;
@@ -157,13 +158,11 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When an error of type AssertionError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type AssertionError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
       const shouldThrow = (): void => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         strictEqual(1, 2);
       };
 
@@ -186,13 +185,11 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When an error of type RangeError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type RangeError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
       const shouldThrow = (): void => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         throw new RangeError('The argument must be between 10 and 20');
       };
 
@@ -214,13 +211,11 @@ describe('Class: PowertoolLogFormatter', () => {
       expect(shouldThrow).toThrowError(expect.any(RangeError));
     });
 
-    test('When an error of type SyntaxError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type SyntaxError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
       const shouldThrow = (): void => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         eval('foo bar');
       };
 
@@ -243,11 +238,12 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When an error of type TypeError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type TypeError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
       const shouldThrow = (): void => {
+        // This is a reference error purposely to test the formatter
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         null.foo();
@@ -270,15 +266,14 @@ describe('Class: PowertoolLogFormatter', () => {
       }
 
       expect(shouldThrow).toThrowError(expect.any(TypeError));
+
     });
 
-    test('When an error of type URIError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type URIError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
       const shouldThrow = (): void => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         decodeURIComponent('%');
       };
 
@@ -298,13 +293,14 @@ describe('Class: PowertoolLogFormatter', () => {
       }
 
       expect(shouldThrow).toThrowError(expect.any(URIError));
+
     });
     
   });
 
   describe('Method: formatTimestamp', () => {
 
-    test('It returns a datetime value ISO 8601 compliant', () => {
+    test('it returns a datetime value ISO 8601 compliant', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -314,13 +310,14 @@ describe('Class: PowertoolLogFormatter', () => {
 
       // Assess
       expect(timestamp).toEqual('2016-06-20T12:08:10.000Z');
+
     });
 
   });
 
   describe('Method: getCodeLocation', () => {
 
-    test('When the stack IS present, it returns a datetime value ISO 8601 compliant', () => {
+    test('when the stack IS present, it returns a datetime value ISO 8601 compliant', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -333,9 +330,10 @@ describe('Class: PowertoolLogFormatter', () => {
 
       // Assess
       expect(errorLocation).toEqual('/home/foo/bar/some-file.ts:154');
+
     });
 
-    test('When the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
+    test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -346,9 +344,10 @@ describe('Class: PowertoolLogFormatter', () => {
 
       // Assess
       expect(errorLocation).toEqual('');
+
     });
 
-    test('When the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
+    test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -359,6 +358,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
       // Assess
       expect(errorLocation).toEqual('');
+
     });
 
   });

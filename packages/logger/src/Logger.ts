@@ -629,7 +629,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @private
    * @returns {boolean}
    */
-  private isValidLogLevel(logLevel?: LogLevel | string): logLevel is LogLevel {
+  private isValidLogLevel(logLevel?: LogLevel | string): logLevel is Uppercase<LogLevel> {
     return typeof logLevel === 'string' && logLevel in this.logLevelThresholds;
   }
 
@@ -748,20 +748,25 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   private setLogLevel(logLevel?: LogLevel): void {
-    if (this.isValidLogLevel(logLevel)) {
-      this.logLevel = logLevel?.toUpperCase() as Uppercase<LogLevel>;
+    const constructorLogLevel = logLevel?.toUpperCase();
+    if (this.isValidLogLevel(constructorLogLevel)) {
+      this.logLevel = constructorLogLevel;
 
       return;
     }
-    const customConfigValue = this.getCustomConfigService()?.getLogLevel();
+    const customConfigValue = this.getCustomConfigService()
+      ?.getLogLevel()
+      ?.toUpperCase();
     if (this.isValidLogLevel(customConfigValue)) {
-      this.logLevel = customConfigValue?.toUpperCase() as Uppercase<LogLevel>;
+      this.logLevel = customConfigValue;
 
       return;
     }
-    const envVarsValue = this.getEnvVarsService().getLogLevel();
+    const envVarsValue = this.getEnvVarsService()
+      ?.getLogLevel()
+      ?.toUpperCase();
     if (this.isValidLogLevel(envVarsValue)) {
-      this.logLevel = envVarsValue?.toUpperCase() as Uppercase<LogLevel>;
+      this.logLevel = envVarsValue;
 
       return;
     }

@@ -1247,7 +1247,7 @@ describe('Class: Logger', () => {
         @logger.injectLambdaContext()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public async handler<TResult>(_event: unknown, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler(_event: unknown, _context: unknown): Promise<unknown> {
           await this.dummyMethod();
           logger.info('This is a DEBUG log');
 
@@ -1258,11 +1258,11 @@ describe('Class: Logger', () => {
           return;
         }
       }
-
-      // Act
       const lambda = new LambdaFunction();
       const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
+
+      // Act
+      await handler({}, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);

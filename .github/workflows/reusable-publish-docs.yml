@@ -50,7 +50,7 @@ jobs:
       # if one of them changes the cache is invalidated/discarded
       - name: Cache node modules
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
         with:
           path: "./node_modules"
           key: 18-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}

@@ -18,7 +18,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
   describe('Method: formatAttributes', () => {
 
-    test('When optional parameters DO NOT have a value set, it returns an object with expected structure and values', () => {
+    test('when optional parameters DO NOT have a value set, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -53,7 +53,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When optional parameters DO have a value set, it returns an object with expected structure and values', () => {
+    test('when optional parameters DO have a value set, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -101,7 +101,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
   describe('Method: formatError', () => {
 
-    test('When an error of type Error is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type Error is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -128,7 +128,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When an error of type ReferenceError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type ReferenceError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -158,7 +158,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When an error of type AssertionError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type AssertionError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -185,7 +185,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When an error of type RangeError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type RangeError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -211,7 +211,7 @@ describe('Class: PowertoolLogFormatter', () => {
       expect(shouldThrow).toThrowError(expect.any(RangeError));
     });
 
-    test('When an error of type SyntaxError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type SyntaxError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -238,7 +238,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When an error of type TypeError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type TypeError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -269,7 +269,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When an error of type URIError is passed, it returns an object with expected structure and values', () => {
+    test('when an error of type URIError is passed, it returns an object with expected structure and values', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -300,7 +300,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
   describe('Method: formatTimestamp', () => {
 
-    test('It returns a datetime value ISO 8601 compliant', () => {
+    test('it returns a datetime value ISO 8601 compliant', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -317,7 +317,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
   describe('Method: getCodeLocation', () => {
 
-    test('When the stack IS present, it returns a datetime value ISO 8601 compliant', () => {
+    test('when the stack IS present, it returns a datetime value ISO 8601 compliant', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -333,7 +333,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
+    test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
@@ -347,7 +347,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
     });
 
-    test('When the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
+    test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();

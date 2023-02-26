@@ -26,7 +26,7 @@
     "prepare": "npm run build",
     "postversion": "git push --tags"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/logging#readme",
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logging#readme",
   "license": "MIT",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",

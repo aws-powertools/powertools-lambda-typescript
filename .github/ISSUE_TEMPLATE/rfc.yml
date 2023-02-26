@@ -83,7 +83,7 @@ body:
       options:
         - label: This feature request meets [Lambda Powertools Tenets](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets)
           required: true
-        - label: Should this be considered in other Lambda Powertools languages? i.e. [Python](https://github.com/awslabs/aws-lambda-powertools-python/), [Java](https://github.com/awslabs/aws-lambda-powertools-java/)
+        - label: Should this be considered in other Lambda Powertools languages? i.e. [Python](https://github.com/awslabs/aws-lambda-powertools-python/), [Java](https://github.com/awslabs/aws-lambda-powertools-java/), and [.NET](https://github.com/awslabs/aws-lambda-powertools-dotnet/)
           required: false
   - type: markdown
     attributes:
@@ -97,3 +97,9 @@ body:
         * RFC PR:
         * Approved by: ''
         * Reviewed by: ''
+  - type: input
+    id: notes
+    attributes:
+      label: Future readers
+      description: Please not edit this field
+      value: "Please react with 👍 and your use case to help us understand customer demand."

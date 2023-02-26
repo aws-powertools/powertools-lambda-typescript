@@ -28,7 +28,22 @@ body:
     attributes:
       label: Code snippet
       description: Please share a code snippet to help us reproduce the issue
-      render: JavaScript
+      placeholder: |
+        ```typescript
+        some code here
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Please share how we might be able to reproduce this issue
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
     validations:
       required: true
   - type: textarea
@@ -38,13 +53,6 @@ body:
       description: If known, please suggest a potential resolution
     validations:
       required: false
-  - type: textarea
-    id: steps
-    attributes:
-      label: Steps to Reproduce
-      description: Please share how we might be able to reproduce this issue
-    validations:
-      required: true
   - type: input
     id: version
     attributes:
@@ -69,7 +77,7 @@ body:
       label: Packaging format used
       options:
         - Lambda Layers
-        - Npm
+        - npm
       multiple: true
     validations:
       required: true

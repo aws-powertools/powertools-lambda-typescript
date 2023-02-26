@@ -23,7 +23,7 @@
     "prepare": "npm run build",
     "postversion": "git push --tags"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/metrics#readme",
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/metrics#readme",
   "license": "MIT-0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",

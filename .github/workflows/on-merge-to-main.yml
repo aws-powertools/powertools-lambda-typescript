@@ -22,7 +22,7 @@ jobs:
     if: ${{ needs.get_pr_details.outputs.prIsMerged == 'true' }}
     uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
   update-release-draft:
-    needs: publish
+    needs: run-unit-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

@@ -3,7 +3,6 @@
  *
  * @group unit/logger/all
  */
-
 import { EnvironmentVariablesService } from '../../../src/config';
 
 describe('Class: EnvironmentVariablesService', () => {
@@ -32,6 +31,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('us-east-1');
+
     });
 
   });
@@ -66,6 +66,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toBe(123456);
+
     });
 
   });
@@ -83,6 +84,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('my-lambda-function');
+
     });
 
   });
@@ -100,6 +102,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('1.4.0');
+
     });
 
   });
@@ -117,6 +120,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(true);
+
     });
 
     test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "false"', () => {
@@ -130,6 +134,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
     test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "somethingsilly"', () => {
@@ -143,6 +148,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
   });
@@ -160,6 +166,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('ERROR');
+
     });
 
   });
@@ -177,6 +184,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(0.01);
+
     });
 
   });
@@ -194,6 +202,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(true);
+
     });
 
     test('It returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
@@ -207,6 +216,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
     test('It returns false if the environment variable POWERTOOLS_DEV is NOT set', () => {
@@ -220,6 +230,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
     test('It returns false if the environment variable POWERTOOLS_DEV is "somethingsilly"', () => {
@@ -233,6 +244,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
   });

@@ -25,11 +25,6 @@
 <!--- If no issue is present the PR might get blocked and not be reviewed. -->
 **Issue number:** 
 
-### PR status
-
-***Is this ready for review?:*** NO  
-***Is it a breaking change?:*** NO
-
 ## Checklist
 
 - [ ] [My changes meet the tenets criteria](https://awslabs.github.io/aws-lambda-powertools-typescript/#tenets)
@@ -45,6 +40,8 @@
 - [ ] The PR title follows the [conventional commit semantics](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/semantic.yml#L2)
 
 ### Breaking change checklist
+
+***Is it a breaking change?:*** NO
 
 - [ ] I have documented the migration process
 - [ ] I have added, implemented necessary warnings (if it can live side by side)

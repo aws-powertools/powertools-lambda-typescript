@@ -62,7 +62,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
       - name: aws credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@186395a8644e48f35e7b453e8a7128d9a3948296
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.target-account-role }}
@@ -72,7 +72,7 @@ jobs:
           node-version: "18"
       - name: Cache node modules
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
         with:
           path: "./node_modules"
           # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that

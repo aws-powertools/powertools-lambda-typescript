@@ -52,7 +52,7 @@ jobs:
         # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
         run: npm ci --foreground-scripts
       - name: Setup AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.6.1
+        uses: aws-actions/configure-aws-credentials@186395a8644e48f35e7b453e8a7128d9a3948296
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: eu-west-1
@@ -98,13 +98,13 @@ jobs:
       - name: Setup npm
         run: npm i -g npm@next-8
       - name: "Configure AWS credentials"
-        uses: aws-actions/configure-aws-credentials@v1.6.1
+        uses: aws-actions/configure-aws-credentials@186395a8644e48f35e7b453e8a7128d9a3948296
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: eu-west-1
       - name: Cache node modules for commons
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
         with:
           path: "./node_modules"
           # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that

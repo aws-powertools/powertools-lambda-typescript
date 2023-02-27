@@ -651,12 +651,12 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * It prints a given log with given log level.
    *
-   * @param {LogLevel} logLevel
+   * @param {Uppercase<LogLevel>} logLevel
    * @param {LogItemMessage} input
    * @param {LogItemExtraInput} extraInput
    * @private
    */
-  private processLogItem(logLevel: LogLevel, input: LogItemMessage, extraInput: LogItemExtraInput): void {
+  private processLogItem(logLevel: Uppercase<LogLevel>, input: LogItemMessage, extraInput: LogItemExtraInput): void {
     if (!this.shouldPrint(logLevel)) {
       return;
     }
@@ -855,13 +855,13 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * It checks whether the current log item should/can be printed.
    *
-   * @param {LogLevel} logLevel
+   * @param {Uppercase<LogLevel>} logLevel
    * @private
    * @returns {boolean}
    */
-  private shouldPrint(logLevel: LogLevel): boolean {
+  private shouldPrint(logLevel: Uppercase<LogLevel>): boolean {
     if (
-      this.logLevelThresholds[logLevel.toUpperCase() as Uppercase<LogLevel>] >=
+      this.logLevelThresholds[logLevel] >=
       this.logLevelThresholds[this.getLogLevel()]
     ) {
       return true;

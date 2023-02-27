@@ -268,6 +268,8 @@ In other cases, you may have constrained capacity. Use `help=wanted` label when 
 
 When in doubt, use `need-more-information` or `need-customer-feedback` labels to signal more context and feedback are necessary before proceeding. You can also use `status/on-hold` label when you expect it might take a while to gather enough information before you can decide.
 
+Note that issues marked as `need-more-information` and `status/discussing` will be automatically closed after 3 weeks of inactivity.
+
 ### Crediting contributions
 
 We credit all contributions as part of each [release note](https://github.com/awslabs/aws-lambda-powertools-typescript/releases) as an automated process. If you find contributors are missing from the release note you're producing, please add them manually.

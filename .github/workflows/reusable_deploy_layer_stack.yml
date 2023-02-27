@@ -62,7 +62,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
       - name: aws credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@186395a8644e48f35e7b453e8a7128d9a3948296
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.target-account-role }}

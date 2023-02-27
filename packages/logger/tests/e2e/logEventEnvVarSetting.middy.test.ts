@@ -1,12 +1,8 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 /**
  * Test logger basic features
  *
  * @group e2e/logger/logEventEnvVarSetting
  */
-
 import path from 'path';
 import { App, Stack } from 'aws-cdk-lib';
 import { v4 } from 'uuid';
@@ -36,6 +32,8 @@ const uuid = v4();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'LogEventEnvVarSetting-Middy');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'LogEventEnvVarSetting-Middy');
 const lambdaFunctionCodeFile = 'logEventEnvVarSetting.middy.test.FunctionCode.ts';
+
+const invocationCount = 3;
 
 const integTestApp = new App();
 let logGroupName: string; // We do not know it until deployment
@@ -67,8 +65,8 @@ describe(`logger E2E tests log event via env var setting (middy) for runtime: ${
     const result = await deployStack(integTestApp, stack);
     logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
 
-    // Invoke the function twice (one for cold start, another for warm start)
-    invocationLogs = await invokeFunction(functionName, 2, 'SEQUENTIAL');
+    // Invoke the function three time (one for cold start, then two for warm start)
+    invocationLogs = await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
 
     console.log('logGroupName', logGroupName);
 
@@ -76,27 +74,26 @@ describe(`logger E2E tests log event via env var setting (middy) for runtime: ${
 
   describe('Log event', () => {
 
-    it('should log the event at both invocations', async () => {
-      const firstInvocationMessages = invocationLogs[0].getAllFunctionLogs();
-      let eventLoggedInFirstInvocation = false;
-      for (const message of firstInvocationMessages) {
-        if (message.includes(`event`)) {
-          eventLoggedInFirstInvocation = true;
-          expect(message).toContain(`"event":{"invocation":0}`);
+    it('should log the event as the first log of each invocation only', async () => {
+
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+
+        for (const [ index, message ] of logMessages.entries()) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          // Check that the event is logged on the first log
+          if (index === 0) {
+            expect(log).toHaveProperty('event');
+            expect(log.event).toStrictEqual(
+              expect.objectContaining({ invocation: i })
+            );
+          // Check that the event is not logged again on the rest of the logs
+          } else {
+            expect(log).not.toHaveProperty('event');
+          }
         }
       }
-
-      const secondInvocationMessages = invocationLogs[1].getAllFunctionLogs();
-      let eventLoggedInSecondInvocation = false;
-      for (const message of secondInvocationMessages) {
-        if (message.includes(`event`)) {
-          eventLoggedInSecondInvocation = true;
-          expect(message).toContain(`"event":{"invocation":1}`);
-        }
-      }
-
-      expect(eventLoggedInFirstInvocation).toBe(true);
-      expect(eventLoggedInSecondInvocation).toBe(true);
 
     }, TEST_CASE_TIMEOUT);
 

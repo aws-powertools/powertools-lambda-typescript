@@ -1,5 +1,6 @@
 import { injectLambdaContext, Logger } from '../../src';
 import { Context, APIGatewayAuthorizerResult } from 'aws-lambda';
+import { TestEvent, TestOutput } from '../helpers/types';
 import middy from '@middy/core';
 
 const PERSISTENT_KEY = process.env.PERSISTENT_KEY || 'persistentKey';
@@ -13,10 +14,6 @@ const SINGLE_LOG_ITEM_VALUE = process.env.SINGLE_LOG_ITEM_VALUE || 'valueForSing
 const ARBITRARY_OBJECT_KEY = process.env.ARBITRARY_OBJECT_KEY || 'keyForArbitraryObject';
 const ARBITRARY_OBJECT_DATA = process.env.ARBITRARY_OBJECT_DATA || 'arbitrary object data';
 
-type LambdaEvent = {
-  invocation: number
-};
-
 const logger = new Logger({
   persistentLogAttributes: {
     [PERSISTENT_KEY]: PERSISTENT_VALUE, // This key-value pair will be added to every log
@@ -24,7 +21,7 @@ const logger = new Logger({
   },
 });
 
-const testFunction = async (event: LambdaEvent, context: Context): Promise<{requestId: string}> => {
+const testFunction = async (event: TestEvent, context: Context): TestOutput => {
   // Test feature 1: Context data injection (all logs should have the same context data)
   // Test feature 2: Event log (this log should have the event data)
   // Test feature 3: Log level filtering (log level is set to INFO)

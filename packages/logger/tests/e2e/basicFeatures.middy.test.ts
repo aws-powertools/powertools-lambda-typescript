@@ -90,7 +90,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     const result = await deployStack(integTestApp, stack);
     logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
 
-    // Invoke the function twice (one for cold start, another for warm start)
+    // Invoke the function three time (one for cold start, then two for warm start)
     invocationLogs = await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
 
     console.log('logGroupName', logGroupName);

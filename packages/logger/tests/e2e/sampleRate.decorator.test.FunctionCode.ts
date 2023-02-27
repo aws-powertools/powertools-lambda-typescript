@@ -1,5 +1,6 @@
 import { Logger } from '../../src';
-import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { TestEvent, TestOutput } from '../helpers/types';
+import { Context } from 'aws-lambda';
 import { LambdaInterface } from '@aws-lambda-powertools/commons';
 
 const SAMPLE_RATE = parseFloat(process.env.SAMPLE_RATE || '0.1');
@@ -20,7 +21,7 @@ class Lambda implements LambdaInterface {
   @logger.injectLambdaContext()
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  public async handler(event: APIGatewayProxyEvent, context: Context): Promise<{requestId: string}> {
+  public async handler(event: TestEvent, context: Context): TestOutput {
     this.printLogInAllLevels();
     
     return {

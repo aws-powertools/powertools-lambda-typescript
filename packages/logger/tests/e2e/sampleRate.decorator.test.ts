@@ -1,12 +1,8 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 /**
  * Test logger sample rate feature
  *
  * @group e2e/logger/sampleRate
  */
-
 import path from 'path';
 import { App, Stack } from 'aws-cdk-lib';
 import { v4 } from 'uuid';
@@ -39,16 +35,18 @@ const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Sampl
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'SampleRate-Decorator');
 const lambdaFunctionCodeFile = 'sampleRate.decorator.test.FunctionCode.ts';
 
+const invocationCount = 20;
+
 // Parameters to be used by Logger in the Lambda function
 const LOG_MSG = `Log message ${uuid}`;
 const SAMPLE_RATE = '0.5';
-const LOG_LEVEL = LEVEL.ERROR.toString();
+const LOG_LEVEL = LEVEL.ERROR;
 
 const integTestApp = new App();
 let stack: Stack;
 let logGroupName: string; // We do not know the exact name until deployment
 
-describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${runtime}`, () => {
+describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: nodejs18x`, () => {
 
   let invocationLogs: InvocationLogs[];
 
@@ -75,7 +73,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
     const result = await deployStack(integTestApp, stack);
     logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
 
-    invocationLogs = await invokeFunction(functionName, 20);
+    invocationLogs = await invokeFunction(functionName, invocationCount);
 
     console.log('logGroupName', logGroupName);
 
@@ -86,23 +84,23 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
       // Fetch log streams from all invocations
       let countSampled = 0;
       let countNotSampled = 0;
-      for (const invocationLog of invocationLogs) {
-        const logs = invocationLog.getFunctionLogs();
-        if (logs.length === 1 && logs[0].includes(LEVEL.ERROR.toString())) {
+
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+
+        if (logMessages.length === 1 && logMessages[0].includes(LEVEL.ERROR)) {
           countNotSampled++;
-        } else if (logs.length === 4) {
+        } else if (logMessages.length === 4) {
           countSampled++;
         } else {
-          // TODO: To be investigate if this is Lambda service's issue. This happens once every 10-20 e2e tests runs. The symptoms I found are:
-          // 1. Warning and error logs disappear (in sampled case)
-          // 2. Error log disappears (in non-sampled case)
-          // I reviewed Logger code but it is not possible that the first case could happen because we use the same "logsSampled" flag.
           console.error(`Log group ${logGroupName} contains missing log`);
           throw new Error('Sampled log should have either 1 error log or 4 logs of all levels');
         }
       }
 
-      // Given that we set rate to 0.5. The chance that we get all invocations sampled (or not sampled) is less than 0.5^20
+      // Given that we set rate to 0.5. The chance that we get all invocations sampled
+      // (or not sampled) is less than 0.5^20
       expect(countSampled).toBeGreaterThan(0);
       expect(countNotSampled).toBeGreaterThan(0);
 
@@ -110,15 +108,21 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: ${
   });
 
   describe('Decorator injectLambdaContext()', () => {
-    it('should inject Lambda context into the log', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs(LEVEL.ERROR);
+    it('should inject Lambda context into every log emitted', async () => {
+      
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs(LEVEL.ERROR);
 
-      for (const log of logMessages) {
-        expect(log).toContain('function_arn');
-        expect(log).toContain('function_memory_size');
-        expect(log).toContain('function_name');
-        expect(log).toContain('function_request_id');
-        expect(log).toContain('timestamp');
+        // Check that the context is logged on every log
+        for (const message of logMessages) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          expect(log).toHaveProperty('function_arn');
+          expect(log).toHaveProperty('function_memory_size');
+          expect(log).toHaveProperty('function_name');
+          expect(log).toHaveProperty('function_request_id');
+          expect(log).toHaveProperty('timestamp');
+        }
       }
 
     }, TEST_CASE_TIMEOUT);

@@ -22,7 +22,7 @@ describe('Class: PowertoolLogFormatter', () => {
 
       // Prepare
       const formatter = new PowertoolLogFormatter();
-      const unformattedAttributes = {
+      const unformattedAttributes: UnformattedAttributes = {
         sampleRateValue: undefined,
         awsRegion: 'eu-west-1',
         environment: '',

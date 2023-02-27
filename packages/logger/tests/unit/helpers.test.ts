@@ -55,7 +55,7 @@ describe('Helper: createLogger function', () => {
     test('when no parameters are set, returns a Logger instance with the correct properties', () => {
 
       // Prepare
-      const loggerOptions = {
+      const loggerOptions: ConstructorOptions = {
         logLevel: 'WARN',
         serviceName: 'my-lambda-service',
         sampleRateValue: 1,
@@ -199,10 +199,10 @@ describe('Helper: createLogger function', () => {
 
     });
 
-    test('when a custom logLevel is passed, returns a Logger instance with the correct properties', () => {
+    test('when a custom uppercase logLevel is passed, returns a Logger instance with the correct properties', () => {
 
       // Prepare
-      const loggerOptions:ConstructorOptions = {
+      const loggerOptions: ConstructorOptions = {
         logLevel: 'ERROR',
       };
 
@@ -223,6 +223,35 @@ describe('Helper: createLogger function', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         customConfigService: undefined,
         logLevel: 'ERROR',
+        logFormatter: expect.any(PowertoolLogFormatter),
+      }));
+
+    });
+    
+    test('when a custom lowercase logLevel is passed, returns a Logger instance with the correct properties', () => {
+
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        logLevel: 'warn',
+      };
+
+      // Act
+      const logger = createLogger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(expect.objectContaining({
+        logsSampled: false,
+        persistentLogAttributes: {},
+        powertoolLogData: {
+          sampleRateValue: undefined,
+          awsRegion: 'eu-west-1',
+          environment: '',
+          serviceName: 'hello-world',
+        },
+        envVarsService: expect.any(EnvironmentVariablesService),
+        customConfigService: undefined,
+        logLevel: 'WARN',
         logFormatter: expect.any(PowertoolLogFormatter),
       }));
 

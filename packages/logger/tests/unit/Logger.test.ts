@@ -1486,7 +1486,7 @@ describe('Class: Logger', () => {
       };
       const childLoggerWithSampleRateEnabled = parentLogger.createChild(optionsWithSampleRateEnabled);
 
-      const optionsWithErrorLogLevel = {
+      const optionsWithErrorLogLevel: ConstructorOptions = {
         logLevel: 'ERROR',
       };
       const childLoggerWithErrorLogLevel = parentLogger.createChild(optionsWithErrorLogLevel);

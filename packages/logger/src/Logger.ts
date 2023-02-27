@@ -117,7 +117,7 @@ class Logger extends Utility implements ClassThatLogs {
 
   private customConfigService?: ConfigServiceInterface;
 
-  private static readonly defaultLogLevel: LogLevel = 'INFO';
+  private static readonly defaultLogLevel: Uppercase<LogLevel> = 'INFO';
 
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
@@ -128,7 +128,7 @@ class Logger extends Utility implements ClassThatLogs {
 
   private logIndentation: number = LogJsonIndent.COMPACT;
 
-  private logLevel?: LogLevel;
+  private logLevel?: Uppercase<LogLevel>;
 
   private readonly logLevelThresholds: LogLevelThresholds = {
     DEBUG: 8,
@@ -554,12 +554,16 @@ class Logger extends Utility implements ClassThatLogs {
 
   /**
    * It returns the log level set for the Logger instance.
+   * 
+   * Even though logLevel starts as undefined, it will always be set to a value
+   * during the Logger instance's initialization. So, we can safely use the non-null
+   * assertion operator here.
    *
    * @private
    * @returns {LogLevel}
    */
-  private getLogLevel(): LogLevel {
-    return <LogLevel> this.logLevel;
+  private getLogLevel(): Uppercase<LogLevel> {
+    return this.logLevel!;
   }
 
   /**
@@ -619,14 +623,14 @@ class Logger extends Utility implements ClassThatLogs {
   }
   
   /**
-   * It returns true if the provided log level is valid.
+   * It returns true and type guards the log level if a given log level is valid.
    *
    * @param {LogLevel} logLevel
    * @private
    * @returns {boolean}
    */
-  private isValidLogLevel(logLevel?: LogLevel): boolean {
-    return typeof logLevel === 'string' && logLevel.toUpperCase() in this.logLevelThresholds;
+  private isValidLogLevel(logLevel?: LogLevel | string): logLevel is Uppercase<LogLevel> {
+    return typeof logLevel === 'string' && logLevel in this.logLevelThresholds;
   }
 
   /**
@@ -647,11 +651,12 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * It prints a given log with given log level.
    *
-   * @param {LogLevel} logLevel
-   * @param {LogItem} log
+   * @param {Uppercase<LogLevel>} logLevel
+   * @param {LogItemMessage} input
+   * @param {LogItemExtraInput} extraInput
    * @private
    */
-  private processLogItem(logLevel: LogLevel, input: LogItemMessage, extraInput: LogItemExtraInput): void {
+  private processLogItem(logLevel: Uppercase<LogLevel>, input: LogItemMessage, extraInput: LogItemExtraInput): void {
     if (!this.shouldPrint(logLevel)) {
       return;
     }
@@ -743,20 +748,25 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   private setLogLevel(logLevel?: LogLevel): void {
-    if (this.isValidLogLevel(logLevel)) {
-      this.logLevel = (<LogLevel>logLevel).toUpperCase();
+    const constructorLogLevel = logLevel?.toUpperCase();
+    if (this.isValidLogLevel(constructorLogLevel)) {
+      this.logLevel = constructorLogLevel;
 
       return;
     }
-    const customConfigValue = this.getCustomConfigService()?.getLogLevel();
+    const customConfigValue = this.getCustomConfigService()
+      ?.getLogLevel()
+      ?.toUpperCase();
     if (this.isValidLogLevel(customConfigValue)) {
-      this.logLevel = (<LogLevel>customConfigValue).toUpperCase();
+      this.logLevel = customConfigValue;
 
       return;
     }
-    const envVarsValue = this.getEnvVarsService().getLogLevel();
+    const envVarsValue = this.getEnvVarsService()
+      ?.getLogLevel()
+      ?.toUpperCase();
     if (this.isValidLogLevel(envVarsValue)) {
-      this.logLevel = (<LogLevel>envVarsValue).toUpperCase();
+      this.logLevel = envVarsValue;
 
       return;
     }
@@ -845,14 +855,15 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * It checks whether the current log item should/can be printed.
    *
-   * @param {string} serviceName
-   * @param {Environment} environment
-   * @param {LogAttributes} persistentLogAttributes
+   * @param {Uppercase<LogLevel>} logLevel
    * @private
    * @returns {boolean}
    */
-  private shouldPrint(logLevel: LogLevel): boolean {
-    if (this.logLevelThresholds[logLevel] >= this.logLevelThresholds[this.getLogLevel()]) {
+  private shouldPrint(logLevel: Uppercase<LogLevel>): boolean {
+    if (
+      this.logLevelThresholds[logLevel] >=
+      this.logLevelThresholds[this.getLogLevel()]
+    ) {
       return true;
     }
 

@@ -1,16 +1,14 @@
 import { injectLambdaContext, Logger } from '../../src';
+import { TestEvent, TestOutput } from '../helpers/types';
 import { Context } from 'aws-lambda';
 import middy from '@middy/core';
 
-type LambdaEvent = {
-  invocation: number
-};
-
 const logger = new Logger();
 
-const testFunction = async (event: LambdaEvent, context: Context): Promise<{requestId: string}> => ({
+const testFunction = async (_event: TestEvent, context: Context): TestOutput => ({
   requestId: context.awsRequestId,
 });
 
 export const handler = middy(testFunction)
-  .use(injectLambdaContext(logger));
+  // The event should be logged because POWERTOOLS_LOGGER_LOG_EVENT is set to true
+  .use(injectLambdaContext(logger)); 

@@ -1,12 +1,8 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 /**
  * Test logger basic features
  *
  * @group e2e/logger/basicFeatures
  */
-
 import path from 'path';
 import { App, Stack } from 'aws-cdk-lib';
 import { APIGatewayAuthorizerResult } from 'aws-lambda';
@@ -24,7 +20,8 @@ import {
   STACK_OUTPUT_LOG_GROUP,
   SETUP_TIMEOUT,
   TEST_CASE_TIMEOUT,
-  TEARDOWN_TIMEOUT
+  TEARDOWN_TIMEOUT,
+  XRAY_TRACE_ID_REGEX,
 } from './constants';
 
 const runtime: string = process.env.RUNTIME || 'nodejs18x';
@@ -40,17 +37,19 @@ const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Basic
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'BasicFeatures-Middy');
 const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
 
+const invocationCount = 3;
+
 // Text to be used by Logger in the Lambda function
 const PERSISTENT_KEY = 'persistentKey';
-const PERSISTENT_KEY_FIRST_INVOCATION_ONLY = 'specialKey';
-const PERSISTENT_VALUE = `a persistent value that will be put in every log ${uuid}`;
+const RUNTIME_ADDED_KEY = 'invocation';
+const PERSISTENT_VALUE = uuid;
 const REMOVABLE_KEY = 'removableKey';
-const REMOVABLE_VALUE = `a persistent value that will be removed and not displayed in any log ${uuid}`;
-const SINGLE_LOG_ITEM_KEY = `keyForSingleLogItem${uuid}`;
-const SINGLE_LOG_ITEM_VALUE = `a value for a single log item${uuid}`;
-const ERROR_MSG = `error-${uuid}`;
-const ARBITRARY_OBJECT_KEY = `keyForArbitraryObject${uuid}`;
-const ARBITRARY_OBJECT_DATA = `arbitrary object data ${uuid}`;
+const REMOVABLE_VALUE = 'removedValue';
+const SINGLE_LOG_ITEM_KEY = 'singleKey';
+const SINGLE_LOG_ITEM_VALUE = 'singleValue';
+const ERROR_MSG = 'error';
+const ARBITRARY_OBJECT_KEY = 'arbitraryObjectKey';
+const ARBITRARY_OBJECT_DATA = 'arbitraryObjectData';
 
 const integTestApp = new App();
 let logGroupName: string; // We do not know it until deployment
@@ -74,8 +73,8 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
 
         // Text to be used by Logger in the Lambda function
         PERSISTENT_KEY,
-        PERSISTENT_KEY_FIRST_INVOCATION_ONLY,
         PERSISTENT_VALUE,
+        RUNTIME_ADDED_KEY,
         REMOVABLE_KEY,
         REMOVABLE_VALUE,
         SINGLE_LOG_ITEM_KEY,
@@ -91,171 +90,261 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     const result = await deployStack(integTestApp, stack);
     logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
 
-    // Invoke the function twice (one for cold start, another for warm start)
-    invocationLogs = await invokeFunction(functionName, 2, 'SEQUENTIAL');
+    // Invoke the function three time (one for cold start, then two for warm start)
+    invocationLogs = await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
 
     console.log('logGroupName', logGroupName);
 
   }, SETUP_TIMEOUT);
 
   describe('Log level filtering', () => {
+
     it('should filter log based on LOG_LEVEL (INFO) environment variable in Lambda', async () => {
-      const debugLogs = invocationLogs[0].getFunctionLogs(LEVEL.DEBUG);
-      expect(debugLogs.length).toBe(0);
+
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation and filter by level
+        const debugLogs = invocationLogs[i].getFunctionLogs(LEVEL.DEBUG);
+        // Check that no log message below INFO level is logged
+        expect(debugLogs.length).toBe(0);
+      }
+
     }, TEST_CASE_TIMEOUT);
   });
 
   describe('Context data', () => {
-    it('should log context information of the function', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs();
 
-      for (const message of logMessages) {
-        expect(message).toContain('function_arn');
-        expect(message).toContain('function_memory_size');
-        expect(message).toContain('function_name');
-        expect(message).toContain('function_request_id');
-        expect(message).toContain('timestamp');
+    it('should inject context info in each log', async () => {
+
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+        // Check that the context is logged on every log
+        for (const message of logMessages) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          expect(log).toHaveProperty('function_arn');
+          expect(log).toHaveProperty('function_memory_size');
+          expect(log).toHaveProperty('function_name');
+          expect(log).toHaveProperty('function_request_id');
+          expect(log).toHaveProperty('timestamp');
+        }
       }
+
     }, TEST_CASE_TIMEOUT);
 
-    it('should include cold start equal to TRUE only on the first invocation', async () => {
-      const coldStartLogMessages = invocationLogs[0].getFunctionLogs(LEVEL.INFO);
-      for (const message of coldStartLogMessages) {
-        expect(message).toContain(`"cold_start":true`);
+    it('should include coldStart equal to TRUE only on the first invocation, FALSE otherwise', async () => {
+      
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+        // Check that cold start is logged correctly on every log
+        for (const message of logMessages) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          if (i === 0) {
+            expect(log.cold_start).toBe(true);
+          } else {
+            expect(log.cold_start).toBe(false);
+          }
+        }
       }
 
-      const normalLogMessages = invocationLogs[1].getFunctionLogs(LEVEL.INFO);
-      for (const message of normalLogMessages) {
-        expect(message).not.toContain(`"cold_start":true`);
-      }
     }, TEST_CASE_TIMEOUT);
 
-    it('should log context information in every log', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs();
-
-      for (const message of logMessages) {
-        expect(message).toContain('function_arn');
-        expect(message).toContain('function_memory_size');
-        expect(message).toContain('function_name');
-        expect(message).toContain('function_request_id');
-        expect(message).toContain('timestamp');
-      }
-    }, TEST_CASE_TIMEOUT);
   });
 
   describe('Log event', () => {
 
-    it('should log the event on the first invocation', async () => {
-      const firstInvocationMessages = invocationLogs[0].getAllFunctionLogs();
-      let eventLoggedInFirstInvocation = false;
-      for (const message of firstInvocationMessages) {
-        if (message.includes(`event`)) {
-          eventLoggedInFirstInvocation = true;
-          expect(message).toContain(`"event":{"invocation":0}`);
+    it('should log the event as the first log of each invocation only', async () => {
+      
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+
+        for (const [ index, message ] of logMessages.entries()) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          // Check that the event is logged on the first log
+          if (index === 0) {
+            expect(log).toHaveProperty('event');
+            expect(log.event).toStrictEqual(
+              expect.objectContaining({ invocation: i })
+            );
+          // Check that the event is not logged again on the rest of the logs
+          } else {
+            expect(log).not.toHaveProperty('event');
+          }
         }
       }
-
-      const secondInvocationMessages = invocationLogs[1].getAllFunctionLogs();
-      let eventLoggedInSecondInvocation = false;
-      for (const message of secondInvocationMessages) {
-        if (message.includes(`event`)) {
-          eventLoggedInSecondInvocation = true;
-          expect(message).toContain(`"event":{"invocation":1}`);
-        }
-      }
-
-      expect(eventLoggedInFirstInvocation).toBe(true);
-      expect(eventLoggedInSecondInvocation).toBe(true);
 
     }, TEST_CASE_TIMEOUT);
 
   });
 
   describe('Persistent additional log keys and values', () => {
-    it('should contain persistent value in every log', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs();
 
-      for (const message of logMessages) {
-        expect(message).toContain(`"${PERSISTENT_KEY}":"${PERSISTENT_VALUE}"`);
+    it('should contain persistent value in every log', async () => {
+
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+
+        for (const message of logMessages) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          // Check that the persistent key is present in every log
+          expect(log).toHaveProperty(PERSISTENT_KEY);
+          expect(log[PERSISTENT_KEY]).toBe(PERSISTENT_VALUE);
+        }
       }
+    
     }, TEST_CASE_TIMEOUT);
 
     it('should not contain persistent keys that were removed on runtime', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs();
 
-      for (const message of logMessages) {
-        expect(message).not.toContain(`"${REMOVABLE_KEY}":"${REMOVABLE_VALUE}"`);
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+
+        for (const [ index, message ] of logMessages.entries()) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          // Check that at the time of logging the event, which happens before the handler,
+          // the key was still present
+          if (index === 0) {
+            expect(log).toHaveProperty(REMOVABLE_KEY);
+            expect(log[REMOVABLE_KEY]).toBe(REMOVABLE_VALUE);
+          // Check that all other logs that happen at runtime do not contain the key
+          } else {
+            expect(log).not.toHaveProperty(REMOVABLE_KEY);
+          }
+        }
       }
+
     }, TEST_CASE_TIMEOUT);
 
-    it('with clear state enabled, should not persist keys across invocations', async () => {
-      const firstInvocationMessages = invocationLogs[0].getFunctionLogs();
-      for (const message of firstInvocationMessages) {
-        expect(message).toContain(`"${PERSISTENT_KEY_FIRST_INVOCATION_ONLY}":0`);
+    it('should not leak any persistent keys added runtime since clearState is enabled', async () => {
+
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+
+        for (const [ index, message ] of logMessages.entries()) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          // Check that at the time of logging the event, which happens before the handler,
+          // the key is NOT present
+          if (index === 0) {
+            expect(log).not.toHaveProperty(RUNTIME_ADDED_KEY);
+          } else {
+            // Check that all other logs that happen at runtime do contain the key
+            expect(log).toHaveProperty(RUNTIME_ADDED_KEY);
+            // Check that the value is the same for all logs (it should be the index of the invocation)
+            expect(log[RUNTIME_ADDED_KEY]).toEqual(i);
+          }
+        }
       }
 
-      const secondInvocationMessages = invocationLogs[1].getFunctionLogs();
-      for (const message of secondInvocationMessages) {
-        expect(message).not.toContain(`"${PERSISTENT_KEY_FIRST_INVOCATION_ONLY}":0`);
-      }
-    }, TEST_CASE_TIMEOUT);
-  });
-
-  describe('X-Ray Trace ID injection', () => {
-    it('should inject & parse X-Ray Trace ID into every log', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs();
-
-      for (const message of logMessages) {
-        expect(message).toContain('xray_trace_id');
-      }
     }, TEST_CASE_TIMEOUT);
   });
 
   describe('One-time additional log keys and values', () => {
-    it('should log additional keys and value only once', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs()
-        .filter(message => message.includes(`"${SINGLE_LOG_ITEM_KEY}":"${SINGLE_LOG_ITEM_VALUE}"`));
 
-      expect(logMessages).toHaveLength(1);
+    it('should log additional keys and value only once', async () => {
+
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+        // Check that the additional log is logged only once
+        const logMessagesWithAdditionalLog = logMessages.filter(
+          log => log.includes(SINGLE_LOG_ITEM_KEY)
+        );
+        expect(logMessagesWithAdditionalLog).toHaveLength(1);
+        // Check that the additional log is logged correctly
+        const parsedLog = InvocationLogs
+          .parseFunctionLog(logMessagesWithAdditionalLog[0]);
+        expect(parsedLog[SINGLE_LOG_ITEM_KEY]).toBe(SINGLE_LOG_ITEM_VALUE);
+      }
+
     }, TEST_CASE_TIMEOUT);
 
+  });
+
+  describe('Error logging', () => {
+
+    it('should log error only once', async () => {
+
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation filtered by error level
+        const logMessages = invocationLogs[i].getFunctionLogs(LEVEL.ERROR);
+
+        // Check that the error is logged only once
+        expect(logMessages).toHaveLength(1);
+
+        // Check that the error is logged correctly
+        const errorLog = InvocationLogs.parseFunctionLog(logMessages[0]);
+        expect(errorLog).toHaveProperty('error');
+        expect(errorLog.error).toStrictEqual(
+          expect.objectContaining({
+            location: expect.any(String),
+            name: 'Error',
+            message: ERROR_MSG,
+            stack: expect.anything()
+          })
+        );
+
+      }
+
+    }, TEST_CASE_TIMEOUT);
+
+  });
+
+  describe('Arbitrary object logging', () => {
+
     it('should log additional arbitrary object only once', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs()
-        .filter(message => message.includes(ARBITRARY_OBJECT_DATA));
 
-      expect(logMessages).toHaveLength(1);
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+        // Get the log messages that contains the arbitrary object
+        const filteredLogs = logMessages
+          .filter(log => log.includes(ARBITRARY_OBJECT_DATA));
+        // Check that the arbitrary object is logged only once
+        expect(filteredLogs).toHaveLength(1);
+        const logObject = InvocationLogs.parseFunctionLog(filteredLogs[0]);
+        // Check that the arbitrary object is logged correctly
+        expect(logObject).toHaveProperty(ARBITRARY_OBJECT_KEY);
+        const arbitrary = logObject[ARBITRARY_OBJECT_KEY] as APIGatewayAuthorizerResult;
+        expect(arbitrary.principalId).toBe(ARBITRARY_OBJECT_DATA);
+        expect(arbitrary.policyDocument).toEqual(expect.objectContaining(
+          {
+            Version: 'Version 1',
+            Statement: [{
+              Effect: 'Allow',
+              Action: 'geo:*',
+              Resource: '*'
+            }]
+          }
+        ));
+      }
 
-      const logObject = InvocationLogs.parseFunctionLog(logMessages[0]);
-      expect(logObject).toHaveProperty(ARBITRARY_OBJECT_KEY);
-      const arbitrary = logObject[ARBITRARY_OBJECT_KEY] as APIGatewayAuthorizerResult;
-      expect(arbitrary.principalId).toBe(ARBITRARY_OBJECT_DATA);
-      expect(arbitrary.policyDocument).toEqual(expect.objectContaining(
-        {
-          Version: 'Version' + ARBITRARY_OBJECT_DATA,
-          Statement: [{
-            Effect: 'Effect' + ARBITRARY_OBJECT_DATA,
-            Action: 'Action' + ARBITRARY_OBJECT_DATA,
-            Resource: 'Resource' + ARBITRARY_OBJECT_DATA
-          }]
-        }
-      ));
     }, TEST_CASE_TIMEOUT);
   });
 
-  describe('Logging an error object', () => {
-    it('should log error only once', async () => {
-      const logMessages = invocationLogs[0].getFunctionLogs(LEVEL.ERROR)
-        .filter(message => message.includes(ERROR_MSG));
+  describe('X-Ray Trace ID injection', () => {
 
-      expect(logMessages).toHaveLength(1);
+    it('should inject & parse the X-Ray Trace ID of the current invocation into every log', async () => {
 
-      const logObject = InvocationLogs.parseFunctionLog(logMessages[0]);
-      const errorObj = logObject.error;
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+        
+        // Check that the X-Ray Trace ID is logged on every log
+        const traceIds: string[] = [];
+        for (const message of logMessages) {
+          const log = InvocationLogs.parseFunctionLog(message);
+          expect(log).toHaveProperty('xray_trace_id');
+          expect(log.xray_trace_id).toMatch(XRAY_TRACE_ID_REGEX);
+          traceIds.push(log.xray_trace_id as string);
+        }
+      }
 
-      expect(errorObj.name).toBe('Error');
-      expect(errorObj.message).toBe(ERROR_MSG);
-      expect(errorObj.stack).toBeDefined();
     }, TEST_CASE_TIMEOUT);
+
   });
 
   afterAll(async () => {

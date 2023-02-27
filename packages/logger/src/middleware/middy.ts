@@ -35,9 +35,9 @@ const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions
   const persistentAttributes: LogAttributes[] = [];
 
   const injectLambdaContextBefore = async (request: MiddyLikeRequest): Promise<void> => {
-    loggers.forEach((logger: Logger) => {
+    loggers.forEach((logger: Logger, index: number) => {
       if (options && options.clearState === true) {
-        persistentAttributes.push({ ...logger.getPersistentLogAttributes() });
+        persistentAttributes[index] = ({ ...logger.getPersistentLogAttributes() });
       }
       Logger.injectLambdaContextBefore(logger, request.event, request.context, options);
     });

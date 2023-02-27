@@ -1235,11 +1235,10 @@ describe('Class: Logger', () => {
     test('it awaits the decorated method correctly', async () => {
 
       // Prepare
-      const injectLambdaContextAfterOrOnErrorMock = jest.fn().mockReturnValue('worked');
-      // Temporarily override the cleanup static method so that we can "spy" on it.
-      // This method is always called after the handler has returned in the decorator
-      // implementation.
-      Logger.injectLambdaContextAfterOrOnError = injectLambdaContextAfterOrOnErrorMock;
+      const injectLambdaContextAfterOrOnErrorSpy = jest.spyOn(
+        Logger,
+        'injectLambdaContextAfterOrOnError'
+      );
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
@@ -1248,7 +1247,7 @@ describe('Class: Logger', () => {
         @logger.injectLambdaContext()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        public async handler<TResult>(_event: unknown, _context: Context, _callback: Callback<TResult>): void | Promise<TResult> {
+        public async handler(_event: unknown, _context: unknown): Promise<unknown> {
           await this.dummyMethod();
           logger.info('This is a DEBUG log');
 
@@ -1259,18 +1258,78 @@ describe('Class: Logger', () => {
           return;
         }
       }
-
-      // Act
       const lambda = new LambdaFunction();
       const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
+
+      // Act
+      await handler({}, context);
 
       // Assess
       expect(consoleSpy).toBeCalledTimes(1);
-      // Here we assert that the logger.info method is called before the cleanup function that should awlays 
-      // be called after the handler has returned. If logger.info is called after it means the decorator is
-      // NOT awaiting the handler which would cause the test to fail.
-      expect(consoleSpy.mock.invocationCallOrder[0]).toBeLessThan(injectLambdaContextAfterOrOnErrorMock.mock.invocationCallOrder[0]);
+      // Here we assert that the logger.info method is called before the cleanup function that should always 
+      // be called ONLY after the handler has returned. If logger.info is called after the cleanup function
+      // it means the decorator is NOT awaiting the handler which would cause the test to fail.
+      expect(consoleSpy.mock.invocationCallOrder[0])
+        .toBeLessThan(injectLambdaContextAfterOrOnErrorSpy.mock.invocationCallOrder[0]);
+
+    });
+
+    test('when logEvent and clearState are both TRUE, and the logger has persistent attributes, any key added in the handler is cleared properly', async () => {
+
+      // Prepare
+      const logger = new Logger({
+        persistentLogAttributes: {
+          version: '1.0.0',
+        }
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info').mockImplementation();
+      class LambdaFunction implements LambdaInterface {
+        @logger.injectLambdaContext({ clearState: true, logEvent: true })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler(event: { foo: string }, _context: unknown): Promise<unknown> {
+          logger.appendKeys({ foo: event.foo });
+
+          return;
+        }
+      }
+      const lambda = new LambdaFunction();
+      const handler = lambda.handler.bind(lambda);
+
+      // Act
+      await handler({ foo: 'bar' }, {} as Context);
+      await handler({ foo: 'baz' }, {} as Context);
+      await handler({ foo: 'biz' }, {} as Context);
+      await handler({ foo: 'buz' }, {} as Context);
+      await handler({ foo: 'boz' }, {} as Context);
+
+      expect(consoleSpy).toBeCalledTimes(5);
+      for (let i = 1; i === 5; i++) {
+        expect(consoleSpy).toHaveBeenNthCalledWith(
+          i,
+          expect.stringContaining('\"message\":\"Lambda invocation event\"'),
+        );
+        expect(consoleSpy).toHaveBeenNthCalledWith(
+          i,
+          expect.stringContaining('\"version\":\"1.0.0\"'),
+        );
+      }
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        2,
+        expect.not.stringContaining('\"foo\":\"bar\"')
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        3,
+        expect.not.stringContaining('\"foo\":\"baz\"')
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        4,
+        expect.not.stringContaining('\"foo\":\"biz\"')
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        5,
+        expect.not.stringContaining('\"foo\":\"buz\"')
+      );
 
     });
 

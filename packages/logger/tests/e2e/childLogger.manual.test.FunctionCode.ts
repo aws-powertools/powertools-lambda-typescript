@@ -1,15 +1,17 @@
 import { Logger } from '../../src';
-import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { Context } from 'aws-lambda';
+import { LogLevel } from '../../src/types';
+import { TestEvent, TestOutput } from '../helpers/types';
 
-const PARENT_PERSISTENT_KEY = process.env.PARENT_PERSISTENT_KEY;
-const PARENT_PERSISTENT_VALUE = process.env.PARENT_PERSISTENT_VALUE;
-const PARENT_LOG_MSG = process.env.PARENT_LOG_MSG;
-const CHILD_LOG_MSG = process.env.PARENT_LOG_MSG;
-const CHILD_LOG_LEVEL = process.env.CHILD_LOG_LEVEL;
+const PERSISTENT_KEY = process.env.PERSISTENT_KEY || 'persistentKey';
+const PERSISTENT_VALUE = process.env.ERSISTENT_VALUE || 'persistentValue';
+const PARENT_LOG_MSG = process.env.PARENT_LOG_MSG || 'parent-only-log-msg';
+const CHILD_LOG_MSG = process.env.CHILD_LOG_MSG || 'child-only-log-msg';
+const CHILD_LOG_LEVEL = (process.env.CHILD_LOG_LEVEL || 'warn') as LogLevel;
 
 const parentLogger = new Logger({
   persistentLogAttributes: {
-    [PARENT_PERSISTENT_KEY]: PARENT_PERSISTENT_VALUE,
+    [PERSISTENT_KEY]: PERSISTENT_VALUE,
   }
 });
 
@@ -18,7 +20,7 @@ const childLogger = parentLogger.createChild({
   logLevel: CHILD_LOG_LEVEL,
 });
 
-export const handler = async (event: APIGatewayProxyEvent, context: Context): Promise<{requestId: string}> => {
+export const handler = async (_event: TestEvent, context: Context): TestOutput => {
   parentLogger.addContext(context);
   
   childLogger.info(CHILD_LOG_MSG);

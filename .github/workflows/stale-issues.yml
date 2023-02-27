@@ -21,10 +21,10 @@ jobs:
           # Label and close type when a stale issue is finally closed
           close-issue-label: status/rejected
           close-issue-reason: not_planned
-          # Exempt any issue that hasn't been triaged yet, or that is clearly marked
+          # Exempt any issue that hasn't been triaged yet, or that is clearly labeled
           exempt-issue-labels: triage,status/confirmed,status/blocked,status/on-hold,status/completed
-          # Include only issues where all these labels are present
-          any-of-issue-labels: need-more-information,status/discussing
+          # Include only issues where any of these labels are present
+          any-of-issue-labels: need-more-information,status/discussing,status/pending-close-response-required
           # Settings specific to issues
           days-before-issue-stale: 14
           days-before-issue-close: 7

@@ -1,46 +1,35 @@
 name: "Close stale issues"
 
-# Controls when the action will run.
-
 on:
   schedule:
     - cron: "0 0 * * *"
 
 jobs:
-  cleanup:
+  check-issues:
     runs-on: ubuntu-latest
-    name: Stale issue job
+    permissions:
+      issues: write
     steps:
-      - uses: aws-actions/stale-issue-cleanup@e1cf8a5d54b4ff316c76f5356079d3a8df84137e
+      - uses: actions/stale@v7
         with:
-          # Setting messages to an empty string will cause the automation to skip
-          # that category
-          ancient-issue-message: Greetings! We’re closing this issue because it has been open a long time and hasn’t been updated in a while and may not be getting the attention it deserves. We encourage you to check if this is still an issue in the latest release and if you find that this is still a problem, please feel free to comment or open a new issue.
-          stale-issue-message: This issue has not received a response in 2 weeks. If you still think there is a problem, please leave a comment to avoid the issue from automatically closing.
-          stale-pr-message: This PR has not received a response in 2 weeks. If you still think there is a problem, please leave a comment to avoid the PR from automatically closing.
-          # These labels are required
-          stale-issue-label: closing-soon
-          exempt-issue-label: no-autoclose
-          stale-pr-label: closing-soon
-          exempt-pr-label: pr/needs-review
-          response-requested-label: response-requested
-
-          # Don't set closed-for-staleness label to skip closing very old issues
-          # regardless of label
-          closed-for-staleness-label: closed-for-staleness
-
-          # Issue timing
-          days-before-stale: 14
-          days-before-close: 7
-          days-before-ancient: 365
-
-          # If you don't want to mark a issue as being ancient based on a
-          # threshold of "upvotes", you can set this here. An "upvote" is
-          # the total number of +1, heart, hooray, and rocket reactions
-          # on an issue.
-          minimum-upvotes-to-exempt: 5
-
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          loglevel: DEBUG
-          # Set dry-run to true to not perform label or close actions.
-          # dry-run: true
+          stale-issue-message: "This issue has not received a response in 2 weeks. If you still think there is a problem, please leave a comment to avoid the issue from automatically closing."
+          close-issue-message: "Greetings! We are closing this issue because it has been open a long time and hasn’t been updated in a while and may not be getting the attention it deserves. We encourage you to check if this is still an issue in the latest release and if you find that this is still a problem, please feel free to comment or reopen the issue."
+          # Label applied or removed when an issue becomes stale
+          stale-issue-label: status/pending-close-response-required
+          remove-stale-when-updated: true
+          # Label and close type when a stale issue is finally closed
+          close-issue-label: status/rejected
+          close-issue-reason: not_planned
+          # Exempt any issue that hasn't been triaged yet, or that is clearly labeled
+          exempt-issue-labels: triage,status/confirmed,status/blocked,status/on-hold,status/completed
+          # Include only issues where any of these labels are present (aka only issues that need more info from the customer)
+          # that are either under discussion, but no info/answer has been provided in 2 weeks, or that were already marked
+          # as stale 
+          any-of-issue-labels: need-more-information,status/discussing,status/pending-close-response-required
+          # Settings specific to issues
+          days-before-issue-stale: 14
+          days-before-issue-close: 7
+          # Set to ignore PRs
+          days-before-pr-stale: -1
+          days-before-pr-close: -1

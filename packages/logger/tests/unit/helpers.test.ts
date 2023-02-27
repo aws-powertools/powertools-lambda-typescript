@@ -3,7 +3,6 @@
  *
  * @group unit/logger/all
  */
-
 import { Console } from 'console';
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
@@ -197,6 +196,7 @@ describe('Helper: createLogger function', () => {
         logLevel: 'DEBUG',
         logFormatter: {},
       }));
+
     });
 
     test('when a custom uppercase logLevel is passed, returns a Logger instance with the correct properties', () => {
@@ -293,6 +293,7 @@ describe('Helper: createLogger function', () => {
           serviceName: 'hello-world',
         },
       });
+
     });
 
     test('when a custom sampleRateValue is passed, returns a Logger instance with the correct properties', () => {
@@ -321,6 +322,7 @@ describe('Helper: createLogger function', () => {
         logLevel: 'DEBUG',
         logFormatter: {},
       }));
+
     });
 
     test('when a custom customConfigService is passed, returns a Logger instance with the correct properties', () => {
@@ -376,6 +378,7 @@ describe('Helper: createLogger function', () => {
         logLevel: 'INFO',
         logFormatter: {},
       }));
+
     });
 
     test('when custom persistentLogAttributes is passed, returns a Logger instance with the correct properties', () => {
@@ -418,6 +421,7 @@ describe('Helper: createLogger function', () => {
         logLevel: 'DEBUG',
         logFormatter: {},
       }));
+
     });
 
     test('when a custom environment is passed, returns a Logger instance with the correct properties', () => {
@@ -446,7 +450,9 @@ describe('Helper: createLogger function', () => {
         logLevel: 'DEBUG',
         logFormatter: {},
       }));
+
     });
+
   });
 
 });

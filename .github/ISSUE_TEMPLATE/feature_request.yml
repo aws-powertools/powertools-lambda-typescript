@@ -7,8 +7,6 @@ body:
     attributes:
       value: |
         Thank you for taking the time to suggest an idea to the Lambda Powertools project.
-
-        *Future readers*: Please react with 👍 and your use case to help us understand customer demand.
   - type: textarea
     id: problem
     attributes:
@@ -38,7 +36,7 @@ body:
       options:
         - label: This feature request meets [Lambda Powertools Tenets](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets)
           required: true
-        - label: Should this be considered in other Lambda Powertools languages? i.e. [Python](https://github.com/awslabs/aws-lambda-powertools-python/), [Java](https://github.com/awslabs/aws-lambda-powertools-java/)
+        - label: Should this be considered in other Lambda Powertools languages? i.e. [Python](https://github.com/awslabs/aws-lambda-powertools-python/), [Java](https://github.com/awslabs/aws-lambda-powertools-java/), and [.NET](https://github.com/awslabs/aws-lambda-powertools-dotnet/)
           required: false
   - type: markdown
     attributes:
@@ -46,3 +44,9 @@ body:
         ---
 
         **Disclaimer**: After creating an issue, please wait until it is triaged and confirmed by a maintainer before implementing it. This will reduce amount of rework and the chance that a pull request gets rejected.
+  - type: input
+    id: notes
+    attributes:
+      label: Future readers
+      description: Please not edit this field
+      value: "Please react with 👍 and your use case to help us understand customer demand."

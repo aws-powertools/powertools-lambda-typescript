@@ -1,0 +1,124 @@
+name: Deploy layer to all regions
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      latest_published_version:
+        description: "Latest npm published version to rebuild corresponding layer for, e.g. v1.0.2"
+        default: "v1.0.2"
+        required: true
+
+  workflow_call:
+    inputs:
+      latest_published_version:
+        type: string
+        description: "Latest npm published version to rebuild latest docs for, e.g. 2.0.0, 2.0.0a1 (pre-release)"
+        required: true
+      pre_release:
+        description: "Publishes documentation using a pre-release tag (2.0.0a1)."
+        default: false
+        type: boolean
+        required: false
+
+jobs:
+  # Build layer by running cdk synth in layer-publisher directory and uploading cdk.out for deployment
+  build-layer:
+    runs-on: ubuntu-latest
+    if: ${{ (github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch') }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Set release notes tag
+        run: |
+          RELEASE_INPUT=${{ inputs.latest_published_version }}
+          LATEST_TAG=$(git describe --tag --abbrev=0)
+          RELEASE_TAG_VERSION=${RELEASE_INPUT:-$LATEST_TAG}
+          echo "RELEASE_TAG_VERSION=${RELEASE_TAG_VERSION:1}" >> $GITHUB_ENV
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        # We can skip the installation if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
+      - name: Create layer files
+        run: |
+          export VERSION=$RELEASE_TAG_VERSION
+          bash .github/scripts/setup_tmp_layer_files.sh
+      - name: CDK build
+        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
+      - name: zip output
+        run: zip -r cdk.out.zip cdk.out
+      - name: Archive CDK artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: cdk-layer-artifact
+          path: layers/cdk.out.zip
+
+  # Deploy layer to all regions in beta account
+  deploy-beta:
+    needs:
+      - build-layer
+    uses: ./.github/workflows/reusable_deploy_layer_stack.yml
+    with:
+      stage: "BETA"
+      artifact-name: "cdk-layer-artifact"
+      latest_published_version: ${{ inputs.latest_published_version }}
+    secrets:
+      target-account-role: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
+
+  # Deploy layer to all regions in prod account
+  deploy-prod:
+    needs:
+      - deploy-beta
+    uses: ./.github/workflows/reusable_deploy_layer_stack.yml
+    with:
+      stage: "PROD"
+      artifact-name: "cdk-layer-artifact"
+      latest_published_version: ${{ inputs.latest_published_version }}
+    secrets:
+      target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
+
+  prepare_docs_alias:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      DOCS_ALIAS: ${{ steps.set-alias.outputs.DOCS_ALIAS }}
+    steps:
+      - name: Set docs alias
+        id: set-alias
+        run: |
+          DOCS_ALIAS=latest
+          if [[ "${{ inputs.pre_release }}" == true ]] ; then
+            DOCS_ALIAS=alpha
+          fi
+          echo DOCS_ALIAS="$DOCS_ALIAS" >> "$GITHUB_OUTPUT"
+
+  release-docs:
+    needs: [ prod, prepare_docs_alias ]
+    permissions:
+      contents: write
+      pages: write
+    uses: ./.github/workflows/reusable_publish_docs.yml
+    with:
+      version: ${{ inputs.latest_published_version }}
+      alias: ${{ needs.prepare_docs_alias.outputs.DOCS_ALIAS }}
+      detached_mode: true

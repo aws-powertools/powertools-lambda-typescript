@@ -3,7 +3,6 @@
  *
  * @group unit/logger/all
  */
-
 import { EnvironmentVariablesService } from '../../../src/config';
 
 describe('Class: EnvironmentVariablesService', () => {
@@ -21,7 +20,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
   describe('Method: getAwsRegion', () => {
 
-    test('It returns the value of the environment variable AWS_REGION', () => {
+    test('it returns the value of the environment variable AWS_REGION', () => {
 
       // Prepare
       process.env.AWS_REGION = 'us-east-1';
@@ -32,13 +31,14 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('us-east-1');
+
     });
 
   });
 
   describe('Method: getCurrentEnvironment', () => {
 
-    test('It returns the value of the environment variable AWS_REGION', () => {
+    test('it returns the value of the environment variable AWS_REGION', () => {
 
       // Prepare
       process.env.ENVIRONMENT = 'stage';
@@ -55,7 +55,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
   describe('Method: getFunctionMemory', () => {
 
-    test('It returns the value of the environment variable AWS_LAMBDA_FUNCTION_MEMORY_SIZE', () => {
+    test('it returns the value of the environment variable AWS_LAMBDA_FUNCTION_MEMORY_SIZE', () => {
 
       // Prepare
       process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE = '123456';
@@ -66,13 +66,14 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toBe(123456);
+
     });
 
   });
 
   describe('Method: getFunctionName', () => {
 
-    test('It returns the value of the environment variable AWS_LAMBDA_FUNCTION_NAME', () => {
+    test('it returns the value of the environment variable AWS_LAMBDA_FUNCTION_NAME', () => {
 
       // Prepare
       process.env.AWS_LAMBDA_FUNCTION_NAME = 'my-lambda-function';
@@ -83,13 +84,14 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('my-lambda-function');
+
     });
 
   });
 
   describe('Method: getFunctionVersion', () => {
 
-    test('It returns the value of the environment variable AWS_LAMBDA_FUNCTION_VERSION', () => {
+    test('it returns the value of the environment variable AWS_LAMBDA_FUNCTION_VERSION', () => {
 
       // Prepare
       process.env.AWS_LAMBDA_FUNCTION_VERSION = '1.4.0';
@@ -100,13 +102,14 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('1.4.0');
+
     });
 
   });
 
   describe('Method: getLogEvent', () => {
 
-    test('It returns true if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "true"', () => {
+    test('it returns true if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "true"', () => {
 
       // Prepare
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
@@ -117,9 +120,10 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(true);
+
     });
 
-    test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "false"', () => {
+    test('it returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "false"', () => {
 
       // Prepare
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'false';
@@ -130,9 +134,10 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
-    test('It returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "somethingsilly"', () => {
+    test('it returns false if the environment variable POWERTOOLS_LOGGER_LOG_EVENT is "somethingsilly"', () => {
 
       // Prepare
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'somethingsilly';
@@ -143,13 +148,14 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
   });
 
   describe('Method: getLogLevel', () => {
 
-    test('It returns the value of the environment variable LOG_LEVEL', () => {
+    test('it returns the value of the environment variable LOG_LEVEL', () => {
 
       // Prepare
       process.env.LOG_LEVEL = 'ERROR';
@@ -160,13 +166,14 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('ERROR');
+
     });
 
   });
 
   describe('Method: getSampleRateValue', () => {
 
-    test('It returns the value of the environment variable POWERTOOLS_LOGGER_SAMPLE_RATE', () => {
+    test('it returns the value of the environment variable POWERTOOLS_LOGGER_SAMPLE_RATE', () => {
 
       // Prepare
       process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '0.01';
@@ -177,13 +184,14 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(0.01);
+
     });
 
   });
 
   describe('Method: isDevMode', () => {
 
-    test('It returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
+    test('it returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
 
       // Prepare
       process.env.POWERTOOLS_DEV = 'true';
@@ -194,9 +202,10 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(true);
+
     });
 
-    test('It returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
+    test('it returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
 
       // Prepare
       process.env.POWERTOOLS_DEV = 'false';
@@ -207,9 +216,10 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
-    test('It returns false if the environment variable POWERTOOLS_DEV is NOT set', () => {
+    test('it returns false if the environment variable POWERTOOLS_DEV is NOT set', () => {
 
       // Prepare
       process.env.POWERTOOLS_DEV = 'somethingsilly';
@@ -220,9 +230,10 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
-    test('It returns false if the environment variable POWERTOOLS_DEV is "somethingsilly"', () => {
+    test('it returns false if the environment variable POWERTOOLS_DEV is "somethingsilly"', () => {
 
       // Prepare
       process.env.POWERTOOLS_DEV = 'somethingsilly';
@@ -233,6 +244,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual(false);
+
     });
 
   });
@@ -253,7 +265,7 @@ describe('Class: EnvironmentVariablesService', () => {
       [ '0', false ]
     ];
 
-    test.each(valuesToTest)('It takes string "%s" and returns %s', (input, output) => {
+    test.each(valuesToTest)('it takes string "%s" and returns %s', (input, output) => {
       // Prepare
       const service = new EnvironmentVariablesService();
       // Act

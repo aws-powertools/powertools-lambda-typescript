@@ -6,5 +6,3 @@ cd examples/sam && npm run lint-fix
 cd ../..
 cd examples/cdk && npm run lint-fix
 cd ../..
-cd layer-publisher && npm run lint-fix
-cd ..

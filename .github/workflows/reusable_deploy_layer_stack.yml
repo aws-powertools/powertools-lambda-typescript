@@ -8,21 +8,25 @@ on:
   workflow_call:
     inputs:
       stage:
+        description: "Deployment stage (BETA, PROD)"
         required: true
         type: string
-      artefact-name:
+      artifact-name:
+        description: "CDK Layer artifact name to download"
+        required: true
+        type: string
+      latest_published_version:
+        description: "Latest version that is published"
         required: true
         type: string
     secrets:
       target-account-role:
         required: true
 
+
 jobs:
   deploy-cdk-stack:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./layer-publisher
     strategy:
       fail-fast: false
       matrix:
@@ -30,6 +34,7 @@ jobs:
           [
             "af-south-1",
             "eu-central-1",
+            "eu-central-2",
             "us-east-1",
             "us-east-2",
             "us-west-1",
@@ -38,24 +43,26 @@ jobs:
             "ap-south-1",
             "ap-northeast-1",
             "ap-northeast-2",
+            "ap-northeast-3",
             "ap-southeast-1",
             "ap-southeast-2",
+            "ap-southeast-3",
+            "ap-southeast-4",
             "ca-central-1",
             "eu-west-1",
             "eu-west-2",
             "eu-west-3",
             "eu-south-1",
+            "eu-south-2",
             "eu-north-1",
             "sa-east-1",
-            "ap-southeast-3",
-            "ap-northeast-3",
             "me-south-1",
           ]
     steps:
       - name: checkout
         uses: actions/checkout@v3
       - name: aws credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@186395a8644e48f35e7b453e8a7128d9a3948296
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.target-account-role }}
@@ -63,19 +70,45 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "18"
-      - name: install cdk and deps
-        run: |
-          npm install -g aws-cdk@2.55.0
-          cdk --version
-      - name: install deps
-        run: |
-          npm ci
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
+        with:
+          path: "./node_modules"
+          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
+          # if one of them changes the cache is invalidated/discarded
+          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        # We can skip the installation if there was a cache hit
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
+        run: npm ci --foreground-scripts
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ inputs.artefact-name }}
-          path: layer-publisher
-      - name: unzip artefact
+          name: ${{ inputs.artifact-name }}
+          path: layers
+      - name: Unzip artifact
         run: unzip cdk.out.zip
-      - name: CDK Deploy Layer
-        run: cdk deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose
+      - name: Deploy Layer
+        run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose --outputs-file cdk-outputs.json
+      - name: Store latest Layer ARN
+        if: ${{ inputs.stage == 'PROD' }}
+        run: |
+          mkdir cdk-layer-stack
+          jq -r -c '.LayerPublisherStack.LatestLayerArn' cdk-outputs.json > cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+          cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+      - name: Save Layer ARN artifact
+        if: ${{ inputs.stage == 'PROD' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: cdk-layer-stack
+          path: ./layer/cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.
+          if-no-files-found: error
+          retention-days: 1
+  update_v2_layer_arn_docs:
+    needs: deploy-cdk-stack
+    if: ${{ inputs.stage == 'PROD' }}
+    uses: ./.github/workflows/reusable_update_layer_arn_docs.yml
+    with:
+      latest_published_version: ${{ inputs.latest_published_version }}

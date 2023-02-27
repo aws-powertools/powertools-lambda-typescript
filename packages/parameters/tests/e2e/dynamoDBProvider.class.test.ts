@@ -6,8 +6,6 @@
 import path from 'path';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, Aspects } from 'aws-cdk-lib';
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { marshall } from '@aws-sdk/util-dynamodb';
 import { v4 } from 'uuid';
 import { 
   generateUniqueName, 
@@ -24,7 +22,7 @@ import {
   TEARDOWN_TIMEOUT, 
   TEST_CASE_TIMEOUT 
 } from './constants';
-import { createDynamoDBTable } from '../helpers/parametersUtils';
+import { createDynamoDBTable, putDynamoDBItem } from '../helpers/parametersUtils';
 
 const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
@@ -36,8 +34,6 @@ const uuid = v4();
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider');
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'dynamoDBProvider');
 const lambdaFunctionCodeFile = 'dynamoDBProvider.class.test.functionCode.ts';
-
-const dynamoDBClient = new DynamoDBClient({});
 
 const invocationCount = 1;
 
@@ -209,101 +205,121 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       ddbTabelGetMultipleCustomKeys,
     ]));
 
-    // Deploy the stack
-    await deployStack(integTestApp, stack);
-
     // Seed tables with test data
     // Test 1
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGet,
-      Item: marshall({
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test1',
+      table: ddbTableGet,
+      item: {
         id: 'my-param',
         value: 'foo',
-      }),
-    }));
+      },
+    });
 
     // Test 2
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGetMultiple,
-      Item: marshall({
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test2-a',
+      table: ddbTableGetMultiple,
+      item: {
         id: 'my-params',
         sk: 'config',
         value: 'bar',
-      }),
-    }));
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGetMultiple,
-      Item: marshall({
+      },
+    });
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test2-b',
+      table: ddbTableGetMultiple,
+      item: {
         id: 'my-params',
         sk: 'key',
         value: 'baz',
-      }),
-    }));
+      },
+    });
 
     // Test 3
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGetCustomkeys,
-      Item: marshall({
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test3',
+      table: ddbTableGetCustomKeys,
+      item: {
         [keyAttr]: 'my-param',
         [valueAttr]: 'foo',
-      }),
-    }));
+      },
+    });
 
     // Test 4
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGetMultipleCustomkeys,
-      Item: marshall({
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test4-a',
+      table: ddbTabelGetMultipleCustomKeys,
+      item: {
         [keyAttr]: 'my-params',
         [sortAttr]: 'config',
         [valueAttr]: 'bar',
-      }),
-    }));
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGetMultipleCustomkeys,
-      Item: marshall({
+      },
+    });
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test4-b',
+      table: ddbTabelGetMultipleCustomKeys,
+      item: {
         [keyAttr]: 'my-params',
         [sortAttr]: 'key',
         [valueAttr]: 'baz',
-      }),
-    }));
+      },
+    });
     
     // Test 5
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGet,
-      Item: marshall({
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test5',
+      table: ddbTableGet,
+      item: {
         id: 'my-param-json',
         value: JSON.stringify({ foo: 'bar' }),
-      }),
-    }));
+      },
+    });
 
     // Test 6
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGet,
-      Item: marshall({
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test6',
+      table: ddbTableGet,
+      item: {
         id: 'my-param-binary',
         value: 'YmF6', // base64 encoded 'baz'
-      }),
-    }));
-
+      },
+    });
+    
     // Test 7
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGetMultiple,
-      Item: marshall({
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test7-a',
+      table: ddbTableGetMultiple,
+      item: {
         id: 'my-encoded-params',
         sk: 'config.json',
         value: JSON.stringify({ foo: 'bar' }),
-      }),
-    }));
-    await dynamoDBClient.send(new PutItemCommand({
-      TableName: tableGetMultiple,
-      Item: marshall({
+      },
+    });
+    putDynamoDBItem({
+      stack,
+      id: 'my-param-test7-b',
+      table: ddbTableGetMultiple,
+      item: {
         id: 'my-encoded-params',
         sk: 'key.binary',
         value: 'YmF6', // base64 encoded 'baz'
-      }),
-    }));
+      },
+    });
 
     // Test 8 & 9 use the same items as Test 1
+
+    // Deploy the stack
+    await deployStack(integTestApp, stack);
 
     // and invoke the Lambda function
     invocationLogs = await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');

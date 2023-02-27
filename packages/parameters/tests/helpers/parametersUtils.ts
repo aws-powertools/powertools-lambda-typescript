@@ -1,11 +1,20 @@
-import { Stack, RemovalPolicy, CustomResource, Duration } from 'aws-cdk-lib';
-import { Provider } from 'aws-cdk-lib/custom-resources';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Stack, RemovalPolicy } from 'aws-cdk-lib';
+import { PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
 import { StringParameter, IStringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Table, TableProps, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
+import {
+  CfnApplication,
+  CfnConfigurationProfile,
+  CfnDeployment,
+  CfnDeploymentStrategy,
+  CfnEnvironment,
+  CfnHostedConfigurationVersion,
+} from 'aws-cdk-lib/aws-appconfig';
+import {
+  AwsCustomResource,
+  AwsCustomResourcePolicy
+} from 'aws-cdk-lib/custom-resources';
+import { marshall } from '@aws-sdk/util-dynamodb';
 
 export type CreateDynamoDBTableOptions = {
   stack: Stack
@@ -23,76 +32,179 @@ const createDynamoDBTable = (options: CreateDynamoDBTableOptions): Table => {
   return new Table(stack, id, props);
 };
 
-export type CreateSecureStringProviderOptions = {
+export type AppConfigResourcesOptions = {
   stack: Stack
-  parametersPrefix: string
+  applicationName: string
+  environmentName: string
+  deploymentStrategyName: string
 };
 
-const createSecureStringProvider = (options: CreateSecureStringProviderOptions): Provider => {
-  const { stack, parametersPrefix } = options;
+type AppConfigResourcesOutput = {
+  application: CfnApplication
+  environment: CfnEnvironment
+  deploymentStrategy: CfnDeploymentStrategy
+};
 
-  const ssmSecureStringHandlerFn = new NodejsFunction(
+/**
+ * Utility function to create the base resources for an AppConfig application.
+ */
+const createBaseAppConfigResources = (options: AppConfigResourcesOptions): AppConfigResourcesOutput => {
+  const {
     stack,
-    'ssm-securestring-handler',
+    applicationName,
+    environmentName,
+    deploymentStrategyName,
+  } = options;
+
+  // create a new app config application.
+  const application = new CfnApplication(
+    stack,
+    'application',
     {
-      entry: 'tests/helpers/ssmSecureStringCdk.ts',
-      handler: 'handler',
-      bundling: {
-        minify: true,
-        sourceMap: true,
-        target: 'es2020',
-        externalModules: [],
-      },
-      runtime: Runtime.NODEJS_18_X,
-      timeout: Duration.seconds(15),
-    });
-  ssmSecureStringHandlerFn.addToRolePolicy(
-    new PolicyStatement({
-      actions: [
-        'ssm:PutParameter',
-        'ssm:DeleteParameter',
-      ],
-      resources: [
-        `arn:aws:ssm:${stack.region}:${stack.account}:parameter/${parametersPrefix}*`,
-      ],
-    }),
+      name: applicationName,
+    }
   );
 
-  return new Provider(stack, 'ssm-secure-string-provider', {
-    onEventHandler: ssmSecureStringHandlerFn,
-    logRetention: RetentionDays.ONE_DAY,
+  const environment = new CfnEnvironment(stack, 'environment', {
+    name: environmentName,
+    applicationId: application.ref,
+  });
+
+  const deploymentStrategy = new CfnDeploymentStrategy(stack, 'deploymentStrategy', {
+    name: deploymentStrategyName,
+    deploymentDurationInMinutes: 0,
+    growthFactor: 100,
+    replicateTo: 'NONE',
+    finalBakeTimeInMinutes: 0,
+  });
+
+  return {
+    application,
+    environment,
+    deploymentStrategy,
+  };
+};
+
+export type CreateAppConfigConfigurationProfileOptions = {
+  stack: Stack
+  name: string
+  application: CfnApplication
+  environment: CfnEnvironment
+  deploymentStrategy: CfnDeploymentStrategy
+  type: 'AWS.Freeform' | 'AWS.AppConfig.FeatureFlags'
+  content: {
+    contentType: 'application/json' | 'application/x-yaml' | 'text/plain'
+    content: string
+  }
+};
+
+/**
+ * Utility function to create an AppConfig configuration profile and deployment.
+ */
+const createAppConfigConfigurationProfile = (options: CreateAppConfigConfigurationProfileOptions): CfnDeployment => {
+  const {
+    stack,
+    name,
+    application,
+    environment,
+    deploymentStrategy,
+    type,
+    content,
+  } = options;
+  
+  const configProfile = new CfnConfigurationProfile(stack, `${name}-configProfile`, {
+    name,
+    applicationId: application.ref,
+    locationUri: 'hosted',
+    type,
+  });
+
+  const configVersion = new CfnHostedConfigurationVersion(stack, `${name}-configVersion`, {
+    applicationId: application.ref,
+    configurationProfileId: configProfile.ref,
+    ...content
+  });
+
+  return new CfnDeployment(stack, `${name}-deployment`, {
+    applicationId: application.ref,
+    configurationProfileId: configProfile.ref,
+    configurationVersion: configVersion.ref,
+    deploymentStrategyId: deploymentStrategy.ref,
+    environmentId: environment.ref,
   });
 };
 
 export type CreateSSMSecureStringOptions = {
   stack: Stack
-  provider: Provider
   id: string
   name: string
   value: string
 };
 
 const createSSMSecureString = (options: CreateSSMSecureStringOptions): IStringParameter => {
-  const { stack, provider, id, name, value } = options;
+  const { stack, id, name, value } = options;
 
-  new CustomResource(stack, `custom-${id}`, {
-    serviceToken: provider.serviceToken,
-    properties: {
-      Name: name,
-      Value: value,
+  const paramCreator = new AwsCustomResource(stack, `create-${id}`, {
+    onCreate: {
+      service: 'SSM',
+      action: 'putParameter',
+      parameters: {
+        Name: name,
+        Value: value,
+        Type: 'SecureString',
+      },
+      physicalResourceId: PhysicalResourceId.of(id),
     },
+    onDelete: {
+      service: 'SSM',
+      action: 'deleteParameter',
+      parameters: {
+        Name: name,
+      },
+    },
+    policy: AwsCustomResourcePolicy.fromSdkCalls({
+      resources: AwsCustomResourcePolicy.ANY_RESOURCE,
+    }),
   });
 
   const param = StringParameter.fromSecureStringParameterAttributes(stack, id, {
     parameterName: name,
   });
-  param.node.addDependency(provider);
+  param.node.addDependency(paramCreator);
 
   return param;
 };
 
+export type PutDynamoDBItemOptions = {
+  stack: Stack
+  id: string
+  table: Table
+  item: Record<string, unknown>
+};
+
+const putDynamoDBItem = async (options: PutDynamoDBItemOptions): Promise<void> => {
+  const { stack, id, table, item } = options;
+
+  new AwsCustomResource(stack, id, {
+    onCreate: {
+      service: 'DynamoDB',
+      action: 'putItem',
+      parameters: {
+        TableName: table.tableName,
+        Item: marshall(item),
+      },
+      physicalResourceId: PhysicalResourceId.of(id),
+    },
+    policy: AwsCustomResourcePolicy.fromSdkCalls({
+      resources: [table.tableArn],
+    }),
+  });
+};
+
 export {
   createDynamoDBTable,
+  createBaseAppConfigResources,
+  createAppConfigConfigurationProfile,
   createSSMSecureString,
-  createSecureStringProvider,
+  putDynamoDBItem,
 };

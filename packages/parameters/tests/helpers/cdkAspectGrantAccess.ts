@@ -1,9 +1,10 @@
-import { IAspect } from 'aws-cdk-lib';
+import { IAspect, Stack } from 'aws-cdk-lib';
 import { IConstruct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { CfnDeployment } from 'aws-cdk-lib/aws-appconfig';
 import { StringParameter, IStringParameter } from 'aws-cdk-lib/aws-ssm';
 
 const isStringParameterGeneric = (parameter: IConstruct): parameter is StringParameter | IStringParameter =>
@@ -24,9 +25,9 @@ const isStringParameterGeneric = (parameter: IConstruct): parameter is StringPar
  * @see {@link https://docs.aws.amazon.com/cdk/v2/guide/aspects.html CDK Docs - Aspects}
  */
 export class ResourceAccessGranter implements IAspect {
-  private readonly resources: Table[] | Secret[] | StringParameter[] | IStringParameter[];
+  private readonly resources: Table[] | Secret[] | StringParameter[] | IStringParameter[] | CfnDeployment[];
 
-  public constructor(resources: Table[] | Secret[] | StringParameter[] | IStringParameter[]) {
+  public constructor(resources: Table[] | Secret[] | StringParameter[] | IStringParameter[] | CfnDeployment[]) {
     this.resources = resources;
   }
 
@@ -35,7 +36,7 @@ export class ResourceAccessGranter implements IAspect {
     if (node instanceof NodejsFunction) {
 
       // Grant access to the resources
-      this.resources.forEach((resource: Table | Secret | StringParameter | IStringParameter) => {
+      this.resources.forEach((resource: Table | Secret | StringParameter | IStringParameter | CfnDeployment) => {
 
         if (resource instanceof Table) {
           resource.grantReadData(node);
@@ -45,6 +46,7 @@ export class ResourceAccessGranter implements IAspect {
           resource.grantRead(node);
         } else if (isStringParameterGeneric(resource)) {          
           resource.grantRead(node);
+          
           // Grant access also to the path of the parameter
           node.addToRolePolicy(
             new PolicyStatement({
@@ -54,6 +56,24 @@ export class ResourceAccessGranter implements IAspect {
               ],
               resources: [
                 resource.parameterArn.split(':').slice(0, -1).join(':'),
+              ],
+            }),
+          );
+        } else if (resource instanceof CfnDeployment) {
+          const appConfigConfigurationArn = Stack.of(node).formatArn({
+            service: 'appconfig',
+            resource: `application/${resource.applicationId}/environment/${resource.environmentId}/configuration/${resource.configurationProfileId}`,
+          });
+          
+          node.addToRolePolicy(
+            new PolicyStatement({
+              effect: Effect.ALLOW,
+              actions: [
+                'appconfig:StartConfigurationSession',
+                'appconfig:GetLatestConfiguration',
+              ],
+              resources: [
+                appConfigConfigurationArn,
               ],
             }),
           );

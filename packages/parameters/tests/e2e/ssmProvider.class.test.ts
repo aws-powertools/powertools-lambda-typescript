@@ -22,10 +22,7 @@ import {
   TEARDOWN_TIMEOUT, 
   TEST_CASE_TIMEOUT 
 } from './constants';
-import {
-  createSecureStringProvider,
-  createSSMSecureString
-} from '../helpers/parametersUtils';
+import { createSSMSecureString } from '../helpers/parametersUtils';
 
 const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
@@ -127,13 +124,6 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
       runtime,
     });
 
-    // Create Custom Resource provider:
-    // will be used to create some SSM parameters not supported by CDK
-    const provider = createSecureStringProvider({
-      stack,
-      parametersPrefix: `${RESOURCE_NAME_PREFIX}-${runtime}-${uuid.substring(0,5)}`
-    });
-
     // Create SSM parameters
     const parameterGetA = new StringParameter(stack, 'Param-a', {
       parameterName: paramA,
@@ -146,7 +136,6 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
 
     const parameterEncryptedA = createSSMSecureString({
       stack,
-      provider,
       id: 'Param-encrypted-a',
       name: paramEncryptedA,
       value: paramEncryptedAValue,
@@ -154,7 +143,6 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     
     const parameterEncryptedB = createSSMSecureString({
       stack,
-      provider,
       id: 'Param-encrypted-b',
       name: paramEncryptedB,
       value: paramEncryptedBValue,

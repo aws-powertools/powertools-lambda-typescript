@@ -9,6 +9,7 @@
   "scripts": {
     "test": "echo 'Not Applicable'",
     "test:e2e": "echo 'Not Applicable'",
+    "package": "echo 'Not applicable'",
     "build": "echo 'Not Applicable'",
     "lint": "eslint --ext .ts --no-error-on-unmatched-pattern logger tracer metrics parameters",
     "lint-fix": "eslint --fix --ext .ts --no-error-on-unmatched-pattern logger tracer metrics parameters"

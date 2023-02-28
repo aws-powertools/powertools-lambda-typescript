@@ -1978,44 +1978,4 @@ describe('Class: Logger', () => {
     });
 
   });
-
-  // // methods.each
-  // describe.each([
-  //   [ 'debug', 'DOES', true, 'DOES NOT', false, 'DOES NOT', false, 'DOES NOT', false ],
-  //   [ 'info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false ],
-  //   [ 'warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false ],
-  //   [ 'error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true ],
-  // ])(
-  //   'Method: %p',
-  //   (
-  //     method: string,
-  //   ) => {
-  
-  //   const methodOfLogger = method as keyof ClassThatLogs;
-  
-  //   describe(`Method: ${method}`, () => {
-  //     test(`it SILENT MODE in ${method}`, () => {
-  //     // Prepare
-  //     const logger: Logger = createLogger({
-  //       logLevel: 'SILENT',
-  //     });
-    
-  //     const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
-
-  //     // Act
-  //     logger[methodOfLogger]('foo');
-
-  //     // Assess
-  //     expect(consoleSpy).toBeCalledTimes(0);
-  //     // expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
-  //     //   level: "INFO",
-  //     //   message: 'foo',
-  //     //   service: 'hello-world',
-  //     //   timestamp: '2016-06-20T12:08:10.000Z',
-  //     //   xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-  //     // }));
-
-//   });
-//   });
-//   });
 });

@@ -135,6 +135,7 @@ class Logger extends Utility implements ClassThatLogs {
     INFO: 12,
     WARN: 16,
     ERROR: 20,
+    SILENT: 24,
   };
 
   private logsSampled: boolean = false;

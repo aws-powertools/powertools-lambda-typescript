@@ -2,8 +2,9 @@ type LogLevelDebug = 'DEBUG';
 type LogLevelInfo = 'INFO';
 type LogLevelWarn = 'WARN';
 type LogLevelError = 'ERROR';
+type LogLevelSilent = 'SILENT';
 
-type LogLevel = LogLevelDebug | Lowercase<LogLevelDebug> | LogLevelInfo | Lowercase<LogLevelInfo> | LogLevelWarn | Lowercase<LogLevelWarn> | LogLevelError | Lowercase<LogLevelError>;
+type LogLevel = LogLevelDebug | Lowercase<LogLevelDebug> | LogLevelInfo | Lowercase<LogLevelInfo> | LogLevelWarn | Lowercase<LogLevelWarn> | LogLevelError | Lowercase<LogLevelError> | LogLevelSilent | Lowercase<LogLevelSilent>;
 
 type LogLevelThresholds = {
   [key in Uppercase<LogLevel>]: number;

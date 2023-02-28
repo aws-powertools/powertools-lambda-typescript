@@ -6,12 +6,19 @@
 import { Console } from 'console';
 import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
-import { ConstructorOptions } from '../../src/types';
+import { ConstructorOptions, LogLevelThresholds } from '../../src/types';
 import { createLogger, Logger } from './../../src';
 
 describe('Helper: createLogger function', () => {
 
   const ENVIRONMENT_VARIABLES = process.env;
+  const logLevelThresholds: LogLevelThresholds = {
+    DEBUG: 8,
+    INFO: 12,
+    WARN: 16,
+    ERROR: 20,
+    SILENT: 24,
+  };  
 
   beforeEach(() => {
     jest.resetModules();
@@ -83,10 +90,7 @@ describe('Helper: createLogger function', () => {
         logLevel: 'WARN',
         console: expect.any(Console),
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: true,
         persistentLogAttributes: {
@@ -125,10 +129,7 @@ describe('Helper: createLogger function', () => {
         logLevel: 'INFO',
         console: expect.any(Console),
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {},
@@ -279,10 +280,7 @@ describe('Helper: createLogger function', () => {
         logLevel: 'INFO',
         console: expect.any(Console),
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {},

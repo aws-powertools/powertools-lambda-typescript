@@ -23,13 +23,13 @@ jobs:
           close-issue-reason: not_planned
           # Exempt any issue that hasn't been triaged yet, or that is clearly labeled
           exempt-issue-labels: triage,status/confirmed,status/blocked,status/on-hold,status/completed
-          # Include only issues where any of these labels are present (aka only issues that need more info from the customer)
-          # that are either under discussion, but no info/answer has been provided in 2 weeks, or that were already marked
-          # as stale 
-          any-of-issue-labels: need-more-information,status/discussing,status/pending-close-response-required
+          # Include only issues that were labeled as `need-more-information` (aka only issues that need more info from the customer)
+          only-issue-labels: need-more-information
           # Settings specific to issues
           days-before-issue-stale: 14
           days-before-issue-close: 7
           # Set to ignore PRs
           days-before-pr-stale: -1
           days-before-pr-close: -1
+          # Operations
+          operations-per-run: 60

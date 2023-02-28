@@ -7,7 +7,6 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
-      - "examples/**"
 
 jobs:
   release-docs:

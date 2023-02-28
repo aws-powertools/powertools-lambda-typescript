@@ -4,7 +4,6 @@ env:
   BRANCH: main
   ORIGIN: awslabs/aws-lambda-powertools-typescript
 
-
 on:
   workflow_call:
     inputs:
@@ -111,7 +110,7 @@ jobs:
           keep_files: true
           destination_dir: ${{ env.VERSION }}/api
       - name: Release API docs to latest
-        if: ${{ input.alias == 'latest' }}
+        if: ${{ inputs.alias == 'latest' }}
         uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

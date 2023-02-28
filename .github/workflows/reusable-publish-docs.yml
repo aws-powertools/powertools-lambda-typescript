@@ -4,7 +4,6 @@ env:
   BRANCH: main
   ORIGIN: awslabs/aws-lambda-powertools-typescript
 
-
 on:
   workflow_call:
     inputs:

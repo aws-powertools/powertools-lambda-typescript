@@ -102,7 +102,7 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | good-first-issue                       | Something that is suitable for those who want to start contributing                            |                                                    |
 | help-wanted                            | Tasks you want help from anyone to move forward                                                | Bandwidth, complex topics, etc.                    |
 | need-customer-feedback                 | Tasks that need more feedback before proceeding                                                | 80/20% rule, uncertain, etc.                       |
-| need-more-information                  | Missing information before making any calls                                                    |                                                    |
+| need-more-information                  | Missing information before making any calls                                                    | Triggers stale automation after 2 weeks            |
 | need-issue                             | PR is missing a related issue for tracking change                                              |                                                    |
 
 ## Maintainer Responsibilities

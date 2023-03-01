@@ -173,7 +173,7 @@ describe('Class: Logger', () => {
           expect(consoleSpy).toBeCalledTimes(0);
         });
 
-        test('when the Logger\'s log level is set through LOG_LEVEL env variable, it should print to stdout', () => {
+        test('when the Logger\'s log level is set through LOG_LEVEL env variable, it DOES print to stdout', () => {
 
           // Prepare
           process.env.LOG_LEVEL = methodOfLogger.toUpperCase();

@@ -20,24 +20,14 @@ on:
         required: false
         default: false
         type: boolean
-      workflow_origin: # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
-        required: true
-        type: string
-    secrets:
-      token:
-        required: true
 
 jobs:
   publish-docs:
-    # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
-    if: ${{ inputs.workflow_origin == 'awslabs/aws-lambda-powertools-typescript' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          # Here `token` is needed to avoid incurring in error GH006 Protected  Branch Update Failed,
-          token: ${{ secrets.token }}
           # While `fetch-depth` is used to allow the workflow to later commit & push the changes.
           fetch-depth: 0
       - name: Setup NodeJS

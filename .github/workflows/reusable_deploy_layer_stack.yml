@@ -95,14 +95,14 @@ jobs:
         if: ${{ inputs.stage == 'PROD' }}
         run: |
           mkdir cdk-layer-stack
-          jq -r -c '.LayerPublisherStack.LatestLayerArn' cdk-outputs.json > cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+          jq -r -c '.LayerPublisherStack.LatestLayerArn' layers/cdk-outputs.json > cdk-layer-stack/${{ matrix.region }}-layer-version.txt
           cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt
       - name: Save Layer ARN artifact
         if: ${{ inputs.stage == 'PROD' }}
         uses: actions/upload-artifact@v3
         with:
           name: cdk-layer-stack
-          path: ./layer/cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.
+          path: ./cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.
           if-no-files-found: error
           retention-days: 1
   update_layer_arn_docs:

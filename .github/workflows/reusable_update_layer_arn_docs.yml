@@ -1,4 +1,4 @@
-name: Update V2 Layer ARN Docs
+name: Update Layer ARN Docs
 
 on:
   workflow_call:
@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
       - name: Git client setup and refresh tip
         run: |
-          git config user.name "Release bot"
+          git config user.name "Release bot[bot]"
           git config user.email "aws-devax-open-source@amazon.com"
           git config pull.rebase true
           git config remote.origin.url >&- || git remote add origin https://github.com/"${origin}" # Git Detached mode (release notes) doesn't have origin

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.5.1...v1.6.0) (2023-03-02)
+
+
+### Bug Fixes
+
+* **logger:** createChild not passing all parent's attributes ([#1267](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1267)) ([84ab4b9](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/84ab4b911d17d687bdbe60ded31f1e2b6860feb3))
+* **logger:** middleware stores initial persistent attributes correctly ([#1329](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1329)) ([6b32304](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/6b3230489895dc1abdfc6ad56daeeb555fda529f))
+
+
+### Features
+
+* **logger:** make loglevel types stricter ([#1313](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1313)) ([5af51d3](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/5af51d319dee68d7a7ba832721580d7a6e655249))
+
+
+
+
+
 ## [1.5.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.5.0...v1.5.1) (2023-01-13)
 
 

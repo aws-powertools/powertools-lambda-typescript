@@ -1,6 +1,6 @@
 {
   "name": "sam-example",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -35,9 +35,9 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^1.5.0",
-    "@aws-lambda-powertools/metrics": "^1.5.0",
-    "@aws-lambda-powertools/tracer": "^1.5.0",
+    "@aws-lambda-powertools/logger": "^1.5.1",
+    "@aws-lambda-powertools/metrics": "^1.5.1",
+    "@aws-lambda-powertools/tracer": "^1.5.1",
     "@aws-sdk/client-dynamodb": "^3.231.0",
     "@aws-sdk/lib-dynamodb": "^3.231.0",
     "@middy/core": "^3.6.2",

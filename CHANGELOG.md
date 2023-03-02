@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.5.1...v1.6.0) (2023-03-02)
+
+
+### Bug Fixes
+
+* **docs:** logger bringYourOwnFormatter snippet [#1253](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1253) ([#1254](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1254)) ([fdbba32](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/fdbba32d8b3545730d242ac4fd1ef2d83cdbccce))
+* hardcoded cdk version in `publish_layer.yaml` ([#1232](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1232)) ([63a3909](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/63a3909063637ca2306a718a10e35e54881f570e))
+* **logger:** createChild not passing all parent's attributes ([#1267](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1267)) ([84ab4b9](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/84ab4b911d17d687bdbe60ded31f1e2b6860feb3))
+* **logger:** middleware stores initial persistent attributes correctly ([#1329](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1329)) ([6b32304](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/6b3230489895dc1abdfc6ad56daeeb555fda529f))
+* **parameters:** handle base64/binaries in transformer ([#1326](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1326)) ([bb50c04](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/bb50c04f5b2e6a144295b453577a7ea1a15ac011))
+* **parameters:** Tokenize attribute names in `DynamoDBProvider` ([#1239](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1239)) ([f3e5ed7](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/f3e5ed70c7e5baa3f3aa15428e8d6cb56b096f26))
+
+
+### Features
+
+* **idempotency:** Add function wrapper and decorator ([#1262](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1262)) ([eacb1d9](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/eacb1d9f59a82ad34234f51198ed215c41a64b41))
+* **layers:** add new regions ([#1322](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1322)) ([618613b](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/618613b9a69166553dd9ef8d5b92f89e1cdf79d0))
+* **logger:** make loglevel types stricter ([#1313](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1313)) ([5af51d3](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/5af51d319dee68d7a7ba832721580d7a6e655249))
+* **parameters:** add support for custom AWS SDK v3 clients for providers ([#1260](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1260)) ([3a8cfa0](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/3a8cfa0d6e5aaa5c2c36d97d7835dbf5287b7110))
+
+
+
+
+
 ## [1.5.1](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.5.0...v1.5.1) (2023-01-13)
 
 

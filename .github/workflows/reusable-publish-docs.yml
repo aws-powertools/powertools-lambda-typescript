@@ -76,10 +76,6 @@ jobs:
           git config remote.origin.url >&- || git remote add origin https://github.com/"$ORIGIN"
           git pull origin "$BRANCH"
       - name: Build docs website and API reference
-        run: |
-          make release-docs VERSION="$VERSION" ALIAS="$ALIAS"
-          poetry run mike set-default --push latest
-      - name: Build docs website and API reference
         env:
           VERSION: ${{ inputs.version }}
           ALIAS: ${{ inputs.alias }}

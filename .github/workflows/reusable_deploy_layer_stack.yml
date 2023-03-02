@@ -106,8 +106,10 @@ jobs:
           path: ./layer/cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.
           if-no-files-found: error
           retention-days: 1
-  update_v2_layer_arn_docs:
+  update_layer_arn_docs:
     needs: deploy-cdk-stack
+    permissions:
+      contents: write
     if: ${{ inputs.stage == 'PROD' }}
     uses: ./.github/workflows/reusable_update_layer_arn_docs.yml
     with:

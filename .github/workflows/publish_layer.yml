@@ -65,8 +65,8 @@ jobs:
           bash .github/scripts/setup_tmp_layer_files.sh
       - name: CDK build
         run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
-      - name: zip output
-        run: zip -r cdk.out.zip cdk.out
+      - name: Zip output
+        run: zip -r cdk.out.zip layers/cdk.out
       - name: Archive CDK artifacts
         uses: actions/upload-artifact@v3
         with:

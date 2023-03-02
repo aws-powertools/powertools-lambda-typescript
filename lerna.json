@@ -6,7 +6,7 @@
     "packages/metrics",
     "examples/cdk",
     "examples/sam",
-    "layer-publisher"
+    "layers"
   ],
   "version": "1.6.0",
   "npmClient": "npm",

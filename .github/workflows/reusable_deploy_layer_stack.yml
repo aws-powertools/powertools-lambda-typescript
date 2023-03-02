@@ -87,7 +87,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artifact-name }}
-          path: layers
       - name: Unzip artifact
         run: unzip cdk.out.zip
       - name: Deploy Layer

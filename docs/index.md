@@ -62,8 +62,8 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
     | `eu-south-2`     | [arn:aws:lambda:eu-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:9](#){: .copyMe}:clipboard:     |
     | `ca-central-1`   | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:9](#){: .copyMe}:clipboard:   |
     | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:9](#){: .copyMe}:clipboard:      |
-    | `af-south-1`     | [arn:aws:lambda:af-south-11:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:    |
-    | `me-south-1`     | [arn:aws:lambda:me-south-11:094274105915:layer:AWSLambdaPowertoolsTypeScript:8](#){: .copyMe}:clipboard:    |
+    | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:9](#){: .copyMe}:clipboard:     |
+    | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:9](#){: .copyMe}:clipboard:     |
 
 ??? note "Note: Click to expand and copy code snippets for popular frameworks"
     

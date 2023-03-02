@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: cdk-layer-artifact
-          path: layers/cdk.out.zip
+          path: cdk.out.zip
 
   # Deploy layer to all regions in beta account
   deploy-beta:

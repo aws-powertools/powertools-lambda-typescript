@@ -82,7 +82,7 @@ jobs:
         run: |
           rm -rf site
           mkdocs build
-          mike deploy --push --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }}"
+          mike deploy --push --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }}
           # Set latest version as a default
           mike set-default --push latest
 

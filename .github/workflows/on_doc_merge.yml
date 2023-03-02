@@ -15,7 +15,6 @@ jobs:
       pages: write
     uses: ./.github/workflows/reusable-publish-docs.yml
     with:
-      workflow_origin: ${{ github.event.repository.full_name }}
       version: dev
       alias: stage
     secrets:

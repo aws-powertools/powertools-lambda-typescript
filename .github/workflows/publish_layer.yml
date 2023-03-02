@@ -2,7 +2,8 @@ name: Deploy layer to all regions
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
+  pages: write
 
 on:
   # Manual trigger

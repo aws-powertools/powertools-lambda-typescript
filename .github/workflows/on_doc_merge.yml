@@ -17,5 +17,3 @@ jobs:
     with:
       version: dev
       alias: stage
-    secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}

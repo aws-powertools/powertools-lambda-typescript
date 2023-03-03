@@ -81,7 +81,7 @@ Your Logger will include the following keys to your structured logging (default 
 
 | Key                         | Example                                                                                                          | Note                                                                                                                                                                                                                            |
 |-----------------------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **level**: `string`         | `INFO`                                                                                                           | Logging level set for the Lambda function"s invocation                                                                                                                                                                          |
+| **level**: `string`         | `INFO`                                                                                                           | Logging level set for the Lambda function's invocation                                                                                                                                                                          |
 | **message**: `string`       | `Query performed to DynamoDB`                                                                                    | A descriptive, human-readable representation of this log item                                                                                                                                                                   |
 | **sampling_rate**: `float`  | `0.1`                                                                                                            | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%                                                                                                                                                   |
 | **service**: `string`       | `serverlessAirline`                                                                                              | A unique name identifier of the service this Lambda function belongs to, by default `service_undefined`                                                                                                                         |
@@ -554,6 +554,17 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
+
+### Silencing logs
+
+The `SILENT` log level provides a simple and efficient way to suppress all log messages without the need to modify your code. When you set this log level, all log messages, regardless of their severity, will be silenced.
+
+This feature is useful when you want to have your code instrumented to produce logs, but due to some requirement or business decision, you prefer to not emit them.
+
+By setting the log level to `SILENT`, which can be done either through the `logLevel` constructor option  or by using the `LOG_LEVEL` environment variable, you can easily suppress all logs as needed.
+
+!!! note
+    Use the `SILENT` log level with care, as it can make it more challenging to monitor and debug your application. Therefore, we advise using this log level judiciously.
 
 ### Custom Log formatter (Bring Your Own Formatter)
 

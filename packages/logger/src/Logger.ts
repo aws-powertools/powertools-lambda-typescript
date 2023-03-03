@@ -130,11 +130,13 @@ class Logger extends Utility implements ClassThatLogs {
 
   private logLevel?: Uppercase<LogLevel>;
 
+  // Log levels are in ascending order from the most verbose to the least verbose (no logs)
   private readonly logLevelThresholds: LogLevelThresholds = {
     DEBUG: 8,
     INFO: 12,
     WARN: 16,
     ERROR: 20,
+    SILENT: 24,
   };
 
   private logsSampled: boolean = false;

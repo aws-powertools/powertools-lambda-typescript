@@ -10,7 +10,7 @@ import {
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolLogFormatter } from '../../src/formatter';
-import { ClassThatLogs, LogJsonIndent, ConstructorOptions } from '../../src/types';
+import { ClassThatLogs, LogJsonIndent, ConstructorOptions, LogLevelThresholds } from '../../src/types';
 import { Context } from 'aws-lambda';
 import { Console } from 'console';
 
@@ -22,6 +22,13 @@ describe('Class: Logger', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const context = dummyContext.helloworldContext;
   const event = dummyEvent.Custom.CustomEvent;
+  const logLevelThresholds: LogLevelThresholds = {
+    DEBUG: 8,
+    INFO: 12,
+    WARN: 16,
+    ERROR: 20,
+    SILENT: 24,
+  };
   
   beforeEach(() => {
     dateSpy.mockClear();
@@ -60,9 +67,7 @@ describe('Class: Logger', () => {
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
 
           // Act
-          if (logger[methodOfLogger]) {
-            logger[methodOfLogger]('foo');
-          }
+          logger[methodOfLogger]('foo');
 
           // Assess
           expect(consoleSpy).toBeCalledTimes(debugPrints ? 1 : 0);
@@ -87,9 +92,7 @@ describe('Class: Logger', () => {
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
 
           // Act
-          if (logger[methodOfLogger]) {
-            logger[methodOfLogger]('foo');
-          }
+          logger[methodOfLogger]('foo');
 
           // Assess
           expect(consoleSpy).toBeCalledTimes(infoPrints ? 1 : 0);
@@ -114,9 +117,7 @@ describe('Class: Logger', () => {
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
 
           // Act
-          if (logger[methodOfLogger]) {
-            logger[methodOfLogger]('foo');
-          }
+          logger[methodOfLogger]('foo');
 
           // Assess
           expect(consoleSpy).toBeCalledTimes(warnPrints ? 1 : 0);
@@ -141,9 +142,7 @@ describe('Class: Logger', () => {
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
 
           // Act
-          if (logger[methodOfLogger]) {
-            logger[methodOfLogger]('foo');
-          }
+          logger[methodOfLogger]('foo');
 
           // Assess
           expect(consoleSpy).toBeCalledTimes(errorPrints ? 1 : 0);
@@ -159,6 +158,41 @@ describe('Class: Logger', () => {
 
         });
 
+        test('when the Logger\'s log level is SILENT, it DOES NOT print to stdout', () => {
+
+          // Prepare
+          const logger: Logger = createLogger({
+            logLevel: 'SILENT',
+          });
+          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+
+          // Act
+          logger[methodOfLogger]('foo');
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(0);
+        });
+
+        test('when the Logger\'s log level is set through LOG_LEVEL env variable, it DOES print to stdout', () => {
+
+          // Prepare
+          process.env.LOG_LEVEL = methodOfLogger.toUpperCase();
+          const logger = new Logger();
+          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+
+          // Act
+          logger[methodOfLogger]('foo');
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(1, JSON.stringify({
+            level: methodOfLogger.toUpperCase(),
+            message: 'foo',
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          }));
+        });
       });
 
       describe('Feature: sample rate', () => {
@@ -169,7 +203,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger: Logger = createLogger({
-            logLevel: 'ERROR',
+            logLevel: 'SILENT',
             sampleRateValue: 0,
           });
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
@@ -180,14 +214,14 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(consoleSpy).toBeCalledTimes(method === 'error' ? 1 : 0);
+          expect(consoleSpy).toBeCalledTimes(0);
         });
 
         test('when the Logger\'s log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout', () => {
 
           // Prepare
           const logger: Logger = createLogger({
-            logLevel: 'ERROR',
+            logLevel: 'SILENT',
             sampleRateValue: 1,
           });
           const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
@@ -630,10 +664,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {},
@@ -1396,10 +1427,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {},
@@ -1422,10 +1450,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: true,
         persistentLogAttributes: {},
@@ -1448,10 +1473,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: true,
         persistentLogAttributes: {},
@@ -1512,10 +1534,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {},
@@ -1538,10 +1557,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {
@@ -1566,10 +1582,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: true,
         persistentLogAttributes: {},
@@ -1592,10 +1605,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'ERROR',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {},
@@ -1641,10 +1651,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {},
@@ -1667,10 +1674,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {
@@ -1700,10 +1704,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {
@@ -1746,10 +1747,7 @@ describe('Class: Logger', () => {
         logFormatter: expect.any(PowertoolLogFormatter),
         logLevel: 'DEBUG',
         logLevelThresholds: {
-          DEBUG: 8,
-          ERROR: 20,
-          INFO: 12,
-          WARN: 16,
+          ...logLevelThresholds
         },
         logsSampled: false,
         persistentLogAttributes: {},
@@ -1980,5 +1978,4 @@ describe('Class: Logger', () => {
     });
 
   });
-
 });

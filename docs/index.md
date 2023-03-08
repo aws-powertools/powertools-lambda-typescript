@@ -24,12 +24,14 @@ You can use Powertools in both TypeScript and JavaScript code bases.
 
 ## Install
 
-Powertools is available in the following formats:
+You can install Powertools using one of the following options:
 
 * **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:9**](#){: .copyMe}:clipboard:
-* **npm**: **`npm install @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics @aws-lambda-powertools/logger`**
+* **npm**: [`npm install @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics @aws-lambda-powertools/logger`](#){: .copyMe}:clipboard:
 
 ### Lambda Layer
+
+???+ warning "As of now, Container Image deployment (OCI) or inline Lambda functions do not support Lambda Layers."
 
 [Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html){target="_blank"} is a .zip file archive that can contain additional code, pre-packaged dependencies, data,  or configuration files. Layers promote code sharing and separation of responsibilities so that you can iterate faster on writing business logic.
 
@@ -245,17 +247,16 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
         ? Do you want to edit the local lambda function now? No
         ```
 
-    === "Get the Layer .zip contents"
-        ```bash title="AWS CLI"
-        aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:9 --region {region}
-        ```
+!!! info "Using Powertools via Lambda Layer? Simply add the Powertools utilities you are using as a development dependency."
 
-        The pre-signed URL to download this Lambda Layer will be within `Location` key.
+??? question "Want to inspect the contents of the Layer?"
+	Change {region} to your AWS region, e.g. `eu-west-1`
 
-???+ warning "Warning: Limitations"
+    ```bash title="AWS CLI"
+    aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:9 --region {region}
+    ```
 
-	Container Image deployment (OCI) or inline Lambda functions do not support Lambda Layers.
-
+    The pre-signed URL to download this Lambda Layer will be within `Location` key.
 
 ## Instrumentation
 

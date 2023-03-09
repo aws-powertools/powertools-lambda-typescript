@@ -1,8 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run lint-fix -ws
-cd examples/sam && npm run lint-fix
-cd ../..
-cd examples/cdk && npm run lint-fix
-cd ../..
+npx lint-staged

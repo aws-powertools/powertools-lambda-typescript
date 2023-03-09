@@ -26,6 +26,9 @@
     "prepare": "npm run build",
     "postversion": "echo \"Not implemented\""
   },
+  "lint-staged": {
+    "*.ts": "npm run lint-fix"
+  },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/idempotency#readme",
   "license": "MIT",
   "main": "./lib/index.js",

@@ -18,6 +18,9 @@
     "test:e2e": "echo 'To be implemented ...'",
     "version": "npm install @aws-lambda-powertools/logger@latest @aws-lambda-powertools/tracer@latest @aws-lambda-powertools/metrics@latest && git add package.json"
   },
+  "lint-staged": {
+    "*.ts": "npm run lint-fix"
+  },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.109",
     "@types/jest": "^29.2.4",

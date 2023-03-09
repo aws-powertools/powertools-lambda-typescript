@@ -23,6 +23,9 @@
     "version": "npm i -D @aws-lambda-powertools/logger@latest @aws-lambda-powertools/tracer@latest @aws-lambda-powertools/metrics@latest && git add package*",
     "cdk": "cdk"
   },
+  "lint-staged": {
+    "*.ts": "npm run lint-fix"
+  },
   "devDependencies": {
     "@aws-lambda-powertools/logger": "^1.5.1",
     "@aws-lambda-powertools/metrics": "^1.5.1",

@@ -72,8 +72,8 @@ As we have enabled tracing for our Lambda-Funtions, you can visit [AWS CloudWatc
 
 ## Cleanup
 
-To delete the sample application that you created, run the command below while in the `examples/sam` directory:
+To delete the sample application that you created, run the command below while in the `examples/cdk` directory:
 
 ```bash
-cdk delete
+cdk destroy
 ```

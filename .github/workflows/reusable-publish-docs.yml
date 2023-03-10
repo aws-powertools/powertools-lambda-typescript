@@ -85,7 +85,10 @@ jobs:
           mike deploy --push --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }}
           # Set latest version as a default
           mike set-default --push latest
-
+      - name: Build API docs
+        run: |
+          rm -rf api
+          npm run docs-generateApiDoc
       - name: Release API docs
         uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
         env:

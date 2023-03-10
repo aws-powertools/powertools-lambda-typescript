@@ -225,6 +225,51 @@ describe('Class: AppConfigProvider', () => {
       // Act & Assess
       await expect(provider.get(name)).rejects.toThrow();
     });
+
+    test('when session returns an empty configuration on the second call, it returns the last value', async () => {
+
+      client.reset();
+
+      // Prepare
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+      };
+      const provider = new AppConfigProvider(options);
+      const name = 'MyAppFeatureFlag';
+
+      const fakeInitialToken = 'aW5pdGlhbFRva2Vu';
+      const fakeNextToken1 = 'bmV4dFRva2Vu';
+      const fakeNextToken2 = 'bmV4dFRva2Vq';
+      const mockData = encoder.encode('myAppConfiguration');
+
+      client
+        .on(StartConfigurationSessionCommand)
+        .resolves({
+          InitialConfigurationToken: fakeInitialToken,
+        })
+        .on(GetLatestConfigurationCommand)
+        .resolvesOnce({
+          Configuration: mockData,
+          NextPollConfigurationToken: fakeNextToken1,
+        })
+        .resolvesOnce({
+          Configuration: undefined,
+          NextPollConfigurationToken: fakeNextToken2,
+        });
+
+      // Act
+
+      // Load local cache
+      const result1 = await provider.get(name, { forceFetch: true });
+
+      // Read from local cache, given empty response from service
+      const result2 = await provider.get(name, { forceFetch: true });
+
+      // Assess
+      expect(result1).toBe(mockData);
+      expect(result2).toBe(mockData);
+    });
   });
 
   describe('Method: _getMultiple', () => {

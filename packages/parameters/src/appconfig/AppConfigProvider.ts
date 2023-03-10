@@ -13,6 +13,7 @@ import type {
 class AppConfigProvider extends BaseProvider {
   public client: AppConfigDataClient;
   protected configurationTokenStore: Map<string, string> = new Map();
+  protected valueStore: Map<string, Uint8Array> = new Map();
   private application?: string;
   private environment: string;
   
@@ -79,6 +80,10 @@ class AppConfigProvider extends BaseProvider {
      * The new AppConfig APIs require two API calls to return the configuration
      * First we start the session and after that we retrieve the configuration
      * We need to store { name: token } pairs to use in the next execution
+     * We also need to store { name : value } pairs because AppConfig returns
+     * an empty value if the session already has the latest configuration
+     * but, we don't want to return an empty value to our callers.
+     * {@link https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration.html}
      **/
     
     if (!this.configurationTokenStore.has(name)) {
@@ -106,14 +111,25 @@ class AppConfigProvider extends BaseProvider {
     });
 
     const response = await this.client.send(getConfigurationCommand);
-    
+
     if (response.NextPollConfigurationToken) {
       this.configurationTokenStore.set(name, response.NextPollConfigurationToken);
     } else {
       this.configurationTokenStore.delete(name);
     }
 
-    return response.Configuration;
+    /** When the response is not empty, stash the result locally before returning
+     * See AppConfig docs: 
+     * {@link https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration.html}
+     **/
+    if (response.Configuration !== undefined && response.Configuration?.length > 0 ) {
+      this.valueStore.set(name, response.Configuration);
+
+      return response.Configuration;
+    }
+
+    // Otherwise, use a stashed value
+    return this.valueStore.get(name);
   }
 
   /**

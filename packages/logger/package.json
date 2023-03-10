@@ -26,6 +26,9 @@
     "prepare": "npm run build",
     "postversion": "git push --tags"
   },
+  "lint-staged": {
+    "*.ts": "npm run lint-fix"
+  },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logging#readme",
   "license": "MIT",
   "main": "./lib/index.js",

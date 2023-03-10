@@ -5,7 +5,7 @@
  * E2E utils is used by e2e tests. They are helper function that calls either CDK or SDK
  * to interact with services. 
 */
-import { App, CfnOutput, Stack } from 'aws-cdk-lib';
+import { App, CfnOutput, Stack, Duration } from 'aws-cdk-lib';
 import {
   NodejsFunction,
   NodejsFunctionProps
@@ -37,6 +37,7 @@ export type StackWithLambdaFunctionOptions = {
   runtime: string
   bundling?: NodejsFunctionProps['bundling']
   layers?: NodejsFunctionProps['layers']
+  timeout?: Duration
 };
 
 type FunctionPayload = {[key: string]: string | boolean | number};
@@ -55,6 +56,7 @@ export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOpt
     bundling: params.bundling,
     layers: params.layers,
     logRetention: RetentionDays.ONE_DAY,
+    timeout: params.timeout
   });
 
   if (params.logGroupOutputKey) {

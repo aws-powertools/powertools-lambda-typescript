@@ -4,7 +4,7 @@
   * @group e2e/parameters/appconfig/class
   */
 import path from 'path';
-import { App, Stack, Aspects } from 'aws-cdk-lib';
+import { App, Stack, Aspects, Duration } from 'aws-cdk-lib';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 import { v4 } from 'uuid';
 import { 
@@ -111,6 +111,7 @@ let stack: Stack;
  * Test 6
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
+ * check that we got matching results
  * 
  * Note: To avoid race conditions, we add a dependency between each pair of configuration profiles.
  * This allows us to influence the order of creation and ensure that each configuration profile
@@ -141,6 +142,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
         FEATURE_FLAG_NAME: featureFlagName,
       },
       runtime,
+      timeout: Duration.seconds(10),
     });
 
     // Create the base resources for an AppConfig application.
@@ -291,8 +293,12 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     it('should retrieve single parameter cached', () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[4]);
 
+      const resultLog1 = InvocationLogs.parseFunctionLog(logs[4]);
+      const resultLog2 = InvocationLogs.parseFunctionLog(logs[5]);
+      expect(resultLog1.value).toStrictEqual(resultLog2.value);
+
+      const testLog = InvocationLogs.parseFunctionLog(logs[6]);
       expect(testLog).toStrictEqual({
         test: 'get-cached',
         value: 1
@@ -305,10 +311,31 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     it('should retrieve single parameter twice without caching', async () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[5]);
+      const testLog = InvocationLogs.parseFunctionLog(logs[7]);
 
       expect(testLog).toStrictEqual({
         test: 'get-forced',
+        value: 2
+      });
+
+    }, TEST_CASE_TIMEOUT);
+
+    // Test 7 - get parameter twice, wait for expiration betweenn
+    // we count number of SDK requests and check that we made two API calls
+    // and check that the values match
+    it('should retrieve single parameter twice, with expiration between and matching values', async () => {
+
+      const logs = invocationLogs[0].getFunctionLogs();
+
+      const resultLog1 = InvocationLogs.parseFunctionLog(logs[8]);
+      const resultLog2 = InvocationLogs.parseFunctionLog(logs[9]);
+      expect(resultLog1.test).toBe('get-expired-result1');
+      expect(resultLog2.test).toBe('get-expired-result2');
+      expect(resultLog1.value).toStrictEqual(resultLog2.value);
+
+      const testLog = InvocationLogs.parseFunctionLog(logs[10]);
+      expect(testLog).toStrictEqual({
+        test: 'get-expired',
         value: 2
       });
 

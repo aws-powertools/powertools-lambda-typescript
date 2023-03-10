@@ -81,8 +81,16 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   try {
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
-    await providerWithMiddleware.get(freeFormBase64encodedPlainText);
-    await providerWithMiddleware.get(freeFormBase64encodedPlainText);
+    const result1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText);
+    const result2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText);
+    logger.log({
+      test: 'get-cached-result1',
+      value: result1
+    });
+    logger.log({
+      test: 'get-cached-result2',
+      value: result2
+    });
     logger.log({
       test: 'get-cached',
       value: middleware.counter // should be 1
@@ -108,6 +116,36 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   } catch (err) {
     logger.log({
       test: 'get-forced',
+      error: err.message
+    });
+  }
+
+  // Test 8
+  // get parameter twice, but wait long enough that cache expires count SDK calls and return values
+  try {
+    providerWithMiddleware.clearCache();
+    middleware.counter = 0;
+    const expiredResult1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 5 });
+
+    // Wait
+    await new Promise(resolve => setTimeout(resolve, 6000));
+
+    const expiredResult2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 5 });
+    logger.log({
+      test: 'get-expired-result1',
+      value: expiredResult1
+    });
+    logger.log({
+      test: 'get-expired-result2',
+      value: expiredResult2
+    });
+    logger.log({
+      test: 'get-expired',
+      value: middleware.counter // should be 2
+    });
+  } catch (err) {
+    logger.log({
+      test: 'get-expired',
       error: err.message
     });
   }

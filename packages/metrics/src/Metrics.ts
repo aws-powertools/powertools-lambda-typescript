@@ -172,8 +172,8 @@ class Metrics extends Utility implements MetricsInterface {
    * @param value
    */
 
-  public addMetric(name: string, unit: MetricUnit, value: number, resolution?: MetricResolution): void {
-    this.storeMetric(name, unit, value, resolution ?? DEFAULT_METRIC_RESOLUTION );
+  public addMetric(name: string, unit: MetricUnit, value: number, resolution: MetricResolution = DEFAULT_METRIC_RESOLUTION): void {
+    this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
   }
 

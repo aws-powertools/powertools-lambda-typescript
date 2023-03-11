@@ -11,11 +11,13 @@ import {
   ExtraOptions,
   MetricUnit,
   MetricUnits,
+  MetricResolution
 } from './types';
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 29;
 const DEFAULT_NAMESPACE = 'default_namespace';
+const DEFAULT_METRIC_RESOLUTION = MetricResolution.Standard; 
 
 /**
  * ## Intro
@@ -169,8 +171,9 @@ class Metrics extends Utility implements MetricsInterface {
    * @param unit
    * @param value
    */
-  public addMetric(name: string, unit: MetricUnit, value: number): void {
-    this.storeMetric(name, unit, value);
+
+  public addMetric(name: string, unit: MetricUnit, value: number, resolution?: MetricResolution): void {
+    this.storeMetric(name, unit, value, resolution ?? DEFAULT_METRIC_RESOLUTION );
     if (this.isSingleMetric) this.publishStoredMetrics();
   }
 
@@ -322,6 +325,7 @@ class Metrics extends Utility implements MetricsInterface {
     const metricDefinitions = Object.values(this.storedMetrics).map((metricDefinition) => ({
       Name: metricDefinition.name,
       Unit: metricDefinition.unit,
+      StorageResolution: metricDefinition.resolution
     }));
     if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
@@ -479,7 +483,7 @@ class Metrics extends Utility implements MetricsInterface {
     }
   }
 
-  private storeMetric(name: string, unit: MetricUnit, value: number): void {
+  private storeMetric(name: string, unit: MetricUnit, value: number, resolution: MetricResolution): void {
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }
@@ -489,6 +493,7 @@ class Metrics extends Utility implements MetricsInterface {
         unit,
         value,
         name,
+        resolution
       };
     } else {
       const storedMetric = this.storedMetrics[name];
@@ -501,4 +506,4 @@ class Metrics extends Utility implements MetricsInterface {
 
 }
 
-export { Metrics, MetricUnits };
+export { Metrics, MetricUnits, MetricResolution };

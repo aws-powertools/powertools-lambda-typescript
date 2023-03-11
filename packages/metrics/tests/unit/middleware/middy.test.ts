@@ -4,7 +4,7 @@
  * @group unit/metrics/middleware
  */
 
-import { Metrics, MetricUnits, logMetrics } from '../../../../metrics/src';
+import { Metrics, MetricUnits, logMetrics, MetricResolution } from '../../../../metrics/src';
 import middy from '@middy/core';
 import { ExtraOptions } from '../../../src/types';
 
@@ -178,7 +178,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
               },
             ],
           },
@@ -215,7 +215,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [[ 'service', 'environment', 'aws_region', 'function_name' ]],
-                Metrics: [{ Name: 'ColdStart', Unit: 'Count' }],
+                Metrics: [{ Name: 'ColdStart', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
               },
             ],
           },
@@ -235,7 +235,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [[ 'service', 'environment', 'aws_region' ]],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
               },
             ],
           },
@@ -270,7 +270,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
               },
             ],
           },
@@ -305,7 +305,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
               },
             ],
           },

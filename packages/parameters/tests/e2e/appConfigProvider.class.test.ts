@@ -54,6 +54,7 @@ const freeFormJsonValue = {
 const freeFormYamlValue = `foo: bar
 `;
 const freeFormPlainTextValue = 'foo';
+const freeFormBase64PlainTextValue = toBase64(new TextEncoder().encode(freeFormPlainTextValue));
 const featureFlagValue = {
   version: '1',
   flags: {
@@ -112,6 +113,11 @@ let stack: Stack;
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
  * check that we got matching results
+ * 
+ * Test 7
+ * get parameter twice, wait for expiration betweenn
+ * we count number of SDK requests and check that we made two API calls
+ * and check that the values match
  * 
  * Note: To avoid race conditions, we add a dependency between each pair of configuration profiles.
  * This allows us to influence the order of creation and ensure that each configuration profile
@@ -193,7 +199,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
       name: freeFormBase64PlainTextName,
       type: 'AWS.Freeform',
       content: {
-        content: toBase64(new TextEncoder().encode(freeFormPlainTextValue)),
+        content: freeFormBase64PlainTextValue,
         contentType: 'text/plain',
       }
     });
@@ -293,15 +299,14 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     it('should retrieve single parameter cached', () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
+      const testLog = InvocationLogs.parseFunctionLog(logs[4]);
+      const result = freeFormBase64PlainTextValue;
 
-      const resultLog1 = InvocationLogs.parseFunctionLog(logs[4]);
-      const resultLog2 = InvocationLogs.parseFunctionLog(logs[5]);
-      expect(resultLog1.value).toStrictEqual(resultLog2.value);
-
-      const testLog = InvocationLogs.parseFunctionLog(logs[6]);
       expect(testLog).toStrictEqual({
         test: 'get-cached',
-        value: 1
+        value: 1,
+        result1: result,
+        result2: result
       });
 
     }, TEST_CASE_TIMEOUT);
@@ -311,7 +316,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     it('should retrieve single parameter twice without caching', async () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[7]);
+      const testLog = InvocationLogs.parseFunctionLog(logs[5]);
 
       expect(testLog).toStrictEqual({
         test: 'get-forced',
@@ -326,17 +331,14 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     it('should retrieve single parameter twice, with expiration between and matching values', async () => {
 
       const logs = invocationLogs[0].getFunctionLogs();
+      const testLog = InvocationLogs.parseFunctionLog(logs[6]);
+      const result = freeFormBase64PlainTextValue;
 
-      const resultLog1 = InvocationLogs.parseFunctionLog(logs[8]);
-      const resultLog2 = InvocationLogs.parseFunctionLog(logs[9]);
-      expect(resultLog1.test).toBe('get-expired-result1');
-      expect(resultLog2.test).toBe('get-expired-result2');
-      expect(resultLog1.value).toStrictEqual(resultLog2.value);
-
-      const testLog = InvocationLogs.parseFunctionLog(logs[10]);
       expect(testLog).toStrictEqual({
         test: 'get-expired',
-        value: 2
+        value: 2,
+        result1: result,
+        result2: result
       });
 
     }, TEST_CASE_TIMEOUT);

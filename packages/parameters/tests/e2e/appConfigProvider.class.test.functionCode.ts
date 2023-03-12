@@ -73,10 +73,10 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   // Test 3 - get a free-form base64-encoded plain text and apply binary transformation (should return a decoded string)
   await _call_get(freeFormBase64encodedPlainText, 'get-freeform-base64-plaintext-binary', { transform: 'binary' });
 
-  // Test 5 - get a feature flag and apply json transformation (should return an object)
+  // Test 4 - get a feature flag and apply json transformation (should return an object)
   await _call_get(featureFlagName, 'get-feature-flag-binary', { transform: 'json' });
 
-  // Test 6
+  // Test 5
   // get parameter twice with middleware, which counts the number of requests, we check later if we only called AppConfig API once
   try {
     providerWithMiddleware.clearCache();
@@ -84,16 +84,10 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     const result1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText);
     const result2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText);
     logger.log({
-      test: 'get-cached-result1',
-      value: result1
-    });
-    logger.log({
-      test: 'get-cached-result2',
-      value: result2
-    });
-    logger.log({
       test: 'get-cached',
-      value: middleware.counter // should be 1
+      value: middleware.counter, // should be 1
+      result1: result1,
+      result2: result2
     });
   } catch (err) {
     logger.log({
@@ -102,7 +96,7 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     });
   }
 
-  // Test 7
+  // Test 6
   // get parameter twice, but force fetch 2nd time, we count number of SDK requests and check that we made two API calls
   try {
     providerWithMiddleware.clearCache();
@@ -120,28 +114,18 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     });
   }
 
-  // Test 8
+  // Test 7
   // get parameter twice, but wait long enough that cache expires count SDK calls and return values
   try {
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
-    const expiredResult1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 5 });
-
-    // Wait
-    await new Promise(resolve => setTimeout(resolve, 6000));
-
-    const expiredResult2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 5 });
-    logger.log({
-      test: 'get-expired-result1',
-      value: expiredResult1
-    });
-    logger.log({
-      test: 'get-expired-result2',
-      value: expiredResult2
-    });
+    const expiredResult1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 0 });
+    const expiredResult2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 0 });
     logger.log({
       test: 'get-expired',
-      value: middleware.counter // should be 2
+      value: middleware.counter, // should be 2
+      result1: expiredResult1,
+      result2: expiredResult2
     });
   } catch (err) {
     logger.log({

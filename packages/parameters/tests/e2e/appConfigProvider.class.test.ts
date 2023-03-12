@@ -147,7 +147,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
         FREEFORM_BASE64_ENCODED_PLAIN_TEXT_NAME: freeFormBase64PlainTextName,
         FEATURE_FLAG_NAME: featureFlagName,
       },
-      runtime
+      runtime,
     });
 
     // Create the base resources for an AppConfig application.

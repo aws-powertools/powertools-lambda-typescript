@@ -4,6 +4,7 @@
  * @group unit/parameters/AppConfigProvider/class
  */
 import { AppConfigProvider } from '../../src/appconfig/index';
+import { ExpirableValue } from '../../src/ExpirableValue';
 import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider';
 import {
   AppConfigDataClient,
@@ -286,5 +287,50 @@ describe('Class: AppConfigProvider', () => {
       // Act & Assess
       await expect(provider.getMultiple(path)).rejects.toThrow(errorMessage);
     });
+  });
+});
+
+describe('Class: ExpirableValue', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Method: constructor', () => {
+    test('when created, it has ttl set to at least maxAge seconds from test start', () => {
+      // Prepare
+      const seconds = 10;
+      const nowTimestamp = Date.now();
+      const futureTimestampSeconds = nowTimestamp/1000+(seconds);
+
+      // Act
+      const expirableValue = new ExpirableValue('foo', seconds);
+
+      // Assess
+      expect(expirableValue.ttl).toBeGreaterThan(futureTimestampSeconds);
+    });
+  });
+
+  describe('Method: isExpired', () => {
+    test('when called, it returns true when maxAge is in the future', () => {
+      // Prepare
+      const seconds = 60;
+
+      // Act
+      const expirableValue = new ExpirableValue('foo', seconds);
+
+      // Assess
+      expect(expirableValue.isExpired()).toBeFalsy();
+    }); 
+
+    test('when called, it returns false when maxAge is in the past', () => {
+      // Prepare
+      const seconds = -60;
+
+      // Act
+      const expirableValue = new ExpirableValue('foo', seconds);
+
+      // Assess
+      expect(expirableValue.isExpired()).toBeTruthy();
+    }); 
   });
 });

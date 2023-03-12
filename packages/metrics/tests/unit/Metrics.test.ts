@@ -12,7 +12,6 @@ import { Metrics, MetricUnits, MetricResolution } from '../../src/';
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 29;
 const DEFAULT_NAMESPACE = 'default_namespace';
-const DEFAULT_METRIC_RESOLUTION = MetricResolution.Standard;
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
@@ -556,8 +555,8 @@ describe('Class: Metrics', () => {
       const serializedMetrics = metrics.serializeMetrics();
 
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics).toStrictEqual([
-        { Name: 'test_name', Unit: 'Count', StorageResolution: DEFAULT_METRIC_RESOLUTION },
-        { Name: 'test_name2', Unit: 'Count', StorageResolution: DEFAULT_METRIC_RESOLUTION },
+        { Name: 'test_name', Unit: 'Count' },
+        { Name: 'test_name2', Unit: 'Count' },
       ]);
       
       expect(serializedMetrics['test_name']).toBe(1);
@@ -566,38 +565,45 @@ describe('Class: Metrics', () => {
   });
 
   describe('Feature: Resolution of Metrics', ()=>{
-    test('Should use default metric resolution `Standard, 60` if none is set',()=>{
+    test('Should serialized metrics in EMF format not contain StorageResolution as key if none is set',()=>{
       const metrics = new Metrics();
       metrics.addMetric('test_name', MetricUnits.Seconds, 10);
       const serializedMetrics = metrics.serializeMetrics();
 
-      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(DEFAULT_METRIC_RESOLUTION);
-      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(MetricResolution.Standard);
-      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(60);
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).not.toContain('StorageResolution');
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Name');
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Unit');
      
     });
 
-    test('Should use metric resolution `Standard, 60` if `Standard` is set',()=>{
+    test('Should be StorageResolution 60 if MetricResolution is set to `Standard`',()=>{
       const metrics = new Metrics();
       metrics.addMetric('test_name', MetricUnits.Seconds, 10, MetricResolution.Standard);
       const serializedMetrics = metrics.serializeMetrics();
 
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(MetricResolution.Standard);
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(60);
-     
     });
 
-    test('Should use metric resolution `Standard, 60` if `60` is set',()=>{
+    test('Should be StorageResolution 60 if MetricResolution is set to `60`',()=>{
       const metrics = new Metrics();
       metrics.addMetric('test_name', MetricUnits.Seconds, 10, 60);
       const serializedMetrics = metrics.serializeMetrics();
 
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(MetricResolution.Standard);
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(60);
-     
     });
 
-    test('Should use metric resolution `High, 1` if `1` is set',()=>{
+    test('Should be StorageResolution 1 if MetricResolution is set to `High`',()=>{
+      const metrics = new Metrics();
+      metrics.addMetric('test_name', MetricUnits.Seconds, 10, MetricResolution.High);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(MetricResolution.High);
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(1);
+    });
+
+    test('Should be StorageResolution 1 if MetricResolution is set to `1`',()=>{
       const metrics = new Metrics();
       metrics.addMetric('test_name', MetricUnits.Seconds, 10, 1);
       const serializedMetrics = metrics.serializeMetrics();
@@ -606,17 +612,6 @@ describe('Class: Metrics', () => {
       expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(1);
      
     });
-
-    test('Should use metric resolution `High, 1` if `High` is set',()=>{
-      const metrics = new Metrics();
-      metrics.addMetric('test_name', MetricUnits.Seconds, 10, MetricResolution.High);
-      const serializedMetrics = metrics.serializeMetrics();
-
-      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(MetricResolution.High);
-      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(1);
-     
-    });
-   
   });
 
   describe('Feature: Clearing Metrics ', () => {

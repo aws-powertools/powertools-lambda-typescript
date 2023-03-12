@@ -17,7 +17,6 @@ import {
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 29;
 const DEFAULT_NAMESPACE = 'default_namespace';
-const DEFAULT_METRIC_RESOLUTION = MetricResolution.Standard; 
 
 /**
  * ## Intro
@@ -170,9 +169,10 @@ class Metrics extends Utility implements MetricsInterface {
    * @param name
    * @param unit
    * @param value
+   * @param resolution
    */
 
-  public addMetric(name: string, unit: MetricUnit, value: number, resolution: MetricResolution = DEFAULT_METRIC_RESOLUTION): void {
+  public addMetric(name: string, unit: MetricUnit, value: number, resolution?: MetricResolution): void {
     this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
   }
@@ -322,11 +322,15 @@ class Metrics extends Utility implements MetricsInterface {
    * @returns {string}
    */
   public serializeMetrics(): EmfOutput {
-    const metricDefinitions = Object.values(this.storedMetrics).map((metricDefinition) => ({
+    const metricDefinitions = Object.values(this.storedMetrics).map((metricDefinition) => metricDefinition.resolution ? ({
       Name: metricDefinition.name,
       Unit: metricDefinition.unit,
       StorageResolution: metricDefinition.resolution
+    }): ({
+      Name: metricDefinition.name,
+      Unit: metricDefinition.unit
     }));
+    
     if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
     }
@@ -483,7 +487,7 @@ class Metrics extends Utility implements MetricsInterface {
     }
   }
 
-  private storeMetric(name: string, unit: MetricUnit, value: number, resolution: MetricResolution): void {
+  private storeMetric(name: string, unit: MetricUnit, value: number, resolution?: MetricResolution): void {
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }
@@ -495,6 +499,7 @@ class Metrics extends Utility implements MetricsInterface {
         name,
         resolution
       };
+      
     } else {
       const storedMetric = this.storedMetrics[name];
       if (!Array.isArray(storedMetric.value)) {

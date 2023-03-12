@@ -178,7 +178,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
               },
             ],
           },
@@ -215,7 +215,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [[ 'service', 'environment', 'aws_region', 'function_name' ]],
-                Metrics: [{ Name: 'ColdStart', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
+                Metrics: [{ Name: 'ColdStart', Unit: 'Count' }],
               },
             ],
           },
@@ -235,7 +235,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [[ 'service', 'environment', 'aws_region' ]],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
               },
             ],
           },
@@ -270,7 +270,7 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
               },
             ],
           },
@@ -305,7 +305,71 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: MetricResolution.Standard }],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
+              },
+            ],
+          },
+          service: 'orders',
+          successfulBooking: 1,
+        })
+      );
+    });
+  });
+  describe('Feature: Resolution of Metrics', ()=>{
+    test('Should use metric resolution `Standard, 60` if `Standard` is set', async () => {
+      // Prepare
+      const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+
+      const lambdaHandler = (): void => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1, MetricResolution.Standard);
+      };
+
+      const handler = middy(lambdaHandler).use(logMetrics(metrics));
+
+      // Act
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(console.log).toHaveBeenCalledWith(
+        JSON.stringify({
+          _aws: {
+            Timestamp: 1466424490000,
+            CloudWatchMetrics: [
+              {
+                Namespace: 'serverlessAirline',
+                Dimensions: [['service']],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: 60 }],
+              },
+            ],
+          },
+          service: 'orders',
+          successfulBooking: 1,
+        })
+      );
+    });
+    test('Should use metric resolution `High, 1` if `High` is set', async () => {
+      // Prepare
+      const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+
+      const lambdaHandler = (): void => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1, MetricResolution.High);
+      };
+
+      const handler = middy(lambdaHandler).use(logMetrics(metrics));
+
+      // Act
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(console.log).toHaveBeenCalledWith(
+        JSON.stringify({
+          _aws: {
+            Timestamp: 1466424490000,
+            CloudWatchMetrics: [
+              {
+                Namespace: 'serverlessAirline',
+                Dimensions: [['service']],
+                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: 1 }],
               },
             ],
           },

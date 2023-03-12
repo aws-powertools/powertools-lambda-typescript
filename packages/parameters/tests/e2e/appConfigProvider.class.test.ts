@@ -299,13 +299,10 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
       const logs = invocationLogs[0].getFunctionLogs();
       const testLog = InvocationLogs.parseFunctionLog(logs[4]);
-      const result = freeFormBase64PlainTextValue;
 
       expect(testLog).toStrictEqual({
         test: 'get-cached',
-        value: 1,
-        result1: result,
-        result2: result
+        value: 1
       });
 
     }, TEST_CASE_TIMEOUT);

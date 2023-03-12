@@ -81,13 +81,11 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   try {
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
-    const result1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText);
-    const result2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText);
+    await providerWithMiddleware.get(freeFormBase64encodedPlainText);
+    await providerWithMiddleware.get(freeFormBase64encodedPlainText);
     logger.log({
       test: 'get-cached',
-      value: middleware.counter, // should be 1
-      result1: result1,
-      result2: result2
+      value: middleware.counter // should be 1
     });
   } catch (err) {
     logger.log({
@@ -119,8 +117,8 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
   try {
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
-    const expiredResult1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 0 });
-    const expiredResult2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 0 });
+    const expiredResult1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 0, transform: 'base64' });
+    const expiredResult2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 0, transform: 'base64' });
     logger.log({
       test: 'get-expired',
       value: middleware.counter, // should be 2

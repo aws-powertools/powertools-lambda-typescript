@@ -4,7 +4,7 @@
   * @group e2e/parameters/appconfig/class
   */
 import path from 'path';
-import { App, Stack, Aspects, Duration } from 'aws-cdk-lib';
+import { App, Stack, Aspects } from 'aws-cdk-lib';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 import { v4 } from 'uuid';
 import { 
@@ -147,8 +147,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
         FREEFORM_BASE64_ENCODED_PLAIN_TEXT_NAME: freeFormBase64PlainTextName,
         FEATURE_FLAG_NAME: featureFlagName,
       },
-      runtime,
-      timeout: Duration.seconds(10),
+      runtime
     });
 
     // Create the base resources for an AppConfig application.

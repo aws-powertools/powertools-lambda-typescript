@@ -233,8 +233,6 @@ describe('Class: AppConfigProvider', () => {
 
     test('when session returns an empty configuration on the second call, it returns the last value', async () => {
 
-      client.reset();
-
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',

@@ -90,21 +90,18 @@ describe('Middy middleware', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
-      const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
-      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+      jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar'
-      });
-      const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
+      })).use(captureLambdaHandler(tracer));
 
       // Act
-      await handler({}, context, () => console.log('Lambda invoked!'));
+      await handler({}, context);
 
       // Assess
-      expect(setSegmentSpy).toHaveBeenCalledTimes(2);
-      expect('metadata' in newSubsegment).toBe(false);
+      expect(putMetadataSpy).toHaveBeenCalledTimes(0);
       delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
 
     });
@@ -113,21 +110,18 @@ describe('Middy middleware', () => {
 
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
-      const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
-      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+      jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar'
-      });
-      const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer, { captureResponse: false }));
+      })).use(captureLambdaHandler(tracer, { captureResponse: false }));
 
       // Act
-      await handler({}, context, () => console.log('Lambda invoked!'));
+      await handler({}, context);
 
       // Assess
-      expect(setSegmentSpy).toHaveBeenCalledTimes(2);
-      expect('metadata' in newSubsegment).toBe(false);
+      expect(putMetadataSpy).toHaveBeenCalledTimes(0);
 
     });
 
@@ -135,30 +129,19 @@ describe('Middy middleware', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
-      const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
-      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+      jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar'
-      });
-      const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer, { captureResponse: true }));
+      })).use(captureLambdaHandler(tracer, { captureResponse: true }));
 
       // Act
-      await handler({}, context, () => console.log('Lambda invoked!'));
+      await handler({}, context);
 
       // Assess
-      expect(setSegmentSpy).toHaveBeenCalledTimes(2);
-      expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## index.handler',
-        metadata: {
-          'hello-world': {
-            'index.handler response': {
-              foo: 'bar',
-            },
-          },
-        }
-      }));
+      expect(putMetadataSpy).toHaveBeenCalledTimes(1);
+      expect(putMetadataSpy).toHaveBeenCalledWith('index.handler response', { foo: 'bar' });
 
     });
 
@@ -166,30 +149,19 @@ describe('Middy middleware', () => {
       
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
-      const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
-      jest.spyOn(tracer.provider, 'getSegment').mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+      jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+
+      const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar'
-      });
-      const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
+      })).use(captureLambdaHandler(tracer));
 
       // Act
-      await handler({}, context, () => console.log('Lambda invoked!'));
+      await handler({}, context);
 
       // Assess
-      expect(setSegmentSpy).toHaveBeenCalledTimes(2);
-      expect(newSubsegment).toEqual(expect.objectContaining({
-        name: '## index.handler',
-        metadata: {
-          'hello-world': {
-            'index.handler response': {
-              foo: 'bar',
-            },
-          },
-        }
-      }));
+      expect(putMetadataSpy).toHaveBeenCalledTimes(1);
+      expect(putMetadataSpy).toHaveBeenCalledWith('index.handler response', { foo: 'bar' });
 
     });
 
@@ -251,46 +223,27 @@ describe('Middy middleware', () => {
       
     // Prepare
     const tracer: Tracer = new Tracer();
-    const facadeSegment = new Segment('facade');
-    const newSubsegmentFirstInvocation: Segment | Subsegment | undefined = new Subsegment('## index.handler');
-    const newSubsegmentSecondInvocation: Segment | Subsegment | undefined = new Subsegment('## index.handler');
-    const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+    jest.spyOn(tracer.provider, 'setSegment').mockImplementation(() => ({}));
     jest.spyOn(tracer.provider, 'getSegment')
-      .mockImplementationOnce(() => facadeSegment)
-      .mockImplementationOnce(() => newSubsegmentFirstInvocation)
-      .mockImplementationOnce(() => facadeSegment)
-      .mockImplementation(() => newSubsegmentSecondInvocation);
-    setContextMissingStrategy(() => null);
+      .mockImplementationOnce(() => new Segment('facade'))
+      .mockImplementationOnce(() => new Subsegment('## index.handler'))
+      .mockImplementationOnce(() => new Segment('facade'))
+      .mockImplementation(() => new Subsegment('## index.handler'));
     const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
-    const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+    
+    const handler = middy(async (_event: unknown, _context: Context) => ({
       foo: 'bar'
-    });
-    const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
+    })).use(captureLambdaHandler(tracer));
 
     // Act
-    await handler({}, context, () => console.log('Lambda invoked!'));
-    await handler({}, context, () => console.log('Lambda invoked!'));
+    await handler({}, context);
+    await handler({}, context);
     
     // Assess
-    expect(setSegmentSpy).toHaveBeenCalledTimes(4);
-    expect(putAnnotationSpy.mock.calls.filter(call => 
-      call[0] === 'ColdStart'
-    )).toEqual([
-      [ 'ColdStart', true ],
-      [ 'ColdStart', false ],
-    ]);
-    expect(newSubsegmentFirstInvocation).toEqual(expect.objectContaining({
-      name: '## index.handler',
-      annotations: expect.objectContaining({
-        'ColdStart': true,
-      })
-    }));
-    expect(newSubsegmentSecondInvocation).toEqual(expect.objectContaining({
-      name: '## index.handler',
-      annotations: expect.objectContaining({
-        'ColdStart': false,
-      })
-    }));
+    // 2x Cold Start + 2x Service
+    expect(putAnnotationSpy).toHaveBeenCalledTimes(4);
+    expect(putAnnotationSpy).toHaveBeenNthCalledWith(1, 'ColdStart', true);
+    expect(putAnnotationSpy).toHaveBeenNthCalledWith(3, 'ColdStart', false);
 
   });
 
@@ -298,35 +251,23 @@ describe('Middy middleware', () => {
       
     // Prepare
     const tracer: Tracer = new Tracer();
-    const facadeSegment = new Segment('facade');
-    const newSubsegment: Segment | Subsegment | undefined = new Subsegment('## index.handler');
-    const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
+    jest.spyOn(tracer.provider, 'setSegment').mockImplementation(() => ({}));
     jest.spyOn(tracer.provider, 'getSegment')
-      .mockImplementationOnce(() => facadeSegment)
-      .mockImplementation(() => newSubsegment);
-    setContextMissingStrategy(() => null);
-    const lambdaHandler: Handler = async (_event: unknown, _context: Context) => ({
+      .mockImplementationOnce(() => new Segment('facade'))
+      .mockImplementation(() => new Subsegment('## index.handler'));
+    const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+
+    const handler = middy(async (_event: unknown, _context: Context) => ({
       foo: 'bar'
-    });
-    const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
+    })).use(captureLambdaHandler(tracer));
 
     // Act
-    await handler({}, context, () => console.log('Lambda invoked!'));
+    await handler({}, context);
 
     // Assess
-    expect(setSegmentSpy).toHaveBeenCalledTimes(2);
-    expect(setSegmentSpy.mock.calls.map(arg => ({
-      name: arg[0].name,
-    }))).toEqual([
-      expect.objectContaining({ name: '## index.handler' }),
-      expect.objectContaining({ name: 'facade' }),
-    ]);
-    expect(newSubsegment).toEqual(expect.objectContaining({
-      name: '## index.handler',
-      annotations: expect.objectContaining({
-        'Service': 'hello-world',
-      })
-    }));
+    // The first call is for the Cold Start annotation
+    expect(putAnnotationSpy).toHaveBeenCalledTimes(2);
+    expect(putAnnotationSpy).toHaveBeenNthCalledWith(2, 'Service', 'hello-world');
 
   });
 

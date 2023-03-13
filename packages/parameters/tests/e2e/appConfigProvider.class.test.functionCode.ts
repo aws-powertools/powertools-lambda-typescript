@@ -111,14 +111,23 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
       error: err.message
     });
   }
-
   // Test 7
-  // get parameter twice, but wait long enough that cache expires count SDK calls and return values
+  // get parameter twice, using maxAge to avoid primary cache, count SDK calls and return values
   try {
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
-    const expiredResult1 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 0, transform: 'base64' });
-    const expiredResult2 = await providerWithMiddleware.get(freeFormBase64encodedPlainText, { maxAge: 0, transform: 'base64' });
+    const expiredResult1 = await providerWithMiddleware.get(
+      freeFormBase64encodedPlainText, { 
+        maxAge: 0, 
+        transform: 'base64' 
+      }
+    );
+    const expiredResult2 = await providerWithMiddleware.get(
+      freeFormBase64encodedPlainText, { 
+        maxAge: 0, 
+        transform: 'base64' 
+      }
+    );
     logger.log({
       test: 'get-expired',
       value: middleware.counter, // should be 2

@@ -115,7 +115,7 @@ let stack: Stack;
  * check that we got matching results
  * 
  * Test 7
- * get parameter twice, wait for expiration betweenn
+ * get parameter twice, using maxAge to avoid primary cache
  * we count number of SDK requests and check that we made two API calls
  * and check that the values match
  * 
@@ -321,7 +321,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
     }, TEST_CASE_TIMEOUT);
 
-    // Test 7 - get parameter twice, wait for expiration betweenn
+    // Test 7 - get parameter twice, using maxAge to avoid primary cache
     // we count number of SDK requests and check that we made two API calls
     // and check that the values match
     it('should retrieve single parameter twice, with expiration between and matching values', async () => {

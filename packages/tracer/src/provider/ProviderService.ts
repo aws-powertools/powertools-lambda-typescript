@@ -1,7 +1,25 @@
-import { ContextMissingStrategy } from 'aws-xray-sdk-core/dist/lib/context_utils';
+import {
+  ContextMissingStrategy
+} from 'aws-xray-sdk-core/dist/lib/context_utils';
 import { Namespace } from 'cls-hooked';
 import { ProviderServiceInterface } from '.';
-import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, captureHTTPsGlobal, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger, Logger } from 'aws-xray-sdk-core';
+import {
+  captureAWS,
+  captureAWSClient,
+  captureAWSv3Client,
+  captureAsyncFunc,
+  captureFunc,
+  captureHTTPsGlobal,
+  getNamespace,
+  getSegment,
+  setSegment,
+  Segment,
+  Subsegment,
+  setContextMissingStrategy,
+  setDaemonAddress,
+  setLogger,
+  Logger
+} from 'aws-xray-sdk-core';
 
 class ProviderService implements ProviderServiceInterface {
   public captureAWS<T>(awssdk: T): T {
@@ -42,7 +60,7 @@ class ProviderService implements ProviderServiceInterface {
   }
 
   public putAnnotation(key: string, value: string | number | boolean): void {
-    const segment = getSegment();
+    const segment = this.getSegment();
     if (segment === undefined) {
       console.warn('No active segment or subsegment found, skipping annotation');
 
@@ -57,7 +75,7 @@ class ProviderService implements ProviderServiceInterface {
   }
 
   public putMetadata(key: string, value: unknown, namespace?: string): void {
-    const segment = getSegment();
+    const segment = this.getSegment();
     if (segment === undefined) {
       console.warn('No active segment or subsegment found, skipping metadata addition');
 

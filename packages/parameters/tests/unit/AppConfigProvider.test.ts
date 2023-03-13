@@ -22,6 +22,10 @@ describe('Class: AppConfigProvider', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    client.reset();
+  });
+
   describe('Method: constructor', () => {
     test('when the class instantiates without SDK client and client config it has default options', async () => {
       // Prepare

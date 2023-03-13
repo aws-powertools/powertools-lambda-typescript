@@ -332,9 +332,11 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
       expect(testLog).toStrictEqual({
         test: 'get-expired',
-        value: 2,
-        result1: result,
-        result2: result
+        value: {
+          counter: 2,
+          result1: result,
+          result2: result
+        }
       });
 
     }, TEST_CASE_TIMEOUT);

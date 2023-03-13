@@ -130,9 +130,11 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     );
     logger.log({
       test: 'get-expired',
-      value: middleware.counter, // should be 2
-      result1: expiredResult1,
-      result2: expiredResult2
+      value: {
+        counter: middleware.counter, // should be 2
+        result1: expiredResult1,
+        result2: expiredResult2
+      },
     });
   } catch (err) {
     logger.log({

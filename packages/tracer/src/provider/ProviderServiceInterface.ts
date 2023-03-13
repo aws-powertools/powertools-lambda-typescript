@@ -25,6 +25,10 @@ interface ProviderServiceInterface {
   captureFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment): unknown
 
   captureHTTPsGlobal(): void
+
+  putAnnotation(key: string, value: string | number | boolean): void
+
+  putMetadata(key: string, value: unknown, namespace?: string): void
 }
 
 export {

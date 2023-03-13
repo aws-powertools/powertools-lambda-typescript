@@ -2,7 +2,7 @@ import { CaptureLambdaHandlerOptions, CaptureMethodOptions, HandlerMethodDecorat
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
 interface TracerInterface {
-  addErrorAsMetadata(error: Error): void
+  addErrorAsMetadata(error: Error, remote?: boolean): void
   addResponseAsMetadata(data?: unknown, methodName?: string): void
   addServiceNameAnnotation(): void
   annotateColdStart(): void
@@ -11,7 +11,7 @@ interface TracerInterface {
   captureAWSClient<T>(service: T): void | T
   captureLambdaHandler(options?: CaptureLambdaHandlerOptions): HandlerMethodDecorator
   captureMethod(options?: CaptureMethodOptions): MethodDecorator
-  getSegment(): Segment | Subsegment
+  getSegment(): Segment | Subsegment | undefined
   getRootXrayTraceId(): string | undefined
   isTracingEnabled(): boolean
   putAnnotation: (key: string, value: string | number | boolean) => void

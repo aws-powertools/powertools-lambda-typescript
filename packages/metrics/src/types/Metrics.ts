@@ -21,7 +21,11 @@ type EmfOutput = {
     CloudWatchMetrics: {
       Namespace: string
       Dimensions: [string[]]   
-      Metrics: { Name: string; Unit: MetricUnit; StorageResolution?: MetricResolution }[]
+      Metrics: {
+        Name: string
+        Unit: MetricUnit
+        StorageResolution?: MetricResolution
+      }[]    
     }[]
   }
 };

@@ -11,7 +11,7 @@ import {
   ExtraOptions,
   MetricUnit,
   MetricUnits,
-  MetricResolution
+  MetricResolution,
 } from './types';
 
 const MAX_METRICS_SIZE = 100;
@@ -487,7 +487,12 @@ class Metrics extends Utility implements MetricsInterface {
     }
   }
 
-  private storeMetric(name: string, unit: MetricUnit, value: number, resolution?: MetricResolution): void {
+  private storeMetric(
+    name: string,
+    unit: MetricUnit,
+    value: number,
+    resolution?: MetricResolution,
+  ): void {    
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }
@@ -497,7 +502,7 @@ class Metrics extends Utility implements MetricsInterface {
         unit,
         value,
         name,
-        resolution
+        resolution,      
       };
       
     } else {
@@ -511,4 +516,8 @@ class Metrics extends Utility implements MetricsInterface {
 
 }
 
-export { Metrics, MetricUnits, MetricResolution };
+export {
+  Metrics,
+  MetricUnits,
+  MetricResolution,
+};

@@ -4,8 +4,12 @@
  * @group unit/metrics/middleware
  */
 
-import { Metrics, MetricUnits, logMetrics, MetricResolution } from '../../../../metrics/src';
-import middy from '@middy/core';
+import {
+  Metrics,
+  MetricUnits,
+  logMetrics,
+  MetricResolution
+} from '../../../../metrics/src';import middy from '@middy/core';
 import { ExtraOptions } from '../../../src/types';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -315,8 +319,9 @@ describe('Middy middleware', () => {
       );
     });
   });
-  describe('Feature: Resolution of Metrics', ()=>{
-    test('Should use metric resolution `Standard, 60` if `Standard` is set', async () => {
+  describe('Metrics resolution', () => {
+
+    test('should use metric resolution `Standard, 60` if `Standard` is set', async () => {
       // Prepare
       const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
 
@@ -338,7 +343,11 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: 60 }],
+                Metrics: [{
+                  Name: 'successfulBooking',
+                  Unit: 'Count',
+                  StorageResolution: 60,
+                }],              
               },
             ],
           },
@@ -347,7 +356,8 @@ describe('Middy middleware', () => {
         })
       );
     });
-    test('Should use metric resolution `High, 1` if `High` is set', async () => {
+
+    test('should use metric resolution `High, 1` if `High` is set', async () => {
       // Prepare
       const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
 
@@ -369,7 +379,11 @@ describe('Middy middleware', () => {
               {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
-                Metrics: [{ Name: 'successfulBooking', Unit: 'Count', StorageResolution: 1 }],
+                Metrics: [{
+                  Name: 'successfulBooking',
+                  Unit: 'Count',
+                  StorageResolution: 1
+                }],              
               },
             ],
           },

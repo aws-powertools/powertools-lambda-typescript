@@ -565,7 +565,8 @@ describe('Class: Metrics', () => {
   });
 
   describe('Feature: Resolution of Metrics', ()=>{
-    test('Should serialized metrics in EMF format not contain StorageResolution as key if none is set',()=>{
+
+    test('serialized metrics in EMF format should not contain `StorageResolution` as key if none is set', () => {
       const metrics = new Metrics();
       metrics.addMetric('test_name', MetricUnits.Seconds, 10);
       const serializedMetrics = metrics.serializeMetrics();
@@ -575,8 +576,7 @@ describe('Class: Metrics', () => {
       expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Unit');
      
     });
-
-    test('Should be StorageResolution 60 if MetricResolution is set to `Standard`',()=>{
+    test('should set StorageResolution 60 if MetricResolution is set to `Standard`', () => {
       const metrics = new Metrics();
       metrics.addMetric('test_name', MetricUnits.Seconds, 10, MetricResolution.Standard);
       const serializedMetrics = metrics.serializeMetrics();

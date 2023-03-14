@@ -798,44 +798,4 @@ describe('Class: Metrics', () => {
       expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(namespace);
     });
   });
-
-  describe('concept', ()=>{
-    test('metric DX type with const', ()=>{
-      const MetricResolutionConcept = {
-        Standard: 60,
-        High: 1
-      } as const;
-      type MetricResolutionConcept = typeof MetricResolutionConcept[keyof typeof MetricResolutionConcept];
-
-      const use = (resolution: MetricResolutionConcept):void => {
-        if (resolution === MetricResolutionConcept.Standard) expect(resolution).toBe(MetricResolution.Standard);
-        if (resolution === MetricResolution.High) expect(resolution).toBe(MetricResolutionConcept.High);
-      };
-
-      // prefered design of Metric Resolution, strcutural typing, compile time guidance 
-      use(MetricResolution.Standard);
-      use(60);
-      use(1);
-      // use(10); // Argument of type '10' is not assignable to parameter of type 'MetricResolutionConcept'.ts(2345)
-      //use(80); // Argument of type '10' is not assignable to parameter of type 'MetricResolutionConcept'.ts(2345)
-    });
-
-    test('metric DX type with enum', ()=>{
-      enum MetricResolutionEnum {
-        Standard = 60,
-        High = 1
-      }
-    
-      const use = (resolution: MetricResolutionEnum):void => {
-        if (resolution === MetricResolutionEnum.Standard) expect(resolution).toBe(MetricResolution.Standard);
-        if (resolution === MetricResolutionEnum.High) expect(resolution).toBe(MetricResolutionEnum.High);
-      };
-      use(MetricResolution.Standard);
-
-      // enum design, allows the following usage at compile time
-      use(10); // Argument of type '10' is assignable to parameter of type 'MetricResolutionEnum'
-      use(80); // Argument of type '10' is assignable to parameter of type 'MetricResolutionEnum'   
-    });
-    
-  });
 });

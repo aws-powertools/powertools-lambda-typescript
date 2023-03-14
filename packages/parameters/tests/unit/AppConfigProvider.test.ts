@@ -4,6 +4,7 @@
  * @group unit/parameters/AppConfigProvider/class
  */
 import { AppConfigProvider } from '../../src/appconfig/index';
+import { ExpirableValue } from '../../src/ExpirableValue';
 import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider';
 import {
   AppConfigDataClient,
@@ -19,6 +20,10 @@ describe('Class: AppConfigProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    client.reset();
   });
 
   describe('Method: constructor', () => {
@@ -225,6 +230,49 @@ describe('Class: AppConfigProvider', () => {
       // Act & Assess
       await expect(provider.get(name)).rejects.toThrow();
     });
+
+    test('when session returns an empty configuration on the second call, it returns the last value', async () => {
+
+      // Prepare
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+      };
+      const provider = new AppConfigProvider(options);
+      const name = 'MyAppFeatureFlag';
+
+      const fakeInitialToken = 'aW5pdGlhbFRva2Vu';
+      const fakeNextToken1 = 'bmV4dFRva2Vu';
+      const fakeNextToken2 = 'bmV4dFRva2Vq';
+      const mockData = encoder.encode('myAppConfiguration');
+
+      client
+        .on(StartConfigurationSessionCommand)
+        .resolves({
+          InitialConfigurationToken: fakeInitialToken,
+        })
+        .on(GetLatestConfigurationCommand)
+        .resolvesOnce({
+          Configuration: mockData,
+          NextPollConfigurationToken: fakeNextToken1,
+        })
+        .resolvesOnce({
+          Configuration: undefined,
+          NextPollConfigurationToken: fakeNextToken2,
+        });
+
+      // Act
+
+      // Load local cache
+      const result1 = await provider.get(name, { forceFetch: true });
+
+      // Read from local cache, given empty response from service
+      const result2 = await provider.get(name, { forceFetch: true });
+
+      // Assess
+      expect(result1).toBe(mockData);
+      expect(result2).toBe(mockData);
+    });
   });
 
   describe('Method: _getMultiple', () => {
@@ -241,5 +289,50 @@ describe('Class: AppConfigProvider', () => {
       // Act & Assess
       await expect(provider.getMultiple(path)).rejects.toThrow(errorMessage);
     });
+  });
+});
+
+describe('Class: ExpirableValue', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Method: constructor', () => {
+    test('when created, it has ttl set to at least maxAge seconds from test start', () => {
+      // Prepare
+      const seconds = 10;
+      const nowTimestamp = Date.now();
+      const futureTimestampSeconds = nowTimestamp/1000+(seconds);
+
+      // Act
+      const expirableValue = new ExpirableValue('foo', seconds);
+
+      // Assess
+      expect(expirableValue.ttl).toBeGreaterThan(futureTimestampSeconds);
+    });
+  });
+
+  describe('Method: isExpired', () => {
+    test('when called, it returns true when maxAge is in the future', () => {
+      // Prepare
+      const seconds = 60;
+
+      // Act
+      const expirableValue = new ExpirableValue('foo', seconds);
+
+      // Assess
+      expect(expirableValue.isExpired()).toBeFalsy();
+    }); 
+
+    test('when called, it returns false when maxAge is in the past', () => {
+      // Prepare
+      const seconds = -60;
+
+      // Act
+      const expirableValue = new ExpirableValue('foo', seconds);
+
+      // Assess
+      expect(expirableValue.isExpired()).toBeTruthy();
+    }); 
   });
 });

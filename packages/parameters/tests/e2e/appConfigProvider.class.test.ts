@@ -54,6 +54,7 @@ const freeFormJsonValue = {
 const freeFormYamlValue = `foo: bar
 `;
 const freeFormPlainTextValue = 'foo';
+const freeFormBase64PlainTextValue = toBase64(new TextEncoder().encode(freeFormPlainTextValue));
 const featureFlagValue = {
   version: '1',
   flags: {
@@ -111,6 +112,12 @@ let stack: Stack;
  * Test 6
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
+ * check that we got matching results
+ * 
+ * Test 7
+ * get parameter twice, using maxAge to avoid primary cache
+ * we count number of SDK requests and check that we made two API calls
+ * and check that the values match
  * 
  * Note: To avoid race conditions, we add a dependency between each pair of configuration profiles.
  * This allows us to influence the order of creation and ensure that each configuration profile
@@ -191,7 +198,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
       name: freeFormBase64PlainTextName,
       type: 'AWS.Freeform',
       content: {
-        content: toBase64(new TextEncoder().encode(freeFormPlainTextValue)),
+        content: freeFormBase64PlainTextValue,
         contentType: 'text/plain',
       }
     });
@@ -310,6 +317,26 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
       expect(testLog).toStrictEqual({
         test: 'get-forced',
         value: 2
+      });
+
+    }, TEST_CASE_TIMEOUT);
+
+    // Test 7 - get parameter twice, using maxAge to avoid primary cache
+    // we count number of SDK requests and check that we made two API calls
+    // and check that the values match
+    it('should retrieve single parameter twice, with expiration between and matching values', async () => {
+
+      const logs = invocationLogs[0].getFunctionLogs();
+      const testLog = InvocationLogs.parseFunctionLog(logs[6]);
+      const result = freeFormBase64PlainTextValue;
+
+      expect(testLog).toStrictEqual({
+        test: 'get-expired',
+        value: {
+          counter: 2,
+          result1: result,
+          result2: result
+        }
       });
 
     }, TEST_CASE_TIMEOUT);

@@ -8,9 +8,9 @@ import type { GetOptionsInterface } from 'types/BaseProvider';
 /**
  * Base interface for AppConfigProviderOptions.
  *
- *  @interface
- *  @property {string} environment - The environment ID or the environment name.
- *  @property {string} [application] - The application ID or the application name.
+ * @interface
+ * @property {string} environment - The environment ID or the environment name.
+ * @property {string} [application] - The application ID or the application name.
  */
 interface AppConfigProviderOptionsBaseInterface {
   environment: string
@@ -20,10 +20,10 @@ interface AppConfigProviderOptionsBaseInterface {
 /**
  * Interface for AppConfigProviderOptions with clientConfig property.
  *
- *  @interface
- *  @extends AppConfigProviderOptionsBaseInterface
- *  @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
- *  @property {never} [awsSdkV3Client] - This property should never be passed.
+ * @interface
+ * @extends AppConfigProviderOptionsBaseInterface
+ * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
+ * @property {never} [awsSdkV3Client] - This property should never be passed.
  */
 interface AppConfigProviderOptionsWithClientConfig extends AppConfigProviderOptionsBaseInterface {
   clientConfig?: AppConfigDataClientConfig
@@ -59,7 +59,10 @@ type AppConfigProviderOptions = AppConfigProviderOptionsWithClientConfig | AppCo
  *
  * @interface AppConfigGetOptionsInterface
  * @extends {GetOptionsInterface}
- * @property {StartConfigurationSessionCommandInput} [sdkOptions] - Required options to start configuration session.
+ * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
+ * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property {StartConfigurationSessionCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
+ * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  */
 interface AppConfigGetOptionsInterface extends Omit<GetOptionsInterface, 'sdkOptions'> {
   sdkOptions?: Omit<

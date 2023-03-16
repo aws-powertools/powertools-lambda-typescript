@@ -27,14 +27,14 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
 /**
  * ## Intro
  * The Parameters utility provides a SSMProvider that allows to retrieve parameters from AWS Systems Manager.
- * 
+ *
  * ## Getting started
- * 
+ *
  * This utility supports AWS SDK v3 for JavaScript only. This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
- * 
+ *
  * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for AppConfig:
- * 
+ *
  * ```sh
  * npm install @aws-lambda-powertools/parameters @aws-sdk/client-ssm
  * ```
@@ -42,13 +42,13 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  * ## Basic usage
  *
  * Retrieve a parameter from SSM:
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a parameter from SSM
  *   const parameter = await parametersProvider.get('/my-parameter');
@@ -56,54 +56,54 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  * ```
  *
  * If you want to retrieve a parameter without customizing the provider, you can use the {@link getParameter} function instead.
- * 
+ *
  * You can also retrieve parameters at once. If you want to get multiple parameters under the same path, you can use the `getMultiple` method.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *  // Retrieve multiple parameters by path from SSM
  *  const parameters = await parametersProvider.getMultiple('/my-parameters-path');
  * };
- * 
+ *
  * If you don't need to customize the provider, you can also use the {@link getParameters} function instead.
- * 
+ *
  * If instead you want to retrieve multiple parameters by name, you can use the `getParametersByName` method.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve multiple parameters by name from SSM
  *   const parameters = await parametersProvider.getParametersByName({
  *     '/my-parameter-1': {}, // Use default options
- *     '/my-parameter-2': { transform: 'json' }, // Parse the value as JSON 
+ *     '/my-parameter-2': { transform: 'json' }, // Parse the value as JSON
  *   });
  * };
  * ```
- * 
+ *
  * If you don't need to customize the provider, you can also use the {@link getParametersByName} function instead.
- * 
+ *
  * ## Advanced usage
- * 
+ *
  * ### Caching
- * 
+ *
  * By default, the provider will cache parameters retrieved in-memory for 5 seconds.
  * You can adjust how long values should be kept in cache by using the `maxAge` parameter.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a parameter and cache it for 10 seconds
  *   const parameter = await parametersProvider.get('/my-parameter', { maxAge: 10 });
@@ -111,20 +111,20 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *   const parameters = await parametersProvider.getMultiple('/my-parameters-path', { maxAge: 20 });
  * };
  * ```
- * 
+ *
  * When using the `getParametersByName` method, you can set a different `maxAge` for each parameter or set a default `maxAge` for all parameters.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve multiple parameters by name and cache them individually
  *   const parameters = await parametersProvider.getParametersByName({
  *     '/my-parameter-1': { maxAge: 10 }, // Cache for 10 seconds
- *     '/my-parameter-2': { maxAge: 10 }, // Cache for 20 seconds
+ *     '/my-parameter-2': { maxAge: 20 }, // Cache for 20 seconds
  *   });
  *   // Retrieve multiple parameters by name and cache them all for 20 seconds
  *   const parameters = await parametersProvider.getParametersByName({
@@ -133,15 +133,15 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *   }, { maxAge: 20 });
  * };
  * ```
- * 
+ *
  * If instead you'd like to always ensure you fetch the latest parameter from the store regardless if already available in cache, use the `forceFetch` parameter.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a parameter and skip cache
  *   const parameter = await parametersProvider.get('/my-parameter', { forceFetch: true });
@@ -149,19 +149,19 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *   const parameters = await parametersProvider.getMultiple('/my-parameters-path', { forceFetch: true });
  * };
  * ```
- * 
+ *
  * Likewise, you can use the `forceFetch` parameter with the `getParametersByName` method both for individual parameters and for all parameters.
- * 
+ *
  * ### Decryption
- * 
+ *
  * If you want to retrieve a parameter that is encrypted, you can use the `decrypt` parameter. This parameter is compatible with `get`, `getMultiple` and `getParametersByName`.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a parameter and decrypt it
  *   const parameter = await parametersProvider.get('/my-parameter', { decrypt: true });
@@ -169,17 +169,17 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *   const parameters = await parametersProvider.getMultiple('/my-parameters-path', { decrypt: true });
  * };
  * ```
- * 
+ *
  * ### Transformations
- * 
+ *
  * For parameters stored as JSON you can use the transform argument for deserialization. This will return a JavaScript object instead of a string.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a parameter and parse it as JSON
  *   const parameter = await parametersProvider.get('/my-parameter', { transform: 'json' });
@@ -187,15 +187,15 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *   const parameters = await parametersProvider.getMultiple('/my-parameters-path', { transform: 'json' });
  * };
  * ```
- * 
+ *
  * For parameters that are instead stored as base64-encoded binary data, you can use the transform argument set to `binary` for decoding. This will return a decoded string.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a base64-encoded string and decode it
  *   const parameter = await parametersProvider.get('/my-parameter', { transform: 'binary' });
@@ -203,19 +203,19 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *   const parameters = await parametersProvider.getMultiple('/my-parameters-path', { transform: 'binary' });
  * };
  * ```
- * 
+ *
  * Both type of transformations are compatible also with the `getParametersByName` method.
- * 
+ *
  * ### Extra SDK options
- * 
+ *
  * When retrieving parameters, you can pass extra options to the AWS SDK v3 for JavaScript client by using the `sdkOptions` parameter.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider();
- * 
+ *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a parameter and pass extra options to the AWS SDK v3 for JavaScript client
  *   const parameter = await parametersProvider.get('/my-parameter', {
@@ -225,39 +225,39 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *   });
  * };
  * ```
- * 
+ *
  * The objects accept the same options as respectively the [AWS SDK v3 for JavaScript GetParameter command](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametercommand.html) and the [AWS SDK v3 for JavaScript GetParametersByPath command](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametersbypathcommand.html).
- * 
+ *
  * ### Customize AWS SDK v3 for JavaScript client
- * 
+ *
  * By default, the provider will create a new SSM client using the default configuration.
- * 
+ *
  * You can customize the client by passing a custom configuration object to the provider.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
- * 
+ *
  * const parametersProvider = new SSMProvider({
  *   clientConfig: { region: 'eu-west-1' },
  * });
  * ```
- * 
+ *
  * This object accepts the same options as the [AWS SDK v3 for JavaScript SSM client constructor](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/ssmclient.html#constructor).
- * 
+ *
  * Otherwise, if you want to use a custom client altogether, you can pass it to the provider.
- * 
+ *
  * @example
  * ```typescript
  * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
  * import { SSMClient } from '@aws-sdk/client-ssm';
- * 
+ *
  * const client = new SSMClient({ region: 'eu-west-1' });
  * const parametersProvider = new SSMProvider({
  *   awsSdkV3Client: client,
  * });
  * ```
- * 
+ *
  * This object must be an instance of the [AWS SDK v3 for JavaScript SSM client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/ssmclient.html).
  *
  * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
@@ -289,28 +289,28 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Retrieve a value from AWS Systems Manager.
-   * 
+   *
    * @example
    * ```typescript
    * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-   * 
+   *
    * const parametersProvider = new SSMProvider();
-   * 
+   *
    * export const handler = async (): Promise<void> => {
    *   // Retrieve a parameter from SSM
    *   const parameter = await parametersProvider.get('/my-parameter');
    * };
    * ```
-   * 
+   *
    * You can customize the retrieval of the value by passing options to the function:
    * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
    * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
    * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
    * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
    * * `decrypt` - Whether to decrypt the value before returning it.
-   * 
+   *
    * For usage examples check {@link SSMProvider}.
-   * 
+   *
    * @param {string} name - The name of the value to retrieve (i.e. the partition key)
    * @param {SSMGetOptionsInterface} options - Options to configure the provider
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
@@ -324,19 +324,19 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Retrieve multiple values from AWS Systems Manager.
-   * 
+   *
    * @example
    * ```typescript
    * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-   * 
+   *
    * const parametersProvider = new SSMProvider();
-   * 
+   *
    * export const handler = async (): Promise<void> => {
    *   // Retrieve multiple parameters from SSM
    *   const parameters = await parametersProvider.getMultiple('/my-parameters-path');
    * };
    * ```
-   * 
+   *
    * You can customize the retrieval of the values by passing options to the function:
    * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
    * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
@@ -345,9 +345,9 @@ class SSMProvider extends BaseProvider {
    * * `throwOnTransformError` - Whether to throw an error if the transform fails (default: `true`)
    * * `decrypt` - Whether to decrypt the value before returning it.
    * * `recursive` - Whether to recursively retrieve all parameters under the given path (default: `false`)
-   * 
+   *
    * For usage examples check {@link SSMProvider}.
-   * 
+   *
    * @param {string} path - The path of the parameters to retrieve
    * @param {SSMGetMultipleOptionsInterface} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
@@ -361,18 +361,18 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Retrieve multiple parameters by name from AWS Systems Manager.
-   * 
+   *
    * @example
    * ```typescript
    * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-   * 
+   *
    * const parametersProvider = new SSMProvider();
-   * 
+   *
    * export const handler = async (): Promise<void> => {
    *   // Retrieve multiple parameters by name from SSM
    *   const parameters = await parametersProvider.getParametersByName({
    *     '/my-parameter-1': {}, // Use default options
-   *     '/my-parameter-2': { transform: 'json' }, // Parse the value as JSON 
+   *     '/my-parameter-2': { transform: 'json' }, // Parse the value as JSON
    *   });
    * };
    * ```
@@ -383,13 +383,13 @@ class SSMProvider extends BaseProvider {
    * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
    * * `throwOnTransformError` - Whether to throw an error if the transform fails (default: `true`)
    * * `decrypt` - Whether to decrypt the value before returning it
-   * 
+   *
    * `throwOnError` decides whether to throw an error if a parameter is not found:
    * - A) Default fail-fast behavior: Throws a `GetParameterError` error upon any failure.
    * - B) Gracefully aggregate all parameters that failed under "_errors" key.
-   * 
+   *
    * It transparently uses GetParameter and/or GetParameters depending on decryption requirements.
-   * 
+   *
    * ```sh
    *                                ┌────────────────────────┐
    *                            ┌───▶  Decrypt entire batch  │─────┐
@@ -404,7 +404,7 @@ class SSMProvider extends BaseProvider {
    *                                └────────────────────────┘           │ GetParameters API  │
    *                                                                     └────────────────────┘
    * ```
-   * 
+   *
    * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - Object containing parameter names and any optional overrides
    * @param {SSMGetParametersByNameOptionsInterface} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
@@ -441,7 +441,7 @@ class SSMProvider extends BaseProvider {
         response: batchResponse,
         errors: batchErrors
       } = await this.getParametersBatchByName(parametersToFetchInBatch, configs.throwOnError, false);
-      
+
       response = { ...decryptResponse, ...batchResponse };
       // Fail-fast disabled, let's aggregate errors under "_errors" key so they can handle gracefully
       if (!configs.throwOnError) {
@@ -452,7 +452,7 @@ class SSMProvider extends BaseProvider {
         response: batchResponse,
         errors: batchErrors
       } = await this.getParametersBatchByName(parametersToDecrypt, configs.throwOnError, true);
-      
+
       response = batchResponse;
       // Fail-fast disabled, let's aggregate errors under "_errors" key so they can handle gracefully
       if (!configs.throwOnError) {
@@ -486,7 +486,7 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Retrieve multiple items from AWS Systems Manager.
-   * 
+   *
    * @param {string} path - The path of the parameters to retrieve
    * @param {SSMGetMultipleOptionsInterface} options - Options to configure the provider
    */
@@ -507,7 +507,7 @@ class SSMProvider extends BaseProvider {
       options.recursive : sdkOptions.Recursive;
     paginationOptions.pageSize = sdkOptions.MaxResults !== undefined ?
       sdkOptions.MaxResults : undefined;
-    
+
     const parameters: Record<string, string | undefined> = {};
     for await (const page of paginateGetParametersByPath(paginationOptions, sdkOptions)) {
       for (const parameter of page.Parameters || []) {
@@ -515,9 +515,9 @@ class SSMProvider extends BaseProvider {
          * Standardize the parameter name
          *
          * The parameter name returned by SSM will contain the full path.
-         * However, for readability, we should return only the part after the path. 
-         **/ 
-        
+         * However, for readability, we should return only the part after the path.
+         **/
+
         // If the parameter is present in the response, then it has a Name
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         let name = parameter.Name!;
@@ -534,7 +534,7 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Retrieve multiple items by name from AWS Systems Manager.
-   * 
+   *
    * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
    * @param {throwOnError} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    * @param {boolean} decrypt - Whether to decrypt the parameters or not
@@ -550,7 +550,7 @@ class SSMProvider extends BaseProvider {
     if (decrypt) {
       sdkOptions.WithDecryption = true;
     }
-    
+
     const result = await this.client.send(new GetParametersCommand(sdkOptions));
     const errors = SSMProvider.handleAnyInvalidGetParameterErrors(result, throwOnError);
     const response = this.transformAndCacheGetParametersResponse(
@@ -567,7 +567,7 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Slice batch and fetch parameters using GetPrameters API by max permissible batch size
-   * 
+   *
    * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
    * @param {throwOnError} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    * @param {boolean} decrypt - Whether to decrypt the parameters or not
@@ -607,7 +607,7 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Fetch each parameter from batch that hasn't expired from cache
-   * 
+   *
    * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
    */
   protected async getParametersByNameFromCache(
@@ -635,7 +635,7 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Slice object into chunks of max permissible batch size and fetch parameters
-   * 
+   *
    * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    * @param {boolean} decrypt - Whether to decrypt the parameters or not
@@ -647,7 +647,7 @@ class SSMProvider extends BaseProvider {
   ): Promise<SSMGetParametersByNameOutputInterface> {
     let response: Record<string, unknown> = {};
     let errors: string[] = [];
-    
+
     // Slice object into chunks of max permissible batch size
     const chunks = Object.entries(parameters).reduce((
       acc,
@@ -669,7 +669,7 @@ class SSMProvider extends BaseProvider {
         response: chunkResponse,
         errors: chunkErrors
       } = await this._getParametersByName(chunk, throwOnError, decrypt);
-      
+
       response = { ...response, ...chunkResponse };
       errors = [ ...errors, ...chunkErrors ];
     }
@@ -682,7 +682,7 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Fetch parameters by name while also decrypting them
-   * 
+   *
    * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
@@ -713,7 +713,7 @@ class SSMProvider extends BaseProvider {
   /**
    * Handle any invalid parameters returned by GetParameters API
    * GetParameters is non-atomic. Failures don't always reflect in exceptions so we need to collect.
-   * 
+   *
    * @param {GetParametersCommandOutput} result - The result of the GetParameters API call
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
@@ -736,7 +736,7 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Split parameters that can be fetched by GetParameters vs GetParameter.
-   * 
+   *
    * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
    * @param {SSMGetParametersByNameOptionsInterface} configs - The configs passed down
    */
@@ -755,7 +755,7 @@ class SSMProvider extends BaseProvider {
         overrides.decrypt : configs.decrypt;
       overrides.maxAge = overrides.maxAge !== undefined ?
         overrides.maxAge : configs.maxAge;
-      
+
       if (overrides.decrypt) {
         parametersToDecrypt[parameterName] = overrides;
       } else {
@@ -771,10 +771,10 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Throw a GetParameterError if fail-fast is disabled and `_errors` key is in parameters list.
-   * 
-   * @param {Record<string, unknown>} parameters 
-   * @param {string} reservedParameter 
-   * @param {boolean} throwOnError 
+   *
+   * @param {Record<string, unknown>} parameters
+   * @param {string} reservedParameter
+   * @param {boolean} throwOnError
    */
   protected static throwIfErrorsKeyIsPresent(
     parameters: Record<string, unknown>,
@@ -790,7 +790,7 @@ class SSMProvider extends BaseProvider {
 
   /**
    * Transform and cache the response from GetParameters API call
-   * 
+   *
    * @param {GetParametersCommandOutput} response - The response from the GetParameters API call
    * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully

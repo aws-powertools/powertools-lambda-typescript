@@ -4,8 +4,12 @@
  * @group unit/metrics/middleware
  */
 
-import { Metrics, MetricUnits, logMetrics } from '../../../../metrics/src';
-import middy from '@middy/core';
+import {
+  Metrics,
+  MetricUnits,
+  logMetrics,
+  MetricResolution
+} from '../../../../metrics/src';import middy from '@middy/core';
 import { ExtraOptions } from '../../../src/types';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -306,6 +310,79 @@ describe('Middy middleware', () => {
                 Namespace: 'serverlessAirline',
                 Dimensions: [['service']],
                 Metrics: [{ Name: 'successfulBooking', Unit: 'Count' }],
+              },
+            ],
+          },
+          service: 'orders',
+          successfulBooking: 1,
+        })
+      );
+    });
+  });
+  describe('Metrics resolution', () => {
+
+    test('serialized metrics in EMF format should not contain `StorageResolution` as key if `60` is set', async () => {
+      // Prepare
+      const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+
+      const lambdaHandler = (): void => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1, MetricResolution.Standard);
+      };
+
+      const handler = middy(lambdaHandler).use(logMetrics(metrics));
+
+      // Act
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(console.log).toHaveBeenCalledWith(
+        JSON.stringify({
+          _aws: {
+            Timestamp: 1466424490000,
+            CloudWatchMetrics: [
+              {
+                Namespace: 'serverlessAirline',
+                Dimensions: [['service']],
+                Metrics: [{
+                  Name: 'successfulBooking',
+                  Unit: 'Count',
+                }],              
+              },
+            ],
+          },
+          service: 'orders',
+          successfulBooking: 1,
+        })
+      );
+    });
+
+    test('Should be StorageResolution `1` if MetricResolution is set to `High`', async () => {
+      // Prepare
+      const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+
+      const lambdaHandler = (): void => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1, MetricResolution.High);
+      };
+
+      const handler = middy(lambdaHandler).use(logMetrics(metrics));
+
+      // Act
+      await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
+
+      // Assess
+      expect(console.log).toHaveBeenCalledWith(
+        JSON.stringify({
+          _aws: {
+            Timestamp: 1466424490000,
+            CloudWatchMetrics: [
+              {
+                Namespace: 'serverlessAirline',
+                Dimensions: [['service']],
+                Metrics: [{
+                  Name: 'successfulBooking',
+                  Unit: 'Count',
+                  StorageResolution: 1
+                }],              
               },
             ],
           },

@@ -321,7 +321,7 @@ describe('Middy middleware', () => {
   });
   describe('Metrics resolution', () => {
 
-    test('should use metric resolution `Standard, 60` if `Standard` is set', async () => {
+    test('serialized metrics in EMF format should not contain `StorageResolution` as key if `60` is set', async () => {
       // Prepare
       const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
 
@@ -346,7 +346,6 @@ describe('Middy middleware', () => {
                 Metrics: [{
                   Name: 'successfulBooking',
                   Unit: 'Count',
-                  StorageResolution: 60,
                 }],              
               },
             ],
@@ -357,7 +356,7 @@ describe('Middy middleware', () => {
       );
     });
 
-    test('should use metric resolution `High, 1` if `High` is set', async () => {
+    test('Should be StorageResolution `1` if MetricResolution is set to `High`', async () => {
       // Prepare
       const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
 

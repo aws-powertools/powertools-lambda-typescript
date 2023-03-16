@@ -21,11 +21,7 @@ type EmfOutput = {
     CloudWatchMetrics: {
       Namespace: string
       Dimensions: [string[]]   
-      Metrics: {
-        Name: string
-        Unit: MetricUnit
-        StorageResolution?: MetricResolution
-      }[]    
+      Metrics: MetricDefinition[]    
     }[]
   }
 };
@@ -65,11 +61,17 @@ type StoredMetric = {
   name: string
   unit: MetricUnit
   value: number | number[]
-  resolution?: MetricResolution
+  resolution: MetricResolution
 };
 
 type StoredMetrics = {
   [key: string]: StoredMetric
 };
 
-export { MetricsOptions, Dimensions, EmfOutput, HandlerMethodDecorator, ExtraOptions, StoredMetrics };
+type MetricDefinition = {
+  Name: string
+  Unit: MetricUnit
+  StorageResolution?: MetricResolution
+}; 
+
+export { MetricsOptions, Dimensions, EmfOutput, HandlerMethodDecorator, ExtraOptions, StoredMetrics, StoredMetric, MetricDefinition };

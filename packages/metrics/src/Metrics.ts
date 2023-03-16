@@ -12,6 +12,8 @@ import {
   MetricUnit,
   MetricUnits,
   MetricResolution,
+  MetricDefinition,
+  StoredMetric,
 } from './types';
 
 const MAX_METRICS_SIZE = 100;
@@ -166,13 +168,32 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Add a metric to the metrics buffer.
-   * @param name
-   * @param unit
-   * @param value
-   * @param resolution
+   *
+   * @example 
+   *
+   * Add Metric using MetricUnit Enum supported by Cloudwatch
+   * 
+   * ```ts
+   * metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+   * ```
+   * 
+   * @example 
+   * 
+   * Add Metric using MetricResolution type with resolutions High or Standard supported by cloudwatch 
+   * 
+   * ```ts
+   * metrics.addMetric('successfulBooking', MetricUnits.Count, 1, MetricResolution.High);
+   * ```
+   * 
+   * @param name - The metric name 
+   * @param unit - The metric unit
+   * @param value - The metric value
+   * @param resolution - The metric resolution
+   * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition Amazon Cloudwatch Concepts Documentation  
+   * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html#CloudWatch_Embedded_Metric_Format_Specification_structure_metricdefinition Metric Definition of Embedded Metric Format Specification
    */
 
-  public addMetric(name: string, unit: MetricUnit, value: number, resolution?: MetricResolution): void {
+  public addMetric(name: string, unit: MetricUnit, value: number, resolution: MetricResolution = MetricResolution.Standard): void {
     this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
   }
@@ -317,19 +338,28 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Function to create the right object compliant with Cloudwatch EMF (Event Metric Format).
+   * Function to create the right object compliant with Cloudwatch EMF (Embedded Metric Format).
+   * 
+   * 
+   * @returns metrics as JSON object compliant EMF Schema Specification
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html for more details
-   * @returns {string}
    */
   public serializeMetrics(): EmfOutput {
-    const metricDefinitions = Object.values(this.storedMetrics).map((metricDefinition) => metricDefinition.resolution ? ({
-      Name: metricDefinition.name,
-      Unit: metricDefinition.unit,
-      StorageResolution: metricDefinition.resolution
-    }): ({
-      Name: metricDefinition.name,
-      Unit: metricDefinition.unit
-    }));
+    // For high-resolution metrics, add StorageResolution property
+    // Example: [ { "Name": "metric_name", "Unit": "Count", "StorageResolution": 1 } ]
+
+    // For standard resolution metrics, don't add StorageResolution property to avoid unnecessary ingestion of data into cloudwatch
+    // Example: [ { "Name": "metric_name", "Unit": "Count"} ]
+    const metricDefinitions: MetricDefinition[] = Object.values(this.storedMetrics).map((metricDefinition) => 
+      this.isHigh(metricDefinition['resolution']) 
+        ? ({
+          Name: metricDefinition.name,
+          Unit: metricDefinition.unit,
+          StorageResolution: metricDefinition.resolution
+        }): ({
+          Name: metricDefinition.name,
+          Unit: metricDefinition.unit,
+        }));
     
     if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
@@ -437,6 +467,10 @@ class Metrics extends Utility implements MetricsInterface {
     return <EnvironmentVariablesService> this.envVarsService;
   }
 
+  private isHigh(resolution: StoredMetric['resolution']): resolution is 1 {
+    return resolution === MetricResolution.High;
+  }
+
   private isNewMetric(name: string, unit: MetricUnit): boolean {
     if (this.storedMetrics[name]){
       // Inconsistent units indicates a bug or typos and we want to flag this to users early
@@ -491,7 +525,7 @@ class Metrics extends Utility implements MetricsInterface {
     name: string,
     unit: MetricUnit,
     value: number,
-    resolution?: MetricResolution,
+    resolution: MetricResolution,
   ): void {    
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
@@ -501,10 +535,10 @@ class Metrics extends Utility implements MetricsInterface {
       this.storedMetrics[name] = {
         unit,
         value,
-        name,
-        resolution,      
+        name, 
+        resolution    
       };
-      
+       
     } else {
       const storedMetric = this.storedMetrics[name];
       if (!Array.isArray(storedMetric.value)) {

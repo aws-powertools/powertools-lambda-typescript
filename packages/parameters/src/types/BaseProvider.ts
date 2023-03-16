@@ -5,8 +5,8 @@ type TransformOptions = 'auto' | 'binary' | 'json';
 
 /**
  * Options for the `get` method.
- * 
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
+ *
+ * @property {number} maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
  * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
  * @property {unknown} sdkOptions - Options to pass to the underlying SDK.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'.
@@ -32,8 +32,8 @@ interface GetOptionsInterface {
 
 /**
  * Options for the `getMultiple` method.
- * 
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
+ *
+ * @property {number} maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
  * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
  * @property {unknown} sdkOptions - Options to pass to the underlying SDK.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'.

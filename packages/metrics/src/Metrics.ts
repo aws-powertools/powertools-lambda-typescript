@@ -467,7 +467,7 @@ class Metrics extends Utility implements MetricsInterface {
     return <EnvironmentVariablesService> this.envVarsService;
   }
 
-  private isHigh(resolution: StoredMetric['resolution']): resolution is 1 {
+  private isHigh(resolution: StoredMetric['resolution']): resolution is typeof MetricResolution['High'] {
     return resolution === MetricResolution.High;
   }
 

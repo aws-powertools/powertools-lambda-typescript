@@ -9,7 +9,8 @@ import {
   LayerVersion,
   Code,
   Runtime,
-  CfnLayerVersionPermission, Architecture
+  CfnLayerVersionPermission,
+  Architecture,
 } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 

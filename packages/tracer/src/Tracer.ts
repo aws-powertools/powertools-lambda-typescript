@@ -512,7 +512,7 @@ class Tracer extends Utility implements TracerInterface {
   }
   
   /**
-   * Get the active segment or subsegment in the current scope.
+   * Get the active segment or subsegment (if any) in the current scope.
    * 
    * Usually you won't need to call this method unless you are creating custom subsegments or using manual mode.
    *
@@ -531,7 +531,7 @@ class Tracer extends Utility implements TracerInterface {
    * }
    * ```
    * 
-   * @returns segment - The active segment or subsegment in the current scope.
+   * @returns segment - The active segment or subsegment in the current scope. Will log a warning and return `undefined` if no segment is found.
    */
   public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {

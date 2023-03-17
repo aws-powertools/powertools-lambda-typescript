@@ -531,7 +531,7 @@ class Tracer extends Utility implements TracerInterface {
    * }
    * ```
    * 
-   * @returns segment - The active segment or subsegment in the current scope. Will log a warning and return `undefined` if no segment is found.
+   * @returns The active segment or subsegment in the current scope. Will log a warning and return `undefined` if no segment is found.
    */
   public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {

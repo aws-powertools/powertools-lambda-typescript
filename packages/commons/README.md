@@ -10,7 +10,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 ## Table of contents <!--- omit in toc -->
 
-- [Table of contents ](#table-of-contents-)
+- [Table of contents](#table-of-contents)
 - [Features](#features)
 - [Getting started](#getting-started)
   - [Installation](#installation)

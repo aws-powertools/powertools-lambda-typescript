@@ -153,6 +153,7 @@ class Tracer extends Utility implements TracerInterface {
     * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
     *
     * @param error - Error to serialize as metadata
+    * @param [remote] - Whether the error was thrown by a remote service. Defaults to `false`
     */
   public addErrorAsMetadata(error: Error, remote?: boolean): void {
     if (!this.isTracingEnabled()) {

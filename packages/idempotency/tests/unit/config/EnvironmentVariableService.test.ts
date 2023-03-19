@@ -1,7 +1,7 @@
 /**
  * Test EnvironmentVariableService class
  *
- * @group unit/idempotency/all
+ * @group unit/idempotency/environment-variables-service
  */
 import { EnvironmentVariablesService } from '../../../src/config';
 

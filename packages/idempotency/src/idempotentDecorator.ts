@@ -1,13 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { IdempotencyOptions } from './types/IdempotencyOptions';
+import {
+  GenericTempRecord,
+  IdempotencyOptions,
+} from './types';
 import { IdempotencyHandler } from './IdempotencyHandler';
 
 const idempotent = function (options: IdempotencyOptions) {
-  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) {
     const childFunction = descriptor.value;
-    descriptor.value = function(record: Record<string, any>){
-      const idempotencyHandler: IdempotencyHandler<unknown> = new IdempotencyHandler<unknown>(childFunction, record[options.dataKeywordArgument], options, record);
-        
+    // TODO: sort out the type for this
+    descriptor.value = function(record: GenericTempRecord){
+      const idempotencyHandler = new IdempotencyHandler<GenericTempRecord>(childFunction, record[options.dataKeywordArgument], options, record);
+
       return idempotencyHandler.processIdempotency();
     };
   

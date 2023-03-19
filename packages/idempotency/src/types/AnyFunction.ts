@@ -1,11 +1,14 @@
+// TODO: Find a better way to type this
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyFunctionWithRecord<U> = (record: Record<string,any>) => Promise<U> | U;
+type GenericTempRecord = Record<string, any>;
+
+type AnyFunctionWithRecord<U> = (record: GenericTempRecord) => Promise<U> | U;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyIdempotentFunction<U> = (record: Record<string,any>) => Promise<U>;
+type AnyIdempotentFunction<U> = (record: GenericTempRecord) => Promise<U>;
 
 export {
-  // AnyFunction,
+  GenericTempRecord,
   AnyFunctionWithRecord,
-  AnyIdempotentFunction
+  AnyIdempotentFunction,
 };

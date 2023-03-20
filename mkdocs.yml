@@ -13,6 +13,8 @@ nav:
       - core/tracer.md
       - core/logger.md
       - core/metrics.md
+  - Utilities:
+      - utilities/parameters.md
 
 theme:
   name: material

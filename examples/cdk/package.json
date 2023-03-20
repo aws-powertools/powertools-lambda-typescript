@@ -5,9 +5,7 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
-  "publishConfig": {
-    "access": "restricted"
-  },
+  "private": true,
   "description": "This project contains source code and supporting files for a serverless application that you can deploy with CDK.",
   "license": "MIT-0",
   "bin": {

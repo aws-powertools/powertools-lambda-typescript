@@ -4,9 +4,7 @@
   "bin": {
     "layer": "bin/layers.js"
   },
-  "publishConfig": {
-    "access": "restricted"
-  },
+  "private": true,
   "description": "This CDK app is meant to be used to publish Powertools for TypeScript Lambda Layer. It is composed of a single stack deploying the Layer into the target account.",
   "scripts": {
     "build": "tsc",

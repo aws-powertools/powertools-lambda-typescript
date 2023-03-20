@@ -5,9 +5,7 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
-  "publishConfig": {
-    "access": "restricted"
-  },
+  "private": true,
   "description": "This project contains source code and supporting files for a serverless application that you can deploy with the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html). The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.",
   "license": "MIT-0",
   "scripts": {

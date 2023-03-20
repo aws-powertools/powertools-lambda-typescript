@@ -77,7 +77,7 @@ const betaPackages = [
       // This version number will be picked up during the `npm publish` step, so that
       // the version number in the registry is correct and matches the tarball.
       // The original package.json file will be restored by lerna after the publish step.
-      writeFileSync('package.json', JSON.stringify({ ...pkgJson, version: betaVersion }, null, 2));
+      writeFileSync('package.json', JSON.stringify({ ...pkgJson, version }, null, 2));
     }
   } catch (err) {
     throw err;

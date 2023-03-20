@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
+
+
+### Features
+
+* **metrics:** support high resolution metrics ([#1369](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1369)) ([79a321b](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/79a321b199ef51a024dc25b83673baf2eb03de69))
+
+
+
+
+
 # [1.6.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.5.1...v1.6.0) (2023-03-02)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

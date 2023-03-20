@@ -1,15 +1,31 @@
 /**
  * Test ProviderService class
  *
- * @group unit/tracer/all
+ * @group unit/tracer/providerservice
  */
 
 import { ProviderService } from '../../src/provider';
-import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureHTTPsGlobal, captureFunc, getNamespace, getSegment, setContextMissingStrategy, setDaemonAddress, setLogger, setSegment, Subsegment } from 'aws-xray-sdk-core';
+import {
+  captureAWS,
+  captureAWSClient,
+  captureAWSv3Client,
+  captureAsyncFunc,
+  captureHTTPsGlobal,
+  captureFunc,
+  getNamespace,
+  getSegment,
+  setContextMissingStrategy,
+  setDaemonAddress,
+  setLogger,
+  setSegment,
+  Subsegment,
+  Segment
+} from 'aws-xray-sdk-core';
 import http from 'http';
 import https from 'https';
 
 jest.mock('aws-xray-sdk-core', () => ({
+  ...jest.requireActual('aws-xray-sdk-core'),
   captureAWS: jest.fn(),
   captureAWSClient: jest.fn(),
   captureAWSv3Client: jest.fn(),
@@ -21,7 +37,7 @@ jest.mock('aws-xray-sdk-core', () => ({
   setContextMissingStrategy: jest.fn(),
   setDaemonAddress: jest.fn(),
   setLogger: jest.fn(),
-  setSegment: jest.fn()
+  setSegment: jest.fn(),
 }));
 
 describe('Class: ProviderService', () => {
@@ -263,6 +279,126 @@ describe('Class: ProviderService', () => {
     
     });
     
+  });
+
+  describe('Method: putAnnotation', () => {
+
+    test('when called and there is no segment, it logs a warning and does not throw', () => {
+
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const logSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      provider.putAnnotation('foo', 'bar');
+
+      // Assess
+      expect(logSpy).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith('No active segment or subsegment found, skipping annotation');
+
+    });
+
+    test('when called and the current segment is not a subsegment, it logs a warning and does not annotate the segment', () => {
+
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const facade = new Segment('facade');
+      const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation();
+      jest.spyOn(provider, 'getSegment')
+        .mockImplementation(() => new Segment('facade'));
+      const addAnnotationSpy = jest.spyOn(facade, 'addAnnotation');
+
+      // Act
+      provider.putAnnotation('foo', 'bar');
+
+      // Assess
+      expect(logWarningSpy).toHaveBeenCalledTimes(1);
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        'You cannot annotate the main segment in a Lambda execution environment'
+      );
+      expect(addAnnotationSpy).toHaveBeenCalledTimes(0);
+
+    });
+
+    test('when called and the current segment is a subsegment, it annotates it', () => {
+
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      jest.spyOn(provider, 'getSegment')
+        .mockImplementation(() => segment);
+      const segmentSpy = jest.spyOn(segment, 'addAnnotation');
+
+      // Act
+      provider.putAnnotation('foo', 'bar');
+
+      // Assess
+      expect(segmentSpy).toHaveBeenCalledTimes(1);
+      expect(segmentSpy).toHaveBeenCalledWith('foo', 'bar');
+
+    });
+
+  });
+  
+  describe('Method: putMetadata', () => {
+
+    test('when called and there is no segment, it logs a warning and does not throw', () => {
+
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      provider.putMetadata('foo', 'bar');
+
+      // Assess
+      expect(logWarningSpy).toHaveBeenCalledTimes(1);
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        'No active segment or subsegment found, skipping metadata addition'
+      );
+
+    });
+
+    test('when called and the current segment is not a subsegment, it logs a warning and does not annotate the segment', () => {
+
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const facade = new Segment('facade');
+      const logSpy = jest.spyOn(console, 'warn').mockImplementation();
+      jest.spyOn(provider, 'getSegment')
+        .mockImplementation(() => new Segment('facade'));
+      const facadeSpy = jest.spyOn(facade, 'addMetadata');
+
+      // Act
+      provider.putMetadata('foo', 'bar');
+
+      // Assess
+      expect(logSpy).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith(
+        'You cannot add metadata to the main segment in a Lambda execution environment'
+      );
+      expect(facadeSpy).toHaveBeenCalledTimes(0);
+
+    });
+
+    test('when called and the current segment is a subsegment, it adds the metadata', () => {
+
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      jest.spyOn(provider, 'getSegment')
+        .mockImplementation(() => segment);
+      const segmentSpy = jest.spyOn(segment, 'addMetadata');
+
+      // Act
+      provider.putMetadata('foo', 'bar', 'baz');
+
+      // Assess
+      expect(segmentSpy).toHaveBeenCalledTimes(1);
+      expect(segmentSpy).toHaveBeenCalledWith('foo', 'bar', 'baz');
+
+    });
+
   });
 
 });

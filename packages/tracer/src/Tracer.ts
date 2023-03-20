@@ -38,7 +38,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * 
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  * 
-* const lambdaHandler = async (_event: any, _context: any) => {
+ * const lambdaHandler = async (_event: any, _context: any) => {
  *   ...
  * };
  * 
@@ -153,20 +153,26 @@ class Tracer extends Utility implements TracerInterface {
     * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
     *
     * @param error - Error to serialize as metadata
+    * @param [remote] - Whether the error was thrown by a remote service. Defaults to `false`
     */
-  public addErrorAsMetadata(error: Error): void {
+  public addErrorAsMetadata(error: Error, remote?: boolean): void {
     if (!this.isTracingEnabled()) {
       return;
     }
 
     const subsegment = this.getSegment();
+    if (subsegment === undefined) {
+
+      return;
+    }
+
     if (!this.captureError) {
       subsegment.addErrorFlag();
 
       return;
     }
 
-    subsegment.addError(error, false);
+    subsegment.addError(error, remote || false);
   }
 
   /**
@@ -506,7 +512,7 @@ class Tracer extends Utility implements TracerInterface {
   }
   
   /**
-   * Get the active segment or subsegment in the current scope.
+   * Get the active segment or subsegment (if any) in the current scope.
    * 
    * Usually you won't need to call this method unless you are creating custom subsegments or using manual mode.
    *
@@ -525,15 +531,17 @@ class Tracer extends Utility implements TracerInterface {
    * }
    * ```
    * 
-   * @returns segment - The active segment or subsegment in the current scope.
+   * @returns The active segment or subsegment in the current scope. Will log a warning and return `undefined` if no segment is found.
    */
-  public getSegment(): Segment | Subsegment {
+  public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {
       return new Subsegment('## Dummy segment');
     }
     const segment = this.provider.getSegment();    
     if (segment === undefined) {
-      throw new Error('Failed to get the current sub/segment from the context.');
+      console.warn(
+        'Failed to get the current sub/segment from the context, this is likely because you are not using the Tracer in a Lambda function.'
+      );
     }
  
     return segment;
@@ -573,13 +581,7 @@ class Tracer extends Utility implements TracerInterface {
   public putAnnotation(key: string, value: string | number | boolean): void {
     if (!this.isTracingEnabled()) return;
 
-    const document = this.getSegment();
-    if (document instanceof Segment) {
-      console.warn('You cannot annotate the main segment in a Lambda execution environment');
-      
-      return;
-    }
-    document.addAnnotation(key, value);
+    this.provider.putAnnotation(key, value);
   }
   
   /**
@@ -606,15 +608,7 @@ class Tracer extends Utility implements TracerInterface {
   public putMetadata(key: string, value: unknown, namespace?: string | undefined): void {
     if (!this.isTracingEnabled()) return;
 
-    const document = this.getSegment();
-    if (document instanceof Segment) {
-      console.warn('You cannot add metadata to the main segment in a Lambda execution environment');
-      
-      return;
-    }
-    
-    namespace = namespace || this.serviceName;
-    document.addMetadata(key, value, namespace);
+    this.provider.putMetadata(key, value, namespace || this.serviceName);
   }
   
   /**

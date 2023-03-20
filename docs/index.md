@@ -39,8 +39,8 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
 ??? note "Note: Click to expand and copy any regional Lambda Layer ARN"
 
-    | Region           | Layer ARN                                                                                                   |
-    | ---------------- | ----------------------------------------------------------------------------------------------------------- |
+    | Region           | Layer ARN                                                                                                    |
+    | ---------------- | ------------------------------------------------------------------------------------------------------------ |
     | `us-east-1`      | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:10](#){: .copyMe}:clipboard:      |
     | `us-east-2`      | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:10](#){: .copyMe}:clipboard:      |
     | `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:10](#){: .copyMe}:clipboard:      |
@@ -281,11 +281,12 @@ If instead you want to see Powertools for TypeScript in a slightly more complex 
 
 Core utilities such as Tracing, Logging, and Metrics will be available across all Lambda Powertools languages. Additional utilities are subjective to each language ecosystem and customer demand.
 
-| Utility                      | Description                                                                                                   |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [Tracer](./core/tracer.md)   | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions   |
-| [Logger](./core/logger.md)   | Structured logging made easier, and a middleware to enrich structured logging with key Lambda context details |
-| [Metrics](./core/metrics.md) | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)                             |
+| Utility                                        | Description                                                                                                                                   |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Tracer](./core/tracer.md)                     | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions                                   |
+| [Logger](./core/logger.md)                     | Structured logging made easier, and a middleware to enrich structured logging with key Lambda context details                                 |
+| [Metrics](./core/metrics.md)                   | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)                                                             |
+| [Parameters (beta)](./utilities/parameters.md) | High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB |
 
 ## Environment variables
 

@@ -4,7 +4,7 @@ description: Utility
 ---
 
 ???+ warning
-	This page refers to an **unreleased and upcoming utility**. Please refer to this [GitHub milestone](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/8) for the latest updates.
+	**This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**.. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/10) we might introduce significant breaking changes and improvements in response to customers feedback.
 
 The Parameters utility provides high-level functions to retrieve one or multiple parameter values from [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html){target="_blank"}, [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html){target="_blank"}, [AWS AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html){target="_blank"}, [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html){target="_blank"}, or your own parameter store.
 
@@ -12,7 +12,7 @@ The Parameters utility provides high-level functions to retrieve one or multiple
 
 * Retrieve one or multiple parameters from the underlying provider
 * Cache parameter values for a given amount of time (defaults to 5 seconds)
-* Transform parameter values from JSON or base 64 encoded strings
+* Transform parameter values from JSON or base64 encoded strings
 * Bring Your Own Parameter Store Provider
 
 ## Getting started
@@ -22,7 +22,7 @@ The Parameters Utility helps to retrieve parameters from the System Manager Para
 ### Installation
 
 ???+ note
-	This utility supports **[AWS SDK v3 for JavaScript](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/) only**. This allows the utility to be modular, and you to install only the SDK packages you need and keep your bundle size small.
+	This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/) only**. This allows the utility to be modular, and you to install only the SDK packages you need and keep your bundle size small.
 
 Depending on the provider you want to use, install the library and the corresponding AWS SDK package:
 

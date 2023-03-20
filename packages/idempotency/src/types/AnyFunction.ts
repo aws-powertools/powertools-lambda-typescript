@@ -4,7 +4,6 @@ type GenericTempRecord = Record<string, any>;
 
 type AnyFunctionWithRecord<U> = (record: GenericTempRecord) => Promise<U> | U;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyIdempotentFunction<U> = (record: GenericTempRecord) => Promise<U>;
 
 export {

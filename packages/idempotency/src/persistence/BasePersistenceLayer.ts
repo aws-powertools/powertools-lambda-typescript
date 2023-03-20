@@ -72,6 +72,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     
     await this._deleteRecord(idempotencyRecord);
   }
+
   /**
    * Retrieves idempotency key for the provided data and fetches data for that key from the persistence store
    * 

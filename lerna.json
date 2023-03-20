@@ -4,6 +4,7 @@
     "packages/tracer",
     "packages/logger",
     "packages/metrics",
+    "packages/parameters",
     "examples/cdk",
     "examples/sam",
     "layers"

@@ -1,13 +1,14 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "The parameters package for the AWS Lambda Powertools for TypeScript library",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "directory": "lib"
   },
   "scripts": {
     "commit": "commit",
@@ -24,7 +25,8 @@
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "package-bundle": "../../package-bundler.sh parameters-bundle ./dist",
     "prepare": "npm run build",
-    "postversion": "git push --tags"
+    "postversion": "git push --tags",
+    "prepack": "cp ../../.github/scripts/release_patch_package_json.js . && node release_patch_package_json.js"
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix"

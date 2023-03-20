@@ -49,7 +49,7 @@ const betaPackages = [
     let version = originalVersion;
     // Add a beta suffix to the version
     if (betaPackages.includes(name)) {
-      version = `${version}-beta.0`;
+      version = `${version}-beta`;
     }
 
     // Create a new package.json file with the updated version for the tarball

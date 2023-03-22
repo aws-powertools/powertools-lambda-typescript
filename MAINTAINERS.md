@@ -39,21 +39,22 @@ This is document explains who the maintainers are (see below), what they do in t
 
 ## Current Maintainers
 
-| Maintainer                 | GitHub ID                                   | Affiliation |
-| -------------------------- | ------------------------------------------- | ----------- |
-| Andrea Amorosi             | [dreamorosi](https://github.com/dreamorosi) | Amazon      |
-| Sara Gerion                | [saragerion](https://github.com/saragerion) | Amazon      |
-| Florian Chazal             | [flochaz](https://github.com/flochaz)       | Amazon      |
-| Chadchapol Vittavutkarnvej | [ijemmy](https://github.com/ijemmy)         | Amazon      |
+| Maintainer         | GitHub ID                                   | Affiliation |
+| ------------------ | ------------------------------------------- | ----------- |
+| Andrea Amorosi     | [dreamorosi](https://github.com/dreamorosi) | Amazon      |
+| Sara Gerion        | [saragerion](https://github.com/saragerion) | Amazon      |
+| Alexander Schueren | [am29d](https://github.com/am29d)           | Amazon      |
 
 ## Emeritus
 
 Previous active maintainers who contributed to this project.
 
-| Maintainer        | GitHub ID                                     | Affiliation |
-| ----------------- | --------------------------------------------- | ----------- |
-| Alan Churley      | [alan-churley](alan-churley)                  | CloudCall   |
-| Nicolas Moutschen | [bahrmichael](https://github.com/bahrmichael) | Stedi       |
+| Maintainer                 | GitHub ID                                     | Affiliation |
+| -------------------------- | --------------------------------------------- | ----------- |
+| Florian Chazal             | [flochaz](https://github.com/flochaz)         | Amazon      |
+| Chadchapol Vittavutkarnvej | [ijemmy](https://github.com/ijemmy)           | Booking.com |
+| Alan Churley               | [alan-churley](alan-churley)                  | CloudCall   |
+| Bahr Michael               | [bahrmichael](https://github.com/bahrmichael) | Stedi       |
 
 ## Labels
 
@@ -131,7 +132,7 @@ PRs are [labeled](#labels) based on file changes and semantic title. Pay attenti
 
 Use and enforce [semantic versioning](https://semver.org/) pull request titles, as these will be used for [CHANGELOG](CHANGELOG.md) and [Release notes](https://github.com/awslabs/aws-lambda-powertools-typescript/releases) - make sure they communicate their intent at the human level.
 
-For issues linked to a PR, our automation should apply the `pending-release` label. Make sure the label is always applied when merging. [Upon release](#releasing-a-new-version), these issues will be notified which release version contains their change.
+For issues linked to a PR, our automation should apply the `status/pending-release` label. Make sure the label is always applied when merging. [Upon release](#releasing-a-new-version), these issues will be notified which release version contains their change.
 
 See [Common scenarios](#common-scenarios) section for additional guidance.
 
@@ -159,7 +160,7 @@ See [Common scenarios](#common-scenarios) section for additional guidance.
 
 Be familiar with [our definition of bug](#is-that-a-bug). If it's not a bug, you can close it or adjust its title and labels - always communicate the reason accordingly.
 
-For bugs caused by upstream dependencies, replace `bug` with `bug-upstream` label. Ask the author whether they'd like to raise the issue upstream or if they prefer us to do so.
+For bugs caused by upstream dependencies, replace `type/bug` with `type/bug-upstream` label. Ask the author whether they'd like to raise the issue upstream or if they prefer us to do so.
 
 Assess the impact and make the call on whether we need an emergency release. Contact other [maintainers](#current-maintainers) when in doubt.
 
@@ -262,7 +263,7 @@ A contribution can get stuck often due to lack of bandwidth and language barrier
 
 For language barrier and others, offer a 1:1 chat to get them unblocked. Often times, English might not be their primary language, and writing in public might put them off, or come across not the way they intended to be.
 
-In other cases, you may have constrained capacity. Use `help=wanted` label when you want to signal other maintainers and external contributors that you could use a hand to move it forward.
+In other cases, you may have constrained capacity. Use `help-wanted` label when you want to signal other maintainers and external contributors that you could use a hand to move it forward.
 
 ### Insufficient feedback or information
 
@@ -290,7 +291,7 @@ Make use of `help-wanted` and `good-first-issue` to signal additional contributi
 
 Try offering a 1:1 call in the attempt to get to a mutual understanding and clarify areas that maintainers could help.
 
-In the rare cases where both parties don't have the bandwidth or expertise to continue, it's best to use the `on-hold` label. By then, see if it's possible to break the PR or issue in smaller chunks, and eventually close if there is no progress.
+In the rare cases where both parties don't have the bandwidth or expertise to continue, it's best to use the `status/on-hold` label. By then, see if it's possible to break the PR or issue in smaller chunks, and eventually close if there is no progress.
 
 ## E2E framework
 

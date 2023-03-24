@@ -23,8 +23,10 @@ jobs:
           close-issue-reason: not_planned
           # Exempt any issue that hasn't been triaged yet, or that is clearly labeled
           exempt-issue-labels: triage,status/confirmed,status/blocked,status/on-hold,status/completed
-          # Include only issues that were labeled as `need-more-information` (aka only issues that need more info from the customer)
-          only-issue-labels: need-more-information
+          # Include only issues that were labeled as 
+`need-customer-feedback` 
+(aka only issues that need more info from the customer)
+          only-issue-labels: need-customer-feedback
           # Settings specific to issues
           days-before-issue-stale: 14
           days-before-issue-close: 7

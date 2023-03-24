@@ -269,7 +269,8 @@ In other cases, you may have constrained capacity. Use `help-wanted` label when 
 
 When in doubt, use `need-more-information` or `need-customer-feedback` labels to signal more context and feedback are necessary before proceeding. You can also use `status/on-hold` label when you expect it might take a while to gather enough information before you can decide.
 
-Note that issues marked as `need-more-information` will be automatically closed after 3 weeks of inactivity.
+Note that issues marked as `need-customer-feedback` will be 
+automatically closed after 3 weeks of inactivity.
 
 ### Crediting contributions
 

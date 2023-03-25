@@ -134,7 +134,7 @@ By default, the provider will cache parameters retrieved in-memory for 5 seconds
 
 You can adjust how long values should be kept in cache by using the param `maxAge`, when using  `get()` or `getMultiple()` methods across all providers.
 
-```typescript hl_lines="7 10" title="Caching parameters values in memory for longer than 5 seconds"
+```typescript hl_lines="7 11" title="Caching parameters values in memory for longer than 5 seconds"
 --8<-- "docs/snippets/parameters/adjustingCacheTTL.ts"
 ```
 
@@ -166,7 +166,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 | **decrypt**   | `false` | Will automatically decrypt the parameter (see required [IAM Permissions](#iam-permissions)).  |
 | **recursive** | `true`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
 
-```typescript hl_lines="6 8" title="Example with get() and getMultiple()"
+```typescript hl_lines="6 9" title="Example with get() and getMultiple()"
 --8<-- "docs/snippets/parameters/ssmProviderDecryptAndRecursive.ts"
 ```
 
@@ -397,3 +397,56 @@ The **`clientConfig`** parameter enables you to pass in a custom [config object]
 ```typescript hl_lines="2 4-5"
 --8<-- "docs/snippets/parameters/clientConfig.ts"
 ```
+
+## Testing your code
+
+### Mocking parameter values
+
+For unit testing your applications, you can mock the calls to the parameters utility to avoid calling AWS APIs. This can be achieved in a number of ways - in this example, we use [Jest mock functions](https://jestjs.io/docs/es6-class-mocks#the-4-ways-to-create-an-es6-class-mock) to patch the `getParameters` function.
+
+=== "handler.test.ts"
+	```typescript hl_lines="2 4-7 12 18"
+	--8<-- "docs/snippets/parameters/testingYourCodeFunctionsJestMock.ts"
+	```
+
+=== "handler.ts"
+	```typescript
+	--8<-- "docs/snippets/parameters/testingYourCodeFunctionsHandler.ts"
+	```
+
+With this pattern in place, you can customize the return values of the mocked function to test different scenarios without calling AWS APIs.
+
+A similar pattern can be applied also to any of the built-in provider classes - in this other example, we use [Jest spyOn method](https://jestjs.io/docs/es6-class-mocks#mocking-a-specific-method-of-a-class) to patch the `get` function of the `AppConfigProvider` class. This is useful also when you want to test that the correct arguments are being passed to the Parameters utility.
+
+=== "handler.test.ts"
+	```typescript hl_lines="2 6 9 21"
+	--8<-- "docs/snippets/parameters/testingYourCodeProvidersJestMock.ts"
+	```
+
+=== "handler.ts"
+	```typescript
+	--8<-- "docs/snippets/parameters/testingYourCodeProvidersHandler.ts"
+	```
+
+In some other cases, you might want to mock the AWS SDK v3 client itself, in these cases we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-jest`](https://www.npmjs.com/package/aws-sdk-client-mock-jest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
+
+=== "handler.test.ts"
+	```typescript hl_lines="2-8 12 19 25-31"
+	--8<-- "docs/snippets/parameters/testingYourCodeClientJestMock.ts"
+	```
+
+=== "handler.ts"
+	```typescript
+	--8<-- "docs/snippets/parameters/testingYourCodeClientHandler.ts"
+	```
+
+### Clearing cache
+
+Parameters utility caches all parameter values for performance and cost reasons. However, this can have unintended interference in tests using the same parameter name.
+
+Within your tests, you can use `clearCache` method available in [every provider](#built-in-provider-class). When using multiple providers or higher level functions like `getParameter`, use the `clearCaches` standalone function to clear cache globally.
+
+=== "handler.test.ts"
+	```typescript hl_lines="1 9-11"
+	--8<-- "docs/snippets/parameters/testingYourCodeClearCache.ts"
+	```

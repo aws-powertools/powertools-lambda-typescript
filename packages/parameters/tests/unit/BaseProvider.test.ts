@@ -7,7 +7,9 @@ import {
   BaseProvider,
   ExpirableValue,
   GetParameterError,
-  TransformParameterError
+  TransformParameterError,
+  clearCaches,
+  DEFAULT_PROVIDERS,
 } from '../../src';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 
@@ -477,6 +479,41 @@ describe('Class: BaseProvider', () => {
       expect(provider._getStoreSize()).toBe(0);
 
     });
+
+  });
+
+});
+
+describe('Function: clearCaches', () => {
+
+  class TestProvider extends BaseProvider {
+
+    public _get(_name: string): Promise<string> {
+      throw Error('Not implemented.');
+    }
+    
+    public _getMultiple(_path: string): Promise<Record<string, string | undefined>> {
+      throw Error('Not implemented.');
+    }
+
+  }
+
+  test('when called, it clears all the caches', () => {
+
+    // Prepare
+    const provider1 = new TestProvider();
+    const provider2 = new TestProvider();
+    const provider1Spy = jest.spyOn(provider1, 'clearCache');
+    const provider2Spy = jest.spyOn(provider2, 'clearCache');
+    DEFAULT_PROVIDERS.ssm = provider1;
+    DEFAULT_PROVIDERS.secretsManager = provider2;
+
+    // Act
+    clearCaches();
+
+    // Assess
+    expect(provider1Spy).toBeCalledTimes(1);
+    expect(provider2Spy).toBeCalledTimes(1);
 
   });
 

@@ -420,18 +420,18 @@ A similar pattern can be applied also to any of the built-in provider classes - 
 
 === "handler.test.ts"
 	```typescript hl_lines="2 6 9 21"
-	--8<-- "docs/snippets/parameters/testingYourCodeProvidersHandler.ts"
+	--8<-- "docs/snippets/parameters/testingYourCodeProvidersJestMock.ts"
 	```
 
 === "handler.ts"
 	```typescript
-	--8<-- "docs/snippets/parameters/testingYourCodeProvidersJestMock.ts"
+	--8<-- "docs/snippets/parameters/testingYourCodeProvidersHandler.ts"
 	```
 
 In some other cases, you might want to mock the AWS SDK v3 client itself, in these cases we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-jest`](https://www.npmjs.com/package/aws-sdk-client-mock-jest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
 
 === "handler.test.ts"
-	```typescript hl_lines="2 4-7 12 18"
+	```typescript hl_lines="2-8 12 19 25-31"
 	--8<-- "docs/snippets/parameters/testingYourCodeClientJestMock.ts"
 	```
 
@@ -447,6 +447,6 @@ Parameters utility caches all parameter values for performance and cost reasons.
 Within your tests, you can use `clearCache` method available in [every provider](#built-in-provider-class). When using multiple providers or higher level functions like `getParameter`, use the `clearCaches` standalone function to clear cache globally.
 
 === "handler.test.ts"
-	```typescript hl_lines="2 4-7 12 18"
+	```typescript hl_lines="1 9-11"
 	--8<-- "docs/snippets/parameters/testingYourCodeClearCache.ts"
 	```

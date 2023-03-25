@@ -1,4 +1,4 @@
-import { clearCache } from '@aws-lambda-powertools/parameters';
+import { clearCaches } from '@aws-lambda-powertools/parameters';
 
 describe('Function tests', () => {
 
@@ -7,7 +7,7 @@ describe('Function tests', () => {
   });
 
   afterEach(() => {
-    clearCache();
+    clearCaches();
   });
 
   // ...

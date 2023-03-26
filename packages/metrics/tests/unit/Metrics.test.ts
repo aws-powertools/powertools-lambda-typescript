@@ -155,5 +155,22 @@ describe('Class: Metrics', () => {
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(1);
 
     });
+
+    test('it will not publish metrics if stored metrics count has not reached max metric size threshold', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+      const metricName = 'test-metric';
+        
+      //Act
+      for (let i = 0; i < 100; i++) {
+        metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
+      }
+  
+      // Assess
+      expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
+
+    });
   });
 });

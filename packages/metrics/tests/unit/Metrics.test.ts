@@ -136,8 +136,24 @@ describe('Class: Metrics', () => {
         metrics.addMetric(metricName, MetricUnits.Count, 1);
         metrics.addMetric(metricName, MetricUnits.Kilobits, 5);
       }).toThrowError(Error);
-      
+
     });
 
+    test('it will publish metrics if stored metrics count has reached max metric size threshold', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+      const metricName = 'test-metric';
+        
+      //Act
+      for (let i = 0; i <= 100; i++) {
+        metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
+      }
+  
+      // Assess
+      expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(1);
+
+    });
   });
 });

@@ -173,4 +173,26 @@ describe('Class: Metrics', () => {
 
     });
   });
+
+  describe('Method: addDimension', () => {
+    
+    test('when called, it should store dimensions', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      const dimensionName = 'test-dimension';
+      const dimensionValue= 'test-value';
+  
+      //Act
+      metrics.addDimension(dimensionName, dimensionValue);
+  
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: {
+          [dimensionName]: dimensionValue
+        },
+      }));
+      
+    });
+  });
 });

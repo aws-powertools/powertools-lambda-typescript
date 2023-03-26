@@ -71,5 +71,33 @@ describe('Class: Metrics', () => {
         },
       }));
     });
+
+    test('when called without resolution, it should store metrics with standard resolution', () => {
+   
+      //Prepare
+      const metrics = new Metrics();
+
+      //Act
+      metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
+      metrics.addMetric('test-metric-2', MetricUnits.Seconds, 3);
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        storedMetrics: {
+          'test-metric-1': {
+            name: 'test-metric-1',
+            resolution: MetricResolution.Standard,
+            unit: MetricUnits.Count,
+            value: 1
+          },
+          'test-metric-2': {
+            name: 'test-metric-2',
+            resolution: MetricResolution.Standard,
+            unit: MetricUnits.Seconds,
+            value: 3
+          }
+        },
+      }));
+    });
   });
 });

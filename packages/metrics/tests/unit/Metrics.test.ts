@@ -37,5 +37,39 @@ describe('Class: Metrics', () => {
       }));
     });
 
+    test('when called with multiple metric name, it should store multiple metrics', () => {
+      
+      //Prepare
+      const metrics = new Metrics();
+
+      //Act
+      metrics.addMetric('test_metric-1', MetricUnits.Count, 1, MetricResolution.High);
+      metrics.addMetric('test_metric-2', MetricUnits.Count, 3, MetricResolution.High);
+      metrics.addMetric('test_metric-3', MetricUnits.Count, 6, MetricResolution.High);
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        storedMetrics: {
+          'test_metric-1': {
+            name: 'test_metric-1',
+            resolution: MetricResolution.High,
+            unit: MetricUnits.Count,
+            value: 1
+          },
+          'test_metric-2': {
+            name: 'test_metric-2',
+            resolution: MetricResolution.High,
+            unit: MetricUnits.Count,
+            value: 3
+          },
+          'test_metric-3': {
+            name: 'test_metric-3',
+            resolution: MetricResolution.High,
+            unit: MetricUnits.Count,
+            value: 6
+          }
+        },
+      }));
+    });
   });
 });

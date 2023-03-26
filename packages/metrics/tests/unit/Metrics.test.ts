@@ -99,5 +99,31 @@ describe('Class: Metrics', () => {
         },
       }));
     });
+
+    test('when trying to add metric with the same name multiple times, values should be grouped together in an array', () => {
+
+      //Prepare
+      const metrics = new Metrics();
+      const metricName = 'test-metric';
+      
+      //Act
+      metrics.addMetric(metricName, MetricUnits.Count, 1);
+      metrics.addMetric(metricName, MetricUnits.Count, 5);
+      metrics.addMetric(metricName, MetricUnits.Count, 1);
+      metrics.addMetric(metricName, MetricUnits.Count, 4);
+      
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        storedMetrics: {
+          [metricName]: {
+            name: metricName,
+            resolution: MetricResolution.Standard,
+            unit: MetricUnits.Count,
+            value: [ 1, 5, 1, 4 ]
+          }
+        },
+      }));
+    });
+
   });
 });

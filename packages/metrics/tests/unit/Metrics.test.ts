@@ -105,7 +105,7 @@ describe('Class: Metrics', () => {
       //Prepare
       const metrics = new Metrics();
       const metricName = 'test-metric';
-      
+
       //Act
       metrics.addMetric(metricName, MetricUnits.Count, 1);
       metrics.addMetric(metricName, MetricUnits.Count, 5);
@@ -123,6 +123,20 @@ describe('Class: Metrics', () => {
           }
         },
       }));
+    });
+
+    test('when trying to add metric with the same name multiple times but with different unit, it will throw an error', () => {
+
+      //Prepare
+      const metrics = new Metrics();
+      const metricName = 'test-metric';
+
+      // Act & Assess
+      expect(() => {
+        metrics.addMetric(metricName, MetricUnits.Count, 1);
+        metrics.addMetric(metricName, MetricUnits.Kilobits, 5);
+      }).toThrowError(Error);
+      
     });
 
   });

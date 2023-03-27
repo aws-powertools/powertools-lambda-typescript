@@ -9,7 +9,8 @@ import {
   LayerVersion,
   Code,
   Runtime,
-  CfnLayerVersionPermission
+  CfnLayerVersionPermission,
+  Architecture,
 } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
@@ -36,6 +37,8 @@ export class LayerPublisherStack extends Stack {
         Runtime.NODEJS_16_X,
         Runtime.NODEJS_18_X
       ],
+      license: 'MIT-0',
+      compatibleArchitectures: [Architecture.X86_64],
       code: Code.fromAsset('../tmp'),
     });
 

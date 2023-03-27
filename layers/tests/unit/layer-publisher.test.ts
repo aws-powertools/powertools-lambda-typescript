@@ -6,9 +6,7 @@
 
 import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
-import {
-  LayerPublisherStack
-} from '../../src/layer-publisher-stack';
+import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 
 describe('Class: LayerPublisherStack', () => {
 
@@ -32,6 +30,10 @@ describe('Class: LayerPublisherStack', () => {
         'nodejs14.x',
         'nodejs16.x',
         'nodejs18.x'
+      ],
+      LicenseInfo: 'MIT-0',
+      CompatibleArchitectures: [
+        'x86_64',
       ],
       Description: 'AWS Lambda Powertools for TypeScript version 1.0.1',
       LayerName: 'AWSLambdaPowertoolsTypeScript',

@@ -27,6 +27,9 @@ If you're new to Amazon CloudWatch, there are two terminologies you must be awar
 
 * **Namespace**. It's the highest level container that will group multiple metrics from multiple services for a given application, for example `ServerlessEcommerce`.
 * **Dimensions**. Metrics metadata in key-value format. They help you slice and dice metrics visualization, for example `ColdStart` metric by Payment `service`.
+* **Metric**. It's the name of the metric, for example: SuccessfulBooking or UpdatedBooking.
+* **Unit**. It's a value representing the unit of measure for the corresponding metric, for example: Count or Seconds.
+* **Resolution**. It's a value representing the storage resolution for the corresponding metric. Metrics can be either Standard or High resolution. Read more [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition).
 
 <figure>
   <img src="../../media/metrics_terminology.png" />
@@ -117,7 +120,23 @@ You can create metrics using the `addMetric` method, and you can create dimensio
     CloudWatch EMF supports a max of 100 metrics per batch. Metrics will automatically propagate all the metrics when adding the 100th metric. Subsequent metrics, e.g. 101th, will be aggregated into a new EMF object, for your convenience.
 
 !!! warning "Do not create metrics or dimensions outside the handler"
-    Metrics or dimensions added in the global scope will only be added during cold start. Disregard if that's the intended behaviour.
+    Metrics or dimensions added in the global scope will only be added during cold start. Disregard if that's the intended behavior.
+
+### Adding high-resolution metrics
+
+You can create [high-resolution metrics](https://aws.amazon.com/about-aws/whats-new/2023/02/amazon-cloudwatch-high-resolution-metric-extraction-structured-logs/) passing `resolution` as parameter to `addMetric`. 
+
+!!! tip "When is it useful?"
+    High-resolution metrics are data with a granularity of one second and are very useful in several situations such as telemetry, time series, real-time incident management, and others.
+
+=== "Metrics with high resolution"
+
+    ```typescript hl_lines="6"
+    --8<-- "docs/snippets/metrics/addHighResolutionMetric.ts"
+    ```
+
+!!! tip "Autocomplete Metric Resolutions"
+    Use the `MetricResolution` type to easily find a supported metric resolution by CloudWatch. Alternatively, you can pass the allowed values of 1 or 60 as an integer.
 
 ### Adding multi-value metrics
 

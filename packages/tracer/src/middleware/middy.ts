@@ -34,18 +34,26 @@ import type {
  * @returns middleware - The middy middleware object
  */
 const captureLambdaHandler = (target: Tracer, options?: CaptureLambdaHandlerOptions): MiddlewareLikeObj => {
-  let lambdaSegment: Subsegment | Segment;
+  let lambdaSegment: Segment;
+  let handlerSegment: Subsegment;
 
   const open = (): void => {
-    lambdaSegment = target.getSegment();
-    const handlerSegment = lambdaSegment.addNewSubsegment(`## ${process.env._HANDLER}`);
+    const segment = target.getSegment();
+    if (segment === undefined) {
+      return;
+    }
+    // If segment is defined, then it is a Segment as this middleware is only used for Lambda Handlers
+    lambdaSegment = segment as Segment;
+    handlerSegment = lambdaSegment.addNewSubsegment(`## ${process.env._HANDLER}`);
     target.setSegment(handlerSegment);
   };
 
   const close = (): void => {
-    const subsegment = target.getSegment();
-    subsegment.close();
-    target.setSegment(lambdaSegment as Segment);
+    if (handlerSegment === undefined || lambdaSegment === null) {
+      return;
+    }
+    handlerSegment.close();
+    target.setSegment(lambdaSegment);
   };
 
   const captureLambdaHandlerBefore = async (): Promise<void> => {

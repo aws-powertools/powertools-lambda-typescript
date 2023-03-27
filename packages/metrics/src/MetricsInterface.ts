@@ -1,11 +1,17 @@
 import { Metrics } from './Metrics';
-import { MetricUnit, EmfOutput, HandlerMethodDecorator, Dimensions, MetricsOptions } from './types';
-
+import {
+  MetricUnit,
+  MetricResolution,
+  EmfOutput,
+  HandlerMethodDecorator,
+  Dimensions,
+  MetricsOptions
+} from './types';
 interface MetricsInterface {
   addDimension(name: string, value: string): void
   addDimensions(dimensions: {[key: string]: string}): void
   addMetadata(key: string, value: string): void
-  addMetric(name: string, unit:MetricUnit, value:number): void
+  addMetric(name: string, unit:MetricUnit, value:number, resolution?: MetricResolution): void
   clearDimensions(): void
   clearMetadata(): void
   clearMetrics(): void

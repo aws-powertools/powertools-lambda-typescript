@@ -284,7 +284,7 @@ describe('Class: AppConfigProvider', () => {
       };
       const path = '/my/path';
       const provider = new AppConfigProvider(config);
-      const errorMessage = 'Not Implemented';
+      const errorMessage = 'Method not implemented.';
 
       // Act & Assess
       await expect(provider.getMultiple(path)).rejects.toThrow(errorMessage);

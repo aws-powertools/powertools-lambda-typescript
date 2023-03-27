@@ -1,10 +1,27 @@
-import { ContextMissingStrategy } from 'aws-xray-sdk-core/dist/lib/context_utils';
+import {
+  ContextMissingStrategy
+} from 'aws-xray-sdk-core/dist/lib/context_utils';
 import { Namespace } from 'cls-hooked';
 import { ProviderServiceInterface } from '.';
-import { captureAWS, captureAWSClient, captureAWSv3Client, captureAsyncFunc, captureFunc, captureHTTPsGlobal, getNamespace, getSegment, setSegment, Segment, Subsegment, setContextMissingStrategy, setDaemonAddress, setLogger, Logger } from 'aws-xray-sdk-core';
+import {
+  captureAWS,
+  captureAWSClient,
+  captureAWSv3Client,
+  captureAsyncFunc,
+  captureFunc,
+  captureHTTPsGlobal,
+  getNamespace,
+  getSegment,
+  setSegment,
+  Segment,
+  Subsegment,
+  setContextMissingStrategy,
+  setDaemonAddress,
+  setLogger,
+  Logger
+} from 'aws-xray-sdk-core';
 
 class ProviderService implements ProviderServiceInterface {
-  
   public captureAWS<T>(awssdk: T): T {
     return captureAWS(awssdk);
   }
@@ -40,6 +57,36 @@ class ProviderService implements ProviderServiceInterface {
 
   public getSegment(): Segment | Subsegment | undefined {
     return getSegment();
+  }
+
+  public putAnnotation(key: string, value: string | number | boolean): void {
+    const segment = this.getSegment();
+    if (segment === undefined) {
+      console.warn('No active segment or subsegment found, skipping annotation');
+
+      return;
+    }
+    if (segment instanceof Segment) {
+      console.warn('You cannot annotate the main segment in a Lambda execution environment');
+      
+      return;
+    }
+    segment.addAnnotation(key, value);
+  }
+
+  public putMetadata(key: string, value: unknown, namespace?: string): void {
+    const segment = this.getSegment();
+    if (segment === undefined) {
+      console.warn('No active segment or subsegment found, skipping metadata addition');
+
+      return;
+    }
+    if (segment instanceof Segment) {
+      console.warn('You cannot add metadata to the main segment in a Lambda execution environment');
+      
+      return;
+    }
+    segment.addMetadata(key, value, namespace);
   }
 
   public setContextMissingStrategy(strategy: unknown): void {

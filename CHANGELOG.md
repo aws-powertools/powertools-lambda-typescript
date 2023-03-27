@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
+
+
+### Bug Fixes
+
+* **docs:** typo in layer arn ([bc5f7c9](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/bc5f7c99e02396223e726962432fc3856a68a29d))
+
+
+### Features
+
+* **logger:** add silent log level to suppress the emission of all logs ([#1347](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1347)) ([c82939e](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/c82939ebdb82ae596cbad07be397794ee4b69fe5))
+* **metrics:** support high resolution metrics ([#1369](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1369)) ([79a321b](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/79a321b199ef51a024dc25b83673baf2eb03de69))
+* **parameters:** AppConfigProvider to return the last valid value when the API returns empty value on subsequent calls ([#1365](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1365)) ([97339d9](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/97339d9336ec67568e9e7fd079b3cfe006da1bba))
+
+
+
+
+
 # [1.6.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.5.1...v1.6.0) (2023-03-02)
 
 

@@ -1,4 +1,4 @@
-# AWS Lambda Powertools for TypeScript
+# AWS Lambda Powertools for TypeScript <!-- omit in toc -->
 
 Powertools is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#features).
 
@@ -8,13 +8,13 @@ AWS Lambda Powertools for [Python](https://github.com/awslabs/aws-lambda-powerto
 
 **[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
 
-## Table of contents
+## Table of contents <!-- omit in toc -->
 
 - [Features](#features)
 - [Getting started](#getting-started)
   - [Installation](#installation)
   - [Examples](#examples)
-  - [Serverless TypeScript Demo](#serverless-typescript-demo-application)
+  - [Serverless TypeScript Demo application](#serverless-typescript-demo-application)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
@@ -26,6 +26,7 @@ AWS Lambda Powertools for [Python](https://github.com/awslabs/aws-lambda-powerto
 * **[Tracer](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
 * **[Logger](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
 * **[Metrics](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
+* **[Parameters (beta)](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM, Secrets Manager, AppConfig, and DynamoDB
 
 ## Getting started
 
@@ -49,6 +50,8 @@ Or refer to the installation guide of each utility:
 👉 [Installation guide for the **Logger** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger#getting-started)
 
 👉 [Installation guide for the **Metrics** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics#getting-started)
+
+👉 [Installation guide for the **Parameters** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/#getting-started)
 
 ### Examples
 

@@ -25,6 +25,7 @@ module.exports = {
   'coveragePathIgnorePatterns': [
     '/node_modules/',
     '/types/',
+    '/src/docs.ts', // this file is only used for documentation
   ],
   'coverageThreshold': {
     'global': {

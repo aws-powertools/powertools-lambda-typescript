@@ -6,7 +6,8 @@
 
 import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface } from '@aws-lambda-powertools/commons';
 import { Context, Callback } from 'aws-lambda';
-import { Metrics, MetricUnits } from '../../src/';
+
+import { Metrics, MetricUnits, MetricResolution } from '../../src/';
 
 const MAX_METRICS_SIZE = 100;
 const MAX_DIMENSION_COUNT = 29;
@@ -560,6 +561,61 @@ describe('Class: Metrics', () => {
       
       expect(serializedMetrics['test_name']).toBe(1);
       expect(serializedMetrics['test_name2']).toBe(2);
+    });
+  });
+
+  describe('Feature: Resolution of Metrics', ()=>{
+
+    test('serialized metrics in EMF format should not contain `StorageResolution` as key if none is set', () => {
+      const metrics = new Metrics();
+      metrics.addMetric('test_name', MetricUnits.Seconds, 10);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).not.toContain('StorageResolution');
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Name');
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Unit');
+     
+    });
+    test('serialized metrics in EMF format should not contain `StorageResolution` as key if `Standard` is set', () => {
+      const metrics = new Metrics();
+      metrics.addMetric('test_name', MetricUnits.Seconds, 10, MetricResolution.Standard);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      // expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(MetricResolution.Standard);
+      // expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(60);
+
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).not.toContain('StorageResolution');
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Name');
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Unit');
+    });
+
+    test('serialized metrics in EMF format should not contain `StorageResolution` as key if `60` is set',()=>{
+      const metrics = new Metrics();
+      metrics.addMetric('test_name', MetricUnits.Seconds, 10, 60);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).not.toContain('StorageResolution');
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Name');
+      expect(Object.keys(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0])).toContain('Unit');
+    });
+
+    test('Should be StorageResolution `1` if MetricResolution is set to `High`',()=>{
+      const metrics = new Metrics();
+      metrics.addMetric('test_name', MetricUnits.Seconds, 10, MetricResolution.High);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(MetricResolution.High);
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(1);
+    });
+
+    test('Should be StorageResolution `1` if MetricResolution is set to `1`',()=>{
+      const metrics = new Metrics();
+      metrics.addMetric('test_name', MetricUnits.Seconds, 10, 1);
+      const serializedMetrics = metrics.serializeMetrics();
+
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(MetricResolution.High);
+      expect(serializedMetrics._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBe(1);
+     
     });
   });
 

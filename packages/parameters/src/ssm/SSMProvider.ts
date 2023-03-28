@@ -16,7 +16,9 @@ import type {
 import type {
   SSMProviderOptions,
   SSMGetMultipleOptionsInterface,
-  SSMGetOptionsInterface,
+  SSMGetOptions,
+  SSMGetOptionsUnion,
+  SSMGetOutput,
   SSMGetParametersByNameOutputInterface,
   SSMGetParametersByNameOptionsInterface,
   SSMSplitBatchAndDecryptParametersOutputType,
@@ -315,11 +317,11 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetOptionsInterface} options - Options to configure the provider
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async get(
+  public async get<O extends SSMGetOptionsUnion | undefined = undefined>(
     name: string,
-    options?: SSMGetOptionsInterface | undefined
-  ): Promise<string | Record<string, unknown> | undefined> {
-    return super.get(name, options) as Promise<string | Record<string, unknown> | undefined>;
+    options?: O & SSMGetOptions
+  ): Promise<SSMGetOutput<O> | undefined> {
+    return super.get(name, options) as Promise<SSMGetOutput<O> | undefined>;
   }
 
   /**
@@ -471,7 +473,7 @@ class SSMProvider extends BaseProvider {
    */
   protected async _get(
     name: string,
-    options?: SSMGetOptionsInterface
+    options?: SSMGetOptions
   ): Promise<string | undefined> {
     const sdkOptions: GetParameterCommandInput = {
       ...(options?.sdkOptions || {}),

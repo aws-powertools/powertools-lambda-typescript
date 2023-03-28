@@ -54,10 +54,31 @@ type SSMProviderOptions = SSMProviderOptionsWithClientConfig | SSMProviderOption
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  * @property {boolean} decrypt - If true, the parameter will be decrypted.
  */
-interface SSMGetOptionsInterface extends GetOptionsInterface {
+interface SSMGetOptions extends GetOptionsInterface {
   decrypt?: boolean
   sdkOptions?: Partial<GetParameterCommandInput>
 }
+
+interface SSMGetOptionsTransformJson extends SSMGetOptions {
+  transform: 'json'
+}
+
+interface SSMGetOptionsTransformBinary extends SSMGetOptions {
+  transform: 'binary'
+}
+
+interface SSMGetOptionsTransformNone extends SSMGetOptions {
+  transform?: never
+}
+
+type SSMGetOptionsUnion = SSMGetOptionsTransformJson | SSMGetOptionsTransformBinary | SSMGetOptionsTransformNone | undefined;
+
+type SSMGetOutput<O = undefined> =
+    undefined extends O ? string :
+      O extends SSMGetOptionsTransformNone | SSMGetOptionsTransformBinary ? string :
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        O extends SSMGetOptionsTransformJson ? Record<string, any> :
+          never;
 
 /**
  * Options for the SSMProvider getMultiple method.
@@ -121,7 +142,9 @@ type SSMGetParametersByNameFromCacheOutputType = {
 
 export type {
   SSMProviderOptions,
-  SSMGetOptionsInterface,
+  SSMGetOptions,
+  SSMGetOptionsUnion,
+  SSMGetOutput,
   SSMGetMultipleOptionsInterface,
   SSMGetParametersByNameOptionsInterface,
   SSMSplitBatchAndDecryptParametersOutputType,

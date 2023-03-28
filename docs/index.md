@@ -293,20 +293,22 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 ???+ info
 	Explicit parameters take precedence over environment variables
 
-| Environment variable                         | Description                                                                                                   | Utility                   | Default             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------- |
-| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging                        | All                       | `service_undefined` |
-| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                                               | [Metrics](./core/metrics) | `default_namespace` |
-| **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                                                   | [Tracer](./core/tracer)   | `true`              |
-| **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Captures Lambda or method return as metadata.                                                                 | [Tracer](./core/tracer)   | `true`              |
-| **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Captures Lambda or method exception as metadata.                                                              | [Tracer](./core/tracer)   | `true`              |
-| **POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS** | Captures HTTP(s) requests as segments.                                                                        | [Tracer](./core/tracer)   | `true`              |
-| **POWERTOOLS_LOGGER_LOG_EVENT**              | Logs incoming event                                                                                           | [Logger](./core/logger)   | `false`             |
-| **POWERTOOLS_LOGGER_SAMPLE_RATE**            | Debug log sampling                                                                                            | [Logger](./core/logger)   | `0`                 |
-| **POWERTOOLS_DEV**                           | Increase JSON indentation to ease debugging when running functions locally or in a non-production environment | [Logger](./core/logger)   | `false`             |
-| **LOG_LEVEL**                                | Sets logging level                                                                                            | [Logger](./core/logger)   | `INFO`              |
+| Environment variable                         | Description                                                                                                   | Utility                              | Default             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ------------------- |
+| **POWERTOOLS_SERVICE_NAME**                  | Sets service name used for tracing namespace, metrics dimension and structured logging                        | All                                  | `service_undefined` |
+| **POWERTOOLS_METRICS_NAMESPACE**             | Sets namespace used for metrics                                                                               | [Metrics](./core/metrics)            | `default_namespace` |
+| **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                                                   | [Tracer](./core/tracer)              | `true`              |
+| **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Captures Lambda or method return as metadata.                                                                 | [Tracer](./core/tracer)              | `true`              |
+| **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Captures Lambda or method exception as metadata.                                                              | [Tracer](./core/tracer)              | `true`              |
+| **POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS** | Captures HTTP(s) requests as segments.                                                                        | [Tracer](./core/tracer)              | `true`              |
+| **POWERTOOLS_LOGGER_LOG_EVENT**              | Logs incoming event                                                                                           | [Logger](./core/logger)              | `false`             |
+| **POWERTOOLS_LOGGER_SAMPLE_RATE**            | Debug log sampling                                                                                            | [Logger](./core/logger)              | `0`                 |
+| **POWERTOOLS_DEV**                           | Increase JSON indentation to ease debugging when running functions locally or in a non-production environment | [Logger](./core/logger)              | `false`             |
+| **LOG_LEVEL**                                | Sets logging level                                                                                            | [Logger](./core/logger)              | `INFO`              |
+| **POWERTOOLS_PARAMETERS_MAX_AGE**            | Adjust how long values are kept in cache (in seconds)                                                         | [Parameters](./utilities/parameters) | `5`                 |
+| **POWERTOOLS_PARAMETERS_SSM_DECRYPT**        | Sets whether to decrypt or not values retrieved from AWS Systems Manager Parameters Store                     | [Parameters](./utilities/parameters) | `false`             |
 
-Each Utility page provides information on example values and allowed values
+Each Utility page provides information on example values and allowed values.
 
 ## Tenets
 

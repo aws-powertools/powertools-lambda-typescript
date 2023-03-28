@@ -4,6 +4,10 @@ interface ConfigServiceInterface {
   
   getServiceName(): string
 
+  getParametersMaxAge(): number | undefined
+
+  getSSMDecrypt(): string
+
 }
 
 export {

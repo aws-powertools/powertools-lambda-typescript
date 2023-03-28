@@ -738,7 +738,7 @@ class SSMProvider extends BaseProvider {
   ): boolean | undefined {
     if (options?.decrypt !== undefined) return options.decrypt;
     if (sdkOptions?.WithDecryption !== undefined) return sdkOptions.WithDecryption;
-    if (this.envVarsService.getSSMDecrypt() !== undefined) {
+    if (this.envVarsService.getSSMDecrypt() !== '') {
       return this.envVarsService.isValueTrue(this.envVarsService.getSSMDecrypt());
     }
 

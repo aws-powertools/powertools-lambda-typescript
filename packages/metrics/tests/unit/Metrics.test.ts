@@ -311,4 +311,39 @@ describe('Class: Metrics', () => {
     });
     
   });
+
+  describe('Method: addMetadata', () => {
+
+    test('it should add metadata', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+  
+      //Act
+      metrics.addMetadata('foo', 'bar');
+  
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        metadata: { 'foo': 'bar' }
+      }));
+      
+    });
+
+    test('it should update metadata value if added again', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+  
+      //Act
+      metrics.addMetadata('foo', 'bar');
+      metrics.addMetadata('foo', 'baz');
+  
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        metadata: { 'foo': 'baz' }
+      }));
+      
+    });
+  });
+
 });

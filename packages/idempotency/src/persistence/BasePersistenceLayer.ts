@@ -38,7 +38,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   public configure(config: BasePersistenceLayerOptions): void {
     const { config: idempotencyConfig } = config;
 
-    if (config?.functionName && config.functionName.trim() !== '') {
+    if (config?.functionName?.trim() !== '') {
       this.idempotencyKeyPrefix = `${this.idempotencyKeyPrefix}.${config.functionName}`;
     }
 

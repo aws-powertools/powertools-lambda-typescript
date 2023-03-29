@@ -1,4 +1,5 @@
 import { DEFAULT_MAX_AGE_SECS } from './constants';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService';
 import type { GetOptionsInterface, TransformOptions } from './types';
 
 /**
@@ -8,12 +9,16 @@ import type { GetOptionsInterface, TransformOptions } from './types';
  */
 class GetOptions implements GetOptionsInterface {
   public forceFetch: boolean = false;
-  public maxAge: number = DEFAULT_MAX_AGE_SECS;
+  public maxAge!: number;
   public sdkOptions?: unknown;
   public transform?: TransformOptions;
 
-  public constructor(options: GetOptionsInterface = {}) {
+  public constructor(options: GetOptionsInterface = {}, envVarsService: EnvironmentVariablesService) {
     Object.assign(this, options);
+
+    if (options.maxAge === undefined) {
+      this.maxAge = envVarsService.getParametersMaxAge() ?? DEFAULT_MAX_AGE_SECS;
+    }
   }
 }
 

@@ -65,6 +65,7 @@
     "aws-sdk-client-mock-jest": "^2.0.1"
   },
   "dependencies": {
+    "@aws-lambda-powertools/commons": "^1.7.0",
     "@aws-sdk/util-base64-node": "^3.209.0"
   }
 }

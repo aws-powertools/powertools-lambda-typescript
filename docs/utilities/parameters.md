@@ -127,16 +127,21 @@ The following will retrieve the latest version and store it in the cache.
 
 ### Adjusting cache TTL
 
-???+ tip
-	`maxAge` parameter is also available in high level functions like `getParameter`, `getSecret`, etc.
-
 By default, the provider will cache parameters retrieved in-memory for 5 seconds.
 
 You can adjust how long values should be kept in cache by using the param `maxAge`, when using  `get()` or `getMultiple()` methods across all providers.
 
+???+ tip
+	If you want to set the same TTL for all parameters, you can set the `POWERTOOLS_PARAMETERS_MAX_AGE` environment variable. **This will override the default TTL of 5 seconds but can be overridden by the `maxAge` parameter**.
+
 ```typescript hl_lines="7 11" title="Caching parameters values in memory for longer than 5 seconds"
 --8<-- "docs/snippets/parameters/adjustingCacheTTL.ts"
 ```
+
+1.  Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_MAX_AGE` environment variable.
+
+???+ info
+	The `maxAge` parameter is also available in high level functions like `getParameter`, `getSecret`, etc.
 
 ### Always fetching the latest
 
@@ -166,9 +171,14 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 | **decrypt**   | `false` | Will automatically decrypt the parameter (see required [IAM Permissions](#iam-permissions)).  |
 | **recursive** | `true`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
 
+???+ tip
+	If you want to always decrypt parameters, you can set the `POWERTOOLS_PARAMETERS_SSM_DECRYPT=true` environment variable. **This will override the default value of `false` but can be overridden by the `decrypt` parameter**.
+
 ```typescript hl_lines="6 9" title="Example with get() and getMultiple()"
 --8<-- "docs/snippets/parameters/ssmProviderDecryptAndRecursive.ts"
 ```
+
+1.  Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_SSM_DECRYPT` environment variable.
 
 #### SecretsProvider
 

@@ -414,7 +414,7 @@ class SSMProvider extends BaseProvider {
     options?: SSMGetParametersByNameOptionsInterface
   ): Promise<Record<string, unknown>> {
     const configs = { ...{
-      decrypt: false,
+      decrypt: this.resolveDecryptionConfigValue({}) || false,
       maxAge: DEFAULT_MAX_AGE_SECS,
       throwOnError: true,
     }, ...options };
@@ -477,8 +477,7 @@ class SSMProvider extends BaseProvider {
       ...(options?.sdkOptions || {}),
       Name: name,
     };
-    sdkOptions.WithDecryption = options?.decrypt !== undefined ?
-      options.decrypt : sdkOptions.WithDecryption;
+    sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(options, sdkOptions);
     const result = await this.client.send(new GetParameterCommand(sdkOptions));
 
     return result.Parameter?.Value;
@@ -501,8 +500,7 @@ class SSMProvider extends BaseProvider {
     const paginationOptions: PaginationConfiguration = {
       client: this.client
     };
-    sdkOptions.WithDecryption = options?.decrypt !== undefined ?
-      options.decrypt : sdkOptions.WithDecryption;
+    sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(options, sdkOptions);
     sdkOptions.Recursive = options?.recursive !== undefined ?
       options.recursive : sdkOptions.Recursive;
     paginationOptions.pageSize = sdkOptions.MaxResults !== undefined ?
@@ -732,6 +730,19 @@ class SSMProvider extends BaseProvider {
     }
 
     return errors;
+  }
+
+  protected resolveDecryptionConfigValue(
+    options: SSMGetOptionsInterface | SSMGetMultipleOptionsInterface = {},
+    sdkOptions?: GetParameterCommandInput | GetParametersByPathCommandInput
+  ): boolean | undefined {
+    if (options?.decrypt !== undefined) return options.decrypt;
+    if (sdkOptions?.WithDecryption !== undefined) return sdkOptions.WithDecryption;
+    if (this.envVarsService.getSSMDecrypt() !== '') {
+      return this.envVarsService.isValueTrue(this.envVarsService.getSSMDecrypt());
+    }
+
+    return undefined;
   }
 
   /**

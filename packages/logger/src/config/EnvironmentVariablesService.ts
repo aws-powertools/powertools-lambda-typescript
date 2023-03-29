@@ -117,18 +117,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
     return this.isValueTrue(value);
   }
 
-  /**
-   * It returns true if the string value represents a boolean true value.
-   *
-   * @param {string} value
-   * @returns boolean
-   */
-  public isValueTrue(value: string): boolean {
-    const truthyValues: string[] = [ '1', 'y', 'yes', 't', 'true', 'on' ];
-
-    return truthyValues.includes(value.toLowerCase());
-  }
-
 }
 
 export {

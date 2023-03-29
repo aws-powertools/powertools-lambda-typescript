@@ -346,4 +346,38 @@ describe('Class: Metrics', () => {
     });
   });
 
+  describe('Method: clearDimensions', () => {
+    
+    test('it should clear all dimensions', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      metrics.addDimension('foo', 'bar');
+  
+      //Act
+      metrics.clearDimensions();
+  
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: {}
+      }));
+      
+    });
+
+    test('it should not clear default dimensions', () => {
+        
+      //Prepare
+      const metrics = new Metrics({ defaultDimensions: { 'environment': 'prod' } });
+  
+      //Act
+      metrics.clearDimensions();
+  
+      // Assess
+      expect(metrics).not.toEqual(expect.objectContaining({
+        defaultDimensions: {}
+      }));
+      
+    });
+  });
+
 });

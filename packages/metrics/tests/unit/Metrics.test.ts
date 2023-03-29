@@ -249,6 +249,29 @@ describe('Class: Metrics', () => {
       }));
 
     });
+
+    test('if same dimension is added again, it should update existing dimension value', () => {
+      
+      //Prepare
+      const dimensionsToBeAdded: { [key: string]: string } = {
+        'test-dimension-1': 'test-value-1',
+        'test-dimension-2': 'test-value-2',
+      };
+      const metrics = new Metrics();
+
+      //Act
+      metrics.addDimensions(dimensionsToBeAdded);
+      metrics.addDimensions({ 'test-dimension-1': 'test-value-3' });
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: {
+          'test-dimension-1': 'test-value-3',
+          'test-dimension-2': 'test-value-2',
+        }
+      }));
+
+    });
     
   });
 });

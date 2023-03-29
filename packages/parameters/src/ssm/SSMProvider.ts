@@ -737,7 +737,7 @@ class SSMProvider extends BaseProvider {
   }
 
   protected resolveDecryptionConfigValue(
-    options: SSMGetOptionsInterface | SSMGetMultipleOptionsInterface = {},
+    options: SSMGetOptions | SSMGetMultipleOptions = {},
     sdkOptions?: GetParameterCommandInput | GetParametersByPathCommandInput
   ): boolean | undefined {
     if (options?.decrypt !== undefined) return options.decrypt;

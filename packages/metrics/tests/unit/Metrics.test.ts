@@ -194,5 +194,38 @@ describe('Class: Metrics', () => {
       }));
       
     });
+
+    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+  
+      // Act & Assess
+      expect(() => {
+        for (let i = 0; i < 29; i++) {
+          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
+        }
+      }).toThrowError(RangeError);
+      
+    });
+
+    test('it should take consideration of defaultDimensions while throwing error if number of dimensions exceeds the maximum allowed', () => {
+        
+      //Prepare
+      const metrics = new Metrics({ defaultDimensions: { 'environment': 'prod', 'foo': 'bar' } });
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+  
+      // Act & Assess
+      expect(() => {
+        for (let i = 0; i < 27; i++) {
+          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
+        }
+      }).toThrowError(RangeError);
+
+    });
+
   });
 });

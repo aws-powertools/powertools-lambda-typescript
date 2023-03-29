@@ -63,6 +63,8 @@ interface SSMGetOptions extends GetOptionsInterface {
    * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetParameterCommandInput`.
    */
   sdkOptions?: Partial<GetParameterCommandInput>
+
+  transform?: Exclude<TransformOptions, 'auto'>
 }
 
 interface SSMGetOptionsTransformJson extends SSMGetOptions {
@@ -77,14 +79,16 @@ interface SSMGetOptionsTransformNone extends SSMGetOptions {
   transform?: never
 }
 
-type SSMGetOptionsUnion = SSMGetOptionsTransformJson | SSMGetOptionsTransformBinary | SSMGetOptionsTransformNone | undefined;
-
-type SSMGetOutput<O = undefined> =
+/**
+ * Generic output type for the SSMProvider get method.
+ */
+type SSMGetOutput<T = undefined, O = undefined> =
+  undefined extends T ? 
     undefined extends O ? string :
       O extends SSMGetOptionsTransformNone | SSMGetOptionsTransformBinary ? string :
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        O extends SSMGetOptionsTransformJson ? Record<string, any> :
-          never;
+        O extends SSMGetOptionsTransformJson ? Record<string, unknown> :
+          never
+    : T;
 
 /**
  * Options for the SSMProvider getMultiple method.
@@ -126,18 +130,32 @@ interface SSMGetMultipleOptionsTransformBinary extends SSMGetMultipleOptions {
   transform: 'binary'
 }
 
+interface SSMGetMultipleOptionsTransformAuto extends SSMGetMultipleOptions {
+  transform: 'auto'
+}
+
 interface SSMGetMultipleOptionsTransformNone extends SSMGetMultipleOptions {
   transform?: never
 }
 
-type SSMGetMultipleOptionsUnion = SSMGetMultipleOptionsTransformJson | SSMGetMultipleOptionsTransformBinary | SSMGetMultipleOptionsTransformNone | undefined;
+type SSMGetMultipleOptionsUnion = 
+  SSMGetMultipleOptionsTransformJson |
+  SSMGetMultipleOptionsTransformBinary |
+  SSMGetMultipleOptionsTransformAuto |
+  SSMGetMultipleOptionsTransformNone |
+  undefined;
 
-type SSMGetMultipleOutput<O = undefined> =
+/**
+ * Generic output type for the SSMProvider getMultiple method.
+ */
+type SSMGetMultipleOutput<T = undefined, O = undefined> =
+  undefined extends T ? 
     undefined extends O ? Record<string, string> :
       O extends SSMGetMultipleOptionsTransformNone | SSMGetMultipleOptionsTransformBinary ? Record<string, string> :
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        O extends SSMGetMultipleOptionsTransformJson ? Record<string, Record<string, any>> :
-          never;
+        O extends SSMGetMultipleOptionsTransformAuto ? Record<string, unknown> :
+          O extends SSMGetMultipleOptionsTransformJson ? Record<string, Record<string, unknown>> :
+            never
+    : Record<string, T>;
 
 /**
  * Options for the SSMProvider getParametersByName method.
@@ -152,7 +170,7 @@ interface SSMGetParametersByNameOptionsInterface {
   maxAge?: number
   throwOnError?: boolean
   decrypt?: boolean
-  transform?: TransformOptions
+  transform?: Exclude<TransformOptions, 'auto'>
 }
 
 /**
@@ -179,10 +197,14 @@ type SSMGetParametersByNameFromCacheOutputType = {
   toFetch: Record<string, SSMGetParametersByNameOptionsInterface>
 };
 
+type SSMGetParametersByNameOutput<T = undefined> = 
+  undefined extends T ?
+    Record<string, unknown> & { _errors?: string[] } :
+    Record<string, T> & { _errors?: string[] };
+
 export type {
   SSMProviderOptions,
   SSMGetOptions,
-  SSMGetOptionsUnion,
   SSMGetOutput,
   SSMGetMultipleOptions,
   SSMGetMultipleOptionsUnion,
@@ -191,4 +213,5 @@ export type {
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface,
   SSMGetParametersByNameFromCacheOutputType,
+  SSMGetParametersByNameOutput,
 };

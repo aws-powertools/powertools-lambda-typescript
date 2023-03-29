@@ -16,11 +16,11 @@ import type {
 import type {
   SSMProviderOptions,
   SSMGetOptions,
-  SSMGetOptionsUnion,
   SSMGetOutput,
   SSMGetMultipleOptions,
   SSMGetMultipleOptionsUnion,
   SSMGetMultipleOutput,
+  SSMGetParametersByNameOutput,
   SSMGetParametersByNameOutputInterface,
   SSMGetParametersByNameOptionsInterface,
   SSMSplitBatchAndDecryptParametersOutputType,
@@ -319,11 +319,11 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetOptions} options - Options to configure the provider
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async get<O extends SSMGetOptionsUnion | undefined = undefined>(
+  public async get<T = undefined, O extends SSMGetOptions | undefined = SSMGetOptions>(
     name: string,
     options?: O & SSMGetOptions
-  ): Promise<SSMGetOutput<O> | undefined> {
-    return super.get(name, options) as Promise<SSMGetOutput<O> | undefined>;
+  ): Promise<SSMGetOutput<T, O> | undefined> {
+    return super.get(name, options) as Promise<SSMGetOutput<T, O> | undefined>;
   }
 
   /**
@@ -356,11 +356,11 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetMultipleOptions} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async getMultiple<O extends SSMGetMultipleOptionsUnion | undefined = undefined>(
+  public async getMultiple<T = undefined, O extends SSMGetMultipleOptionsUnion | undefined = undefined>(
     path: string,
     options?: O & SSMGetMultipleOptions
-  ): Promise<SSMGetMultipleOutput<O> | undefined> {
-    return super.getMultiple(path, options) as Promise<SSMGetMultipleOutput<O> | undefined>;
+  ): Promise<SSMGetMultipleOutput<T, O> | undefined> {
+    return super.getMultiple(path, options) as Promise<SSMGetMultipleOutput<T, O> | undefined>;
   }
 
   /**
@@ -413,10 +413,10 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetParametersByNameOptionsInterface} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async getParametersByName(
+  public async getParametersByName<T = undefined>(
     parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
     options?: SSMGetParametersByNameOptionsInterface
-  ): Promise<Record<string, unknown>> {
+  ): Promise<SSMGetParametersByNameOutput<T>> {
     const configs = { ...{
       decrypt: this.resolveDecryptionConfigValue({}) || false,
       maxAge: DEFAULT_MAX_AGE_SECS,
@@ -464,7 +464,7 @@ class SSMProvider extends BaseProvider {
       }
     }
 
-    return response;
+    return response as unknown as Promise<SSMGetParametersByNameOutput<T>>;
   }
 
   /**

@@ -333,6 +333,89 @@ describe('Class: Metrics', () => {
     
   });
 
+  describe('Method: setDefaultDimensions', () => {
+        
+    test('it should set default dimensions when service name is not provided', () => {
+          
+      //Prepare
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
+      };
+      const metrics = new Metrics();
+    
+      //Act
+      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: { ...defaultDimensionsToBeAdded, service : 'service_undefined' }
+      }));
+        
+    });
+
+    test('it should set default dimensions when service name is provided', () => {
+          
+      //Prepare
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
+      };
+      const serviceName = 'test-service';
+      const metrics = new Metrics({ serviceName: serviceName });
+    
+      //Act
+      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: { ...defaultDimensionsToBeAdded, service : serviceName }
+      }));
+        
+    });
+
+    test('it should add default dimensions', () => {
+          
+      //Prepare
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
+      };
+      const serviceName = 'test-service';
+      const metrics = new Metrics({ serviceName: serviceName , defaultDimensions: { 'test-dimension': 'test-dimension-value' } });
+    
+      //Act
+      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: { ...defaultDimensionsToBeAdded, service : serviceName , 'test-dimension': 'test-dimension-value' }
+      }));
+        
+    });
+
+    test('it should update already added default dimensions values', () => {
+          
+      //Prepare
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
+      };
+      const serviceName = 'test-service';
+      const metrics = new Metrics({ serviceName: serviceName, defaultDimensions: { 'environment': 'dev' } });
+    
+      //Act
+      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: { foo: 'bar', service: serviceName, 'environment': 'prod' }
+      }));
+
+    });
+    
+  });
+
   describe('Method: addMetadata', () => {
 
     test('it should add metadata', () => {

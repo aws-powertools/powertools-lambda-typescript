@@ -50,12 +50,18 @@ type SSMProviderOptions = SSMProviderOptionsWithClientConfig | SSMProviderOption
  * @extends {GetOptionsInterface}
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
  * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {GetItemCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
+ * @property {GetItemCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client. Supports all options from `GetParameterCommandInput`.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
- * @property {boolean} decrypt - If true, the parameter will be decrypted.
+ * @property {boolean} decrypt - If true, the parameter will be decrypted. Defaults to `false`.
  */
 interface SSMGetOptions extends GetOptionsInterface {
+  /**
+   * If true, the parameter will be decrypted. Defaults to `false`.
+   */
   decrypt?: boolean
+  /**
+   * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetParameterCommandInput`.
+   */
   sdkOptions?: Partial<GetParameterCommandInput>
 }
 
@@ -93,12 +99,45 @@ type SSMGetOutput<O = undefined> =
  * @property {boolean} recursive - If true, the parameter will be fetched recursively.
  * @property {boolean} throwOnTransformError - If true, the method will throw an error if the transform fails.
  */
-interface SSMGetMultipleOptionsInterface extends GetMultipleOptionsInterface {
+interface SSMGetMultipleOptions extends GetMultipleOptionsInterface {
+  /**
+   * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetParametersByPathCommandInput`.
+   */
   sdkOptions?: Partial<GetParametersByPathCommandInput>
+  /**
+   * If true, the parameters will be decrypted. Defaults to `false`.
+   */
   decrypt?: boolean
+  /**
+   * If true, the parameters will be fetched recursively. Defaults to `false`.
+   */
   recursive?: boolean
+  /**
+   * If true, the method will throw an error if the transform fails.
+   */
   throwOnTransformError?: boolean
 }
+
+interface SSMGetMultipleOptionsTransformJson extends SSMGetMultipleOptions {
+  transform: 'json'
+}
+
+interface SSMGetMultipleOptionsTransformBinary extends SSMGetMultipleOptions {
+  transform: 'binary'
+}
+
+interface SSMGetMultipleOptionsTransformNone extends SSMGetMultipleOptions {
+  transform?: never
+}
+
+type SSMGetMultipleOptionsUnion = SSMGetMultipleOptionsTransformJson | SSMGetMultipleOptionsTransformBinary | SSMGetMultipleOptionsTransformNone | undefined;
+
+type SSMGetMultipleOutput<O = undefined> =
+    undefined extends O ? Record<string, string> :
+      O extends SSMGetMultipleOptionsTransformNone | SSMGetMultipleOptionsTransformBinary ? Record<string, string> :
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        O extends SSMGetMultipleOptionsTransformJson ? Record<string, Record<string, any>> :
+          never;
 
 /**
  * Options for the SSMProvider getParametersByName method.
@@ -145,7 +184,9 @@ export type {
   SSMGetOptions,
   SSMGetOptionsUnion,
   SSMGetOutput,
-  SSMGetMultipleOptionsInterface,
+  SSMGetMultipleOptions,
+  SSMGetMultipleOptionsUnion,
+  SSMGetMultipleOutput,
   SSMGetParametersByNameOptionsInterface,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface,

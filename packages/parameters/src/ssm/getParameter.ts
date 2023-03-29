@@ -137,7 +137,7 @@ import type {
  * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
  *
  * @param {string} name - The name of the parameter to retrieve
- * @param {SSMGetOptionsInterface} options - Options to configure the provider
+ * @param {SSMGetOptions} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
 const getParameter = <O extends SSMGetOptionsUnion | undefined = undefined>(
@@ -148,7 +148,9 @@ const getParameter = <O extends SSMGetOptionsUnion | undefined = undefined>(
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
-  return (DEFAULT_PROVIDERS.ssm as SSMProvider).get(name, options) as Promise<SSMGetOutput<O> | undefined>;
+  return (
+    DEFAULT_PROVIDERS.ssm as SSMProvider
+  ).get(name, options) as Promise<SSMGetOutput<O> | undefined>;
 };
 
 export {

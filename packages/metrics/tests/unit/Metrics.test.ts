@@ -272,6 +272,43 @@ describe('Class: Metrics', () => {
       }));
 
     });
+
+    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const dimensionsToBeAdded: { [key: string]: string } = {};
+      for (let i = 0; i <= 29; i++) {
+        dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+     
+      // Act & Assess
+      expect(() => {
+        metrics.addDimensions(dimensionsToBeAdded);
+      }).toThrowError(RangeError);
+      
+    });
+
+    test('it should successfully add up to maximum allowed dimensions without throwing error', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const dimensionsToBeAdded: { [key: string]: string } = {};
+      for (let i = 0; i < 29; i++) {
+        dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+     
+      // Act & Assess
+      expect(() => {
+        metrics.addDimensions(dimensionsToBeAdded);
+      }).not.toThrowError(RangeError);
+      expect(metrics).toEqual(expect.objectContaining({ dimensions: dimensionsToBeAdded }));
+      
+    });
     
   });
 });

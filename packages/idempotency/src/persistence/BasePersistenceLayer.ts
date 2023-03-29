@@ -26,7 +26,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private validationKeyJmesPath?: string;
 
   public constructor() { 
-    this.setEnvVarsService();
+    this.envVarsService = new EnvironmentVariablesService();
     this.idempotencyKeyPrefix = this.getEnvVarsService().getFunctionName();
   }
 
@@ -221,14 +221,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
 
     return !data;
-  }
-
-  /**
-   * Setter and initializer for `envVarsService`.
-   * Used internally during initialization.
-   */
-  private setEnvVarsService(): void {
-    this.envVarsService = new EnvironmentVariablesService();
   }
 
   private validatePayload(data: Record<string, unknown>, record: IdempotencyRecord): void {

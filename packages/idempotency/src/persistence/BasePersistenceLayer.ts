@@ -51,8 +51,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     this.eventKeyJmesPath = idempotencyConfig?.eventKeyJmesPath;
     this.validationKeyJmesPath = idempotencyConfig?.payloadValidationJmesPath;
     this.payloadValidationEnabled = this.validationKeyJmesPath !== undefined || false;
-    if (idempotencyConfig?.throwOnNoIdempotencyKey)
-      this.throwOnNoIdempotencyKey = idempotencyConfig.throwOnNoIdempotencyKey;
+    this.throwOnNoIdempotencyKey = idempotencyConfig?.throwOnNoIdempotencyKey || false;
     this.eventKeyJmesPath = idempotencyConfig.eventKeyJmesPath;
     this.expiresAfterSeconds = idempotencyConfig.expiresAfterSeconds; // 1 hour default
     // TODO: Add support for local cache

@@ -174,6 +174,27 @@ describe('Class: Metrics', () => {
     });
   });
 
+  describe('Method: clearMetrics', () => {
+      
+    test('when called, it should clear stored metrics', () => {
+          
+      //Prepare
+      const metrics = new Metrics();
+      const metricName = 'test-metric';
+          
+      //Act
+      metrics.addMetric(metricName, MetricUnits.Count, 1);
+      metrics.clearMetrics();
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        storedMetrics: {},
+      }));
+        
+    });
+    
+  });
+
   describe('Method: addDimension', () => {
     
     test('when called, it should store dimensions', () => {

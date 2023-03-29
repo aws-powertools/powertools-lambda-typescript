@@ -378,6 +378,28 @@ describe('Class: Metrics', () => {
       }));
       
     });
+
+  });
+
+  describe('Method: clearMetadata', () => {
+    
+    test('it should clear all metadata', () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      metrics.addMetadata('foo', 'bar');
+      metrics.addMetadata('test', 'baz');
+  
+      //Act
+      metrics.clearMetadata();
+  
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        metadata: {}
+      }));
+      
+    });
+
   });
 
 });

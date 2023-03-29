@@ -46,7 +46,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     this.inProgressExpiryAttr = config.inProgressExpiryAttr ?? 'in_progress_expiry_attr';
     this.dataAttr = config.dataAttr ?? 'data';
     this.validationKeyAttr = config.validationKeyAttr ?? 'validation';
-    if (config?.sortKeyAttr === this.keyAttr) {
+    if (config.sortKeyAttr === this.keyAttr) {
       throw new Error(
         `keyAttr [${this.keyAttr}] and sortKeyAttr [${config.sortKeyAttr}] cannot be the same!`
       );

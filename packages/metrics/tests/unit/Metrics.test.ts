@@ -228,4 +228,27 @@ describe('Class: Metrics', () => {
     });
 
   });
+
+  describe('Method: addDimensions', () => {
+      
+    test('it should add multiple dimensions', () => {
+      
+      //Prepare
+      const dimensionsToBeAdded: { [key: string]: string } = {
+        'test-dimension-1': 'test-value-1',
+        'test-dimension-2': 'test-value-2',
+      };
+      const metrics = new Metrics();
+
+      //Act
+      metrics.addDimensions(dimensionsToBeAdded);
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: dimensionsToBeAdded
+      }));
+
+    });
+    
+  });
 });

@@ -36,6 +36,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * @param {BasePersistenceLayerConfigureOptions} config - configuration object for the persistence layer
    */
   public configure(config: BasePersistenceLayerOptions): void {
+    // Extracting the idempotency config from the config object for easier access
     const { config: idempotencyConfig } = config;
 
     if (config?.functionName && config.functionName.trim() !== '') {

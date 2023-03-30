@@ -1,19 +1,20 @@
 /**
  * Test Function Wrapper
  *
- * @group unit/idempotency/all
+ * @group unit/idempotency/decorator
  */
 
 import { IdempotencyOptions } from '../../src/types/IdempotencyOptions';
-import { PersistenceLayer, IdempotencyRecord } from '../../src/persistence';
+import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { idempotent } from '../../src/idempotentDecorator';
-import { IdempotencyRecordStatus, IdempotencyRecordOptions } from '../../src/types';
+import { IdempotencyRecordStatus } from '../../src/types';
+import type { IdempotencyRecordOptions } from '../../src/types';
 import { IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyInconsistentStateError, IdempotencyPersistenceLayerError } from '../../src/Exceptions';
 
-const mockSaveInProgress = jest.spyOn(PersistenceLayer.prototype, 'saveInProgress').mockImplementation();
-const mockGetRecord = jest.spyOn(PersistenceLayer.prototype, 'getRecord').mockImplementation();
+const mockSaveInProgress = jest.spyOn(BasePersistenceLayer.prototype, 'saveInProgress').mockImplementation();
+const mockGetRecord = jest.spyOn(BasePersistenceLayer.prototype, 'getRecord').mockImplementation();
 
-class PersistenceLayerTestClass extends PersistenceLayer {
+class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
   protected _getRecord = jest.fn();
   protected _putRecord = jest.fn();
@@ -25,6 +26,8 @@ const functionalityToDecorate = jest.fn();
 
 class TestingClass {
   @idempotent(options)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   public testing(record: Record<string, unknown>): string {
     functionalityToDecorate(record);
 

@@ -1,4 +1,4 @@
 export * from './DynamoDBPersistenceLayer';
-export * from './PersistenceLayer';
-export * from './PersistenceLayerInterface';
+export * from './BasePersistenceLayer';
+export * from './BasePersistenceLayerInterface';
 export * from './IdempotencyRecord';

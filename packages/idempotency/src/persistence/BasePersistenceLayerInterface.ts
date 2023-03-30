@@ -1,12 +1,13 @@
 import { IdempotencyRecord } from './IdempotencyRecord';
-import type { PersistenceLayerConfigureOptions } from '../types/PersistenceLayer';
+import type { BasePersistenceLayerOptions } from '../types/BasePersistenceLayer';
 
-interface PersistenceLayerInterface {
-  configure(options?: PersistenceLayerConfigureOptions): void
+interface BasePersistenceLayerInterface {
+  configure(options?: BasePersistenceLayerOptions): void
+  isPayloadValidationEnabled(): boolean
   saveInProgress(data: unknown): Promise<void>
   saveSuccess(data: unknown, result: unknown): Promise<void>
   deleteRecord(data: unknown): Promise<void>
   getRecord(data: unknown): Promise<IdempotencyRecord>
 }
 
-export { PersistenceLayerInterface };
+export { BasePersistenceLayerInterface };

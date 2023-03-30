@@ -1,19 +1,27 @@
 /**
  * Test Function Wrapper
  *
- * @group unit/idempotency/all
+ * @group unit/idempotency/makeFunctionIdempotent
  */
-
 import { IdempotencyOptions } from '../../src/types/IdempotencyOptions';
-import { IdempotencyRecord, PersistenceLayer } from '../../src/persistence';
+import { IdempotencyRecord, BasePersistenceLayer } from '../../src/persistence';
 import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
-import { AnyIdempotentFunction, IdempotencyRecordStatus, IdempotencyRecordOptions } from '../../src/types';
-import { IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyInconsistentStateError, IdempotencyPersistenceLayerError } from '../../src/Exceptions';
+import { IdempotencyRecordStatus } from '../../src/types';
+import type {
+  AnyIdempotentFunction,
+  IdempotencyRecordOptions
+} from '../../src/types';
+import {
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyAlreadyInProgressError,
+  IdempotencyInconsistentStateError,
+  IdempotencyPersistenceLayerError
+} from '../../src/Exceptions';
 
-const mockSaveInProgress = jest.spyOn(PersistenceLayer.prototype, 'saveInProgress').mockImplementation();
-const mockGetRecord = jest.spyOn(PersistenceLayer.prototype, 'getRecord').mockImplementation();
+const mockSaveInProgress = jest.spyOn(BasePersistenceLayer.prototype, 'saveInProgress').mockImplementation();
+const mockGetRecord = jest.spyOn(BasePersistenceLayer.prototype, 'getRecord').mockImplementation();
 
-class PersistenceLayerTestClass extends PersistenceLayer {
+class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
   protected _getRecord = jest.fn();
   protected _putRecord = jest.fn();

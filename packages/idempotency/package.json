@@ -46,7 +46,8 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^1.5.0",
-    "@aws-sdk/lib-dynamodb": "^3.231.0"
+    "@aws-sdk/lib-dynamodb": "^3.231.0",
+    "jmespath": "^0.16.0"
   },
   "keywords": [
     "aws",
@@ -56,6 +57,7 @@
     "nodejs"
   ],
   "devDependencies": {
+    "@types/jmespath": "^0.15.0",
     "aws-sdk-client-mock": "^2.0.1",
     "aws-sdk-client-mock-jest": "^2.0.1"
   }

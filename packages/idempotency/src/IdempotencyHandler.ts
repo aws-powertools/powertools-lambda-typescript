@@ -1,16 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { AnyFunctionWithRecord, IdempotencyRecordStatus } from './types';
-import { IdempotencyOptions } from './types/IdempotencyOptions';
-import { IdempotencyRecord } from 'persistence';
-import { IdempotencyInconsistentStateError, IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyPersistenceLayerError } from './Exceptions';
+import { IdempotencyRecordStatus } from './types';
+import type {
+  AnyFunctionWithRecord,
+  IdempotencyOptions,
+} from './types';
+import {
+  IdempotencyInconsistentStateError,
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyAlreadyInProgressError,
+  IdempotencyPersistenceLayerError
+} from './Exceptions';
+import { IdempotencyRecord } from './persistence/IdempotencyRecord';
 
 export class IdempotencyHandler<U> {
+  public constructor(
+    private functionToMakeIdempotent: AnyFunctionWithRecord<U>,
+    private functionPayloadToBeHashed: Record<string, unknown>, 
+    private idempotencyOptions: IdempotencyOptions,
+    private fullFunctionPayload: Record<string, unknown>
+  ) {}
 
-  public constructor(private functionToMakeIdempotent: AnyFunctionWithRecord<U>, private functionPayloadToBeHashed: unknown, 
-    private idempotencyOptions: IdempotencyOptions, private fullFunctionPayload: Record<string, any>) {}
-
-  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U{ 
+  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U { 
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError('Item has expired during processing and may not longer be valid.');
     } else if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS){

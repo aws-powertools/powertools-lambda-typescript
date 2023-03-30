@@ -413,6 +413,47 @@ describe('Class: Metrics', () => {
       }));
 
     });
+
+    test('it should throw error if number of dimensions reaches the maximum allowed', () => {
+          
+      //Prepare
+      const metrics = new Metrics();
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const defaultDimensions: { [key: string]: string } = {};
+      for (let i = 0; i <= 29; i++) {
+        defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+      
+      // Act & Assess
+      expect(() => {
+        metrics.setDefaultDimensions(defaultDimensions);
+      }).toThrowError(Error);
+        
+    });
+
+    test('it should consider default dimensions provided in constructor, while throwing error if number of dimensions exceeds the maximum allowed', () => {
+          
+      //Prepare
+      const metrics = new Metrics({
+        defaultDimensions: {
+          'test-dimension': 'test-value',
+          'environment': 'dev'
+        }
+      });
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const defaultDimensions: { [key: string]: string } = {};
+      for (let i = 0; i < 27; i++) {
+        defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+      
+      // Act & Assess
+      expect(() => {
+        metrics.setDefaultDimensions(defaultDimensions);
+      }).toThrowError(Error);
+        
+    });
     
   });
 

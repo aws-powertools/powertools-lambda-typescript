@@ -566,4 +566,34 @@ describe('Class: Metrics', () => {
 
   });
 
+  describe('Method: singleMetric', () => {
+
+    test('it should return a single Metric object', () => {
+
+      //Prepare
+      const namespace = 'test-namespace';
+      const defaultDimensions = {
+        'foo': 'bar',
+        'service': 'order'
+      };
+      const metrics = new Metrics({
+        namespace,
+        defaultDimensions,
+        singleMetric: false
+      });
+
+      //Act
+      const singleMetric = metrics.singleMetric();
+      
+      //Asses
+      expect(singleMetric).toEqual(expect.objectContaining({
+        isSingleMetric: true,
+        namespace,
+        defaultDimensions
+      }));
+
+    });
+    
+  });
+
 });

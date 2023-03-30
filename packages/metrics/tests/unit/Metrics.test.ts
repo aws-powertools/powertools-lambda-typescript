@@ -457,6 +457,25 @@ describe('Class: Metrics', () => {
     
   });
 
+  describe('Method: clearDefaultDimensions', () => {
+      
+    test('it should clear all default dimensions', () => {
+          
+      //Prepare
+      const metrics = new Metrics();
+      metrics.setDefaultDimensions({ 'foo': 'bar' });
+    
+      //Act
+      metrics.clearDefaultDimensions();
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: {}
+      }));
+        
+    });
+  }); 
+
   describe('Method: addMetadata', () => {
 
     test('it should add metadata', () => {

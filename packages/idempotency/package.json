@@ -46,8 +46,8 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^1.5.0",
-    "@aws-sdk/client-dynamodb": "^3.245.0",
-    "@aws-sdk/util-dynamodb": "^3.294.0",
+    "@aws-sdk/client-dynamodb": "^3.301.0",
+    "@aws-sdk/util-dynamodb": "^3.301.0",
     "jmespath": "^0.16.0"
   },
   "keywords": [

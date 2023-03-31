@@ -103,7 +103,8 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | good-first-issue                       | Something that is suitable for those who want to start contributing                            |                                                    |
 | help-wanted                            | Tasks you want help from anyone to move forward                                                | Bandwidth, complex topics, etc.                    |
 | need-customer-feedback                 | Tasks that need more feedback before proceeding                                                | 80/20% rule, uncertain, etc.                       |
-| need-more-information                  | Missing information before making any calls                                                    | Triggers stale automation after 2 weeks            |
+| need-more-information                  | Missing information before making any calls                                                    | Signal that investigation or answers are needed    |
+| need-response                          | Requires a response from a customer and might be automatically closed if none is received      | Marked as stale after 2 weeks, and closed after 3  |
 | need-issue                             | PR is missing a related issue for tracking change                                              |                                                    |
 
 ## Maintainer Responsibilities
@@ -269,8 +270,7 @@ In other cases, you may have constrained capacity. Use `help-wanted` label when 
 
 When in doubt, use `need-more-information` or `need-customer-feedback` labels to signal more context and feedback are necessary before proceeding. You can also use `status/on-hold` label when you expect it might take a while to gather enough information before you can decide.
 
-Note that issues marked as `need-customer-feedback` will be 
-automatically closed after 3 weeks of inactivity.
+Note that issues marked as `need-response` will be automatically closed after 3 weeks of inactivity.
 
 ### Crediting contributions
 

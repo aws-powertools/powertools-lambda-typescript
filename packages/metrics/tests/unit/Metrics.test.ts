@@ -593,7 +593,26 @@ describe('Class: Metrics', () => {
       }));
 
     });
-    
+
+  });
+
+  describe('Method: throwOnEmptyMetrics', () => {
+      
+    test('it should set the throwOnEmptyMetrics flag to true', () => {
+  
+      //Prepare
+      const metrics = new Metrics();
+  
+      //Act
+      metrics.throwOnEmptyMetrics();
+
+      //Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        shouldThrowOnEmptyMetrics: true
+      }));
+  
+    });
+  
   });
 
 });

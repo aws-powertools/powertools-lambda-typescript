@@ -615,4 +615,23 @@ describe('Class: Metrics', () => {
   
   });
 
+  describe('Method: setFunctionName', () => {
+      
+    test('it should set the function name', () => {
+  
+      //Prepare
+      const metrics = new Metrics();
+  
+      //Act
+      metrics.setFunctionName('test-function');
+
+      //Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        functionName: 'test-function'
+      }));
+  
+    });
+  
+  });
+
 });

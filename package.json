@@ -21,7 +21,6 @@
     "package": "npm run package -ws",
     "setup-local": "export PROJECT_ROOT=$(pwd) && npm ci --foreground-scripts && cd $PROJECT_ROOT/examples/cdk && npm ci && cd $PROJECT_ROOT/examples/sam && npm ci && cd $PROJECT_ROOT/ && npm run init-environment",
     "build": "npm run build -ws",
-    "postversion": "git push && git push --tags",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",
     "docs-buildDockerImage": "docker build -t powertools-typescript/docs ./docs/",
     "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertools-typescript/docs",
@@ -67,7 +66,7 @@
     "husky": "^8.0.2",
     "jest": "^29.3.1",
     "jest-runner-groups": "^2.2.0",
-    "lerna": "^4.0.0",
+    "lerna": "^6.6.1",
     "lint-staged": "^13.1.2",
     "promptly": "^3.2.0",
     "proxy-agent": "^5.0.0",
@@ -83,8 +82,5 @@
   ],
   "engines": {
     "node": ">=14"
-  },
-  "dependencies": {
-    "hosted-git-info": "^6.1.1"
   }
 }

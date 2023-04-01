@@ -39,7 +39,7 @@ jobs:
       - name: Build packages
         run: |
           npm run build -w packages/commons
-          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
+          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics & npm run build -w packages/parameters
       - name: "Version and publish"
         env:
           GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
@@ -48,7 +48,8 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
           npx lerna version --conventional-commits --force-publish --yes
-          npx lerna publish from-git --no-verify-access --yes
+          git push --tags
+          npx lerna publish from-git --yes
       - name: Set release version
         id: set-release-version
         run: |

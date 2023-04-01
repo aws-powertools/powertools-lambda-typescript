@@ -23,8 +23,7 @@
     "lint-fix": "eslint --fix --ext .ts --no-error-on-unmatched-pattern src tests",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "package-bundle": "../../package-bundler.sh metrics-bundle ./dist",
-    "prepare": "npm run build",
-    "postversion": "git push --tags"
+    "prepare": "npm run build"
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix"

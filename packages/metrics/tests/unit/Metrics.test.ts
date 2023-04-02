@@ -4,10 +4,18 @@
  * @group unit/metrics/class
  */
 
+import {
+  LambdaInterface,
+  ContextExamples as dummyContext,
+  Events as dummyEvent
+} from '@aws-lambda-powertools/commons';
 import { MetricResolution, MetricUnits, Metrics } from '../../src/';
+import { Context } from 'aws-lambda';
 
 describe('Class: Metrics', () => {
   const ENVIRONMENT_VARIABLES = process.env;
+  const context = dummyContext.helloworldContext;
+  const event = dummyEvent.Custom.CustomEvent;
 
   beforeAll(() => {
     process.env = { ...ENVIRONMENT_VARIABLES };
@@ -632,6 +640,44 @@ describe('Class: Metrics', () => {
   
     });
   
+  });
+
+  describe('Method: logMetrics', () => {
+
+    const expectedReturnValue = 'Lambda invoked!';
+    const testMetric = 'successfulBooking';
+
+    test('it should log metrics', async () => {
+
+      //Prepare
+      const metrics = new Metrics();
+      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+      const addMetricSpy = jest.spyOn(metrics, 'addMetric');
+      const captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
+      class LambdaFunction implements LambdaInterface {
+
+        @metrics.logMetrics()
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
+          metrics.addMetric(testMetric, MetricUnits.Count, 1);
+          
+          return expectedReturnValue;
+        }
+
+      }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+
+      // Act
+      const actualResult = await handler(event, context);
+
+      // Assess
+      expect(actualResult).toEqual(expectedReturnValue);
+      expect(captureColdStartMetricSpy).not.toBeCalled();
+      expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(publishStoredMetricsSpy).toBeCalledTimes(1);
+
+    });
+
   });
 
 });

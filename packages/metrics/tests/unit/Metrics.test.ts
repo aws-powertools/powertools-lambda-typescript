@@ -729,6 +729,41 @@ describe('Class: Metrics', () => {
   
     });
 
+    test('it should set default dimensions if passed in the options', async () => {
+          
+      //Prepare
+      const defaultDimensions = {
+        'foo': 'bar',
+        'service': 'order'
+      };
+      const metrics = new Metrics();
+      const setDefaultDimensionsSpy = jest.spyOn(metrics, 'setDefaultDimensions');
+      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+      const addMetricSpy = jest.spyOn(metrics, 'addMetric');
+
+      class LambdaFunction implements LambdaInterface {
+    
+        @metrics.logMetrics({ defaultDimensions })
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
+          metrics.addMetric(testMetric, MetricUnits.Count, 1);
+          
+          return expectedReturnValue;
+        }
+    
+      }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+    
+      // Act
+      await handler(event, context);
+    
+      // Assess
+      expect(setDefaultDimensionsSpy).toHaveBeenNthCalledWith(1, defaultDimensions);
+      expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(publishStoredMetricsSpy).toBeCalledTimes(1);
+    
+    });
+
   });
 
 });

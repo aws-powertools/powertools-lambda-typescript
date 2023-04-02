@@ -678,6 +678,37 @@ describe('Class: Metrics', () => {
 
     });
 
+    test('it should capture cold start metrics, if passed in the options as true', async () => {
+      
+      //Prepare
+      const metrics = new Metrics();
+      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+      const addMetricSpy = jest.spyOn(metrics, 'addMetric');
+      const captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
+      class LambdaFunction implements LambdaInterface {
+
+        @metrics.logMetrics({ captureColdStartMetric: true })
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
+          metrics.addMetric(testMetric, MetricUnits.Count, 1);
+          
+          return expectedReturnValue;
+        }
+
+      }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+
+      // Act
+      const actualResult = await handler(event, context);
+
+      // Assess
+      expect(actualResult).toEqual(expectedReturnValue);
+      expect(captureColdStartMetricSpy).toBeCalledTimes(1);
+      expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(publishStoredMetricsSpy).toBeCalledTimes(1);
+
+    });
+
   });
 
 });

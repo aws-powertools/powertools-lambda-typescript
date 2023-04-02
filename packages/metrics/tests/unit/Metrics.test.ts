@@ -764,6 +764,27 @@ describe('Class: Metrics', () => {
     
     });
 
+    test('it should throw error if lambda handler throws any error', async () => {
+          
+      //Prepare
+      const metrics = new Metrics();
+      const errorMessage = 'Unexpected error occurred!';
+      class LambdaFunction implements LambdaInterface {
+    
+        @metrics.logMetrics()
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
+          throw new Error(errorMessage);
+        }
+    
+      }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+    
+      // Act & Assess
+      await expect(handler(event, context)).rejects.toThrowError(errorMessage);
+    
+    });
+
   });
 
 });

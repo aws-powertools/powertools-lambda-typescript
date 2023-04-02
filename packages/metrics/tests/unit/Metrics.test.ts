@@ -787,4 +787,23 @@ describe('Class: Metrics', () => {
 
   });
 
+  describe('Method: serializeMetrics', () => {
+
+    test('it should print warning, if no namespace provided in constructor or environment variable', () => {
+
+      //Prepare
+      process.env.POWERTOOLS_METRICS_NAMESPACE = '';
+      const metrics = new Metrics();
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      //Act
+      metrics.serializeMetrics();
+
+      //Assess
+      expect(consoleWarnSpy).toBeCalledWith('Namespace should be defined, default used');
+
+    });
+
+  });
+
 });

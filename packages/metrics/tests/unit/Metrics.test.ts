@@ -709,6 +709,26 @@ describe('Class: Metrics', () => {
 
     });
 
+    test('it should throw error if no metrics are added and throwOnEmptyMetrics is set to true', async () => {
+        
+      //Prepare
+      const metrics = new Metrics();
+      class LambdaFunction implements LambdaInterface {
+  
+        @metrics.logMetrics({ throwOnEmptyMetrics: true })
+        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
+          return expectedReturnValue;
+        }
+  
+      }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+  
+      // Act & Assess
+      await expect(handler(event, context)).rejects.toThrowError(RangeError);
+  
+    });
+
   });
 
 });

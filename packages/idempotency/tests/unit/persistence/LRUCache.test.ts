@@ -124,4 +124,75 @@ describe('Class: LRUMap', () => {
 
   });
 
+  describe('Method: has', () => {
+
+    test('when called it returns true for an existing key', () => {
+
+      // Prepare
+      const cache = new LRUCache();
+      cache.add('a', 1);
+
+      // Act
+      const hasKey = cache.has('a');
+
+      // Assess
+      expect(hasKey).toBe(true);
+
+    });
+
+    test('when called it returns false for a non-existing key', () => {
+
+      // Prepare
+      const cache = new LRUCache();
+
+      // Act
+      const hasKey = cache.has('a');
+
+      // Assess
+      expect(hasKey).toBe(false);
+
+    });
+
+  });
+
+  describe('Method: remove', () => {
+
+    test('when called it removes the item from the cache', () => {
+
+      // Prepare
+      const cache = new LRUCache();
+      cache.add('a', 1);
+      cache.add('b', 2);
+      cache.add('c', 3);
+
+      // Act
+      cache.remove('b');
+      cache.remove('c');
+      cache.remove('a');
+
+      // Assess
+      expect(cache.size()).toBe(0);
+      expect(cache.get('a')).toBeUndefined();
+
+    });
+
+    test('when called on an empty cache it does nothing', () => {
+
+      // Prepare
+      const cache = new LRUCache();
+      cache.add('a', 1);
+      cache.add('b', 2);
+
+      // Act
+      cache.remove('a');
+      cache.remove('b');
+      cache.remove('a');
+
+      // Assess
+      expect(cache.size()).toBe(0);
+
+    });
+
+  });
+
 });

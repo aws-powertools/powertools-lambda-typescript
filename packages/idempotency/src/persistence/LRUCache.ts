@@ -145,6 +145,44 @@ class LRUCache<K, V>{
   }
 
   /**
+   * Returns `true` if the key exists in the cache, `false` otherwise.
+   * 
+   * @param key - The key to check for in the cache
+   */
+  public has(key: K): boolean {
+    return this.map.has(key);
+  }
+
+  /**
+   * Removes an item from the cache, while doing so it also reconciles the linked list.
+   * 
+   * @param key - The key to remove from the cache
+   */
+  public remove(key: K): void {
+    const item = this.map.get(key);
+    if (!item) return;
+
+    this.map.delete(key);
+    if (item[NEWER] && item[OLDER]) {
+      // relink the older entry with the newer entry
+      item[OLDER][NEWER] = item[NEWER];
+      item[NEWER][OLDER] = item[OLDER];
+    } else if (item[NEWER]) {
+      // remove the link to us
+      item[NEWER][OLDER] = undefined;
+      // link the newer entry to head
+      this.leastRecentlyUsed = item[NEWER];
+    } else if (item[OLDER]) {
+      // remove the link to us
+      item[OLDER][NEWER] = undefined;
+      // link the newer entry to head
+      this.mostRecentlyUsed = item[OLDER];
+    } else {
+      this.leastRecentlyUsed = this.mostRecentlyUsed = undefined;
+    }
+  }
+
+  /**
    * Returns the current size of the cache.
    */
   public size(): number {

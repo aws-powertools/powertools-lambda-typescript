@@ -25,9 +25,9 @@ interface GetOptionsInterface {
    */
   sdkOptions?: unknown
   /**
-   * Transform to be applied, can be 'json', 'binary', or 'auto'.
+   * Transform to be applied, can be `json` or `binary`.
    */
-  transform?: TransformOptions
+  transform?: Omit<TransformOptions, 'auto'>
 }
 
 /**
@@ -40,6 +40,10 @@ interface GetOptionsInterface {
  * @property {boolean} throwOnTransformError - Whether to throw an error if a value cannot be transformed.
  */
 interface GetMultipleOptionsInterface extends GetOptionsInterface {
+  /**
+   * Transform to be applied, can be `json`, `binary`, or `auto`.
+   */
+  transform?: TransformOptions
   /**
    * Whether to throw an error if a value cannot be transformed.
    */

@@ -25,7 +25,7 @@ describe('Class: Metrics', () => {
   const event = dummyEvent.Custom.CustomEvent;
 
   beforeEach(() => {
-    consoleSpy.mockClear();
+    jest.clearAllMocks();
   });
 
   beforeAll(() => {
@@ -463,6 +463,65 @@ describe('Class: Metrics', () => {
       } catch (e) {
         expect((<Error>e).message).toBe('The number of metrics recorded must be higher than zero');
       }
+    });
+
+    test('when decorator is used with throwOnEmptyMetrics set to false, a warning should be logged', async () => {
+
+      // Prepare
+      const metrics = new Metrics({ namespace: 'test' });
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics({ throwOnEmptyMetrics: false })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+        ): Promise<void | TResult> {
+          return;
+        }
+      }
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      await new LambdaFunction().handler(event, context);
+
+      // Assess
+      expect(consoleWarnSpy).toBeCalledTimes(1);
+      expect(consoleWarnSpy).toBeCalledWith(
+        'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
+      );
+
+    });
+
+    test('when decorator is used with throwOnEmptyMetrics set to false & captureColdStartMetric set to true, a warning should be logged', async () => {
+
+      // Prepare
+      const metrics = new Metrics({ namespace: 'test' });
+      class LambdaFunction implements LambdaInterface {
+        @metrics.logMetrics({
+          throwOnEmptyMetrics: false,
+          captureColdStartMetric: true
+        })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        public async handler<TEvent, TResult>(
+          _event: TEvent,
+          _context: Context,
+        ): Promise<void | TResult> {
+          return;
+        }
+      }
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      await new LambdaFunction().handler(event, context);
+
+      // Assess
+      expect(consoleWarnSpy).toBeCalledTimes(1);
+      expect(consoleWarnSpy).toBeCalledWith(
+        'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
+      );
+
     });
   });
 

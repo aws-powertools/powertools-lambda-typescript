@@ -13,8 +13,9 @@ import {
 import { ExtraOptions } from '../../../src/types';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 const mockDate = new Date(1466424490000);
-const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
+jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Middy middleware', () => {
   
@@ -40,8 +41,7 @@ describe('Middy middleware', () => {
   
   beforeEach(() => {
     jest.resetModules();
-    consoleSpy.mockClear();
-    dateSpy.mockClear();
+    jest.clearAllMocks();
   });
 
   describe('throwOnEmptyMetrics', () => {
@@ -80,21 +80,22 @@ describe('Middy middleware', () => {
       }
     });
 
-    test('should not throw on empty metrics if not set', async () => {
+    test('should not throw on empty metrics if not set, but should log a warning', async () => {
+
       // Prepare
       const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
-
-      const lambdaHandler = (): void => {
+      const lambdaHandler = async (): Promise<void> => {
         console.log('do nothing');
       };
-
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
-      try {
-        await handler(dummyEvent, dummyContext, () => console.log('Lambda invoked!'));
-      } catch (e) {
-        fail(`Should not throw but got the following Error: ${e}`);
-      }
+      // Act & Assess
+      await expect(handler(dummyEvent, dummyContext)).resolves.not.toThrowError();
+      expect(consoleWarnSpy).toBeCalledTimes(1);
+      expect(consoleWarnSpy).toBeCalledWith(
+        'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
+      );
+
     });
   });
 

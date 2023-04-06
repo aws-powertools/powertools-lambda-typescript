@@ -1,4 +1,10 @@
-import { IdempotencyRecordStatus } from './IdempotencyRecordStatus';
+const IdempotencyRecordStatus = {
+  INPROGRESS: 'INPROGRESS',
+  COMPLETED: 'COMPLETED',
+  EXPIRED: 'EXPIRED'
+} as const;
+
+type IdempotencyRecordStatus = typeof IdempotencyRecordStatus[keyof typeof IdempotencyRecordStatus];
 
 type IdempotencyRecordOptions = {
   idempotencyKey: string
@@ -10,5 +16,6 @@ type IdempotencyRecordOptions = {
 };
 
 export {
+  IdempotencyRecordStatus,
   IdempotencyRecordOptions
 };

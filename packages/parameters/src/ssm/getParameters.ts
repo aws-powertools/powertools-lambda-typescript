@@ -1,5 +1,9 @@
 import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
-import type { SSMGetMultipleOptionsInterface } from '../types/SSMProvider';
+import type {
+  SSMGetMultipleOptions,
+  SSMGetMultipleOptionsUnion,
+  SSMGetMultipleOutput,
+} from '../types/SSMProvider';
 
 /**
  * ## Intro
@@ -134,18 +138,20 @@ import type { SSMGetMultipleOptionsInterface } from '../types/SSMProvider';
  * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
  *
  * @param {string} path - The path of the parameters to retrieve
- * @param {SSMGetMultipleOptionsInterface} options - Options to configure the provider
+ * @param {SSMGetMultipleOptions} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
-const getParameters = (
+const getParameters = <T = undefined, O extends SSMGetMultipleOptionsUnion | undefined = SSMGetMultipleOptionsUnion>(
   path: string,
-  options?: SSMGetMultipleOptionsInterface
-): Promise<undefined | Record<string, unknown>> => {
+  options?: O & SSMGetMultipleOptions
+): Promise<SSMGetMultipleOutput<T, O> | undefined> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
-  return (DEFAULT_PROVIDERS.ssm as SSMProvider).getMultiple(path, options);
+  return (
+    DEFAULT_PROVIDERS.ssm as SSMProvider
+  ).getMultiple(path, options) as Promise<SSMGetMultipleOutput<T, O> | undefined>;
 };
 
 export {

@@ -25,8 +25,8 @@
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "package-bundle": "../../package-bundler.sh parameters-bundle ./dist",
     "prepare": "npm run build",
-    "postversion": "git push --tags",
-    "prepack": "cp ../../.github/scripts/release_patch_package_json.js . && node release_patch_package_json.js"
+    "prepack": "cp ../../.github/scripts/release_patch_package_json.js . && node release_patch_package_json.js",
+    "postpack": "rm release_patch_package_json.js"
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix"
@@ -65,6 +65,7 @@
     "aws-sdk-client-mock-jest": "^2.0.1"
   },
   "dependencies": {
+    "@aws-lambda-powertools/commons": "^1.7.0",
     "@aws-sdk/util-base64-node": "^3.209.0"
   }
 }

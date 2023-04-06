@@ -1,5 +1,8 @@
 import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
-import type { SSMGetOptionsInterface } from '../types/SSMProvider';
+import type {
+  SSMGetOptions,
+  SSMGetOutput,
+} from '../types/SSMProvider';
 
 /**
  * ## Intro
@@ -133,18 +136,20 @@ import type { SSMGetOptionsInterface } from '../types/SSMProvider';
  * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
  *
  * @param {string} name - The name of the parameter to retrieve
- * @param {SSMGetOptionsInterface} options - Options to configure the provider
+ * @param {SSMGetOptions} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
-const getParameter = (
+const getParameter = <T = undefined, O extends SSMGetOptions | undefined = SSMGetOptions>(
   name: string,
-  options?: SSMGetOptionsInterface
-): Promise<undefined | string | Record<string, unknown>> => {
+  options?: O & SSMGetOptions
+): Promise<SSMGetOutput<T, O> | undefined> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
-  return (DEFAULT_PROVIDERS.ssm as SSMProvider).get(name, options);
+  return (
+    DEFAULT_PROVIDERS.ssm as SSMProvider
+  ).get(name, options) as Promise<SSMGetOutput<T, O> | undefined>;
 };
 
 export {

@@ -4,7 +4,13 @@ import { GetMultipleOptions } from './GetMultipleOptions';
 import { ExpirableValue } from './ExpirableValue';
 import { TRANSFORM_METHOD_BINARY, TRANSFORM_METHOD_JSON } from './constants';
 import { GetParameterError, TransformParameterError } from './Exceptions';
-import type { BaseProviderInterface, GetMultipleOptionsInterface, GetOptionsInterface, TransformOptions } from './types';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService';
+import type {
+  BaseProviderInterface,
+  GetMultipleOptionsInterface,
+  GetOptionsInterface,
+  TransformOptions
+} from './types';
 
 // These providers are dinamycally intialized on first use of the helper functions
 const DEFAULT_PROVIDERS: Record<string, BaseProvider> = {};
@@ -29,10 +35,12 @@ const DEFAULT_PROVIDERS: Record<string, BaseProvider> = {};
  * this should be an acceptable tradeoff.
  */
 abstract class BaseProvider implements BaseProviderInterface {
+  public envVarsService: EnvironmentVariablesService;
   protected store: Map<string, ExpirableValue>;
 
   public constructor() {
     this.store = new Map();
+    this.envVarsService = new EnvironmentVariablesService();
   }
 
   /**
@@ -62,7 +70,7 @@ abstract class BaseProvider implements BaseProviderInterface {
    * @param {GetOptionsInterface} options - Options to configure maximum age, trasformation, AWS SDK options, or force fetch
    */
   public async get(name: string, options?: GetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>> {
-    const configs = new GetOptions(options);
+    const configs = new GetOptions(options, this.envVarsService);
     const key = [ name, configs.transform ].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
@@ -97,7 +105,7 @@ abstract class BaseProvider implements BaseProviderInterface {
    * @returns 
    */
   public async getMultiple(path: string, options?: GetMultipleOptionsInterface): Promise<undefined | Record<string, unknown>> {
-    const configs = new GetMultipleOptions(options || {});
+    const configs = new GetMultipleOptions(options, this.envVarsService);
     const key = [ path, configs.transform ].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {

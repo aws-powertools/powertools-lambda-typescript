@@ -15,8 +15,12 @@ import type {
 } from '@aws-sdk/client-ssm';
 import type {
   SSMProviderOptions,
-  SSMGetMultipleOptionsInterface,
-  SSMGetOptionsInterface,
+  SSMGetOptions,
+  SSMGetOutput,
+  SSMGetMultipleOptions,
+  SSMGetMultipleOptionsUnion,
+  SSMGetMultipleOutput,
+  SSMGetParametersByNameOutput,
   SSMGetParametersByNameOutputInterface,
   SSMGetParametersByNameOptionsInterface,
   SSMSplitBatchAndDecryptParametersOutputType,
@@ -312,14 +316,14 @@ class SSMProvider extends BaseProvider {
    * For usage examples check {@link SSMProvider}.
    *
    * @param {string} name - The name of the value to retrieve (i.e. the partition key)
-   * @param {SSMGetOptionsInterface} options - Options to configure the provider
+   * @param {SSMGetOptions} options - Options to configure the provider
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async get(
+  public async get<T = undefined, O extends SSMGetOptions | undefined = SSMGetOptions>(
     name: string,
-    options?: SSMGetOptionsInterface | undefined
-  ): Promise<string | Record<string, unknown> | undefined> {
-    return super.get(name, options) as Promise<string | Record<string, unknown> | undefined>;
+    options?: O & SSMGetOptions
+  ): Promise<SSMGetOutput<T, O> | undefined> {
+    return super.get(name, options) as Promise<SSMGetOutput<T, O> | undefined>;
   }
 
   /**
@@ -349,14 +353,14 @@ class SSMProvider extends BaseProvider {
    * For usage examples check {@link SSMProvider}.
    *
    * @param {string} path - The path of the parameters to retrieve
-   * @param {SSMGetMultipleOptionsInterface} options - Options to configure the retrieval
+   * @param {SSMGetMultipleOptions} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async getMultiple(
+  public async getMultiple<T = undefined, O extends SSMGetMultipleOptionsUnion | undefined = undefined>(
     path: string,
-    options?: SSMGetMultipleOptionsInterface | undefined
-  ): Promise<undefined | Record<string, unknown>> {
-    return super.getMultiple(path, options);
+    options?: O & SSMGetMultipleOptions
+  ): Promise<SSMGetMultipleOutput<T, O> | undefined> {
+    return super.getMultiple(path, options) as Promise<SSMGetMultipleOutput<T, O> | undefined>;
   }
 
   /**
@@ -409,12 +413,12 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetParametersByNameOptionsInterface} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async getParametersByName(
+  public async getParametersByName<T = undefined>(
     parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
     options?: SSMGetParametersByNameOptionsInterface
-  ): Promise<Record<string, unknown>> {
+  ): Promise<SSMGetParametersByNameOutput<T>> {
     const configs = { ...{
-      decrypt: false,
+      decrypt: this.resolveDecryptionConfigValue({}) || false,
       maxAge: DEFAULT_MAX_AGE_SECS,
       throwOnError: true,
     }, ...options };
@@ -460,25 +464,24 @@ class SSMProvider extends BaseProvider {
       }
     }
 
-    return response;
+    return response as unknown as Promise<SSMGetParametersByNameOutput<T>>;
   }
 
   /**
    * Retrieve a parameter from AWS Systems Manager.
    *
    * @param {string} name - Name of the parameter to retrieve
-   * @param {SSMGetOptionsInterface} options - Options to customize the retrieval
+   * @param {SSMGetOptions} options - Options to customize the retrieval
    */
   protected async _get(
     name: string,
-    options?: SSMGetOptionsInterface
+    options?: SSMGetOptions
   ): Promise<string | undefined> {
     const sdkOptions: GetParameterCommandInput = {
       ...(options?.sdkOptions || {}),
       Name: name,
     };
-    sdkOptions.WithDecryption = options?.decrypt !== undefined ?
-      options.decrypt : sdkOptions.WithDecryption;
+    sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(options, sdkOptions);
     const result = await this.client.send(new GetParameterCommand(sdkOptions));
 
     return result.Parameter?.Value;
@@ -488,11 +491,11 @@ class SSMProvider extends BaseProvider {
    * Retrieve multiple items from AWS Systems Manager.
    *
    * @param {string} path - The path of the parameters to retrieve
-   * @param {SSMGetMultipleOptionsInterface} options - Options to configure the provider
+   * @param {SSMGetMultipleOptions} options - Options to configure the provider
    */
   protected async _getMultiple(
     path: string,
-    options?: SSMGetMultipleOptionsInterface
+    options?: SSMGetMultipleOptions
   ): Promise<Record<string, string | undefined>> {
     const sdkOptions: GetParametersByPathCommandInput = {
       ...(options?.sdkOptions || {}),
@@ -501,8 +504,7 @@ class SSMProvider extends BaseProvider {
     const paginationOptions: PaginationConfiguration = {
       client: this.client
     };
-    sdkOptions.WithDecryption = options?.decrypt !== undefined ?
-      options.decrypt : sdkOptions.WithDecryption;
+    sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(options, sdkOptions);
     sdkOptions.Recursive = options?.recursive !== undefined ?
       options.recursive : sdkOptions.Recursive;
     paginationOptions.pageSize = sdkOptions.MaxResults !== undefined ?
@@ -732,6 +734,19 @@ class SSMProvider extends BaseProvider {
     }
 
     return errors;
+  }
+
+  protected resolveDecryptionConfigValue(
+    options: SSMGetOptions | SSMGetMultipleOptions = {},
+    sdkOptions?: GetParameterCommandInput | GetParametersByPathCommandInput
+  ): boolean | undefined {
+    if (options?.decrypt !== undefined) return options.decrypt;
+    if (sdkOptions?.WithDecryption !== undefined) return sdkOptions.WithDecryption;
+    if (this.envVarsService.getSSMDecrypt() !== '') {
+      return this.envVarsService.isValueTrue(this.envVarsService.getSSMDecrypt());
+    }
+
+    return undefined;
   }
 
   /**

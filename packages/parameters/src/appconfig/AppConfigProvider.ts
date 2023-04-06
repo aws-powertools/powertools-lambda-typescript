@@ -165,8 +165,8 @@ import type {
  */
 class AppConfigProvider extends BaseProvider {
   public client: AppConfigDataClient;
-  protected configurationTokenStore: Map<string, string> = new Map();
-  protected valueStore: Map<string, Uint8Array> = new Map();
+  protected configurationTokenStore = new Map<string, string>();
+  protected valueStore = new Map<string, Uint8Array>();
   private application?: string;
   private environment: string;
   
@@ -187,13 +187,12 @@ class AppConfigProvider extends BaseProvider {
       this.client = new AppConfigDataClient(options.clientConfig || {});
     }
     
-    if (!options?.application && !process.env['POWERTOOLS_SERVICE_NAME']) {
+    this.application = options?.application || this.envVarsService.getServiceName();
+    if (!this.application || this.application.trim().length === 0) {
       throw new Error(
         'Application name is not defined or POWERTOOLS_SERVICE_NAME is not set'
       );
     }
-    this.application =
-      options.application || process.env['POWERTOOLS_SERVICE_NAME'];
     this.environment = options.environment;
   }
 

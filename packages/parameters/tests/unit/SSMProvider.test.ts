@@ -26,9 +26,11 @@ import { toBase64 } from '@aws-sdk/util-base64';
 const encoder = new TextEncoder();
 
 describe('Class: SSMProvider', () => {
+  const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
   describe('Method: constructor', () => {
@@ -304,6 +306,31 @@ describe('Class: SSMProvider', () => {
   });
 
   describe('Method: _get', () => {
+
+    test('when called without any options but with POWERTOOLS_PARAMETERS_SSM_DECRYPT env var enabled, it gets the parameter with decryption', async () => {
+
+      // Prepare
+      process.env.POWERTOOLS_PARAMETERS_SSM_DECRYPT = 'true';
+      const provider = new SSMProvider();
+      const parameterName = 'foo';
+      const parameterValue = 'foo';
+      const client = mockClient(SSMClient).on(GetParameterCommand).resolves({
+        Parameter: {
+          Value: parameterValue,
+        },
+      });
+
+      // Act
+      const value = await provider.get(parameterName);
+
+      // Assess
+      expect(client).toReceiveCommandWith(GetParameterCommand, {
+        Name: parameterName,
+        WithDecryption: true,
+      });
+      expect(value).toBe(parameterValue);
+
+    });
 
     test('when called without sdkOptions, it gets the parameter using the name and with no decryption', async () => {
 

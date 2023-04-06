@@ -110,4 +110,31 @@ describe('Class: EnvironmentVariablesService', () => {
 
   });
 
+  describe('Method: isValueTrue', () => {
+
+    const valuesToTest: Array<Array<string | boolean>> = [
+      [ '1', true ],
+      [ 'y', true ],
+      [ 'yes', true ],
+      [ 't', true ],
+      [ 'TRUE', true ],
+      [ 'on', true ],
+      [ '', false ],
+      [ 'false', false ],
+      [ 'fasle', false ],
+      [ 'somethingsilly', false ],
+      [ '0', false ]
+    ];
+
+    test.each(valuesToTest)('it takes string "%s" and returns %s', (input, output) => {
+      // Prepare
+      const service = new EnvironmentVariablesService();
+      // Act
+      const value = service.isValueTrue(input as string);
+      // Assess
+      expect(value).toBe(output);
+    });
+    
+  });
+
 });

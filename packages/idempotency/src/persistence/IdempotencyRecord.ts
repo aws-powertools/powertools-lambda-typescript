@@ -1,22 +1,27 @@
-import { IdempotencyRecordOptions } from 'types/IdempotencyRecordOptions';
+import { IdempotencyRecordStatus } from '../types';
+import type {
+  IdempotencyRecordOptions
+} from '../types';
 import { IdempotencyInvalidStatusError } from '../Exceptions';
-import { IdempotencyRecordStatus } from '../types/IdempotencyRecordStatus';
 
+/**
+ * Class representing an idempotency record
+ */
 class IdempotencyRecord {
-  public expiryTimestamp: number | undefined;
+  public expiryTimestamp?: number;
   public idempotencyKey: string;
-  public inProgressExpiryTimestamp: number | undefined;
-  public payloadHash: string | undefined;
-  public responseData: Record<string, unknown> | undefined;
+  public inProgressExpiryTimestamp?: number;
+  public payloadHash?: string;
+  public responseData?: Record<string, unknown>;
   private status: IdempotencyRecordStatus;
 
-  public constructor(constructorOptions: IdempotencyRecordOptions) { 
-    this.idempotencyKey = constructorOptions.idempotencyKey;
-    this.expiryTimestamp = constructorOptions.expiryTimestamp;
-    this.inProgressExpiryTimestamp = constructorOptions.inProgressExpiryTimestamp;
-    this.responseData = constructorOptions.responseData;
-    this.payloadHash = constructorOptions.payloadHash;
-    this.status = constructorOptions.status;
+  public constructor(config: IdempotencyRecordOptions) { 
+    this.idempotencyKey = config.idempotencyKey;
+    this.expiryTimestamp = config.expiryTimestamp;
+    this.inProgressExpiryTimestamp = config.inProgressExpiryTimestamp;
+    this.responseData = config.responseData;
+    this.payloadHash = config.payloadHash;
+    this.status = config.status;
   }
 
   public getResponse(): Record<string, unknown> | undefined {
@@ -29,7 +34,7 @@ class IdempotencyRecord {
     } else if (Object.values(IdempotencyRecordStatus).includes(this.status)) {
       return this.status;
     } else {
-      throw new IdempotencyInvalidStatusError();
+      throw new IdempotencyInvalidStatusError(this.status);
     }
   }
 

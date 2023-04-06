@@ -1,20 +1,21 @@
-import { DEFAULT_MAX_AGE_SECS } from './constants';
-import type { GetMultipleOptionsInterface, TransformOptions } from './types';
+import { GetOptions } from './GetOptions';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService';
+import type { GetMultipleOptionsInterface } from './types';
 
 /**
  * Options for the `getMultiple` method.
  * 
- * It merges the default options with the provided options.
+ * Extends the `GetOptions` class and adds the `throwOnTransformError` option.
  */
-class GetMultipleOptions implements GetMultipleOptionsInterface {
-  public forceFetch: boolean = false;
-  public maxAge: number = DEFAULT_MAX_AGE_SECS;
-  public sdkOptions?: unknown;
+class GetMultipleOptions extends GetOptions implements GetMultipleOptionsInterface {
   public throwOnTransformError: boolean = false;
-  public transform?: TransformOptions;
 
-  public constructor(options: GetMultipleOptionsInterface) {
-    Object.assign(this, options);
+  public constructor(options: GetMultipleOptionsInterface = {}, envVarsService: EnvironmentVariablesService) {
+    super(options, envVarsService);
+
+    if (options.throwOnTransformError !== undefined) {
+      this.throwOnTransformError = options.throwOnTransformError;
+    }
   }
 }
 

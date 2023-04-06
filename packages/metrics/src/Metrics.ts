@@ -330,6 +330,12 @@ class Metrics extends Utility implements MetricsInterface {
    * ```
    */
   public publishStoredMetrics(): void {
+    if (!this.shouldThrowOnEmptyMetrics && Object.keys(this.storedMetrics).length === 0) {
+      console.warn(
+        'No application metrics to publish. The cold-start metric may be published if enabled. ' +
+        'If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
+      );
+    }
     const target = this.serializeMetrics();
     console.log(JSON.stringify(target));
     this.clearMetrics();

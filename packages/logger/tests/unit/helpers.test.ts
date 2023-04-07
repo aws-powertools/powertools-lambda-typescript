@@ -17,7 +17,8 @@ describe('Helper: createLogger function', () => {
     INFO: 12,
     WARN: 16,
     ERROR: 20,
-    SILENT: 24,
+    CRITICAL: 24,
+    SILENT: 28,
   };  
 
   beforeEach(() => {

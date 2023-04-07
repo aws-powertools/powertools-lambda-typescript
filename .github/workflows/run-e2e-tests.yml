@@ -109,7 +109,7 @@ jobs:
           path: "./node_modules"
           # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
           # if one of them changes the cache is invalidated/discarded
-          key: ${{ matrix.version }}-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+          key: ${{ matrix.version }}-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         # We can skip the install if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'

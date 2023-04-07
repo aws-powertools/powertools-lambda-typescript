@@ -136,7 +136,8 @@ class Logger extends Utility implements ClassThatLogs {
     INFO: 12,
     WARN: 16,
     ERROR: 20,
-    SILENT: 24,
+    CRITICAL: 24,
+    SILENT: 28,
   };
 
   private logsSampled: boolean = false;
@@ -212,15 +213,25 @@ class Logger extends Utility implements ClassThatLogs {
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
     const childLogger = new Logger(merge(parentsOptions, parentsPowertoolsLogData, options));
-    
+
     const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
     childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);
-    
+
     if (parentsPowertoolsLogData.lambdaContext) {
       childLogger.addContext(parentsPowertoolsLogData.lambdaContext as Context);
     }
-    
+
     return childLogger;
+  }
+
+  /**
+   * It prints a log item with level CRITICAL.
+   * 
+   * @param {LogItemMessage} input
+   * @param {Error | LogAttributes | string} extraInput
+   */
+  public critical(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
+    this.processLogItem('CRITICAL', input, extraInput);
   }
 
   /**
@@ -645,7 +656,10 @@ class Logger extends Utility implements ClassThatLogs {
   private printLog(logLevel: LogLevel, log: LogItem): void {
     log.prepareForPrint();
 
-    const consoleMethod = logLevel.toLowerCase() as keyof ClassThatLogs;
+    const consoleMethod =
+      logLevel === 'CRITICAL' ?
+        'error' :
+        logLevel.toLowerCase() as keyof Omit<ClassThatLogs, 'critical'>;
 
     this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.getReplacer(), this.logIndentation));
   }

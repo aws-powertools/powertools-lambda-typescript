@@ -16,6 +16,10 @@ import { Console } from 'console';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
+const getConsoleMethod = (method: string): keyof Omit<ClassThatLogs, 'critical'> => 
+  method === 'critical' ?
+    'error' :
+    method.toLowerCase() as keyof Omit<ClassThatLogs, 'critical'>;
 
 describe('Class: Logger', () => {
 
@@ -27,7 +31,8 @@ describe('Class: Logger', () => {
     INFO: 12,
     WARN: 16,
     ERROR: 20,
-    SILENT: 24,
+    CRITICAL: 24,
+    SILENT: 28,
   };
   
   beforeEach(() => {
@@ -40,6 +45,7 @@ describe('Class: Logger', () => {
     [ 'info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false ],
     [ 'warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false ],
     [ 'error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true ],
+    [ 'critical', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true ],
   ])(
     'Method: %p',
     (
@@ -54,9 +60,9 @@ describe('Class: Logger', () => {
       errorPrints,
     ) => {
 
-      describe('Feature: log level', () => {
+      const methodOfLogger = method as keyof ClassThatLogs;
 
-        const methodOfLogger = method as keyof ClassThatLogs;
+      describe('Feature: log level', () => {
 
         test('when the Logger\'s log level is DEBUG, it ' + debugAction + ' print to stdout', () => {
 
@@ -64,7 +70,7 @@ describe('Class: Logger', () => {
           const logger: Logger = createLogger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(method)).mockImplementation();
 
           // Act
           logger[methodOfLogger]('foo');
@@ -89,7 +95,7 @@ describe('Class: Logger', () => {
           const logger: Logger = createLogger({
             logLevel: 'INFO',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           logger[methodOfLogger]('foo');
@@ -114,7 +120,7 @@ describe('Class: Logger', () => {
           const logger: Logger = createLogger({
             logLevel: 'WARN',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           logger[methodOfLogger]('foo');
@@ -139,7 +145,7 @@ describe('Class: Logger', () => {
           const logger: Logger = createLogger({
             logLevel: 'ERROR',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           logger[methodOfLogger]('foo');
@@ -164,7 +170,7 @@ describe('Class: Logger', () => {
           const logger: Logger = createLogger({
             logLevel: 'SILENT',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           logger[methodOfLogger]('foo');
@@ -178,7 +184,7 @@ describe('Class: Logger', () => {
           // Prepare
           process.env.LOG_LEVEL = methodOfLogger.toUpperCase();
           const logger = new Logger();
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           logger[methodOfLogger]('foo');
@@ -197,8 +203,6 @@ describe('Class: Logger', () => {
 
       describe('Feature: sample rate', () => {
 
-        const methodOfLogger = method as keyof ClassThatLogs;
-
         test('when the Logger\'s log level is higher and the current Lambda invocation IS NOT sampled for logging, it DOES NOT print to stdout', () => {
 
           // Prepare
@@ -206,7 +210,7 @@ describe('Class: Logger', () => {
             logLevel: 'SILENT',
             sampleRateValue: 0,
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           if (logger[methodOfLogger]) {
@@ -224,7 +228,7 @@ describe('Class: Logger', () => {
             logLevel: 'SILENT',
             sampleRateValue: 1,
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           if (logger[methodOfLogger]) {
@@ -247,13 +251,11 @@ describe('Class: Logger', () => {
 
       describe('Feature: inject context', () => {
 
-        const methodOfLogger = method as keyof ClassThatLogs;
-
         test('when the Lambda context is not captured and a string is passed as log message, it should print a valid ' + method.toUpperCase() + ' log', () => {
 
           // Prepare
           const logger: Logger = createLogger();
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           if (logger[methodOfLogger]) {
@@ -279,7 +281,7 @@ describe('Class: Logger', () => {
             logLevel: 'DEBUG',
           });
           logger.addContext(context);
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           if (logger[methodOfLogger]) {
@@ -307,15 +309,13 @@ describe('Class: Logger', () => {
 
       describe('Feature: ephemeral log attributes', () => {
 
-        const methodOfLogger = method as keyof ClassThatLogs;
-
         test('when added, they should appear in that log item only', () => {
 
           // Prepare
           const logger: Logger = createLogger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           interface NestedObject { bool: boolean; str: string; num: number; err: Error }
           interface ArbitraryObject<TNested> { value: 'CUSTOM' | 'USER_DEFINED'; nested: TNested }
@@ -444,8 +444,6 @@ describe('Class: Logger', () => {
 
       describe('Feature: persistent log attributes', () => {
 
-        const methodOfLogger = method as keyof ClassThatLogs;
-
         test('when persistent log attributes are added to the Logger instance, they should appear in all logs printed by the instance', () => {
 
           // Prepare
@@ -456,7 +454,7 @@ describe('Class: Logger', () => {
               aws_region: 'eu-west-1',
             },
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           if (logger[methodOfLogger]) {
@@ -481,15 +479,13 @@ describe('Class: Logger', () => {
 
       describe('Feature: X-Ray Trace ID injection', () => {
 
-        const methodOfLogger = method as keyof ClassThatLogs;
-
         test('when the `_X_AMZN_TRACE_ID` environment variable is set it parses it correctly and adds the Trace ID to the log', () => {
 
           // Prepare
           const logger: Logger = createLogger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           if (logger[methodOfLogger]) {
@@ -515,7 +511,7 @@ describe('Class: Logger', () => {
           const logger: Logger = createLogger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
 
           // Act
           if (logger[methodOfLogger]) {
@@ -537,15 +533,13 @@ describe('Class: Logger', () => {
 
       describe('Feature: handle safely unexpected errors', () => {
 
-        const methodOfLogger = method as keyof ClassThatLogs;
-
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
 
           // Prepare
           const logger: Logger = createLogger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
           const circularObject = {
             foo: 'bar',
             self: {},
@@ -581,7 +575,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger = new Logger();
-          jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
           const message = `This is an ${methodOfLogger} log with BigInt value`;
           const logItem = { value: BigInt(42) };
           const errorMessage = 'Do not know how to serialize a BigInt';
@@ -595,7 +589,7 @@ describe('Class: Logger', () => {
     
           // Prepare
           const logger = new Logger();
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
           const message = `This is an ${methodOfLogger} log with BigInt value`;
           const logItem = { value: BigInt(42) };
           
@@ -619,7 +613,7 @@ describe('Class: Logger', () => {
 
           // Prepare
           const logger = new Logger();
-          const consoleSpy = jest.spyOn(logger['console'], methodOfLogger).mockImplementation();
+          const consoleSpy = jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger)).mockImplementation();
           const message = `This is an ${methodOfLogger} log with empty, null, and undefined values`;
           const logItem = { value: 42, emptyValue: '', undefinedValue: undefined, nullValue: null };
           
@@ -1050,6 +1044,7 @@ describe('Class: Logger', () => {
           biz: 'baz'
         }
       });
+      jest.spyOn(logger['console'], 'debug').mockImplementation();
       class LambdaFunction implements LambdaInterface {
 
         @logger.injectLambdaContext({ clearState: true })
@@ -1091,6 +1086,7 @@ describe('Class: Logger', () => {
           biz: 'baz'
         }
       });
+      jest.spyOn(logger['console'], 'debug').mockImplementation();
       class LambdaFunction implements LambdaInterface {
 
         @logger.injectLambdaContext({ clearState: true })

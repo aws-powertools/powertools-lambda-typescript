@@ -19,19 +19,23 @@ type IdempotencyConfigOptions = {
    */
   payloadValidationJmesPath?: string
   /**
-   * Throw an error if no idempotency key was found in the request, defaults to false
+   * Throw an error if no idempotency key was found in the request, defaults to `false`
    */
   throwOnNoIdempotencyKey?: boolean
   /**
-   * The number of seconds to wait before a record is expired, defaults to 3600 (1 hour)
+   * The number of seconds to wait before a record is expired, defaults to `3600` (1 hour)
    */
   expiresAfterSeconds?: number
   /**
-   * Wheter to locally cache idempotency results, defaults to false
+   * Wheter to locally cache idempotency results, defaults to `false`
    */
   useLocalCache?: boolean
   /**
-   * Function to use for calculating hashes, defaults to md5
+   * Number of records to keep in the local cache, defaults to `256`
+   */
+  maxLocalCacheSize?: number
+  /**
+   * Function to use for calculating hashes, defaults to `md5`
    */
   hashFunction?: string
   /**

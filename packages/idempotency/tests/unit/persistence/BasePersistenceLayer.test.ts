@@ -6,7 +6,7 @@
 import {
   ContextExamples as dummyContext
 } from '@aws-lambda-powertools/commons';
-import { 
+import {
   IdempotencyConfig,
 } from '../../../src/IdempotencyConfig';
 import {
@@ -14,6 +14,7 @@ import {
   BasePersistenceLayer
 } from '../../../src/persistence';
 import {
+  IdempotencyItemAlreadyExistsError,
   IdempotencyValidationError,
 } from '../../../src/Exceptions';
 import type {
@@ -41,7 +42,7 @@ describe('Class: BasePersistenceLayer', () => {
 
     public _deleteRecord = jest.fn();
     public _getRecord = jest.fn();
-    public _putRecord = jest.fn(); 
+    public _putRecord = jest.fn();
     public _updateRecord = jest.fn();
   }
 
@@ -105,7 +106,7 @@ describe('Class: BasePersistenceLayer', () => {
       // Prepare
       const config = new IdempotencyConfig({});
       const persistenceLayer = new PersistenceLayerTestClass();
-      
+
       // Act
       persistenceLayer.configure({ config });
 
@@ -132,6 +133,7 @@ describe('Class: BasePersistenceLayer', () => {
         throwOnNoIdempotencyKey: true,
         expiresAfterSeconds: 100,
         useLocalCache: true,
+        maxLocalCacheSize: 300,
         hashFunction: 'hashFunction',
         lambdaContext: context,
       };
@@ -149,7 +151,7 @@ describe('Class: BasePersistenceLayer', () => {
         payloadValidationEnabled: true,
         throwOnNoIdempotencyKey: true,
         expiresAfterSeconds: 100,
-        useLocalCache: false,
+        useLocalCache: true,
         hashFunction: 'hashFunction',
       }));
 
@@ -191,7 +193,37 @@ describe('Class: BasePersistenceLayer', () => {
         status: IdempotencyRecordStatus.EXPIRED,
       });
       const deleteRecordSpy = jest.spyOn(persistenceLayer, '_deleteRecord');
-      
+
+      // Act
+      await persistenceLayer.deleteRecord({ foo: 'bar' });
+
+      // Assess
+      expect(deleteRecordSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...baseIdempotencyRecord,
+          idempotencyKey: 'my-lambda-function#mocked-hash',
+          status: IdempotencyRecordStatus.EXPIRED
+        }),
+      );
+
+    });
+
+    test('when called, it deletes the record from the local cache', async () => {
+
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          useLocalCache: true,
+        }),
+      });
+      const baseIdempotencyRecord = new IdempotencyRecord({
+        idempotencyKey: 'idempotencyKey',
+        status: IdempotencyRecordStatus.EXPIRED,
+      });
+      await persistenceLayer.saveSuccess({ foo: 'bar' }, { bar: 'baz' });
+      const deleteRecordSpy = jest.spyOn(persistenceLayer, '_deleteRecord');
+
       // Act
       await persistenceLayer.deleteRecord({ foo: 'bar' });
 
@@ -216,19 +248,19 @@ describe('Class: BasePersistenceLayer', () => {
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
         config: new IdempotencyConfig({
-          eventKeyJmesPath: 'foo', 
+          eventKeyJmesPath: 'foo',
         }),
       });
       const getRecordSpy = jest.spyOn(persistenceLayer, '_getRecord');
-      
+
       // Act
       await persistenceLayer.getRecord({ foo: 'bar' });
 
       // Assess
       expect(getRecordSpy).toHaveBeenCalledWith('my-lambda-function#mocked-hash');
-        
+
     });
-    
+
     test('when called and payload validation fails due to hash mismatch, it throws an IdempotencyValidationError', async () => {
 
       // Prepare
@@ -243,7 +275,7 @@ describe('Class: BasePersistenceLayer', () => {
         status: IdempotencyRecordStatus.INPROGRESS,
         payloadHash: 'different-hash',
       }));
-      
+
       // Act & Assess
       await expect(persistenceLayer.getRecord({ foo: 'bar' })).rejects.toThrow(
         new IdempotencyValidationError(
@@ -260,7 +292,7 @@ describe('Class: BasePersistenceLayer', () => {
       persistenceLayer.configure({
         config: new IdempotencyConfig({
           // This will cause the hash generation to fail because the event does not have a bar property
-          eventKeyJmesPath: 'bar', 
+          eventKeyJmesPath: 'bar',
         }),
       });
       const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -283,7 +315,7 @@ describe('Class: BasePersistenceLayer', () => {
         config: new IdempotencyConfig({
           throwOnNoIdempotencyKey: true,
           // This will cause the hash generation to fail because the JMESPath expression will return an empty array
-          eventKeyJmesPath: 'foo.bar', 
+          eventKeyJmesPath: 'foo.bar',
         }),
       });
 
@@ -291,6 +323,55 @@ describe('Class: BasePersistenceLayer', () => {
       await expect(persistenceLayer.getRecord({ foo: { bar: [] } })).rejects.toThrow(
         new Error('No data found to create a hashed idempotency_key')
       );
+
+    });
+
+    test('when called twice with the same payload, it retrieves the record from the local cache', async () => {
+
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          useLocalCache: true,
+        }),
+      });
+      const getRecordSpy = jest.spyOn(persistenceLayer, '_getRecord').mockReturnValue(new IdempotencyRecord({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        status: IdempotencyRecordStatus.COMPLETED,
+        payloadHash: 'different-hash',
+      }));
+
+      // Act
+      await persistenceLayer.getRecord({ foo: 'bar' });
+      await persistenceLayer.getRecord({ foo: 'bar' });
+
+      // Assess
+      expect(getRecordSpy).toHaveBeenCalledTimes(1);
+
+    });
+
+    test('when called twice with the same payload, if it founds an expired record in the local cache, it retrieves it', async () => {
+
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          useLocalCache: true,
+        }),
+      });
+      const getRecordSpy = jest.spyOn(persistenceLayer, '_getRecord').mockReturnValue(new IdempotencyRecord({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        status: IdempotencyRecordStatus.EXPIRED,
+        payloadHash: 'different-hash',
+        expiryTimestamp: Date.now() / 1000 - 1,
+      }));
+
+      // Act
+      await persistenceLayer.getRecord({ foo: 'bar' });
+      await persistenceLayer.getRecord({ foo: 'bar' });
+
+      // Assess
+      expect(getRecordSpy).toHaveBeenCalledTimes(2);
 
     });
 
@@ -304,7 +385,7 @@ describe('Class: BasePersistenceLayer', () => {
       const persistenceLayer = new PersistenceLayerTestClass();
       const putRecordSpy = jest.spyOn(persistenceLayer, '_putRecord');
       const remainingTimeInMs = 2000;
-      
+
       // Act
       await persistenceLayer.saveInProgress({ foo: 'bar' }, remainingTimeInMs);
 
@@ -328,7 +409,7 @@ describe('Class: BasePersistenceLayer', () => {
       const persistenceLayer = new PersistenceLayerTestClass();
       const putRecordSpy = jest.spyOn(persistenceLayer, '_putRecord');
       const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation(() => ({}));
-      
+
       // Act
       await persistenceLayer.saveInProgress({ foo: 'bar' });
 
@@ -337,6 +418,51 @@ describe('Class: BasePersistenceLayer', () => {
       expect(logWarningSpy).toHaveBeenCalledWith(
         'Could not determine remaining time left. Did you call registerLambdaContext on IdempotencyConfig?',
       );
+
+    });
+
+    test('when called and there is already a completed record in the cache, it throws an IdempotencyItemAlreadyExistsError', async () => {
+
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          useLocalCache: true,
+        }),
+      });
+      const putRecordSpy = jest.spyOn(persistenceLayer, '_putRecord');
+      await persistenceLayer.saveSuccess({ foo: 'bar' }, { bar: 'baz' });
+
+      // Act & Assess
+      await expect(persistenceLayer.saveInProgress({ foo: 'bar' })).rejects.toThrow(
+        new IdempotencyItemAlreadyExistsError()
+      );
+      expect(putRecordSpy).toHaveBeenCalledTimes(0);
+
+    });
+
+    test('when called and there is an in-progress record in the cache, it returns', async () => {
+
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          useLocalCache: true,
+        }),
+      });
+      jest.spyOn(persistenceLayer, '_getRecord').mockImplementationOnce(
+        () => new IdempotencyRecord({
+          idempotencyKey: 'my-lambda-function#mocked-hash',
+          status: IdempotencyRecordStatus.INPROGRESS,
+          payloadHash: 'different-hash',
+          expiryTimestamp: Date.now() / 1000 + 3600,
+          inProgressExpiryTimestamp: Date.now() + 2000,
+        })
+      );
+      await persistenceLayer.getRecord({ foo: 'bar' });
+
+      // Act & Assess
+      await expect(persistenceLayer.saveInProgress({ foo: 'bar' })).resolves.toBeUndefined();
 
     });
 
@@ -350,7 +476,7 @@ describe('Class: BasePersistenceLayer', () => {
       const persistenceLayer = new PersistenceLayerTestClass();
       const updateRecordSpy = jest.spyOn(persistenceLayer, '_updateRecord');
       const result = { bar: 'baz' };
-      
+
       // Act
       await persistenceLayer.saveSuccess({ foo: 'bar' }, result);
 

@@ -38,7 +38,8 @@ export class LayerPublisherStack extends Stack {
         Runtime.NODEJS_18_X
       ],
       license: 'MIT-0',
-      compatibleArchitectures: [Architecture.X86_64],
+      // This is needed because the following regions do not support the compatibleArchitectures property
+      ...(![ 'eu-south-2', 'eu-central-2', 'ap-southeast-4' ].includes(Stack.of(this).region) && { compatibleArchitectures: [Architecture.X86_64] }),
       code: Code.fromAsset('../tmp'),
     });
 

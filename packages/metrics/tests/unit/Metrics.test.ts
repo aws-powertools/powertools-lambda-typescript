@@ -9,8 +9,11 @@ import {
   ContextExamples as dummyContext,
   Events as dummyEvent
 } from '@aws-lambda-powertools/commons';
-import { MetricResolution, MetricUnits, Metrics } from '../../src/';
+import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
 import { Context } from 'aws-lambda';
+
+const mockDate = new Date(1466424490000);
+const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Class: Metrics', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -18,6 +21,7 @@ describe('Class: Metrics', () => {
   const event = dummyEvent.Custom.CustomEvent;
 
   beforeAll(() => {
+    dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -802,6 +806,59 @@ describe('Class: Metrics', () => {
       //Assess
       expect(consoleWarnSpy).toBeCalledWith('Namespace should be defined, default used');
 
+    });
+
+    test('it should return right object compliant with Cloudwatch EMF', () => {
+      
+      //Prepare
+      const metrics: Metrics = createMetrics({
+        namespace: 'test-namespace',
+        serviceName: 'test-service',
+        defaultDimensions: {
+          'environment': 'dev'
+        }
+      });
+
+      //Act
+      metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+      metrics.addMetric('successfulBooking', MetricUnits.Count, 3);
+      metrics.addMetric('failedBooking', MetricUnits.Count, 1, MetricResolution.High);
+      const loggedData = metrics.serializeMetrics();
+
+      //Assess
+      expect(loggedData).toEqual(
+        {
+          '_aws': {
+            'Timestamp': mockDate.getTime(),
+            'CloudWatchMetrics': [
+              {
+                'Namespace': 'test-namespace',
+                'Dimensions': [
+                  [
+                    'service',
+                    'environment'
+                  ]
+                ],
+                'Metrics': [
+                  {
+                    'Name': 'successfulBooking',
+                    'Unit': 'Count'
+                  },
+                  {
+                    'Name': 'failedBooking',
+                    'Unit': 'Count',
+                    'StorageResolution': 1
+                  }
+                ]
+              }
+            ]
+          },
+          'environment': 'dev',
+          'service': 'test-service',
+          'successfulBooking': [ 1, 3 ],
+          'failedBooking': 1
+        }
+      );
     });
 
   });

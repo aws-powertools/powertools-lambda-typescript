@@ -6,6 +6,7 @@ class IdempotencyConfig {
   public expiresAfterSeconds: number;
   public hashFunction: string;
   public lambdaContext?: Context;
+  public maxLocalCacheSize: number;
   public payloadValidationJmesPath?: string;
   public throwOnNoIdempotencyKey: boolean;
   public useLocalCache: boolean;
@@ -16,6 +17,7 @@ class IdempotencyConfig {
     this.throwOnNoIdempotencyKey = config.throwOnNoIdempotencyKey ?? false;
     this.expiresAfterSeconds = config.expiresAfterSeconds ?? 3600; // 1 hour default
     this.useLocalCache = config.useLocalCache ?? false;
+    this.maxLocalCacheSize = config.maxLocalCacheSize ?? 1000;
     this.hashFunction = config.hashFunction ?? 'md5';
     this.lambdaContext = config.lambdaContext;
   }

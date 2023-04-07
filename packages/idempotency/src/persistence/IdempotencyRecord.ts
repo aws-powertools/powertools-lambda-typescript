@@ -15,7 +15,7 @@ class IdempotencyRecord {
   public responseData?: Record<string, unknown>;
   private status: IdempotencyRecordStatus;
 
-  public constructor(config: IdempotencyRecordOptions) { 
+  public constructor(config: IdempotencyRecordOptions) {
     this.idempotencyKey = config.idempotencyKey;
     this.expiryTimestamp = config.expiryTimestamp;
     this.inProgressExpiryTimestamp = config.inProgressExpiryTimestamp;
@@ -38,7 +38,7 @@ class IdempotencyRecord {
     }
   }
 
-  private isExpired(): boolean {
+  public isExpired(): boolean {
     return this.expiryTimestamp !== undefined && ((Date.now() / 1000) > this.expiryTimestamp);
   }
 }

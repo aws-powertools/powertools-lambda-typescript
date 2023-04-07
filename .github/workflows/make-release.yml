@@ -35,7 +35,7 @@ jobs:
           path: "./node_modules"
           # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
           # if one of them changes the cache is invalidated/discarded
-          key: 18-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Build packages
         run: |
           npm run build -w packages/commons

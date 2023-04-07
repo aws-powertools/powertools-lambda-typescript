@@ -42,7 +42,7 @@ jobs:
         uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
         with:
           path: "./node_modules"
-          key: 18-cache-utils-node-modules-${{ hashFiles('./package-lock.json') }}
+          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         # We can skip the installation if there was a cache hit
         if: steps.cache-node-modules.outputs.cache-hit != 'true'

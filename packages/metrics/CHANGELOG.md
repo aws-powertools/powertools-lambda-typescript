@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.7.0...v1.8.0) (2023-04-07)
+
+
+### Features
+
+* **metrics:** log warning on empty metrics ([#1397](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1397)) ([31ae936](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/31ae936831177f58edff43ce3850ed13c964fc87))
+
+
+
+
+
 # [1.7.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
 
 

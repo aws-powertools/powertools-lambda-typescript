@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.7.0...v1.8.0) (2023-04-07)
+
+
+### Features
+
+* **logger:** add `CRITICAL` log level ([#1399](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1399)) ([a248ff0](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/a248ff0a584bac5a97fe300f3addbb9c3a50b555))
+* **parameters:** ability to set `maxAge` and `decrypt` via environment variables ([#1384](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1384)) ([dcf6620](https://github.com/awslabs/aws-lambda-powertools-typescript/commit/dcf6620f55004b69186cd69b0c42b1cdd9fd1ce4))
+
+
+
+
+
 # [1.7.0](https://github.com/awslabs/aws-lambda-powertools-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
 
 

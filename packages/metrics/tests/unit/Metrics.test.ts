@@ -12,6 +12,7 @@ import {
 import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
 import { Context } from 'aws-lambda';
 
+const DEFAULT_NAMESPACE = 'default_namespace';
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
@@ -988,6 +989,35 @@ describe('Class: Metrics', () => {
       //Assess
       expect(() => metrics.serializeMetrics()).toThrow('The number of metrics recorded must be higher than zero');
           
+    });
+
+    test('it should use default namespace when not provided', () => {
+                  
+      //Prepare
+      const metrics: Metrics = createMetrics();
+          
+      //Act
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const loggedData = metrics.serializeMetrics();
+          
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(DEFAULT_NAMESPACE);
+          
+    });
+
+    test('it should use namespace provided in constructor', () => {
+                      
+      //Prepare
+      const namespace = 'test-namespace';
+      const metrics: Metrics = createMetrics({ namespace: namespace });
+              
+      //Act
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const loggedData = metrics.serializeMetrics();
+              
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(namespace);  
+      
     });
 
   });

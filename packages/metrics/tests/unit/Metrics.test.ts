@@ -544,13 +544,18 @@ describe('Class: Metrics', () => {
         
       //Prepare
       const metrics = new Metrics({ defaultDimensions: { 'environment': 'prod' } });
+      metrics.addDimension('foo', 'bar');
   
       //Act
       metrics.clearDimensions();
   
       // Assess
-      expect(metrics).not.toEqual(expect.objectContaining({
-        defaultDimensions: {}
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: {},
+        defaultDimensions: {
+          'environment': 'prod',
+          'service': 'service_undefined'
+        }
       }));
       
     });

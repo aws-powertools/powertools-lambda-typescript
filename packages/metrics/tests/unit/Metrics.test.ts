@@ -21,6 +21,10 @@ describe('Class: Metrics', () => {
   const context = dummyContext.helloworldContext;
   const event = dummyEvent.Custom.CustomEvent;
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   beforeAll(() => {
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
@@ -1107,6 +1111,26 @@ describe('Class: Metrics', () => {
       
     });
 
+  });
+
+  describe('Methods: publishStoredMetrics', () => {
+    
+    test('it should console warning if no metrics are added', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act 
+      metrics.publishStoredMetrics();
+
+      // Assess
+      expect(consoleWarnSpy).toBeCalledTimes(1);
+      expect(consoleWarnSpy).toBeCalledWith(
+        'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
+      );
+        
+    });
   });
 
 });

@@ -11,6 +11,7 @@ import {
 } from '@aws-lambda-powertools/commons';
 import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
 import { Context } from 'aws-lambda';
+import { EmfOutput } from '../../src/types';
 
 const DEFAULT_NAMESPACE = 'default_namespace';
 const mockDate = new Date(1466424490000);
@@ -1130,6 +1131,47 @@ describe('Class: Metrics', () => {
         'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
       );
         
+    });
+
+    test('it should call serializeMetrics && log the stringified return value of serializeMetrics', () => {
+            
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const mockData: EmfOutput = {
+        '_aws': {
+          'Timestamp': 1466424490000,
+          'CloudWatchMetrics': [
+            {
+              'Namespace': 'test',
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': 'test-metrics',
+                  'Unit': MetricUnits.Count
+                }
+              ]
+            }
+          ]
+        },
+        'service': 'service_undefined',
+        'test-metrics': 10
+      };
+      const serializeMetricsSpy = jest.spyOn(metrics, 'serializeMetrics').mockImplementation(() => mockData);
+  
+      // Act 
+      metrics.publishStoredMetrics();
+  
+      // Assess
+      expect(serializeMetricsSpy).toBeCalledTimes(1);
+      expect(consoleLogSpy).toBeCalledTimes(1);
+      expect(consoleLogSpy).toBeCalledWith(JSON.stringify(mockData));
+            
     });
   });
 

@@ -1072,6 +1072,41 @@ describe('Class: Metrics', () => {
               
     });
 
+    test('it should not contain `StorageResolution` as key for non-high resolution metrics', () => {
+                                        
+      //Prepare
+      const metricName = 'test-metrics';
+      const metrics: Metrics = createMetrics();
+                                
+      //Act
+      metrics.addMetric(metricName, MetricUnits.Count, 10);
+      const loggedData = metrics.serializeMetrics();
+                                
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBeUndefined();  
+
+    });
+
+    test('it should contain `StorageResolution` as key & high metric resolution as value for high resolution metrics', () => {
+                                        
+      //Prepare
+      const metricName = 'test-metrics';
+      const metricName2 = 'test-metrics-2';
+      const metrics: Metrics = createMetrics();
+                                
+      //Act
+      metrics.addMetric(metricName, MetricUnits.Count, 10);
+      metrics.addMetric(metricName2, MetricUnits.Seconds, 10, MetricResolution.High);
+      const loggedData = metrics.serializeMetrics();
+                                
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(2);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBeUndefined();
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[1].StorageResolution).toEqual(MetricResolution.High);  
+      
+    });
+
   });
 
 });

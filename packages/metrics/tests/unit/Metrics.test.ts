@@ -962,6 +962,21 @@ describe('Class: Metrics', () => {
     
     });
 
+    test('it should log metadata correctly', () => {
+            
+      //Prepare
+      const metrics: Metrics = createMetrics();
+      
+      //Act
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetadata('foo', 'bar');
+      const loggedData = metrics.serializeMetrics();
+      
+      //Assess
+      expect(loggedData.foo).toEqual('bar');
+      
+    });
+
   });
 
 });

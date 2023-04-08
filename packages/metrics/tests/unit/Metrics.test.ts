@@ -861,6 +861,37 @@ describe('Class: Metrics', () => {
       );
     });
 
+    test('it should log service dimension correctly when passed', () => { 
+
+      //Prepare
+      const serviceName = 'test-service';
+      const metrics: Metrics = createMetrics({ serviceName:serviceName });
+
+      //Act
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const loggedData = metrics.serializeMetrics();
+
+      //Assess
+      expect(loggedData.service).toEqual(serviceName);
+
+    });
+
+    test('it should log service dimension correctly from env var when not passed', () => {
+
+      //Prepare
+      const serviceName = 'hello-world-service';
+      process.env.POWERTOOLS_SERVICE_NAME = serviceName;
+      const metrics: Metrics = createMetrics();
+
+      //Act
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const loggedData = metrics.serializeMetrics();
+
+      //Assess
+      expect(loggedData.service).toEqual(serviceName);
+      
+    });
+
   });
 
 });

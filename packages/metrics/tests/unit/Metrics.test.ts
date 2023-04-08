@@ -977,6 +977,19 @@ describe('Class: Metrics', () => {
       
     });
 
+    test('it should throw error on empty metrics when throwOnEmptyMetrics is true', () => {
+                
+      //Prepare
+      const metrics: Metrics = createMetrics();
+        
+      //Act
+      metrics.throwOnEmptyMetrics();
+
+      //Assess
+      expect(() => metrics.serializeMetrics()).toThrow('The number of metrics recorded must be higher than zero');
+          
+    });
+
   });
 
 });

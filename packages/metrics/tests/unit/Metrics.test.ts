@@ -1020,6 +1020,58 @@ describe('Class: Metrics', () => {
       
     });
 
+    test('it should contain a metric value if added once', () => {
+                            
+      //Prepare
+      const metricName = 'test-metrics';
+      const metrics: Metrics = createMetrics();
+                    
+      //Act
+      metrics.addMetric(metricName, MetricUnits.Count, 10);
+      const loggedData = metrics.serializeMetrics();
+                    
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      expect(loggedData['test-metrics']).toEqual(10);
+          
+    });
+
+    test('it should convert metric value with the same name and unit to array if added multiple times', () => {
+                              
+      //Prepare
+      const metricName = 'test-metrics';
+      const metrics: Metrics = createMetrics();
+                      
+      //Act
+      metrics.addMetric(metricName, MetricUnits.Count, 10);
+      metrics.addMetric(metricName, MetricUnits.Count, 20);
+      const loggedData = metrics.serializeMetrics();
+                      
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      expect(loggedData[metricName]).toEqual([ 10, 20 ]);
+            
+    });
+
+    test('it should create multiple metric values if added multiple times', () => {
+                                  
+      //Prepare
+      const metricName1 = 'test-metrics';
+      const metricName2 = 'test-metrics-2';
+      const metrics: Metrics = createMetrics();
+                          
+      //Act
+      metrics.addMetric(metricName1, MetricUnits.Count, 10);
+      metrics.addMetric(metricName2, MetricUnits.Seconds, 20);
+      const loggedData = metrics.serializeMetrics();
+                          
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(2);
+      expect(loggedData[metricName1]).toEqual(10);
+      expect(loggedData[metricName2]).toEqual(20);
+              
+    });
+
   });
 
 });

@@ -793,6 +793,8 @@ describe('Class: Metrics', () => {
 
   describe('Method: serializeMetrics', () => {
 
+    const defaultServiceName = 'service_undefined';
+
     test('it should print warning, if no namespace provided in constructor or environment variable', () => {
 
       //Prepare
@@ -889,7 +891,70 @@ describe('Class: Metrics', () => {
 
       //Assess
       expect(loggedData.service).toEqual(serviceName);
+      delete process.env.POWERTOOLS_SERVICE_NAME;
       
+    });
+
+    test('it should log default dimensions correctly', () => {
+        
+      //Prepare
+      const additionalDimensions = {
+        'foo': 'bar',
+        'env': 'dev'
+      };
+      const metrics: Metrics = createMetrics({ defaultDimensions: additionalDimensions });
+  
+      //Act
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const loggedData = metrics.serializeMetrics();
+  
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
+      expect(loggedData.service).toEqual(defaultServiceName);
+      expect(loggedData.foo).toEqual(additionalDimensions.foo);
+      expect(loggedData.env).toEqual(additionalDimensions.env);
+  
+    });
+
+    test('it should log additional dimensions correctly', () => {
+          
+      //Prepare
+      const additionalDimension = { name: 'metric2', value: 'metric2Value' };
+      const metrics: Metrics = createMetrics();
+    
+      //Act
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10, MetricResolution.High);
+      metrics.addDimension(additionalDimension.name, additionalDimension.value);
+      const loggedData = metrics.serializeMetrics();
+    
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
+      expect(loggedData.service).toEqual(defaultServiceName);
+      expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
+    
+    });
+
+    test('it should log additional bulk dimensions correctly', () => {
+          
+      //Prepare
+      const additionalDimensions: { [key: string]: string } = {
+        metric2: 'metric2Value',
+        metric3: 'metric3Value'
+      };
+      const metrics: Metrics = createMetrics();
+    
+      //Act
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10, MetricResolution.High);
+      metrics.addDimensions(additionalDimensions);
+      const loggedData = metrics.serializeMetrics();
+    
+      //Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
+      expect(loggedData.service).toEqual(defaultServiceName);
+      Object.keys(additionalDimensions).forEach((key) => {
+        expect(loggedData[key]).toEqual(additionalDimensions[key]);
+      });
+    
     });
 
   });

@@ -24,6 +24,7 @@ describe('Class: Metrics', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetModules();
   });
 
   beforeAll(() => {
@@ -1221,4 +1222,25 @@ describe('Class: Metrics', () => {
 
   });
 
+  describe('Methods: captureColdStartMetric', () => {
+      
+    test('it should call addMetric with correct parameters', () => {
+            
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const addMetricSpy = jest.spyOn(singleMetricMock, 'addMetric');
+    
+      // Act 
+      metrics.captureColdStartMetric();
+    
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(addMetricSpy).toBeCalledTimes(1);
+      expect(addMetricSpy).toBeCalledWith('ColdStart', MetricUnits.Count, 1);
+              
+    });
+  
+  });
 });

@@ -11,7 +11,7 @@ import {
 } from '@aws-lambda-powertools/commons';
 import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
 import { Context } from 'aws-lambda';
-import { EmfOutput } from '../../src/types';
+import { Dimensions, EmfOutput } from '../../src/types';
 
 const DEFAULT_NAMESPACE = 'default_namespace';
 const mockDate = new Date(1466424490000);
@@ -1240,6 +1240,49 @@ describe('Class: Metrics', () => {
       expect(addMetricSpy).toBeCalledTimes(1);
       expect(addMetricSpy).toBeCalledWith('ColdStart', MetricUnits.Count, 1);
               
+    });
+
+    test('it should call setDefaultDimensions with correct parameters', () => {
+                
+      // Prepare
+      const defaultDimensions: Dimensions = {
+        'foo': 'bar',
+        'service': 'order'
+      };
+      const metrics: Metrics = createMetrics({
+        namespace: 'test',
+        defaultDimensions
+      });
+      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
+        
+      // Act 
+      metrics.captureColdStartMetric();
+        
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(setDefaultDimensionsSpy).toBeCalledTimes(1);
+      expect(setDefaultDimensionsSpy).toBeCalledWith({ service: defaultDimensions.service });
+                  
+    });
+
+    test('it should call setDefaultDimensions with correct parameters if not set', () => {
+                
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
+        
+      // Act 
+      metrics.captureColdStartMetric();
+        
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(setDefaultDimensionsSpy).toBeCalledTimes(1);
+      expect(setDefaultDimensionsSpy).toBeCalledWith({ service: 'service_undefined' });
+                  
     });
   
   });

@@ -1188,6 +1188,22 @@ describe('Class: Metrics', () => {
       expect(clearMetricsSpy).toBeCalledTimes(1);
               
     });
+
+    test('it should call clearDimensions function', () => {
+                      
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const clearDimensionsSpy = jest.spyOn(metrics, 'clearDimensions');
+        
+      // Act 
+      metrics.publishStoredMetrics();
+        
+      // Assess
+      expect(clearDimensionsSpy).toBeCalledTimes(1);
+                  
+    });
+
   });
 
 });

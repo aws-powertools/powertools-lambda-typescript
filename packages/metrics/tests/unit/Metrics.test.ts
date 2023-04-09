@@ -1321,6 +1321,29 @@ describe('Class: Metrics', () => {
       expect(addDimensionSpy).toBeCalledTimes(0);
                       
     });
+
+    test('it should not call any function, if there is no cold start', () => {
+                    
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      jest.spyOn(metrics, 'isColdStart').mockImplementation(() => false);
+
+      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const addMetricSpy = jest.spyOn(singleMetricMock, 'addMetric');
+      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
+      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
+            
+      // Act 
+      metrics.captureColdStartMetric();
+            
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(0);
+      expect(setDefaultDimensionsSpy).toBeCalledTimes(0);
+      expect(addDimensionSpy).toBeCalledTimes(0);
+      expect(addMetricSpy).toBeCalledTimes(0);
+                        
+    });
   
   });
 });

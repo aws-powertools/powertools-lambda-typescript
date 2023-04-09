@@ -1284,6 +1284,43 @@ describe('Class: Metrics', () => {
       expect(setDefaultDimensionsSpy).toBeCalledWith({ service: 'service_undefined' });
                   
     });
+
+    test('it should call addDimension, if functionName is set', () => {
+                  
+      // Prepare
+      const functionName = 'cold-start';
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      metrics.setFunctionName(functionName);
+      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
+          
+      // Act 
+      metrics.captureColdStartMetric();
+          
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(addDimensionSpy).toBeCalledTimes(1);
+      expect(addDimensionSpy).toBeCalledWith('function_name', functionName);
+                      
+    });
+
+    test('it should not call addDimension, if functionName is not set', () => {
+                  
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
+          
+      // Act 
+      metrics.captureColdStartMetric();
+          
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(addDimensionSpy).toBeCalledTimes(0);
+                      
+    });
   
   });
 });

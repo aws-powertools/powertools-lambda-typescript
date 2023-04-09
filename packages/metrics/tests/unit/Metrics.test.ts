@@ -1204,6 +1204,21 @@ describe('Class: Metrics', () => {
                   
     });
 
+    test('it should call clearMetadata function', () => {
+                            
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const clearMetadataSpy = jest.spyOn(metrics, 'clearMetadata');
+              
+      // Act 
+      metrics.publishStoredMetrics();
+              
+      // Assess
+      expect(clearMetadataSpy).toBeCalledTimes(1);
+                        
+    });
+
   });
 
 });

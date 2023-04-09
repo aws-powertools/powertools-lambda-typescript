@@ -1173,6 +1173,21 @@ describe('Class: Metrics', () => {
       expect(consoleLogSpy).toBeCalledWith(JSON.stringify(mockData));
             
     });
+
+    test('it should call clearMetrics function', () => {
+                  
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const clearMetricsSpy = jest.spyOn(metrics, 'clearMetrics');
+    
+      // Act 
+      metrics.publishStoredMetrics();
+    
+      // Assess
+      expect(clearMetricsSpy).toBeCalledTimes(1);
+              
+    });
   });
 
 });

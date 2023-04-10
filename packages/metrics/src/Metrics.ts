@@ -2,6 +2,7 @@ import { Callback, Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { MetricsInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import { MAX_DIMENSION_COUNT,MAX_METRICS_SIZE,DEFAULT_NAMESPACE } from './constants';
 import {
   MetricsOptions,
   Dimensions,
@@ -15,10 +16,6 @@ import {
   MetricDefinition,
   StoredMetric,
 } from './types';
-
-const MAX_METRICS_SIZE = 100;
-const MAX_DIMENSION_COUNT = 29;
-const DEFAULT_NAMESPACE = 'default_namespace';
 
 /**
  * ## Intro

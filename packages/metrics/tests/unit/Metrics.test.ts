@@ -155,7 +155,7 @@ describe('Class: Metrics', () => {
       expect(() => {
         metrics.addMetric(metricName, MetricUnits.Count, 1);
         metrics.addMetric(metricName, MetricUnits.Kilobits, 5);
-      }).toThrowError(Error);
+      }).toThrowError(`Metric "${metricName}" has already been added with unit "${MetricUnits.Count}", but we received unit "${MetricUnits.Kilobits}". Did you mean to use metric unit "${MetricUnits.Count}"?`);
 
     });
 
@@ -248,7 +248,7 @@ describe('Class: Metrics', () => {
         for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
           metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
         }
-      }).toThrowError(RangeError);
+      }).toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       
     });
 
@@ -265,7 +265,7 @@ describe('Class: Metrics', () => {
         for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(defaultDimensions).length); i++) {
           metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
         }
-      }).toThrowError(RangeError);
+      }).toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
 
     });
 
@@ -329,7 +329,7 @@ describe('Class: Metrics', () => {
       // Act & Assess
       expect(() => {
         metrics.addDimensions(dimensionsToBeAdded);
-      }).toThrowError(RangeError);
+      }).toThrowError(`Unable to add ${Object.keys(dimensionsToBeAdded).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       
     });
 
@@ -347,7 +347,7 @@ describe('Class: Metrics', () => {
       // Act & Assess
       expect(() => {
         metrics.addDimensions(dimensionsToBeAdded);
-      }).not.toThrowError(RangeError);
+      }).not.toThrowError(`Unable to add ${Object.keys(dimensionsToBeAdded).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       expect(metrics).toEqual(expect.objectContaining({ dimensions: dimensionsToBeAdded }));
       
     });
@@ -457,7 +457,7 @@ describe('Class: Metrics', () => {
       // Act & Assess
       expect(() => {
         metrics.setDefaultDimensions(defaultDimensions);
-      }).toThrowError(Error);
+      }).toThrowError('Max dimension count hit');
         
     });
 
@@ -482,7 +482,7 @@ describe('Class: Metrics', () => {
       // Act & Assess
       expect(() => {
         metrics.setDefaultDimensions(defaultDimensions);
-      }).toThrowError(Error);
+      }).toThrowError('Max dimension count hit');
         
     });
     
@@ -752,7 +752,7 @@ describe('Class: Metrics', () => {
       const handler = handlerClass.handler.bind(handlerClass);
   
       // Act & Assess
-      await expect(handler(event, context)).rejects.toThrowError(RangeError);
+      await expect(handler(event, context)).rejects.toThrowError('The number of metrics recorded must be higher than zero');
   
     });
 

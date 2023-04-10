@@ -12,7 +12,7 @@ import {
 import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
 import { Context } from 'aws-lambda';
 import { Dimensions, EmfOutput } from '../../src/types';
-import { DEFAULT_NAMESPACE, MAX_METRICS_SIZE } from '../../src/constants';
+import { DEFAULT_NAMESPACE, MAX_DIMENSION_COUNT, MAX_METRICS_SIZE } from '../../src/constants';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -244,7 +244,7 @@ describe('Class: Metrics', () => {
   
       // Act & Assess
       expect(() => {
-        for (let i = 0; i < 29; i++) {
+        for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
           metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
         }
       }).toThrowError(RangeError);
@@ -320,7 +320,7 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const dimensionsToBeAdded: { [key: string]: string } = {};
-      for (let i = 0; i <= 29; i++) {
+      for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
         dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
      
@@ -338,7 +338,7 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const dimensionsToBeAdded: { [key: string]: string } = {};
-      for (let i = 0; i < 29; i++) {
+      for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
         dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
      
@@ -440,7 +440,7 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const defaultDimensions: { [key: string]: string } = {};
-      for (let i = 0; i <= 29; i++) {
+      for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
         defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
       

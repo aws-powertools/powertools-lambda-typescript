@@ -19,6 +19,7 @@ const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Class: Metrics', () => {
   const ENVIRONMENT_VARIABLES = process.env;
+  const TEST_NAMESPACE = 'test';
   const context = dummyContext.helloworldContext;
   const event = dummyEvent.Custom.CustomEvent;
 
@@ -37,7 +38,7 @@ describe('Class: Metrics', () => {
     test('when called, it should store metrics', () => {
       
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const metricName = 'test_metric';
 
       //Act
@@ -59,7 +60,7 @@ describe('Class: Metrics', () => {
     test('when called with multiple metric name, it should store multiple metrics', () => {
       
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
       //Act
       metrics.addMetric('test_metric-1', MetricUnits.Count, 1, MetricResolution.High);
@@ -94,7 +95,7 @@ describe('Class: Metrics', () => {
     test('when called without resolution, it should store metrics with standard resolution', () => {
    
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
       //Act
       metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
@@ -122,7 +123,7 @@ describe('Class: Metrics', () => {
     test('when trying to add metric with the same name multiple times, values should be grouped together in an array', () => {
 
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const metricName = 'test-metric';
 
       //Act
@@ -147,7 +148,7 @@ describe('Class: Metrics', () => {
     test('when trying to add metric with the same name multiple times but with different unit, it will throw an error', () => {
 
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const metricName = 'test-metric';
 
       // Act & Assess
@@ -161,7 +162,7 @@ describe('Class: Metrics', () => {
     test('it will publish metrics if stored metrics count has reached max metric size threshold', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const metricName = 'test-metric';
         
@@ -178,7 +179,7 @@ describe('Class: Metrics', () => {
     test('it will not publish metrics if stored metrics count has not reached max metric size threshold', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const metricName = 'test-metric';
         
@@ -198,7 +199,7 @@ describe('Class: Metrics', () => {
     test('when called, it should clear stored metrics', () => {
           
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const metricName = 'test-metric';
           
       //Act
@@ -219,7 +220,7 @@ describe('Class: Metrics', () => {
     test('when called, it should store dimensions', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue= 'test-value';
   
@@ -238,7 +239,7 @@ describe('Class: Metrics', () => {
     test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
   
@@ -279,7 +280,7 @@ describe('Class: Metrics', () => {
         'test-dimension-1': 'test-value-1',
         'test-dimension-2': 'test-value-2',
       };
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
       //Act
       metrics.addDimensions(dimensionsToBeAdded);
@@ -298,7 +299,7 @@ describe('Class: Metrics', () => {
         'test-dimension-1': 'test-value-1',
         'test-dimension-2': 'test-value-2',
       };
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
       //Act
       metrics.addDimensions(dimensionsToBeAdded);
@@ -317,7 +318,7 @@ describe('Class: Metrics', () => {
     test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const dimensionsToBeAdded: { [key: string]: string } = {};
@@ -335,7 +336,7 @@ describe('Class: Metrics', () => {
     test('it should successfully add up to maximum allowed dimensions without throwing error', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const dimensionsToBeAdded: { [key: string]: string } = {};
@@ -362,7 +363,7 @@ describe('Class: Metrics', () => {
         'environment': 'prod',
         'foo': 'bar',
       };
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
       //Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
@@ -403,6 +404,7 @@ describe('Class: Metrics', () => {
       };
       const serviceName = 'test-service';
       const metrics: Metrics = createMetrics({
+        namespace: TEST_NAMESPACE,
         serviceName,
         defaultDimensions: { 'test-dimension': 'test-dimension-value' }
       });
@@ -426,6 +428,7 @@ describe('Class: Metrics', () => {
       };
       const serviceName = 'test-service';
       const metrics: Metrics = createMetrics({
+        namespace: TEST_NAMESPACE,
         serviceName,
         defaultDimensions: { 'environment': 'dev' }
       });
@@ -443,7 +446,7 @@ describe('Class: Metrics', () => {
     test('it should throw error if number of dimensions reaches the maximum allowed', () => {
           
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const defaultDimensions: { [key: string]: string } = {};
@@ -465,7 +468,10 @@ describe('Class: Metrics', () => {
         'test-dimension': 'test-value',
         'environment': 'dev'
       };
-      const metrics: Metrics = createMetrics({ namespace: 'test', defaultDimensions: initialDefaultDimensions });
+      const metrics: Metrics = createMetrics({
+        namespace: TEST_NAMESPACE,
+        defaultDimensions: initialDefaultDimensions
+      });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const defaultDimensions: { [key: string]: string } = {};
@@ -487,7 +493,7 @@ describe('Class: Metrics', () => {
     test('it should clear all default dimensions', () => {
           
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.setDefaultDimensions({ 'foo': 'bar' });
     
       //Act
@@ -506,7 +512,7 @@ describe('Class: Metrics', () => {
     test('it should add metadata', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
   
       //Act
       metrics.addMetadata('foo', 'bar');
@@ -521,7 +527,7 @@ describe('Class: Metrics', () => {
     test('it should update metadata value if added again', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
   
       //Act
       metrics.addMetadata('foo', 'bar');
@@ -540,7 +546,7 @@ describe('Class: Metrics', () => {
     test('it should clear all dimensions', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.addDimension('foo', 'bar');
   
       //Act
@@ -580,7 +586,7 @@ describe('Class: Metrics', () => {
     test('it should clear all metadata', () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.addMetadata('foo', 'bar');
       metrics.addMetadata('test', 'baz');
   
@@ -601,13 +607,12 @@ describe('Class: Metrics', () => {
     test('it should return a single Metric object', () => {
 
       //Prepare
-      const namespace = 'test-namespace';
       const defaultDimensions = {
         'foo': 'bar',
         'service': 'order'
       };
       const metrics: Metrics = createMetrics({
-        namespace,
+        namespace: TEST_NAMESPACE,
         defaultDimensions,
         singleMetric: false
       });
@@ -618,7 +623,7 @@ describe('Class: Metrics', () => {
       //Asses
       expect(singleMetric).toEqual(expect.objectContaining({
         isSingleMetric: true,
-        namespace,
+        namespace: TEST_NAMESPACE,
         defaultDimensions
       }));
 
@@ -631,7 +636,7 @@ describe('Class: Metrics', () => {
     test('it should set the throwOnEmptyMetrics flag to true', () => {
   
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
   
       //Act
       metrics.throwOnEmptyMetrics();
@@ -650,7 +655,7 @@ describe('Class: Metrics', () => {
     test('it should set the function name', () => {
   
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
   
       //Act
       metrics.setFunctionName('test-function');
@@ -672,7 +677,7 @@ describe('Class: Metrics', () => {
     test('it should log metrics', async () => {
 
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const addMetricSpy = jest.spyOn(metrics, 'addMetric');
       const captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
@@ -703,7 +708,7 @@ describe('Class: Metrics', () => {
     test('it should capture cold start metrics, if passed in the options as true', async () => {
       
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const addMetricSpy = jest.spyOn(metrics, 'addMetric');
       const captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
@@ -734,7 +739,7 @@ describe('Class: Metrics', () => {
     test('it should throw error if no metrics are added and throwOnEmptyMetrics is set to true', async () => {
         
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       class LambdaFunction implements LambdaInterface {
   
         @metrics.logMetrics({ throwOnEmptyMetrics: true })
@@ -758,7 +763,7 @@ describe('Class: Metrics', () => {
         'foo': 'bar',
         'service': 'order'
       };
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const setDefaultDimensionsSpy = jest.spyOn(metrics, 'setDefaultDimensions');
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const addMetricSpy = jest.spyOn(metrics, 'addMetric');
@@ -789,7 +794,7 @@ describe('Class: Metrics', () => {
     test('it should throw error if lambda handler throws any error', async () => {
           
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const errorMessage = 'Unexpected error occurred!';
       class LambdaFunction implements LambdaInterface {
     
@@ -901,7 +906,7 @@ describe('Class: Metrics', () => {
       //Prepare
       const serviceName = 'hello-world-service';
       process.env.POWERTOOLS_SERVICE_NAME = serviceName;
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
       //Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
@@ -938,7 +943,7 @@ describe('Class: Metrics', () => {
           
       //Prepare
       const additionalDimension = { name: 'metric2', value: 'metric2Value' };
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
       //Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10, MetricResolution.High);
@@ -959,7 +964,7 @@ describe('Class: Metrics', () => {
         metric2: 'metric2Value',
         metric3: 'metric3Value'
       };
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
       //Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10, MetricResolution.High);
@@ -978,7 +983,7 @@ describe('Class: Metrics', () => {
     test('it should log metadata correctly', () => {
             
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       
       //Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
@@ -993,7 +998,7 @@ describe('Class: Metrics', () => {
     test('it should throw error on empty metrics when throwOnEmptyMetrics is true', () => {
                 
       //Prepare
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
         
       //Act
       metrics.throwOnEmptyMetrics();
@@ -1020,15 +1025,14 @@ describe('Class: Metrics', () => {
     test('it should use namespace provided in constructor', () => {
                       
       //Prepare
-      const namespace = 'test-namespace';
-      const metrics: Metrics = createMetrics({ namespace: namespace });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
               
       //Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
               
       //Assess
-      expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(namespace);  
+      expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(TEST_NAMESPACE);  
       
     });
 
@@ -1036,7 +1040,7 @@ describe('Class: Metrics', () => {
                             
       //Prepare
       const metricName = 'test-metrics';
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                     
       //Act
       metrics.addMetric(metricName, MetricUnits.Count, 10);
@@ -1052,7 +1056,7 @@ describe('Class: Metrics', () => {
                               
       //Prepare
       const metricName = 'test-metrics';
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                       
       //Act
       metrics.addMetric(metricName, MetricUnits.Count, 10);
@@ -1070,7 +1074,7 @@ describe('Class: Metrics', () => {
       //Prepare
       const metricName1 = 'test-metrics';
       const metricName2 = 'test-metrics-2';
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                           
       //Act
       metrics.addMetric(metricName1, MetricUnits.Count, 10);
@@ -1088,7 +1092,7 @@ describe('Class: Metrics', () => {
                                         
       //Prepare
       const metricName = 'test-metrics';
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                                 
       //Act
       metrics.addMetric(metricName, MetricUnits.Count, 10);
@@ -1105,7 +1109,7 @@ describe('Class: Metrics', () => {
       //Prepare
       const metricName = 'test-metrics';
       const metricName2 = 'test-metrics-2';
-      const metrics: Metrics = createMetrics();
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                                 
       //Act
       metrics.addMetric(metricName, MetricUnits.Count, 10);
@@ -1126,7 +1130,7 @@ describe('Class: Metrics', () => {
     test('it should console warning if no metrics are added', () => {
         
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       // Act 
@@ -1143,7 +1147,7 @@ describe('Class: Metrics', () => {
     test('it should call serializeMetrics && log the stringified return value of serializeMetrics', () => {
             
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       const mockData: EmfOutput = {
@@ -1184,7 +1188,7 @@ describe('Class: Metrics', () => {
     test('it should call clearMetrics function', () => {
                   
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const clearMetricsSpy = jest.spyOn(metrics, 'clearMetrics');
     
@@ -1199,7 +1203,7 @@ describe('Class: Metrics', () => {
     test('it should call clearDimensions function', () => {
                       
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const clearDimensionsSpy = jest.spyOn(metrics, 'clearDimensions');
         
@@ -1214,7 +1218,7 @@ describe('Class: Metrics', () => {
     test('it should call clearMetadata function', () => {
                             
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const clearMetadataSpy = jest.spyOn(metrics, 'clearMetadata');
               
@@ -1233,8 +1237,8 @@ describe('Class: Metrics', () => {
     test('it should call addMetric with correct parameters', () => {
             
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
-      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
       const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
       const addMetricSpy = jest.spyOn(singleMetricMock, 'addMetric');
     
@@ -1256,10 +1260,10 @@ describe('Class: Metrics', () => {
         'service': 'order'
       };
       const metrics: Metrics = createMetrics({
-        namespace: 'test',
+        namespace: TEST_NAMESPACE,
         defaultDimensions
       });
-      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
       const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
       const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
         
@@ -1276,8 +1280,8 @@ describe('Class: Metrics', () => {
     test('it should call setDefaultDimensions with correct parameters if not set', () => {
                 
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
-      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
       const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
       const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
         
@@ -1295,9 +1299,9 @@ describe('Class: Metrics', () => {
                   
       // Prepare
       const functionName = 'cold-start';
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.setFunctionName(functionName);
-      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
       const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
       const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
           
@@ -1314,8 +1318,8 @@ describe('Class: Metrics', () => {
     test('it should not call addDimension, if functionName is not set', () => {
                   
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
-      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
       const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
       const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
           
@@ -1331,10 +1335,10 @@ describe('Class: Metrics', () => {
     test('it should not call any function, if there is no cold start', () => {
                     
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: 'test' });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       jest.spyOn(metrics, 'isColdStart').mockImplementation(() => false);
 
-      const singleMetricMock: Metrics = createMetrics({ namespace: 'test', singleMetric: true });
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
       const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
       const addMetricSpy = jest.spyOn(singleMetricMock, 'addMetric');
       const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');

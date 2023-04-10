@@ -12,8 +12,8 @@ import {
 import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
 import { Context } from 'aws-lambda';
 import { Dimensions, EmfOutput } from '../../src/types';
+import { DEFAULT_NAMESPACE } from '../../src/constants';
 
-const DEFAULT_NAMESPACE = 'default_namespace';
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 

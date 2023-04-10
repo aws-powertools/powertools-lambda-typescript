@@ -12,7 +12,7 @@ import {
 import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
 import { Context } from 'aws-lambda';
 import { Dimensions, EmfOutput } from '../../src/types';
-import { DEFAULT_NAMESPACE, MAX_DIMENSION_COUNT, MAX_METRICS_SIZE } from '../../src/constants';
+import { COLD_START_METRIC, DEFAULT_NAMESPACE, MAX_DIMENSION_COUNT, MAX_METRICS_SIZE } from '../../src/constants';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -1238,7 +1238,7 @@ describe('Class: Metrics', () => {
       // Assess
       expect(singleMetricSpy).toBeCalledTimes(1);
       expect(addMetricSpy).toBeCalledTimes(1);
-      expect(addMetricSpy).toBeCalledWith('ColdStart', MetricUnits.Count, 1);
+      expect(addMetricSpy).toBeCalledWith(COLD_START_METRIC, MetricUnits.Count, 1);
               
     });
 

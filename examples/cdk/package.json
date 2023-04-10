@@ -50,7 +50,7 @@
   "dependencies": {
     "@middy/core": "^3.6.2",
     "aws-cdk-lib": "^2.55.1",
-    "aws-sdk": "^2.1277.0",
+    "aws-sdk": "^2.1354.0",
     "constructs": "^10.1.194",
     "phin": "^3.7.0",
     "source-map-support": "^0.5.21"

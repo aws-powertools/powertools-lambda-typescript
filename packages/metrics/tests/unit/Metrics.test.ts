@@ -253,14 +253,15 @@ describe('Class: Metrics', () => {
 
     test('it should take consideration of defaultDimensions while throwing error if number of dimensions exceeds the maximum allowed', () => {
         
-      //Prepare
-      const metrics = new Metrics({ defaultDimensions: { 'environment': 'prod', 'foo': 'bar' } });
+      // Prepare
+      const defaultDimensions : { [key: string]: string } = { 'environment': 'dev', 'foo': 'bar' };
+      const metrics: Metrics = createMetrics({ namespace:'test', defaultDimensions });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
   
       // Act & Assess
       expect(() => {
-        for (let i = 0; i < 27; i++) {
+        for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(defaultDimensions).length); i++) {
           metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
         }
       }).toThrowError(RangeError);
@@ -453,17 +454,16 @@ describe('Class: Metrics', () => {
 
     test('it should consider default dimensions provided in constructor, while throwing error if number of dimensions exceeds the maximum allowed', () => {
           
-      //Prepare
-      const metrics = new Metrics({
-        defaultDimensions: {
-          'test-dimension': 'test-value',
-          'environment': 'dev'
-        }
-      });
+      // Prepare
+      const initialDefaultDimensions: { [key: string]: string } = {
+        'test-dimension': 'test-value',
+        'environment': 'dev'
+      };
+      const metrics: Metrics = createMetrics({ namespace: 'test', defaultDimensions: initialDefaultDimensions });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const defaultDimensions: { [key: string]: string } = {};
-      for (let i = 0; i < 27; i++) {
+      for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(initialDefaultDimensions).length); i++) {
         defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
       

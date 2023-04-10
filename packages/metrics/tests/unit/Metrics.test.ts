@@ -37,11 +37,11 @@ describe('Class: Metrics', () => {
     
     test('when called, it should store metrics', () => {
       
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const metricName = 'test_metric';
 
-      //Act
+      // Act
       metrics.addMetric(metricName, MetricUnits.Count, 1, MetricResolution.High);
 
       // Assess
@@ -59,10 +59,10 @@ describe('Class: Metrics', () => {
 
     test('when called with multiple metric name, it should store multiple metrics', () => {
       
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
-      //Act
+      // Act
       metrics.addMetric('test_metric-1', MetricUnits.Count, 1, MetricResolution.High);
       metrics.addMetric('test_metric-2', MetricUnits.Count, 3, MetricResolution.High);
       metrics.addMetric('test_metric-3', MetricUnits.Count, 6, MetricResolution.High);
@@ -94,10 +94,10 @@ describe('Class: Metrics', () => {
 
     test('when called without resolution, it should store metrics with standard resolution', () => {
    
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
-      //Act
+      // Act
       metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
       metrics.addMetric('test-metric-2', MetricUnits.Seconds, 3);
 
@@ -122,11 +122,11 @@ describe('Class: Metrics', () => {
 
     test('when trying to add metric with the same name multiple times, values should be grouped together in an array', () => {
 
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const metricName = 'test-metric';
 
-      //Act
+      // Act
       metrics.addMetric(metricName, MetricUnits.Count, 1);
       metrics.addMetric(metricName, MetricUnits.Count, 5);
       metrics.addMetric(metricName, MetricUnits.Count, 1);
@@ -147,7 +147,7 @@ describe('Class: Metrics', () => {
 
     test('when trying to add metric with the same name multiple times but with different unit, it will throw an error', () => {
 
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const metricName = 'test-metric';
 
@@ -161,12 +161,12 @@ describe('Class: Metrics', () => {
 
     test('it will publish metrics if stored metrics count has reached max metric size threshold', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const metricName = 'test-metric';
         
-      //Act
+      // Act
       for (let i = 0; i <= MAX_METRICS_SIZE; i++) {
         metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
       }
@@ -178,12 +178,12 @@ describe('Class: Metrics', () => {
 
     test('it will not publish metrics if stored metrics count has not reached max metric size threshold', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const metricName = 'test-metric';
         
-      //Act
+      // Act
       for (let i = 0; i < MAX_METRICS_SIZE; i++) {
         metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
       }
@@ -198,11 +198,11 @@ describe('Class: Metrics', () => {
       
     test('when called, it should clear stored metrics', () => {
           
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const metricName = 'test-metric';
           
-      //Act
+      // Act
       metrics.addMetric(metricName, MetricUnits.Count, 1);
       metrics.clearMetrics();
     
@@ -219,12 +219,12 @@ describe('Class: Metrics', () => {
     
     test('when called, it should store dimensions', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue= 'test-value';
   
-      //Act
+      // Act
       metrics.addDimension(dimensionName, dimensionValue);
   
       // Assess
@@ -238,7 +238,7 @@ describe('Class: Metrics', () => {
 
     test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
@@ -275,14 +275,14 @@ describe('Class: Metrics', () => {
       
     test('it should add multiple dimensions', () => {
       
-      //Prepare
+      // Prepare
       const dimensionsToBeAdded: { [key: string]: string } = {
         'test-dimension-1': 'test-value-1',
         'test-dimension-2': 'test-value-2',
       };
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
-      //Act
+      // Act
       metrics.addDimensions(dimensionsToBeAdded);
 
       // Assess
@@ -294,14 +294,14 @@ describe('Class: Metrics', () => {
 
     test('if same dimension is added again, it should update existing dimension value', () => {
       
-      //Prepare
+      // Prepare
       const dimensionsToBeAdded: { [key: string]: string } = {
         'test-dimension-1': 'test-value-1',
         'test-dimension-2': 'test-value-2',
       };
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
-      //Act
+      // Act
       metrics.addDimensions(dimensionsToBeAdded);
       metrics.addDimensions({ 'test-dimension-1': 'test-value-3' });
 
@@ -317,7 +317,7 @@ describe('Class: Metrics', () => {
 
     test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
@@ -335,7 +335,7 @@ describe('Class: Metrics', () => {
 
     test('it should successfully add up to maximum allowed dimensions without throwing error', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
@@ -358,14 +358,14 @@ describe('Class: Metrics', () => {
         
     test('it should set default dimensions when service name is not provided', () => {
           
-      //Prepare
+      // Prepare
       const defaultDimensionsToBeAdded = {
         'environment': 'prod',
         'foo': 'bar',
       };
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
-      //Act
+      // Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
@@ -377,7 +377,7 @@ describe('Class: Metrics', () => {
 
     test('it should set default dimensions when service name is provided', () => {
           
-      //Prepare
+      // Prepare
       const defaultDimensionsToBeAdded = {
         'environment': 'prod',
         'foo': 'bar',
@@ -385,7 +385,7 @@ describe('Class: Metrics', () => {
       const serviceName = 'test-service';
       const metrics: Metrics = createMetrics({ serviceName: serviceName });
     
-      //Act
+      // Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
@@ -397,7 +397,7 @@ describe('Class: Metrics', () => {
 
     test('it should add default dimensions', () => {
           
-      //Prepare
+      // Prepare
       const defaultDimensionsToBeAdded = {
         'environment': 'prod',
         'foo': 'bar',
@@ -409,7 +409,7 @@ describe('Class: Metrics', () => {
         defaultDimensions: { 'test-dimension': 'test-dimension-value' }
       });
     
-      //Act
+      // Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
@@ -421,7 +421,7 @@ describe('Class: Metrics', () => {
 
     test('it should update already added default dimensions values', () => {
           
-      //Prepare
+      // Prepare
       const defaultDimensionsToBeAdded = {
         'environment': 'prod',
         'foo': 'bar',
@@ -433,7 +433,7 @@ describe('Class: Metrics', () => {
         defaultDimensions: { 'environment': 'dev' }
       });
     
-      //Act
+      // Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
@@ -445,7 +445,7 @@ describe('Class: Metrics', () => {
 
     test('it should throw error if number of dimensions reaches the maximum allowed', () => {
           
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
@@ -492,11 +492,11 @@ describe('Class: Metrics', () => {
       
     test('it should clear all default dimensions', () => {
           
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.setDefaultDimensions({ 'foo': 'bar' });
     
-      //Act
+      // Act
       metrics.clearDefaultDimensions();
     
       // Assess
@@ -511,10 +511,10 @@ describe('Class: Metrics', () => {
 
     test('it should add metadata', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
   
-      //Act
+      // Act
       metrics.addMetadata('foo', 'bar');
   
       // Assess
@@ -526,10 +526,10 @@ describe('Class: Metrics', () => {
 
     test('it should update metadata value if added again', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
   
-      //Act
+      // Act
       metrics.addMetadata('foo', 'bar');
       metrics.addMetadata('foo', 'baz');
   
@@ -545,11 +545,11 @@ describe('Class: Metrics', () => {
     
     test('it should clear all dimensions', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.addDimension('foo', 'bar');
   
-      //Act
+      // Act
       metrics.clearDimensions();
   
       // Assess
@@ -561,11 +561,11 @@ describe('Class: Metrics', () => {
 
     test('it should not clear default dimensions', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ defaultDimensions: { 'environment': 'prod' } });
       metrics.addDimension('foo', 'bar');
   
-      //Act
+      // Act
       metrics.clearDimensions();
   
       // Assess
@@ -585,12 +585,12 @@ describe('Class: Metrics', () => {
     
     test('it should clear all metadata', () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.addMetadata('foo', 'bar');
       metrics.addMetadata('test', 'baz');
   
-      //Act
+      // Act
       metrics.clearMetadata();
   
       // Assess
@@ -606,7 +606,7 @@ describe('Class: Metrics', () => {
 
     test('it should return a single Metric object', () => {
 
-      //Prepare
+      // Prepare
       const defaultDimensions = {
         'foo': 'bar',
         'service': 'order'
@@ -617,7 +617,7 @@ describe('Class: Metrics', () => {
         singleMetric: false
       });
 
-      //Act
+      // Act
       const singleMetric = metrics.singleMetric();
       
       //Asses
@@ -635,13 +635,13 @@ describe('Class: Metrics', () => {
       
     test('it should set the throwOnEmptyMetrics flag to true', () => {
   
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
   
-      //Act
+      // Act
       metrics.throwOnEmptyMetrics();
 
-      //Assess
+      // Assess
       expect(metrics).toEqual(expect.objectContaining({
         shouldThrowOnEmptyMetrics: true
       }));
@@ -654,13 +654,13 @@ describe('Class: Metrics', () => {
       
     test('it should set the function name', () => {
   
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
   
-      //Act
+      // Act
       metrics.setFunctionName('test-function');
 
-      //Assess
+      // Assess
       expect(metrics).toEqual(expect.objectContaining({
         functionName: 'test-function'
       }));
@@ -676,7 +676,7 @@ describe('Class: Metrics', () => {
 
     test('it should log metrics', async () => {
 
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const addMetricSpy = jest.spyOn(metrics, 'addMetric');
@@ -707,7 +707,7 @@ describe('Class: Metrics', () => {
 
     test('it should capture cold start metrics, if passed in the options as true', async () => {
       
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const addMetricSpy = jest.spyOn(metrics, 'addMetric');
@@ -738,7 +738,7 @@ describe('Class: Metrics', () => {
 
     test('it should throw error if no metrics are added and throwOnEmptyMetrics is set to true', async () => {
         
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       class LambdaFunction implements LambdaInterface {
   
@@ -758,7 +758,7 @@ describe('Class: Metrics', () => {
 
     test('it should set default dimensions if passed in the options', async () => {
           
-      //Prepare
+      // Prepare
       const defaultDimensions = {
         'foo': 'bar',
         'service': 'order'
@@ -793,7 +793,7 @@ describe('Class: Metrics', () => {
 
     test('it should throw error if lambda handler throws any error', async () => {
           
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const errorMessage = 'Unexpected error occurred!';
       class LambdaFunction implements LambdaInterface {
@@ -820,22 +820,22 @@ describe('Class: Metrics', () => {
 
     test('it should print warning, if no namespace provided in constructor or environment variable', () => {
 
-      //Prepare
+      // Prepare
       process.env.POWERTOOLS_METRICS_NAMESPACE = '';
       const metrics: Metrics = new Metrics();
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      //Act
+      // Act
       metrics.serializeMetrics();
 
-      //Assess
+      // Assess
       expect(consoleWarnSpy).toBeCalledWith('Namespace should be defined, default used');
 
     });
 
     test('it should return right object compliant with Cloudwatch EMF', () => {
       
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({
         namespace: 'test-namespace',
         serviceName: 'test-service',
@@ -844,13 +844,13 @@ describe('Class: Metrics', () => {
         }
       });
 
-      //Act
+      // Act
       metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
       metrics.addMetric('successfulBooking', MetricUnits.Count, 3);
       metrics.addMetric('failedBooking', MetricUnits.Count, 1, MetricResolution.High);
       const loggedData = metrics.serializeMetrics();
 
-      //Assess
+      // Assess
       expect(loggedData).toEqual(
         {
           '_aws': {
@@ -888,31 +888,31 @@ describe('Class: Metrics', () => {
 
     test('it should log service dimension correctly when passed', () => { 
 
-      //Prepare
+      // Prepare
       const serviceName = 'test-service';
       const metrics: Metrics = createMetrics({ serviceName:serviceName });
 
-      //Act
+      // Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
-      //Assess
+      // Assess
       expect(loggedData.service).toEqual(serviceName);
 
     });
 
     test('it should log service dimension correctly from env var when not passed', () => {
 
-      //Prepare
+      // Prepare
       const serviceName = 'hello-world-service';
       process.env.POWERTOOLS_SERVICE_NAME = serviceName;
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
-      //Act
+      // Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
-      //Assess
+      // Assess
       expect(loggedData.service).toEqual(serviceName);
       delete process.env.POWERTOOLS_SERVICE_NAME;
       
@@ -920,18 +920,18 @@ describe('Class: Metrics', () => {
 
     test('it should log default dimensions correctly', () => {
         
-      //Prepare
+      // Prepare
       const additionalDimensions = {
         'foo': 'bar',
         'env': 'dev'
       };
       const metrics: Metrics = createMetrics({ defaultDimensions: additionalDimensions });
   
-      //Act
+      // Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
   
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
       expect(loggedData.service).toEqual(defaultServiceName);
       expect(loggedData.foo).toEqual(additionalDimensions.foo);
@@ -941,16 +941,16 @@ describe('Class: Metrics', () => {
 
     test('it should log additional dimensions correctly', () => {
           
-      //Prepare
+      // Prepare
       const additionalDimension = { name: 'metric2', value: 'metric2Value' };
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
-      //Act
+      // Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10, MetricResolution.High);
       metrics.addDimension(additionalDimension.name, additionalDimension.value);
       const loggedData = metrics.serializeMetrics();
     
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData.service).toEqual(defaultServiceName);
       expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
@@ -959,19 +959,19 @@ describe('Class: Metrics', () => {
 
     test('it should log additional bulk dimensions correctly', () => {
           
-      //Prepare
+      // Prepare
       const additionalDimensions: { [key: string]: string } = {
         metric2: 'metric2Value',
         metric3: 'metric3Value'
       };
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
-      //Act
+      // Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10, MetricResolution.High);
       metrics.addDimensions(additionalDimensions);
       const loggedData = metrics.serializeMetrics();
     
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(3);
       expect(loggedData.service).toEqual(defaultServiceName);
       Object.keys(additionalDimensions).forEach((key) => {
@@ -982,71 +982,71 @@ describe('Class: Metrics', () => {
 
     test('it should log metadata correctly', () => {
             
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       
-      //Act
+      // Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       metrics.addMetadata('foo', 'bar');
       const loggedData = metrics.serializeMetrics();
       
-      //Assess
+      // Assess
       expect(loggedData.foo).toEqual('bar');
       
     });
 
     test('it should throw error on empty metrics when throwOnEmptyMetrics is true', () => {
                 
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
         
-      //Act
+      // Act
       metrics.throwOnEmptyMetrics();
 
-      //Assess
+      // Assess
       expect(() => metrics.serializeMetrics()).toThrow('The number of metrics recorded must be higher than zero');
           
     });
 
     test('it should use default namespace when not provided', () => {
                   
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics();
           
-      //Act
+      // Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
           
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(DEFAULT_NAMESPACE);
           
     });
 
     test('it should use namespace provided in constructor', () => {
                       
-      //Prepare
+      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
               
-      //Act
+      // Act
       metrics.addMetric('test-metrics', MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
               
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(TEST_NAMESPACE);  
       
     });
 
     test('it should contain a metric value if added once', () => {
                             
-      //Prepare
+      // Prepare
       const metricName = 'test-metrics';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                     
-      //Act
+      // Act
       metrics.addMetric(metricName, MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
                     
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
       expect(loggedData['test-metrics']).toEqual(10);
           
@@ -1054,16 +1054,16 @@ describe('Class: Metrics', () => {
 
     test('it should convert metric value with the same name and unit to array if added multiple times', () => {
                               
-      //Prepare
+      // Prepare
       const metricName = 'test-metrics';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                       
-      //Act
+      // Act
       metrics.addMetric(metricName, MetricUnits.Count, 10);
       metrics.addMetric(metricName, MetricUnits.Count, 20);
       const loggedData = metrics.serializeMetrics();
                       
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
       expect(loggedData[metricName]).toEqual([ 10, 20 ]);
             
@@ -1071,17 +1071,17 @@ describe('Class: Metrics', () => {
 
     test('it should create multiple metric values if added multiple times', () => {
                                   
-      //Prepare
+      // Prepare
       const metricName1 = 'test-metrics';
       const metricName2 = 'test-metrics-2';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                           
-      //Act
+      // Act
       metrics.addMetric(metricName1, MetricUnits.Count, 10);
       metrics.addMetric(metricName2, MetricUnits.Seconds, 20);
       const loggedData = metrics.serializeMetrics();
                           
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(2);
       expect(loggedData[metricName1]).toEqual(10);
       expect(loggedData[metricName2]).toEqual(20);
@@ -1090,15 +1090,15 @@ describe('Class: Metrics', () => {
 
     test('it should not contain `StorageResolution` as key for non-high resolution metrics', () => {
                                         
-      //Prepare
+      // Prepare
       const metricName = 'test-metrics';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                                 
-      //Act
+      // Act
       metrics.addMetric(metricName, MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
                                 
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBeUndefined();  
 
@@ -1106,17 +1106,17 @@ describe('Class: Metrics', () => {
 
     test('it should contain `StorageResolution` as key & high metric resolution as value for high resolution metrics', () => {
                                         
-      //Prepare
+      // Prepare
       const metricName = 'test-metrics';
       const metricName2 = 'test-metrics-2';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                                 
-      //Act
+      // Act
       metrics.addMetric(metricName, MetricUnits.Count, 10);
       metrics.addMetric(metricName2, MetricUnits.Seconds, 10, MetricResolution.High);
       const loggedData = metrics.serializeMetrics();
                                 
-      //Assess
+      // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(2);
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBeUndefined();
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics[1].StorageResolution).toEqual(MetricResolution.High);  

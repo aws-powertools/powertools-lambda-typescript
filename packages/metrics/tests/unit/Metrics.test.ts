@@ -12,7 +12,7 @@ import {
 import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
 import { Context } from 'aws-lambda';
 import { Dimensions, EmfOutput } from '../../src/types';
-import { DEFAULT_NAMESPACE } from '../../src/constants';
+import { DEFAULT_NAMESPACE, MAX_METRICS_SIZE } from '../../src/constants';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -166,7 +166,7 @@ describe('Class: Metrics', () => {
       const metricName = 'test-metric';
         
       //Act
-      for (let i = 0; i <= 100; i++) {
+      for (let i = 0; i <= MAX_METRICS_SIZE; i++) {
         metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
       }
   
@@ -183,7 +183,7 @@ describe('Class: Metrics', () => {
       const metricName = 'test-metric';
         
       //Act
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < MAX_METRICS_SIZE; i++) {
         metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
       }
   

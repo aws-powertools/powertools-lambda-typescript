@@ -7,19 +7,22 @@
 import path from 'path';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
-import * as AWS from 'aws-sdk';
+import { XRayClient } from '@aws-sdk/client-xray';
+import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import { 
   getTraces,
   getInvocationSubsegment,
   splitSegmentsByName,
-  ParsedTrace,
   invokeAllTestCases,
   createTracerTestFunction,
   getFunctionArn,
   getFirstSubsegment,
 } from '../helpers/tracesUtils';
+import type {
+  ParsedTrace,
+} from '../helpers/traceUtils.types';
 import {
   generateUniqueName,
   isValidRuntimeKey,
@@ -53,7 +56,8 @@ const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Al
 const lambdaFunctionCodeFile = 'allFeatures.manual.test.functionCode.ts';
 const expectedServiceName = functionName; 
 
-const xray = new AWS.XRay();
+const xrayClient = new XRayClient({});
+const stsClient = new STSClient({});
 const invocations = 3;
 let sortedTraces: ParsedTrace[];
 
@@ -103,8 +107,8 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
     await invokeAllTestCases(functionName);
 
     // Retrieve traces from X-Ray for assertion
-    const lambdaFunctionArn = await getFunctionArn(functionName);
-    sortedTraces = await getTraces(xray, startTime, lambdaFunctionArn, invocations, 4);
+    const lambdaFunctionArn = await getFunctionArn(stsClient, functionName);
+    sortedTraces = await getTraces(xrayClient, startTime, lambdaFunctionArn, invocations, 4);
     
   }, SETUP_TIMEOUT);
 

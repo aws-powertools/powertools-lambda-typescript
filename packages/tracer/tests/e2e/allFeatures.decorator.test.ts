@@ -7,7 +7,8 @@
 import path from 'path';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
-import * as AWS from 'aws-sdk';
+import { XRayClient } from '@aws-sdk/client-xray';
+import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import {
@@ -85,7 +86,8 @@ const uuidFunction4 = v4();
 const functionNameWithCaptureResponseFalse = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction4, runtime, 'AllFeatures-Decorator-CaptureResponseFalse');
 const serviceNameWithCaptureResponseFalse = functionNameWithCaptureResponseFalse;
 
-const xray = new AWS.XRay();
+const xrayClient = new XRayClient({});
+const stsClient = new STSClient({});
 const invocations = 3;
 
 const integTestApp = new App();
@@ -192,7 +194,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should generate all custom traces', async () => {
     
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
+    const tracesWhenAllFlagsEnabled = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled), invocations, 4);
     
     expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
 
@@ -239,7 +241,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
   }, TEST_CASE_TIMEOUT);
   
   it('should have correct annotations and metadata', async () => {
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
+    const tracesWhenAllFlagsEnabled = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled), invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       const trace = tracesWhenAllFlagsEnabled[i];
@@ -273,7 +275,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should not capture error nor response when the flags are false', async () => {
     
-    const tracesWithNoCaptureErrorOrResponse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithNoCaptureErrorOrResponse), invocations, 4);
+    const tracesWithNoCaptureErrorOrResponse = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithNoCaptureErrorOrResponse), invocations, 4);
     
     expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocations);
 
@@ -325,7 +327,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should not capture response when the decorator\'s captureResponse is set to false', async () => {
 
-    const tracesWithCaptureResponseFalse = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCaptureResponseFalse), invocations, 4);
+    const tracesWithCaptureResponseFalse = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithCaptureResponseFalse), invocations, 4);
 
     expect(tracesWithCaptureResponseFalse.length).toBe(invocations);
 
@@ -379,7 +381,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   it('should not capture any custom traces when disabled', async () => {
     const expectedNoOfTraces = 2;
-    const tracesWithTracerDisabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithTracerDisabled), invocations, expectedNoOfTraces);
+    const tracesWithTracerDisabled = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithTracerDisabled), invocations, expectedNoOfTraces);
     
     expect(tracesWithTracerDisabled.length).toBe(invocations);
 

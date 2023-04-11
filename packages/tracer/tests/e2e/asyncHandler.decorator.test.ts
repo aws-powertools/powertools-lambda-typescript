@@ -7,7 +7,8 @@
 import path from 'path';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
-import * as AWS from 'aws-sdk';
+import { XRayClient } from '@aws-sdk/client-xray';
+import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import {
@@ -65,7 +66,8 @@ const uuidFunction2 = v4();
 const functionNameWithCustomSubsegmentNameInMethod = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction2, runtime, 'AllFeatures-Decorator-Async-CustomSubsegmentNameInMethod');
 const serviceNameWithCustomSubsegmentNameInMethod = functionNameWithCustomSubsegmentNameInMethod;
 
-const xray = new AWS.XRay();
+const xrayClient = new XRayClient({});
+const stsClient = new STSClient({});
 const invocations = 3;
 
 const integTestApp = new App();
@@ -141,7 +143,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
 
   it('should generate all custom traces', async () => {
     
-    const tracesWhenAllFlagsEnabled = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
+    const tracesWhenAllFlagsEnabled = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled), invocations, 4);
     
     expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
 
@@ -188,7 +190,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
   }, TEST_CASE_TIMEOUT);
 
   it('should have correct annotations and metadata', async () => {
-    const traces = await getTraces(xray, startTime, await getFunctionArn(functionNameWithAllFlagsEnabled), invocations, 4);
+    const traces = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled), invocations, 4);
 
     for (let i = 0; i < invocations; i++) {
       const trace = traces[i];
@@ -222,7 +224,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
 
   it('should have a custom name as the subsegment\'s name for the decorated method', async () => {
     
-    const tracesWhenCustomSubsegmentNameInMethod = await getTraces(xray, startTime, await getFunctionArn(functionNameWithCustomSubsegmentNameInMethod), invocations, 4);
+    const tracesWhenCustomSubsegmentNameInMethod = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithCustomSubsegmentNameInMethod), invocations, 4);
     
     expect(tracesWhenCustomSubsegmentNameInMethod.length).toBe(invocations);
 

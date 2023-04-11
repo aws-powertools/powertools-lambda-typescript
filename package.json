@@ -43,8 +43,8 @@
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
   "devDependencies": {
-    "@aws-cdk/cloudformation-diff": "^2.55.0",
-    "@aws-cdk/cx-api": "^2.55.0",
+    "@aws-cdk/cloudformation-diff": "^2.73.0",
+    "@aws-cdk/cx-api": "^2.73.0",
     "@middy/core": "^3.6.2",
     "@types/aws-lambda": "^8.10.109",
     "@types/jest": "^29.2.4",
@@ -53,10 +53,9 @@
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
     "archiver": "^5.3.1",
-    "aws-cdk": "^2.55.0",
-    "aws-cdk-lib": "^2.55.0",
-    "aws-sdk": "^2.1276.0",
-    "cdk-assets": "^2.55.0",
+    "aws-cdk": "^2.73.0",
+    "aws-cdk-lib": "^2.73.0",
+    "cdk-assets": "^2.72.1",
     "constructs": "^10.1.190",
     "esbuild": "^0.16.7",
     "eslint": "^8.29.0",
@@ -82,5 +81,8 @@
   ],
   "engines": {
     "node": ">=14"
+  },
+  "dependencies": {
+    "D": "^1.0.0"
   }
 }

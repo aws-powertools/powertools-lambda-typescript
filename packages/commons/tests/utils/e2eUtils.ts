@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 /** 
  * E2E utils is used by e2e tests. They are helper function that calls either CDK or SDK
  * to interact with services. 
@@ -12,11 +9,12 @@ import {
 } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import * as AWS from 'aws-sdk';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { fromUtf8 } from '@aws-sdk/util-utf8-node';
 
 import { InvocationLogs } from './InvocationLogs';
 
-const lambdaClient = new AWS.Lambda();
+const lambdaClient = new LambdaClient({});
 
 const testRuntimeKeys = [ 'nodejs14x', 'nodejs16x', 'nodejs18x' ];
 export type TestRuntimesKey = typeof testRuntimeKeys[number];
@@ -76,15 +74,15 @@ export const invokeFunction = async (functionName: string, times: number = 1, in
 
   const promiseFactory = (index?: number): Promise<void> => {
     const invokePromise = lambdaClient
-      .invoke({
+      .send(new InvokeCommand({
         FunctionName: functionName,
+        InvocationType: 'RequestResponse',
         LogType: 'Tail', // Wait until execution completes and return all logs
-        Payload: JSON.stringify({
+        Payload: fromUtf8(JSON.stringify({
           invocation: index,
           ...payload
-        }),
-      })
-      .promise()
+        })),
+      }))
       .then((response) => {
         if (response?.LogResult) {
           invocationLogs.push(new InvocationLogs(response?.LogResult));

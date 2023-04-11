@@ -28,16 +28,16 @@
     "*.ts": "npm run lint-fix"
   },
   "devDependencies": {
-    "@aws-lambda-powertools/logger": "^1.7.0",
-    "@aws-lambda-powertools/metrics": "^1.7.0",
-    "@aws-lambda-powertools/tracer": "^1.7.0",
+    "@aws-lambda-powertools/logger": "^1.8.0",
+    "@aws-lambda-powertools/metrics": "^1.8.0",
+    "@aws-lambda-powertools/tracer": "^1.8.0",
     "@aws-sdk/lib-dynamodb": "^3.231.0",
     "@types/aws-lambda": "^8.10.109",
     "@types/jest": "^29.2.4",
     "@types/node": "18.11.17",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
-    "aws-cdk": "^2.55.1",
+    "aws-cdk": "^2.73.0",
     "esbuild": "^0.16.9",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^3.5.2",
@@ -49,8 +49,7 @@
   },
   "dependencies": {
     "@middy/core": "^3.6.2",
-    "aws-cdk-lib": "^2.55.1",
-    "aws-sdk": "^2.1277.0",
+    "aws-cdk-lib": "^2.73.0",
     "constructs": "^10.1.194",
     "phin": "^3.7.0",
     "source-map-support": "^0.5.21"

@@ -79,16 +79,16 @@ class Lambda implements LambdaInterface {
       const data = await docClient.send(new GetCommand({
         TableName: tableName,
         Key: {
-          id: event.pathParameters.id 
+          id: event.pathParameters.id
         }
       }));
       const item = data.Item;
-      
+
       logger.info(`Response ${event.path}`, {
         statusCode: 200,
         body: item,
       });
-      
+
       return {
         statusCode: 200,
         body: JSON.stringify(item)
@@ -96,7 +96,7 @@ class Lambda implements LambdaInterface {
     } catch (err) {
       tracer.addErrorAsMetadata(err as Error);
       logger.error('Error reading from table. ' + err);
-      
+
       return {
         statusCode: 500,
         body: JSON.stringify({ 'error': 'Error reading from table.' })

@@ -8,7 +8,6 @@ import { ContextExamples as dummyContext, Events as dummyEvent, LambdaInterface 
 import { Tracer } from '../../src';
 import { Callback, Context } from 'aws-lambda/handler';
 import { Segment, setContextMissingStrategy, Subsegment } from 'aws-xray-sdk-core';
-import { DynamoDB } from 'aws-sdk';
 import { ProviderServiceInterface } from '../../src/provider';
 
 type CaptureAsyncFuncMock = jest.SpyInstance<unknown, [name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment]>;
@@ -1308,44 +1307,47 @@ describe('Class: Tracer', () => {
       const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
 
       // Act
-      const client = tracer.captureAWSClient(new DynamoDB());
+      tracer.captureAWSClient({});
 
       // Assess
       expect(captureAWSClientSpy).toBeCalledTimes(0);
-      expect(client).toBeInstanceOf(DynamoDB);
     
     });
 
-    test('when called with a base AWS SDK v2 client, it returns it back instrumented', () => {
+    test('when called with a base AWS SDK v2 client, it calls the provider method to patch it', () => {
     
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
+      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient')
+        .mockImplementation(() => null);
 
       // Act
-      const client = tracer.captureAWSClient(new DynamoDB());
+      tracer.captureAWSClient({});
 
       // Assess
       expect(captureAWSClientSpy).toBeCalledTimes(1);
-      expect(captureAWSClientSpy).toBeCalledWith(client);
-      expect(client).toBeInstanceOf(DynamoDB);
+      expect(captureAWSClientSpy).toBeCalledWith({});
     
     });
 
-    test('when called with a complex AWS SDK v2 client, it returns it back instrumented', () => {
+    test('when called with a complex AWS SDK v2 client, it calls the provider method to patch it', () => {
     
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient');
+      const captureAWSClientSpy = jest.spyOn(tracer.provider, 'captureAWSClient')
+        .mockImplementationOnce(
+          () => { throw new Error('service.customizeRequests is not a function'); }
+        )
+        .mockImplementation(() => null);
 
       // Act
-      const client = tracer.captureAWSClient(new DynamoDB.DocumentClient());
+      // This is the shape of a DocumentClient from the AWS SDK v2
+      tracer.captureAWSClient({ service: {} });
 
       // Assess
       expect(captureAWSClientSpy).toBeCalledTimes(2);
-      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, client);
-      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, (client as unknown as DynamoDB & { service: DynamoDB }).service);
-      expect(client).toBeInstanceOf(DynamoDB.DocumentClient);
+      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, { service: {} });
+      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, {});
     
     });
 

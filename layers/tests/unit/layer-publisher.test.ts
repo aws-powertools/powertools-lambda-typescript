@@ -32,9 +32,9 @@ describe('Class: LayerPublisherStack', () => {
         'nodejs18.x'
       ],
       LicenseInfo: 'MIT-0',
-      CompatibleArchitectures: [
+      /* CompatibleArchitectures: [
         'x86_64',
-      ],
+      ], */
       Description: 'AWS Lambda Powertools for TypeScript version 1.0.1',
       LayerName: 'AWSLambdaPowertoolsTypeScript',
     });

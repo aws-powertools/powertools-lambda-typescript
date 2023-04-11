@@ -4,6 +4,7 @@ import { logger, tracer, metrics } from './common/powertools';
 import { docClient } from './common/dynamodb-client';
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import { default as request } from 'phin';
+import type { Subsegment } from 'aws-xray-sdk-core';
 
 /**
  *
@@ -27,10 +28,12 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
   // Tracer: Get facade segment created by AWS Lambda
   const segment = tracer.getSegment();
 
-  // Tracer: Create subsegment for the function & set it as active
-  const handlerSegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
-  tracer.setSegment(handlerSegment);
-
+  let handlerSegment: Subsegment | undefined;
+  if (segment) {
+    // Tracer: Create subsegment for the function & set it as active
+    handlerSegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
+    tracer.setSegment(handlerSegment);
+  }
   // Tracer: Annotate the subsegment with the cold start & serviceName
   tracer.annotateColdStart();
   tracer.addServiceNameAnnotation();
@@ -79,7 +82,7 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
     await docClient.send(new PutCommand({
       TableName: tableName,
       Item: {
-        id, 
+        id,
         name
       }
     }));
@@ -96,15 +99,17 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
   } catch (err) {
     tracer.addErrorAsMetadata(err as Error);
     logger.error('Error writing data to table. ' + err);
-    
+
     return {
       statusCode: 500,
       body: JSON.stringify({ 'error': 'Error writing data to table.' })
     };
   } finally {
-    // Tracer: Close subsegment (the AWS Lambda one is closed automatically)
-    handlerSegment.close(); // (## index.handler)
-    // Tracer: Set the facade segment as active again (the one created by AWS Lambda)
-    tracer.setSegment(segment);
+    if (handlerSegment && segment) {
+      // Tracer: Close subsegment (the AWS Lambda one is closed automatically)
+      handlerSegment.close();
+      // Tracer: Set the facade segment as active again (the one created by AWS Lambda)
+      tracer.setSegment(segment);
+    }
   }
 };

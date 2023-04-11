@@ -1,16 +1,10 @@
-import { getFirstSubsegment, ParsedDocument } from './tracesUtils';
+import { getFirstSubsegment } from './tracesUtils';
+import type { AssertAnnotationParams, ParsedDocument } from './traceUtils.types';
 
-export interface AssertAnnotationParams {
-  annotations: ParsedDocument['annotations']
-  isColdStart: boolean
-  expectedServiceName: string
-  expectedCustomAnnotationKey: string
-  expectedCustomAnnotationValue: string | number | boolean
-}
 export const assertAnnotation = (params: AssertAnnotationParams): void => {
-  const { 
-    annotations, 
-    isColdStart, 
+  const {
+    annotations,
+    isColdStart,
     expectedServiceName,
     expectedCustomAnnotationKey,
     expectedCustomAnnotationValue

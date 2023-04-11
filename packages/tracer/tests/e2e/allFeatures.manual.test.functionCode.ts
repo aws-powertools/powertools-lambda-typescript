@@ -2,6 +2,7 @@ import { Tracer } from '../../src';
 import { Context } from 'aws-lambda';
 import axios from 'axios';
 import AWS from 'aws-sdk';
+import type { Subsegment } from 'aws-xray-sdk-core';
 
 const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
 const customAnnotationKey = process.env.EXPECTED_CUSTOM_ANNOTATION_KEY ?? 'myAnnotation';
@@ -22,8 +23,11 @@ const dynamoDB = tracer.captureAWSClient(new AWS.DynamoDB.DocumentClient());
 
 export const handler = async (event: CustomEvent, _context: Context): Promise<void> => {
   const segment = tracer.getSegment();
-  const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
-  tracer.setSegment(subsegment);
+  let subsegment: Subsegment | undefined;
+  if (segment) {
+    subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
+    tracer.setSegment(subsegment);
+  }
 
   tracer.annotateColdStart();
   tracer.addServiceNameAnnotation();
@@ -47,7 +51,9 @@ export const handler = async (event: CustomEvent, _context: Context): Promise<vo
     tracer.addErrorAsMetadata(err as Error);
     throw err;
   } finally {
-    subsegment.close();
-    tracer.setSegment(segment);
+    if (segment && subsegment) {
+      subsegment.close();
+      tracer.setSegment(segment);
+    }
   }
 };

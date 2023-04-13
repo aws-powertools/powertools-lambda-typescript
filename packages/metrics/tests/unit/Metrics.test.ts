@@ -3,7 +3,6 @@
  *
  * @group unit/metrics/class
  */
-
 import {
   LambdaInterface,
   ContextExamples as dummyContext,
@@ -684,6 +683,8 @@ describe('Class: Metrics', () => {
       class LambdaFunction implements LambdaInterface {
 
         @metrics.logMetrics()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           metrics.addMetric(testMetric, MetricUnits.Count, 1);
           
@@ -715,6 +716,8 @@ describe('Class: Metrics', () => {
       class LambdaFunction implements LambdaInterface {
 
         @metrics.logMetrics({ captureColdStartMetric: true })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           metrics.addMetric(testMetric, MetricUnits.Count, 1);
           
@@ -743,6 +746,8 @@ describe('Class: Metrics', () => {
       class LambdaFunction implements LambdaInterface {
   
         @metrics.logMetrics({ throwOnEmptyMetrics: true })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           return expectedReturnValue;
         }
@@ -771,6 +776,8 @@ describe('Class: Metrics', () => {
       class LambdaFunction implements LambdaInterface {
     
         @metrics.logMetrics({ defaultDimensions })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           metrics.addMetric(testMetric, MetricUnits.Count, 1);
           
@@ -799,6 +806,8 @@ describe('Class: Metrics', () => {
       class LambdaFunction implements LambdaInterface {
     
         @metrics.logMetrics()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
           throw new Error(errorMessage);
         }

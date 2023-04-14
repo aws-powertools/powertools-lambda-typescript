@@ -1,5 +1,12 @@
-import type { GetOptionsInterface } from './BaseProvider';
-import type { SecretsManagerClient, SecretsManagerClientConfig, GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
+import type {
+  GetOptionsInterface,
+  TransformOptions
+} from './BaseProvider';
+import type {
+  SecretsManagerClient,
+  SecretsManagerClientConfig,
+  GetSecretValueCommandInput
+} from '@aws-sdk/client-secrets-manager';
 
 /**
  * Base interface for SecretsProviderOptions.
@@ -45,11 +52,47 @@ type SecretsProviderOptions = SecretsProviderOptionsWithClientConfig | SecretsPr
  * @property {GetSecretValueCommandInput} sdkOptions - Options to pass to the underlying SDK.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  */
-interface SecretsGetOptionsInterface extends GetOptionsInterface {
+interface SecretsGetOptions extends GetOptionsInterface {
+  /**
+   * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetSecretValueCommandInput`.
+   */
   sdkOptions?: Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>
+  transform?: Exclude<TransformOptions, 'auto'>
 }
+
+interface SecretsGetOptionsTransformJson extends SecretsGetOptions {
+  transform: 'json'
+}
+
+interface SecretsGetOptionsTransformBinary extends SecretsGetOptions {
+  transform: 'binary'
+}
+
+interface SecretsGetOptionsTransformNone extends SecretsGetOptions {
+  transform?: never
+}
+
+type SecretsGetOptionsUnion =
+  SecretsGetOptionsTransformNone | 
+  SecretsGetOptionsTransformJson |
+  SecretsGetOptionsTransformBinary |
+  undefined;
+
+/**
+ * Generic output type for the SecretsProvider get method.
+ */
+type SecretsGetOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
+  undefined extends ExplicitUserProvidedType ? 
+    undefined extends InferredFromOptionsType ? string | Uint8Array :
+      InferredFromOptionsType extends SecretsGetOptionsTransformNone ? string | Uint8Array :
+        InferredFromOptionsType extends SecretsGetOptionsTransformBinary ? string :
+          InferredFromOptionsType extends SecretsGetOptionsTransformJson ? Record<string, unknown> :
+            never
+    : ExplicitUserProvidedType;
 
 export type {
   SecretsProviderOptions,
-  SecretsGetOptionsInterface,
+  SecretsGetOptions,
+  SecretsGetOutput,
+  SecretsGetOptionsUnion,
 };

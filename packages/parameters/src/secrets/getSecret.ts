@@ -1,6 +1,10 @@
 import { DEFAULT_PROVIDERS } from '../BaseProvider';
 import { SecretsProvider } from './SecretsProvider';
-import type { SecretsGetOptionsInterface } from '../types/SecretsProvider';
+import type {
+  SecretsGetOptions,
+  SecretsGetOutput,
+  SecretsGetOptionsUnion,
+} from '../types/SecretsProvider';
 
 /**
  * ## Intro
@@ -100,15 +104,23 @@ import type { SecretsGetOptionsInterface } from '../types/SecretsProvider';
  *
  *
  * @param {string} name - The name of the secret to retrieve
- * @param {SecretsGetOptionsInterface} options - Options to configure the provider
+ * @param {SecretsGetOptions} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
-const getSecret = async (name: string, options?: SecretsGetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>> => {
+const getSecret = async <
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType extends SecretsGetOptionsUnion | undefined = SecretsGetOptionsUnion
+>(
+  name: string,
+  options?: InferredFromOptionsType & SecretsGetOptions
+): Promise<SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('secrets')) {
     DEFAULT_PROVIDERS.secrets = new SecretsProvider();
   }
-  
-  return DEFAULT_PROVIDERS.secrets.get(name, options);
+
+  return (
+    DEFAULT_PROVIDERS.secrets as SecretsProvider
+  ).get(name, options) as Promise<SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
 };
 
 export {

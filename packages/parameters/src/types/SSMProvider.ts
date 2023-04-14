@@ -79,6 +79,12 @@ interface SSMGetOptionsTransformNone extends SSMGetOptions {
   transform?: never
 }
 
+type SSMGetOptionsUnion =
+  SSMGetOptionsTransformJson |
+  SSMGetOptionsTransformBinary |
+  SSMGetOptionsTransformNone |
+  undefined;
+
 /**
  * Generic output type for the SSMProvider get method.
  */
@@ -160,13 +166,13 @@ type SSMGetMultipleOutput<T = undefined, O = undefined> =
 /**
  * Options for the SSMProvider getParametersByName method.
  *
- * @interface SSMGetParametersByNameOptionsInterface
+ * @interface SSMGetParametersByNameOptions
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  * @property {boolean} decrypt - If true, the parameter will be decrypted.
  * @property {boolean} throwOnError - If true, the method will throw an error if one of the parameters cannot be fetched. Otherwise it will aggregate the errors under an _errors key in the response.
  */
-interface SSMGetParametersByNameOptionsInterface {
+interface SSMGetParametersByNameOptions {
   maxAge?: number
   throwOnError?: boolean
   decrypt?: boolean
@@ -177,8 +183,8 @@ interface SSMGetParametersByNameOptionsInterface {
  * Output type for the SSMProvider splitBatchAndDecryptParameters method.
  */
 type SSMSplitBatchAndDecryptParametersOutputType = {
-  parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptionsInterface>
-  parametersToDecrypt: Record<string, SSMGetParametersByNameOptionsInterface>
+  parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptions>
+  parametersToDecrypt: Record<string, SSMGetParametersByNameOptions>
 };
 
 /**
@@ -194,7 +200,7 @@ interface SSMGetParametersByNameOutputInterface {
  */
 type SSMGetParametersByNameFromCacheOutputType = {
   cached: Record<string, string | Record<string, unknown>>
-  toFetch: Record<string, SSMGetParametersByNameOptionsInterface>
+  toFetch: Record<string, SSMGetParametersByNameOptions>
 };
 
 type SSMGetParametersByNameOutput<T = undefined> = 
@@ -205,11 +211,12 @@ type SSMGetParametersByNameOutput<T = undefined> =
 export type {
   SSMProviderOptions,
   SSMGetOptions,
+  SSMGetOptionsUnion,
   SSMGetOutput,
   SSMGetMultipleOptions,
   SSMGetMultipleOptionsUnion,
   SSMGetMultipleOutput,
-  SSMGetParametersByNameOptionsInterface,
+  SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface,
   SSMGetParametersByNameFromCacheOutputType,

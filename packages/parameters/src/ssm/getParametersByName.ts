@@ -1,6 +1,6 @@
 import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
 import type {
-  SSMGetParametersByNameOptionsInterface,
+  SSMGetParametersByNameOptions,
   SSMGetParametersByNameOutput,
 } from '../types/SSMProvider';
 
@@ -157,21 +157,21 @@ import type {
  * 
  * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
  * 
- * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - The path of the parameters to retrieve
- * @param {SSMGetParametersByNameOptionsInterface} options - Options to configure the provider
+ * @param {Record<string, SSMGetParametersByNameOptions>} parameters - The path of the parameters to retrieve
+ * @param {SSMGetParametersByNameOptions} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
-const getParametersByName = <T = undefined>(
-  parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
-  options?: SSMGetParametersByNameOptionsInterface
-): Promise<SSMGetParametersByNameOutput<T>> => {
+const getParametersByName = async <ExplicitUserProvidedType = undefined>(
+  parameters: Record<string, SSMGetParametersByNameOptions>,
+  options?: SSMGetParametersByNameOptions
+): Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
   return (
     DEFAULT_PROVIDERS.ssm as SSMProvider
-  ).getParametersByName(parameters, options) as Promise<SSMGetParametersByNameOutput<T>>;
+  ).getParametersByName(parameters, options) as Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>>;
 };
 
 export {

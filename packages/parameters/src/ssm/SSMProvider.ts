@@ -22,7 +22,7 @@ import type {
   SSMGetMultipleOutput,
   SSMGetParametersByNameOutput,
   SSMGetParametersByNameOutputInterface,
-  SSMGetParametersByNameOptionsInterface,
+  SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
 } from '../types/SSMProvider';
@@ -319,11 +319,11 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetOptions} options - Options to configure the provider
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async get<T = undefined, O extends SSMGetOptions | undefined = SSMGetOptions>(
+  public async get<ExplicitUserProvidedType = undefined, InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions>(
     name: string,
-    options?: O & SSMGetOptions
-  ): Promise<SSMGetOutput<T, O> | undefined> {
-    return super.get(name, options) as Promise<SSMGetOutput<T, O> | undefined>;
+    options?: InferredFromOptionsType & SSMGetOptions
+  ): Promise<SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> {
+    return super.get(name, options) as Promise<SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
   }
 
   /**
@@ -356,11 +356,11 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetMultipleOptions} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async getMultiple<T = undefined, O extends SSMGetMultipleOptionsUnion | undefined = undefined>(
+  public async getMultiple<ExplicitUserProvidedType = undefined, InferredFromOptionsType extends SSMGetMultipleOptionsUnion | undefined = undefined>(
     path: string,
-    options?: O & SSMGetMultipleOptions
-  ): Promise<SSMGetMultipleOutput<T, O> | undefined> {
-    return super.getMultiple(path, options) as Promise<SSMGetMultipleOutput<T, O> | undefined>;
+    options?: InferredFromOptionsType & SSMGetMultipleOptions
+  ): Promise<SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> {
+    return super.getMultiple(path, options) as Promise<SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
   }
 
   /**
@@ -409,19 +409,21 @@ class SSMProvider extends BaseProvider {
    *                                                                     └────────────────────┘
    * ```
    *
-   * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - Object containing parameter names and any optional overrides
-   * @param {SSMGetParametersByNameOptionsInterface} options - Options to configure the retrieval
+   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - Object containing parameter names and any optional overrides
+   * @param {SSMGetParametersByNameOptions} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async getParametersByName<T = undefined>(
-    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
-    options?: SSMGetParametersByNameOptionsInterface
-  ): Promise<SSMGetParametersByNameOutput<T>> {
-    const configs = { ...{
-      decrypt: this.resolveDecryptionConfigValue({}) || false,
-      maxAge: DEFAULT_MAX_AGE_SECS,
-      throwOnError: true,
-    }, ...options };
+  public async getParametersByName<ExplicitUserProvidedType = undefined>(
+    parameters: Record<string, SSMGetParametersByNameOptions>,
+    options?: SSMGetParametersByNameOptions
+  ): Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>> {
+    const configs = {
+      ...{
+        decrypt: this.resolveDecryptionConfigValue({}) || false,
+        maxAge: DEFAULT_MAX_AGE_SECS,
+        throwOnError: true,
+      }, ...options
+    };
 
     let response: Record<string, unknown> = {};
 
@@ -464,7 +466,7 @@ class SSMProvider extends BaseProvider {
       }
     }
 
-    return response as unknown as Promise<SSMGetParametersByNameOutput<T>>;
+    return response as unknown as Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>>;
   }
 
   /**
@@ -537,12 +539,12 @@ class SSMProvider extends BaseProvider {
   /**
    * Retrieve multiple items by name from AWS Systems Manager.
    *
-   * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
+   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
    * @param {throwOnError} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    * @param {boolean} decrypt - Whether to decrypt the parameters or not
    */
   protected async _getParametersByName(
-    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    parameters: Record<string, SSMGetParametersByNameOptions>,
     throwOnError: boolean,
     decrypt: boolean
   ): Promise<SSMGetParametersByNameOutputInterface> {
@@ -570,12 +572,12 @@ class SSMProvider extends BaseProvider {
   /**
    * Slice batch and fetch parameters using GetPrameters API by max permissible batch size
    *
-   * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
+   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
    * @param {throwOnError} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    * @param {boolean} decrypt - Whether to decrypt the parameters or not
    */
   protected async getParametersBatchByName(
-    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    parameters: Record<string, SSMGetParametersByNameOptions>,
     throwOnError: boolean,
     decrypt: boolean
   ): Promise<SSMGetParametersByNameOutputInterface> {
@@ -610,13 +612,13 @@ class SSMProvider extends BaseProvider {
   /**
    * Fetch each parameter from batch that hasn't expired from cache
    *
-   * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
+   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
    */
   protected async getParametersByNameFromCache(
-    parameters: Record<string, SSMGetParametersByNameOptionsInterface>
+    parameters: Record<string, SSMGetParametersByNameOptions>
   ): Promise<SSMGetParametersByNameFromCacheOutputType> {
     const cached: Record<string, string | Record<string, unknown>> = {};
-    const toFetch: Record<string, SSMGetParametersByNameOptionsInterface> = {};
+    const toFetch: Record<string, SSMGetParametersByNameOptions> = {};
 
     for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
       const cacheKey = [ parameterName, parameterOptions.transform ].toString();
@@ -638,12 +640,12 @@ class SSMProvider extends BaseProvider {
   /**
    * Slice object into chunks of max permissible batch size and fetch parameters
    *
-   * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
+   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    * @param {boolean} decrypt - Whether to decrypt the parameters or not
    */
   protected async getParametersByNameInChunks(
-    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    parameters: Record<string, SSMGetParametersByNameOptions>,
     throwOnError: boolean,
     decrypt: boolean
   ): Promise<SSMGetParametersByNameOutputInterface> {
@@ -663,7 +665,7 @@ class SSMProvider extends BaseProvider {
       acc[chunkIndex][parameterName] = parameterOptions;
 
       return acc;
-    }, [] as Record<string, SSMGetParametersByNameOptionsInterface>[]);
+    }, [] as Record<string, SSMGetParametersByNameOptions>[]);
 
     // Fetch each chunk and merge results
     for (const chunk of chunks) {
@@ -685,11 +687,11 @@ class SSMProvider extends BaseProvider {
   /**
    * Fetch parameters by name while also decrypting them
    *
-   * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
+   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
   protected async getParametersByNameWithDecryptOption(
-    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    parameters: Record<string, SSMGetParametersByNameOptions>,
     throwOnError: boolean
   ): Promise<SSMGetParametersByNameOutputInterface> {
     const response: Record<string, unknown> = {};
@@ -752,15 +754,15 @@ class SSMProvider extends BaseProvider {
   /**
    * Split parameters that can be fetched by GetParameters vs GetParameter.
    *
-   * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
-   * @param {SSMGetParametersByNameOptionsInterface} configs - The configs passed down
+   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
+   * @param {SSMGetParametersByNameOptions} configs - The configs passed down
    */
   protected static splitBatchAndDecryptParameters(
-    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
-    configs: SSMGetParametersByNameOptionsInterface
+    parameters: Record<string, SSMGetParametersByNameOptions>,
+    configs: SSMGetParametersByNameOptions
   ): SSMSplitBatchAndDecryptParametersOutputType {
-    const parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptionsInterface> = {};
-    const parametersToDecrypt: Record<string, SSMGetParametersByNameOptionsInterface> = {};
+    const parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptions> = {};
+    const parametersToDecrypt: Record<string, SSMGetParametersByNameOptions> = {};
 
     for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
       const overrides = parameterOptions;
@@ -807,12 +809,12 @@ class SSMProvider extends BaseProvider {
    * Transform and cache the response from GetParameters API call
    *
    * @param {GetParametersCommandOutput} response - The response from the GetParameters API call
-   * @param {Record<string, SSMGetParametersByNameOptionsInterface>} parameters - An object of parameter names and their options
+   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
   protected transformAndCacheGetParametersResponse(
     response: GetParametersCommandOutput,
-    parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
+    parameters: Record<string, SSMGetParametersByNameOptions>,
     throwOnError: boolean
   ): Record<string, unknown> {
     const processedParameters: Record<string, unknown> = {};

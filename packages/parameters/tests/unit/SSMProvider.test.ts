@@ -16,7 +16,7 @@ import 'aws-sdk-client-mock-jest';
 import type {
   SSMProviderOptions,
   SSMGetParametersByNameFromCacheOutputType,
-  SSMGetParametersByNameOptionsInterface,
+  SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface
 } from '../../src/types/SSMProvider';
@@ -121,7 +121,7 @@ describe('Class: SSMProvider', () => {
 
       // Prepare
       const provider = new SSMProviderMock();
-      const parameters: Record<string, SSMGetParametersByNameOptionsInterface> = {
+      const parameters: Record<string, SSMGetParametersByNameOptions> = {
         '/foo/bar': {
           maxAge: 1000,
         },
@@ -156,7 +156,7 @@ describe('Class: SSMProvider', () => {
 
       // Prepare
       const provider = new SSMProviderMock();
-      const parameters: Record<string, SSMGetParametersByNameOptionsInterface> = {
+      const parameters: Record<string, SSMGetParametersByNameOptions> = {
         '/foo/bar': {
           maxAge: 1000,
         },
@@ -186,7 +186,7 @@ describe('Class: SSMProvider', () => {
 
       // Prepare
       const provider = new SSMProviderMock();
-      const parameters: Record<string, SSMGetParametersByNameOptionsInterface> = {
+      const parameters: Record<string, SSMGetParametersByNameOptions> = {
         '/foo/bar': {
           maxAge: 1000,
         },
@@ -236,7 +236,7 @@ describe('Class: SSMProvider', () => {
 
       // Prepare
       const provider = new SSMProviderMock();
-      const parameters: Record<string, SSMGetParametersByNameOptionsInterface> = {
+      const parameters: Record<string, SSMGetParametersByNameOptions> = {
         '/foo/bar': {
           maxAge: 1000,
         },
@@ -274,7 +274,7 @@ describe('Class: SSMProvider', () => {
 
       // Prepare
       const provider = new SSMProviderMock();
-      const parameters: Record<string, SSMGetParametersByNameOptionsInterface> = {
+      const parameters: Record<string, SSMGetParametersByNameOptions> = {
         '/foo/bar': {
           maxAge: 1000,
         },
@@ -545,7 +545,7 @@ describe('Class: SSMProvider', () => {
         super();
       }
 
-      public _getParametersByName(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
+      public _getParametersByName(parameters: Record<string, SSMGetParametersByNameOptions>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
         return super._getParametersByName(parameters, throwOnError, decrypt);
       }
     }
@@ -628,7 +628,7 @@ describe('Class: SSMProvider', () => {
         super();
       }
 
-      public getParametersBatchByName(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
+      public getParametersBatchByName(parameters: Record<string, SSMGetParametersByNameOptions>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
         return super.getParametersBatchByName(parameters, throwOnError, decrypt);
       }
     }
@@ -761,7 +761,7 @@ describe('Class: SSMProvider', () => {
         this.store.set(key, value);
       }
 
-      public async getParametersByNameFromCache(parameters: Record<string, SSMGetParametersByNameOptionsInterface>): Promise<SSMGetParametersByNameFromCacheOutputType> {
+      public async getParametersByNameFromCache(parameters: Record<string, SSMGetParametersByNameOptions>): Promise<SSMGetParametersByNameFromCacheOutputType> {
         return super.getParametersByNameFromCache(parameters);
       }
     }
@@ -801,7 +801,7 @@ describe('Class: SSMProvider', () => {
         super();
       }
 
-      public async getParametersByNameInChunks(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
+      public async getParametersByNameInChunks(parameters: Record<string, SSMGetParametersByNameOptions>, throwOnError: boolean, decrypt: boolean): Promise<SSMGetParametersByNameOutputInterface> {
         return super.getParametersByNameInChunks(parameters, throwOnError, decrypt);
       }
     }
@@ -900,7 +900,7 @@ describe('Class: SSMProvider', () => {
         super();
       }
 
-      public async getParametersByNameWithDecryptOption(parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean): Promise<SSMGetParametersByNameOutputInterface> {
+      public async getParametersByNameWithDecryptOption(parameters: Record<string, SSMGetParametersByNameOptions>, throwOnError: boolean): Promise<SSMGetParametersByNameOutputInterface> {
         return super.getParametersByNameWithDecryptOption(parameters, throwOnError);
       }
     }
@@ -1041,8 +1041,8 @@ describe('Class: SSMProvider', () => {
       }
 
       public splitBatchAndDecryptParameters(
-        parameters: Record<string, SSMGetParametersByNameOptionsInterface>,
-        configs: SSMGetParametersByNameOptionsInterface
+        parameters: Record<string, SSMGetParametersByNameOptions>,
+        configs: SSMGetParametersByNameOptions
       ): SSMSplitBatchAndDecryptParametersOutputType {
         return SSMProvider.splitBatchAndDecryptParameters(parameters, configs);
       }
@@ -1220,7 +1220,7 @@ describe('Class: SSMProvider', () => {
         super();
       }
 
-      public transformAndCacheGetParametersResponse(response: Partial<GetParametersCommandOutput>, parameters: Record<string, SSMGetParametersByNameOptionsInterface>, throwOnError: boolean): Record<string, unknown> {
+      public transformAndCacheGetParametersResponse(response: Partial<GetParametersCommandOutput>, parameters: Record<string, SSMGetParametersByNameOptions>, throwOnError: boolean): Record<string, unknown> {
         return super.transformAndCacheGetParametersResponse(response as GetParametersCommandOutput, parameters, throwOnError);
       }
     }

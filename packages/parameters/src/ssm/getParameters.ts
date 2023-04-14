@@ -141,17 +141,20 @@ import type {
  * @param {SSMGetMultipleOptions} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
-const getParameters = <T = undefined, O extends SSMGetMultipleOptionsUnion | undefined = SSMGetMultipleOptionsUnion>(
+const getParameters = async <
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType extends SSMGetMultipleOptionsUnion | undefined = SSMGetMultipleOptionsUnion
+>(
   path: string,
-  options?: O & SSMGetMultipleOptions
-): Promise<SSMGetMultipleOutput<T, O> | undefined> => {
+  options?: InferredFromOptionsType & SSMGetMultipleOptions
+): Promise<SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
   return (
     DEFAULT_PROVIDERS.ssm as SSMProvider
-  ).getMultiple(path, options) as Promise<SSMGetMultipleOutput<T, O> | undefined>;
+  ).getMultiple(path, options) as Promise<SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
 };
 
 export {

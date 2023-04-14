@@ -79,16 +79,22 @@ interface SSMGetOptionsTransformNone extends SSMGetOptions {
   transform?: never
 }
 
+type SSMGetOptionsUnion =
+  SSMGetOptionsTransformJson |
+  SSMGetOptionsTransformBinary |
+  SSMGetOptionsTransformNone |
+  undefined;
+
 /**
  * Generic output type for the SSMProvider get method.
  */
-type SSMGetOutput<T = undefined, O = undefined> =
-  undefined extends T ? 
-    undefined extends O ? string :
-      O extends SSMGetOptionsTransformNone | SSMGetOptionsTransformBinary ? string :
-        O extends SSMGetOptionsTransformJson ? Record<string, unknown> :
+type SSMGetOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
+  undefined extends ExplicitUserProvidedType ? 
+    undefined extends InferredFromOptionsType ? string :
+      InferredFromOptionsType extends SSMGetOptionsTransformNone | SSMGetOptionsTransformBinary ? string :
+        InferredFromOptionsType extends SSMGetOptionsTransformJson ? Record<string, unknown> :
           never
-    : T;
+    : ExplicitUserProvidedType;
 
 /**
  * Options for the SSMProvider getMultiple method.
@@ -148,25 +154,25 @@ type SSMGetMultipleOptionsUnion =
 /**
  * Generic output type for the SSMProvider getMultiple method.
  */
-type SSMGetMultipleOutput<T = undefined, O = undefined> =
-  undefined extends T ? 
-    undefined extends O ? Record<string, string> :
-      O extends SSMGetMultipleOptionsTransformNone | SSMGetMultipleOptionsTransformBinary ? Record<string, string> :
-        O extends SSMGetMultipleOptionsTransformAuto ? Record<string, unknown> :
-          O extends SSMGetMultipleOptionsTransformJson ? Record<string, Record<string, unknown>> :
+type SSMGetMultipleOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
+  undefined extends ExplicitUserProvidedType ? 
+    undefined extends InferredFromOptionsType ? Record<string, string> :
+      InferredFromOptionsType extends SSMGetMultipleOptionsTransformNone | SSMGetMultipleOptionsTransformBinary ? Record<string, string> :
+        InferredFromOptionsType extends SSMGetMultipleOptionsTransformAuto ? Record<string, unknown> :
+          InferredFromOptionsType extends SSMGetMultipleOptionsTransformJson ? Record<string, Record<string, unknown>> :
             never
-    : Record<string, T>;
+    : Record<string, ExplicitUserProvidedType>;
 
 /**
  * Options for the SSMProvider getParametersByName method.
  *
- * @interface SSMGetParametersByNameOptionsInterface
+ * @interface SSMGetParametersByNameOptions
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  * @property {boolean} decrypt - If true, the parameter will be decrypted.
  * @property {boolean} throwOnError - If true, the method will throw an error if one of the parameters cannot be fetched. Otherwise it will aggregate the errors under an _errors key in the response.
  */
-interface SSMGetParametersByNameOptionsInterface {
+interface SSMGetParametersByNameOptions {
   maxAge?: number
   throwOnError?: boolean
   decrypt?: boolean
@@ -177,8 +183,8 @@ interface SSMGetParametersByNameOptionsInterface {
  * Output type for the SSMProvider splitBatchAndDecryptParameters method.
  */
 type SSMSplitBatchAndDecryptParametersOutputType = {
-  parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptionsInterface>
-  parametersToDecrypt: Record<string, SSMGetParametersByNameOptionsInterface>
+  parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptions>
+  parametersToDecrypt: Record<string, SSMGetParametersByNameOptions>
 };
 
 /**
@@ -194,22 +200,26 @@ interface SSMGetParametersByNameOutputInterface {
  */
 type SSMGetParametersByNameFromCacheOutputType = {
   cached: Record<string, string | Record<string, unknown>>
-  toFetch: Record<string, SSMGetParametersByNameOptionsInterface>
+  toFetch: Record<string, SSMGetParametersByNameOptions>
 };
 
-type SSMGetParametersByNameOutput<T = undefined> = 
-  undefined extends T ?
+/**
+ * Generic output type for the SSMProvider getParametersByName method.
+ */
+type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> = 
+  undefined extends InferredFromOptionsType ?
     Record<string, unknown> & { _errors?: string[] } :
-    Record<string, T> & { _errors?: string[] };
+    Record<string, InferredFromOptionsType> & { _errors?: string[] };
 
 export type {
   SSMProviderOptions,
   SSMGetOptions,
+  SSMGetOptionsUnion,
   SSMGetOutput,
   SSMGetMultipleOptions,
   SSMGetMultipleOptionsUnion,
   SSMGetMultipleOutput,
-  SSMGetParametersByNameOptionsInterface,
+  SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface,
   SSMGetParametersByNameFromCacheOutputType,

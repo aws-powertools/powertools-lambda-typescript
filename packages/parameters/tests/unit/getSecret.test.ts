@@ -29,7 +29,7 @@ describe('Function: getSecret', () => {
     });
 
     // Act
-    const result: string | undefined = await getSecret(secretName);
+    const result: string | Uint8Array | undefined = await getSecret(secretName);
 
     // Assess
     expect(client).toReceiveCommandWith(GetSecretValueCommand, { SecretId: secretName });
@@ -50,7 +50,7 @@ describe('Function: getSecret', () => {
     });
 
     // Act
-    const result: string | undefined = await getSecret(secretName);
+    const result: string | Uint8Array | undefined = await getSecret(secretName);
 
     // Assess
     expect(client).toReceiveCommandWith(GetSecretValueCommand, { SecretId: secretName });

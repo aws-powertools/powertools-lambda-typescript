@@ -8,6 +8,7 @@ import type {
   SecretsProviderOptions,
   SecretsGetOptions,
   SecretsGetOutput,
+  SecretsGetOptionsUnion,
 } from '../types/SecretsProvider';
 
 /**
@@ -202,7 +203,7 @@ class SecretsProvider extends BaseProvider {
    */
   public async get<
     ExplicitUserProvidedType = undefined,
-    InferredFromOptionsType extends SecretsGetOptions | undefined = SecretsGetOptions
+    InferredFromOptionsType extends SecretsGetOptionsUnion | undefined = SecretsGetOptionsUnion
   >(
     name: string,
     options?: InferredFromOptionsType & SecretsGetOptions

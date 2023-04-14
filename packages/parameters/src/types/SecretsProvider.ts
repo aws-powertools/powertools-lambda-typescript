@@ -72,19 +72,27 @@ interface SecretsGetOptionsTransformNone extends SecretsGetOptions {
   transform?: never
 }
 
+type SecretsGetOptionsUnion =
+  SecretsGetOptionsTransformNone | 
+  SecretsGetOptionsTransformJson |
+  SecretsGetOptionsTransformBinary |
+  undefined;
+
 /**
  * Generic output type for the SecretsProvider get method.
  */
 type SecretsGetOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
   undefined extends ExplicitUserProvidedType ? 
-    undefined extends InferredFromOptionsType ? string :
-      InferredFromOptionsType extends SecretsGetOptionsTransformNone | SecretsGetOptionsTransformBinary ? string :
-        InferredFromOptionsType extends SecretsGetOptionsTransformJson ? Record<string, unknown> :
-          never
+    undefined extends InferredFromOptionsType ? string | Uint8Array :
+      InferredFromOptionsType extends SecretsGetOptionsTransformNone ? string | Uint8Array :
+        InferredFromOptionsType extends SecretsGetOptionsTransformBinary ? string :
+          InferredFromOptionsType extends SecretsGetOptionsTransformJson ? Record<string, unknown> :
+            never
     : ExplicitUserProvidedType;
 
 export type {
   SecretsProviderOptions,
   SecretsGetOptions,
   SecretsGetOutput,
+  SecretsGetOptionsUnion,
 };

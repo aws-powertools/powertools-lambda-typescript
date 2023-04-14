@@ -3,6 +3,7 @@ import { SecretsProvider } from './SecretsProvider';
 import type {
   SecretsGetOptions,
   SecretsGetOutput,
+  SecretsGetOptionsUnion,
 } from '../types/SecretsProvider';
 
 /**
@@ -108,7 +109,7 @@ import type {
  */
 const getSecret = async <
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType extends SecretsGetOptions | undefined = SecretsGetOptions
+  InferredFromOptionsType extends SecretsGetOptionsUnion | undefined = SecretsGetOptionsUnion
 >(
   name: string,
   options?: InferredFromOptionsType & SecretsGetOptions

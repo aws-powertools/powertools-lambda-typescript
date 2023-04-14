@@ -88,13 +88,13 @@ type SSMGetOptionsUnion =
 /**
  * Generic output type for the SSMProvider get method.
  */
-type SSMGetOutput<T = undefined, O = undefined> =
-  undefined extends T ? 
-    undefined extends O ? string :
-      O extends SSMGetOptionsTransformNone | SSMGetOptionsTransformBinary ? string :
-        O extends SSMGetOptionsTransformJson ? Record<string, unknown> :
+type SSMGetOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
+  undefined extends ExplicitUserProvidedType ? 
+    undefined extends InferredFromOptionsType ? string :
+      InferredFromOptionsType extends SSMGetOptionsTransformNone | SSMGetOptionsTransformBinary ? string :
+        InferredFromOptionsType extends SSMGetOptionsTransformJson ? Record<string, unknown> :
           never
-    : T;
+    : ExplicitUserProvidedType;
 
 /**
  * Options for the SSMProvider getMultiple method.
@@ -154,14 +154,14 @@ type SSMGetMultipleOptionsUnion =
 /**
  * Generic output type for the SSMProvider getMultiple method.
  */
-type SSMGetMultipleOutput<T = undefined, O = undefined> =
-  undefined extends T ? 
-    undefined extends O ? Record<string, string> :
-      O extends SSMGetMultipleOptionsTransformNone | SSMGetMultipleOptionsTransformBinary ? Record<string, string> :
-        O extends SSMGetMultipleOptionsTransformAuto ? Record<string, unknown> :
-          O extends SSMGetMultipleOptionsTransformJson ? Record<string, Record<string, unknown>> :
+type SSMGetMultipleOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
+  undefined extends ExplicitUserProvidedType ? 
+    undefined extends InferredFromOptionsType ? Record<string, string> :
+      InferredFromOptionsType extends SSMGetMultipleOptionsTransformNone | SSMGetMultipleOptionsTransformBinary ? Record<string, string> :
+        InferredFromOptionsType extends SSMGetMultipleOptionsTransformAuto ? Record<string, unknown> :
+          InferredFromOptionsType extends SSMGetMultipleOptionsTransformJson ? Record<string, Record<string, unknown>> :
             never
-    : Record<string, T>;
+    : Record<string, ExplicitUserProvidedType>;
 
 /**
  * Options for the SSMProvider getParametersByName method.
@@ -203,10 +203,13 @@ type SSMGetParametersByNameFromCacheOutputType = {
   toFetch: Record<string, SSMGetParametersByNameOptions>
 };
 
-type SSMGetParametersByNameOutput<T = undefined> = 
-  undefined extends T ?
+/**
+ * Generic output type for the SSMProvider getParametersByName method.
+ */
+type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> = 
+  undefined extends InferredFromOptionsType ?
     Record<string, unknown> & { _errors?: string[] } :
-    Record<string, T> & { _errors?: string[] };
+    Record<string, InferredFromOptionsType> & { _errors?: string[] };
 
 export type {
   SSMProviderOptions,

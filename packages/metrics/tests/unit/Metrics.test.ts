@@ -38,7 +38,7 @@ describe('Class: Metrics', () => {
       
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const metricName = 'test_metric';
+      const metricName = 'test-metric';
 
       // Act
       metrics.addMetric(metricName, MetricUnits.Count, 1, MetricResolution.High);
@@ -62,27 +62,27 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric('test_metric-1', MetricUnits.Count, 1, MetricResolution.High);
-      metrics.addMetric('test_metric-2', MetricUnits.Count, 3, MetricResolution.High);
-      metrics.addMetric('test_metric-3', MetricUnits.Count, 6, MetricResolution.High);
+      metrics.addMetric('test-metric-1', MetricUnits.Count, 1, MetricResolution.High);
+      metrics.addMetric('test-metric-2', MetricUnits.Count, 3, MetricResolution.High);
+      metrics.addMetric('test-metric-3', MetricUnits.Count, 6, MetricResolution.High);
 
       // Assess
       expect(metrics).toEqual(expect.objectContaining({
         storedMetrics: {
-          'test_metric-1': {
-            name: 'test_metric-1',
+          'test-metric-1': {
+            name: 'test-metric-1',
             resolution: MetricResolution.High,
             unit: MetricUnits.Count,
             value: 1
           },
-          'test_metric-2': {
-            name: 'test_metric-2',
+          'test-metric-2': {
+            name: 'test-metric-2',
             resolution: MetricResolution.High,
             unit: MetricUnits.Count,
             value: 3
           },
-          'test_metric-3': {
-            name: 'test_metric-3',
+          'test-metric-3': {
+            name: 'test-metric-3',
             resolution: MetricResolution.High,
             unit: MetricUnits.Count,
             value: 6

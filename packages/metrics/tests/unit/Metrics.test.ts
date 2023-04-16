@@ -126,7 +126,7 @@ describe('Class: Metrics', () => {
 
     });
 
-    test('if same dimension is added again, it should update existing dimension value', () => {
+    test('it should update existing dimension value if same dimension is added again', () => {
       
       // Prepare
       const dimensionsToBeAdded: { [key: string]: string } = {

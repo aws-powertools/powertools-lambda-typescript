@@ -17,6 +17,7 @@ const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Class: Metrics', () => {
+  
   const ENVIRONMENT_VARIABLES = process.env;
   const TEST_NAMESPACE = 'test';
   const context = dummyContext.helloworldContext;
@@ -30,6 +31,179 @@ describe('Class: Metrics', () => {
   beforeAll(() => {
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
+  });
+
+  describe('Method: addDimension', () => {
+    
+    test('when called, it should store dimensions', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const dimensionName = 'test-dimension';
+      const dimensionValue= 'test-value';
+  
+      // Act
+      metrics.addDimension(dimensionName, dimensionValue);
+  
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: {
+          [dimensionName]: dimensionValue
+        },
+      }));
+      
+    });
+
+    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+  
+      // Act & Assess
+      expect(() => {
+        for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
+          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
+        }
+      }).toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+      
+    });
+
+    test('it should take consideration of defaultDimensions while throwing error if number of dimensions exceeds the maximum allowed', () => {
+        
+      // Prepare
+      const defaultDimensions : { [key: string]: string } = { 'environment': 'dev', 'foo': 'bar' };
+      const metrics: Metrics = createMetrics({ namespace:'test', defaultDimensions });
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+  
+      // Act & Assess
+      expect(() => {
+        for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(defaultDimensions).length); i++) {
+          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
+        }
+      }).toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+
+    });
+
+  });
+
+  describe('Method: addDimensions', () => {
+      
+    test('it should add multiple dimensions', () => {
+      
+      // Prepare
+      const dimensionsToBeAdded: { [key: string]: string } = {
+        'test-dimension-1': 'test-value-1',
+        'test-dimension-2': 'test-value-2',
+      };
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+
+      // Act
+      metrics.addDimensions(dimensionsToBeAdded);
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: dimensionsToBeAdded
+      }));
+
+    });
+
+    test('if same dimension is added again, it should update existing dimension value', () => {
+      
+      // Prepare
+      const dimensionsToBeAdded: { [key: string]: string } = {
+        'test-dimension-1': 'test-value-1',
+        'test-dimension-2': 'test-value-2',
+      };
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+
+      // Act
+      metrics.addDimensions(dimensionsToBeAdded);
+      metrics.addDimensions({ 'test-dimension-1': 'test-value-3' });
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: {
+          'test-dimension-1': 'test-value-3',
+          'test-dimension-2': 'test-value-2',
+        }
+      }));
+
+    });
+
+    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const dimensionsToBeAdded: { [key: string]: string } = {};
+      for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
+        dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+     
+      // Act & Assess
+      expect(() => {
+        metrics.addDimensions(dimensionsToBeAdded);
+      }).toThrowError(`Unable to add ${Object.keys(dimensionsToBeAdded).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+      
+    });
+
+    test('it should successfully add up to maximum allowed dimensions without throwing error', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const dimensionsToBeAdded: { [key: string]: string } = {};
+      for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
+        dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+     
+      // Act & Assess
+      expect(() => {
+        metrics.addDimensions(dimensionsToBeAdded);
+      }).not.toThrowError(`Unable to add ${Object.keys(dimensionsToBeAdded).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+      expect(metrics).toEqual(expect.objectContaining({ dimensions: dimensionsToBeAdded }));
+      
+    });
+    
+  });
+
+  describe('Method: addMetadata', () => {
+
+    test('it should add metadata', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+  
+      // Act
+      metrics.addMetadata('foo', 'bar');
+  
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        metadata: { 'foo': 'bar' }
+      }));
+      
+    });
+
+    test('it should update metadata value if added again', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+  
+      // Act
+      metrics.addMetadata('foo', 'bar');
+      metrics.addMetadata('foo', 'baz');
+  
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        metadata: { 'foo': 'baz' }
+      }));
+      
+    });
   });
 
   describe('Method: addMetric', () => {
@@ -193,298 +367,129 @@ describe('Class: Metrics', () => {
     });
   });
 
-  describe('Method: clearMetrics', () => {
+  describe('Methods: captureColdStartMetric', () => {
       
-    test('when called, it should clear stored metrics', () => {
-          
+    test('it should call addMetric with correct parameters', () => {
+            
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const metricName = 'test-metric';
-          
-      // Act
-      metrics.addMetric(metricName, MetricUnits.Count, 1);
-      metrics.clearMetrics();
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const addMetricSpy = jest.spyOn(singleMetricMock, 'addMetric');
+    
+      // Act 
+      metrics.captureColdStartMetric();
     
       // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        storedMetrics: {},
-      }));
-        
-    });
-    
-  });
-
-  describe('Method: addDimension', () => {
-    
-    test('when called, it should store dimensions', () => {
-        
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const dimensionName = 'test-dimension';
-      const dimensionValue= 'test-value';
-  
-      // Act
-      metrics.addDimension(dimensionName, dimensionValue);
-  
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        dimensions: {
-          [dimensionName]: dimensionValue
-        },
-      }));
-      
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(addMetricSpy).toBeCalledTimes(1);
+      expect(addMetricSpy).toBeCalledWith(COLD_START_METRIC, MetricUnits.Count, 1);
+              
     });
 
-    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
-        
+    test('it should call setDefaultDimensions with correct parameters', () => {
+                
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const dimensionName = 'test-dimension';
-      const dimensionValue = 'test-value';
-  
-      // Act & Assess
-      expect(() => {
-        for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
-          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
-        }
-      }).toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
-      
-    });
-
-    test('it should take consideration of defaultDimensions while throwing error if number of dimensions exceeds the maximum allowed', () => {
-        
-      // Prepare
-      const defaultDimensions : { [key: string]: string } = { 'environment': 'dev', 'foo': 'bar' };
-      const metrics: Metrics = createMetrics({ namespace:'test', defaultDimensions });
-      const dimensionName = 'test-dimension';
-      const dimensionValue = 'test-value';
-  
-      // Act & Assess
-      expect(() => {
-        for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(defaultDimensions).length); i++) {
-          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
-        }
-      }).toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
-
-    });
-
-  });
-
-  describe('Method: addDimensions', () => {
-      
-    test('it should add multiple dimensions', () => {
-      
-      // Prepare
-      const dimensionsToBeAdded: { [key: string]: string } = {
-        'test-dimension-1': 'test-value-1',
-        'test-dimension-2': 'test-value-2',
-      };
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-
-      // Act
-      metrics.addDimensions(dimensionsToBeAdded);
-
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        dimensions: dimensionsToBeAdded
-      }));
-
-    });
-
-    test('if same dimension is added again, it should update existing dimension value', () => {
-      
-      // Prepare
-      const dimensionsToBeAdded: { [key: string]: string } = {
-        'test-dimension-1': 'test-value-1',
-        'test-dimension-2': 'test-value-2',
-      };
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-
-      // Act
-      metrics.addDimensions(dimensionsToBeAdded);
-      metrics.addDimensions({ 'test-dimension-1': 'test-value-3' });
-
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        dimensions: {
-          'test-dimension-1': 'test-value-3',
-          'test-dimension-2': 'test-value-2',
-        }
-      }));
-
-    });
-
-    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
-        
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const dimensionName = 'test-dimension';
-      const dimensionValue = 'test-value';
-      const dimensionsToBeAdded: { [key: string]: string } = {};
-      for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
-        dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
-      }
-     
-      // Act & Assess
-      expect(() => {
-        metrics.addDimensions(dimensionsToBeAdded);
-      }).toThrowError(`Unable to add ${Object.keys(dimensionsToBeAdded).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
-      
-    });
-
-    test('it should successfully add up to maximum allowed dimensions without throwing error', () => {
-        
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const dimensionName = 'test-dimension';
-      const dimensionValue = 'test-value';
-      const dimensionsToBeAdded: { [key: string]: string } = {};
-      for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
-        dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
-      }
-     
-      // Act & Assess
-      expect(() => {
-        metrics.addDimensions(dimensionsToBeAdded);
-      }).not.toThrowError(`Unable to add ${Object.keys(dimensionsToBeAdded).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
-      expect(metrics).toEqual(expect.objectContaining({ dimensions: dimensionsToBeAdded }));
-      
-    });
-    
-  });
-
-  describe('Method: setDefaultDimensions', () => {
-        
-    test('it should set default dimensions when service name is not provided', () => {
-          
-      // Prepare
-      const defaultDimensionsToBeAdded = {
-        'environment': 'prod',
+      const defaultDimensions: Dimensions = {
         'foo': 'bar',
-      };
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-    
-      // Act
-      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
-    
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        defaultDimensions: { ...defaultDimensionsToBeAdded, service : 'service_undefined' }
-      }));
-        
-    });
-
-    test('it should set default dimensions when service name is provided', () => {
-          
-      // Prepare
-      const defaultDimensionsToBeAdded = {
-        'environment': 'prod',
-        'foo': 'bar',
-      };
-      const serviceName = 'test-service';
-      const metrics: Metrics = createMetrics({ serviceName: serviceName });
-    
-      // Act
-      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
-    
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        defaultDimensions: { ...defaultDimensionsToBeAdded, service : serviceName }
-      }));
-        
-    });
-
-    test('it should add default dimensions', () => {
-          
-      // Prepare
-      const defaultDimensionsToBeAdded = {
-        'environment': 'prod',
-        'foo': 'bar',
-      };
-      const serviceName = 'test-service';
-      const metrics: Metrics = createMetrics({
-        namespace: TEST_NAMESPACE,
-        serviceName,
-        defaultDimensions: { 'test-dimension': 'test-dimension-value' }
-      });
-    
-      // Act
-      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
-    
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        defaultDimensions: { ...defaultDimensionsToBeAdded, service : serviceName , 'test-dimension': 'test-dimension-value' }
-      }));
-        
-    });
-
-    test('it should update already added default dimensions values', () => {
-          
-      // Prepare
-      const defaultDimensionsToBeAdded = {
-        'environment': 'prod',
-        'foo': 'bar',
-      };
-      const serviceName = 'test-service';
-      const metrics: Metrics = createMetrics({
-        namespace: TEST_NAMESPACE,
-        serviceName,
-        defaultDimensions: { 'environment': 'dev' }
-      });
-    
-      // Act
-      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
-    
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        defaultDimensions: { foo: 'bar', service: serviceName, 'environment': 'prod' }
-      }));
-
-    });
-
-    test('it should throw error if number of dimensions reaches the maximum allowed', () => {
-          
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const dimensionName = 'test-dimension';
-      const dimensionValue = 'test-value';
-      const defaultDimensions: { [key: string]: string } = {};
-      for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
-        defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
-      }
-      
-      // Act & Assess
-      expect(() => {
-        metrics.setDefaultDimensions(defaultDimensions);
-      }).toThrowError('Max dimension count hit');
-        
-    });
-
-    test('it should consider default dimensions provided in constructor, while throwing error if number of dimensions exceeds the maximum allowed', () => {
-          
-      // Prepare
-      const initialDefaultDimensions: { [key: string]: string } = {
-        'test-dimension': 'test-value',
-        'environment': 'dev'
+        'service': 'order'
       };
       const metrics: Metrics = createMetrics({
         namespace: TEST_NAMESPACE,
-        defaultDimensions: initialDefaultDimensions
+        defaultDimensions
       });
-      const dimensionName = 'test-dimension';
-      const dimensionValue = 'test-value';
-      const defaultDimensions: { [key: string]: string } = {};
-      for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(initialDefaultDimensions).length); i++) {
-        defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
-      }
-      
-      // Act & Assess
-      expect(() => {
-        metrics.setDefaultDimensions(defaultDimensions);
-      }).toThrowError('Max dimension count hit');
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
         
+      // Act 
+      metrics.captureColdStartMetric();
+        
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(setDefaultDimensionsSpy).toBeCalledTimes(1);
+      expect(setDefaultDimensionsSpy).toBeCalledWith({ service: defaultDimensions.service });
+                  
     });
-    
+
+    test('it should call setDefaultDimensions with correct parameters if not set', () => {
+                
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
+        
+      // Act 
+      metrics.captureColdStartMetric();
+        
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(setDefaultDimensionsSpy).toBeCalledTimes(1);
+      expect(setDefaultDimensionsSpy).toBeCalledWith({ service: 'service_undefined' });
+                  
+    });
+
+    test('it should call addDimension, if functionName is set', () => {
+                  
+      // Prepare
+      const functionName = 'cold-start';
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      metrics.setFunctionName(functionName);
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
+          
+      // Act 
+      metrics.captureColdStartMetric();
+          
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(addDimensionSpy).toBeCalledTimes(1);
+      expect(addDimensionSpy).toBeCalledWith('function_name', functionName);
+                      
+    });
+
+    test('it should not call addDimension, if functionName is not set', () => {
+                  
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
+          
+      // Act 
+      metrics.captureColdStartMetric();
+          
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(1);
+      expect(addDimensionSpy).toBeCalledTimes(0);
+                      
+    });
+
+    test('it should not call any function, if there is no cold start', () => {
+                    
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      jest.spyOn(metrics, 'isColdStart').mockImplementation(() => false);
+
+      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
+      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
+      const addMetricSpy = jest.spyOn(singleMetricMock, 'addMetric');
+      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
+      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
+            
+      // Act 
+      metrics.captureColdStartMetric();
+            
+      // Assess
+      expect(singleMetricSpy).toBeCalledTimes(0);
+      expect(setDefaultDimensionsSpy).toBeCalledTimes(0);
+      expect(addDimensionSpy).toBeCalledTimes(0);
+      expect(addMetricSpy).toBeCalledTimes(0);
+                        
+    });
+  
   });
 
   describe('Method: clearDefaultDimensions', () => {
@@ -505,40 +510,6 @@ describe('Class: Metrics', () => {
         
     });
   }); 
-
-  describe('Method: addMetadata', () => {
-
-    test('it should add metadata', () => {
-        
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-  
-      // Act
-      metrics.addMetadata('foo', 'bar');
-  
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        metadata: { 'foo': 'bar' }
-      }));
-      
-    });
-
-    test('it should update metadata value if added again', () => {
-        
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-  
-      // Act
-      metrics.addMetadata('foo', 'bar');
-      metrics.addMetadata('foo', 'baz');
-  
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        metadata: { 'foo': 'baz' }
-      }));
-      
-    });
-  });
 
   describe('Method: clearDimensions', () => {
     
@@ -601,73 +572,27 @@ describe('Class: Metrics', () => {
 
   });
 
-  describe('Method: singleMetric', () => {
-
-    test('it should return a single Metric object', () => {
-
-      // Prepare
-      const defaultDimensions = {
-        'foo': 'bar',
-        'service': 'order'
-      };
-      const metrics: Metrics = createMetrics({
-        namespace: TEST_NAMESPACE,
-        defaultDimensions,
-        singleMetric: false
-      });
-
-      // Act
-      const singleMetric = metrics.singleMetric();
+  describe('Method: clearMetrics', () => {
       
-      //Asses
-      expect(singleMetric).toEqual(expect.objectContaining({
-        isSingleMetric: true,
-        namespace: TEST_NAMESPACE,
-        defaultDimensions
-      }));
-
-    });
-
-  });
-
-  describe('Method: throwOnEmptyMetrics', () => {
-      
-    test('it should set the throwOnEmptyMetrics flag to true', () => {
-  
+    test('when called, it should clear stored metrics', () => {
+          
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-  
+      const metricName = 'test-metric';
+          
       // Act
-      metrics.throwOnEmptyMetrics();
-
+      metrics.addMetric(metricName, MetricUnits.Count, 1);
+      metrics.clearMetrics();
+    
       // Assess
       expect(metrics).toEqual(expect.objectContaining({
-        shouldThrowOnEmptyMetrics: true
+        storedMetrics: {},
       }));
-  
+        
     });
-  
+    
   });
-
-  describe('Method: setFunctionName', () => {
-      
-    test('it should set the function name', () => {
   
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-  
-      // Act
-      metrics.setFunctionName('test-function');
-
-      // Assess
-      expect(metrics).toEqual(expect.objectContaining({
-        functionName: 'test-function'
-      }));
-  
-    });
-  
-  });
-
   describe('Method: logMetrics', () => {
 
     const expectedReturnValue = 'Lambda invoked!';
@@ -819,6 +744,113 @@ describe('Class: Metrics', () => {
       // Act & Assess
       await expect(handler(event, context)).rejects.toThrowError(errorMessage);
     
+    });
+
+  });
+
+  describe('Methods: publishStoredMetrics', () => {
+    
+    test('it should console warning if no metrics are added', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act 
+      metrics.publishStoredMetrics();
+
+      // Assess
+      expect(consoleWarnSpy).toBeCalledTimes(1);
+      expect(consoleWarnSpy).toBeCalledWith(
+        'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
+      );
+        
+    });
+
+    test('it should call serializeMetrics && log the stringified return value of serializeMetrics', () => {
+            
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const mockData: EmfOutput = {
+        '_aws': {
+          'Timestamp': 1466424490000,
+          'CloudWatchMetrics': [
+            {
+              'Namespace': 'test',
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': 'test-metrics',
+                  'Unit': MetricUnits.Count
+                }
+              ]
+            }
+          ]
+        },
+        'service': 'service_undefined',
+        'test-metrics': 10
+      };
+      const serializeMetricsSpy = jest.spyOn(metrics, 'serializeMetrics').mockImplementation(() => mockData);
+  
+      // Act 
+      metrics.publishStoredMetrics();
+  
+      // Assess
+      expect(serializeMetricsSpy).toBeCalledTimes(1);
+      expect(consoleLogSpy).toBeCalledTimes(1);
+      expect(consoleLogSpy).toBeCalledWith(JSON.stringify(mockData));
+            
+    });
+
+    test('it should call clearMetrics function', () => {
+                  
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const clearMetricsSpy = jest.spyOn(metrics, 'clearMetrics');
+    
+      // Act 
+      metrics.publishStoredMetrics();
+    
+      // Assess
+      expect(clearMetricsSpy).toBeCalledTimes(1);
+              
+    });
+
+    test('it should call clearDimensions function', () => {
+                      
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const clearDimensionsSpy = jest.spyOn(metrics, 'clearDimensions');
+        
+      // Act 
+      metrics.publishStoredMetrics();
+        
+      // Assess
+      expect(clearDimensionsSpy).toBeCalledTimes(1);
+                  
+    });
+
+    test('it should call clearMetadata function', () => {
+                            
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      const clearMetadataSpy = jest.spyOn(metrics, 'clearMetadata');
+              
+      // Act 
+      metrics.publishStoredMetrics();
+              
+      // Assess
+      expect(clearMetadataSpy).toBeCalledTimes(1);
+                        
     });
 
   });
@@ -1135,235 +1167,205 @@ describe('Class: Metrics', () => {
 
   });
 
-  describe('Methods: publishStoredMetrics', () => {
-    
-    test('it should console warning if no metrics are added', () => {
+  describe('Method: setDefaultDimensions', () => {
         
+    test('it should set default dimensions when service name is not provided', () => {
+          
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Act 
-      metrics.publishStoredMetrics();
-
-      // Assess
-      expect(consoleWarnSpy).toBeCalledTimes(1);
-      expect(consoleWarnSpy).toBeCalledWith(
-        'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
-      );
-        
-    });
-
-    test('it should call serializeMetrics && log the stringified return value of serializeMetrics', () => {
-            
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-      const mockData: EmfOutput = {
-        '_aws': {
-          'Timestamp': 1466424490000,
-          'CloudWatchMetrics': [
-            {
-              'Namespace': 'test',
-              'Dimensions': [
-                [
-                  'service'
-                ]
-              ],
-              'Metrics': [
-                {
-                  'Name': 'test-metrics',
-                  'Unit': MetricUnits.Count
-                }
-              ]
-            }
-          ]
-        },
-        'service': 'service_undefined',
-        'test-metrics': 10
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
       };
-      const serializeMetricsSpy = jest.spyOn(metrics, 'serializeMetrics').mockImplementation(() => mockData);
-  
-      // Act 
-      metrics.publishStoredMetrics();
-  
-      // Assess
-      expect(serializeMetricsSpy).toBeCalledTimes(1);
-      expect(consoleLogSpy).toBeCalledTimes(1);
-      expect(consoleLogSpy).toBeCalledWith(JSON.stringify(mockData));
-            
-    });
-
-    test('it should call clearMetrics function', () => {
-                  
-      // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
-      const clearMetricsSpy = jest.spyOn(metrics, 'clearMetrics');
     
-      // Act 
-      metrics.publishStoredMetrics();
+      // Act
+      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
-      expect(clearMetricsSpy).toBeCalledTimes(1);
-              
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: { ...defaultDimensionsToBeAdded, service : 'service_undefined' }
+      }));
+        
     });
 
-    test('it should call clearDimensions function', () => {
-                      
+    test('it should set default dimensions when service name is provided', () => {
+          
+      // Prepare
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
+      };
+      const serviceName = 'test-service';
+      const metrics: Metrics = createMetrics({ serviceName: serviceName });
+    
+      // Act
+      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: { ...defaultDimensionsToBeAdded, service : serviceName }
+      }));
+        
+    });
+
+    test('it should add default dimensions', () => {
+          
+      // Prepare
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
+      };
+      const serviceName = 'test-service';
+      const metrics: Metrics = createMetrics({
+        namespace: TEST_NAMESPACE,
+        serviceName,
+        defaultDimensions: { 'test-dimension': 'test-dimension-value' }
+      });
+    
+      // Act
+      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: { ...defaultDimensionsToBeAdded, service : serviceName , 'test-dimension': 'test-dimension-value' }
+      }));
+        
+    });
+
+    test('it should update already added default dimensions values', () => {
+          
+      // Prepare
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
+      };
+      const serviceName = 'test-service';
+      const metrics: Metrics = createMetrics({
+        namespace: TEST_NAMESPACE,
+        serviceName,
+        defaultDimensions: { 'environment': 'dev' }
+      });
+    
+      // Act
+      metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: { foo: 'bar', service: serviceName, 'environment': 'prod' }
+      }));
+
+    });
+
+    test('it should throw error if number of dimensions reaches the maximum allowed', () => {
+          
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
-      const clearDimensionsSpy = jest.spyOn(metrics, 'clearDimensions');
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const defaultDimensions: { [key: string]: string } = {};
+      for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
+        defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+      
+      // Act & Assess
+      expect(() => {
+        metrics.setDefaultDimensions(defaultDimensions);
+      }).toThrowError('Max dimension count hit');
         
-      // Act 
-      metrics.publishStoredMetrics();
-        
-      // Assess
-      expect(clearDimensionsSpy).toBeCalledTimes(1);
-                  
     });
 
-    test('it should call clearMetadata function', () => {
-                            
+    test('it should consider default dimensions provided in constructor, while throwing error if number of dimensions exceeds the maximum allowed', () => {
+          
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
-      const clearMetadataSpy = jest.spyOn(metrics, 'clearMetadata');
-              
-      // Act 
-      metrics.publishStoredMetrics();
-              
-      // Assess
-      expect(clearMetadataSpy).toBeCalledTimes(1);
-                        
+      const initialDefaultDimensions: { [key: string]: string } = {
+        'test-dimension': 'test-value',
+        'environment': 'dev'
+      };
+      const metrics: Metrics = createMetrics({
+        namespace: TEST_NAMESPACE,
+        defaultDimensions: initialDefaultDimensions
+      });
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const defaultDimensions: { [key: string]: string } = {};
+      for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(initialDefaultDimensions).length); i++) {
+        defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+      
+      // Act & Assess
+      expect(() => {
+        metrics.setDefaultDimensions(defaultDimensions);
+      }).toThrowError('Max dimension count hit');
+        
     });
-
+    
   });
 
-  describe('Methods: captureColdStartMetric', () => {
+  describe('Method: setFunctionName', () => {
       
-    test('it should call addMetric with correct parameters', () => {
-            
+    test('it should set the function name', () => {
+  
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
-      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
-      const addMetricSpy = jest.spyOn(singleMetricMock, 'addMetric');
-    
-      // Act 
-      metrics.captureColdStartMetric();
-    
-      // Assess
-      expect(singleMetricSpy).toBeCalledTimes(1);
-      expect(addMetricSpy).toBeCalledTimes(1);
-      expect(addMetricSpy).toBeCalledWith(COLD_START_METRIC, MetricUnits.Count, 1);
-              
-    });
+  
+      // Act
+      metrics.setFunctionName('test-function');
 
-    test('it should call setDefaultDimensions with correct parameters', () => {
-                
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        functionName: 'test-function'
+      }));
+  
+    });
+  
+  });
+
+  describe('Method: singleMetric', () => {
+
+    test('it should return a single Metric object', () => {
+
       // Prepare
-      const defaultDimensions: Dimensions = {
+      const defaultDimensions = {
         'foo': 'bar',
         'service': 'order'
       };
       const metrics: Metrics = createMetrics({
         namespace: TEST_NAMESPACE,
-        defaultDimensions
+        defaultDimensions,
+        singleMetric: false
       });
-      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
-      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
-      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
-        
-      // Act 
-      metrics.captureColdStartMetric();
-        
-      // Assess
-      expect(singleMetricSpy).toBeCalledTimes(1);
-      expect(setDefaultDimensionsSpy).toBeCalledTimes(1);
-      expect(setDefaultDimensionsSpy).toBeCalledWith({ service: defaultDimensions.service });
-                  
+
+      // Act
+      const singleMetric = metrics.singleMetric();
+      
+      //Asses
+      expect(singleMetric).toEqual(expect.objectContaining({
+        isSingleMetric: true,
+        namespace: TEST_NAMESPACE,
+        defaultDimensions
+      }));
+
     });
 
-    test('it should call setDefaultDimensions with correct parameters if not set', () => {
-                
+  });
+
+  describe('Method: throwOnEmptyMetrics', () => {
+      
+    test('it should set the throwOnEmptyMetrics flag to true', () => {
+  
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
-      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
-      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
-        
-      // Act 
-      metrics.captureColdStartMetric();
-        
-      // Assess
-      expect(singleMetricSpy).toBeCalledTimes(1);
-      expect(setDefaultDimensionsSpy).toBeCalledTimes(1);
-      expect(setDefaultDimensionsSpy).toBeCalledWith({ service: 'service_undefined' });
-                  
-    });
+  
+      // Act
+      metrics.throwOnEmptyMetrics();
 
-    test('it should call addDimension, if functionName is set', () => {
-                  
-      // Prepare
-      const functionName = 'cold-start';
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.setFunctionName(functionName);
-      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
-      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
-      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
-          
-      // Act 
-      metrics.captureColdStartMetric();
-          
       // Assess
-      expect(singleMetricSpy).toBeCalledTimes(1);
-      expect(addDimensionSpy).toBeCalledTimes(1);
-      expect(addDimensionSpy).toBeCalledWith('function_name', functionName);
-                      
-    });
-
-    test('it should not call addDimension, if functionName is not set', () => {
-                  
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
-      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
-      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
-          
-      // Act 
-      metrics.captureColdStartMetric();
-          
-      // Assess
-      expect(singleMetricSpy).toBeCalledTimes(1);
-      expect(addDimensionSpy).toBeCalledTimes(0);
-                      
-    });
-
-    test('it should not call any function, if there is no cold start', () => {
-                    
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      jest.spyOn(metrics, 'isColdStart').mockImplementation(() => false);
-
-      const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
-      const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
-      const addMetricSpy = jest.spyOn(singleMetricMock, 'addMetric');
-      const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
-      const addDimensionSpy = jest.spyOn(singleMetricMock, 'addDimension');
-            
-      // Act 
-      metrics.captureColdStartMetric();
-            
-      // Assess
-      expect(singleMetricSpy).toBeCalledTimes(0);
-      expect(setDefaultDimensionsSpy).toBeCalledTimes(0);
-      expect(addDimensionSpy).toBeCalledTimes(0);
-      expect(addMetricSpy).toBeCalledTimes(0);
-                        
+      expect(metrics).toEqual(expect.objectContaining({
+        shouldThrowOnEmptyMetrics: true
+      }));
+  
     });
   
   });
+
 });

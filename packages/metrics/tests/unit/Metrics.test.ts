@@ -658,7 +658,7 @@ describe('Class: Metrics', () => {
 
   describe('Method: clearMetrics', () => {
       
-    test('when called, it should clear stored metrics', () => {
+    test('it should clear stored metrics', () => {
           
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });

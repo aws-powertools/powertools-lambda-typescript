@@ -386,6 +386,51 @@ describe('Class: Metrics', () => {
 
     });
 
+    test('it should publish metrics on every call if singleMetric is set to true', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
+      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+        
+      // Act
+      metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
+      metrics.addMetric('test-metric-2', MetricUnits.Bits, 100);
+  
+      // Assess
+      expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(2);
+
+    });
+
+    test('it should not publish metrics on every call if singleMetric is set to false', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: false });
+      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+        
+      // Act
+      metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
+      metrics.addMetric('test-metric-2', MetricUnits.Bits, 100);
+  
+      // Assess
+      expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
+
+    });
+
+    test('it should not publish metrics on every call if singleMetric is not provided', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+        
+      // Act
+      metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
+      metrics.addMetric('test-metric-2', MetricUnits.Bits, 100);
+  
+      // Assess
+      expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
+
+    });
+
   });
 
   describe('Methods: captureColdStartMetric', () => {

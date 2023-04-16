@@ -224,7 +224,7 @@ describe('Class: Metrics', () => {
 
   describe('Method: addMetric', () => {
     
-    test('when called, it should store metrics', () => {
+    test('it should store metrics when called', () => {
       
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -244,9 +244,10 @@ describe('Class: Metrics', () => {
           }
         },
       }));
+
     });
 
-    test('when called with multiple metric name, it should store multiple metrics', () => {
+    test('it should store multiple metrics when called with multiple metric name', () => {
       
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -279,9 +280,10 @@ describe('Class: Metrics', () => {
           }
         },
       }));
+      
     });
 
-    test('when called without resolution, it should store metrics with standard resolution', () => {
+    test('it should store metrics with standard resolution when called without resolution', () => {
    
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -307,9 +309,10 @@ describe('Class: Metrics', () => {
           }
         },
       }));
+
     });
 
-    test('when trying to add metric with the same name multiple times, values should be grouped together in an array', () => {
+    test('it should group the metric values together in an array when trying to add same metric with different values', () => {
 
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -332,9 +335,10 @@ describe('Class: Metrics', () => {
           }
         },
       }));
+
     });
 
-    test('when trying to add metric with the same name multiple times but with different unit, it will throw an error', () => {
+    test('it should throw an error when trying to add same metric with different unit', () => {
 
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -348,7 +352,7 @@ describe('Class: Metrics', () => {
 
     });
 
-    test('it will publish metrics if stored metrics count has reached max metric size threshold', () => {
+    test('it should publish metrics if stored metrics count has reached max metric size threshold', () => {
         
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -365,7 +369,7 @@ describe('Class: Metrics', () => {
 
     });
 
-    test('it will not publish metrics if stored metrics count has not reached max metric size threshold', () => {
+    test('it should not publish metrics if stored metrics count has not reached max metric size threshold', () => {
         
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -381,6 +385,7 @@ describe('Class: Metrics', () => {
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
 
     });
+
   });
 
   describe('Methods: captureColdStartMetric', () => {

@@ -460,10 +460,7 @@ describe('Class: Metrics', () => {
         'foo': 'bar',
         'service': 'order'
       };
-      const metrics: Metrics = createMetrics({
-        namespace: TEST_NAMESPACE,
-        defaultDimensions
-      });
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE, defaultDimensions });
       const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });
       const singleMetricSpy = jest.spyOn(metrics, 'singleMetric').mockImplementation(() => singleMetricMock);
       const setDefaultDimensionsSpy = jest.spyOn(singleMetricMock, 'setDefaultDimensions');
@@ -478,7 +475,7 @@ describe('Class: Metrics', () => {
                   
     });
 
-    test('it should call setDefaultDimensions with correct parameters if not set', () => {
+    test('it should call setDefaultDimensions with correct parameters when defaultDimensions are not set', () => {
                 
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -499,7 +496,7 @@ describe('Class: Metrics', () => {
     test('it should call addDimension, if functionName is set', () => {
                   
       // Prepare
-      const functionName = 'cold-start';
+      const functionName = 'coldStart';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       metrics.setFunctionName(functionName);
       const singleMetricMock: Metrics = createMetrics({ namespace: TEST_NAMESPACE, singleMetric: true });

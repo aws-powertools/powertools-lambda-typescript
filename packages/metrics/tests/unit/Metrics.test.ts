@@ -868,7 +868,6 @@ describe('Class: Metrics', () => {
 
       // Assess
       expect(consoleWarnSpy).toBeCalledWith('Namespace should be defined, default used');
-      delete process.env.POWERTOOLS_METRICS_NAMESPACE;
 
     });
 
@@ -953,7 +952,6 @@ describe('Class: Metrics', () => {
 
       // Assess
       expect(loggedData.service).toEqual(serviceName);
-      delete process.env.POWERTOOLS_SERVICE_NAME;
       
     });
 

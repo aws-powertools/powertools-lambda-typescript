@@ -26,9 +26,6 @@ describe('Class: Metrics', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetModules();
-  });
-
-  beforeAll(() => {
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
@@ -1050,9 +1047,10 @@ describe('Class: Metrics', () => {
           
     });
 
-    test('it should use default namespace when not provided', () => {
+    test('if the namespace is not provided or is not present in the environment variable, it should use the default namespace', () => {
                   
       // Prepare
+      process.env.POWERTOOLS_METRICS_NAMESPACE = '';
       const metrics: Metrics = createMetrics();
           
       // Act

@@ -681,14 +681,23 @@ describe('Class: Metrics', () => {
 
     const expectedReturnValue = 'Lambda invoked!';
     const testMetric = 'successfulBooking';
+    let metrics: Metrics;
+    let publishStoredMetricsSpy: jest.SpyInstance;
+    let addMetricSpy: jest.SpyInstance;
+    let captureColdStartMetricSpy: jest.SpyInstance;
+    let setDefaultDimensionsSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
+      addMetricSpy = jest.spyOn(metrics, 'addMetric');
+      captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
+      setDefaultDimensionsSpy = jest.spyOn(metrics, 'setDefaultDimensions');
+    });
 
     test('it should log metrics', async () => {
 
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
-      const addMetricSpy = jest.spyOn(metrics, 'addMetric');
-      const captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
       class LambdaFunction implements LambdaInterface {
 
         @metrics.logMetrics()
@@ -718,10 +727,6 @@ describe('Class: Metrics', () => {
     test('it should capture cold start metrics, if passed in the options as true', async () => {
       
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
-      const addMetricSpy = jest.spyOn(metrics, 'addMetric');
-      const captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
       class LambdaFunction implements LambdaInterface {
 
         @metrics.logMetrics({ captureColdStartMetric: true })
@@ -751,7 +756,6 @@ describe('Class: Metrics', () => {
     test('it should throw error if no metrics are added and throwOnEmptyMetrics is set to true', async () => {
         
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       class LambdaFunction implements LambdaInterface {
   
         @metrics.logMetrics({ throwOnEmptyMetrics: true })
@@ -777,11 +781,6 @@ describe('Class: Metrics', () => {
         'foo': 'bar',
         'service': 'order'
       };
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const setDefaultDimensionsSpy = jest.spyOn(metrics, 'setDefaultDimensions');
-      const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
-      const addMetricSpy = jest.spyOn(metrics, 'addMetric');
-
       class LambdaFunction implements LambdaInterface {
     
         @metrics.logMetrics({ defaultDimensions })
@@ -810,7 +809,6 @@ describe('Class: Metrics', () => {
     test('it should throw error if lambda handler throws any error', async () => {
           
       // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const errorMessage = 'Unexpected error occurred!';
       class LambdaFunction implements LambdaInterface {
     

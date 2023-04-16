@@ -613,10 +613,10 @@ describe('Class: Metrics', () => {
       
     });
 
-    test('it should not clear default dimensions', () => {
+    test('it should only clear dimensions', () => {
         
       // Prepare
-      const metrics: Metrics = createMetrics({ defaultDimensions: { 'environment': 'prod' } });
+      const metrics: Metrics = createMetrics({ defaultDimensions: { 'environment': 'dev' } });
       metrics.addDimension('foo', 'bar');
   
       // Act
@@ -626,7 +626,7 @@ describe('Class: Metrics', () => {
       expect(metrics).toEqual(expect.objectContaining({
         dimensions: {},
         defaultDimensions: {
-          'environment': 'prod',
+          'environment': 'dev',
           'service': 'service_undefined'
         }
       }));

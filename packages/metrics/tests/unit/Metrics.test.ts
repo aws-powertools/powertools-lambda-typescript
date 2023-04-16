@@ -51,7 +51,26 @@ describe('Class: Metrics', () => {
       
     });
 
-    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
+    test('it should update existing dimension value if same dimension is added again', () => {
+      
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const dimensionName = 'test-dimension';
+  
+      // Act
+      metrics.addDimension(dimensionName, 'test-value-1');
+      metrics.addDimension(dimensionName, 'test-value-2');
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        dimensions: {
+          [dimensionName]: 'test-value-2'
+        }
+      }));
+
+    });
+
+    test('it should throw error if the number of dimensions exceeds the maximum allowed', () => {
         
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });

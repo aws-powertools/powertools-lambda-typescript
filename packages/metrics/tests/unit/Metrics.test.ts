@@ -572,6 +572,27 @@ describe('Class: Metrics', () => {
       }));
         
     });
+
+    test('it should only clear default dimensions', () => {
+
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      metrics.setDefaultDimensions({ 'foo': 'bar' });
+      metrics.addDimension('environment', 'dev');
+     
+      // Act
+      metrics.clearDefaultDimensions();
+     
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        defaultDimensions: {},
+        dimensions: {
+          'environment': 'dev'
+        }
+      }));
+
+    });
+    
   }); 
 
   describe('Method: clearDimensions', () => {

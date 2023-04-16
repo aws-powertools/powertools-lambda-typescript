@@ -205,7 +205,7 @@ describe('Class: Metrics', () => {
       
     });
 
-    test('it should update metadata value if added again', () => {
+    test('it should update existing metadata value if same metadata is added again', () => {
         
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });

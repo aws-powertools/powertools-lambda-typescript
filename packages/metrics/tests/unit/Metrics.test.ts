@@ -9,9 +9,10 @@ import {
   Events as dummyEvent
 } from '@aws-lambda-powertools/commons';
 import { MetricResolution, MetricUnits, Metrics, createMetrics } from '../../src/';
-import { Context } from 'aws-lambda';
+import { Context, Handler } from 'aws-lambda';
 import { Dimensions, EmfOutput } from '../../src/types';
 import { COLD_START_METRIC, DEFAULT_NAMESPACE, MAX_DIMENSION_COUNT, MAX_METRICS_SIZE } from '../../src/constants';
+import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -679,14 +680,14 @@ describe('Class: Metrics', () => {
   
   describe('Method: logMetrics', () => {
 
-    const expectedReturnValue = 'Lambda invoked!';
-    const testMetric = 'successfulBooking';
     let metrics: Metrics;
     let publishStoredMetricsSpy: jest.SpyInstance;
     let addMetricSpy: jest.SpyInstance;
     let captureColdStartMetricSpy: jest.SpyInstance;
     let throwOnEmptyMetricsSpy: jest.SpyInstance;
     let setDefaultDimensionsSpy: jest.SpyInstance;
+    const decoratorLambdaExpectedReturnValue = 'Lambda invoked!';
+    const decoratorLambdaMetric= 'decorator-lambda-test-metric';
 
     beforeEach(() => {
       metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -700,27 +701,14 @@ describe('Class: Metrics', () => {
     test('it should execute lambda function & publish stored metrics', async () => {
 
       // Prepare
-      class LambdaFunction implements LambdaInterface {
-
-        @metrics.logMetrics()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
-          metrics.addMetric(testMetric, MetricUnits.Count, 1);
-          
-          return expectedReturnValue;
-        }
-
-      }
-      const handlerClass = new LambdaFunction();
-      const handler = handlerClass.handler.bind(handlerClass);
+      const handler: Handler = setupDecoratorLambdaHandler(metrics);
 
       // Act
-      const actualResult = await handler(event, context);
+      const actualResult = await handler(event, context, () => console.log('callback'));
 
       // Assess
-      expect(actualResult).toEqual(expectedReturnValue);
-      expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(actualResult).toEqual(decoratorLambdaExpectedReturnValue);
+      expect(addMetricSpy).toHaveBeenNthCalledWith(1, decoratorLambdaMetric, MetricUnits.Count, 1);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
       expect(captureColdStartMetricSpy).not.toBeCalled();
       expect(throwOnEmptyMetricsSpy).not.toBeCalled();
@@ -731,27 +719,14 @@ describe('Class: Metrics', () => {
     test('it should capture cold start metrics, if passed in the options as true', async () => {
       
       // Prepare
-      class LambdaFunction implements LambdaInterface {
-
-        @metrics.logMetrics({ captureColdStartMetric: true })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
-          metrics.addMetric(testMetric, MetricUnits.Count, 1);
-          
-          return expectedReturnValue;
-        }
-
-      }
-      const handlerClass = new LambdaFunction();
-      const handler = handlerClass.handler.bind(handlerClass);
+      const handler: Handler = setupDecoratorLambdaHandler(metrics, { captureColdStartMetric: true });
 
       // Act
-      const actualResult = await handler(event, context);
+      const actualResult = await handler(event, context, () => console.log('callback'));
 
       // Assess
-      expect(actualResult).toEqual(expectedReturnValue);
-      expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(actualResult).toEqual(decoratorLambdaExpectedReturnValue);
+      expect(addMetricSpy).toHaveBeenNthCalledWith(1, decoratorLambdaMetric, MetricUnits.Count, 1);
       expect(captureColdStartMetricSpy).toBeCalledTimes(1);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
       expect(throwOnEmptyMetricsSpy).not.toBeCalled();
@@ -762,27 +737,14 @@ describe('Class: Metrics', () => {
     test('it should call throwOnEmptyMetrics, if passed in the options as true', async () => {
         
       // Prepare
-      class LambdaFunction implements LambdaInterface {
-  
-        @metrics.logMetrics({ throwOnEmptyMetrics: true })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
-          metrics.addMetric(testMetric, MetricUnits.Count, 1);
-          
-          return expectedReturnValue;
-        }
-  
-      }
-      const handlerClass = new LambdaFunction();
-      const handler = handlerClass.handler.bind(handlerClass);
-  
+      const handler: Handler = setupDecoratorLambdaHandler(metrics, { throwOnEmptyMetrics: true });
+     
       // Act
-      const actualResult = await handler(event, context);
+      const actualResult = await handler(event, context, () => console.log('callback'));
 
       // Assess
-      expect(actualResult).toEqual(expectedReturnValue);
-      expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(actualResult).toEqual(decoratorLambdaExpectedReturnValue);
+      expect(addMetricSpy).toHaveBeenNthCalledWith(1, decoratorLambdaMetric, MetricUnits.Count, 1);
       expect(throwOnEmptyMetricsSpy).toBeCalledTimes(1);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
       expect(captureColdStartMetricSpy).not.toBeCalled();
@@ -790,34 +752,21 @@ describe('Class: Metrics', () => {
   
     });
 
-    test('it should set default dimensions if passed in the options', async () => {
+    test('it should set default dimensions if passed in the options as true', async () => {
           
       // Prepare
       const defaultDimensions = {
         'foo': 'bar',
         'service': 'order'
       };
-      class LambdaFunction implements LambdaInterface {
-    
-        @metrics.logMetrics({ defaultDimensions })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
-          metrics.addMetric(testMetric, MetricUnits.Count, 1);
-          
-          return expectedReturnValue;
-        }
-    
-      }
-      const handlerClass = new LambdaFunction();
-      const handler = handlerClass.handler.bind(handlerClass);
+      const handler: Handler = setupDecoratorLambdaHandler(metrics, { defaultDimensions });
     
       // Act
-      const actualResult = await handler(event, context);
+      const actualResult = await handler(event, context, () => console.log('callback'));
     
       // Assess
-      expect(actualResult).toEqual(expectedReturnValue);
-      expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(actualResult).toEqual(decoratorLambdaExpectedReturnValue);
+      expect(addMetricSpy).toHaveBeenNthCalledWith(1, decoratorLambdaMetric, MetricUnits.Count, 1);
       expect(setDefaultDimensionsSpy).toHaveBeenNthCalledWith(1, defaultDimensions);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
       expect(throwOnEmptyMetricsSpy).not.toBeCalled();

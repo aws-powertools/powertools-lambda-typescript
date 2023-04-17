@@ -685,6 +685,7 @@ describe('Class: Metrics', () => {
     let publishStoredMetricsSpy: jest.SpyInstance;
     let addMetricSpy: jest.SpyInstance;
     let captureColdStartMetricSpy: jest.SpyInstance;
+    let throwOnEmptyMetricsSpy: jest.SpyInstance;
     let setDefaultDimensionsSpy: jest.SpyInstance;
 
     beforeEach(() => {
@@ -692,10 +693,11 @@ describe('Class: Metrics', () => {
       publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       addMetricSpy = jest.spyOn(metrics, 'addMetric');
       captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
+      throwOnEmptyMetricsSpy = jest.spyOn(metrics, 'throwOnEmptyMetrics');
       setDefaultDimensionsSpy = jest.spyOn(metrics, 'setDefaultDimensions');
     });
 
-    test('it should log metrics', async () => {
+    test('it should execute lambda function & publish stored metrics', async () => {
 
       // Prepare
       class LambdaFunction implements LambdaInterface {
@@ -718,9 +720,11 @@ describe('Class: Metrics', () => {
 
       // Assess
       expect(actualResult).toEqual(expectedReturnValue);
-      expect(captureColdStartMetricSpy).not.toBeCalled();
       expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
+      expect(captureColdStartMetricSpy).not.toBeCalled();
+      expect(throwOnEmptyMetricsSpy).not.toBeCalled();
+      expect(setDefaultDimensionsSpy).not.toBeCalled();
 
     });
 

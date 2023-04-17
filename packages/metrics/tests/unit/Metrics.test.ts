@@ -813,12 +813,15 @@ describe('Class: Metrics', () => {
       const handler = handlerClass.handler.bind(handlerClass);
     
       // Act
-      await handler(event, context);
+      const actualResult = await handler(event, context);
     
       // Assess
-      expect(setDefaultDimensionsSpy).toHaveBeenNthCalledWith(1, defaultDimensions);
+      expect(actualResult).toEqual(expectedReturnValue);
       expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(setDefaultDimensionsSpy).toHaveBeenNthCalledWith(1, defaultDimensions);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
+      expect(throwOnEmptyMetricsSpy).not.toBeCalled();
+      expect(captureColdStartMetricSpy).not.toBeCalled();
     
     });
 

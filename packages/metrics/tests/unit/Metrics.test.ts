@@ -751,9 +751,11 @@ describe('Class: Metrics', () => {
 
       // Assess
       expect(actualResult).toEqual(expectedReturnValue);
-      expect(captureColdStartMetricSpy).toBeCalledTimes(1);
       expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(captureColdStartMetricSpy).toBeCalledTimes(1);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
+      expect(throwOnEmptyMetricsSpy).not.toBeCalled();
+      expect(setDefaultDimensionsSpy).not.toBeCalled();
 
     });
 

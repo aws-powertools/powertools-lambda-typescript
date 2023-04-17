@@ -759,7 +759,7 @@ describe('Class: Metrics', () => {
 
     });
 
-    test('it should throw error if no metrics are added and throwOnEmptyMetrics is set to true', async () => {
+    test('it should call throwOnEmptyMetrics, if passed in the options as true', async () => {
         
       // Prepare
       class LambdaFunction implements LambdaInterface {
@@ -768,6 +768,8 @@ describe('Class: Metrics', () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
+          metrics.addMetric(testMetric, MetricUnits.Count, 1);
+          
           return expectedReturnValue;
         }
   
@@ -775,8 +777,16 @@ describe('Class: Metrics', () => {
       const handlerClass = new LambdaFunction();
       const handler = handlerClass.handler.bind(handlerClass);
   
-      // Act & Assess
-      await expect(handler(event, context)).rejects.toThrowError('The number of metrics recorded must be higher than zero');
+      // Act
+      const actualResult = await handler(event, context);
+
+      // Assess
+      expect(actualResult).toEqual(expectedReturnValue);
+      expect(addMetricSpy).toHaveBeenNthCalledWith(1, testMetric, MetricUnits.Count, 1);
+      expect(throwOnEmptyMetricsSpy).toBeCalledTimes(1);
+      expect(publishStoredMetricsSpy).toBeCalledTimes(1);
+      expect(captureColdStartMetricSpy).not.toBeCalled();
+      expect(setDefaultDimensionsSpy).not.toBeCalled();
   
     });
 

@@ -800,7 +800,7 @@ describe('Class: Metrics', () => {
 
   describe('Methods: publishStoredMetrics', () => {
     
-    test('it should console warning if no metrics are added', () => {
+    test('it should log warning if no metrics are added & throwOnEmptyMetrics is false', () => {
         
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
@@ -825,7 +825,7 @@ describe('Class: Metrics', () => {
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       const mockData: EmfOutput = {
         '_aws': {
-          'Timestamp': 1466424490000,
+          'Timestamp': mockDate.getTime(),
           'CloudWatchMetrics': [
             {
               'Namespace': 'test',

@@ -1548,42 +1548,48 @@ describe('Class: Metrics', () => {
   });
 
   describe('Method: setDefaultDimensions', () => {
-        
-    test('it should set default dimensions when service name is not provided', () => {
+
+    test('it should set default dimensions correctly when service name is provided', () => {
           
       // Prepare
+      const serviceName = 'test-service';
+      const metrics: Metrics = createMetrics({ serviceName: serviceName });
       const defaultDimensionsToBeAdded = {
-        'environment': 'prod',
+        'environment': 'dev',
         'foo': 'bar',
       };
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
       // Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
       expect(metrics).toEqual(expect.objectContaining({
-        defaultDimensions: { ...defaultDimensionsToBeAdded, service : 'service_undefined' }
+        defaultDimensions: {
+          ...defaultDimensionsToBeAdded,
+          service: serviceName
+        }
       }));
         
     });
-
-    test('it should set default dimensions when service name is provided', () => {
+        
+    test('it should set default dimensions correctly when service name is not provided', () => {
           
       // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const defaultDimensionsToBeAdded = {
-        'environment': 'prod',
+        'environment': 'dev',
         'foo': 'bar',
       };
-      const serviceName = 'test-service';
-      const metrics: Metrics = createMetrics({ serviceName: serviceName });
     
       // Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
       expect(metrics).toEqual(expect.objectContaining({
-        defaultDimensions: { ...defaultDimensionsToBeAdded, service : serviceName }
+        defaultDimensions: {
+          ...defaultDimensionsToBeAdded,
+          service: 'service_undefined'
+        }
       }));
         
     });
@@ -1591,23 +1597,27 @@ describe('Class: Metrics', () => {
     test('it should add default dimensions', () => {
           
       // Prepare
-      const defaultDimensionsToBeAdded = {
-        'environment': 'prod',
-        'foo': 'bar',
-      };
       const serviceName = 'test-service';
       const metrics: Metrics = createMetrics({
         namespace: TEST_NAMESPACE,
         serviceName,
         defaultDimensions: { 'test-dimension': 'test-dimension-value' }
       });
+      const defaultDimensionsToBeAdded = {
+        'environment': 'dev',
+        'foo': 'bar',
+      };
     
       // Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
       expect(metrics).toEqual(expect.objectContaining({
-        defaultDimensions: { ...defaultDimensionsToBeAdded, service : serviceName , 'test-dimension': 'test-dimension-value' }
+        defaultDimensions: {
+          ...defaultDimensionsToBeAdded,
+          service: serviceName,
+          'test-dimension': 'test-dimension-value'
+        }
       }));
         
     });
@@ -1615,23 +1625,29 @@ describe('Class: Metrics', () => {
     test('it should update already added default dimensions values', () => {
           
       // Prepare
-      const defaultDimensionsToBeAdded = {
-        'environment': 'prod',
-        'foo': 'bar',
-      };
       const serviceName = 'test-service';
       const metrics: Metrics = createMetrics({
         namespace: TEST_NAMESPACE,
         serviceName,
-        defaultDimensions: { 'environment': 'dev' }
+        defaultDimensions: {
+          environment: 'dev'
+        }
       });
+      const defaultDimensionsToBeAdded = {
+        'environment': 'prod',
+        'foo': 'bar',
+      };
     
       // Act
       metrics.setDefaultDimensions(defaultDimensionsToBeAdded);
     
       // Assess
       expect(metrics).toEqual(expect.objectContaining({
-        defaultDimensions: { foo: 'bar', service: serviceName, 'environment': 'prod' }
+        defaultDimensions: {
+          foo: 'bar',
+          service: serviceName,
+          environment: 'prod'
+        }
       }));
 
     });

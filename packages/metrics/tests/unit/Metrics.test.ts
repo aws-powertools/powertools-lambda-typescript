@@ -821,7 +821,7 @@ describe('Class: Metrics', () => {
             
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric('test-metric', MetricUnits.Count, 10);
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       const mockData: EmfOutput = {
         '_aws': {
@@ -836,7 +836,7 @@ describe('Class: Metrics', () => {
               ],
               'Metrics': [
                 {
-                  'Name': 'test-metrics',
+                  'Name': 'test-metric',
                   'Unit': MetricUnits.Count
                 }
               ]
@@ -844,7 +844,7 @@ describe('Class: Metrics', () => {
           ]
         },
         'service': 'service_undefined',
-        'test-metrics': 10
+        'test-metric': 10
       };
       const serializeMetricsSpy = jest.spyOn(metrics, 'serializeMetrics').mockImplementation(() => mockData);
   
@@ -862,7 +862,7 @@ describe('Class: Metrics', () => {
                   
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric('test-metric', MetricUnits.Count, 10);
       const clearMetricsSpy = jest.spyOn(metrics, 'clearMetrics');
     
       // Act 
@@ -877,7 +877,7 @@ describe('Class: Metrics', () => {
                       
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric('test-metric', MetricUnits.Count, 10);
       const clearDimensionsSpy = jest.spyOn(metrics, 'clearDimensions');
         
       // Act 
@@ -892,7 +892,7 @@ describe('Class: Metrics', () => {
                             
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric('test-metric', MetricUnits.Count, 10);
       const clearMetadataSpy = jest.spyOn(metrics, 'clearMetadata');
               
       // Act 
@@ -958,11 +958,11 @@ describe('Class: Metrics', () => {
                 'Metrics': [
                   {
                     'Name': 'successfulBooking',
-                    'Unit': 'Count'
+                    'Unit': MetricUnits.Count
                   },
                   {
                     'Name': 'failedBooking',
-                    'Unit': 'Count',
+                    'Unit': MetricUnits.Count,
                     'StorageResolution': 1
                   }
                 ]
@@ -981,30 +981,78 @@ describe('Class: Metrics', () => {
 
       // Prepare
       const serviceName = 'test-service';
-      const metrics: Metrics = createMetrics({ serviceName:serviceName });
+      const testMetric = 'test-metric';
+      const metrics: Metrics = createMetrics({ serviceName: serviceName, namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
       expect(loggedData.service).toEqual(serviceName);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': testMetric,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': serviceName,
+        [testMetric]: 10
+      });
 
     });
 
-    test('it should log service dimension correctly from env var when not passed', () => {
+    test('it should log service dimension correctly using environment variable when not specified in constructor', () => {
 
       // Prepare
       const serviceName = 'hello-world-service';
       process.env.POWERTOOLS_SERVICE_NAME = serviceName;
+      const testMetric = 'test-metric';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
       expect(loggedData.service).toEqual(serviceName);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': testMetric,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': serviceName,
+        [testMetric]: 10
+      });
       
     });
 
@@ -1015,10 +1063,11 @@ describe('Class: Metrics', () => {
         'foo': 'bar',
         'env': 'dev'
       };
-      const metrics: Metrics = createMetrics({ defaultDimensions: additionalDimensions });
+      const testMetric = 'test-metric';
+      const metrics: Metrics = createMetrics({ defaultDimensions: additionalDimensions, namespace: TEST_NAMESPACE });
   
       // Act
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
   
       // Assess
@@ -1026,17 +1075,45 @@ describe('Class: Metrics', () => {
       expect(loggedData.service).toEqual(defaultServiceName);
       expect(loggedData.foo).toEqual(additionalDimensions.foo);
       expect(loggedData.env).toEqual(additionalDimensions.env);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service',
+                  'foo',
+                  'env'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': testMetric,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [testMetric]: 10,
+        'env': 'dev',
+        'foo': 'bar',
+      });
   
     });
 
     test('it should log additional dimensions correctly', () => {
           
       // Prepare
+      const testMetric = 'test-metric';
       const additionalDimension = { name: 'metric2', value: 'metric2Value' };
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
       // Act
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10, MetricResolution.High);
+      metrics.addMetric('test-metric', MetricUnits.Count, 10, MetricResolution.High);
       metrics.addDimension(additionalDimension.name, additionalDimension.value);
       const loggedData = metrics.serializeMetrics();
     
@@ -1044,12 +1121,39 @@ describe('Class: Metrics', () => {
       expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(2);
       expect(loggedData.service).toEqual(defaultServiceName);
       expect(loggedData[additionalDimension.name]).toEqual(additionalDimension.value);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service',
+                  'metric2'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': testMetric,
+                  'StorageResolution': 1,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [testMetric]: 10,
+        'metric2': 'metric2Value'
+      });
     
     });
 
     test('it should log additional bulk dimensions correctly', () => {
           
       // Prepare
+      const testMetric = 'test-metric';
       const additionalDimensions: { [key: string]: string } = {
         metric2: 'metric2Value',
         metric3: 'metric3Value'
@@ -1057,7 +1161,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
     
       // Act
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10, MetricResolution.High);
+      metrics.addMetric(testMetric, MetricUnits.Count, 10, MetricResolution.High);
       metrics.addDimensions(additionalDimensions);
       const loggedData = metrics.serializeMetrics();
     
@@ -1067,21 +1171,74 @@ describe('Class: Metrics', () => {
       Object.keys(additionalDimensions).forEach((key) => {
         expect(loggedData[key]).toEqual(additionalDimensions[key]);
       });
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service',
+                  'metric2',
+                  'metric3',
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': testMetric,
+                  'StorageResolution': 1,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [testMetric]: 10,
+        'metric2': 'metric2Value',
+        'metric3': 'metric3Value'
+      });
     
     });
 
     test('it should log metadata correctly', () => {
             
       // Prepare
+      const testMetric = 'test-metric';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       
       // Act
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnits.Count, 10);
       metrics.addMetadata('foo', 'bar');
       const loggedData = metrics.serializeMetrics();
       
       // Assess
       expect(loggedData.foo).toEqual('bar');
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': testMetric,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [testMetric]: 10,
+        'foo': 'bar'
+      });
       
     });
 
@@ -1098,39 +1255,87 @@ describe('Class: Metrics', () => {
           
     });
 
-    test('if the namespace is not provided or is not present in the environment variable, it should use the default namespace', () => {
+    test('it should use the default namespace when no namespace is provided in constructor or found in environment variable', () => {
                   
       // Prepare
       process.env.POWERTOOLS_METRICS_NAMESPACE = '';
+      const testMetric = 'test-metric';
       const metrics: Metrics = createMetrics();
           
       // Act
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
           
       // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(DEFAULT_NAMESPACE);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': testMetric,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': DEFAULT_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [testMetric]: 10
+      });
           
     });
 
     test('it should use namespace provided in constructor', () => {
                       
       // Prepare
+      const testMetric = 'test-metric';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
               
       // Act
-      metrics.addMetric('test-metrics', MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnits.Count, 10);
       const loggedData = metrics.serializeMetrics();
               
       // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Namespace).toEqual(TEST_NAMESPACE);  
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': testMetric,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [testMetric]: 10
+      });
       
     });
 
     test('it should contain a metric value if added once', () => {
                             
       // Prepare
-      const metricName = 'test-metrics';
+      const metricName = 'test-metric';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                     
       // Act
@@ -1139,14 +1344,37 @@ describe('Class: Metrics', () => {
                     
       // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
-      expect(loggedData['test-metrics']).toEqual(10);
+      expect(loggedData[metricName]).toEqual(10);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': metricName,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [metricName]: 10
+      });
           
     });
 
     test('it should convert metric value with the same name and unit to array if added multiple times', () => {
                               
       // Prepare
-      const metricName = 'test-metrics';
+      const metricName = 'test-metric';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                       
       // Act
@@ -1157,14 +1385,37 @@ describe('Class: Metrics', () => {
       // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
       expect(loggedData[metricName]).toEqual([ 10, 20 ]);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': metricName,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [metricName]: [ 10, 20 ]
+      });
             
     });
 
     test('it should create multiple metric values if added multiple times', () => {
                                   
       // Prepare
-      const metricName1 = 'test-metrics';
-      const metricName2 = 'test-metrics-2';
+      const metricName1 = 'test-metric-1';
+      const metricName2 = 'test-metric-2';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                           
       // Act
@@ -1176,13 +1427,41 @@ describe('Class: Metrics', () => {
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(2);
       expect(loggedData[metricName1]).toEqual(10);
       expect(loggedData[metricName2]).toEqual(20);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': metricName1,
+                  'Unit': MetricUnits.Count
+                },
+                {
+                  'Name': metricName2,
+                  'Unit': MetricUnits.Seconds
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [metricName1]: 10,
+        [metricName2]: 20
+      });
               
     });
 
     test('it should not contain `StorageResolution` as key for non-high resolution metrics', () => {
                                         
       // Prepare
-      const metricName = 'test-metrics';
+      const metricName = 'test-metric';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                                 
       // Act
@@ -1191,26 +1470,78 @@ describe('Class: Metrics', () => {
                                 
       // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
-      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBeUndefined();  
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBeUndefined();
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': metricName,
+                  'Unit': MetricUnits.Count
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [metricName]: 10
+      });
 
     });
 
     test('it should contain `StorageResolution` as key & high metric resolution as value for high resolution metrics', () => {
                                         
       // Prepare
-      const metricName = 'test-metrics';
-      const metricName2 = 'test-metrics-2';
+      const metricName1 = 'test-metric';
+      const metricName2 = 'test-metric-2';
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
                                 
       // Act
-      metrics.addMetric(metricName, MetricUnits.Count, 10);
+      metrics.addMetric(metricName1, MetricUnits.Count, 10);
       metrics.addMetric(metricName2, MetricUnits.Seconds, 10, MetricResolution.High);
       const loggedData = metrics.serializeMetrics();
                                 
       // Assess
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(2);
       expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].StorageResolution).toBeUndefined();
-      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[1].StorageResolution).toEqual(MetricResolution.High);  
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[1].StorageResolution).toEqual(MetricResolution.High);
+      expect(loggedData).toEqual({
+        '_aws': {
+          'CloudWatchMetrics': [
+            {
+              'Dimensions': [
+                [
+                  'service'
+                ]
+              ],
+              'Metrics': [
+                {
+                  'Name': metricName1,
+                  'Unit':  MetricUnits.Count
+                },
+                {
+                  'Name': metricName2,
+                  'StorageResolution': 1,
+                  'Unit': MetricUnits.Seconds
+                }
+              ],
+              'Namespace': TEST_NAMESPACE
+            }
+          ],
+          'Timestamp': mockDate.getTime()
+        },
+        'service': 'service_undefined',
+        [metricName1]: 10,
+        [metricName2]: 10
+      });
       
     });
 

@@ -370,20 +370,32 @@ describe('Class: Metrics', () => {
 
     });
 
-    test('it should publish metrics if stored metrics count has reached max metric size threshold', () => {
+    test('it should publish metrics if stored metrics count has already reached max metric size threshold & then store remaining metric', () => {
         
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const metricName = 'test-metric';
         
-      // Act
-      for (let i = 0; i <= MAX_METRICS_SIZE; i++) {
-        metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
-      }
-  
-      // Assess
+      // Act & Assess
+      expect(() => {
+        for (let i = 0; i < MAX_METRICS_SIZE; i++) {
+          metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
+        }
+      }).not.toThrowError();
+      expect(Object.keys(metrics['storedMetrics']).length).toEqual(MAX_METRICS_SIZE);
+      metrics.addMetric('another-metric', MetricUnits.Count, MAX_METRICS_SIZE + 1);
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(1);
+      expect(metrics).toEqual(expect.objectContaining({
+        storedMetrics: {
+          'another-metric': {
+            name: 'another-metric',
+            resolution: MetricResolution.Standard,
+            unit: MetricUnits.Count,
+            value: MAX_METRICS_SIZE + 1
+          }
+        },
+      }));
 
     });
 
@@ -394,13 +406,16 @@ describe('Class: Metrics', () => {
       const publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       const metricName = 'test-metric';
         
-      // Act
-      for (let i = 0; i < MAX_METRICS_SIZE; i++) {
-        metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
-      }
-  
-      // Assess
+      // Act & Assess
+      expect(() => {
+        for (let i = 0; i < MAX_METRICS_SIZE - 1; i++) {
+          metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
+        }
+      }).not.toThrowError();
+      expect(Object.keys(metrics['storedMetrics']).length).toEqual(MAX_METRICS_SIZE - 1);
+      metrics.addMetric('another-metric', MetricUnits.Count, MAX_METRICS_SIZE);
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
+      expect(Object.keys(metrics['storedMetrics']).length).toEqual(MAX_METRICS_SIZE);
 
     });
 

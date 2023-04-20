@@ -82,13 +82,13 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
   
-      // Act 
+      // Act & Assess
       // Starts from 1 because the service dimension is already added by default
-      for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
-        metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
-      }
-
-      // Assess
+      expect(() => {
+        for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
+          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
+        }
+      }).not.toThrowError();
       expect(Object.keys(metrics['defaultDimensions']).length).toBe(1);
       expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT - 1);
       expect(() => metrics.addDimension('another-dimension', 'another-dimension-value'))
@@ -107,13 +107,13 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
   
-      // Act 
+      // Act & Assess
       // Starts from 3 because three default dimensions are already set (service, environment, foo)
-      for (let i = 3; i < MAX_DIMENSION_COUNT; i++) {
-        metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
-      }
-
-      // Assess
+      expect(() => {
+        for (let i = 3; i < MAX_DIMENSION_COUNT; i++) {
+          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
+        }
+      }).not.toThrowError();
       expect(Object.keys(metrics['defaultDimensions']).length).toBe(3);
       expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT - 3);
       expect(() => metrics.addDimension('another-dimension', 'another-dimension-value'))
@@ -195,10 +195,8 @@ describe('Class: Metrics', () => {
         dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
      
-      // Act 
-      metrics.addDimensions(dimensionsToBeAdded);
-
-      // Assess
+      // Act & Assess
+      expect(() => metrics.addDimensions(dimensionsToBeAdded)).not.toThrowError();
       expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT);
       expect(() => {
         metrics.addDimensions({ 'another-dimension': 'another-dimension-value' });
@@ -1684,10 +1682,8 @@ describe('Class: Metrics', () => {
         defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
 
-      // Act
-      metrics.setDefaultDimensions(defaultDimensions);
-      
-      // Assess
+      // Act & Assess
+      expect(() => metrics.setDefaultDimensions(defaultDimensions)).not.toThrowError();
       expect(Object.keys(metrics['defaultDimensions']).length).toBe(MAX_DIMENSION_COUNT - 1);
       expect(() => {
         metrics.setDefaultDimensions({ 'another-dimension': 'another-dimension-value' });
@@ -1715,10 +1711,8 @@ describe('Class: Metrics', () => {
         defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
 
-      // Act
-      metrics.setDefaultDimensions(defaultDimensions);
-      
-      // Assess
+      // Act & Assess
+      expect(() => metrics.setDefaultDimensions(defaultDimensions)).not.toThrowError();
       expect(Object.keys(metrics['defaultDimensions']).length).toBe(MAX_DIMENSION_COUNT - 1);
       expect(() => {
         metrics.setDefaultDimensions({ 'another-dimension': 'another-dimension-value' });

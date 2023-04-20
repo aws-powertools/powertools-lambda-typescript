@@ -17,6 +17,10 @@ import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils';
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
+interface LooseObject {
+  [key: string]: string
+}
+
 describe('Class: Metrics', () => {
   
   const ENVIRONMENT_VARIABLES = process.env;
@@ -90,7 +94,7 @@ describe('Class: Metrics', () => {
     test('it should take consideration of defaultDimensions while throwing error if number of dimensions exceeds the maximum allowed', () => {
         
       // Prepare
-      const defaultDimensions : { [key: string]: string } = { 'environment': 'dev', 'foo': 'bar' };
+      const defaultDimensions : LooseObject = { 'environment': 'dev', 'foo': 'bar' };
       const metrics: Metrics = createMetrics({ namespace:'test', defaultDimensions });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
@@ -111,7 +115,7 @@ describe('Class: Metrics', () => {
     test('it should add multiple dimensions', () => {
       
       // Prepare
-      const dimensionsToBeAdded: { [key: string]: string } = {
+      const dimensionsToBeAdded: LooseObject = {
         'test-dimension-1': 'test-value-1',
         'test-dimension-2': 'test-value-2',
       };
@@ -130,7 +134,7 @@ describe('Class: Metrics', () => {
     test('it should update existing dimension value if same dimension is added again', () => {
       
       // Prepare
-      const dimensionsToBeAdded: { [key: string]: string } = {
+      const dimensionsToBeAdded: LooseObject = {
         'test-dimension-1': 'test-value-1',
         'test-dimension-2': 'test-value-2',
       };
@@ -156,7 +160,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
-      const dimensionsToBeAdded: { [key: string]: string } = {};
+      const dimensionsToBeAdded: LooseObject = {};
       for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
         dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
@@ -174,7 +178,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
-      const dimensionsToBeAdded: { [key: string]: string } = {};
+      const dimensionsToBeAdded: LooseObject = {};
       for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
         dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
@@ -1154,7 +1158,7 @@ describe('Class: Metrics', () => {
           
       // Prepare
       const testMetric = 'test-metric';
-      const additionalDimensions: { [key: string]: string } = {
+      const additionalDimensions: LooseObject = {
         metric2: 'metric2Value',
         metric3: 'metric3Value'
       };
@@ -1658,7 +1662,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
-      const defaultDimensions: { [key: string]: string } = {};
+      const defaultDimensions: LooseObject = {};
       for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
         defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
@@ -1673,7 +1677,7 @@ describe('Class: Metrics', () => {
     test('it should consider default dimensions provided in constructor, while throwing error if number of dimensions exceeds the maximum allowed', () => {
           
       // Prepare
-      const initialDefaultDimensions: { [key: string]: string } = {
+      const initialDefaultDimensions: LooseObject = {
         'test-dimension': 'test-value',
         'environment': 'dev'
       };
@@ -1683,7 +1687,7 @@ describe('Class: Metrics', () => {
       });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
-      const defaultDimensions: { [key: string]: string } = {};
+      const defaultDimensions: LooseObject = {};
       for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(initialDefaultDimensions).length); i++) {
         defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }

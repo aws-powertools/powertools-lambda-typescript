@@ -82,29 +82,42 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
   
-      // Act & Assess
-      expect(() => {
-        for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
-          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
-        }
-      }).toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+      // Act 
+      // Starts from 1 because the service dimension is already added by default
+      for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
+        metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
+      }
+
+      // Assess
+      expect(Object.keys(metrics['defaultDimensions']).length).toBe(1);
+      expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT - 1);
+      expect(() => metrics.addDimension('another-dimension', 'another-dimension-value'))
+        .toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       
     });
 
     test('it should take consideration of defaultDimensions while throwing error if number of dimensions exceeds the maximum allowed', () => {
         
       // Prepare
-      const defaultDimensions : LooseObject = { 'environment': 'dev', 'foo': 'bar' };
-      const metrics: Metrics = createMetrics({ namespace:'test', defaultDimensions });
+      const defaultDimensions: LooseObject = {
+        'environment': 'dev',
+        'foo': 'bar'
+      };
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE, defaultDimensions });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
   
-      // Act & Assess
-      expect(() => {
-        for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(defaultDimensions).length); i++) {
-          metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
-        }
-      }).toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+      // Act 
+      // Starts from 3 because three default dimensions are already set (service, environment, foo)
+      for (let i = 3; i < MAX_DIMENSION_COUNT; i++) {
+        metrics.addDimension(`${dimensionName}-${i}`, `${dimensionValue}-${i}`);
+      }
+
+      // Assess
+      expect(Object.keys(metrics['defaultDimensions']).length).toBe(3);
+      expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT - 3);
+      expect(() => metrics.addDimension('another-dimension', 'another-dimension-value'))
+        .toThrowError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
 
     });
 
@@ -154,24 +167,6 @@ describe('Class: Metrics', () => {
 
     });
 
-    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
-        
-      // Prepare
-      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
-      const dimensionName = 'test-dimension';
-      const dimensionValue = 'test-value';
-      const dimensionsToBeAdded: LooseObject = {};
-      for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
-        dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
-      }
-     
-      // Act & Assess
-      expect(() => {
-        metrics.addDimensions(dimensionsToBeAdded);
-      }).toThrowError(`Unable to add ${Object.keys(dimensionsToBeAdded).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
-      
-    });
-
     test('it should successfully add up to maximum allowed dimensions without throwing error', () => {
         
       // Prepare
@@ -184,10 +179,30 @@ describe('Class: Metrics', () => {
       }
      
       // Act & Assess
+      expect(() => { metrics.addDimensions(dimensionsToBeAdded);}).not.toThrowError();
+      expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT);
+      
+    });
+
+    test('it should throw error if number of dimensions exceeds the maximum allowed', () => {
+        
+      // Prepare
+      const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
+      const dimensionName = 'test-dimension';
+      const dimensionValue = 'test-value';
+      const dimensionsToBeAdded: LooseObject = {};
+      for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
+        dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
+      }
+     
+      // Act 
+      metrics.addDimensions(dimensionsToBeAdded);
+
+      // Assess
+      expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT);
       expect(() => {
-        metrics.addDimensions(dimensionsToBeAdded);
-      }).not.toThrowError(`Unable to add ${Object.keys(dimensionsToBeAdded).length} dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
-      expect(metrics).toEqual(expect.objectContaining({ dimensions: dimensionsToBeAdded }));
+        metrics.addDimensions({ 'another-dimension': 'another-dimension-value' });
+      }).toThrowError(`Unable to add 1 dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       
     });
     
@@ -1656,25 +1671,31 @@ describe('Class: Metrics', () => {
 
     });
 
-    test('it should throw error if number of dimensions reaches the maximum allowed', () => {
+    test('it should throw error if number of default dimensions reaches the maximum allowed', () => {
           
       // Prepare
       const metrics: Metrics = createMetrics({ namespace: TEST_NAMESPACE });
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const defaultDimensions: LooseObject = {};
-      for (let i = 0; i <= MAX_DIMENSION_COUNT; i++) {
+
+      // Starts from 1 because the service dimension is already added by default
+      for (let i = 1; i < MAX_DIMENSION_COUNT - 1; i++) {
         defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
+
+      // Act
+      metrics.setDefaultDimensions(defaultDimensions);
       
-      // Act & Assess
+      // Assess
+      expect(Object.keys(metrics['defaultDimensions']).length).toBe(MAX_DIMENSION_COUNT - 1);
       expect(() => {
-        metrics.setDefaultDimensions(defaultDimensions);
+        metrics.setDefaultDimensions({ 'another-dimension': 'another-dimension-value' });
       }).toThrowError('Max dimension count hit');
         
     });
 
-    test('it should consider default dimensions provided in constructor, while throwing error if number of dimensions exceeds the maximum allowed', () => {
+    test('it should consider default dimensions provided in constructor, while throwing error if number of default dimensions reaches the maximum allowed', () => {
           
       // Prepare
       const initialDefaultDimensions: LooseObject = {
@@ -1688,13 +1709,19 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const defaultDimensions: LooseObject = {};
-      for (let i = 0; i < (MAX_DIMENSION_COUNT - Object.keys(initialDefaultDimensions).length); i++) {
+
+      // Starts from 3 because the service dimension is already added by default & two dimensions are already added in the constructor
+      for (let i = 3; i < MAX_DIMENSION_COUNT - 1; i++) {
         defaultDimensions[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
+
+      // Act
+      metrics.setDefaultDimensions(defaultDimensions);
       
-      // Act & Assess
+      // Assess
+      expect(Object.keys(metrics['defaultDimensions']).length).toBe(MAX_DIMENSION_COUNT - 1);
       expect(() => {
-        metrics.setDefaultDimensions(defaultDimensions);
+        metrics.setDefaultDimensions({ 'another-dimension': 'another-dimension-value' });
       }).toThrowError('Max dimension count hit');
         
     });

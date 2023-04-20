@@ -10,7 +10,6 @@ import {
   Code,
   Runtime,
   CfnLayerVersionPermission,
-  Architecture,
 } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
@@ -39,7 +38,7 @@ export class LayerPublisherStack extends Stack {
       ],
       license: 'MIT-0',
       // This is needed because the following regions do not support the compatibleArchitectures property #1400
-      ...([ 'eu-south-2', 'eu-central-2', 'ap-southeast-4' ].includes(Stack.of(this).region) ? { compatibleArchitectures: [Architecture.X86_64] } : {}),
+      // ...(![ 'eu-south-2', 'eu-central-2', 'ap-southeast-4' ].includes(Stack.of(this).region) ? { compatibleArchitectures: [Architecture.X86_64] } : {}),
       code: Code.fromAsset('../tmp'),
     });
 

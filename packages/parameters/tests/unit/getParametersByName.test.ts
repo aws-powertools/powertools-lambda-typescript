@@ -5,7 +5,9 @@
  */
 import { DEFAULT_PROVIDERS } from '../../src/BaseProvider';
 import { SSMProvider, getParametersByName } from '../../src/ssm';
-import type { SSMGetParametersByNameOptionsInterface } from '../../src/types/SSMProvider';
+import type {
+  SSMGetParametersByNameOptions
+} from '../../src/types/SSMProvider';
 
 describe('Function: getParametersByName', () => {
 
@@ -16,7 +18,7 @@ describe('Function: getParametersByName', () => {
   test('when called and a default provider doesn\'t exist, it instantiates one and returns the value', async () => {
 
     // Prepare
-    const parameters: Record<string, SSMGetParametersByNameOptionsInterface> = {
+    const parameters: Record<string, SSMGetParametersByNameOptions> = {
       '/foo/bar': {
         maxAge: 1000,
       },

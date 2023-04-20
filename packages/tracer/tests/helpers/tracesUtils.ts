@@ -1,11 +1,16 @@
-import AWS, { XRay } from 'aws-sdk';
 import promiseRetry from 'promise-retry';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import {
-  invokeFunction, TestRuntimesKey, TEST_RUNTIMES,
-} from '../../../commons/tests/utils/e2eUtils';
-import { Duration, Stack } from 'aws-cdk-lib';
+import { Duration } from 'aws-cdk-lib';
 import { Architecture, Tracing } from 'aws-cdk-lib/aws-lambda';
+import {
+  GetTraceSummariesCommand,
+  BatchGetTracesCommand,
+} from '@aws-sdk/client-xray';
+import type { XRayClient } from '@aws-sdk/client-xray';
+import type { STSClient } from '@aws-sdk/client-sts';
+import {
+  GetCallerIdentityCommand
+} from '@aws-sdk/client-sts';
 import { 
   expectedCustomAnnotationKey, 
   expectedCustomAnnotationValue, 
@@ -14,79 +19,20 @@ import {
   expectedCustomResponseValue, 
   expectedCustomErrorMessage,
 } from '../e2e/constants';
-import { FunctionSegmentNotDefinedError } from './FunctionSegmentNotDefinedError';
-interface ParsedDocument {
-  name: string
-  id: string
-  start_time: number
-  end_time?: number
-  // This flag may be set if the segment hasn't been fully processed
-  // The trace may have already appeared in the `getTraceSummaries` response 
-  // but a segment may still be in_progress
-  in_progress?: boolean 
-  aws?: {
-    request_id: string
-  }
-  http?: {
-    response: {
-      status: number
-    }
-  }
-  origin?: string
-  resource_arn?: string
-  trace_id?: string
-  subsegments?: ParsedDocument[]
-  annotations?: {
-    [key: string]: string | boolean | number
-  }
-  metadata?: {
-    [key: string]: {
-      [key: string]: unknown
-    }
-  }
-  fault?: boolean
-  cause?: {
-    working_directory: string
-    exceptions: {
-      message: string
-      type: string
-      remote: boolean
-      stack: {
-        path: string
-        line: number
-        label: string
-      }[]
-    }[]
-  }
-  exception: {
-    message: string
-  }
-  error?: boolean
-}
+import {
+  invokeFunction, TestRuntimesKey, TEST_RUNTIMES,
+} from '../../../commons/tests/utils/e2eUtils';
+import {
+  FunctionSegmentNotDefinedError
+} from './FunctionSegmentNotDefinedError';
+import type {
+  ParsedDocument,
+  ParsedSegment,
+  ParsedTrace,
+  TracerTestFunctionParams,
+} from './traceUtils.types';
 
-interface ParsedSegment {
-  Document: ParsedDocument
-  Id: string
-}
-
-export interface ParsedTrace {
-  Duration: number
-  Id: string
-  LimitExceeded: boolean
-  Segments: ParsedSegment[]
-}
-
-interface TracerTestFunctionParams { 
-  stack: Stack
-  functionName: string
-  handler?: string
-  entry: string
-  expectedServiceName: string
-  environmentParams: { [key: string]: string }
-  runtime: string
-}
-
-const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string, expectedTraces: number, expectedSegments: number): Promise<ParsedTrace[]> => {
+const getTraces = async (xrayClient: XRayClient, startTime: Date, resourceArn: string, expectedTraces: number, expectedSegments: number): Promise<ParsedTrace[]> => {
   const retryOptions = { retries: 20, minTimeout: 5_000, maxTimeout: 10_000, factor: 1.25 };
 
   return promiseRetry(async(retry: (err?: Error) => never , _: number) => {
@@ -94,20 +40,24 @@ const getTraces = async (xrayClient: XRay, startTime: Date, resourceArn: string,
     const endTime = new Date();
     console.log(`Manual query: aws xray get-trace-summaries --start-time ${Math.floor(startTime.getTime() / 1000)} --end-time ${Math.floor(endTime.getTime() / 1000)} --filter-expression 'resource.arn = "${resourceArn}"'`);
     const traces = await xrayClient
-      .getTraceSummaries({
+      .send(new GetTraceSummariesCommand({
         StartTime: startTime,
         EndTime: endTime,
         FilterExpression: `resource.arn = "${resourceArn}"`,
-      })
-      .promise();
+      }));
 
     if (traces.TraceSummaries?.length !== expectedTraces) {
       retry(new Error(`Expected ${expectedTraces} traces, got ${traces.TraceSummaries?.length} for ${resourceArn}`));
     }
 
-    const traceDetails = await xrayClient.batchGetTraces({
-      TraceIds: traces.TraceSummaries?.map((traceSummary) => traceSummary?.Id) as XRay.TraceIdList,
-    }).promise();
+    const traceIds = traces.TraceSummaries?.map((traceSummary) => traceSummary.Id);
+    if (!traceIds.every((traceId) => traceId !== undefined)) {
+      retry(new Error(`Expected all trace summaries to have an ID, got ${traceIds} for ${resourceArn}`));
+    }
+
+    const traceDetails = await xrayClient.send(new BatchGetTracesCommand({
+      TraceIds: traceIds as string[],
+    }));
 
     if (traceDetails.Traces?.length !== expectedTraces) {
       retry(new Error(`Expected ${expectedTraces} trace summaries, got ${traceDetails.Traces?.length} for ${resourceArn}`));
@@ -257,11 +207,10 @@ const createTracerTestFunction = (params: TracerTestFunctionParams): NodejsFunct
 };
 
 let account: string | undefined;
-const getFunctionArn = async (functionName: string): Promise<string> => {
+const getFunctionArn = async (stsClient: STSClient, functionName: string): Promise<string> => {
   const region = process.env.AWS_REGION;
-  const stsClient = new AWS.STS();
   if (!account) {
-    const identity = await stsClient.getCallerIdentity().promise();
+    const identity = await stsClient.send(new GetCallerIdentityCommand({}));
     account = identity.Account;
   }
   
@@ -277,9 +226,4 @@ export {
   invokeAllTestCases,
   createTracerTestFunction,
   getFunctionArn,
-};
-
-export type {
-  ParsedDocument,
-  TracerTestFunctionParams,
 };

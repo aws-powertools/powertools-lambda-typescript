@@ -6,7 +6,9 @@ import {
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import type {
   SecretsProviderOptions,
-  SecretsGetOptionsInterface
+  SecretsGetOptions,
+  SecretsGetOutput,
+  SecretsGetOptionsUnion,
 } from '../types/SecretsProvider';
 
 /**
@@ -157,7 +159,7 @@ class SecretsProvider extends BaseProvider {
    * 
    * @param {SecretsProviderOptions} config - The configuration object.
    */
-  public constructor (config?: SecretsProviderOptions) {
+  public constructor(config?: SecretsProviderOptions) {
     super();
 
     if (config?.awsSdkV3Client) {
@@ -170,7 +172,6 @@ class SecretsProvider extends BaseProvider {
       const clientConfig = config?.clientConfig || {};
       this.client = new SecretsManagerClient(clientConfig);
     }
-    
   }
 
   /**
@@ -197,14 +198,20 @@ class SecretsProvider extends BaseProvider {
    * For usage examples check {@link SecretsProvider}.
    * 
    * @param {string} name - The name of the secret
-   * @param {SecretsGetOptionsInterface} options - Options to customize the retrieval of the secret
+   * @param {SecretsGetOptions} options - Options to customize the retrieval of the secret
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async get(
+  public async get<
+    ExplicitUserProvidedType = undefined,
+    InferredFromOptionsType extends SecretsGetOptionsUnion | undefined = SecretsGetOptionsUnion
+  >(
     name: string,
-    options?: SecretsGetOptionsInterface
-  ): Promise<undefined | string | Uint8Array | Record<string, unknown>> {
-    return super.get(name, options);
+    options?: InferredFromOptionsType & SecretsGetOptions
+  ): Promise<SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> {
+    return super.get(
+      name,
+      options
+    ) as Promise<SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
   }
 
   /**
@@ -221,11 +228,11 @@ class SecretsProvider extends BaseProvider {
    * Retrieve a configuration from AWS AppConfig.
    *
    * @param {string} name - Name of the configuration or its ID
-   * @param {SecretsGetOptionsInterface} options - SDK options to propagate to the AWS SDK v3 for JavaScript client
+   * @param {SecretsGetOptions} options - SDK options to propagate to the AWS SDK v3 for JavaScript client
    */
   protected async _get(
     name: string,
-    options?: SecretsGetOptionsInterface
+    options?: SecretsGetOptions
   ): Promise<string | Uint8Array | undefined> {
     const sdkOptions: GetSecretValueCommandInput = {
       ...(options?.sdkOptions || {}),
@@ -249,7 +256,7 @@ class SecretsProvider extends BaseProvider {
     _options?: unknown
   ): Promise<Record<string, string | undefined>> {
     throw new Error('Method not implemented.');
-  } 
+  }
 }
 
 export {

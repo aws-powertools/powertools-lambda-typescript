@@ -67,7 +67,7 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
 
     // Logger: All log statements are written to CloudWatch
     logger.debug(`retrieved items: ${items?.length || 0}`);
-    
+
     logger.info(`Response ${event.path}`, {
       statusCode: 200,
       body: items,
@@ -80,7 +80,7 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
   } catch (err) {
     tracer.addErrorAsMetadata(err as Error);
     logger.error('Error reading from table. ' + err);
-    
+
     return {
       statusCode: 500,
       body: JSON.stringify({ 'error': 'Error reading from table.' })

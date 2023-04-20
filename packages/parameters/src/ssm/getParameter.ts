@@ -2,6 +2,7 @@ import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
 import type {
   SSMGetOptions,
   SSMGetOutput,
+  SSMGetOptionsUnion,
 } from '../types/SSMProvider';
 
 /**
@@ -139,17 +140,20 @@ import type {
  * @param {SSMGetOptions} options - Options to configure the provider
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
  */
-const getParameter = <T = undefined, O extends SSMGetOptions | undefined = SSMGetOptions>(
+const getParameter = async <
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType extends SSMGetOptionsUnion | undefined = SSMGetOptionsUnion
+>(
   name: string,
-  options?: O & SSMGetOptions
-): Promise<SSMGetOutput<T, O> | undefined> => {
+  options?: InferredFromOptionsType & SSMGetOptions
+): Promise<SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
   return (
     DEFAULT_PROVIDERS.ssm as SSMProvider
-  ).get(name, options) as Promise<SSMGetOutput<T, O> | undefined>;
+  ).get(name, options) as Promise<SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
 };
 
 export {

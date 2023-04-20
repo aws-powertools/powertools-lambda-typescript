@@ -46,5 +46,9 @@
     "powertools",
     "serverless",
     "nodejs"
-  ]
+  ],
+  "devDependencies": {
+    "@aws-sdk/client-lambda": "^3.310.0",
+    "@aws-sdk/util-utf8-node": "^3.259.0"
+  }
 }

@@ -960,7 +960,7 @@ describe('Class: Metrics', () => {
       
       // Prepare
       const metrics: Metrics = createMetrics({
-        namespace: 'test-namespace',
+        namespace: TEST_NAMESPACE,
         serviceName: 'test-service',
         defaultDimensions: {
           'environment': 'dev'
@@ -980,7 +980,7 @@ describe('Class: Metrics', () => {
             'Timestamp': mockDate.getTime(),
             'CloudWatchMetrics': [
               {
-                'Namespace': 'test-namespace',
+                'Namespace': TEST_NAMESPACE,
                 'Dimensions': [
                   [
                     'service',

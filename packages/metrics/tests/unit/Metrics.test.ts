@@ -179,7 +179,7 @@ describe('Class: Metrics', () => {
       }
      
       // Act & Assess
-      expect(() => { metrics.addDimensions(dimensionsToBeAdded);}).not.toThrowError();
+      expect(() => metrics.addDimensions(dimensionsToBeAdded)).not.toThrowError();
       expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT);
       
     });
@@ -198,9 +198,9 @@ describe('Class: Metrics', () => {
       // Act & Assess
       expect(() => metrics.addDimensions(dimensionsToBeAdded)).not.toThrowError();
       expect(Object.keys(metrics['dimensions']).length).toBe(MAX_DIMENSION_COUNT);
-      expect(() => {
-        metrics.addDimensions({ 'another-dimension': 'another-dimension-value' });
-      }).toThrowError(`Unable to add 1 dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+      expect(() => 
+        metrics.addDimensions({ 'another-dimension': 'another-dimension-value' })
+      ).toThrowError(`Unable to add 1 dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
       
     });
     

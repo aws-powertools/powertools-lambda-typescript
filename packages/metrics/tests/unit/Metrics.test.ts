@@ -10,9 +10,10 @@ import {
 } from '@aws-lambda-powertools/commons';
 import { MetricResolution, MetricUnits, Metrics } from '../../src/';
 import { Context, Handler } from 'aws-lambda';
-import { Dimensions, EmfOutput } from '../../src/types';
+import { Dimensions, EmfOutput, MetricsOptions } from '../../src/types';
 import { COLD_START_METRIC, DEFAULT_NAMESPACE, MAX_DIMENSION_COUNT, MAX_METRICS_SIZE } from '../../src/constants';
 import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils';
+import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/config';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -33,6 +34,253 @@ describe('Class: Metrics', () => {
     jest.resetModules();
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
+  });
+
+  describe('Method: constructor', () => {
+
+    test('when no constructor parameters are set, creates instance with the options set in the environment variables', () => {
+
+      // Prepare
+      const metricsOptions = undefined;
+
+      // Act
+      const metrics: Metrics = new Metrics(metricsOptions);
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        coldStart: true,
+        customConfigService: undefined,
+        defaultDimensions: {
+          service: 'service_undefined',
+        },
+        defaultServiceName: 'service_undefined',
+        dimensions: {},
+        envVarsService: expect.any(EnvironmentVariablesService),
+        isSingleMetric: false,
+        metadata: {},
+        namespace: 'hello-world',
+        shouldThrowOnEmptyMetrics: false,
+        storedMetrics: {}
+      }));
+
+    });
+      
+    test('when no constructor parameters and no environment variables are set, creates instance with the default properties', () => {
+
+      // Prepare
+      const metricsOptions = undefined;
+      process.env = {};
+
+      // Act
+      const metrics: Metrics = new Metrics(metricsOptions);
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        coldStart: true,
+        customConfigService: undefined,
+        defaultDimensions: {
+          service: 'service_undefined',
+        },
+        defaultServiceName: 'service_undefined',
+        dimensions: {},
+        envVarsService: expect.any(EnvironmentVariablesService),
+        isSingleMetric: false,
+        metadata: {},
+        namespace: '',
+        shouldThrowOnEmptyMetrics: false,
+        storedMetrics: {}
+      }));
+
+    });
+      
+    test('when constructor parameters are set, creates instance with the options set in the constructor parameters', () => {
+
+      // Prepare
+      const metricsOptions: MetricsOptions = {
+        customConfigService: new EnvironmentVariablesService(),
+        namespace: TEST_NAMESPACE,
+        serviceName: 'test-service',
+        singleMetric: true,
+        defaultDimensions: {
+          service: 'order',
+        },
+      };
+
+      // Act
+      const metrics: Metrics = new Metrics(metricsOptions);
+
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        coldStart: true,
+        customConfigService: expect.any(EnvironmentVariablesService),
+        defaultDimensions: metricsOptions.defaultDimensions,
+        defaultServiceName: 'service_undefined',
+        dimensions: {},
+        envVarsService: expect.any(EnvironmentVariablesService),
+        isSingleMetric: true,
+        metadata: {},
+        namespace: metricsOptions.namespace,
+        shouldThrowOnEmptyMetrics: false,
+        storedMetrics: {}
+      }));
+    });
+      
+    test('when custom namespace is passed, creates instance with the correct properties', () => {
+            
+      // Prepare
+      const metricsOptions: MetricsOptions = {
+        namespace: TEST_NAMESPACE,
+      };
+    
+      // Act
+      const metrics: Metrics = new Metrics(metricsOptions);
+    
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        coldStart: true,
+        customConfigService: undefined,
+        defaultDimensions: {
+          service: 'service_undefined',
+        },
+        defaultServiceName: 'service_undefined',
+        dimensions: {},
+        envVarsService: expect.any(EnvironmentVariablesService),
+        isSingleMetric: false,
+        metadata: {},
+        namespace: metricsOptions.namespace,
+        shouldThrowOnEmptyMetrics: false,
+        storedMetrics: {}
+      }));
+    
+    });
+
+    test('when custom defaultDimensions is passed, creates instance with the correct properties', () => {
+              
+      // Prepare
+      const metricsOptions: MetricsOptions = {
+        defaultDimensions: {
+          service: 'order',
+        },
+      };
+      
+      // Act
+      const metrics: Metrics = new Metrics(metricsOptions);
+      
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        coldStart: true,
+        customConfigService: undefined,
+        defaultDimensions: metricsOptions.defaultDimensions,
+        defaultServiceName: 'service_undefined',
+        dimensions: {},
+        envVarsService: expect.any(EnvironmentVariablesService),
+        isSingleMetric: false,
+        metadata: {},
+        namespace: 'hello-world',
+        shouldThrowOnEmptyMetrics: false,
+        storedMetrics: {}
+      }));
+        
+    });
+
+    test('when singleMetric is passed, creates instance with the correct properties', () => {
+                  
+      // Prepare
+      const metricsOptions: MetricsOptions = {
+        singleMetric: true,
+      };
+        
+      // Act
+      const metrics: Metrics = new Metrics(metricsOptions);
+        
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        coldStart: true,
+        customConfigService: undefined,
+        defaultDimensions: {
+          service: 'service_undefined',
+        },
+        defaultServiceName: 'service_undefined',
+        dimensions: {},
+        envVarsService: expect.any(EnvironmentVariablesService),
+        isSingleMetric: true,
+        metadata: {},
+        namespace: 'hello-world',
+        shouldThrowOnEmptyMetrics: false,
+        storedMetrics: {}
+      }));
+          
+    });
+
+    test('when custom customConfigService is passed, creates instance with the correct properties', () => {
+                        
+      // Prepare
+      const configService: ConfigServiceInterface = {
+        get(name: string): string {
+          return `a-string-from-${name}`;
+        },
+        getNamespace(): string{
+          return TEST_NAMESPACE;
+        },
+        getServiceName(): string{
+          return 'test-service';
+        }
+      };
+      const metricsOptions: MetricsOptions = {
+        customConfigService: configService,
+      };
+              
+      // Act
+      const metrics: Metrics = new Metrics(metricsOptions);
+              
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        coldStart: true,
+        customConfigService: configService,
+        defaultDimensions: {
+          service: 'test-service'
+        },
+        defaultServiceName: 'service_undefined',
+        dimensions: {},
+        envVarsService: expect.any(EnvironmentVariablesService),
+        isSingleMetric: false,
+        metadata: {},
+        namespace: TEST_NAMESPACE,
+        shouldThrowOnEmptyMetrics: false,
+        storedMetrics: {}
+      }));
+                
+    });
+
+    test('when custom serviceName is passed, creates instance with the correct properties', () => {
+                            
+      // Prepare
+      const metricsOptions: MetricsOptions = {
+        serviceName: 'test-service',
+      };
+                      
+      // Act
+      const metrics: Metrics = new Metrics(metricsOptions);
+                      
+      // Assess
+      expect(metrics).toEqual(expect.objectContaining({
+        coldStart: true,
+        customConfigService: undefined,
+        defaultDimensions: {
+          service: 'test-service'
+        },
+        defaultServiceName: 'service_undefined',
+        dimensions: {},
+        envVarsService: expect.any(EnvironmentVariablesService),
+        isSingleMetric: false,
+        metadata: {},
+        namespace: 'hello-world',
+        shouldThrowOnEmptyMetrics: false,
+        storedMetrics: {}
+      }));
+                          
+    });
+
   });
 
   describe('Method: addDimension', () => {

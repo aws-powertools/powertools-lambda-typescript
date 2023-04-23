@@ -46,7 +46,16 @@ export class IdempotencyHandler<U> {
     }
   }
 
+  /**
+   * Main entry point for the handler
+   * IdempotencyInconsistentStateError can happen under rare but expected cases
+   * when persistent state changes in the small time between put & get requests.
+   * In most cases we can retry successfully on this exception.
+   */
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   public async handle(): Promise<U> {
+
     const MAX_RETRIES = 2;
     for (let i = 1; i <= MAX_RETRIES; i++) {
       try {
@@ -57,7 +66,6 @@ export class IdempotencyHandler<U> {
         }
       }
     }
-    throw new Error('This should never happen');
   }
 
   public async processIdempotency(): Promise<U> {

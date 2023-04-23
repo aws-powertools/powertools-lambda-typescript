@@ -5,7 +5,7 @@
  */
 
 import {
-  IdempotencyAlreadyInProgressError,
+  IdempotencyAlreadyInProgressError, IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError
 } from '../../src/Exceptions';
@@ -43,7 +43,7 @@ describe('Class IdempotencyHandler', () => {
 
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: Date.now() + 10000, // should be in the future
+        expiryTimestamp: Date.now() + 1000, // should be in the future
         inProgressExpiryTimestamp: 0, // less than current time in milliseconds
         responseData: { responseData: 'responseData' },
         payloadHash: 'payloadHash',
@@ -57,6 +57,48 @@ describe('Class IdempotencyHandler', () => {
         await idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
       } catch (e) {
         expect(e).toBeInstanceOf(IdempotencyAlreadyInProgressError);
+      }
+    });
+
+    test('when record is in progress and outside expiry window, it rejects with IdempotencyInconsistentStateError', async () => {
+
+      const stubRecord = new IdempotencyRecord({
+        idempotencyKey: 'idempotencyKey',
+        expiryTimestamp: Date.now() + 1000, // should be in the future
+        inProgressExpiryTimestamp: new Date().getUTCMilliseconds() - 1000, // should be in the past
+        responseData: { responseData: 'responseData' },
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.INPROGRESS
+      });
+
+      expect(stubRecord.isExpired()).toBe(false);
+      expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
+
+      try {
+        await idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
+      } catch (e) {
+        expect(e).toBeInstanceOf(IdempotencyInconsistentStateError);
+      }
+    });
+
+    test('when record is expired, it rejects with IdempotencyInconsistentStateError', async () => {
+
+      const stubRecord = new IdempotencyRecord({
+        idempotencyKey: 'idempotencyKey',
+        expiryTimestamp: new Date().getUTCMilliseconds() - 1000, // should be in the past
+        inProgressExpiryTimestamp: 0, // less than current time in milliseconds
+        responseData: { responseData: 'responseData' },
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.EXPIRED
+      });
+
+      expect(stubRecord.isExpired()).toBe(true);
+      expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.EXPIRED);
+
+      try {
+        await idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
+      } catch (e) {
+        expect(e).toBeInstanceOf(IdempotencyInconsistentStateError);
       }
     });
   });

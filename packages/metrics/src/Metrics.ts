@@ -1,8 +1,13 @@
 import { Callback, Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import { MetricsInterface } from '.';
+import type { MetricsInterface } from './MetricsInterface';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { MAX_DIMENSION_COUNT, MAX_METRICS_SIZE, DEFAULT_NAMESPACE, COLD_START_METRIC } from './constants';
+import {
+  MAX_DIMENSION_COUNT,
+  MAX_METRICS_SIZE,
+  DEFAULT_NAMESPACE,
+  COLD_START_METRIC,
+} from './constants';
 import {
   MetricsOptions,
   Dimensions,
@@ -14,7 +19,6 @@ import {
   MetricUnits,
   MetricResolution,
   MetricDefinition,
-  StoredMetric,
 } from './types';
 
 /**
@@ -109,7 +113,7 @@ class Metrics extends Utility implements MetricsInterface {
   private envVarsService?: EnvironmentVariablesService;
   private functionName?: string;
   private isSingleMetric: boolean = false;
-  private metadata: { [key: string]: string } = {};
+  private metadata: Record<string, string> = {};
   private namespace?: string;
   private shouldThrowOnEmptyMetrics: boolean = false;
   private storedMetrics: StoredMetrics = {};
@@ -123,7 +127,9 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Add a dimension to the metrics.
+   *
    * A dimension is a key-value pair that is used to group metrics.
+   *
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension for more details.
    * @param name
    * @param value
@@ -137,7 +143,10 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Add multiple dimensions to the metrics.
-   * @param dimensions
+   *
+   * A dimension is a key-value pair that is used to group metrics.
+   *
+   * @param dimensions A key-value pair of dimensions
    */
   public addDimensions(dimensions: { [key: string]: string }): void {
     const newDimensions = { ...this.dimensions };
@@ -155,9 +164,12 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * A high-cardinality data part of your Metrics log. This is useful when you want to search highly contextual information along with your metrics in your logs.
-   * @param key
-   * @param value
+   * A high-cardinality data part of your Metrics log.
+   *
+   * This is useful when you want to search highly contextual information along with your metrics in your logs.
+   *
+   * @param key The key of the metadata
+   * @param value The value of the metadata
    */
   public addMetadata(key: string, value: string): void {
     this.metadata[key] = value;
@@ -166,30 +178,39 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Add a metric to the metrics buffer.
    *
-   * @example 
+   * By default, metrics are buffered and flushed at the end of the Lambda invocation
+   * or when calling {@link Metrics.publishStoredMetrics}.
    *
-   * Add Metric using MetricUnit Enum supported by Cloudwatch
+   * You can add a metric by specifying the metric name, unit, and value. For convenience,
+   * we provide a set of constants for the most common units in {@link MetricUnits}.
+   *
+   * @example
+   * ```typescript
+   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
    * 
-   * ```ts
+   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+   * 
    * metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
    * ```
+   *
+   * Optionally, you can specify the metric resolution, which can be either `High` or `Standard`.
+   * By default, metrics are published with a resolution of `Standard`, click [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition)
+   * to learn more about metric resolutions.
+   *
+   * @example
+   * ```typescript
+   * import { Metrics, MetricUnits, MetricResolution } from '@aws-lambda-powertools/metrics';
    * 
-   * @example 
+   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
    * 
-   * Add Metric using MetricResolution type with resolutions High or Standard supported by cloudwatch 
-   * 
-   * ```ts
    * metrics.addMetric('successfulBooking', MetricUnits.Count, 1, MetricResolution.High);
    * ```
-   * 
+   *
    * @param name - The metric name 
    * @param unit - The metric unit
    * @param value - The metric value
    * @param resolution - The metric resolution
-   * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition Amazon Cloudwatch Concepts Documentation  
-   * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html#CloudWatch_Embedded_Metric_Format_Specification_structure_metricdefinition Metric Definition of Embedded Metric Format Specification
    */
-
   public addMetric(name: string, unit: MetricUnit, value: number, resolution: MetricResolution = MetricResolution.Standard): void {
     this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
@@ -197,14 +218,15 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Create a singleMetric to capture cold start.
+   * 
    * If it's a cold start invocation, this feature will:
-   *   * Create a separate EMF blob solely containing a metric named ColdStart
+   *   * Create a separate EMF blob that contains a single metric named ColdStart
    *   * Add function_name and service dimensions
    *
-   * This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
+   * This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions,
+   * as well as avoiding potential data loss from metrics not being published for other reasons.
    *
    * @example
-   *
    * ```typescript
    * import { Metrics } from '@aws-lambda-powertools/metrics';
    *
@@ -228,18 +250,30 @@ class Metrics extends Utility implements MetricsInterface {
     singleMetric.addMetric(COLD_START_METRIC, MetricUnits.Count, 1);
   }
 
+  /**
+   * Clear all default dimensions.
+   */
   public clearDefaultDimensions(): void {
     this.defaultDimensions = {};
   }
 
+  /**
+   * Clear all dimensions.
+   */
   public clearDimensions(): void {
     this.dimensions = {};
   }
 
+  /**
+   * Clear all metadata.
+   */
   public clearMetadata(): void {
     this.metadata = {};
   }
 
+  /**
+   * Clear all the metrics stored in the buffer.
+   */
   public clearMetrics(): void {
     this.storedMetrics = {};
   }
@@ -341,45 +375,54 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Function to create the right object compliant with Cloudwatch EMF (Embedded Metric Format).
+   * Function to create a new metric object compliant with the EMF (Embedded Metric Format) schema which
+   * includes the metric name, unit, and optionally storage resolution.
    * 
+   * The function will create a new EMF blob and log it to standard output to be then ingested by Cloudwatch
+   * logs and processed automatically for metrics creation.
    * 
    * @returns metrics as JSON object compliant EMF Schema Specification
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html for more details
    */
   public serializeMetrics(): EmfOutput {
-    // For high-resolution metrics, add StorageResolution property
-    // Example: [ { "Name": "metric_name", "Unit": "Count", "StorageResolution": 1 } ]
+    // Storage resolution is included only for High resolution metrics
+    const metricDefinitions: MetricDefinition[] = Object.values(
+      this.storedMetrics
+    ).map((metricDefinition) => ({
+      Name: metricDefinition.name,
+      Unit: metricDefinition.unit,
+      ...(metricDefinition.resolution === MetricResolution.High
+        ? { StorageResolution: metricDefinition.resolution }
+        : {}),
+    }));
 
-    // For standard resolution metrics, don't add StorageResolution property to avoid unnecessary ingestion of data into cloudwatch
-    // Example: [ { "Name": "metric_name", "Unit": "Count"} ]
-    const metricDefinitions: MetricDefinition[] = Object.values(this.storedMetrics).map((metricDefinition) => 
-      this.isHigh(metricDefinition['resolution']) 
-        ? ({
-          Name: metricDefinition.name,
-          Unit: metricDefinition.unit,
-          StorageResolution: metricDefinition.resolution
-        }): ({
-          Name: metricDefinition.name,
-          Unit: metricDefinition.unit,
-        }));
-    
     if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
-      throw new RangeError('The number of metrics recorded must be higher than zero');
+      throw new RangeError(
+        'The number of metrics recorded must be higher than zero'
+      );
     }
 
-    if (!this.namespace) console.warn('Namespace should be defined, default used');
+    if (!this.namespace)
+      console.warn('Namespace should be defined, default used');
 
+    // We reduce the stored metrics to a single object with the metric
+    // name as the key and the value as the value.
     const metricValues = Object.values(this.storedMetrics).reduce(
-      (result: { [key: string]: number | number[] }, { name, value }: { name: string; value: number | number[] }) => {
+      (
+        result: Record<string, number | number[]>,
+        { name, value }: { name: string; value: number | number[] }
+      ) => {
         result[name] = value;
 
         return result;
       },
-      {},
+      {}
     );
 
-    const dimensionNames = [ ...Object.keys(this.defaultDimensions), ...Object.keys(this.dimensions) ];
+    const dimensionNames = [
+      ...Object.keys(this.defaultDimensions),
+      ...Object.keys(this.dimensions),
+    ];
 
     return {
       _aws: {
@@ -399,6 +442,11 @@ class Metrics extends Utility implements MetricsInterface {
     };
   }
 
+  /**
+   * Sets default dimensions that will be added to all metrics.
+   * 
+   * @param dimensions The default dimensions to be added to all metrics.
+   */
   public setDefaultDimensions(dimensions: Dimensions | undefined): void {
     const targetDimensions = {
       ...this.defaultDimensions,
@@ -410,6 +458,11 @@ class Metrics extends Utility implements MetricsInterface {
     this.defaultDimensions = targetDimensions;
   }
 
+  /**
+   * Sets the function name to be added to the metric.
+   *
+   * @param value The function name to be added to the metric.
+   */
   public setFunctionName(value: string): void {
     this.functionName = value;
   }
@@ -458,25 +511,48 @@ class Metrics extends Utility implements MetricsInterface {
     this.shouldThrowOnEmptyMetrics = true;
   }
 
+  /**
+   * Gets the current number of dimensions stored.
+   * 
+   * @returns the number of dimensions currently stored
+   */
   private getCurrentDimensionsCount(): number {
     return Object.keys(this.dimensions).length + Object.keys(this.defaultDimensions).length;
   }
 
+  /**
+   * Gets the custom config service if it exists.
+   *
+   * @returns the custom config service if it exists, undefined otherwise
+   */
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;
   }
 
+  /**
+   * Gets the environment variables service.
+   *
+   * @returns the environment variables service
+   */
   private getEnvVarsService(): EnvironmentVariablesService {
     return <EnvironmentVariablesService> this.envVarsService;
   }
 
-  private isHigh(resolution: StoredMetric['resolution']): resolution is typeof MetricResolution['High'] {
-    return resolution === MetricResolution.High;
-  }
-
+  /**
+   * Checks if a metric is new or not.
+   *
+   * A metric is considered new if there is no metric with the same name already stored.
+   *
+   * When a metric is not new, we also check if the unit is consistent with the stored metric with
+   * the same name. If the units are inconsistent, we throw an error as this is likely a bug or typo.
+   * This can happen if a metric is added without using the `MetricUnit` helper in JavaScript codebases.
+   *
+   * @param name The name of the metric
+   * @param unit The unit of the metric
+   * @returns true if the metric is new, false if another metric with the same name already exists
+   */
   private isNewMetric(name: string, unit: MetricUnit): boolean {
     if (this.storedMetrics[name]){
-      // Inconsistent units indicates a bug or typos and we want to flag this to users early
       if (this.storedMetrics[name].unit !== unit) {
         const currentUnit = this.storedMetrics[name].unit;
         throw new Error(`Metric "${name}" has already been added with unit "${currentUnit}", but we received unit "${unit}". Did you mean to use metric unit "${currentUnit}"?`);
@@ -488,20 +564,41 @@ class Metrics extends Utility implements MetricsInterface {
     }
   }
 
+  /**
+   * Sets the custom config service to be used.
+   *
+   * @param customConfigService The custom config service to be used
+   */
   private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
     this.customConfigService = customConfigService ? customConfigService : undefined;
   }
 
+  /**
+   * Sets the environment variables service to be used.
+   */
   private setEnvVarsService(): void {
     this.envVarsService = new EnvironmentVariablesService();
   }
 
+  /**
+   * Sets the namespace to be used.
+   *
+   * @param namespace The namespace to be used
+   */
   private setNamespace(namespace: string | undefined): void {
     this.namespace = (namespace ||
       this.getCustomConfigService()?.getNamespace() ||
       this.getEnvVarsService().getNamespace()) as string;
   }
 
+  /**
+   * Sets the options to be used by the Metrics instance.
+   * 
+   * This method is used during the initialization of the Metrics instance.
+   *
+   * @param options The options to be used
+   * @returns the Metrics instance
+   */
   private setOptions(options: MetricsOptions): Metrics {
     const { customConfigService, namespace, serviceName, singleMetric, defaultDimensions } = options;
 
@@ -515,6 +612,11 @@ class Metrics extends Utility implements MetricsInterface {
     return this;
   }
 
+  /**
+   * Sets the service to be used.
+   *
+   * @param service The service to be used
+   */
   private setService(service: string | undefined): void {
     const targetService = (service ||
       this.getCustomConfigService()?.getServiceName() ||
@@ -524,6 +626,14 @@ class Metrics extends Utility implements MetricsInterface {
     }
   }
 
+  /**
+   * Stores a metric in the buffer
+   * 
+   * @param name The name of the metric to store
+   * @param unit The unit of the metric to store
+   * @param value The value of the metric to store
+   * @param resolution The resolution of the metric to store
+   */
   private storeMetric(
     name: string,
     unit: MetricUnit,

@@ -1,16 +1,15 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 /**
  * Test metrics standard functions
  *
  * @group e2e/metrics/decorator
  */
-
 import path from 'path';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { App, Stack } from 'aws-cdk-lib';
-import * as AWS from 'aws-sdk';
+import {
+  CloudWatchClient,
+  GetMetricStatisticsCommand
+} from '@aws-sdk/client-cloudwatch';
 import { v4 } from 'uuid';
 import { 
   generateUniqueName, 
@@ -40,7 +39,7 @@ const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'decor
 const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'decorator');
 const lambdaFunctionCodeFile = 'basicFeatures.decorator.test.functionCode.ts';
 
-const cloudwatchClient = new AWS.CloudWatch();
+const cloudwatchClient = new CloudWatchClient({});
 
 const invocationCount = 2;
 const startTime = new Date();
@@ -114,20 +113,17 @@ describe(`metrics E2E tests (decorator) for runtime: ${runtime}`, () => {
       const adjustedStartTime = new Date(startTime.getTime() - ONE_MINUTE);
       const endTime = new Date(new Date().getTime() + ONE_MINUTE);
       console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ColdStart --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(expectedDimensions)}'`);
-      const coldStartMetricStat = await cloudwatchClient
-        .getMetricStatistics(
-          {
-            Namespace: expectedNamespace,
-            StartTime: adjustedStartTime, 
-            Dimensions: expectedDimensions,
-            EndTime: endTime,
-            Period: 60,
-            MetricName: 'ColdStart',
-            Statistics: ['Sum'],
-          },
-          undefined
-        )
-        .promise();
+      const coldStartMetricStat = await cloudwatchClient.send(
+        new GetMetricStatisticsCommand({
+          Namespace: expectedNamespace,
+          StartTime: adjustedStartTime, 
+          Dimensions: expectedDimensions,
+          EndTime: endTime,
+          Period: 60,
+          MetricName: 'ColdStart',
+          Statistics: ['Sum'],
+        })
+      );
 
       // Despite lambda has been called twice, coldstart metric sum should only be 1
       const singleDataPoint = coldStartMetricStat.Datapoints ? coldStartMetricStat.Datapoints[0] : {};
@@ -154,20 +150,17 @@ describe(`metrics E2E tests (decorator) for runtime: ${runtime}`, () => {
       const adjustedStartTime = new Date(startTime.getTime() - 3 * ONE_MINUTE);
       const endTime = new Date(new Date().getTime() + ONE_MINUTE);
       console.log(`Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ${expectedMetricName} --start-time ${Math.floor(adjustedStartTime.getTime()/1000)} --end-time ${Math.floor(endTime.getTime()/1000)} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(expectedDimensions)}'`);
-      const metricStat = await cloudwatchClient
-        .getMetricStatistics(
-          {
-            Namespace: expectedNamespace,
-            StartTime: adjustedStartTime,
-            Dimensions: expectedDimensions,
-            EndTime: endTime,
-            Period: 60,
-            MetricName: expectedMetricName,
-            Statistics: ['Sum'],
-          },
-          undefined
-        )
-        .promise();
+      const metricStat = await cloudwatchClient.send(
+        new GetMetricStatisticsCommand({
+          Namespace: expectedNamespace,
+          StartTime: adjustedStartTime,
+          Dimensions: expectedDimensions,
+          EndTime: endTime,
+          Period: 60,
+          MetricName: expectedMetricName,
+          Statistics: ['Sum'],
+        })
+      );
 
       // Since lambda has been called twice in this test and potentially more in others, metric sum should be at least of expectedMetricValue * invocationCount
       const singleDataPoint = metricStat.Datapoints ? metricStat.Datapoints[0] : {};

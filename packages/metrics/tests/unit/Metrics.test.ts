@@ -17,6 +17,8 @@ import { ConfigServiceInterface, EnvironmentVariablesService } from '../../src/c
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
+jest.spyOn(console, 'log').mockImplementation();
+jest.spyOn(console, 'warn').mockImplementation();
 
 interface LooseObject {
   [key: string]: string

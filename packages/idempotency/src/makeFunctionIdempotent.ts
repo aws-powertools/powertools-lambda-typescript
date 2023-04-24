@@ -13,7 +13,7 @@ const makeFunctionIdempotent = function <U>(
   const wrappedFn: AnyIdempotentFunction<U> = function (record: GenericTempRecord): Promise<U> {
     const idempotencyHandler: IdempotencyHandler<U> = new IdempotencyHandler<U>(fn, record[options.dataKeywordArgument], options, record);
 
-    return idempotencyHandler.processIdempotency();
+    return idempotencyHandler.handle();
   };
 
   return wrappedFn;

@@ -1,6 +1,6 @@
 import { Callback, Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import { MetricsInterface } from '.';
+import type { MetricsInterface } from './MetricsInterface';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
 import { MAX_DIMENSION_COUNT, MAX_METRICS_SIZE, DEFAULT_NAMESPACE, COLD_START_METRIC } from './constants';
 import {
@@ -14,7 +14,6 @@ import {
   MetricUnits,
   MetricResolution,
   MetricDefinition,
-  StoredMetric,
 } from './types';
 
 /**
@@ -109,7 +108,7 @@ class Metrics extends Utility implements MetricsInterface {
   private envVarsService?: EnvironmentVariablesService;
   private functionName?: string;
   private isSingleMetric: boolean = false;
-  private metadata: { [key: string]: string } = {};
+  private metadata: Record<string, string> = {};
   private namespace?: string;
   private shouldThrowOnEmptyMetrics: boolean = false;
   private storedMetrics: StoredMetrics = {};
@@ -189,7 +188,6 @@ class Metrics extends Utility implements MetricsInterface {
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition Amazon Cloudwatch Concepts Documentation  
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html#CloudWatch_Embedded_Metric_Format_Specification_structure_metricdefinition Metric Definition of Embedded Metric Format Specification
    */
-
   public addMetric(name: string, unit: MetricUnit, value: number, resolution: MetricResolution = MetricResolution.Standard): void {
     this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
@@ -341,7 +339,13 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Function to create the right object compliant with Cloudwatch EMF (Embedded Metric Format).
+   * Function to create a new 
+   * 
+   * the right object compliant with Cloudwatch EMF (Embedded Metric Format).
+   * 
+   * The function will create a new EMF blob and log it to standard output to be then ingested by Cloudwatch logs and processed automatically for metrics creation.
+   * 
+   * The function iterates over the stored metrics, and for each metric it will create a new metric object compliant with the EMF schema which includes the metric name, unit, and storage resolution.
    * 
    * 
    * @returns metrics as JSON object compliant EMF Schema Specification
@@ -353,16 +357,16 @@ class Metrics extends Utility implements MetricsInterface {
 
     // For standard resolution metrics, don't add StorageResolution property to avoid unnecessary ingestion of data into cloudwatch
     // Example: [ { "Name": "metric_name", "Unit": "Count"} ]
-    const metricDefinitions: MetricDefinition[] = Object.values(this.storedMetrics).map((metricDefinition) => 
-      this.isHigh(metricDefinition['resolution']) 
-        ? ({
-          Name: metricDefinition.name,
-          Unit: metricDefinition.unit,
-          StorageResolution: metricDefinition.resolution
-        }): ({
-          Name: metricDefinition.name,
-          Unit: metricDefinition.unit,
-        }));
+
+    const metricDefinitions: MetricDefinition[] = Object.values(
+      this.storedMetrics
+    ).map((metricDefinition) => ({
+      Name: metricDefinition.name,
+      Unit: metricDefinition.unit,
+      ...(metricDefinition.resolution === MetricResolution.High
+        ? { StorageResolution: metricDefinition.resolution }
+        : {}),
+    }));
     
     if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
       throw new RangeError('The number of metrics recorded must be higher than zero');
@@ -371,7 +375,7 @@ class Metrics extends Utility implements MetricsInterface {
     if (!this.namespace) console.warn('Namespace should be defined, default used');
 
     const metricValues = Object.values(this.storedMetrics).reduce(
-      (result: { [key: string]: number | number[] }, { name, value }: { name: string; value: number | number[] }) => {
+      (result: Record<string, number | number[]>, { name, value }: { name: string; value: number | number[] }) => {
         result[name] = value;
 
         return result;
@@ -470,13 +474,21 @@ class Metrics extends Utility implements MetricsInterface {
     return <EnvironmentVariablesService> this.envVarsService;
   }
 
-  private isHigh(resolution: StoredMetric['resolution']): resolution is typeof MetricResolution['High'] {
-    return resolution === MetricResolution.High;
-  }
-
+  /**
+   * Checks if a metric is new or not.
+   *
+   * A metric is considered new if there is no metric with the same name already stored.
+   *
+   * When a metric is not new, we also check if the unit is consistent with the stored metric with
+   * the same name. If the units are inconsistent, we throw an error as this is likely a bug or typo.
+   * This can happen if a metric is added without using the `MetricUnit` helper in JavaScript codebases.
+   *
+   * @param name The name of the metric
+   * @param unit The unit of the metric
+   * @returns true if the metric is new, false if another metric with the same name already exists
+   */
   private isNewMetric(name: string, unit: MetricUnit): boolean {
     if (this.storedMetrics[name]){
-      // Inconsistent units indicates a bug or typos and we want to flag this to users early
       if (this.storedMetrics[name].unit !== unit) {
         const currentUnit = this.storedMetrics[name].unit;
         throw new Error(`Metric "${name}" has already been added with unit "${currentUnit}", but we received unit "${unit}". Did you mean to use metric unit "${currentUnit}"?`);
@@ -524,6 +536,14 @@ class Metrics extends Utility implements MetricsInterface {
     }
   }
 
+  /**
+   * Stores a metric in the buffer
+   * 
+   * @param name The name of the metric to store
+   * @param unit The unit of the metric to store
+   * @param value The value of the metric to store
+   * @param resolution The resolution of the metric to store
+   */
   private storeMetric(
     name: string,
     unit: MetricUnit,

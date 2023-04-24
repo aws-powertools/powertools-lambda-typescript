@@ -4,7 +4,7 @@ import { ConfigServiceInterface } from '../config';
 import { MetricUnit } from './MetricUnit';
 import { MetricResolution } from './MetricResolution';
 
-type Dimensions = { [key: string]: string };
+type Dimensions = Record<string, string>;
 
 type MetricsOptions = {
   customConfigService?: ConfigServiceInterface
@@ -14,7 +14,7 @@ type MetricsOptions = {
   defaultDimensions?: Dimensions
 };
 
-type EmfOutput = {
+type EmfOutput = Readonly<{
   [key: string]: string | number | object
   _aws: {
     Timestamp: number
@@ -24,7 +24,7 @@ type EmfOutput = {
       Metrics: MetricDefinition[]    
     }[]
   }
-};
+}>;
 
 type HandlerMethodDecorator = (
   target: LambdaInterface,
@@ -64,9 +64,7 @@ type StoredMetric = {
   resolution: MetricResolution
 };
 
-type StoredMetrics = {
-  [key: string]: StoredMetric
-};
+type StoredMetrics = Record<string, StoredMetric>;
 
 type MetricDefinition = {
   Name: string

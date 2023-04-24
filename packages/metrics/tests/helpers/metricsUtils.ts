@@ -1,24 +1,41 @@
-import { CloudWatch } from 'aws-sdk';
 import promiseRetry from 'promise-retry';
 import { Metrics } from '../../src';
 import { ExtraOptions, MetricUnits } from '../../src/types';
-import { Context, Handler } from 'aws-lambda';
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import {
+  CloudWatchClient,
+  ListMetricsCommand,
+} from '@aws-sdk/client-cloudwatch';
+import type { ListMetricsCommandOutput } from '@aws-sdk/client-cloudwatch';
+import type { Context, Handler } from 'aws-lambda';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons';
 
-const getMetrics = async (cloudWatchClient: CloudWatch, namespace: string, metric: string, expectedMetrics: number): Promise<CloudWatch.ListMetricsOutput> => {
-  const retryOptions = { retries: 20, minTimeout: 5_000, maxTimeout: 10_000, factor: 1.25 };
+const getMetrics = async (
+  cloudWatchClient: CloudWatchClient,
+  namespace: string,
+  metric: string,
+  expectedMetrics: number
+): Promise<ListMetricsCommandOutput> => {
+  const retryOptions = {
+    retries: 20,
+    minTimeout: 5_000,
+    maxTimeout: 10_000,
+    factor: 1.25,
+  };
 
   return promiseRetry(async (retry: (err?: Error) => never, _: number) => {
-
-    const result = await cloudWatchClient
-      .listMetrics({
+    const result = await cloudWatchClient.send(
+      new ListMetricsCommand({
         Namespace: namespace,
         MetricName: metric,
       })
-      .promise();
+    );
 
     if (result.Metrics?.length !== expectedMetrics) {
-      retry(new Error(`Expected ${expectedMetrics} metrics, got ${result.Metrics?.length} for ${namespace}.${metric}`));
+      retry(
+        new Error(
+          `Expected ${expectedMetrics} metrics, got ${result.Metrics?.length} for ${namespace}.${metric}`
+        )
+      );
     }
 
     return result;

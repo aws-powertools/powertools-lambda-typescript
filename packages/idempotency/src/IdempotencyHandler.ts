@@ -52,8 +52,6 @@ export class IdempotencyHandler<U> {
    * when persistent state changes in the small time between put & get requests.
    * In most cases we can retry successfully on this exception.
    */
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public async handle(): Promise<U> {
 
     const MAX_RETRIES = 2;
@@ -66,6 +64,8 @@ export class IdempotencyHandler<U> {
         }
       }
     }
+    /* istanbul ignore next */
+    throw new Error('This should never happen');
   }
 
   public async processIdempotency(): Promise<U> {

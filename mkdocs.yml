@@ -9,6 +9,7 @@ nav:
   - Changelog: changelog.md
   - Roadmap: roadmap.md
   - API reference: api/" target="_blank
+  - We Made This (Community): we_made_this.md
   - Core utilities:
       - core/tracer.md
       - core/logger.md

@@ -4,17 +4,14 @@
  * @group unit/idempotency/makeFunctionIdempotent
  */
 import { IdempotencyOptions } from '../../src/types/IdempotencyOptions';
-import { IdempotencyRecord, BasePersistenceLayer } from '../../src/persistence';
+import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
+import type { AnyIdempotentFunction, IdempotencyRecordOptions } from '../../src/types';
 import { IdempotencyRecordStatus } from '../../src/types';
-import type {
-  AnyIdempotentFunction,
-  IdempotencyRecordOptions
-} from '../../src/types';
 import {
-  IdempotencyItemAlreadyExistsError,
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
+  IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError
 } from '../../src/Exceptions';
 
@@ -29,8 +26,11 @@ class PersistenceLayerTestClass extends BasePersistenceLayer {
 }
 
 describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
-  beforeEach(()=> jest.clearAllMocks());
-  describe('Given options for idempotency', (options: IdempotencyOptions = { persistenceStore: new PersistenceLayerTestClass(), dataKeywordArgument: 'testingKey' }) => {
+  beforeEach(() => jest.clearAllMocks());
+  describe('Given options for idempotency', (options: IdempotencyOptions = {
+    persistenceStore: new PersistenceLayerTestClass(),
+    dataKeywordArgument: 'testingKey'
+  }) => {
     const keyValueToBeSaved = 'thisWillBeSaved';
     const inputRecord = { testingKey: keyValueToBeSaved, otherKey: 'thisWillNot' };
     describe('When wrapping a function with no previous executions', () => {
@@ -66,11 +66,11 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
           resultingError = e as Error;
         }
       });
-  
+
       test('Then it will attempt to save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
-  
+
       test('Then it will get the previous execution record', () => {
         expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
       });
@@ -79,7 +79,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
         expect(functionToWrap).not.toBeCalled();
       });
 
-      test('Then an IdempotencyAlreadyInProgressError is thrown', ()=> {
+      test('Then an IdempotencyAlreadyInProgressError is thrown', () => {
         expect(resultingError).toBeInstanceOf(IdempotencyAlreadyInProgressError);
       });
     });
@@ -101,11 +101,11 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
           resultingError = e as Error;
         }
       });
-    
+
       test('Then it will attempt to save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
-    
+
       test('Then it will get the previous execution record', () => {
         expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
       });
@@ -113,8 +113,8 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       test('Then the function that was wrapped is not called again', () => {
         expect(functionToWrap).not.toBeCalled();
       });
-  
-      test('Then an IdempotencyInconsistentStateError is thrown', ()=> {
+
+      test('Then an IdempotencyInconsistentStateError is thrown', () => {
         expect(resultingError).toBeInstanceOf(IdempotencyInconsistentStateError);
       });
     });
@@ -127,15 +127,15 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
           idempotencyKey: 'key',
           status: IdempotencyRecordStatus.COMPLETED
         };
-        mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions)); 
+        mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));
         resultingFunction = makeFunctionIdempotent(functionToWrap, options);
         await resultingFunction(inputRecord);
       });
-    
+
       test('Then it will attempt to save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
-    
+
       test('Then it will get the previous execution record', () => {
         expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
       });
@@ -158,12 +158,12 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
           resultingError = e as Error;
         }
       });
-      
+
       test('Then it will attempt to save the record to INPROGRESS', () => {
         expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
       });
-    
-      test('Then an IdempotencyPersistenceLayerError is thrown', ()=> {
+
+      test('Then an IdempotencyPersistenceLayerError is thrown', () => {
         expect(resultingError).toBeInstanceOf(IdempotencyPersistenceLayerError);
       });
     });

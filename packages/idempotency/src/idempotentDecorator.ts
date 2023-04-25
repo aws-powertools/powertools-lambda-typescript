@@ -11,12 +11,11 @@ const idempotent = function (options: IdempotencyOptions) {
     descriptor.value = function(record: GenericTempRecord){
       const idempotencyHandler = new IdempotencyHandler<GenericTempRecord>(childFunction, record[options.dataKeywordArgument], options, record);
 
-      return idempotencyHandler.processIdempotency();
+      return idempotencyHandler.handle();
     };
-  
+
     return descriptor;
-  }; 
+  };
 };
-  
+
 export { idempotent };
-  

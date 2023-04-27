@@ -322,7 +322,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 You can manually flush the metrics with `publishStoredMetrics` as follows:
 
 !!! warning
-Metrics, dimensions and namespace validation still applies.
+    Metrics, dimensions and namespace validation still applies.
 
 === "handler.ts"
 

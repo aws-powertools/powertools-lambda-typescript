@@ -1,7 +1,13 @@
 import type { Context } from 'aws-lambda';
 import { BasePersistenceLayer } from '../persistence/BasePersistenceLayer';
+import { IdempotencyConfig } from 'IdempotencyConfig';
 
-type IdempotencyOptions = {
+type IdempotentHandlerOptions = {
+  config?: IdempotencyConfig
+  persistenceStore: BasePersistenceLayer
+};
+
+type IdempotentFunctionOptions = {
   dataKeywordArgument: string
   persistenceStore: BasePersistenceLayer
 };
@@ -45,6 +51,7 @@ type IdempotencyConfigOptions = {
 };
 
 export {
-  IdempotencyOptions,
-  IdempotencyConfigOptions
+  IdempotencyConfigOptions,
+  IdempotentHandlerOptions,
+  IdempotentFunctionOptions
 };

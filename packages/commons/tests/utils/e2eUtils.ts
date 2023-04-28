@@ -1,15 +1,12 @@
-/** 
+/**
  * E2E utils is used by e2e tests. They are helper function that calls either CDK or SDK
- * to interact with services. 
-*/
-import { App, CfnOutput, Stack, Duration } from 'aws-cdk-lib';
-import {
-  NodejsFunction,
-  NodejsFunctionProps
-} from 'aws-cdk-lib/aws-lambda-nodejs';
+ * to interact with services.
+ */
+import { App, CfnOutput, Duration, Stack } from 'aws-cdk-lib';
+import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { fromUtf8 } from '@aws-sdk/util-utf8-node';
 
 import { InvocationLogs } from './InvocationLogs';
@@ -30,7 +27,7 @@ export type StackWithLambdaFunctionOptions = {
   functionName: string
   functionEntry: string
   tracing?: Tracing
-  environment: {[key: string]: string}
+  environment: { [key: string]: string }
   logGroupOutputKey?: string
   runtime: string
   bundling?: NodejsFunctionProps['bundling']
@@ -38,12 +35,12 @@ export type StackWithLambdaFunctionOptions = {
   timeout?: Duration
 };
 
-type FunctionPayload = {[key: string]: string | boolean | number};
+type FunctionPayload = { [key: string]: string | boolean | number };
 
 export const isValidRuntimeKey = (runtime: string): runtime is TestRuntimesKey => testRuntimeKeys.includes(runtime);
 
 export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOptions): Stack => {
-  
+
   const stack = new Stack(params.app, params.stackName);
   const testFunction = new NodejsFunction(stack, `testFunction`, {
     functionName: params.functionName,
@@ -62,26 +59,27 @@ export const createStackWithLambdaFunction = (params: StackWithLambdaFunctionOpt
       value: testFunction.logGroup.logGroupName,
     });
   }
-  
+
   return stack;
 };
 
-export const generateUniqueName = (name_prefix: string, uuid: string, runtime: string, testName: string): string => 
-  `${name_prefix}-${runtime}-${uuid.substring(0,5)}-${testName}`.substring(0, 64);
+export const generateUniqueName = (name_prefix: string, uuid: string, runtime: string, testName: string): string =>
+  `${name_prefix}-${runtime}-${uuid.substring(0, 5)}-${testName}`.substring(0, 64);
 
-export const invokeFunction = async (functionName: string, times: number = 1, invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL', payload: FunctionPayload = {}): Promise<InvocationLogs[]> => {
+export const invokeFunction = async (functionName: string, times: number = 1, invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL', payload: FunctionPayload = {}, includeIndex = true): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];
 
-  const promiseFactory = (index?: number): Promise<void> => {
+  const promiseFactory = (index?: number, includeIndex?: boolean): Promise<void> => {
+
+    // in some cases we need to send a payload without the index, i.e. idempotency tests
+    const payloadToSend = includeIndex ? { invocation: index, ...payload } : { ...payload };
+
     const invokePromise = lambdaClient
       .send(new InvokeCommand({
         FunctionName: functionName,
         InvocationType: 'RequestResponse',
         LogType: 'Tail', // Wait until execution completes and return all logs
-        Payload: fromUtf8(JSON.stringify({
-          invocation: index,
-          ...payload
-        })),
+        Payload: fromUtf8(JSON.stringify(payloadToSend)),
       }))
       .then((response) => {
         if (response?.LogResult) {
@@ -93,17 +91,17 @@ export const invokeFunction = async (functionName: string, times: number = 1, in
 
     return invokePromise;
   };
-  
-  const promiseFactories = Array.from({ length: times }, () => promiseFactory );
+
+  const promiseFactories = Array.from({ length: times }, () => promiseFactory);
   const invocation = invocationMode == 'PARALLEL'
-    ? Promise.all(promiseFactories.map((factory, index) => factory(index)))
+    ? Promise.all(promiseFactories.map((factory, index) => factory(index, includeIndex)))
     : chainPromises(promiseFactories);
   await invocation;
 
-  return invocationLogs; 
+  return invocationLogs;
 };
 
-const chainPromises = async (promiseFactories: ((index?: number) => Promise<void>)[]) : Promise<void> => {
+const chainPromises = async (promiseFactories: ((index?: number) => Promise<void>)[]): Promise<void> => {
   for (let index = 0; index < promiseFactories.length; index++) {
     await promiseFactories[index](index);
   }

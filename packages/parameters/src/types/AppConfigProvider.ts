@@ -13,8 +13,8 @@ import type { GetOptionsInterface } from './BaseProvider';
  * @property {string} [application] - The application ID or the application name.
  */
 interface AppConfigProviderOptionsBaseInterface {
-  environment: string
-  application?: string
+  environment: string;
+  application?: string;
 }
 
 /**
@@ -25,9 +25,10 @@ interface AppConfigProviderOptionsBaseInterface {
  * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
  * @property {never} [awsSdkV3Client] - This property should never be passed.
  */
-interface AppConfigProviderOptionsWithClientConfig extends AppConfigProviderOptionsBaseInterface {
-  clientConfig?: AppConfigDataClientConfig
-  awsSdkV3Client?: never
+interface AppConfigProviderOptionsWithClientConfig
+  extends AppConfigProviderOptionsBaseInterface {
+  clientConfig?: AppConfigDataClientConfig;
+  awsSdkV3Client?: never;
 }
 
 /**
@@ -38,9 +39,10 @@ interface AppConfigProviderOptionsWithClientConfig extends AppConfigProviderOpti
  * @property {AppConfigDataClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during AppConfigProvider class instantiation
  * @property {never} [clientConfig] - This property should never be passed.
  */
-interface AppConfigProviderOptionsWithClientInstance extends AppConfigProviderOptionsBaseInterface {
-  awsSdkV3Client?: AppConfigDataClient
-  clientConfig?: never
+interface AppConfigProviderOptionsWithClientInstance
+  extends AppConfigProviderOptionsBaseInterface {
+  awsSdkV3Client?: AppConfigDataClient;
+  clientConfig?: never;
 }
 
 /**
@@ -52,7 +54,9 @@ interface AppConfigProviderOptionsWithClientInstance extends AppConfigProviderOp
  * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
  * @property {AppConfigDataClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during AppConfigProvider class instantiation. Mutually exclusive with clientConfig.
  */
-type AppConfigProviderOptions = AppConfigProviderOptionsWithClientConfig | AppConfigProviderOptionsWithClientInstance;
+type AppConfigProviderOptions =
+  | AppConfigProviderOptionsWithClientConfig
+  | AppConfigProviderOptionsWithClientInstance;
 
 /**
  * Options for the AppConfigProvider get method.
@@ -64,12 +68,13 @@ type AppConfigProviderOptions = AppConfigProviderOptionsWithClientConfig | AppCo
  * @property {StartConfigurationSessionCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  */
-interface AppConfigGetOptionsInterface extends Omit<GetOptionsInterface, 'sdkOptions'> {
+interface AppConfigGetOptionsInterface
+  extends Omit<GetOptionsInterface, 'sdkOptions'> {
   sdkOptions?: Omit<
-  Partial<StartConfigurationSessionCommandInput>,
-  | 'ApplicationIdentifier'
-  | 'EnvironmentIdentifier | ConfigurationProfileIdentifier'
-  >
+    Partial<StartConfigurationSessionCommandInput>,
+    | 'ApplicationIdentifier'
+    | 'EnvironmentIdentifier | ConfigurationProfileIdentifier'
+  >;
 }
 
 /**
@@ -80,7 +85,7 @@ interface AppConfigGetOptionsInterface extends Omit<GetOptionsInterface, 'sdkOpt
  */
 interface GetAppConfigCombinedInterface
   extends Omit<AppConfigProviderOptions, 'clientConfig' | 'awsSdkV3Client'>,
-  AppConfigGetOptionsInterface {}
+    AppConfigGetOptionsInterface {}
 
 export type {
   AppConfigProviderOptions,

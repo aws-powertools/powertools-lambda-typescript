@@ -1,11 +1,15 @@
-import { BaseProvider, DEFAULT_PROVIDERS, transformValue } from '../BaseProvider';
+import {
+  BaseProvider,
+  DEFAULT_PROVIDERS,
+  transformValue,
+} from '../BaseProvider';
 import { GetParameterError } from '../Exceptions';
 import { DEFAULT_MAX_AGE_SECS } from '../constants';
 import {
   SSMClient,
   GetParameterCommand,
   paginateGetParametersByPath,
-  GetParametersCommand
+  GetParametersCommand,
 } from '@aws-sdk/client-ssm';
 import type {
   GetParameterCommandInput,
@@ -319,11 +323,19 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetOptions} options - Options to configure the provider
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async get<ExplicitUserProvidedType = undefined, InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions>(
+  public async get<
+    ExplicitUserProvidedType = undefined,
+    InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions
+  >(
     name: string,
     options?: InferredFromOptionsType & SSMGetOptions
-  ): Promise<SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> {
-    return super.get(name, options) as Promise<SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
+  ): Promise<
+    SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined
+  > {
+    return super.get(name, options) as Promise<
+      | SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+      | undefined
+    >;
   }
 
   /**
@@ -356,11 +368,22 @@ class SSMProvider extends BaseProvider {
    * @param {SSMGetMultipleOptions} options - Options to configure the retrieval
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
    */
-  public async getMultiple<ExplicitUserProvidedType = undefined, InferredFromOptionsType extends SSMGetMultipleOptionsUnion | undefined = undefined>(
+  public async getMultiple<
+    ExplicitUserProvidedType = undefined,
+    InferredFromOptionsType extends
+      | SSMGetMultipleOptionsUnion
+      | undefined = undefined
+  >(
     path: string,
     options?: InferredFromOptionsType & SSMGetMultipleOptions
-  ): Promise<SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> {
-    return super.getMultiple(path, options) as Promise<SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
+  ): Promise<
+    | SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+    | undefined
+  > {
+    return super.getMultiple(path, options) as Promise<
+      | SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+      | undefined
+    >;
   }
 
   /**
@@ -422,42 +445,52 @@ class SSMProvider extends BaseProvider {
         decrypt: this.resolveDecryptionConfigValue({}) || false,
         maxAge: DEFAULT_MAX_AGE_SECS,
         throwOnError: true,
-      }, ...options
+      },
+      ...options,
     };
 
     let response: Record<string, unknown> = {};
 
     // NOTE: We fail early to avoid unintended graceful errors being replaced with their '_errors' param values
-    SSMProvider.throwIfErrorsKeyIsPresent(parameters, this.errorsKey, configs.throwOnError);
+    SSMProvider.throwIfErrorsKeyIsPresent(
+      parameters,
+      this.errorsKey,
+      configs.throwOnError
+    );
 
-    const {
-      parametersToFetchInBatch,
-      parametersToDecrypt
-    } = SSMProvider.splitBatchAndDecryptParameters(parameters, configs);
+    const { parametersToFetchInBatch, parametersToDecrypt } =
+      SSMProvider.splitBatchAndDecryptParameters(parameters, configs);
     // NOTE: We need to find out whether all parameters must be decrypted or not to know which API to use
     // Logic:
     // GetParameters API -> When decrypt is used for all parameters in the the batch
     // GetParameter  API -> When decrypt is used for one or more in the batch
-    if (Object.keys(parametersToDecrypt).length !== Object.keys(parameters).length) {
-      const {
-        response: decryptResponse,
-        errors: decryptErrors
-      } = await this.getParametersByNameWithDecryptOption(parametersToDecrypt, configs.throwOnError);
-      const {
-        response: batchResponse,
-        errors: batchErrors
-      } = await this.getParametersBatchByName(parametersToFetchInBatch, configs.throwOnError, false);
+    if (
+      Object.keys(parametersToDecrypt).length !== Object.keys(parameters).length
+    ) {
+      const { response: decryptResponse, errors: decryptErrors } =
+        await this.getParametersByNameWithDecryptOption(
+          parametersToDecrypt,
+          configs.throwOnError
+        );
+      const { response: batchResponse, errors: batchErrors } =
+        await this.getParametersBatchByName(
+          parametersToFetchInBatch,
+          configs.throwOnError,
+          false
+        );
 
       response = { ...decryptResponse, ...batchResponse };
       // Fail-fast disabled, let's aggregate errors under "_errors" key so they can handle gracefully
       if (!configs.throwOnError) {
-        response[this.errorsKey] = [ ...decryptErrors, ...batchErrors ];
+        response[this.errorsKey] = [...decryptErrors, ...batchErrors];
       }
     } else {
-      const {
-        response: batchResponse,
-        errors: batchErrors
-      } = await this.getParametersBatchByName(parametersToDecrypt, configs.throwOnError, true);
+      const { response: batchResponse, errors: batchErrors } =
+        await this.getParametersBatchByName(
+          parametersToDecrypt,
+          configs.throwOnError,
+          true
+        );
 
       response = batchResponse;
       // Fail-fast disabled, let's aggregate errors under "_errors" key so they can handle gracefully
@@ -466,7 +499,9 @@ class SSMProvider extends BaseProvider {
       }
     }
 
-    return response as unknown as Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>>;
+    return response as unknown as Promise<
+      SSMGetParametersByNameOutput<ExplicitUserProvidedType>
+    >;
   }
 
   /**
@@ -483,7 +518,10 @@ class SSMProvider extends BaseProvider {
       ...(options?.sdkOptions || {}),
       Name: name,
     };
-    sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(options, sdkOptions);
+    sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(
+      options,
+      sdkOptions
+    );
     const result = await this.client.send(new GetParameterCommand(sdkOptions));
 
     return result.Parameter?.Value;
@@ -504,16 +542,24 @@ class SSMProvider extends BaseProvider {
       Path: path,
     };
     const paginationOptions: PaginationConfiguration = {
-      client: this.client
+      client: this.client,
     };
-    sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(options, sdkOptions);
-    sdkOptions.Recursive = options?.recursive !== undefined ?
-      options.recursive : sdkOptions.Recursive;
-    paginationOptions.pageSize = sdkOptions.MaxResults !== undefined ?
-      sdkOptions.MaxResults : undefined;
+    sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(
+      options,
+      sdkOptions
+    );
+    sdkOptions.Recursive =
+      options?.recursive !== undefined
+        ? options.recursive
+        : sdkOptions.Recursive;
+    paginationOptions.pageSize =
+      sdkOptions.MaxResults !== undefined ? sdkOptions.MaxResults : undefined;
 
     const parameters: Record<string, string | undefined> = {};
-    for await (const page of paginateGetParametersByPath(paginationOptions, sdkOptions)) {
+    for await (const page of paginateGetParametersByPath(
+      paginationOptions,
+      sdkOptions
+    )) {
       for (const parameter of page.Parameters || []) {
         /**
          * Standardize the parameter name
@@ -556,7 +602,10 @@ class SSMProvider extends BaseProvider {
     }
 
     const result = await this.client.send(new GetParametersCommand(sdkOptions));
-    const errors = SSMProvider.handleAnyInvalidGetParameterErrors(result, throwOnError);
+    const errors = SSMProvider.handleAnyInvalidGetParameterErrors(
+      result,
+      throwOnError
+    );
     const response = this.transformAndCacheGetParametersResponse(
       result,
       parameters,
@@ -585,7 +634,9 @@ class SSMProvider extends BaseProvider {
     let errors: string[] = [];
 
     // Fetch each possible batch param from cache and return if entire batch is cached
-    const { cached, toFetch } = await this.getParametersByNameFromCache(parameters);
+    const { cached, toFetch } = await this.getParametersByNameFromCache(
+      parameters
+    );
     if (Object.keys(cached).length >= Object.keys(parameters).length) {
       response = cached;
 
@@ -596,10 +647,8 @@ class SSMProvider extends BaseProvider {
     }
 
     // Slice batch by max permitted GetParameters call and retrieve the ones that are not cached
-    const {
-      response: batchResponse,
-      errors: batchErrors
-    } = await this.getParametersByNameInChunks(toFetch, throwOnError, decrypt);
+    const { response: batchResponse, errors: batchErrors } =
+      await this.getParametersByNameInChunks(toFetch, throwOnError, decrypt);
     response = { ...cached, ...batchResponse };
     errors = batchErrors;
 
@@ -620,12 +669,17 @@ class SSMProvider extends BaseProvider {
     const cached: Record<string, string | Record<string, unknown>> = {};
     const toFetch: Record<string, SSMGetParametersByNameOptions> = {};
 
-    for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
-      const cacheKey = [ parameterName, parameterOptions.transform ].toString();
+    for (const [parameterName, parameterOptions] of Object.entries(
+      parameters
+    )) {
+      const cacheKey = [parameterName, parameterOptions.transform].toString();
       if (!this.hasKeyExpiredInCache(cacheKey)) {
         // Since we know the key exists in the cache, we can safely use the non-null assertion operator
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        cached[parameterName] = this.store.get(cacheKey)!.value as Record<string, string | Record<string, unknown>>;
+        cached[parameterName] = this.store.get(cacheKey)!.value as Record<
+          string,
+          string | Record<string, unknown>
+        >;
       } else {
         toFetch[parameterName] = parameterOptions;
       }
@@ -653,29 +707,26 @@ class SSMProvider extends BaseProvider {
     let errors: string[] = [];
 
     // Slice object into chunks of max permissible batch size
-    const chunks = Object.entries(parameters).reduce((
-      acc,
-      [ parameterName, parameterOptions ],
-      index
-    ) => {
-      const chunkIndex = Math.floor(index / this.maxGetParametersItems);
-      if (!acc[chunkIndex]) {
-        acc[chunkIndex] = {};
-      }
-      acc[chunkIndex][parameterName] = parameterOptions;
+    const chunks = Object.entries(parameters).reduce(
+      (acc, [parameterName, parameterOptions], index) => {
+        const chunkIndex = Math.floor(index / this.maxGetParametersItems);
+        if (!acc[chunkIndex]) {
+          acc[chunkIndex] = {};
+        }
+        acc[chunkIndex][parameterName] = parameterOptions;
 
-      return acc;
-    }, [] as Record<string, SSMGetParametersByNameOptions>[]);
+        return acc;
+      },
+      [] as Record<string, SSMGetParametersByNameOptions>[]
+    );
 
     // Fetch each chunk and merge results
     for (const chunk of chunks) {
-      const {
-        response: chunkResponse,
-        errors: chunkErrors
-      } = await this._getParametersByName(chunk, throwOnError, decrypt);
+      const { response: chunkResponse, errors: chunkErrors } =
+        await this._getParametersByName(chunk, throwOnError, decrypt);
 
       response = { ...response, ...chunkResponse };
-      errors = [ ...errors, ...chunkErrors ];
+      errors = [...errors, ...chunkErrors];
     }
 
     return {
@@ -697,9 +748,14 @@ class SSMProvider extends BaseProvider {
     const response: Record<string, unknown> = {};
     const errors: string[] = [];
 
-    for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
+    for (const [parameterName, parameterOptions] of Object.entries(
+      parameters
+    )) {
       try {
-        response[parameterName] = await this._get(parameterName, parameterOptions);
+        response[parameterName] = await this._get(
+          parameterName,
+          parameterOptions
+        );
       } catch (error) {
         if (throwOnError) {
           throw error;
@@ -743,9 +799,12 @@ class SSMProvider extends BaseProvider {
     sdkOptions?: GetParameterCommandInput | GetParametersByPathCommandInput
   ): boolean | undefined {
     if (options?.decrypt !== undefined) return options.decrypt;
-    if (sdkOptions?.WithDecryption !== undefined) return sdkOptions.WithDecryption;
+    if (sdkOptions?.WithDecryption !== undefined)
+      return sdkOptions.WithDecryption;
     if (this.envVarsService.getSSMDecrypt() !== '') {
-      return this.envVarsService.isValueTrue(this.envVarsService.getSSMDecrypt());
+      return this.envVarsService.isValueTrue(
+        this.envVarsService.getSSMDecrypt()
+      );
     }
 
     return undefined;
@@ -761,17 +820,23 @@ class SSMProvider extends BaseProvider {
     parameters: Record<string, SSMGetParametersByNameOptions>,
     configs: SSMGetParametersByNameOptions
   ): SSMSplitBatchAndDecryptParametersOutputType {
-    const parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptions> = {};
-    const parametersToDecrypt: Record<string, SSMGetParametersByNameOptions> = {};
+    const parametersToFetchInBatch: Record<
+      string,
+      SSMGetParametersByNameOptions
+    > = {};
+    const parametersToDecrypt: Record<string, SSMGetParametersByNameOptions> =
+      {};
 
-    for (const [ parameterName, parameterOptions ] of Object.entries(parameters)) {
+    for (const [parameterName, parameterOptions] of Object.entries(
+      parameters
+    )) {
       const overrides = parameterOptions;
       overrides.transform = overrides.transform || configs.transform;
 
-      overrides.decrypt = overrides.decrypt !== undefined ?
-        overrides.decrypt : configs.decrypt;
-      overrides.maxAge = overrides.maxAge !== undefined ?
-        overrides.maxAge : configs.maxAge;
+      overrides.decrypt =
+        overrides.decrypt !== undefined ? overrides.decrypt : configs.decrypt;
+      overrides.maxAge =
+        overrides.maxAge !== undefined ? overrides.maxAge : configs.maxAge;
 
       if (overrides.decrypt) {
         parametersToDecrypt[parameterName] = overrides;
@@ -840,7 +905,7 @@ class SSMProvider extends BaseProvider {
       }
 
       if (value) {
-        const cacheKey = [ parameterName, parameterOptions.transform ].toString();
+        const cacheKey = [parameterName, parameterOptions.transform].toString();
         this.addToCache(
           cacheKey,
           value,
@@ -855,7 +920,4 @@ class SSMProvider extends BaseProvider {
   }
 }
 
-export {
-  SSMProvider,
-  DEFAULT_PROVIDERS,
-};
+export { SSMProvider, DEFAULT_PROVIDERS };

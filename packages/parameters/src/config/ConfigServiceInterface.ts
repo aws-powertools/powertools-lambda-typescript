@@ -1,15 +1,11 @@
 interface ConfigServiceInterface {
+  get?(name: string): string;
 
-  get?(name: string): string
-  
-  getServiceName(): string
+  getServiceName(): string;
 
-  getParametersMaxAge(): number | undefined
+  getParametersMaxAge(): number | undefined;
 
-  getSSMDecrypt(): string
-
+  getSSMDecrypt(): string;
 }
 
-export {
-  ConfigServiceInterface,
-};
+export { ConfigServiceInterface };

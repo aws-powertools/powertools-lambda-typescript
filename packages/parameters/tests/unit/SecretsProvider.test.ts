@@ -4,7 +4,10 @@
  * @group unit/parameters/SecretsProvider/class
  */
 import { SecretsProvider } from '../../src/secrets';
-import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
+import {
+  SecretsManagerClient,
+  GetSecretValueCommand,
+} from '@aws-sdk/client-secrets-manager';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import type { SecretsProviderOptions } from '../../src/types/SecretsProvider';
 import { mockClient } from 'aws-sdk-client-mock';
@@ -13,7 +16,6 @@ import 'aws-sdk-client-mock-jest';
 const encoder = new TextEncoder();
 
 describe('Class: SecretsProvider', () => {
-
   const client = mockClient(SecretsManagerClient);
 
   beforeEach(() => {
@@ -22,7 +24,6 @@ describe('Class: SecretsProvider', () => {
 
   describe('Method: constructor', () => {
     test('when the class instantiates without SDK client and client config it has default options', async () => {
-      
       // Prepare
       const options: SecretsProviderOptions = {};
 
@@ -38,7 +39,6 @@ describe('Class: SecretsProvider', () => {
     });
 
     test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
-
       // Prepare
       const options: SecretsProviderOptions = {
         clientConfig: {
@@ -58,7 +58,6 @@ describe('Class: SecretsProvider', () => {
     });
 
     test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
-      
       // Prepare
       const awsSdkV3Client = new SecretsManagerClient({
         serviceId: 'with-custom-sdk-client',
@@ -94,9 +93,7 @@ describe('Class: SecretsProvider', () => {
   });
 
   describe('Method: _get', () => {
-
     test('when called with only a name, it gets the secret string', async () => {
-
       // Prepare
       const provider = new SecretsProvider();
       const secretName = 'foo';
@@ -109,11 +106,9 @@ describe('Class: SecretsProvider', () => {
 
       // Assess
       expect(result).toBe('bar');
-
     });
 
     test('when called with only a name, it gets the secret binary', async () => {
-
       // Prepare
       const provider = new SecretsProvider();
       const secretName = 'foo';
@@ -127,11 +122,9 @@ describe('Class: SecretsProvider', () => {
 
       // Assess
       expect(result).toBe(mockData);
-
     });
 
     test('when called with a name and sdkOptions, it gets the secret using the options provided', async () => {
-
       // Prepare
       const provider = new SecretsProvider();
       const secretName = 'foo';
@@ -143,7 +136,7 @@ describe('Class: SecretsProvider', () => {
       await provider.get(secretName, {
         sdkOptions: {
           VersionId: 'test-version',
-        }
+        },
       });
 
       // Assess
@@ -151,11 +144,9 @@ describe('Class: SecretsProvider', () => {
         SecretId: secretName,
         VersionId: 'test-version',
       });
-
     });
 
     test('when called with sdkOptions that override arguments passed to the method, it gets the secret using the arguments', async () => {
-
       // Prepare
       const provider = new SecretsProvider();
       const secretName = 'foo';
@@ -174,23 +165,18 @@ describe('Class: SecretsProvider', () => {
       expect(client).toReceiveCommandWith(GetSecretValueCommand, {
         SecretId: secretName,
       });
-
     });
-
   });
 
   describe('Method: _getMultiple', () => {
-    
     test('when called, it throws an error', async () => {
-
       // Prepare
       const provider = new SecretsProvider();
-      
+
       // Act & Assess
-      await expect(provider.getMultiple('foo')).rejects.toThrow('Method not implemented.');
-
+      await expect(provider.getMultiple('foo')).rejects.toThrow(
+        'Method not implemented.'
+      );
     });
-
   });
-
 });

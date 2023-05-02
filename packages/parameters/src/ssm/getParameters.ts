@@ -143,20 +143,27 @@ import type {
  */
 const getParameters = async <
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType extends SSMGetMultipleOptionsUnion | undefined = SSMGetMultipleOptionsUnion
+  InferredFromOptionsType extends
+    | SSMGetMultipleOptionsUnion
+    | undefined = SSMGetMultipleOptionsUnion
 >(
   path: string,
   options?: InferredFromOptionsType & SSMGetMultipleOptions
-): Promise<SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined> => {
+): Promise<
+  | SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+  | undefined
+> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
-  return (
-    DEFAULT_PROVIDERS.ssm as SSMProvider
-  ).getMultiple(path, options) as Promise<SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined>;
+  return (DEFAULT_PROVIDERS.ssm as SSMProvider).getMultiple(
+    path,
+    options
+  ) as Promise<
+    | SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+    | undefined
+  >;
 };
 
-export {
-  getParameters,
-};
+export { getParameters };

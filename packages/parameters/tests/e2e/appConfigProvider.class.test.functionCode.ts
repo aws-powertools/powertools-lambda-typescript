@@ -1,10 +1,6 @@
 import { Context } from 'aws-lambda';
-import {
-  AppConfigProvider,
-} from '../../src/appconfig';
-import {
-  AppConfigGetOptionsInterface,
-} from '../../src/types';
+import { AppConfigProvider } from '../../src/appconfig';
+import { AppConfigGetOptionsInterface } from '../../src/types';
 import { TinyLogger } from '../helpers/tinyLogger';
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
 import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
@@ -16,14 +12,15 @@ const application = process.env.APPLICATION_NAME || 'my-app';
 const environment = process.env.ENVIRONMENT_NAME || 'my-env';
 const freeFormJsonName = process.env.FREEFORM_JSON_NAME || 'freeform-json';
 const freeFormYamlName = process.env.FREEFORM_YAML_NAME || 'freeform-yaml';
-const freeFormBase64encodedPlainText = process.env.FREEFORM_BASE64_ENCODED_PLAIN_TEXT_NAME || 'freeform-plain-text';
+const freeFormBase64encodedPlainText =
+  process.env.FREEFORM_BASE64_ENCODED_PLAIN_TEXT_NAME || 'freeform-plain-text';
 const featureFlagName = process.env.FEATURE_FLAG_NAME || 'feature-flag';
 
 const defaultProvider = new AppConfigProvider({
   application,
   environment,
 });
-// Provider test 
+// Provider test
 const customClient = new AppConfigDataClient({});
 customClient.middlewareStack.use(middleware);
 const providerWithMiddleware = new AppConfigProvider({
@@ -45,7 +42,7 @@ const _call_get = async (
   paramName: string,
   testName: string,
   options?: AppConfigGetOptionsInterface,
-  provider?: AppConfigProvider,
+  provider?: AppConfigProvider
 ): Promise<void> => {
   try {
     const currentProvider = resolveProvider(provider);
@@ -53,28 +50,39 @@ const _call_get = async (
     const parameterValue = await currentProvider.get(paramName, options);
     logger.log({
       test: testName,
-      value: parameterValue
+      value: parameterValue,
     });
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message
+      error: err.message,
     });
   }
 };
 
-export const handler = async (_event: unknown, _context: Context): Promise<void> => {
+export const handler = async (
+  _event: unknown,
+  _context: Context
+): Promise<void> => {
   // Test 1 - get a single parameter as-is (no transformation - should return an Uint8Array)
   await _call_get(freeFormYamlName, 'get');
 
   // Test 2 - get a free-form JSON and apply json transformation (should return an object)
-  await _call_get(freeFormJsonName, 'get-freeform-json-binary', { transform: 'json' });
+  await _call_get(freeFormJsonName, 'get-freeform-json-binary', {
+    transform: 'json',
+  });
 
   // Test 3 - get a free-form base64-encoded plain text and apply binary transformation (should return a decoded string)
-  await _call_get(freeFormBase64encodedPlainText, 'get-freeform-base64-plaintext-binary', { transform: 'binary' });
+  await _call_get(
+    freeFormBase64encodedPlainText,
+    'get-freeform-base64-plaintext-binary',
+    { transform: 'binary' }
+  );
 
   // Test 4 - get a feature flag and apply json transformation (should return an object)
-  await _call_get(featureFlagName, 'get-feature-flag-binary', { transform: 'json' });
+  await _call_get(featureFlagName, 'get-feature-flag-binary', {
+    transform: 'json',
+  });
 
   // Test 5
   // get parameter twice with middleware, which counts the number of requests, we check later if we only called AppConfig API once
@@ -85,12 +93,12 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     await providerWithMiddleware.get(freeFormBase64encodedPlainText);
     logger.log({
       test: 'get-cached',
-      value: middleware.counter // should be 1
+      value: middleware.counter, // should be 1
     });
   } catch (err) {
     logger.log({
       test: 'get-cached',
-      error: err.message
+      error: err.message,
     });
   }
 
@@ -100,15 +108,17 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
     await providerWithMiddleware.get(freeFormBase64encodedPlainText);
-    await providerWithMiddleware.get(freeFormBase64encodedPlainText, { forceFetch: true });
+    await providerWithMiddleware.get(freeFormBase64encodedPlainText, {
+      forceFetch: true,
+    });
     logger.log({
       test: 'get-forced',
-      value: middleware.counter // should be 2
+      value: middleware.counter, // should be 2
     });
   } catch (err) {
     logger.log({
       test: 'get-forced',
-      error: err.message
+      error: err.message,
     });
   }
   // Test 7
@@ -117,15 +127,17 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     providerWithMiddleware.clearCache();
     middleware.counter = 0;
     const expiredResult1 = await providerWithMiddleware.get(
-      freeFormBase64encodedPlainText, { 
-        maxAge: 0, 
-        transform: 'base64' 
+      freeFormBase64encodedPlainText,
+      {
+        maxAge: 0,
+        transform: 'base64',
       }
     );
     const expiredResult2 = await providerWithMiddleware.get(
-      freeFormBase64encodedPlainText, { 
-        maxAge: 0, 
-        transform: 'base64' 
+      freeFormBase64encodedPlainText,
+      {
+        maxAge: 0,
+        transform: 'base64',
       }
     );
     logger.log({
@@ -133,13 +145,13 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
       value: {
         counter: middleware.counter, // should be 2
         result1: expiredResult1,
-        result2: expiredResult2
+        result2: expiredResult2,
       },
     });
   } catch (err) {
     logger.log({
       test: 'get-expired',
-      error: err.message
+      error: err.message,
     });
   }
 };

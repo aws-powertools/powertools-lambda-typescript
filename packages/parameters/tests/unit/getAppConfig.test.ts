@@ -26,7 +26,7 @@ describe('Function: getAppConfig', () => {
     jest.clearAllMocks();
   });
 
-  test('when called and a default provider doesn\'t exist, it instantiates one and returns the value', async () => {
+  test('when called and a default provider does not exist, it instantiates one and returns the value', async () => {
     // Prepare
     const options: GetAppConfigCombinedInterface = {
       application: 'MyApp',
@@ -90,7 +90,7 @@ describe('Function: getAppConfig', () => {
     expect(result).toBe(mockData);
   });
 
-  test('when called with transform: \'binary\' option, it returns string value', async () => {
+  test('when called with transform: `binary` option, it returns string value', async () => {
     // Prepare
     const options: GetAppConfigCombinedInterface = {
       application: 'MyApp',

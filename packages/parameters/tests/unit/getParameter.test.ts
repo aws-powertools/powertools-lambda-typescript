@@ -14,21 +14,21 @@ import 'aws-sdk-client-mock-jest';
  * generic types defined in the utility are working as expected. If they are not, the tests will fail to compile.
  */
 describe('Function: getParameter', () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('when called and a default provider doesn\'t exist, it instantiates one and returns the value', async () => {
-
+  test('when called and a default provider does not exist, it instantiates one and returns the value', async () => {
     // Prepare
     const parameterName = 'foo';
     const parameterValue = 'foo';
-    const client = mockClient(SSMClient).on(GetParameterCommand).resolves({
-      Parameter: {
-        Value: parameterValue,
-      },
-    });
+    const client = mockClient(SSMClient)
+      .on(GetParameterCommand)
+      .resolves({
+        Parameter: {
+          Value: parameterValue,
+        },
+      });
 
     // Act
     const value: string | undefined = await getParameter(parameterName);
@@ -38,21 +38,21 @@ describe('Function: getParameter', () => {
       Name: parameterName,
     });
     expect(value).toBe(parameterValue);
-
   });
 
   test('when called and a default provider exists, it uses it and returns the value', async () => {
-
     // Prepare
     const provider = new SSMProvider();
     DEFAULT_PROVIDERS.ssm = provider;
     const parameterName = 'foo';
     const parameterValue = 'foo';
-    const client = mockClient(SSMClient).on(GetParameterCommand).resolves({
-      Parameter: {
-        Value: parameterValue,
-      },
-    });
+    const client = mockClient(SSMClient)
+      .on(GetParameterCommand)
+      .resolves({
+        Parameter: {
+          Value: parameterValue,
+        },
+      });
 
     // Act
     const value: string | undefined = await getParameter(parameterName);
@@ -63,55 +63,59 @@ describe('Function: getParameter', () => {
     });
     expect(value).toBe(parameterValue);
     expect(DEFAULT_PROVIDERS.ssm).toBe(provider);
-
   });
 
   test('when called and transform `JSON` is specified, it returns an object with correct type', async () => {
-
     // Prepare
     const provider = new SSMProvider();
     DEFAULT_PROVIDERS.ssm = provider;
     const parameterName = 'foo';
     const parameterValue = JSON.stringify({ hello: 'world' });
-    const client = mockClient(SSMClient).on(GetParameterCommand).resolves({
-      Parameter: {
-        Value: parameterValue,
-      },
-    });
+    const client = mockClient(SSMClient)
+      .on(GetParameterCommand)
+      .resolves({
+        Parameter: {
+          Value: parameterValue,
+        },
+      });
 
     // Act
-    const value: Record<string, unknown> | undefined = await getParameter(parameterName, { transform: 'json' });
+    const value: Record<string, unknown> | undefined = await getParameter(
+      parameterName,
+      { transform: 'json' }
+    );
 
     // Assess
     expect(client).toReceiveCommandWith(GetParameterCommand, {
       Name: parameterName,
     });
     expect(value).toStrictEqual(JSON.parse(parameterValue));
-
   });
 
   test('when called and transform `JSON` is specified as well as an explicit `K` type, it returns a result with correct type', async () => {
-
     // Prepare
     const provider = new SSMProvider();
     DEFAULT_PROVIDERS.ssm = provider;
     const parameterName = 'foo';
     const parameterValue = JSON.stringify(5);
-    const client = mockClient(SSMClient).on(GetParameterCommand).resolves({
-      Parameter: {
-        Value: parameterValue,
-      },
-    });
+    const client = mockClient(SSMClient)
+      .on(GetParameterCommand)
+      .resolves({
+        Parameter: {
+          Value: parameterValue,
+        },
+      });
 
     // Act
-    const value: number | undefined = await getParameter<number>(parameterName, { transform: 'json' });
+    const value: number | undefined = await getParameter<number>(
+      parameterName,
+      { transform: 'json' }
+    );
 
     // Assess
     expect(client).toReceiveCommandWith(GetParameterCommand, {
       Name: parameterName,
     });
     expect(value).toBe(JSON.parse(parameterValue));
-
   });
-
 });

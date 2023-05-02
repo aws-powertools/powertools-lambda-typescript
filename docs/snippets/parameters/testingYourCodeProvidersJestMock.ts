@@ -2,7 +2,6 @@ import { handler } from './testingYourCodeFunctionsHandler';
 import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
 
 describe('Function tests', () => {
-  
   const providerSpy = jest.spyOn(AppConfigProvider.prototype, 'get');
 
   beforeEach(() => {
@@ -10,7 +9,6 @@ describe('Function tests', () => {
   });
 
   test('it retrieves the config once and uses the correct name', async () => {
-
     // Prepare
     const expectedConfig = {
       feature: {
@@ -27,7 +25,5 @@ describe('Function tests', () => {
     expect(result).toStrictEqual({ value: expectedConfig });
     expect(providerSpy).toHaveBeenCalledTimes(1);
     expect(providerSpy).toHaveBeenCalledWith('my-config');
-
   });
-
 });

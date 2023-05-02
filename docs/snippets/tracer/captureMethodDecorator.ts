@@ -1,5 +1,5 @@
 import { Tracer } from '@aws-lambda-powertools/tracer';
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
@@ -15,6 +15,6 @@ class Lambda implements LambdaInterface {
     await this.getChargeId();
   }
 }
- 
+
 const handlerClass = new Lambda();
 export const handler = handlerClass.handler.bind(handlerClass); // (2)

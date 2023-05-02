@@ -8,7 +8,10 @@ const configsProvider = new AppConfigProvider({
   clientConfig,
 });
 
-export const handler = async (): Promise<void> => {
+export const handler = async (
+  _event: unknown,
+  _context: unknown
+): Promise<void> => {
   // Retrieve a config
   const config = await configsProvider.get('my-config');
   console.log(config);

@@ -4,9 +4,15 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 // construct your clients with any custom configuration
 const dynamoDBClient = new DynamoDBClient({ region: 'us-east-1' });
 // pass the client to the provider
-const valuesProvider = new DynamoDBProvider({ awsSdkV3Client: dynamoDBClient });
+const valuesProvider = new DynamoDBProvider({
+  awsSdkV3Client: dynamoDBClient,
+  tableName: 'my-table',
+});
 
-export const handler = async (): Promise<void> => {
+export const handler = async (
+  _event: unknown,
+  _context: unknown
+): Promise<void> => {
   // Retrieve a single value
   const value = await valuesProvider.get('my-value');
   console.log(value);

@@ -1,5 +1,8 @@
 import { getFirstSubsegment } from './tracesUtils';
-import type { AssertAnnotationParams, ParsedDocument } from './traceUtils.types';
+import type {
+  AssertAnnotationParams,
+  ParsedDocument,
+} from './traceUtils.types';
 
 export const assertAnnotation = (params: AssertAnnotationParams): void => {
   const {
@@ -7,7 +10,7 @@ export const assertAnnotation = (params: AssertAnnotationParams): void => {
     isColdStart,
     expectedServiceName,
     expectedCustomAnnotationKey,
-    expectedCustomAnnotationValue
+    expectedCustomAnnotationValue,
   } = params;
 
   if (!annotations) {
@@ -15,14 +18,21 @@ export const assertAnnotation = (params: AssertAnnotationParams): void => {
   }
   expect(annotations['ColdStart']).toEqual(isColdStart);
   expect(annotations['Service']).toEqual(expectedServiceName);
-  expect(annotations[expectedCustomAnnotationKey]).toEqual(expectedCustomAnnotationValue);
+  expect(annotations[expectedCustomAnnotationKey]).toEqual(
+    expectedCustomAnnotationValue
+  );
 };
 
-export const assertErrorAndFault = (invocationSubsegment: ParsedDocument, expectedCustomErrorMessage: string): void => {
+export const assertErrorAndFault = (
+  invocationSubsegment: ParsedDocument,
+  expectedCustomErrorMessage: string
+): void => {
   expect(invocationSubsegment.error).toBe(true);
 
   const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
   expect(handlerSubsegment.fault).toBe(true);
   expect(handlerSubsegment.hasOwnProperty('cause')).toBe(true);
-  expect(handlerSubsegment.cause?.exceptions[0].message).toBe(expectedCustomErrorMessage);
+  expect(handlerSubsegment.cause?.exceptions[0].message).toBe(
+    expectedCustomErrorMessage
+  );
 };

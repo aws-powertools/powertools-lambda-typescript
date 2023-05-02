@@ -10,8 +10,11 @@ import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
 import { XRayClient } from '@aws-sdk/client-xray';
 import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
-import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
-import { 
+import {
+  deployStack,
+  destroyStack,
+} from '../../../commons/tests/utils/cdk-cli';
+import {
   getTraces,
   getInvocationSubsegment,
   splitSegmentsByName,
@@ -20,28 +23,26 @@ import {
   getFunctionArn,
   getFirstSubsegment,
 } from '../helpers/tracesUtils';
-import type {
-  ParsedTrace,
-} from '../helpers/traceUtils.types';
+import type { ParsedTrace } from '../helpers/traceUtils.types';
 import {
   generateUniqueName,
   isValidRuntimeKey,
 } from '../../../commons/tests/utils/e2eUtils';
-import { 
+import {
   RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT, 
-  TEARDOWN_TIMEOUT, 
+  SETUP_TIMEOUT,
+  TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-  expectedCustomAnnotationKey, 
-  expectedCustomAnnotationValue, 
-  expectedCustomMetadataKey, 
-  expectedCustomMetadataValue, 
-  expectedCustomResponseValue, 
+  expectedCustomAnnotationKey,
+  expectedCustomAnnotationValue,
+  expectedCustomMetadataKey,
+  expectedCustomMetadataValue,
+  expectedCustomResponseValue,
   expectedCustomErrorMessage,
 } from './constants';
-import { 
+import {
   assertErrorAndFault,
-  assertAnnotation
+  assertAnnotation,
 } from '../helpers/traceAssertions';
 
 const runtime: string = process.env.RUNTIME || 'nodejs18x';
@@ -51,10 +52,20 @@ if (!isValidRuntimeKey(runtime)) {
 }
 
 const uuid = v4();
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Manual');
-const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'AllFeatures-Manual');
+const stackName = generateUniqueName(
+  RESOURCE_NAME_PREFIX,
+  uuid,
+  runtime,
+  'AllFeatures-Manual'
+);
+const functionName = generateUniqueName(
+  RESOURCE_NAME_PREFIX,
+  uuid,
+  runtime,
+  'AllFeatures-Manual'
+);
 const lambdaFunctionCodeFile = 'allFeatures.manual.test.functionCode.ts';
-const expectedServiceName = functionName; 
+const expectedServiceName = functionName;
 
 const xrayClient = new XRayClient({});
 const stsClient = new STSClient({});
@@ -64,10 +75,8 @@ let sortedTraces: ParsedTrace[];
 const integTestApp = new App();
 let stack: Stack;
 
-describe(`Tracer E2E tests, all features with manual instantiation for runtime: nodejs18x`, () => {
-
+describe(`Tracer E2E tests, all features with manual instantiation for runtime: ${runtime}`, () => {
   beforeAll(async () => {
-    
     // Prepare
     const startTime = new Date();
     const ddbTableName = stackName + '-table';
@@ -86,17 +95,17 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       entry,
       expectedServiceName,
       environmentParams,
-      runtime
+      runtime,
     });
-    
+
     const ddbTable = new Table(stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
         name: 'id',
-        type: AttributeType.STRING
+        type: AttributeType.STRING,
       },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     ddbTable.grantWriteData(testFunction);
@@ -108,8 +117,13 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
 
     // Retrieve traces from X-Ray for assertion
     const lambdaFunctionArn = await getFunctionArn(stsClient, functionName);
-    sortedTraces = await getTraces(xrayClient, startTime, lambdaFunctionArn, invocations, 4);
-    
+    sortedTraces = await getTraces(
+      xrayClient,
+      startTime,
+      lambdaFunctionArn,
+      invocations,
+      4
+    );
   }, SETUP_TIMEOUT);
 
   afterAll(async () => {
@@ -118,80 +132,89 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
     }
   }, TEARDOWN_TIMEOUT);
 
-  it('should generate all custom traces', async () => {
-    
-    expect(sortedTraces.length).toBe(invocations);
+  it(
+    'should generate all custom traces',
+    async () => {
+      expect(sortedTraces.length).toBe(invocations);
 
-    // Assess
-    for (let i = 0; i < invocations; i++) {
-      const trace = sortedTraces[i];
+      // Assess
+      for (let i = 0; i < invocations; i++) {
+        const trace = sortedTraces[i];
 
-      /**
-       * Expect the trace to have 4 segments:
-       * 1. Lambda Context (AWS::Lambda)
-       * 2. Lambda Function (AWS::Lambda::Function)
-       * 3. DynamoDB (AWS::DynamoDB)
-       * 4. Remote call (awslabs.github.io)
-       */
-      expect(trace.Segments.length).toBe(4);
-      const invocationSubsegment = getInvocationSubsegment(trace);
-      
-      /**
-       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
-       * '## index.handler' subsegment should have 2 subsegments
-       * 1. DynamoDB (PutItem on the table)
-       * 2. awslabs.github.io (Remote call)
-       */
-      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
-      expect(handlerSubsegment.name).toBe('## index.handler');
-      expect(handlerSubsegment?.subsegments).toHaveLength(2);
+        /**
+         * Expect the trace to have 4 segments:
+         * 1. Lambda Context (AWS::Lambda)
+         * 2. Lambda Function (AWS::Lambda::Function)
+         * 3. DynamoDB (AWS::DynamoDB)
+         * 4. Remote call (awslabs.github.io)
+         */
+        expect(trace.Segments.length).toBe(4);
+        const invocationSubsegment = getInvocationSubsegment(trace);
 
-      if (!handlerSubsegment.subsegments) {
-        fail('"## index.handler" subsegment should have subsegments');
+        /**
+         * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+         * '## index.handler' subsegment should have 2 subsegments
+         * 1. DynamoDB (PutItem on the table)
+         * 2. awslabs.github.io (Remote call)
+         */
+        const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+        expect(handlerSubsegment.name).toBe('## index.handler');
+        expect(handlerSubsegment?.subsegments).toHaveLength(2);
+
+        if (!handlerSubsegment.subsegments) {
+          fail('"## index.handler" subsegment should have subsegments');
+        }
+        const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [
+          'DynamoDB',
+          'awslabs.github.io',
+        ]);
+        expect(subsegments.get('DynamoDB')?.length).toBe(1);
+        expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
+        expect(subsegments.get('other')?.length).toBe(0);
+
+        const shouldThrowAnError = i === invocations - 1;
+        if (shouldThrowAnError) {
+          assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
+        }
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io' ]);
-      expect(subsegments.get('DynamoDB')?.length).toBe(1);
-      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
-      expect(subsegments.get('other')?.length).toBe(0);
-      
-      const shouldThrowAnError = (i === (invocations - 1));
-      if (shouldThrowAnError) {
-        assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
+    },
+    TEST_CASE_TIMEOUT
+  );
+
+  it(
+    'should have correct annotations and metadata',
+    async () => {
+      for (let i = 0; i < invocations; i++) {
+        const trace = sortedTraces[i];
+        const invocationSubsegment = getInvocationSubsegment(trace);
+        const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+        const { annotations, metadata } = handlerSubsegment;
+
+        const isColdStart = i === 0;
+        assertAnnotation({
+          annotations,
+          isColdStart,
+          expectedServiceName,
+          expectedCustomAnnotationKey,
+          expectedCustomAnnotationValue,
+        });
+
+        if (!metadata) {
+          fail('metadata is missing');
+        }
+        expect(
+          metadata[expectedServiceName][expectedCustomMetadataKey]
+        ).toEqual(expectedCustomMetadataValue);
+
+        const shouldThrowAnError = i === invocations - 1;
+        if (!shouldThrowAnError) {
+          // Assert that the metadata object contains the response
+          expect(
+            metadata[expectedServiceName]['index.handler response']
+          ).toEqual(expectedCustomResponseValue);
+        }
       }
-    }
-
-  }, TEST_CASE_TIMEOUT);
-  
-  it('should have correct annotations and metadata', async () => {
-    for (let i = 0; i < invocations; i++) {
-      const trace = sortedTraces[i];
-      const invocationSubsegment = getInvocationSubsegment(trace);
-      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
-      const { annotations, metadata } = handlerSubsegment;
-
-      const isColdStart = (i === 0);
-      assertAnnotation({
-        annotations,
-        isColdStart,
-        expectedServiceName,
-        expectedCustomAnnotationKey,
-        expectedCustomAnnotationValue,
-      });
-      
-      if (!metadata) {
-        fail('metadata is missing');
-      }
-      expect(metadata[expectedServiceName][expectedCustomMetadataKey])
-        .toEqual(expectedCustomMetadataValue);
-
-      const shouldThrowAnError = (i === (invocations - 1));
-      if (!shouldThrowAnError) {
-        // Assert that the metadata object contains the response
-        expect(metadata[expectedServiceName]['index.handler response'])
-          .toEqual(expectedCustomResponseValue);
-      }
-    }
-  }, TEST_CASE_TIMEOUT);
-
+    },
+    TEST_CASE_TIMEOUT
+  );
 });
-

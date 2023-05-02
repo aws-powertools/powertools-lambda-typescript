@@ -4,23 +4,35 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import axios from 'axios';
 
-const serviceName = process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
-const customAnnotationKey = process.env.EXPECTED_CUSTOM_ANNOTATION_KEY ?? 'myAnnotation';
-const customAnnotationValue = process.env.EXPECTED_CUSTOM_ANNOTATION_VALUE ?? 'myValue';
-const customMetadataKey = process.env.EXPECTED_CUSTOM_METADATA_KEY ?? 'myMetadata';
-const customMetadataValue = process.env.EXPECTED_CUSTOM_METADATA_VALUE ? JSON.parse(process.env.EXPECTED_CUSTOM_METADATA_VALUE) : { bar: 'baz' };
-const customResponseValue = process.env.EXPECTED_CUSTOM_RESPONSE_VALUE ? JSON.parse(process.env.EXPECTED_CUSTOM_RESPONSE_VALUE) : { foo: 'bar' };
-const customErrorMessage = process.env.EXPECTED_CUSTOM_ERROR_MESSAGE ?? 'An error has occurred';
+const serviceName =
+  process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
+const customAnnotationKey =
+  process.env.EXPECTED_CUSTOM_ANNOTATION_KEY ?? 'myAnnotation';
+const customAnnotationValue =
+  process.env.EXPECTED_CUSTOM_ANNOTATION_VALUE ?? 'myValue';
+const customMetadataKey =
+  process.env.EXPECTED_CUSTOM_METADATA_KEY ?? 'myMetadata';
+const customMetadataValue = process.env.EXPECTED_CUSTOM_METADATA_VALUE
+  ? JSON.parse(process.env.EXPECTED_CUSTOM_METADATA_VALUE)
+  : { bar: 'baz' };
+const customResponseValue = process.env.EXPECTED_CUSTOM_RESPONSE_VALUE
+  ? JSON.parse(process.env.EXPECTED_CUSTOM_RESPONSE_VALUE)
+  : { foo: 'bar' };
+const customErrorMessage =
+  process.env.EXPECTED_CUSTOM_ERROR_MESSAGE ?? 'An error has occurred';
 const testTableName = process.env.TEST_TABLE_NAME ?? 'TestTable';
-const customSubSegmentName = process.env.EXPECTED_CUSTOM_SUBSEGMENT_NAME ?? 'mySubsegment';
+const customSubSegmentName =
+  process.env.EXPECTED_CUSTOM_SUBSEGMENT_NAME ?? 'mySubsegment';
 
 interface CustomEvent {
-  throw: boolean
-  invocation: number
+  throw: boolean;
+  invocation: number;
 }
 
 const tracer = new Tracer({ serviceName: serviceName });
-const dynamoDB = tracer.captureAWSv3Client(DynamoDBDocumentClient.from(new DynamoDBClient({})));
+const dynamoDB = tracer.captureAWSv3Client(
+  DynamoDBDocumentClient.from(new DynamoDBClient({}))
+);
 
 export class MyFunctionBase {
   private readonly returnValue: string;
@@ -29,13 +41,24 @@ export class MyFunctionBase {
     this.returnValue = customResponseValue;
   }
 
-  public async handler(event: CustomEvent, _context: Context): Promise<unknown> {
+  public async handler(
+    event: CustomEvent,
+    _context: Context
+  ): Promise<unknown> {
     tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
     tracer.putMetadata(customMetadataKey, customMetadataValue);
 
     try {
-      await dynamoDB.send(new PutCommand({ TableName: testTableName, Item: { id: `${serviceName}-${event.invocation}-sdkv3` } }));
-      await axios.get('https://awslabs.github.io/aws-lambda-powertools-typescript/latest/', { timeout: 5000 });
+      await dynamoDB.send(
+        new PutCommand({
+          TableName: testTableName,
+          Item: { id: `${serviceName}-${event.invocation}-sdkv3` },
+        })
+      );
+      await axios.get(
+        'https://awslabs.github.io/aws-lambda-powertools-typescript/latest/',
+        { timeout: 5000 }
+      );
 
       const res = this.myMethod();
       if (event.throw) {
@@ -57,7 +80,11 @@ class MyFunctionWithDecorator extends MyFunctionBase {
   @tracer.captureLambdaHandler()
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  public async handler(event: CustomEvent, _context: Context, _callback: Callback<unknown>): void | Promise<unknown> {
+  public async handler(
+    event: CustomEvent,
+    _context: Context,
+    _callback: Callback<unknown>
+  ): void | Promise<unknown> {
     return super.handler(event, _context);
   }
 
@@ -76,7 +103,11 @@ export class MyFunctionWithDecoratorAndCustomNamedSubSegmentForMethod extends My
   @tracer.captureLambdaHandler()
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  public async handler(event: CustomEvent, _context: Context, _callback: Callback<unknown>): void | Promise<unknown> {
+  public async handler(
+    event: CustomEvent,
+    _context: Context,
+    _callback: Callback<unknown>
+  ): void | Promise<unknown> {
     return super.handler(event, _context);
   }
 
@@ -88,5 +119,7 @@ export class MyFunctionWithDecoratorAndCustomNamedSubSegmentForMethod extends My
   }
 }
 
-const handlerWithCustomSubsegmentNameInMethodClass = new MyFunctionWithDecoratorAndCustomNamedSubSegmentForMethod();
-export const handlerWithCustomSubsegmentNameInMethod = handlerClass.handler.bind(handlerWithCustomSubsegmentNameInMethodClass);
+const handlerWithCustomSubsegmentNameInMethodClass =
+  new MyFunctionWithDecoratorAndCustomNamedSubSegmentForMethod();
+export const handlerWithCustomSubsegmentNameInMethod =
+  handlerClass.handler.bind(handlerWithCustomSubsegmentNameInMethodClass);

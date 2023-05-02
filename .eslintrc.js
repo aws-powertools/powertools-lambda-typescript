@@ -74,6 +74,5 @@ module.exports = {
     'prefer-arrow-callback': 'error', // Enforce arrow functions instead of anonymous functions for callbacks
     quotes: [ 'error', 'single', { allowTemplateLiterals: true } ], // Enforce single quotes except for template strings
     semi: [ 'error', 'always' ], // Require semicolons instead of ASI (automatic semicolon insertion) at the end of statements
-    'prettier/prettier': 'error', // Enforce prettier formatting
   }
 };

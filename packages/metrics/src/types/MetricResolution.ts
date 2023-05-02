@@ -3,6 +3,7 @@ const MetricResolution = {
   High: 1,
 } as const;
 
-type MetricResolution = typeof MetricResolution[keyof typeof MetricResolution];
+type MetricResolution =
+  (typeof MetricResolution)[keyof typeof MetricResolution];
 
 export { MetricResolution };

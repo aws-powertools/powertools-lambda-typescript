@@ -55,34 +55,31 @@ type MetricUnitTerabitsPerSecond = MetricUnits.TerabitsPerSecond;
 type MetricUnitCountPerSecond = MetricUnits.CountPerSecond;
 
 type MetricUnit =
-    MetricUnitSeconds
-    | MetricUnitMicroseconds
-    | MetricUnitMilliseconds
-    | MetricUnitBytes
-    | MetricUnitKilobytes
-    | MetricUnitMegabytes
-    | MetricUnitGigabytes
-    | MetricUnitTerabytes
-    | MetricUnitBits
-    | MetricUnitKilobits
-    | MetricUnitMegabits
-    | MetricUnitGigabits
-    | MetricUnitTerabits
-    | MetricUnitPercent
-    | MetricUnitCount
-    | MetricUnitBitsPerSecond
-    | MetricUnitBytesPerSecond
-    | MetricUnitKilobytesPerSecond
-    | MetricUnitMegabytesPerSecond
-    | MetricUnitGigabytesPerSecond
-    | MetricUnitTerabytesPerSecond
-    | MetricUnitKilobitsPerSecond
-    | MetricUnitMegabitsPerSecond
-    | MetricUnitGigabitsPerSecond
-    | MetricUnitTerabitsPerSecond
-    | MetricUnitCountPerSecond;
+  | MetricUnitSeconds
+  | MetricUnitMicroseconds
+  | MetricUnitMilliseconds
+  | MetricUnitBytes
+  | MetricUnitKilobytes
+  | MetricUnitMegabytes
+  | MetricUnitGigabytes
+  | MetricUnitTerabytes
+  | MetricUnitBits
+  | MetricUnitKilobits
+  | MetricUnitMegabits
+  | MetricUnitGigabits
+  | MetricUnitTerabits
+  | MetricUnitPercent
+  | MetricUnitCount
+  | MetricUnitBitsPerSecond
+  | MetricUnitBytesPerSecond
+  | MetricUnitKilobytesPerSecond
+  | MetricUnitMegabytesPerSecond
+  | MetricUnitGigabytesPerSecond
+  | MetricUnitTerabytesPerSecond
+  | MetricUnitKilobitsPerSecond
+  | MetricUnitMegabitsPerSecond
+  | MetricUnitGigabitsPerSecond
+  | MetricUnitTerabitsPerSecond
+  | MetricUnitCountPerSecond;
 
-export {
-  MetricUnit,
-  MetricUnits,
-};
+export { MetricUnit, MetricUnits };

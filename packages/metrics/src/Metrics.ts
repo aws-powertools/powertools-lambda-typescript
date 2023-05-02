@@ -34,26 +34,26 @@ import {
  *   * Context manager to create a one off metric with a different dimension
  *
  * ## Usage
- * 
+ *
  * ### Functions usage with middleware
- * 
+ *
  * Using this middleware on your handler function will automatically flush metrics after the function returns or throws an error.
  * Additionally, you can configure the middleware to easily:
  * * ensure that at least one metric is emitted before you flush them
  * * capture a `ColdStart` a metric
  * * set default dimensions for all your metrics
- * 
+ *
  * @example
  * ```typescript
  * import { Metrics, logMetrics } from '@aws-lambda-powertools/metrics';
  * import middy from '@middy/core';
- * 
+ *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
- * 
+ *
  * const lambdaHandler = async (_event: any, _context: any) => {
  *   ...
  * };
- * 
+ *
  * export const handler = middy(lambdaHandler).use(logMetrics(metrics));
  * ```
  *
@@ -112,10 +112,10 @@ class Metrics extends Utility implements MetricsInterface {
   private dimensions: Dimensions = {};
   private envVarsService?: EnvironmentVariablesService;
   private functionName?: string;
-  private isSingleMetric: boolean = false;
+  private isSingleMetric = false;
   private metadata: Record<string, string> = {};
   private namespace?: string;
-  private shouldThrowOnEmptyMetrics: boolean = false;
+  private shouldThrowOnEmptyMetrics = false;
   private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {
@@ -136,7 +136,9 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public addDimension(name: string, value: string): void {
     if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount()) {
-      throw new RangeError(`The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`);
+      throw new RangeError(
+        `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+      );
     }
     this.dimensions[name] = value;
   }
@@ -157,7 +159,7 @@ class Metrics extends Utility implements MetricsInterface {
       throw new RangeError(
         `Unable to add ${
           Object.keys(dimensions).length
-        } dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`,
+        } dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     }
     this.dimensions = newDimensions;
@@ -187,9 +189,9 @@ class Metrics extends Utility implements MetricsInterface {
    * @example
    * ```typescript
    * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-   * 
+   *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
-   * 
+   *
    * metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
    * ```
    *
@@ -200,25 +202,30 @@ class Metrics extends Utility implements MetricsInterface {
    * @example
    * ```typescript
    * import { Metrics, MetricUnits, MetricResolution } from '@aws-lambda-powertools/metrics';
-   * 
+   *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
-   * 
+   *
    * metrics.addMetric('successfulBooking', MetricUnits.Count, 1, MetricResolution.High);
    * ```
    *
-   * @param name - The metric name 
+   * @param name - The metric name
    * @param unit - The metric unit
    * @param value - The metric value
    * @param resolution - The metric resolution
    */
-  public addMetric(name: string, unit: MetricUnit, value: number, resolution: MetricResolution = MetricResolution.Standard): void {
+  public addMetric(
+    name: string,
+    unit: MetricUnit,
+    value: number,
+    resolution: MetricResolution = MetricResolution.Standard
+  ): void {
     this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
   }
 
   /**
    * Create a singleMetric to capture cold start.
-   * 
+   *
    * If it's a cold start invocation, this feature will:
    *   * Create a separate EMF blob that contains a single metric named ColdStart
    *   * Add function_name and service dimensions
@@ -242,7 +249,9 @@ class Metrics extends Utility implements MetricsInterface {
     const singleMetric = this.singleMetric();
 
     if (this.defaultDimensions.service) {
-      singleMetric.setDefaultDimensions({ service: this.defaultDimensions.service });
+      singleMetric.setDefaultDimensions({
+        service: this.defaultDimensions.service,
+      });
     }
     if (this.functionName != null) {
       singleMetric.addDimension('function_name', this.functionName);
@@ -304,7 +313,8 @@ class Metrics extends Utility implements MetricsInterface {
    * @decorator Class
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
-    const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } = options;
+    const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
+      options;
     if (throwOnEmptyMetrics) {
       this.throwOnEmptyMetrics();
     }
@@ -315,7 +325,7 @@ class Metrics extends Utility implements MetricsInterface {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
-       */ 
+       */
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
 
@@ -323,21 +333,26 @@ class Metrics extends Utility implements MetricsInterface {
       const metricsRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
-      descriptor.value = ( async function(this: Handler, event: unknown, context: Context, callback: Callback): Promise<unknown> {
+      descriptor.value = async function (
+        this: Handler,
+        event: unknown,
+        context: Context,
+        callback: Callback
+      ): Promise<unknown> {
         metricsRef.functionName = context.functionName;
         if (captureColdStartMetric) metricsRef.captureColdStartMetric();
-          
+
         let result: unknown;
         try {
-          result = await originalMethod.apply(this, [ event, context, callback ]);
+          result = await originalMethod.apply(this, [event, context, callback]);
         } catch (error) {
           throw error;
         } finally {
           metricsRef.publishStoredMetrics();
         }
-          
+
         return result;
-      });
+      };
 
       return descriptor;
     };
@@ -361,10 +376,13 @@ class Metrics extends Utility implements MetricsInterface {
    * ```
    */
   public publishStoredMetrics(): void {
-    if (!this.shouldThrowOnEmptyMetrics && Object.keys(this.storedMetrics).length === 0) {
+    if (
+      !this.shouldThrowOnEmptyMetrics &&
+      Object.keys(this.storedMetrics).length === 0
+    ) {
       console.warn(
         'No application metrics to publish. The cold-start metric may be published if enabled. ' +
-        'If application metrics should never be empty, consider using \'throwOnEmptyMetrics\'',
+          'If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
       );
     }
     const target = this.serializeMetrics();
@@ -377,10 +395,10 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Function to create a new metric object compliant with the EMF (Embedded Metric Format) schema which
    * includes the metric name, unit, and optionally storage resolution.
-   * 
+   *
    * The function will create a new EMF blob and log it to standard output to be then ingested by Cloudwatch
    * logs and processed automatically for metrics creation.
-   * 
+   *
    * @returns metrics as JSON object compliant EMF Schema Specification
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html for more details
    */
@@ -444,7 +462,7 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Sets default dimensions that will be added to all metrics.
-   * 
+   *
    * @param dimensions The default dimensions to be added to all metrics.
    */
   public setDefaultDimensions(dimensions: Dimensions | undefined): void {
@@ -513,11 +531,14 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Gets the current number of dimensions stored.
-   * 
+   *
    * @returns the number of dimensions currently stored
    */
   private getCurrentDimensionsCount(): number {
-    return Object.keys(this.dimensions).length + Object.keys(this.defaultDimensions).length;
+    return (
+      Object.keys(this.dimensions).length +
+      Object.keys(this.defaultDimensions).length
+    );
   }
 
   /**
@@ -535,7 +556,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @returns the environment variables service
    */
   private getEnvVarsService(): EnvironmentVariablesService {
-    return <EnvironmentVariablesService> this.envVarsService;
+    return this.envVarsService as EnvironmentVariablesService;
   }
 
   /**
@@ -552,12 +573,14 @@ class Metrics extends Utility implements MetricsInterface {
    * @returns true if the metric is new, false if another metric with the same name already exists
    */
   private isNewMetric(name: string, unit: MetricUnit): boolean {
-    if (this.storedMetrics[name]){
+    if (this.storedMetrics[name]) {
       if (this.storedMetrics[name].unit !== unit) {
         const currentUnit = this.storedMetrics[name].unit;
-        throw new Error(`Metric "${name}" has already been added with unit "${currentUnit}", but we received unit "${unit}". Did you mean to use metric unit "${currentUnit}"?`);
+        throw new Error(
+          `Metric "${name}" has already been added with unit "${currentUnit}", but we received unit "${unit}". Did you mean to use metric unit "${currentUnit}"?`
+        );
       }
-      
+
       return false;
     } else {
       return true;
@@ -569,8 +592,12 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param customConfigService The custom config service to be used
    */
-  private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
-    this.customConfigService = customConfigService ? customConfigService : undefined;
+  private setCustomConfigService(
+    customConfigService?: ConfigServiceInterface
+  ): void {
+    this.customConfigService = customConfigService
+      ? customConfigService
+      : undefined;
   }
 
   /**
@@ -593,14 +620,20 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Sets the options to be used by the Metrics instance.
-   * 
+   *
    * This method is used during the initialization of the Metrics instance.
    *
    * @param options The options to be used
    * @returns the Metrics instance
    */
   private setOptions(options: MetricsOptions): Metrics {
-    const { customConfigService, namespace, serviceName, singleMetric, defaultDimensions } = options;
+    const {
+      customConfigService,
+      namespace,
+      serviceName,
+      singleMetric,
+      defaultDimensions,
+    } = options;
 
     this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
@@ -618,9 +651,11 @@ class Metrics extends Utility implements MetricsInterface {
    * @param service The service to be used
    */
   private setService(service: string | undefined): void {
-    const targetService = (service ||
-      this.getCustomConfigService()?.getServiceName() ||
-      this.getEnvVarsService().getServiceName()) as string || this.getDefaultServiceName();
+    const targetService =
+      ((service ||
+        this.getCustomConfigService()?.getServiceName() ||
+        this.getEnvVarsService().getServiceName()) as string) ||
+      this.getDefaultServiceName();
     if (targetService.length > 0) {
       this.setDefaultDimensions({ service: targetService });
     }
@@ -628,7 +663,7 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Stores a metric in the buffer
-   * 
+   *
    * @param name The name of the metric to store
    * @param unit The unit of the metric to store
    * @param value The value of the metric to store
@@ -638,8 +673,8 @@ class Metrics extends Utility implements MetricsInterface {
     name: string,
     unit: MetricUnit,
     value: number,
-    resolution: MetricResolution,
-  ): void {    
+    resolution: MetricResolution
+  ): void {
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }
@@ -648,10 +683,9 @@ class Metrics extends Utility implements MetricsInterface {
       this.storedMetrics[name] = {
         unit,
         value,
-        name, 
-        resolution    
+        name,
+        resolution,
       };
-       
     } else {
       const storedMetric = this.storedMetrics[name];
       if (!Array.isArray(storedMetric.value)) {
@@ -660,11 +694,6 @@ class Metrics extends Utility implements MetricsInterface {
       storedMetric.value.push(value);
     }
   }
-
 }
 
-export {
-  Metrics,
-  MetricUnits,
-  MetricResolution,
-};
+export { Metrics, MetricUnits, MetricResolution };

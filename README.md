@@ -105,13 +105,13 @@ Knowing which companies are using this library is important to help prioritize t
 
 The following companies, among others, use Powertools:
 
-* [Hashnode](https://hashnode.com/){target="_blank"}
-* [Trek10](https://www.trek10.com/){target="_blank"}
-* [Elva](https://elva-group.com){target="_blank"}
-* [globaldatanet](https://globaldatanet.com/){target="_blank"}
-* [Bailey Nelson](https://www.baileynelson.com.au){target="_blank"}
-* [Perfect Post](https://www.perfectpost.fr){target="_blank"}
-* [Sennder](https://sennder.com/){target="_blank"}
+* [Hashnode](https://hashnode.com/)
+* [Trek10](https://www.trek10.com/)
+* [Elva](https://elva-group.com)
+* [globaldatanet](https://globaldatanet.com/)
+* [Bailey Nelson](https://www.baileynelson.com.au)
+* [Perfect Post](https://www.perfectpost.fr)
+* [Sennder](https://sennder.com/)
 
 ### Sharing your work
 

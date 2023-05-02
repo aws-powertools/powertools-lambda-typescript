@@ -8,23 +8,23 @@ import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {
   deployStack,
-  destroyStack
+  destroyStack,
 } from '../../../packages/commons/tests/utils/cdk-cli';
 import {
   generateUniqueName,
   invokeFunction,
   isValidRuntimeKey,
-  createStackWithLambdaFunction
+  createStackWithLambdaFunction,
 } from '../../../packages/commons/tests/utils/e2eUtils';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT
+  TEST_CASE_TIMEOUT,
 } from './constants';
 import {
   LEVEL,
-  InvocationLogs
+  InvocationLogs,
 } from '../../../packages/commons/tests/utils/InvocationLogs';
 import { v4 } from 'uuid';
 import path from 'path';
@@ -37,13 +37,32 @@ if (!isValidRuntimeKey(runtime)) {
 }
 
 describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () => {
-
   const uuid = v4();
   let invocationLogs: InvocationLogs[];
-  const stackNameLayers = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'layerStack');
-  const stackNameFunction = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'functionStack');
-  const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'function');
-  const ssmParameterLayerName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'parameter');
+  const stackNameLayers = generateUniqueName(
+    RESOURCE_NAME_PREFIX,
+    uuid,
+    runtime,
+    'layerStack'
+  );
+  const stackNameFunction = generateUniqueName(
+    RESOURCE_NAME_PREFIX,
+    uuid,
+    runtime,
+    'functionStack'
+  );
+  const functionName = generateUniqueName(
+    RESOURCE_NAME_PREFIX,
+    uuid,
+    runtime,
+    'function'
+  );
+  const ssmParameterLayerName = generateUniqueName(
+    RESOURCE_NAME_PREFIX,
+    uuid,
+    runtime,
+    'parameter'
+  );
   const lambdaFunctionCodeFile = 'layerPublisher.class.test.functionCode.ts';
 
   const invocationCount = 1;
@@ -55,18 +74,18 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
   const powerToolsPackageVersion = packageJson.version;
 
   beforeAll(async () => {
-
-    const layerName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'layer');
-
-    stackLayer = new LayerPublisherStack(
-      integTestApp,
-      stackNameLayers,
-      {
-        layerName: layerName,
-        powertoolsPackageVersion: powerToolsPackageVersion,
-        ssmParameterLayerArn: ssmParameterLayerName,
-      }
+    const layerName = generateUniqueName(
+      RESOURCE_NAME_PREFIX,
+      uuid,
+      runtime,
+      'layer'
     );
+
+    stackLayer = new LayerPublisherStack(integTestApp, stackNameLayers, {
+      layerName: layerName,
+      powertoolsPackageVersion: powerToolsPackageVersion,
+      ssmParameterLayerArn: ssmParameterLayerName,
+    });
 
     stackFunction = createStackWithLambdaFunction({
       app: integTestApp,
@@ -85,8 +104,8 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
           '@aws-lambda-powertools/commons',
           '@aws-lambda-powertools/logger',
           '@aws-lambda-powertools/metrics',
-          '@aws-lambda-powertools/tracer'
-        ]
+          '@aws-lambda-powertools/tracer',
+        ],
       },
       layers: [stackLayer.lambdaLayerVersion],
     });
@@ -94,47 +113,56 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
     await deployStack(integTestApp, stackLayer);
     await deployStack(integTestApp, stackFunction);
 
-    invocationLogs = await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
-
+    invocationLogs = await invokeFunction(
+      functionName,
+      invocationCount,
+      'SEQUENTIAL'
+    );
   }, SETUP_TIMEOUT);
 
   describe('LayerPublisherStack usage', () => {
+    it(
+      'should have no errors in the logs, which indicates the pacakges version matches the expected one',
+      () => {
+        const logs = invocationLogs[0].getFunctionLogs(LEVEL.ERROR);
 
-    it('should have no errors in the logs, which indicates the pacakges version matches the expected one', () => {
+        expect(logs.length).toBe(0);
+      },
+      TEST_CASE_TIMEOUT
+    );
 
-      const logs = invocationLogs[0].getFunctionLogs(LEVEL.ERROR);
+    it(
+      'should have one warning related to missing Metrics namespace',
+      () => {
+        const logs = invocationLogs[0].getFunctionLogs(LEVEL.WARN);
 
-      expect(logs.length).toBe(0);
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toContain('Namespace should be defined, default used');
+      },
+      TEST_CASE_TIMEOUT
+    );
 
-    }, TEST_CASE_TIMEOUT);
+    it(
+      'should have one info log related to coldstart metric',
+      () => {
+        const logs = invocationLogs[0].getFunctionLogs(LEVEL.INFO);
 
-    it('should have one warning related to missing Metrics namespace', () => {
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toContain('ColdStart');
+      },
+      TEST_CASE_TIMEOUT
+    );
 
-      const logs = invocationLogs[0].getFunctionLogs(LEVEL.WARN);
+    it(
+      'should have one debug log that says Hello World!',
+      () => {
+        const logs = invocationLogs[0].getFunctionLogs(LEVEL.DEBUG);
 
-      expect(logs.length).toBe(1);
-      expect(logs[0]).toContain('Namespace should be defined, default used');
-
-    }, TEST_CASE_TIMEOUT);
-
-    it('should have one info log related to coldstart metric', () => {
-
-      const logs = invocationLogs[0].getFunctionLogs(LEVEL.INFO);
-
-      expect(logs.length).toBe(1);
-      expect(logs[0]).toContain('ColdStart');
-
-    }, TEST_CASE_TIMEOUT);
-
-    it('should have one debug log that says Hello World!', () => {
-
-      const logs = invocationLogs[0].getFunctionLogs(LEVEL.DEBUG);
-
-      expect(logs.length).toBe(1);
-      expect(logs[0]).toContain('Hello World!');
-
-    }, TEST_CASE_TIMEOUT);
-
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toContain('Hello World!');
+      },
+      TEST_CASE_TIMEOUT
+    );
   });
 
   afterAll(async () => {
@@ -143,5 +171,4 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
       await destroyStack(integTestApp, stackLayer);
     }
   }, TEARDOWN_TIMEOUT);
-
 });

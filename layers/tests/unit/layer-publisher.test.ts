@@ -9,9 +9,7 @@ import { Template } from 'aws-cdk-lib/assertions';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 
 describe('Class: LayerPublisherStack', () => {
-
   it('creates the stack with a layer in it', () => {
-
     // Prepare
     const app = new App();
     const stack = new LayerPublisherStack(app, 'MyTestStack', {
@@ -26,11 +24,7 @@ describe('Class: LayerPublisherStack', () => {
     // Assess
     template.resourceCountIs('AWS::Lambda::LayerVersion', 1);
     template.hasResourceProperties('AWS::Lambda::LayerVersion', {
-      CompatibleRuntimes: [
-        'nodejs14.x',
-        'nodejs16.x',
-        'nodejs18.x'
-      ],
+      CompatibleRuntimes: ['nodejs14.x', 'nodejs16.x', 'nodejs18.x'],
       LicenseInfo: 'MIT-0',
       /* CompatibleArchitectures: [
         'x86_64',
@@ -51,5 +45,4 @@ describe('Class: LayerPublisherStack', () => {
       Type: 'String',
     });
   });
-
 });

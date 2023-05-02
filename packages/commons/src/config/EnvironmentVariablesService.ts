@@ -14,7 +14,6 @@ import { ConfigService } from '.';
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
  */
 class EnvironmentVariablesService extends ConfigService {
-
   /**
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
    * @protected
@@ -44,7 +43,7 @@ class EnvironmentVariablesService extends ConfigService {
 
   /**
    * It returns the value of the _X_AMZN_TRACE_ID environment variable.
-   * 
+   *
    * The AWS X-Ray Trace data available in the environment variable has this format:
    * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
    *
@@ -67,13 +66,10 @@ class EnvironmentVariablesService extends ConfigService {
    * @returns boolean
    */
   public isValueTrue(value: string): boolean {
-    const truthyValues: string[] = [ '1', 'y', 'yes', 't', 'true', 'on' ];
+    const truthyValues: string[] = ['1', 'y', 'yes', 't', 'true', 'on'];
 
     return truthyValues.includes(value.toLowerCase());
   }
-
 }
 
-export {
-  EnvironmentVariablesService,
-};
+export { EnvironmentVariablesService };

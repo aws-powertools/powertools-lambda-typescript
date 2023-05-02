@@ -20,9 +20,7 @@ export class IdempotencyHandler<U> {
 
   }
 
-  public determineResultFromIdempotencyRecord(
-    idempotencyRecord: IdempotencyRecord
-  ): Promise<U> | U {
+  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U {
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError(
         'Item has expired during processing and may not longer be valid.'
@@ -43,10 +41,9 @@ export class IdempotencyHandler<U> {
           `There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`
         );
       }
-    } else {
-      // Currently recalling the method as this fulfills FR1. FR3 will address using the previously stored value https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447
-      return this.functionToMakeIdempotent(this.fullFunctionPayload);
     }
+
+    return idempotencyRecord.getResponse() as U;
   }
 
   public async getFunctionResult(): Promise<U> {

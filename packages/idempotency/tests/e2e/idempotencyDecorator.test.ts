@@ -4,7 +4,7 @@
  * @group e2e/idempotency
  */
 import { v4 } from 'uuid';
-import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { App, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
 import {
@@ -17,6 +17,7 @@ import { RESOURCE_NAME_PREFIX, SETUP_TIMEOUT, TEARDOWN_TIMEOUT, TEST_CASE_TIMEOU
 import * as path from 'path';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
+import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 
 const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
@@ -30,6 +31,8 @@ const app = new App();
 let stack: Stack;
 const ddbTableName = stackName + '-idempotency-table';
 describe('Idempotency e2e test, basic features', () => {
+
+  let invocationLogs: InvocationLogs[];
 
   beforeAll(async () => {
     stack = new Stack(app, stackName);
@@ -47,20 +50,19 @@ describe('Idempotency e2e test, basic features', () => {
       runtime: TEST_RUNTIMES[runtime],
       functionName: testFunctionName,
       entry: path.join(__dirname, 'idempotencyDecorator.test.FunctionCode.ts'),
+      timeout: Duration.seconds(30),
       handler: 'handler',
       environment: {
         IDEMPOTENCY_TABLE_NAME: ddbTableName,
         POWERTOOLS_LOGGER_LOG_EVENT: 'true',
-      }
+      },
     });
 
     ddbTable.grantReadWriteData(testFunction);
 
     await deployStack(app, stack);
 
-    await Promise.all([
-      invokeFunction(testFunctionName, 1, 'SEQUENTIAL', { username: 'foo' }, false),
-    ]);
+    invocationLogs = await invokeFunction(testFunctionName, 2, 'SEQUENTIAL', { foo: 'bar' }, false);
 
   }, SETUP_TIMEOUT);
 
@@ -69,10 +71,12 @@ describe('Idempotency e2e test, basic features', () => {
     const ddb = new DynamoDBClient({ region: 'eu-west-1' });
     await ddb.send(new ScanCommand({ TableName: ddbTableName })).then((data) => {
       expect(data.Items?.length).toEqual(1);
-      expect(data.Items?.[0].data?.S).toEqual('Hello World foo');
+      expect(data.Items?.[0].data?.S).toEqual('Hello World');
       expect(data.Items?.[0].status?.S).toEqual('COMPLETED');
-
+      expect(invocationLogs[0].getFunctionLogs().toString()).toContain('Got test event');
+      expect(invocationLogs[1].getFunctionLogs().toString()).not.toContain('Got test event');
     });
+
   }, TEST_CASE_TIMEOUT);
 
   afterAll(async () => {

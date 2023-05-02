@@ -16,15 +16,19 @@ interface TestEvent {
 const logger = new Logger();
 
 class Lambda implements LambdaInterface {
+
   @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public async handler(_event: TestEvent, _context: Context): Promise<string> {
-    logger.info(JSON.stringify(_event));
+    logger.info(`Got test event: ${JSON.stringify(_event)}`);
+    // sleep for 5 seconds
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    return 'Hello World ' + _event.username;
+    return 'Hello World';
   }
+
 }
 
-export const handlerClass = new Lambda();
+const handlerClass = new Lambda();
 export const handler = handlerClass.handler.bind(handlerClass);

@@ -3,43 +3,31 @@
  *
  * @group unit/idempotency/persistence/base
  */
-import {
-  ContextExamples as dummyContext
-} from '@aws-lambda-powertools/commons';
-import {
-  IdempotencyConfig,
-} from '../../../src/IdempotencyConfig';
+import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
+import { IdempotencyConfig } from '../../../src/IdempotencyConfig';
 import {
   IdempotencyRecord,
-  BasePersistenceLayer
+  BasePersistenceLayer,
 } from '../../../src/persistence';
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyValidationError,
 } from '../../../src/Exceptions';
-import type {
-  IdempotencyConfigOptions
-} from '../../../src/types';
-import {
-  IdempotencyRecordStatus
-} from '../../../src/types';
+import type { IdempotencyConfigOptions } from '../../../src/types';
+import { IdempotencyRecordStatus } from '../../../src/types';
 
 jest.mock('node:crypto', () => ({
-  createHash: jest.fn().mockReturnValue(
-    {
-      update: jest.fn(),
-      digest: jest.fn().mockReturnValue('mocked-hash')
-    }
-  ),
+  createHash: jest.fn().mockReturnValue({
+    update: jest.fn(),
+    digest: jest.fn().mockReturnValue('mocked-hash'),
+  }),
 }));
 
 describe('Class: BasePersistenceLayer', () => {
-
   const ENVIRONMENT_VARIABLES = process.env;
   const context = dummyContext.helloworldContext;
 
   class PersistenceLayerTestClass extends BasePersistenceLayer {
-
     public _deleteRecord = jest.fn();
     public _getRecord = jest.fn();
     public _putRecord = jest.fn();
@@ -47,9 +35,7 @@ describe('Class: BasePersistenceLayer', () => {
   }
 
   beforeAll(() => {
-    jest
-      .useFakeTimers()
-      .setSystemTime(new Date());
+    jest.useFakeTimers().setSystemTime(new Date());
   });
 
   beforeEach(() => {
@@ -64,31 +50,27 @@ describe('Class: BasePersistenceLayer', () => {
   });
 
   describe('Method: constructor', () => {
-
     test('when initialized with no arguments, it initializes with default values', () => {
-
       // Prepare & Act
       const persistenceLayer = new PersistenceLayerTestClass();
 
       // Assess
       expect(persistenceLayer.idempotencyKeyPrefix).toBe('my-lambda-function');
-      expect(persistenceLayer).toEqual(expect.objectContaining({
-        configured: false,
-        expiresAfterSeconds: 3600,
-        hashFunction: 'md5',
-        payloadValidationEnabled: false,
-        throwOnNoIdempotencyKey: false,
-        useLocalCache: false,
-      }));
-
+      expect(persistenceLayer).toEqual(
+        expect.objectContaining({
+          configured: false,
+          expiresAfterSeconds: 3600,
+          hashFunction: 'md5',
+          payloadValidationEnabled: false,
+          throwOnNoIdempotencyKey: false,
+          useLocalCache: false,
+        })
+      );
     });
-
   });
 
   describe('Method: configure', () => {
-
     test('when configured with a function name, it appends the function name to the idempotency key prefix', () => {
-
       // Prepare
       const config = new IdempotencyConfig({});
       const persistenceLayer = new PersistenceLayerTestClass();
@@ -97,12 +79,12 @@ describe('Class: BasePersistenceLayer', () => {
       persistenceLayer.configure({ config, functionName: 'my-function' });
 
       // Assess
-      expect(persistenceLayer.idempotencyKeyPrefix).toBe('my-lambda-function.my-function');
-
+      expect(persistenceLayer.idempotencyKeyPrefix).toBe(
+        'my-lambda-function.my-function'
+      );
     });
 
     test('when configured with an empty config object, it initializes the persistence layer with default configs', () => {
-
       // Prepare
       const config = new IdempotencyConfig({});
       const persistenceLayer = new PersistenceLayerTestClass();
@@ -111,21 +93,21 @@ describe('Class: BasePersistenceLayer', () => {
       persistenceLayer.configure({ config });
 
       // Assess
-      expect(persistenceLayer).toEqual(expect.objectContaining({
-        configured: true,
-        validationKeyJmesPath: undefined,
-        payloadValidationEnabled: false,
-        expiresAfterSeconds: 3600,
-        throwOnNoIdempotencyKey: false,
-        eventKeyJmesPath: '',
-        useLocalCache: false,
-        hashFunction: 'md5',
-      }));
-
+      expect(persistenceLayer).toEqual(
+        expect.objectContaining({
+          configured: true,
+          validationKeyJmesPath: undefined,
+          payloadValidationEnabled: false,
+          expiresAfterSeconds: 3600,
+          throwOnNoIdempotencyKey: false,
+          eventKeyJmesPath: '',
+          useLocalCache: false,
+          hashFunction: 'md5',
+        })
+      );
     });
 
     test('when configured with a config object, it initializes the persistence layer with the provided configs', () => {
-
       // Prepare
       const configOptions: IdempotencyConfigOptions = {
         eventKeyJmesPath: 'eventKeyJmesPath',
@@ -144,21 +126,21 @@ describe('Class: BasePersistenceLayer', () => {
       persistenceLayer.configure({ config });
 
       // Assess
-      expect(persistenceLayer).toEqual(expect.objectContaining({
-        configured: true,
-        eventKeyJmesPath: 'eventKeyJmesPath',
-        validationKeyJmesPath: 'payloadValidationJmesPath',
-        payloadValidationEnabled: true,
-        throwOnNoIdempotencyKey: true,
-        expiresAfterSeconds: 100,
-        useLocalCache: true,
-        hashFunction: 'hashFunction',
-      }));
-
+      expect(persistenceLayer).toEqual(
+        expect.objectContaining({
+          configured: true,
+          eventKeyJmesPath: 'eventKeyJmesPath',
+          validationKeyJmesPath: 'payloadValidationJmesPath',
+          payloadValidationEnabled: true,
+          throwOnNoIdempotencyKey: true,
+          expiresAfterSeconds: 100,
+          useLocalCache: true,
+          hashFunction: 'hashFunction',
+        })
+      );
     });
 
     test('when called twice, it returns without reconfiguring the persistence layer', () => {
-
       // Prepare
       const config = new IdempotencyConfig({
         eventKeyJmesPath: 'eventKeyJmesPath',
@@ -173,19 +155,17 @@ describe('Class: BasePersistenceLayer', () => {
       persistenceLayer.configure({ config: secondConfig });
 
       // Assess
-      expect(persistenceLayer).toEqual(expect.objectContaining({
-        configured: true,
-        eventKeyJmesPath: 'eventKeyJmesPath',
-      }));
-
+      expect(persistenceLayer).toEqual(
+        expect.objectContaining({
+          configured: true,
+          eventKeyJmesPath: 'eventKeyJmesPath',
+        })
+      );
     });
-
   });
 
   describe('Method: deleteRecord', () => {
-
     test('when called, it calls the _deleteRecord method with the correct arguments', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       const baseIdempotencyRecord = new IdempotencyRecord({
@@ -202,14 +182,12 @@ describe('Class: BasePersistenceLayer', () => {
         expect.objectContaining({
           ...baseIdempotencyRecord,
           idempotencyKey: 'my-lambda-function#mocked-hash',
-          status: IdempotencyRecordStatus.EXPIRED
-        }),
+          status: IdempotencyRecordStatus.EXPIRED,
+        })
       );
-
     });
 
     test('when called, it deletes the record from the local cache', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -232,18 +210,14 @@ describe('Class: BasePersistenceLayer', () => {
         expect.objectContaining({
           ...baseIdempotencyRecord,
           idempotencyKey: 'my-lambda-function#mocked-hash',
-          status: IdempotencyRecordStatus.EXPIRED
-        }),
+          status: IdempotencyRecordStatus.EXPIRED,
+        })
       );
-
     });
-
   });
 
   describe('Method: getRecord', () => {
-
     test('when called, it calls the _getRecord method with the correct arguments', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -257,12 +231,12 @@ describe('Class: BasePersistenceLayer', () => {
       await persistenceLayer.getRecord({ foo: 'bar' });
 
       // Assess
-      expect(getRecordSpy).toHaveBeenCalledWith('my-lambda-function#mocked-hash');
-
+      expect(getRecordSpy).toHaveBeenCalledWith(
+        'my-lambda-function#mocked-hash'
+      );
     });
 
     test('when called and payload validation fails due to hash mismatch, it throws an IdempotencyValidationError', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -270,23 +244,23 @@ describe('Class: BasePersistenceLayer', () => {
           payloadValidationJmesPath: 'foo',
         }),
       });
-      jest.spyOn(persistenceLayer, '_getRecord').mockReturnValue(new IdempotencyRecord({
-        idempotencyKey: 'my-lambda-function#mocked-hash',
-        status: IdempotencyRecordStatus.INPROGRESS,
-        payloadHash: 'different-hash',
-      }));
+      jest.spyOn(persistenceLayer, '_getRecord').mockReturnValue(
+        new IdempotencyRecord({
+          idempotencyKey: 'my-lambda-function#mocked-hash',
+          status: IdempotencyRecordStatus.INPROGRESS,
+          payloadHash: 'different-hash',
+        })
+      );
 
       // Act & Assess
       await expect(persistenceLayer.getRecord({ foo: 'bar' })).rejects.toThrow(
         new IdempotencyValidationError(
-          'Payload does not match stored record for this event key',
+          'Payload does not match stored record for this event key'
         )
       );
-
     });
 
     test('when called and the hash generation fails, and throwOnNoIdempotencyKey is disabled, it logs a warning', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -304,11 +278,9 @@ describe('Class: BasePersistenceLayer', () => {
       expect(logWarningSpy).toHaveBeenCalledWith(
         'No value found for idempotency_key. jmespath: bar'
       );
-
     });
 
     test('when called and the hash generation fails, and throwOnNoIdempotencyKey is enabled, it throws', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -320,14 +292,14 @@ describe('Class: BasePersistenceLayer', () => {
       });
 
       // Act & Assess
-      await expect(persistenceLayer.getRecord({ foo: { bar: [] } })).rejects.toThrow(
+      await expect(
+        persistenceLayer.getRecord({ foo: { bar: [] } })
+      ).rejects.toThrow(
         new Error('No data found to create a hashed idempotency_key')
       );
-
     });
 
     test('when called twice with the same payload, it retrieves the record from the local cache', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -335,11 +307,15 @@ describe('Class: BasePersistenceLayer', () => {
           useLocalCache: true,
         }),
       });
-      const getRecordSpy = jest.spyOn(persistenceLayer, '_getRecord').mockReturnValue(new IdempotencyRecord({
-        idempotencyKey: 'my-lambda-function#mocked-hash',
-        status: IdempotencyRecordStatus.COMPLETED,
-        payloadHash: 'different-hash',
-      }));
+      const getRecordSpy = jest
+        .spyOn(persistenceLayer, '_getRecord')
+        .mockReturnValue(
+          new IdempotencyRecord({
+            idempotencyKey: 'my-lambda-function#mocked-hash',
+            status: IdempotencyRecordStatus.COMPLETED,
+            payloadHash: 'different-hash',
+          })
+        );
 
       // Act
       await persistenceLayer.getRecord({ foo: 'bar' });
@@ -347,11 +323,9 @@ describe('Class: BasePersistenceLayer', () => {
 
       // Assess
       expect(getRecordSpy).toHaveBeenCalledTimes(1);
-
     });
 
     test('when called twice with the same payload, if it founds an expired record in the local cache, it retrieves it', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -359,12 +333,16 @@ describe('Class: BasePersistenceLayer', () => {
           useLocalCache: true,
         }),
       });
-      const getRecordSpy = jest.spyOn(persistenceLayer, '_getRecord').mockReturnValue(new IdempotencyRecord({
-        idempotencyKey: 'my-lambda-function#mocked-hash',
-        status: IdempotencyRecordStatus.EXPIRED,
-        payloadHash: 'different-hash',
-        expiryTimestamp: Date.now() / 1000 - 1,
-      }));
+      const getRecordSpy = jest
+        .spyOn(persistenceLayer, '_getRecord')
+        .mockReturnValue(
+          new IdempotencyRecord({
+            idempotencyKey: 'my-lambda-function#mocked-hash',
+            status: IdempotencyRecordStatus.EXPIRED,
+            payloadHash: 'different-hash',
+            expiryTimestamp: Date.now() / 1000 - 1,
+          })
+        );
 
       // Act
       await persistenceLayer.getRecord({ foo: 'bar' });
@@ -372,15 +350,11 @@ describe('Class: BasePersistenceLayer', () => {
 
       // Assess
       expect(getRecordSpy).toHaveBeenCalledTimes(2);
-
     });
-
   });
 
   describe('Method: saveInProgress', () => {
-
     test('when called, it calls the _putRecord method with the correct arguments', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       const putRecordSpy = jest.spyOn(persistenceLayer, '_putRecord');
@@ -398,17 +372,17 @@ describe('Class: BasePersistenceLayer', () => {
           payloadHash: 'mocked-hash',
           inProgressExpiryTimestamp: Date.now() + remainingTimeInMs,
           responseData: undefined,
-        }),
+        })
       );
-
     });
 
     test('when called without remainingTimeInMillis, it logs a warning and then calls the _putRecord method', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       const putRecordSpy = jest.spyOn(persistenceLayer, '_putRecord');
-      const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation(() => ({}));
+      const logWarningSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => ({}));
 
       // Act
       await persistenceLayer.saveInProgress({ foo: 'bar' });
@@ -416,13 +390,11 @@ describe('Class: BasePersistenceLayer', () => {
       // Assess
       expect(putRecordSpy).toHaveBeenCalledTimes(1);
       expect(logWarningSpy).toHaveBeenCalledWith(
-        'Could not determine remaining time left. Did you call registerLambdaContext on IdempotencyConfig?',
+        'Could not determine remaining time left. Did you call registerLambdaContext on IdempotencyConfig?'
       );
-
     });
 
     test('when called and there is already a completed record in the cache, it throws an IdempotencyItemAlreadyExistsError', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -434,15 +406,13 @@ describe('Class: BasePersistenceLayer', () => {
       await persistenceLayer.saveSuccess({ foo: 'bar' }, { bar: 'baz' });
 
       // Act & Assess
-      await expect(persistenceLayer.saveInProgress({ foo: 'bar' })).rejects.toThrow(
-        new IdempotencyItemAlreadyExistsError()
-      );
+      await expect(
+        persistenceLayer.saveInProgress({ foo: 'bar' })
+      ).rejects.toThrow(new IdempotencyItemAlreadyExistsError());
       expect(putRecordSpy).toHaveBeenCalledTimes(0);
-
     });
 
     test('when called and there is an in-progress record in the cache, it returns', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -451,27 +421,26 @@ describe('Class: BasePersistenceLayer', () => {
         }),
       });
       jest.spyOn(persistenceLayer, '_getRecord').mockImplementationOnce(
-        () => new IdempotencyRecord({
-          idempotencyKey: 'my-lambda-function#mocked-hash',
-          status: IdempotencyRecordStatus.INPROGRESS,
-          payloadHash: 'different-hash',
-          expiryTimestamp: Date.now() / 1000 + 3600,
-          inProgressExpiryTimestamp: Date.now() + 2000,
-        })
+        () =>
+          new IdempotencyRecord({
+            idempotencyKey: 'my-lambda-function#mocked-hash',
+            status: IdempotencyRecordStatus.INPROGRESS,
+            payloadHash: 'different-hash',
+            expiryTimestamp: Date.now() / 1000 + 3600,
+            inProgressExpiryTimestamp: Date.now() + 2000,
+          })
       );
       await persistenceLayer.getRecord({ foo: 'bar' });
 
       // Act & Assess
-      await expect(persistenceLayer.saveInProgress({ foo: 'bar' })).resolves.toBeUndefined();
-
+      await expect(
+        persistenceLayer.saveInProgress({ foo: 'bar' })
+      ).resolves.toBeUndefined();
     });
-
   });
 
   describe('Method: saveSuccess', () => {
-
     test('when called, it calls the _updateRecord method with the correct arguments', async () => {
-
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       const updateRecordSpy = jest.spyOn(persistenceLayer, '_updateRecord');
@@ -489,11 +458,8 @@ describe('Class: BasePersistenceLayer', () => {
           payloadHash: 'mocked-hash',
           inProgressExpiryTimestamp: undefined,
           responseData: result,
-        }),
+        })
       );
-
     });
-
   });
-
 });

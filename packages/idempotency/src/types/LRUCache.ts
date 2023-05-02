@@ -2,9 +2,7 @@ type LRUCacheOptions = {
   /**
    * The maximum number of items to store in the cache.
    */
-  maxSize: number
+  maxSize: number;
 };
 
-export {
-  LRUCacheOptions
-};
+export { LRUCacheOptions };

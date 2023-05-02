@@ -13,9 +13,8 @@ export class IdempotencyHandler<U> {
     private functionToMakeIdempotent: AnyFunctionWithRecord<U>,
     private functionPayloadToBeHashed: Record<string, unknown>,
     private idempotencyOptions: IdempotencyOptions,
-    private fullFunctionPayload: Record<string, unknown>,
-  ) {
-  }
+    private fullFunctionPayload: Record<string, unknown>
+  ) {}
 
   public determineResultFromIdempotencyRecord(
     idempotencyRecord: IdempotencyRecord
@@ -30,7 +29,7 @@ export class IdempotencyHandler<U> {
       if (
         idempotencyRecord.inProgressExpiryTimestamp &&
         idempotencyRecord.inProgressExpiryTimestamp <
-        new Date().getUTCMilliseconds()
+          new Date().getUTCMilliseconds()
       ) {
         throw new IdempotencyInconsistentStateError(
           'Item is in progress but the in progress expiry timestamp has expired.'
@@ -53,13 +52,15 @@ export class IdempotencyHandler<U> {
    * In most cases we can retry successfully on this exception.
    */
   public async handle(): Promise<U> {
-
     const MAX_RETRIES = 2;
     for (let i = 1; i <= MAX_RETRIES; i++) {
       try {
         return await this.processIdempotency();
       } catch (e) {
-        if (!(e instanceof IdempotencyAlreadyInProgressError) || i === MAX_RETRIES) {
+        if (
+          !(e instanceof IdempotencyAlreadyInProgressError) ||
+          i === MAX_RETRIES
+        ) {
           throw e;
         }
       }
@@ -71,7 +72,7 @@ export class IdempotencyHandler<U> {
   public async processIdempotency(): Promise<U> {
     try {
       await this.idempotencyOptions.persistenceStore.saveInProgress(
-        this.functionPayloadToBeHashed,
+        this.functionPayloadToBeHashed
       );
     } catch (e) {
       if (e instanceof IdempotencyItemAlreadyExistsError) {

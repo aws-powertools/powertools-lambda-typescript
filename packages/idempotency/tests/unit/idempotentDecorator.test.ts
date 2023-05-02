@@ -9,10 +9,19 @@ import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { idempotent } from '../../src/idempotentDecorator';
 import { IdempotencyRecordStatus } from '../../src/types';
 import type { IdempotencyRecordOptions } from '../../src/types';
-import { IdempotencyItemAlreadyExistsError, IdempotencyAlreadyInProgressError, IdempotencyInconsistentStateError, IdempotencyPersistenceLayerError } from '../../src/Exceptions';
+import {
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyAlreadyInProgressError,
+  IdempotencyInconsistentStateError,
+  IdempotencyPersistenceLayerError,
+} from '../../src/Exceptions';
 
-const mockSaveInProgress = jest.spyOn(BasePersistenceLayer.prototype, 'saveInProgress').mockImplementation();
-const mockGetRecord = jest.spyOn(BasePersistenceLayer.prototype, 'getRecord').mockImplementation();
+const mockSaveInProgress = jest
+  .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')
+  .mockImplementation();
+const mockGetRecord = jest
+  .spyOn(BasePersistenceLayer.prototype, 'getRecord')
+  .mockImplementation();
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -21,7 +30,10 @@ class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _updateRecord = jest.fn();
 }
 
-const options: IdempotencyOptions = { persistenceStore: new PersistenceLayerTestClass(), dataKeywordArgument: 'testingKey' };
+const options: IdempotencyOptions = {
+  persistenceStore: new PersistenceLayerTestClass(),
+  dataKeywordArgument: 'testingKey',
+};
 const functionalityToDecorate = jest.fn();
 
 class TestingClass {
@@ -37,8 +49,11 @@ class TestingClass {
 
 describe('Given a class with a function to decorate', (classWithFunction = new TestingClass()) => {
   const keyValueToBeSaved = 'thisWillBeSaved';
-  const inputRecord = { testingKey: keyValueToBeSaved, otherKey: 'thisWillNot' };
-  beforeEach(()=> jest.clearAllMocks());
+  const inputRecord = {
+    testingKey: keyValueToBeSaved,
+    otherKey: 'thisWillNot',
+  };
+  beforeEach(() => jest.clearAllMocks());
   describe('When wrapping a function with no previous executions', () => {
     beforeEach(async () => {
       classWithFunction.testing(inputRecord);
@@ -56,12 +71,16 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
   describe('When decorating a function with previous execution that is INPROGRESS', () => {
     let resultingError: Error;
     beforeEach(async () => {
-      mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      mockSaveInProgress.mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError()
+      );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
-        status: IdempotencyRecordStatus.INPROGRESS
+        status: IdempotencyRecordStatus.INPROGRESS,
       };
-      mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));      
+      mockGetRecord.mockResolvedValue(
+        new IdempotencyRecord(idempotencyOptions)
+      );
       try {
         await classWithFunction.testing(inputRecord);
       } catch (e) {
@@ -89,12 +108,16 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
   describe('When decorating a function with previous execution that is EXPIRED', () => {
     let resultingError: Error;
     beforeEach(async () => {
-      mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      mockSaveInProgress.mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError()
+      );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
-        status: IdempotencyRecordStatus.EXPIRED
+        status: IdempotencyRecordStatus.EXPIRED,
       };
-      mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions)); 
+      mockGetRecord.mockResolvedValue(
+        new IdempotencyRecord(idempotencyOptions)
+      );
       try {
         await classWithFunction.testing(inputRecord);
       } catch (e) {
@@ -121,12 +144,16 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
 
   describe('When wrapping a function with previous execution that is COMPLETED', () => {
     beforeEach(async () => {
-      mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      mockSaveInProgress.mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError()
+      );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
-        status: IdempotencyRecordStatus.COMPLETED
+        status: IdempotencyRecordStatus.COMPLETED,
       };
-      mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions)); 
+      mockGetRecord.mockResolvedValue(
+        new IdempotencyRecord(idempotencyOptions)
+      );
       await classWithFunction.testing(inputRecord);
     });
 

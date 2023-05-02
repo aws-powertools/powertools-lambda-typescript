@@ -10,7 +10,6 @@ import { PowertoolLog } from '../types/formats';
  * @extends {LogFormatter}
  */
 class PowertoolLogFormatter extends LogFormatter {
-
   /**
    * It formats key-value pairs of log attributes.
    *
@@ -32,9 +31,6 @@ class PowertoolLogFormatter extends LogFormatter {
       xray_trace_id: attributes.xRayTraceId,
     };
   }
-
 }
 
-export {
-  PowertoolLogFormatter,
-};
+export { PowertoolLogFormatter };

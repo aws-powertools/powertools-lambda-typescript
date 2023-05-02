@@ -1,4 +1,8 @@
-import { AsyncHandler, LambdaInterface, SyncHandler } from '@aws-lambda-powertools/commons';
+import {
+  AsyncHandler,
+  LambdaInterface,
+  SyncHandler,
+} from '@aws-lambda-powertools/commons';
 import { Handler } from 'aws-lambda';
 import { ConfigServiceInterface } from '../config';
 import { LogFormatterInterface } from '../formatter';
@@ -10,53 +14,56 @@ import {
 } from './Log';
 
 type ClassThatLogs = {
-  [key in Exclude<Lowercase<LogLevel>, 'silent'>]: (input: LogItemMessage, ...extraInput: LogItemExtraInput) => void;
+  [key in Exclude<Lowercase<LogLevel>, 'silent'>]: (
+    input: LogItemMessage,
+    ...extraInput: LogItemExtraInput
+  ) => void;
 };
 
 type HandlerOptions = {
-  logEvent?: boolean
-  clearState?: boolean
+  logEvent?: boolean;
+  clearState?: boolean;
 };
 
 type ConstructorOptions = {
-  logLevel?: LogLevel
-  serviceName?: string
-  sampleRateValue?: number
-  logFormatter?: LogFormatterInterface
-  customConfigService?: ConfigServiceInterface
-  persistentLogAttributes?: LogAttributes
-  environment?: Environment
+  logLevel?: LogLevel;
+  serviceName?: string;
+  sampleRateValue?: number;
+  logFormatter?: LogFormatterInterface;
+  customConfigService?: ConfigServiceInterface;
+  persistentLogAttributes?: LogAttributes;
+  environment?: Environment;
 };
 
 type LambdaFunctionContext = {
-  functionName: string
-  memoryLimitInMB: number
-  functionVersion: string
-  coldStart: boolean
-  invokedFunctionArn: string
-  awsRequestId: string
+  functionName: string;
+  memoryLimitInMB: number;
+  functionVersion: string;
+  coldStart: boolean;
+  invokedFunctionArn: string;
+  awsRequestId: string;
 };
 
 type PowertoolLogData = LogAttributes & {
-  environment?: Environment
-  serviceName: string
-  sampleRateValue?: number
-  lambdaFunctionContext: LambdaFunctionContext
-  xRayTraceId?: string
-  awsRegion: string
+  environment?: Environment;
+  serviceName: string;
+  sampleRateValue?: number;
+  lambdaFunctionContext: LambdaFunctionContext;
+  xRayTraceId?: string;
+  awsRegion: string;
 };
 
 type UnformattedAttributes = {
-  environment?: Environment
-  error?: Error
-  serviceName: string
-  sampleRateValue?: number
-  lambdaContext?: LambdaFunctionContext
-  xRayTraceId?: string
-  awsRegion: string
-  logLevel: LogLevel
-  timestamp: Date
-  message: string
+  environment?: Environment;
+  error?: Error;
+  serviceName: string;
+  sampleRateValue?: number;
+  lambdaContext?: LambdaFunctionContext;
+  xRayTraceId?: string;
+  awsRegion: string;
+  logLevel: LogLevel;
+  timestamp: Date;
+  message: string;
 };
 
 type LogItemMessage = string | LogAttributesWithMessage;
@@ -65,7 +72,9 @@ type LogItemExtraInput = [Error | string] | LogAttributes[];
 type HandlerMethodDecorator = (
   target: LambdaInterface,
   propertyKey: string | symbol,
-  descriptor: TypedPropertyDescriptor<SyncHandler<Handler>> | TypedPropertyDescriptor<AsyncHandler<Handler>>
+  descriptor:
+    | TypedPropertyDescriptor<SyncHandler<Handler>>
+    | TypedPropertyDescriptor<AsyncHandler<Handler>>
 ) => void;
 
 export {
@@ -77,7 +86,7 @@ export {
   UnformattedAttributes,
   PowertoolLogData,
   ConstructorOptions,
-  HandlerOptions
+  HandlerOptions,
 };
 
 export const enum LogJsonIndent {

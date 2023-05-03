@@ -7,6 +7,7 @@ import { Logger } from '../../../logger';
 const IDEMPOTENCY_TABLE_NAME = process.env.IDEMPOTENCY_TABLE_NAME;
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer({
   tableName: IDEMPOTENCY_TABLE_NAME,
+  staticPkValue: 'test',
 });
 
 interface TestEvent {
@@ -23,7 +24,7 @@ class Lambda implements LambdaInterface {
   public async handler(_event: TestEvent, _context: Context): Promise<string> {
     logger.info(`Got test event: ${JSON.stringify(_event)}`);
     // sleep for 5 seconds
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     return 'Hello World';
   }

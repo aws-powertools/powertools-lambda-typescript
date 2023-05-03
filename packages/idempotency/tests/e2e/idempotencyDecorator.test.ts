@@ -6,7 +6,7 @@
 import { v4 } from 'uuid';
 import { App, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   generateUniqueName,
   invokeFunction,
@@ -17,7 +17,9 @@ import { RESOURCE_NAME_PREFIX, SETUP_TIMEOUT, TEARDOWN_TIMEOUT, TEST_CASE_TIMEOU
 import * as path from 'path';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
-import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
+import { InvocationLogs, LEVEL } from '../../../commons/tests/utils/InvocationLogs';
+import { GetCommand } from '@aws-sdk/lib-dynamodb';
+import { createHash } from 'node:crypto';
 
 const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
@@ -26,13 +28,15 @@ if (!isValidRuntimeKey(runtime)) {
 }
 
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'IdempotencyDecorator');
-const testFunctionName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'IdempotencyDecoratorFunction');
+const testFunctionName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'idp');
 const app = new App();
 let stack: Stack;
 const ddbTableName = stackName + '-idempotency-table';
 describe('Idempotency e2e test, basic features', () => {
 
-  let invocationLogs: InvocationLogs[];
+  let invocationLogsSequential: InvocationLogs[];
+  let invocationLogsParallel: InvocationLogs[];
+  const payload = { foo: 'baz' };
 
   beforeAll(async () => {
     stack = new Stack(app, stackName);
@@ -46,9 +50,9 @@ describe('Idempotency e2e test, basic features', () => {
       removalPolicy: RemovalPolicy.DESTROY
     });
 
-    const testFunction = new NodejsFunction(stack, 'IdemppotentFucntion', {
+    const sequntialExecutionFunction = new NodejsFunction(stack, 'IdempotentFucntionSequential', {
       runtime: TEST_RUNTIMES[runtime],
-      functionName: testFunctionName,
+      functionName: `${testFunctionName}-sequential`,
       entry: path.join(__dirname, 'idempotencyDecorator.test.FunctionCode.ts'),
       timeout: Duration.seconds(30),
       handler: 'handler',
@@ -58,23 +62,57 @@ describe('Idempotency e2e test, basic features', () => {
       },
     });
 
-    ddbTable.grantReadWriteData(testFunction);
+    const parallelExecutionFunction = new NodejsFunction(stack, 'IdemppotentFucntionParallel', {
+      runtime: TEST_RUNTIMES[runtime],
+      functionName: `${testFunctionName}-parallel`,
+      entry: path.join(__dirname, 'idempotencyDecorator.test.FunctionCode.ts'),
+      timeout: Duration.seconds(30),
+      handler: 'handler',
+      environment: {
+        IDEMPOTENCY_TABLE_NAME: ddbTableName,
+        POWERTOOLS_LOGGER_LOG_EVENT: 'true',
+      },
+    });
+
+    ddbTable.grantReadWriteData(sequntialExecutionFunction);
+    ddbTable.grantReadWriteData(parallelExecutionFunction);
 
     await deployStack(app, stack);
 
-    invocationLogs = await invokeFunction(testFunctionName, 2, 'SEQUENTIAL', { foo: 'bar' }, false);
+    invocationLogsSequential = await invokeFunction(`${testFunctionName}-sequential`, 2, 'SEQUENTIAL', payload, false);
+
+    invocationLogsParallel = await invokeFunction(`${testFunctionName}-parallel`, 2, 'PARALLEL', payload, false);
 
   }, SETUP_TIMEOUT);
 
-  it('when called, it returns the same value', async () => {
+  it('when called twice, it returns the same value without calling the inner function', async () => {
     // create dynamodb client to query the table and check the value
     const ddb = new DynamoDBClient({ region: 'eu-west-1' });
-    await ddb.send(new ScanCommand({ TableName: ddbTableName })).then((data) => {
-      expect(data.Items?.length).toEqual(1);
-      expect(data.Items?.[0].data?.S).toEqual('Hello World');
-      expect(data.Items?.[0].status?.S).toEqual('COMPLETED');
-      expect(invocationLogs[0].getFunctionLogs().toString()).toContain('Got test event');
-      expect(invocationLogs[1].getFunctionLogs().toString()).not.toContain('Got test event');
+    const payloadHash = createHash('md5').update(JSON.stringify(payload)).digest('base64');
+    const fnHash = `${testFunctionName}-sequential#${payloadHash}`;
+    console.log(fnHash);
+    await ddb.send(new GetCommand({ TableName: ddbTableName, Key: { id: fnHash } })).then((data) => {
+      console.log(data);
+      expect(data?.Item?.data).toEqual('Hello World');
+      expect(data?.Item?.status).toEqual('COMPLETED');
+      // we log events inside the handler, so the 2nd invocation should not log anything
+      expect(invocationLogsSequential[0].getFunctionLogs().toString()).toContain('Got test event');
+      expect(invocationLogsSequential[1].getFunctionLogs().toString()).not.toContain('Got test event');
+    });
+
+  }, TEST_CASE_TIMEOUT);
+
+  it('when called twice in parallel, it trows an error', async () => {
+    // create dynamodb client to query the table and check the value
+    const ddb = new DynamoDBClient({ region: 'eu-west-1' });
+    const payloadHash = createHash('md5').update(JSON.stringify(payload)).digest('base64');
+    const fnHash = `${testFunctionName}-parallel#${payloadHash}`;
+    console.log(fnHash);
+    await ddb.send(new GetCommand({ TableName: ddbTableName, Key: { id: fnHash } })).then((data) => {
+      expect(data?.Item?.data).toEqual('Hello World');
+      expect(data?.Item?.status).toEqual('COMPLETED');
+
+      expect(invocationLogsParallel[0].getFunctionLogs(LEVEL.ERROR).toString()).toContain('There is already an execution in progress with idempotency key');
     });
 
   }, TEST_CASE_TIMEOUT);

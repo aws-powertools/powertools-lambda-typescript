@@ -69,6 +69,7 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | area/tracer                            | Items related to the Tracer Utility                                                            | PR automation                                      |
 | area/idempotency                       | Items related to the Idempotency Utility                                                       | PR automation                                      |
 | area/parameters                        | Items related to the Parameters Utility                                                        | PR automation                                      |
+| area/commons                           | Items related to the Commons Utility                                                           | PR automation                                      |
 | area/automation                        | Items related to automation like GitHub workflows or CI/CD                                     | PR automation                                      |
 | size/XS                                | PRs between 0-9 LOC                                                                            | PR automation                                      |
 | size/S                                 | PRs between 10-29 LOC                                                                          | PR automation                                      |

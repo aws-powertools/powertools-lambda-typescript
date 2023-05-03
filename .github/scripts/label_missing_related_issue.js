@@ -5,36 +5,64 @@ const {
   PR_NUMBER,
   IGNORE_AUTHORS,
   LABEL_BLOCK,
-  LABEL_BLOCK_REASON
+  LABEL_BLOCK_REASON,
+  RELATED_ISSUE_REGEX,
 } = require("./constants");
 
-module.exports = async ({github, context, core}) => {
-    if (IGNORE_AUTHORS.includes(PR_AUTHOR)) {
-      return core.notice("Author in IGNORE_AUTHORS list; skipping...");
+module.exports = async ({ github, context, core }) => {
+  if (IGNORE_AUTHORS.includes(PR_AUTHOR)) {
+    return core.notice("Author in IGNORE_AUTHORS list; skipping...");
+  }
+
+  if (
+    ["opened", "edited", "ready_for_review", "reopened"].includes(PR_ACTION)
+  ) {
+    return core.notice(
+      "Only newly opened or updated PRs are labelled to avoid spam; skipping"
+    );
+  }
+
+  const isMatch = RELATED_ISSUE_REGEX.exec(PR_BODY);
+  if (isMatch == null) {
+    core.info(
+      `No related issue found, maybe the author didn't use the template but there is one.`
+    );
+
+    let msg =
+      "No related issues found. Please ensure there is an open issue related to this change to avoid significant delays or closure.";
+    await github.rest.issues.createComment({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      body: msg,
+      issue_number: PR_NUMBER,
+    });
+
+    return await github.rest.issues.addLabels({
+      issue_number: PR_NUMBER,
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      labels: [LABEL_BLOCK, LABEL_BLOCK_REASON],
+    });
+  } else {
+    const { closingWord, issue } = isMatch.groups;
+    if (closingWord == null) {
+      core.info(
+        `Found related issue #${issue} without closing word, adding one...`
+      );
+      // Add closing word to the PR body
+      const msg = `Issue number: closes ${issue}`;
+      const updatedPRBody = PR_BODY.replace(RELATED_ISSUE_REGEX, msg);
+
+      await github.rest.issues.update({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        body: updatedPRBody,
+        issue_number: PR_NUMBER,
+      });
+    } else {
+      core.info(
+        `Found related issue #${issue} with closing word '${closingWord}'`
+      );
     }
-
-    if (PR_ACTION != "opened") {
-      return core.notice("Only newly open PRs are labelled to avoid spam; skipping");
-    }
-
-    const RELATED_ISSUE_REGEX = /Issue number:[^\d\r\n]+(?<issue>\d+)/;
-    const isMatch = RELATED_ISSUE_REGEX.exec(PR_BODY);
-    if (isMatch == null) {
-        core.info(`No related issue found, maybe the author didn't use the template but there is one.`);
-
-        let msg = "No related issues found. Please ensure there is an open issue related to this change to avoid significant delays or closure.";
-        await github.rest.issues.createComment({
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          body: msg,
-          issue_number: PR_NUMBER,
-        });
-
-        return await github.rest.issues.addLabels({
-          issue_number: PR_NUMBER,
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          labels: [LABEL_BLOCK, LABEL_BLOCK_REASON]
-        });
-    }
-}
+  }
+};

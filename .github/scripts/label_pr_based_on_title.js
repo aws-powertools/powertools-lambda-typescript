@@ -3,14 +3,12 @@ const { PR_NUMBER, PR_TITLE } = require("./constants");
 module.exports = async ({github, context, core}) => {
     const BUG_REGEX = /(fix|bug)(\((.+)\))?(:.+)/
     const FEAT_REFACTOR_REGEX = /(feat|refactor)(\((.+)\))?(:.+)/
-    const DOCS_REGEX = /(docs|doc)(\((.+)\))?(:.+)/
     const CHORE_REGEX = /(chore)(\((.+)\))?(:.+)/
     const DEPRECATED_REGEX = /(deprecated)(\((.+)\))?(:.+)/
     
     const labels = {
         "type/feature": FEAT_REFACTOR_REGEX,
         "type/bug": BUG_REGEX,
-        "area/documentation": DOCS_REGEX,
         "type/internal": CHORE_REGEX,
         "type/deprecation": DEPRECATED_REGEX,
     }

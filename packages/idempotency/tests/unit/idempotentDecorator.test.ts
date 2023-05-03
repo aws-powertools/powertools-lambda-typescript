@@ -134,7 +134,7 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
       mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
-        status: IdempotencyRecordStatus.COMPLETED
+        status: IdempotencyRecordStatus.COMPLETED,
       };
       mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));
       await classWithFunction.testing(inputRecord);
@@ -148,8 +148,8 @@ describe('Given a class with a function to decorate', (classWithFunction = new T
       expect(mockGetRecord).toBeCalledWith(inputRecord);
     });
 
-    test('Then it will call the function that was decorated with the whole input record', () => {
-      expect(functionalityToDecorate).toBeCalledWith(inputRecord);
+    test('Then it will not call decorated functionality', () => {
+      expect(functionalityToDecorate).not.toBeCalledWith(inputRecord);
     });
 
   });

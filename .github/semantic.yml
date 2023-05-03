@@ -13,6 +13,23 @@ types:
   - revert
   - improv
 
+scopes:
+  - tracer
+  - logger
+  - metrics
+  - parameters
+  - idempotency
+  - commons
+  - parser
+  - validator
+  - batch
+  - layers
+  - ci
+  - docs
+  - tests
+  - internal
+  - maintenance
+
 # Always validate the PR title
 # and ignore the commits to lower the entry bar for contribution
 # while titles make up the Release notes to ease maintenance overhead

@@ -110,6 +110,48 @@ describe('Class: EnvironmentVariablesService', () => {
 
   });
 
+  describe('Method: getXrayTraceSampled', () => {
+    
+    test('It returns true if the Sampled flag is set in the _X_AMZN_TRACE_ID environment variable', () => {
+
+      // Prepare
+      process.env._X_AMZN_TRACE_ID = 'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getXrayTraceSampled();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    test('It returns false if the Sampled flag is not set in the _X_AMZN_TRACE_ID environment variable', () => {
+
+      // Prepare
+      process.env._X_AMZN_TRACE_ID = 'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getXrayTraceSampled();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    it('It returns false when no _X_AMZN_TRACE_ID environment variable is present', () => {
+
+      // Prepare
+      delete process.env._X_AMZN_TRACE_ID;
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getXrayTraceSampled();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+  });
+
   describe('Method: isValueTrue', () => {
 
     const valuesToTest: Array<Array<string | boolean>> = [

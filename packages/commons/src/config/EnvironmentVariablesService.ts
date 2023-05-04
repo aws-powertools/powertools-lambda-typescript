@@ -61,6 +61,20 @@ class EnvironmentVariablesService extends ConfigService {
   }
 
   /**
+   * It returns true if the Sampled flag is set in the _X_AMZN_TRACE_ID environment variable.
+   * 
+   * The AWS X-Ray Trace data available in the environment variable has this format:
+   * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+   *
+   * @returns {string}
+   */
+  public getXrayTraceSampled(): boolean {
+    const xRayTraceData = this.getXrayTraceData();
+
+    return xRayTraceData[2] === 'Sampled=1';
+  }
+
+  /**
    * It returns true if the string value represents a boolean true value.
    *
    * @param {string} value

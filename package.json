@@ -12,7 +12,8 @@
     "packages/parameters",
     "packages/idempotency",
     "docs/snippets",
-    "layers"
+    "layers",
+    "examples/cdk"
   ],
   "scripts": {
     "init-environment": "husky install",
@@ -81,8 +82,5 @@
   ],
   "engines": {
     "node": ">=14"
-  },
-  "dependencies": {
-    "D": "^1.0.0"
   }
 }

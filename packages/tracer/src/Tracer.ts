@@ -557,6 +557,8 @@ class Tracer extends Utility implements TracerInterface {
    * @returns boolean - `true` if the trace is sampled, `false` otherwise.
    */
   public isTraceSampled(): boolean {
+    if (!this.isTracingEnabled()) return false;
+
     return this.envVarsService.getXrayTraceSampled();
   }
 

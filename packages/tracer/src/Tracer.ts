@@ -554,7 +554,7 @@ class Tracer extends Utility implements TracerInterface {
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces
    * 
-   * @returns boolean - `true` if the trace is sampled, `false` otherwise.
+   * @returns boolean - `true` if the trace is sampled, `false` if tracing is disabled or the trace is not sampled.
    */
   public isTraceSampled(): boolean {
     if (!this.isTracingEnabled()) return false;

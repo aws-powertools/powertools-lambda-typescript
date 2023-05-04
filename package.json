@@ -13,7 +13,8 @@
     "packages/idempotency",
     "docs/snippets",
     "layers",
-    "examples/cdk"
+    "examples/cdk",
+    "examples/sam"
   ],
   "scripts": {
     "init-environment": "husky install",

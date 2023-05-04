@@ -92,6 +92,8 @@ labelPRBasedOnFilePath:
     - .github/scripts/**/*
     - .github/workflows/*
     - .github/workflows/**/*
+    - .github/actions/*
+    - .github/actions/**/*
     - .github/release-drafter.yml
     - .github/boring-cyborg.yml
     - .github/semantic.yml

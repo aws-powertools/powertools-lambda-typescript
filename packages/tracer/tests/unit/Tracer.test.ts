@@ -279,6 +279,23 @@ describe('Class: Tracer', () => {
 
   });
 
+  describe('Method: isTraceSampled', () => {
+
+    test('when called, it returns true if the Sampled flag is set', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+
+      // Act
+      const xRayTraceSampled = tracer.getRootXrayTraceId();
+
+      // Assess
+      expect(xRayTraceSampled).toBe(true);
+
+    });
+
+  });
+
   describe('Method: getSegment', () => {
 
     test('when called and no segment is returned, it logs a warning', () => {

@@ -47,7 +47,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY
-          npx lerna version --conventional-commits --force-publish --yes
+          npm run version
           git push --tags
           npx lerna publish from-git --yes
       - name: Set release version

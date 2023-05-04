@@ -510,10 +510,6 @@ class Tracer extends Utility implements TracerInterface {
   public getRootXrayTraceId(): string | undefined {
     return this.envVarsService.getXrayTraceId();
   }
-
-  public isTraceSampled(): boolean {
-    return this.envVarsService.getXrayTraceSampled();
-  }
   
   /**
    * Get the active segment or subsegment (if any) in the current scope.
@@ -549,6 +545,19 @@ class Tracer extends Utility implements TracerInterface {
     }
  
     return segment;
+  }
+
+  /**
+   * Get the current value of the AWS X-Ray Sampled flag.
+   * 
+   * Utility method that returns the current AWS X-Ray Sampled flag.
+   *
+   * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces
+   * 
+   * @returns boolean - `true` if the trace is sampled, `false` otherwise.
+   */
+  public isTraceSampled(): boolean {
+    return this.envVarsService.getXrayTraceSampled();
   }
 
   /**

@@ -66,7 +66,7 @@ class EnvironmentVariablesService extends ConfigService {
    * The AWS X-Ray Trace data available in the environment variable has this format:
    * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
    *
-   * @returns {string}
+   * @returns {boolean}
    */
   public getXrayTraceSampled(): boolean {
     const xRayTraceData = this.getXrayTraceData();

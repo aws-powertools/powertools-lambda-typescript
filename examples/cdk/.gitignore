@@ -8,3 +8,5 @@ node_modules
 .cdk.staging
 cdk.out
 lib
+# npm lock file - this is managed by the npm workspace
+package-lock.json

@@ -3,6 +3,7 @@ name: Reusable Publish docs
 env:
   BRANCH: main
   ORIGIN: awslabs/aws-lambda-powertools-typescript
+  VERSION: ""
 
 on:
   workflow_call:
@@ -75,9 +76,10 @@ jobs:
           git config pull.rebase true
           git config remote.origin.url >&- || git remote add origin https://github.com/"$ORIGIN"
           git pull origin "$BRANCH"
+      - name: Normalize Version Number
+        run: echo "VERSION=$(echo ${{ inputs.version }} | sed 's/v//')" >> $GITHUB_ENV
       - name: Build docs website and API reference
         env:
-          VERSION: ${{ inputs.version }}
           ALIAS: ${{ inputs.alias }}
         run: |
           rm -rf site
@@ -91,8 +93,6 @@ jobs:
           npm run docs-generateApiDoc
       - name: Release API docs
         uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
-        env:
-          VERSION: ${{ inputs.version }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./api

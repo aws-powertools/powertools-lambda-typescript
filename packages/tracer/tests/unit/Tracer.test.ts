@@ -287,7 +287,7 @@ describe('Class: Tracer', () => {
       const tracer: Tracer = new Tracer();
 
       // Act
-      const xRayTraceSampled = tracer.getRootXrayTraceId();
+      const xRayTraceSampled = tracer.isTraceSampled();
 
       // Assess
       expect(xRayTraceSampled).toBe(true);

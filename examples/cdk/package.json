@@ -15,13 +15,12 @@
     "build": "tsc --skipLibCheck",
     "watch": "tsc -w",
     "test": "npm run test:unit",
-    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests --resolve-plugins-relative-to .",
-    "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests --resolve-plugins-relative-to .",
+    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
+    "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "package": "echo 'Not applicable'",
     "package-bundle": "echo 'Not applicable'",
     "test:unit": "export POWERTOOLS_DEV=true && npm run build && jest --silent",
     "test:e2e": "echo 'To be implemented ...'",
-    "version": "npm i -D @aws-lambda-powertools/logger@latest @aws-lambda-powertools/tracer@latest @aws-lambda-powertools/metrics@latest && git add package*",
     "cdk": "cdk"
   },
   "lint-staged": {

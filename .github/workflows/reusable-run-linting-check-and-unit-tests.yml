@@ -21,28 +21,11 @@ jobs:
           node-version: ${{ matrix.version }}
           cache: "npm"
       - name: Setup npm
-        run: npm i -g npm@next-8
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
+        run: npm i -g npm@latest
+      - name: Setup dependencies
+        uses: ./.github/actions/cached-node-modules
         with:
-          path: "./node_modules"
-          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
-          # if one of them changes the cache is invalidated/discarded
-          key: ${{ matrix.version }}-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
-      - name: Install dependencies
-        # We can skip the installation if there was a cache hit
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        run: npm ci --foreground-scripts
-      - name: Build packages
-        # If there's a cache hit we still need to manually build the packages
-        # this would otherwise have been done automatically as a part of the
-        # post-install npm hook
-        if: steps.cache-node-modules.outputs.cache-hit == 'true'
-        run: |
-          npm run build -w packages/commons
-          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics & npm run build -w packages/parameters & npm run build -w packages/idempotency
+          nodeVersion: ${{ matrix.version }}
       - name: Run linting
         run: npm run lint -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics -w packages/parameters -w packages/idempotency
       - name: Run unit tests
@@ -66,20 +49,8 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
-        with:
-          path: "./examples/${{ matrix.example }}/node_modules"
-          # Use the combo between example, name, and SHA-256 hash of all example lock files as cache key.
-          # It's not possible to use the ${{ matrix.example }} key in the hashFiles fn so
-          # if any of the lock files (wich should be fairly similar anyway) changes the cache is
-          # invalidated/discarded for all.
-          key: ${{ matrix.example }}-cache-examples-node-modules-${{ hashFiles('./examples/*/package-lock.json') }}
-      - name: Install dependencies
-        # We can skip the installation if there was a cache hit
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
+      - name: Setup dependencies
+        uses: ./.github/actions/cached-node-modules
       - name: Run linting
         run: npm run lint
       - name: Run tests
@@ -96,19 +67,8 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
-        with:
-          path: "./node_modules"
-          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
-          # if one of them changes the cache is invalidated/discarded
-          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
-      - name: Install dependencies
-        # We can skip the installation if there was a cache hit
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        run: npm ci --foreground-scripts
+      - name: Setup dependencies
+        uses: ./.github/actions/cached-node-modules
       - name: Run linting
         run: npm run lint -w layers
       - name: Create layer files
@@ -129,28 +89,7 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
-      - name: Setup npm
-        run: npm i -g npm@next-8
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
-        with:
-          path: "./node_modules"
-          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
-          # if one of them changes the cache is invalidated/discarded
-          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
-      - name: Install dependencies
-        # We can skip the installation if there was a cache hit
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        run: npm ci --foreground-scripts
-      - name: Build packages
-        # If there's a cache hit we still need to manually build the packages
-        # this would otherwise have been done automatically as a part of the
-        # post-install npm hook
-        if: steps.cache-node-modules.outputs.cache-hit == 'true'
-        run: |
-          npm run build -w packages/commons
-          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics & npm run build -w packages/parameters & npm run build -w packages/idempotency & npm run build -w docs/snippets
+      - name: Setup dependencies
+        uses: ./.github/actions/cached-node-modules
       - name: Run linting
         run: npm run lint -w docs/snippets

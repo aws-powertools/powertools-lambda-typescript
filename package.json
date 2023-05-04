@@ -12,21 +12,25 @@
     "packages/parameters",
     "packages/idempotency",
     "docs/snippets",
-    "layers"
+    "layers",
+    "examples/cdk",
+    "examples/sam"
   ],
   "scripts": {
     "init-environment": "husky install",
     "test": "npm t -ws",
     "commit": "commit",
     "package": "npm run package -ws",
-    "setup-local": "export PROJECT_ROOT=$(pwd) && npm ci --foreground-scripts && cd $PROJECT_ROOT/examples/cdk && npm ci && cd $PROJECT_ROOT/examples/sam && npm ci && cd $PROJECT_ROOT/ && npm run init-environment",
+    "setup-local": "npm ci --foreground-scripts && npm run init-environment",
     "build": "npm run build -ws",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",
     "docs-buildDockerImage": "docker build -t powertools-typescript/docs ./docs/",
     "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertools-typescript/docs",
     "docs-api-build-run": "npm run docs-generateApiDoc && npx live-server api",
     "docs-generateApiDoc": "typedoc .",
-    "docs-runLocalApiDoc": "npx live-server api"
+    "docs-runLocalApiDoc": "npx live-server api",
+    "version": "lerna version --conventional-commits --force-publish=packages/commons,packages/tracer,packages/logger,packages/metrics,packages/parameters --no-commit-hooks --yes",
+    "version:dry-run": "lerna version --conventional-commits --force-publish=packages/commons,packages/tracer,packages/logger,packages/metrics,packages/parameters --no-commit-hooks --no-git-tag-version --no-push"
   },
   "repository": {
     "type": "git",
@@ -81,8 +85,5 @@
   ],
   "engines": {
     "node": ">=14"
-  },
-  "dependencies": {
-    "D": "^1.0.0"
   }
 }

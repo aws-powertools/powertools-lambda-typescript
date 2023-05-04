@@ -36,27 +36,8 @@ jobs:
         with:
           node-version: "18"
           cache: "npm"
-      # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
-      # if one of them changes the cache is invalidated/discarded
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
-        with:
-          path: "./node_modules"
-          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
-      - name: Install dependencies
-        # We can skip the installation if there was a cache hit
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        run: npm ci --foreground-scripts
-      - name: Build packages
-        # If there's a cache hit we still need to manually build the packages
-        # this would otherwise have been done automatically as a part of the
-        # post-install npm hook
-        if: steps.cache-node-modules.outputs.cache-hit == 'true'
-        run: |
-          npm run build -w packages/commons
-          npm run build -w packages/logger & npm run build -w packages/tracer & npm run build -w packages/metrics
+      - name: Setup dependencies
+        uses: ./.github/actions/cached-node-modules
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

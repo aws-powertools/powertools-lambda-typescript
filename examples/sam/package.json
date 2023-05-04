@@ -11,13 +11,12 @@
   "scripts": {
     "build": "sam build --beta-features",
     "test": "npm run test:unit",
-    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests --resolve-plugins-relative-to .",
-    "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests --resolve-plugins-relative-to .",
+    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
+    "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
     "package": "echo 'Not applicable'",
     "package-bundle": "echo 'Not applicable'",
     "test:unit": "export POWERTOOLS_DEV=true && npm run build && jest --silent",
-    "test:e2e": "echo 'To be implemented ...'",
-    "version": "npm install @aws-lambda-powertools/logger@latest @aws-lambda-powertools/tracer@latest @aws-lambda-powertools/metrics@latest && git add package.json"
+    "test:e2e": "echo 'To be implemented ...'"
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix"
@@ -39,9 +38,9 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^1.7.0",
-    "@aws-lambda-powertools/metrics": "^1.7.0",
-    "@aws-lambda-powertools/tracer": "^1.7.0",
+    "@aws-lambda-powertools/logger": "^1.8.0",
+    "@aws-lambda-powertools/metrics": "^1.8.0",
+    "@aws-lambda-powertools/tracer": "^1.8.0",
     "@aws-sdk/client-dynamodb": "^3.231.0",
     "@aws-sdk/lib-dynamodb": "^3.231.0",
     "@middy/core": "^3.6.2",

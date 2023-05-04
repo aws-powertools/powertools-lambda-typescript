@@ -6,6 +6,7 @@ const {
   LABEL_PENDING_RELEASE,
   HANDLE_MAINTAINERS_TEAM,
   PR_IS_MERGED,
+  RELATED_ISSUE_REGEX,
 } = require("./constants");
 
 module.exports = async ({ github, context, core }) => {
@@ -18,7 +19,6 @@ module.exports = async ({ github, context, core }) => {
   }
 
   const isMatch = RELATED_ISSUE_REGEX.exec(PR_BODY);
-
   try {
     if (!isMatch) {
       core.setFailed(

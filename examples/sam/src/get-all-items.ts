@@ -1,4 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import middy from '@middy/core';
 import { tableName } from './common/constants';
 import { logger, tracer, metrics } from './common/powertools';
@@ -12,7 +16,7 @@ import { default as request } from 'phin';
 /*
  *
  * This example uses the Middy middleware instrumentation.
- * It is the best choice if your existing code base relies on the Middy middleware engine. 
+ * It is the best choice if your existing code base relies on the Middy middleware engine.
  * Powertools offers compatible Middy middleware to make this integration seamless.
  * Find more Information in the docs: https://awslabs.github.io/aws-lambda-powertools-typescript/
  *
@@ -23,9 +27,14 @@ import { default as request } from 'phin';
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
-const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+const getAllItemsHandler = async (
+  event: APIGatewayProxyEvent,
+  context: Context
+): Promise<APIGatewayProxyResult> => {
   if (event.httpMethod !== 'GET') {
-    throw new Error(`getAllItems only accepts GET method, you tried: ${event.httpMethod}`);
+    throw new Error(
+      `getAllItems only accepts GET method, you tried: ${event.httpMethod}`
+    );
   }
 
   // Tracer: Add awsRequestId as annotation
@@ -60,14 +69,16 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
       throw new Error('SAMPLE_TABLE environment variable is not set');
     }
 
-    const data = await docClient.send(new ScanCommand({
-      TableName: tableName
-    }));
+    const data = await docClient.send(
+      new ScanCommand({
+        TableName: tableName,
+      })
+    );
     const { Items: items } = data;
 
     // Logger: All log statements are written to CloudWatch
     logger.debug(`retrieved items: ${items?.length || 0}`);
-    
+
     logger.info(`Response ${event.path}`, {
       statusCode: 200,
       body: items,
@@ -75,15 +86,15 @@ const getAllItemsHandler = async (event: APIGatewayProxyEvent, context: Context)
 
     return {
       statusCode: 200,
-      body: JSON.stringify(items)
+      body: JSON.stringify(items),
     };
   } catch (err) {
     tracer.addErrorAsMetadata(err as Error);
     logger.error('Error reading from table. ' + err);
-    
+
     return {
       statusCode: 500,
-      body: JSON.stringify({ 'error': 'Error reading from table.' })
+      body: JSON.stringify({ error: 'Error reading from table.' }),
     };
   }
 };

@@ -13,6 +13,7 @@ interface TracerInterface {
   captureMethod(options?: CaptureMethodOptions): MethodDecorator
   getSegment(): Segment | Subsegment | undefined
   getRootXrayTraceId(): string | undefined
+  isTraceSampled(): boolean
   isTracingEnabled(): boolean
   putAnnotation: (key: string, value: string | number | boolean) => void
   putMetadata: (key: string, value: unknown, namespace?: string | undefined) => void

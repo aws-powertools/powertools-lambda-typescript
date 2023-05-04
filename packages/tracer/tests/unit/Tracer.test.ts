@@ -277,6 +277,48 @@ describe('Class: Tracer', () => {
 
     });
 
+    test('when called and Tracer is disabled, it returns undefined', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+
+      // Act
+      const xRayTraceId = tracer.getRootXrayTraceId();
+
+      // Assess
+      expect(xRayTraceId).toBe(undefined);
+    });
+
+  });
+
+  describe('Method: isTraceSampled', () => {
+
+    test('when called, it returns true if the Sampled flag is set', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer();
+
+      // Act
+      const xRayTraceSampled = tracer.isTraceSampled();
+
+      // Assess
+      expect(xRayTraceSampled).toBe(false);
+
+    });
+
+    test('when called and Trace is disabled, it returns false', () => {
+
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+
+      // Act
+      const xRayTraceSampled = tracer.isTraceSampled();
+
+      // Assess
+      expect(xRayTraceSampled).toBe(false);
+
+    });
+
   });
 
   describe('Method: getSegment', () => {

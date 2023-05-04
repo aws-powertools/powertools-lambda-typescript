@@ -53,11 +53,23 @@ class EnvironmentVariablesService extends ConfigService {
    * @returns {string}
    */
   public getXrayTraceId(): string | undefined {
-    const xRayTraceId = this.get(this.xRayTraceIdVariable);
+    const xRayTraceData = this.getXrayTraceData();
 
-    if (xRayTraceId === '') return undefined;
+    return xRayTraceData?.Root;
+  }
 
-    return xRayTraceId.split(';')[0].replace('Root=', '');
+  /**
+   * It returns true if the Sampled flag is set in the _X_AMZN_TRACE_ID environment variable.
+   * 
+   * The AWS X-Ray Trace data available in the environment variable has this format:
+   * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+   *
+   * @returns {boolean}
+   */
+  public getXrayTraceSampled(): boolean {
+    const xRayTraceData = this.getXrayTraceData();
+
+    return xRayTraceData?.Sampled === '1';
   }
 
   /**
@@ -72,6 +84,28 @@ class EnvironmentVariablesService extends ConfigService {
     return truthyValues.includes(value.toLowerCase());
   }
 
+  /**
+   * It parses the key/value data present in the _X_AMZN_TRACE_ID environment variable
+   * and returns it as an object when available.
+   */
+  private getXrayTraceData(): Record<string, string> | undefined {
+    const xRayTraceEnv = this.get(this.xRayTraceIdVariable);
+
+    if (xRayTraceEnv === '') return undefined;
+
+    if (!xRayTraceEnv.includes('=')) return { Root: xRayTraceEnv };
+
+    const xRayTraceData: Record<string, string> = {};
+
+    xRayTraceEnv.split(';').forEach((field) => {
+
+      const [ key, value ] = field.split('=');
+
+      xRayTraceData[key] = value;
+    });
+
+    return xRayTraceData;
+  }
 }
 
 export {

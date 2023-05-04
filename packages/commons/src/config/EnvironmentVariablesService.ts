@@ -55,9 +55,7 @@ class EnvironmentVariablesService extends ConfigService {
   public getXrayTraceId(): string | undefined {
     const xRayTraceData = this.getXrayTraceData();
 
-    if (xRayTraceData.length === 0) return undefined;
-
-    return xRayTraceData[0].replace('Root=', '');
+    return xRayTraceData?.Root;
   }
 
   /**
@@ -71,7 +69,7 @@ class EnvironmentVariablesService extends ConfigService {
   public getXrayTraceSampled(): boolean {
     const xRayTraceData = this.getXrayTraceData();
 
-    return xRayTraceData[2] === 'Sampled=1';
+    return xRayTraceData?.Sampled === '1';
   }
 
   /**
@@ -86,12 +84,27 @@ class EnvironmentVariablesService extends ConfigService {
     return truthyValues.includes(value.toLowerCase());
   }
 
-  private getXrayTraceData(): string[] {
+  /**
+   * It parses the key/value data present in the _X_AMZN_TRACE_ID environment variable
+   * and returns it as an object when available.
+   */
+  private getXrayTraceData(): Record<string, string> | undefined {
     const xRayTraceEnv = this.get(this.xRayTraceIdVariable);
 
-    if (xRayTraceEnv === '') return [];
+    if (xRayTraceEnv === '') return undefined;
 
-    return xRayTraceEnv.split(';');
+    if (!xRayTraceEnv.includes('=')) return { Root: xRayTraceEnv };
+
+    const xRayTraceData: Record<string, string> = {};
+
+    xRayTraceEnv.split(';').forEach((field) => {
+
+      const [ key, value ] = field.split('=');
+
+      xRayTraceData[key] = value;
+    });
+
+    return xRayTraceData;
   }
 }
 

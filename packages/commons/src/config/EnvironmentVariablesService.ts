@@ -53,11 +53,11 @@ class EnvironmentVariablesService extends ConfigService {
    * @returns {string}
    */
   public getXrayTraceId(): string | undefined {
-    const xRayTraceId = this.get(this.xRayTraceIdVariable);
+    const xRayTraceData = this.getXrayTraceData();
 
-    if (xRayTraceId === '') return undefined;
+    if (xRayTraceData.length === 0) return undefined;
 
-    return xRayTraceId.split(';')[0].replace('Root=', '');
+    return xRayTraceData[0].replace('Root=', '');
   }
 
   /**
@@ -72,6 +72,13 @@ class EnvironmentVariablesService extends ConfigService {
     return truthyValues.includes(value.toLowerCase());
   }
 
+  private getXrayTraceData(): string[] {
+    const xRayTraceEnv = this.get(this.xRayTraceIdVariable);
+
+    if (xRayTraceEnv === '') return [];
+
+    return xRayTraceEnv.split(';');
+  }
 }
 
 export {

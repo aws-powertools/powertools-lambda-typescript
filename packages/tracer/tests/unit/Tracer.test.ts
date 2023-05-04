@@ -290,7 +290,7 @@ describe('Class: Tracer', () => {
       const xRayTraceSampled = tracer.isTraceSampled();
 
       // Assess
-      expect(xRayTraceSampled).toBe(true);
+      expect(xRayTraceSampled).toBe(false);
 
     });
 

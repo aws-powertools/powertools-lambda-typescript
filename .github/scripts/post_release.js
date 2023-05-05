@@ -49,7 +49,7 @@ const notifyRelease = async ({
 	repository,
 	release_version,
 }) => {
-	const release_url = `https://github.com/${owner}/${repository}/releases/tag/v${release_version}`;
+	const release_url = `https://github.com/${owner}/${repository}/releases/tag/v${release_version.replace(/v/g, '')}`;
 
 	const issues = await fetchIssues({
 		gh_client: gh_client,
@@ -106,6 +106,6 @@ module.exports = async ({ github, context }) => {
 		gh_client: github,
 		owner: context.repo.owner,
 		repository: context.repo.repo,
-		release_version: RELEASE_VERSION.replace(/v/g, ''),
+		release_version: RELEASE_VERSION,
 	});
 };

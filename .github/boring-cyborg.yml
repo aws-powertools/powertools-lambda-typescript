@@ -27,6 +27,7 @@ labelPRBasedOnFilePath:
   area/commons:
     - packages/commons/src/*
     - packages/commons/src/**/*
+
   area/layers:
     - layers/src/*
     - layers/src/**/*

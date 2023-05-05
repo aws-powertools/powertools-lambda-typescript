@@ -37,5 +37,5 @@ module.exports = Object.freeze({
   "IGNORE_AUTHORS": ["dependabot[bot]"],
 
   /** @type {RegExp} */
-  "RELATED_ISSUE_REGEX": /\bIssue number:(?<closingWord>:closes?|close|fix|fixes?|fixed|resolves?|resolved)?\s*#(?<issue>\d+)\b/
+  "RELATED_ISSUE_REGEX": /\b\*{0,2}[iI]ssue [nN]umber\*{0,2}:\*{0,2}\s*(?<closingWord>closes?|closed|fix|fixes?|fixed|resolves?|resolved)?\s*#(?<issue>\d+)\b/
 });

@@ -38,7 +38,7 @@ module.exports = async ({ github, context, core }) => {
   } finally {
     if (miss == Object.keys(labels).length) {
       core.notice(
-        `PR ${PR_NUMBER} title '${PR_TITLE}' doesn't follow semantic titles; skipping...`
+        `PR ${PR_NUMBER} title '${PR_TITLE}' contain any of the release-related types; skipping...`
       );
     }
   }

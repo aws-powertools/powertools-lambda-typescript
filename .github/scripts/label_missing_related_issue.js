@@ -14,7 +14,7 @@ module.exports = async ({ github, context, core }) => {
     return core.notice("Author in IGNORE_AUTHORS list; skipping...");
   }
 
-  if (["opened"].includes(PR_ACTION)) {
+  if (!["opened"].includes(PR_ACTION)) {
     return core.notice(
       "Only newly opened PRs are labelled to avoid spam; skipping"
     );

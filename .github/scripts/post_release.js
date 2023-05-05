@@ -11,7 +11,6 @@ const { LABEL_PENDING_RELEASE, LABEL_RELEASED } = require("./constants");
  * @return {Object[]} issues - Array of issues matching params
  * @see {@link https://octokit.github.io/rest.js/v18#usage|Octokit client}
  */
-
 const fetchIssues = async ({
 	gh_client,
 	org,
@@ -44,19 +43,19 @@ const fetchIssues = async ({
  * @param {string} release_version - GitHub Release version
  * @see {@link https://octokit.github.io/rest.js/v18#usage|Octokit client}
  */
-
 const notifyRelease = async ({
 	gh_client,
 	owner,
 	repository,
 	release_version,
 }) => {
-	const release_url = `https://github.com/${owner}/${repository}/releases/tag/v${release_version}`;
+	const release_url = `https://github.com/${owner}/${repository}/releases/tag/v${release_version.replace(/v/g, '')}`;
 
 	const issues = await fetchIssues({
 		gh_client: gh_client,
 		org: owner,
 		repository: repository,
+		state: "closed"
 	});
 
 	issues.forEach(async (issue) => {
@@ -79,15 +78,15 @@ const notifyRelease = async ({
 		// Close issue and remove staged label; keep existing ones
 		const labels = issue.labels
 			.filter((label) => label.name != LABEL_PENDING_RELEASE)
-			.map((label) => label.name);
+			.map((label) => label.name)
+			.push(LABEL_RELEASED);
 
 		try {
-			await gh_client.rest.issues.update({
+			await gh_client.rest.issues.setLabels({
 				repo: repository,
-				owner: owner,
+				owner,
 				issue_number: issue.number,
-				state: "closed",
-				labels: [...labels, LABEL_RELEASED],
+				labels,
 			});
 		} catch (error) {
 			console.error(error);
@@ -99,7 +98,6 @@ const notifyRelease = async ({
 };
 
 // context: https://github.com/actions/toolkit/blob/main/packages/github/src/context.ts
-
 module.exports = async ({ github, context }) => {
 	const { RELEASE_VERSION } = process.env;
 	console.log(`Running post-release script for ${RELEASE_VERSION} version`);

@@ -43,24 +43,12 @@ module.exports = async ({ github, context, core }) => {
     });
   } else {
     const { closingWord, issue } = isMatch.groups;
-    if (closingWord == null) {
-      core.info(
-        `Found related issue #${issue} without closing word, adding one...`
-      );
-      // Add closing word to the PR body
-      const msg = `Issue number: closes ${issue}`;
-      const updatedPRBody = PR_BODY.replace(RELATED_ISSUE_REGEX, msg);
-
-      await github.rest.issues.update({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        body: updatedPRBody,
-        issue_number: PR_NUMBER,
-      });
-    } else {
-      core.info(
-        `Found related issue #${issue} with closing word '${closingWord}'`
-      );
-    }
+    core.info(
+      `Found related issue #${issue} ${
+        closingWord === undefined
+          ? "without closing word"
+          : `with closing word ${closingWord}`
+      }`
+    );
   }
 };

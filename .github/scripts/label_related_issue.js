@@ -76,7 +76,7 @@ module.exports = async ({ github, context, core }) => {
     core.info(
       `Auto-labeling related issue ${issue} for release while removing 'status/*' and 'need-*' labels`
     );
-    return await github.rest.issues.replaceLabels({
+    return await github.rest.issues.setLabels({
       issue_number: issue,
       owner: context.repo.owner,
       repo: context.repo.repo,

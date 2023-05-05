@@ -22,11 +22,9 @@ Add here the number (i.e. #42) to the Github Issue or RFC that is related to thi
 
 Don't include any other text, otherwise the Github Issue will not be detected.
 
-Example: 
-**Issue number:** #42
+Note: If no issue is present the PR might get blocked and not be reviewed.
 -->
 **Issue number:** 
-<!--- Note: If no issue is present the PR might get blocked and not be reviewed. -->
 
 ## Checklist
 

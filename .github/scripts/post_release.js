@@ -82,7 +82,7 @@ const notifyRelease = async ({
 			.push(LABEL_RELEASED);
 
 		try {
-			await gh_client.rest.issues.replaceLabels({
+			await gh_client.rest.issues.setLabels({
 				repo: repository,
 				owner,
 				issue_number: issue.number,

@@ -27,19 +27,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
         with:
           # While `fetch-depth` is used to allow the workflow to later commit & push the changes.
           fetch-depth: 0
       - name: Setup NodeJS
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: "18"
           cache: "npm"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b # v4.6.0
         with:
           python-version: "3.8"
       - name: Install doc generation dependencies
@@ -81,7 +81,7 @@ jobs:
           destination_dir: ${{ env.VERSION }}/api
       - name: Release API docs to latest
         if: ${{ inputs.alias == 'latest' }}
-        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7
+        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./api

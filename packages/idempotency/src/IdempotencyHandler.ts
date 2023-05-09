@@ -17,7 +17,6 @@ export class IdempotencyHandler<U> {
     private persistenceStore: BasePersistenceLayer,
     private fullFunctionPayload: Record<string, unknown>,
   ) {
-
   }
 
   public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U {
@@ -104,6 +103,7 @@ export class IdempotencyHandler<U> {
 
         return this.determineResultFromIdempotencyRecord(idempotencyRecord);
       } else {
+        console.log(e);
         throw new IdempotencyPersistenceLayerError();
       }
     }

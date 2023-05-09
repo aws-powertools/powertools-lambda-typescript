@@ -1,15 +1,10 @@
-import type {
-  AnyFunctionWithRecord,
-  AnyIdempotentFunction,
-  GenericTempRecord,
-  IdempotentFunctionOptions,
-} from './types';
+import type { AnyFunctionWithRecord, AnyIdempotentFunction, GenericTempRecord, IdempotentOptions, } from './types';
 import { IdempotencyHandler } from './IdempotencyHandler';
 import { IdempotencyConfig } from './IdempotencyConfig';
 
 const makeFunctionIdempotent = function <U>(
   fn: AnyFunctionWithRecord<U>,
-  options: IdempotentFunctionOptions,
+  options: IdempotentOptions,
 ): AnyIdempotentFunction<U> {
   const wrappedFn: AnyIdempotentFunction<U> = function (record: GenericTempRecord): Promise<U> {
     if (options.dataKeywordArgument === undefined) {

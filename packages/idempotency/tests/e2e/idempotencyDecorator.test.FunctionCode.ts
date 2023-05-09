@@ -7,29 +7,88 @@ import { Logger } from '../../../logger';
 const IDEMPOTENCY_TABLE_NAME = process.env.IDEMPOTENCY_TABLE_NAME;
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer({
   tableName: IDEMPOTENCY_TABLE_NAME,
-  staticPkValue: 'test',
+});
+
+const ddbPersistenceLayerCustomized = new DynamoDBPersistenceLayer({
+  tableName: IDEMPOTENCY_TABLE_NAME,
+  dataAttr: 'dataattr',
+  keyAttr: 'customId',
+  expiryAttr: 'expiryattr',
+  statusAttr: 'statusattr',
+  inProgressExpiryAttr: 'inprogressexpiryattr',
+  staticPkValue: 'staticpkvalue',
+  validationKeyAttr: 'validationkeyattr',
 });
 
 interface TestEvent {
-  username: string
+  [key: string]: string
 }
 
-const logger = new Logger();
+interface EventRecords {
+  records: Record<string, unknown>[]
+}
 
-class Lambda implements LambdaInterface {
+class DefaultLambda implements LambdaInterface {
 
   @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  public async handler(_event: TestEvent, _context: Context): Promise<string> {
+  public async handler(_event: Record, _context: Context): Promise<string> {
     logger.info(`Got test event: ${JSON.stringify(_event)}`);
-    // sleep for 5 seconds
+    // sleep to enforce error with parallel execution
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     return 'Hello World';
   }
 
+  @idempotent({ persistenceStore: ddbPersistenceLayerCustomized })
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  public async handlerCustomized(_event: TestEvent, _context: Context): Promise<string> {
+    logger.info(`Got test event customized: ${JSON.stringify(_event)}`);
+    // sleep for 5 seconds
+
+    return 'Hello World Customized';
+  }
+
+  @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  public async handlerFails(_event: TestEvent, _context: Context): Promise<string> {
+    logger.info(`Got test event: ${JSON.stringify(_event)}`);
+    // sleep for 5 seconds
+
+    throw new Error('Failed');
+  }
+
 }
 
-const handlerClass = new Lambda();
+const logger = new Logger();
+
+class LambdaWithKeywordArgument implements LambdaInterface {
+  public async handler(_event: EventRecords, _context: Context): Promise<string> {
+    logger.info(`Got test event: ${JSON.stringify(_event)}`);
+    for (const record of _event.records) {
+      logger.info(`Processing event: ${JSON.stringify(record)}`);
+      await this.process(record);
+    }
+
+    return 'Hello World Keyword Argument';
+  }
+
+  @idempotent({ persistenceStore: dynamoDBPersistenceLayer, dataKeywordArgument: 'foo' })
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  public async process(record: Record<string, unknown>): string {
+    logger.info(`Processing inside: ${JSON.stringify(record)}`);
+
+    return 'idempotent result: ' + record.foo;
+  }
+}
+
+const handlerClass = new DefaultLambda();
+const decorateInnerMethodClass = new LambdaWithKeywordArgument();
 export const handler = handlerClass.handler.bind(handlerClass);
+export const handlerCustomized = handlerClass.handlerCustomized.bind(handlerClass);
+export const handlerFails = handlerClass.handlerFails.bind(handlerClass);
+export const handlerWithKeywordArgument = decorateInnerMethodClass.handler.bind(decorateInnerMethodClass);

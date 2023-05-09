@@ -35,7 +35,7 @@ export type StackWithLambdaFunctionOptions = {
   timeout?: Duration
 };
 
-type FunctionPayload = { [key: string]: string | boolean | number };
+type FunctionPayload = { [key: string]: string | boolean | number | Array<Record<string, unknown>> };
 
 export const isValidRuntimeKey = (runtime: string): runtime is TestRuntimesKey => testRuntimeKeys.includes(runtime);
 

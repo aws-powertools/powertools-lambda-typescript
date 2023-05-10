@@ -103,7 +103,6 @@ export class IdempotencyHandler<U> {
 
         return this.determineResultFromIdempotencyRecord(idempotencyRecord);
       } else {
-        console.log(e);
         throw new IdempotencyPersistenceLayerError();
       }
     }

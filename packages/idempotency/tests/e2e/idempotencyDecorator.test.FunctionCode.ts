@@ -63,6 +63,11 @@ class DefaultLambda implements LambdaInterface {
 
 }
 
+const defaultLambda = new DefaultLambda();
+export const handler = defaultLambda.handler.bind(defaultLambda);
+export const handlerCustomized = defaultLambda.handlerCustomized.bind(defaultLambda);
+export const handlerFails = defaultLambda.handlerFails.bind(defaultLambda);
+
 const logger = new Logger();
 
 class LambdaWithKeywordArgument implements LambdaInterface {
@@ -86,9 +91,5 @@ class LambdaWithKeywordArgument implements LambdaInterface {
   }
 }
 
-const handlerClass = new DefaultLambda();
-const decorateInnerMethodClass = new LambdaWithKeywordArgument();
-export const handler = handlerClass.handler.bind(handlerClass);
-export const handlerCustomized = handlerClass.handlerCustomized.bind(handlerClass);
-export const handlerFails = handlerClass.handlerFails.bind(handlerClass);
-export const handlerWithKeywordArgument = decorateInnerMethodClass.handler.bind(decorateInnerMethodClass);
+const lambdaWithKeywordArg = new LambdaWithKeywordArgument();
+export const handlerWithKeywordArgument = lambdaWithKeywordArg.handler.bind(lambdaWithKeywordArg);

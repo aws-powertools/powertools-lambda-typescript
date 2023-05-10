@@ -13,10 +13,10 @@ import {
   isValidRuntimeKey,
   TEST_RUNTIMES
 } from '../../../commons/tests/utils/e2eUtils';
-import { RESOURCE_NAME_PREFIX, SETUP_TIMEOUT, TEST_CASE_TIMEOUT } from './constants';
+import { RESOURCE_NAME_PREFIX, SETUP_TIMEOUT, TEARDOWN_TIMEOUT, TEST_CASE_TIMEOUT } from './constants';
 import * as path from 'path';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { deployStack } from '../../../commons/tests/utils/cdk-cli';
+import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import { LEVEL } from '../../../commons/tests/utils/InvocationLogs';
 import { GetCommand } from '@aws-sdk/lib-dynamodb';
 import { createHash } from 'node:crypto';
@@ -180,9 +180,9 @@ describe('Idempotency e2e test, default settings', () => {
     });
   }, TEST_CASE_TIMEOUT);
 
-  // afterAll(async () => {
-  //   if (!process.env.DISABLE_TEARDOWN) {
-  //     await destroyStack(app, stack);
-  //   }
-  // }, TEARDOWN_TIMEOUT);
+  afterAll(async () => {
+    if (!process.env.DISABLE_TEARDOWN) {
+      await destroyStack(app, stack);
+    }
+  }, TEARDOWN_TIMEOUT);
 });

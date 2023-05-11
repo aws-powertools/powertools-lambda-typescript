@@ -4,22 +4,15 @@
  * @group e2e/idempotency
  */
 import { v4 } from 'uuid';
-import { App, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { App, Stack } from 'aws-cdk-lib';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import {
-  generateUniqueName,
-  invokeFunction,
-  isValidRuntimeKey,
-  TEST_RUNTIMES
-} from '../../../commons/tests/utils/e2eUtils';
+import { generateUniqueName, invokeFunction, isValidRuntimeKey } from '../../../commons/tests/utils/e2eUtils';
 import { RESOURCE_NAME_PREFIX, SETUP_TIMEOUT, TEARDOWN_TIMEOUT, TEST_CASE_TIMEOUT } from './constants';
-import * as path from 'path';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
 import { LEVEL } from '../../../commons/tests/utils/InvocationLogs';
 import { GetCommand } from '@aws-sdk/lib-dynamodb';
 import { createHash } from 'node:crypto';
+import { createIdempotencyResources } from '../helpers/idempotencyUtils';
 
 const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
@@ -28,38 +21,10 @@ if (!isValidRuntimeKey(runtime)) {
 }
 
 const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'Idempotency');
+const decoratorFunctionFile = 'idempotencyDecorator.test.FunctionCode.ts';
 
 const app = new App();
 let stack: Stack;
-
-const createIdempotencyResources = (stack: Stack, ddbTableName: string, functionName: string, handler: string, ddbPkId?: string): void => {
-  const uniqueTableId = ddbTableName + v4().substring(0, 5);
-  const ddbTable = new Table(stack, uniqueTableId, {
-    tableName: ddbTableName,
-    partitionKey: {
-      name: ddbPkId ? ddbPkId : 'id',
-      type: AttributeType.STRING,
-    },
-    billingMode: BillingMode.PAY_PER_REQUEST,
-    removalPolicy: RemovalPolicy.DESTROY
-  });
-
-  const uniqueFunctionId = functionName + v4().substring(0, 5);
-  const nodeJsFunction = new NodejsFunction(stack, uniqueFunctionId, {
-    runtime: TEST_RUNTIMES[runtime],
-    functionName: functionName,
-    entry: path.join(__dirname, 'idempotencyDecorator.test.FunctionCode.ts'),
-    timeout: Duration.seconds(30),
-    handler: handler,
-    environment: {
-      IDEMPOTENCY_TABLE_NAME: ddbTableName,
-      POWERTOOLS_LOGGER_LOG_EVENT: 'true',
-    }
-  });
-
-  ddbTable.grantReadWriteData(nodeJsFunction);
-
-};
 
 describe('Idempotency e2e test, default settings', () => {
 
@@ -68,19 +33,19 @@ describe('Idempotency e2e test, default settings', () => {
 
   const functionNameDefault = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'default');
   const ddbTableNameDefault = stackName + '-default-table';
-  createIdempotencyResources(stack, ddbTableNameDefault, functionNameDefault, 'handler');
+  createIdempotencyResources(stack, runtime, ddbTableNameDefault, decoratorFunctionFile, functionNameDefault, 'handler');
 
   const functionNameCustom = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'custom');
   const ddbTableNameCustom = stackName + '-custom-table';
-  createIdempotencyResources(stack, ddbTableNameCustom, functionNameCustom, 'handlerCustomized', 'customId');
+  createIdempotencyResources(stack, runtime, ddbTableNameCustom, decoratorFunctionFile, functionNameCustom, 'handlerCustomized', 'customId');
 
   const functionNameKeywordArg = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'keywordarg');
   const ddbTableNameKeywordArg = stackName + '-keywordarg-table';
-  createIdempotencyResources(stack, ddbTableNameKeywordArg, functionNameKeywordArg, 'handlerWithKeywordArgument');
+  createIdempotencyResources(stack, runtime, ddbTableNameKeywordArg, decoratorFunctionFile, functionNameKeywordArg, 'handlerWithKeywordArgument');
 
   const functionNameFails = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'fails');
   const ddbTableNameFails = stackName + '-fails-table';
-  createIdempotencyResources(stack, ddbTableNameFails, functionNameFails, 'handlerFails');
+  createIdempotencyResources(stack, runtime, ddbTableNameFails, decoratorFunctionFile, functionNameFails, 'handlerFails');
 
   beforeAll(async () => {
     await deployStack(app, stack);

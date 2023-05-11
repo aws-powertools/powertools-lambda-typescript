@@ -7,7 +7,6 @@
 import { EnvironmentVariablesService } from '../../../src/config';
 
 describe('Class: EnvironmentVariablesService', () => {
-
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
@@ -20,9 +19,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: get', () => {
-
     test('When the variable IS present, it returns the value of a runtime variable', () => {
-
       // Prepare
       process.env.CUSTOM_VARIABLE = 'my custom value';
       const service = new EnvironmentVariablesService();
@@ -32,11 +29,9 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('my custom value');
-
     });
 
     test('When the variable IS NOT present, it returns an empty string', () => {
-
       // Prepare
       delete process.env.CUSTOM_VARIABLE;
       const service = new EnvironmentVariablesService();
@@ -46,15 +41,11 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('');
-
     });
-
   });
 
   describe('Method: getServiceName', () => {
-
     test('It returns the value of the environment variable POWERTOOLS_SERVICE_NAME', () => {
-
       // Prepare
       process.env.POWERTOOLS_SERVICE_NAME = 'shopping-cart-api';
       const service = new EnvironmentVariablesService();
@@ -65,13 +56,10 @@ describe('Class: EnvironmentVariablesService', () => {
       // Assess
       expect(value).toEqual('shopping-cart-api');
     });
-
   });
 
   describe('Method: getXrayTraceId', () => {
-
     test('It returns the value of the environment variable _X_AMZN_TRACE_ID', () => {
-
       // Prepare
       process.env._X_AMZN_TRACE_ID = 'abcd123456789';
       const service = new EnvironmentVariablesService();
@@ -83,9 +71,9 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual('abcd123456789');
     });
     test('It returns the value of the Root X-Ray segment ID properly formatted', () => {
-
       // Prepare
-      process.env._X_AMZN_TRACE_ID = 'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
+      process.env._X_AMZN_TRACE_ID =
+        'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
       const service = new EnvironmentVariablesService();
 
       // Act
@@ -96,7 +84,6 @@ describe('Class: EnvironmentVariablesService', () => {
     });
 
     test('It returns the value of the Root X-Ray segment ID properly formatted', () => {
-
       // Prepare
       delete process.env._X_AMZN_TRACE_ID;
       const service = new EnvironmentVariablesService();
@@ -107,15 +94,13 @@ describe('Class: EnvironmentVariablesService', () => {
       // Assess
       expect(value).toEqual(undefined);
     });
-
   });
 
   describe('Method: getXrayTraceSampled', () => {
-    
     test('It returns true if the Sampled flag is set in the _X_AMZN_TRACE_ID environment variable', () => {
-
       // Prepare
-      process.env._X_AMZN_TRACE_ID = 'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
+      process.env._X_AMZN_TRACE_ID =
+        'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
       const service = new EnvironmentVariablesService();
 
       // Act
@@ -126,9 +111,9 @@ describe('Class: EnvironmentVariablesService', () => {
     });
 
     test('It returns false if the Sampled flag is not set in the _X_AMZN_TRACE_ID environment variable', () => {
-
       // Prepare
-      process.env._X_AMZN_TRACE_ID = 'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047';
+      process.env._X_AMZN_TRACE_ID =
+        'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047';
       const service = new EnvironmentVariablesService();
 
       // Act
@@ -139,7 +124,6 @@ describe('Class: EnvironmentVariablesService', () => {
     });
 
     it('It returns false when no _X_AMZN_TRACE_ID environment variable is present', () => {
-
       // Prepare
       delete process.env._X_AMZN_TRACE_ID;
       const service = new EnvironmentVariablesService();
@@ -153,30 +137,30 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: isValueTrue', () => {
-
     const valuesToTest: Array<Array<string | boolean>> = [
-      [ '1', true ],
-      [ 'y', true ],
-      [ 'yes', true ],
-      [ 't', true ],
-      [ 'TRUE', true ],
-      [ 'on', true ],
-      [ '', false ],
-      [ 'false', false ],
-      [ 'fasle', false ],
-      [ 'somethingsilly', false ],
-      [ '0', false ]
+      ['1', true],
+      ['y', true],
+      ['yes', true],
+      ['t', true],
+      ['TRUE', true],
+      ['on', true],
+      ['', false],
+      ['false', false],
+      ['fasle', false],
+      ['somethingsilly', false],
+      ['0', false],
     ];
 
-    test.each(valuesToTest)('it takes string "%s" and returns %s', (input, output) => {
-      // Prepare
-      const service = new EnvironmentVariablesService();
-      // Act
-      const value = service.isValueTrue(input as string);
-      // Assess
-      expect(value).toBe(output);
-    });
-    
+    test.each(valuesToTest)(
+      'it takes string "%s" and returns %s',
+      (input, output) => {
+        // Prepare
+        const service = new EnvironmentVariablesService();
+        // Act
+        const value = service.isValueTrue(input as string);
+        // Assess
+        expect(value).toBe(output);
+      }
+    );
   });
-
 });

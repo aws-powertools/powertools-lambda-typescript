@@ -1,7 +1,10 @@
 import { Stack, StackProps, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Table, BillingMode, AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
+import {
+  NodejsFunction,
+  NodejsFunctionProps,
+} from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime, Tracing, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
@@ -15,7 +18,7 @@ const commonProps: Partial<NodejsFunctionProps> = {
     NODE_OPTIONS: '--enable-source-maps', // see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
     POWERTOOLS_SERVICE_NAME: 'items-store',
     POWERTOOLS_METRICS_NAMESPACE: 'PowertoolsCDKExample',
-    LOG_LEVEL: 'DEBUG'
+    LOG_LEVEL: 'DEBUG',
   },
   bundling: {
     externalModules: [
@@ -39,14 +42,17 @@ export class CdkAppStack extends Stack {
       partitionKey: {
         type: AttributeType.STRING,
         name: 'id',
-      }
+      },
     });
 
     commonProps.layers?.push(
       LayerVersion.fromLayerVersionArn(
         this,
         'powertools-layer',
-        `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:6`)
+        `arn:aws:lambda:${
+          Stack.of(this).region
+        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:6`
+      )
     );
 
     const putItemFn = new NodejsFunction(this, 'put-item-fn', {

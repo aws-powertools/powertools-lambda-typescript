@@ -1,4 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import { tableName } from './common/constants';
 import { logger, tracer, metrics } from './common/powertools';
 import { LambdaInterface } from '@aws-lambda-powertools/commons';
@@ -22,7 +26,6 @@ import { default as request } from 'phin';
  */
 
 class Lambda implements LambdaInterface {
-
   @tracer.captureMethod()
   public async getUuid(): Promise<string> {
     // Request a sample random uuid from a webservice
@@ -37,11 +40,18 @@ class Lambda implements LambdaInterface {
 
   @tracer.captureLambdaHandler({ captureResponse: false }) // by default the tracer would add the response as metadata on the segment, but there is a chance to hit the 64kb segment size limit. Therefore set captureResponse: false
   @logger.injectLambdaContext({ logEvent: true })
-  @metrics.logMetrics({ throwOnEmptyMetrics: false, captureColdStartMetric: true })
-  public async handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> {
-
+  @metrics.logMetrics({
+    throwOnEmptyMetrics: false,
+    captureColdStartMetric: true,
+  })
+  public async handler(
+    event: APIGatewayProxyEvent,
+    context: Context
+  ): Promise<APIGatewayProxyResult> {
     if (event.httpMethod !== 'GET') {
-      throw new Error(`getById only accepts GET method, you tried: ${event.httpMethod}`);
+      throw new Error(
+        `getById only accepts GET method, you tried: ${event.httpMethod}`
+      );
     }
 
     // Tracer: Add awsRequestId as annotation
@@ -76,12 +86,14 @@ class Lambda implements LambdaInterface {
       if (!event.pathParameters.id) {
         throw new Error('PathParameter id is missing');
       }
-      const data = await docClient.send(new GetCommand({
-        TableName: tableName,
-        Key: {
-          id: event.pathParameters.id
-        }
-      }));
+      const data = await docClient.send(
+        new GetCommand({
+          TableName: tableName,
+          Key: {
+            id: event.pathParameters.id,
+          },
+        })
+      );
       const item = data.Item;
 
       logger.info(`Response ${event.path}`, {
@@ -91,7 +103,7 @@ class Lambda implements LambdaInterface {
 
       return {
         statusCode: 200,
-        body: JSON.stringify(item)
+        body: JSON.stringify(item),
       };
     } catch (err) {
       tracer.addErrorAsMetadata(err as Error);
@@ -99,11 +111,10 @@ class Lambda implements LambdaInterface {
 
       return {
         statusCode: 500,
-        body: JSON.stringify({ 'error': 'Error reading from table.' })
+        body: JSON.stringify({ error: 'Error reading from table.' }),
       };
     }
   }
-
 }
 
 const handlerClass = new Lambda();

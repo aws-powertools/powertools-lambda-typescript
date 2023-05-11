@@ -15,8 +15,10 @@ import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
  */
-class EnvironmentVariablesService extends CommonEnvironmentVariablesService implements ConfigServiceInterface {
-
+class EnvironmentVariablesService
+  extends CommonEnvironmentVariablesService
+  implements ConfigServiceInterface
+{
   // Reserved environment variables
   private awsRegionVariable = 'AWS_REGION';
   private currentEnvironmentVariable = 'ENVIRONMENT';
@@ -82,7 +84,7 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
    */
   public getLogEvent(): boolean {
     const value = this.get(this.logEventVariable);
-    
+
     return this.isValueTrue(value);
   }
 
@@ -103,7 +105,7 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
   public getSampleRateValue(): number | undefined {
     const value = this.get(this.sampleRateValueVariable);
 
-    return (value && value.length > 0) ? Number(value) : undefined;
+    return value && value.length > 0 ? Number(value) : undefined;
   }
 
   /**
@@ -116,9 +118,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
 
     return this.isValueTrue(value);
   }
-
 }
 
-export {
-  EnvironmentVariablesService,
-};
+export { EnvironmentVariablesService };

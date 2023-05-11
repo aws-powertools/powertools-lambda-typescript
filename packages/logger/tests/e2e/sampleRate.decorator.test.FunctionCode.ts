@@ -23,13 +23,13 @@ class Lambda implements LambdaInterface {
   // @ts-ignore
   public async handler(event: TestEvent, context: Context): TestOutput {
     this.printLogInAllLevels();
-    
+
     return {
       requestId: context.awsRequestId,
     };
   }
 
-  private printLogInAllLevels() : void {
+  private printLogInAllLevels(): void {
     logger.debug(this.logMsg);
     logger.info(this.logMsg);
     logger.warn(this.logMsg);

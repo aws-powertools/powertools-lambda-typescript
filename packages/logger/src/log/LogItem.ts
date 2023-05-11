@@ -3,10 +3,12 @@ import { LogItemInterface } from '.';
 import { LogAttributes } from '../types';
 
 class LogItem implements LogItemInterface {
-
   private attributes: LogAttributes = {};
 
-  public constructor(params: { baseAttributes: LogAttributes; persistentAttributes: LogAttributes }) {
+  public constructor(params: {
+    baseAttributes: LogAttributes;
+    persistentAttributes: LogAttributes;
+  }) {
     // Add attributes in the log item in this order:
     // - Base attributes supported by the Powertool by default
     // - Persistent attributes provided by developer, not formatted
@@ -32,20 +34,21 @@ class LogItem implements LogItemInterface {
   public removeEmptyKeys(attributes: LogAttributes): LogAttributes {
     const newAttributes: LogAttributes = {};
     for (const key in attributes) {
-      if (attributes[key] !== undefined && attributes[key] !== '' && attributes[key] !== null) {
+      if (
+        attributes[key] !== undefined &&
+        attributes[key] !== '' &&
+        attributes[key] !== null
+      ) {
         newAttributes[key] = attributes[key];
       }
     }
-    
+
     return newAttributes;
   }
 
   public setAttributes(attributes: LogAttributes): void {
     this.attributes = attributes;
   }
-
 }
 
-export {
-  LogItem,
-};
+export { LogItem };

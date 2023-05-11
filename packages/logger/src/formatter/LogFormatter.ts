@@ -9,14 +9,15 @@ import { LogAttributes, UnformattedAttributes } from '../types';
  * @implements {LogFormatterInterface}
  */
 abstract class LogFormatter implements LogFormatterInterface {
-
   /**
    * It formats key-value pairs of log attributes.
    *
    * @param {UnformattedAttributes} attributes
    * @returns {LogAttributes}
    */
-  public abstract formatAttributes(attributes: UnformattedAttributes): LogAttributes;
+  public abstract formatAttributes(
+    attributes: UnformattedAttributes
+  ): LogAttributes;
 
   /**
    * It formats a given Error parameter.
@@ -64,13 +65,10 @@ abstract class LogFormatter implements LogFormatterInterface {
       if (Array.isArray(match)) {
         return `${match[1]}:${Number(match[2])}`;
       }
-
     }
 
     return '';
   }
 }
 
-export {
-  LogFormatter,
-};
+export { LogFormatter };

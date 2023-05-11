@@ -2,14 +2,14 @@ import { Logger } from '../Logger';
 import { HandlerOptions, LogAttributes } from '../types';
 import type {
   MiddlewareLikeObj,
-  MiddyLikeRequest
+  MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons';
 
 /**
  * A middy middleware that helps emitting CloudWatch EMF metrics in your logs.
  *
  * Using this middleware on your handler function will automatically add context information to logs, as well as optionally log the event and clear attributes set during the invocation.
- * 
+ *
  * @example
  * ```typescript
  * import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
@@ -29,24 +29,39 @@ import type {
  * @param options - (_optional_) Options for the middleware
  * @returns - The middy middleware object
  */
-const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions): MiddlewareLikeObj => {
-
+const injectLambdaContext = (
+  target: Logger | Logger[],
+  options?: HandlerOptions
+): MiddlewareLikeObj => {
   const loggers = target instanceof Array ? target : [target];
   const persistentAttributes: LogAttributes[] = [];
 
-  const injectLambdaContextBefore = async (request: MiddyLikeRequest): Promise<void> => {
+  const injectLambdaContextBefore = async (
+    request: MiddyLikeRequest
+  ): Promise<void> => {
     loggers.forEach((logger: Logger, index: number) => {
       if (options && options.clearState === true) {
-        persistentAttributes[index] = ({ ...logger.getPersistentLogAttributes() });
+        persistentAttributes[index] = {
+          ...logger.getPersistentLogAttributes(),
+        };
       }
-      Logger.injectLambdaContextBefore(logger, request.event, request.context, options);
+      Logger.injectLambdaContextBefore(
+        logger,
+        request.event,
+        request.context,
+        options
+      );
     });
   };
 
   const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
     if (options && options.clearState === true) {
       loggers.forEach((logger: Logger, index: number) => {
-        Logger.injectLambdaContextAfterOrOnError(logger, persistentAttributes[index], options);
+        Logger.injectLambdaContextAfterOrOnError(
+          logger,
+          persistentAttributes[index],
+          options
+        );
       });
     }
   };
@@ -54,10 +69,8 @@ const injectLambdaContext = (target: Logger | Logger[], options?: HandlerOptions
   return {
     before: injectLambdaContextBefore,
     after: injectLambdaContextAfterOrOnError,
-    onError: injectLambdaContextAfterOrOnError
+    onError: injectLambdaContextAfterOrOnError,
   };
 };
 
-export {
-  injectLambdaContext,
-};
+export { injectLambdaContext };

@@ -1,88 +1,98 @@
 import { Handler } from 'aws-lambda';
-import { AsyncHandler, SyncHandler, Utility } from '@aws-lambda-powertools/commons';
+import {
+  AsyncHandler,
+  SyncHandler,
+  Utility,
+} from '@aws-lambda-powertools/commons';
 import { TracerInterface } from '.';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { HandlerMethodDecorator, TracerOptions, MethodDecorator, CaptureLambdaHandlerOptions, CaptureMethodOptions } from './types';
+import {
+  HandlerMethodDecorator,
+  TracerOptions,
+  MethodDecorator,
+  CaptureLambdaHandlerOptions,
+  CaptureMethodOptions,
+} from './types';
 import { ProviderService, ProviderServiceInterface } from './provider';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
 /**
  * ## Intro
  * Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://github.com/aws/aws-xray-sdk-node).
- * 
+ *
  * Tracing data can be visualized through AWS X-Ray Console.
- * 
+ *
  * ## Key features
  *   * Auto capture cold start as annotation, and responses or full exceptions as metadata
  *   * Auto-disable when not running in AWS Lambda environment
  *   * Automatically trace HTTP(s) clients and generate segments for each request
  *   * Support tracing functions via decorators, middleware, and manual instrumentation
  *   * Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
- * 
+ *
  * ## Usage
- * 
+ *
  * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/).
- * 
+ *
  * ### Functions usage with middleware
- * 
+ *
  * If you use function-based Lambda handlers you can use the [captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
- * * handle the subsegment lifecycle 
+ * * handle the subsegment lifecycle
  * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
  * * add the function error as metadata (if any)
- * 
+ *
  * @example
  * ```typescript
  * import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';
  * import middy from '@middy/core';
- * 
+ *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
- * 
+ *
  * const lambdaHandler = async (_event: any, _context: any) => {
  *   ...
  * };
- * 
+ *
  * export const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
  * ```
- * 
+ *
  * ### Object oriented usage with decorators
- * 
+ *
  * If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHandler) decorator to automatically:
- * * handle the subsegment lifecycle 
+ * * handle the subsegment lifecycle
  * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
  * * add the function error as metadata (if any)
- * 
+ *
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
  * import { LambdaInterface } from '@aws-lambda-powertools/commons';
- * 
+ *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
- * 
+ *
  * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@tracer* instead of `@tracer.captureLambdaHandler`
- * 
+ *
  * class Lambda implements LambdaInterface {
  *   @tracer.captureLambdaHandler()
  *   public handler(event: any, context: any) {
  *     ...
  *   }
  * }
- * 
+ *
  * const handlerClass = new Lambda();
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
- * 
+ *
  * ### Functions usage with manual instrumentation
- * 
+ *
  * If you prefer to manually instrument your Lambda handler you can use the methods in the tracer class directly.
  *
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
- * 
+ *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
- * 
+ *
  * export const handler = async (_event: any, context: any) => {
  *   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
  *   // Create subsegment for the function & set it as active
@@ -96,7 +106,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *   let res;
  *   try {
  *       // ... your own logic goes here
- *       // Add the response as metadata 
+ *       // Add the response as metadata
  *       tracer.addResponseAsMetadata(res, process.env._HANDLER);
  *   } catch (err) {
  *       // Add the error as metadata
@@ -114,24 +124,23 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  * ```
  */
 class Tracer extends Utility implements TracerInterface {
-
   public provider: ProviderServiceInterface;
-  
-  private captureError: boolean = true;
 
-  private captureHTTPsRequests: boolean = true;
-  
-  private captureResponse: boolean = true;
+  private captureError = true;
+
+  private captureHTTPsRequests = true;
+
+  private captureResponse = true;
 
   private customConfigService?: ConfigServiceInterface;
-  
+
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
-  
+
   // serviceName is always initialized in the constructor in setOptions()
   private serviceName!: string;
-  
-  private tracingEnabled: boolean = true;
+
+  private tracingEnabled = true;
 
   public constructor(options: TracerOptions = {}) {
     super();
@@ -148,13 +157,13 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-    * Add an error to the current segment or subsegment as metadata.
-    *
-    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
-    *
-    * @param error - Error to serialize as metadata
-    * @param [remote] - Whether the error was thrown by a remote service. Defaults to `false`
-    */
+   * Add an error to the current segment or subsegment as metadata.
+   *
+   * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-errors
+   *
+   * @param error - Error to serialize as metadata
+   * @param [remote] - Whether the error was thrown by a remote service. Defaults to `false`
+   */
   public addErrorAsMetadata(error: Error, remote?: boolean): void {
     if (!this.isTracingEnabled()) {
       return;
@@ -162,7 +171,6 @@ class Tracer extends Utility implements TracerInterface {
 
     const subsegment = this.getSegment();
     if (subsegment === undefined) {
-
       return;
     }
 
@@ -176,15 +184,19 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-    * Add response data to the current segment or subsegment as metadata.
-    *
-    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-annotations
-    *
-    * @param data - Data to serialize as metadata
-    * @param methodName - Name of the method that is being traced
-    */
+   * Add response data to the current segment or subsegment as metadata.
+   *
+   * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-annotations
+   *
+   * @param data - Data to serialize as metadata
+   * @param methodName - Name of the method that is being traced
+   */
   public addResponseAsMetadata(data?: unknown, methodName?: string): void {
-    if (data === undefined || !this.captureResponse || !this.isTracingEnabled()) {
+    if (
+      data === undefined ||
+      !this.captureResponse ||
+      !this.isTracingEnabled()
+    ) {
       return;
     }
 
@@ -193,7 +205,7 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Add service name to the current segment or subsegment as annotation.
-   * 
+   *
    */
   public addServiceNameAnnotation(): void {
     if (!this.isTracingEnabled()) {
@@ -204,11 +216,11 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Add ColdStart annotation to the current segment or subsegment.
-   * 
+   *
    * If Tracer has been initialized outside the Lambda handler then the same instance
    * of Tracer will be reused throughout the lifecycle of that same Lambda execution environment
    * and this method will annotate `ColdStart: false` after the first invocation.
-   * 
+   *
    * @see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html
    */
   public annotateColdStart(): void {
@@ -219,23 +231,23 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Patch all AWS SDK v2 clients and create traces when your application makes calls to AWS services.
-   * 
+   *
    * If you want to patch a specific client use {@link captureAWSClient} and if you are using AWS SDK v3 use {@link captureAWSv3Client} instead.
-   * 
+   *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-awssdkclients.html
-   * 
+   *
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * const AWS = tracer.captureAWS(require('aws-sdk'));
-   * 
+   *
    * export const handler = async (_event: any, _context: any) => {
    *   ...
    * }
    * ```
-   * 
+   *
    * @param aws - AWS SDK v2 import
    * @returns AWS - Instrumented AWS SDK
    */
@@ -247,24 +259,24 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Patch a specific AWS SDK v2 client and create traces when your application makes calls to that AWS service.
-   * 
+   *
    * If you want to patch all clients use {@link captureAWS} and if you are using AWS SDK v3 use {@link captureAWSv3Client} instead.
-   * 
+   *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-awssdkclients.html
-   * 
+   *
    * @example
    * ```typescript
    * import { S3 } from 'aws-sdk';
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * const s3 = tracer.captureAWSClient(new S3({ apiVersion: '2006-03-01' }));
-   * 
+   *
    * export const handler = async (_event: any, _context: any) => {
    *   ...
    * }
    * ```
-   * 
+   *
    * @param service - AWS SDK v2 client
    * @returns service - Instrumented AWS SDK v2 client
    */
@@ -276,10 +288,10 @@ class Tracer extends Utility implements TracerInterface {
     } catch (error) {
       try {
         // This is needed because some aws-sdk clients like AWS.DynamoDB.DocumentDB don't comply with the same
-        // instrumentation contract like most base clients. 
+        // instrumentation contract like most base clients.
         // For detailed explanation see: https://github.com/awslabs/aws-lambda-powertools-typescript/issues/524#issuecomment-1024493662
         this.provider.captureAWSClient((service as T & { service: T }).service);
-        
+
         return service;
       } catch {
         throw error;
@@ -289,25 +301,25 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Patch an AWS SDK v3 client and create traces when your application makes calls to that AWS service.
-   * 
+   *
    * If you are using AWS SDK v2 use {@link captureAWSClient} instead.
-   * 
+   *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-awssdkclients.html
-   * 
+   *
    * @example
    * ```typescript
    * import { S3Client } from '@aws-sdk/client-s3';
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * const client = new S3Client({});
    * tracer.captureAWSv3Client(client);
-   * 
+   *
    * export const handler = async (_event: any, _context: any) => {
    *   ...
    * }
    * ```
-   * 
+   *
    * @param service - AWS SDK v3 client
    * @returns service - Instrumented AWS SDK v3 client
    */
@@ -319,42 +331,44 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * A decorator automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
-   * 
+   *
    * Using this decorator on your handler function will automatically:
-   * * handle the subsegment lifecycle 
+   * * handle the subsegment lifecycle
    * * add the `ColdStart` annotation
    * * add the function response as metadata
    * * add the function error as metadata (if any)
-   * 
+   *
    * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
    * function syntax, you should use the middleware instead.
-   * 
+   *
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * import { LambdaInterface } from '@aws-lambda-powertools/commons';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * 
+   *
    * class Lambda implements LambdaInterface {
    *   @tracer.captureLambdaHandler()
    *   public handler(event: any, context: any) {
    *     ...
    *   }
    * }
-   * 
+   *
    * const handlerClass = new Lambda();
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
-   * 
+   *
    * @decorator Class
    * @param options - (_optional_) Options for the decorator
    */
-  public captureLambdaHandler(options?: CaptureLambdaHandlerOptions): HandlerMethodDecorator {
+  public captureLambdaHandler(
+    options?: CaptureLambdaHandlerOptions
+  ): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
-       */ 
+       */
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
 
@@ -362,35 +376,41 @@ class Tracer extends Utility implements TracerInterface {
       const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
-      descriptor.value = (function (this: Handler, event, context, callback) {
+      descriptor.value = function (this: Handler, event, context, callback) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const handlerRef: Handler = this;
 
         if (!tracerRef.isTracingEnabled()) {
-          return originalMethod.apply(handlerRef, [ event, context, callback ]);
+          return originalMethod.apply(handlerRef, [event, context, callback]);
         }
 
-        return tracerRef.provider.captureAsyncFunc(`## ${process.env._HANDLER}`, async subsegment => {
-          tracerRef.annotateColdStart();
-          tracerRef.addServiceNameAnnotation();
-          let result: unknown;
-          try {
-            result = await originalMethod.apply(handlerRef, [ event, context, callback ]);
-            if (options?.captureResponse ?? true) {
-              tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
+        return tracerRef.provider.captureAsyncFunc(
+          `## ${process.env._HANDLER}`,
+          async (subsegment) => {
+            tracerRef.annotateColdStart();
+            tracerRef.addServiceNameAnnotation();
+            let result: unknown;
+            try {
+              result = await originalMethod.apply(handlerRef, [
+                event,
+                context,
+                callback,
+              ]);
+              if (options?.captureResponse ?? true) {
+                tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
+              }
+            } catch (error) {
+              tracerRef.addErrorAsMetadata(error as Error);
+              throw error;
+            } finally {
+              subsegment?.close();
+              subsegment?.flush();
             }
 
-          } catch (error) {
-            tracerRef.addErrorAsMetadata(error as Error);
-            throw error;
-          } finally {
-            subsegment?.close();
-            subsegment?.flush();
+            return result;
           }
-          
-          return result;
-        });
-      }) as SyncHandler<Handler> | AsyncHandler<Handler>;
+        );
+      } as SyncHandler<Handler> | AsyncHandler<Handler>;
 
       return descriptor;
     };
@@ -398,37 +418,37 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * A decorator automating capture of metadata and annotations on segments or subsegments for an arbitrary function.
-   * 
+   *
    * Using this decorator on your function will automatically:
-   * * handle the subsegment lifecycle 
+   * * handle the subsegment lifecycle
    * * add the function response as metadata
    * * add the function error as metadata (if any)
-   * 
+   *
    * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
    * function syntax, you should use the middleware instead.
-   * 
+   *
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * import { LambdaInterface } from '@aws-lambda-powertools/commons';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * 
+   *
    * class Lambda implements LambdaInterface {
    *   @tracer.captureMethod()
    *   public myMethod(param: any) {
    *     ...
    *   }
-   * 
+   *
    *   public handler(event: any, context: any) {
    *     ...
    *   }
    * }
-   * 
+   *
    * const handlerClass = new Lambda();
-   * export const handler = handlerClass.handler.bind(handlerClass);; 
+   * export const handler = handlerClass.handler.bind(handlerClass);;
    * ```
-   * 
+   *
    * @decorator Class
    * @param options - (_optional_) Options for the decorator
    */
@@ -437,7 +457,7 @@ class Tracer extends Utility implements TracerInterface {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const originalMethod = descriptor.value!;
-      
+
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
@@ -448,26 +468,31 @@ class Tracer extends Utility implements TracerInterface {
         }
 
         const methodName = String(propertyKey);
-        const subsegmentName = options?.subSegmentName ? options.subSegmentName : `### ${methodName}`;
+        const subsegmentName = options?.subSegmentName
+          ? options.subSegmentName
+          : `### ${methodName}`;
 
-        return tracerRef.provider.captureAsyncFunc(subsegmentName, async subsegment => {
-          let result;
-          try {
-            result = await originalMethod.apply(this, [...args]);
-            if (options?.captureResponse ?? true) {
-              tracerRef.addResponseAsMetadata(result, methodName);
+        return tracerRef.provider.captureAsyncFunc(
+          subsegmentName,
+          async (subsegment) => {
+            let result;
+            try {
+              result = await originalMethod.apply(this, [...args]);
+              if (options?.captureResponse ?? true) {
+                tracerRef.addResponseAsMetadata(result, methodName);
+              }
+            } catch (error) {
+              tracerRef.addErrorAsMetadata(error as Error);
+
+              throw error;
+            } finally {
+              subsegment?.close();
+              subsegment?.flush();
             }
-          } catch (error) {
-            tracerRef.addErrorAsMetadata(error as Error);
-            
-            throw error;
-          } finally {
-            subsegment?.close();
-            subsegment?.flush();
+
+            return result;
           }
-          
-          return result;
-        });
+        );
       };
 
       return descriptor;
@@ -476,17 +501,17 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Get the current root AWS X-Ray trace id.
-   * 
+   *
    * Utility method that returns the current AWS X-Ray Root trace id. Useful as correlation id for downstream processes.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces
-   * 
+   *
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * 
+   *
    * export const handler = async () => {
    *   try {
    *     ...
@@ -504,58 +529,56 @@ class Tracer extends Utility implements TracerInterface {
    *   }
    * }
    * ```
-   * 
+   *
    * @returns string - The root X-Ray trace id.
    */
   public getRootXrayTraceId(): string | undefined {
-    if (!this.isTracingEnabled()) return undefined;
-
     return this.envVarsService.getXrayTraceId();
   }
-  
+
   /**
    * Get the active segment or subsegment (if any) in the current scope.
-   * 
+   *
    * Usually you won't need to call this method unless you are creating custom subsegments or using manual mode.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-segments
    * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/#escape-hatch-mechanism
-   * 
+   *
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * 
+   *
    * export const handler = async (_event: any, _context: any) => {
    *   const currentSegment = tracer.getSegment();
    *   ... // Do something with segment
    * }
    * ```
-   * 
+   *
    * @returns The active segment or subsegment in the current scope. Will log a warning and return `undefined` if no segment is found.
    */
   public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {
       return new Subsegment('## Dummy segment');
     }
-    const segment = this.provider.getSegment();    
+    const segment = this.provider.getSegment();
     if (segment === undefined) {
       console.warn(
         'Failed to get the current sub/segment from the context, this is likely because you are not using the Tracer in a Lambda function.'
       );
     }
- 
+
     return segment;
   }
 
   /**
    * Get the current value of the AWS X-Ray Sampled flag.
-   * 
+   *
    * Utility method that returns the current AWS X-Ray Sampled flag.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces
-   * 
+   *
    * @returns boolean - `true` if the trace is sampled, `false` if tracing is disabled or the trace is not sampled.
    */
   public isTraceSampled(): boolean {
@@ -566,11 +589,11 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Get the current value of the `tracingEnabled` property.
-   * 
+   *
    * You can use this method during manual instrumentation to determine
    * if tracer is currently enabled.
-   * 
-   * @returns tracingEnabled - `true` if tracing is enabled, `false` otherwise. 
+   *
+   * @returns tracingEnabled - `true` if tracing is enabled, `false` otherwise.
    */
   public isTracingEnabled(): boolean {
     return this.tracingEnabled;
@@ -578,20 +601,20 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Adds annotation to existing segment or subsegment.
-   * 
+   *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-segment.html#xray-sdk-nodejs-segment-annotations
-   * 
+   *
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * 
+   *
    * export const handler = async (_event: any, _context: any) => {
    *   tracer.putAnnotation('successfulBooking', true);
    * }
    * ```
-   * 
+   *
    * @param key - Annotation key
    * @param value - Value for annotation
    */
@@ -600,59 +623,63 @@ class Tracer extends Utility implements TracerInterface {
 
     this.provider.putAnnotation(key, value);
   }
-  
+
   /**
    * Adds metadata to existing segment or subsegment.
-   * 
+   *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-segment.html#xray-sdk-nodejs-segment-metadata
-   * 
+   *
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * 
+   *
    * export const handler = async (_event: any, _context: any) => {
    *   const res = someLogic();
    *   tracer.putMetadata('paymentResponse', res);
    * }
    * ```
-   * 
+   *
    * @param key - Metadata key
    * @param value - Value for metadata
    * @param namespace - Namespace that metadata will lie under, if none is passed it will use the serviceName
    */
-  public putMetadata(key: string, value: unknown, namespace?: string | undefined): void {
+  public putMetadata(
+    key: string,
+    value: unknown,
+    namespace?: string | undefined
+  ): void {
     if (!this.isTracingEnabled()) return;
 
     this.provider.putMetadata(key, value, namespace || this.serviceName);
   }
-  
+
   /**
    * Sets the passed subsegment as the current active subsegment.
-   * 
+   *
    * If you are using a middleware or a decorator this is done automatically for you.
-   * 
+   *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html
-   * 
+   *
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
    * import { Subsegment } from 'aws-xray-sdk-core';
-   * 
+   *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
-   * 
+   *
    * export const handler = async (_event: any, _context: any) => {
    *   const subsegment = new Subsegment('### foo.bar');
    *   tracer.setSegment(subsegment);
    * }
    * ```
-   * 
+   *
    * @param segment - Subsegment to set as the current segment
    */
   public setSegment(segment: Segment | Subsegment): void {
     if (!this.isTracingEnabled()) return;
-    
+
     return this.provider.setSegment(segment);
   }
 
@@ -677,9 +704,12 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private isAmplifyCli(): boolean {
-    return this.getEnvVarsService().getAwsExecutionEnv() === 'AWS_Lambda_amplify-mock';
+    return (
+      this.getEnvVarsService().getAwsExecutionEnv() ===
+      'AWS_Lambda_amplify-mock'
+    );
   }
-  
+
   /**
    * Determine if we are running in a Lambda execution environment.
    * Used internally during initialization.
@@ -687,7 +717,7 @@ class Tracer extends Utility implements TracerInterface {
   private isLambdaExecutionEnv(): boolean {
     return this.getEnvVarsService().getAwsExecutionEnv() !== '';
   }
-  
+
   /**
    * Determine if we are running inside a SAM CLI process.
    * Used internally during initialization.
@@ -701,8 +731,12 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private setCaptureError(): void {
-    const customConfigValue = this.getCustomConfigService()?.getTracingCaptureError();
-    if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
+    const customConfigValue =
+      this.getCustomConfigService()?.getTracingCaptureError();
+    if (
+      customConfigValue !== undefined &&
+      customConfigValue.toLowerCase() === 'false'
+    ) {
       this.captureError = false;
 
       return;
@@ -721,9 +755,9 @@ class Tracer extends Utility implements TracerInterface {
    *
    * Calls using third-party HTTP request libraries, such as Axios, are supported as long as they use the native http
    * module under the hood. Support for third-party HTTP request libraries is provided on a best effort basis.
-   * 
+   *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-httpclients.html
-   * 
+   *
    * @param enabled - Whether or not to patch all HTTP clients
    * @returns void
    */
@@ -734,8 +768,12 @@ class Tracer extends Utility implements TracerInterface {
       return;
     }
 
-    const customConfigValue = this.getCustomConfigService()?.getCaptureHTTPsRequests();
-    if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
+    const customConfigValue =
+      this.getCustomConfigService()?.getCaptureHTTPsRequests();
+    if (
+      customConfigValue !== undefined &&
+      customConfigValue.toLowerCase() === 'false'
+    ) {
       this.captureHTTPsRequests = false;
 
       return;
@@ -754,8 +792,12 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private setCaptureResponse(): void {
-    const customConfigValue = this.getCustomConfigService()?.getTracingCaptureResponse();
-    if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
+    const customConfigValue =
+      this.getCustomConfigService()?.getTracingCaptureResponse();
+    if (
+      customConfigValue !== undefined &&
+      customConfigValue.toLowerCase() === 'false'
+    ) {
       this.captureResponse = false;
 
       return;
@@ -772,11 +814,15 @@ class Tracer extends Utility implements TracerInterface {
   /**
    * Setter for `customConfigService` based on configuration passed.
    * Used internally during initialization.
-   * 
+   *
    * @param customConfigService - Custom configuration service to use
    */
-  private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
-    this.customConfigService = customConfigService ? customConfigService : undefined;
+  private setCustomConfigService(
+    customConfigService?: ConfigServiceInterface
+  ): void {
+    this.customConfigService = customConfigService
+      ? customConfigService
+      : undefined;
   }
 
   /**
@@ -790,16 +836,12 @@ class Tracer extends Utility implements TracerInterface {
   /**
    * Method that reconciles the configuration passed with the environment variables.
    * Used internally during initialization.
-   * 
+   *
    * @param options - Configuration passed to the tracer
    */
   private setOptions(options: TracerOptions): Tracer {
-    const {
-      enabled,
-      serviceName,
-      captureHTTPsRequests,
-      customConfigService
-    } = options;
+    const { enabled, serviceName, captureHTTPsRequests, customConfigService } =
+      options;
 
     this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
@@ -815,7 +857,7 @@ class Tracer extends Utility implements TracerInterface {
   /**
    * Setter for `customConfigService` based on configurations passed and environment variables.
    * Used internally during initialization.
-   * 
+   *
    * @param serviceName - Name of the service to use
    */
   private setServiceName(serviceName?: string): void {
@@ -826,7 +868,10 @@ class Tracer extends Utility implements TracerInterface {
     }
 
     const customConfigValue = this.getCustomConfigService()?.getServiceName();
-    if (customConfigValue !== undefined && this.isValidServiceName(customConfigValue)) {
+    if (
+      customConfigValue !== undefined &&
+      this.isValidServiceName(customConfigValue)
+    ) {
       this.serviceName = customConfigValue;
 
       return;
@@ -844,37 +889,42 @@ class Tracer extends Utility implements TracerInterface {
   /**
    * Setter for `tracingEnabled` based on configurations passed and environment variables.
    * Used internally during initialization.
-   * 
+   *
    * @param enabled - Whether or not tracing is enabled
    */
   private setTracingEnabled(enabled?: boolean): void {
     if (enabled !== undefined && !enabled) {
       this.tracingEnabled = enabled;
-      
+
       return;
     }
 
-    const customConfigValue = this.getCustomConfigService()?.getTracingEnabled();
-    if (customConfigValue !== undefined && customConfigValue.toLowerCase() === 'false') {
+    const customConfigValue =
+      this.getCustomConfigService()?.getTracingEnabled();
+    if (
+      customConfigValue !== undefined &&
+      customConfigValue.toLowerCase() === 'false'
+    ) {
       this.tracingEnabled = false;
-      
+
       return;
     }
 
     const envVarsValue = this.getEnvVarsService().getTracingEnabled();
     if (envVarsValue.toLowerCase() === 'false') {
       this.tracingEnabled = false;
-      
+
       return;
     }
 
-    if (this.isAmplifyCli() || this.isLambdaSamCli() || !this.isLambdaExecutionEnv()) {
+    if (
+      this.isAmplifyCli() ||
+      this.isLambdaSamCli() ||
+      !this.isLambdaExecutionEnv()
+    ) {
       this.tracingEnabled = false;
     }
   }
-
 }
 
-export {
-  Tracer
-};
+export { Tracer };

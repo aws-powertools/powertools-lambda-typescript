@@ -1,29 +1,33 @@
 import { ConfigServiceInterface } from '../config';
 import { Handler } from 'aws-lambda';
-import { AsyncHandler, LambdaInterface, SyncHandler } from '@aws-lambda-powertools/commons';
+import {
+  AsyncHandler,
+  LambdaInterface,
+  SyncHandler,
+} from '@aws-lambda-powertools/commons';
 
 /**
-  * Options for the tracer class to be used during initialization.
-  * 
-  * Usage:
-  * @example
-  * ```typescript
-  * const customConfigService: ConfigServiceInterface;
-  * const tracerOptions: TracerOptions = {
-  *   enabled?: true,
-  *   serviceName?: 'serverlessAirline',
-  *   captureHTTPsRequests?: true,
-  *   customConfigService?: customConfigService, // Only needed for advanced uses
-  * };
-  * 
-  * const tracer = new Tracer(tracerOptions);
-  * ```
-  */
+ * Options for the tracer class to be used during initialization.
+ *
+ * Usage:
+ * @example
+ * ```typescript
+ * const customConfigService: ConfigServiceInterface;
+ * const tracerOptions: TracerOptions = {
+ *   enabled?: true,
+ *   serviceName?: 'serverlessAirline',
+ *   captureHTTPsRequests?: true,
+ *   customConfigService?: customConfigService, // Only needed for advanced uses
+ * };
+ *
+ * const tracer = new Tracer(tracerOptions);
+ * ```
+ */
 type TracerOptions = {
-  enabled?: boolean
-  serviceName?: string
-  captureHTTPsRequests?: boolean
-  customConfigService?: ConfigServiceInterface
+  enabled?: boolean;
+  serviceName?: string;
+  captureHTTPsRequests?: boolean;
+  customConfigService?: ConfigServiceInterface;
 };
 
 /**
@@ -31,20 +35,20 @@ type TracerOptions = {
  *
  * Options supported:
  * * `captureResponse` - (_optional_) - Disable response serialization as subsegment metadata
- * 
+ *
  * Middleware usage:
  * @example
  * ```typescript
  * import middy from '@middy/core';
- * 
+ *
  * const tracer = new Tracer();
- * 
+ *
  * const lambdaHandler = async (_event: any, _context: any): Promise<void> => {};
- * 
+ *
  * export const handler = middy(lambdaHandler)
  *  .use(captureLambdaHandler(tracer, { captureResponse: false }));
  * ```
- * 
+ *
  * Decorator usage:
  * @example
  * ```typescript
@@ -60,12 +64,12 @@ type TracerOptions = {
  * ```
  */
 type CaptureLambdaHandlerOptions = {
-  captureResponse?: boolean
+  captureResponse?: boolean;
 };
 
 /**
  * Options for method decorators.
- * 
+ *
  * Options supported:
  * * `subSegmentName` - (_optional_) - Set a custom name for the subsegment
  * * `captureResponse` - (_optional_) - Disable response serialization as subsegment metadata
@@ -92,24 +96,32 @@ type CaptureLambdaHandlerOptions = {
  * ```
  */
 type CaptureMethodOptions = {
-  subSegmentName?: string
-  captureResponse?: boolean
+  subSegmentName?: string;
+  captureResponse?: boolean;
 };
 
 type HandlerMethodDecorator = (
   target: LambdaInterface,
   propertyKey: string | symbol,
-  descriptor: TypedPropertyDescriptor<SyncHandler<Handler>> | TypedPropertyDescriptor<AsyncHandler<Handler>>
+  descriptor:
+    | TypedPropertyDescriptor<SyncHandler<Handler>>
+    | TypedPropertyDescriptor<AsyncHandler<Handler>>
 ) => void;
 
 // TODO: Revisit type below & make it more specific
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
-type MethodDecorator = (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<any>) => any;
+type MethodDecorator = (
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  target: any,
+  propertyKey: string | symbol,
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  descriptor: TypedPropertyDescriptor<any>
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+) => any;
 
 export {
   TracerOptions,
   CaptureLambdaHandlerOptions,
   CaptureMethodOptions,
   HandlerMethodDecorator,
-  MethodDecorator
+  MethodDecorator,
 };

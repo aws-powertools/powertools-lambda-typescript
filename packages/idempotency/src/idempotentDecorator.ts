@@ -1,8 +1,8 @@
-import { GenericTempRecord, IdempotentOptions, } from './types';
+import { GenericTempRecord, IdempotencyOptions, } from './types';
 import { IdempotencyHandler } from './IdempotencyHandler';
 import { IdempotencyConfig } from './IdempotencyConfig';
 
-const idempotent = function (options: IdempotentOptions) {
+const idempotent = function (options: IdempotencyOptions) {
   return function (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) {
     const childFunction = descriptor.value;
     // TODO: sort out the type for this

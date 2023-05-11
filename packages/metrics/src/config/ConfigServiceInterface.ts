@@ -1,11 +1,7 @@
 interface ConfigServiceInterface {
-
-  get?(name: string): string
-  getNamespace(): string
-  getServiceName(): string
-
+  get?(name: string): string;
+  getNamespace(): string;
+  getServiceName(): string;
 }
 
-export {
-  ConfigServiceInterface,
-};
+export { ConfigServiceInterface };

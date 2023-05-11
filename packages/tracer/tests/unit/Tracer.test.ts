@@ -41,6 +41,7 @@ const createCaptureAsyncFuncMock = function (
     });
 };
 
+jest.spyOn(console, 'log').mockImplementation(() => null);
 jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);
 jest.spyOn(console, 'error').mockImplementation(() => null);
@@ -269,41 +270,6 @@ describe('Class: Tracer', () => {
       // Assess
       expect(xRayTraceId).toBe('1-abcdef12-3456abcdef123456abcdef12');
     });
-
-    test('when called and Tracer is disabled, it returns undefined', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer({ enabled: false });
-
-      // Act
-      const xRayTraceId = tracer.getRootXrayTraceId();
-
-      // Assess
-      expect(xRayTraceId).toBe(undefined);
-    });
-  });
-
-  describe('Method: isTraceSampled', () => {
-    test('when called, it returns true if the Sampled flag is set', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer();
-
-      // Act
-      const xRayTraceSampled = tracer.isTraceSampled();
-
-      // Assess
-      expect(xRayTraceSampled).toBe(false);
-    });
-
-    test('when called and Trace is disabled, it returns false', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer({ enabled: false });
-
-      // Act
-      const xRayTraceSampled = tracer.isTraceSampled();
-
-      // Assess
-      expect(xRayTraceSampled).toBe(false);
-    });
   });
 
   describe('Method: getSegment', () => {
@@ -357,6 +323,30 @@ describe('Class: Tracer', () => {
           trace_id: process.env._X_AMZN_TRACE_ID,
         })
       );
+    });
+  });
+
+  describe('Method: isTraceSampled', () => {
+    test('when called, it returns true if the Sampled flag is set', () => {
+      // Prepare
+      const tracer: Tracer = new Tracer();
+
+      // Act
+      const xRayTraceSampled = tracer.isTraceSampled();
+
+      // Assess
+      expect(xRayTraceSampled).toBe(false);
+    });
+
+    test('when called and Trace is disabled, it returns false', () => {
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+
+      // Act
+      const xRayTraceSampled = tracer.isTraceSampled();
+
+      // Assess
+      expect(xRayTraceSampled).toBe(false);
     });
   });
 
@@ -513,23 +503,19 @@ describe('Class: Tracer', () => {
       );
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public handler<TEvent, TResult>(
-          _event: TEvent,
+        public handler(
+          _event: unknown,
           _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
-          return new Promise((resolve, _reject) =>
-            resolve({
-              foo: 'bar',
-            } as unknown as TResult)
-          );
+          callback: Callback<unknown>
+        ): void {
+          callback(null, {
+            foo: 'bar',
+          });
         }
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
+      new Lambda().handler(event, context, () =>
         console.log('Lambda invoked!')
       );
 
@@ -723,20 +709,19 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public handler<TEvent, TResult>(
-          _event: TEvent,
+        public handler(
+          _event: unknown,
           _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
+          _callback: Callback<void>
+        ): void {
           throw new Error('Exception thrown!');
         }
       }
+      const lambda = new Lambda();
 
       // Act & Assess
-      await expect(
-        new Lambda().handler({}, context, () => console.log('Lambda invoked!'))
+      expect(
+        lambda.handler({}, context, () => console.log('Lambda invoked!'))
       ).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
@@ -761,20 +746,19 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public handler<TEvent, TResult>(
-          _event: TEvent,
+        public handler(
+          _event: unknown,
           _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
-          throw new Error('Exception thrown!');
+          _callback: Callback<void>
+        ): void {
+          throw new Error('Exception thrown!2');
         }
       }
 
       // Act & Assess
-      await expect(
-        new Lambda().handler({}, context, () => console.log('Lambda invoked!'))
+      const lambda = new Lambda();
+      expect(
+        lambda.handler({}, context, () => console.log('Lambda invoked!'))
       ).rejects.toThrowError(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(addErrorAsMetadataSpy).toHaveBeenCalledTimes(1);
@@ -792,23 +776,17 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public handler<TEvent, TResult>(
-          _event: TEvent,
+        public handler(
+          _event: unknown,
           _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
-          return new Promise((resolve, _reject) =>
-            resolve({
-              foo: 'bar',
-            } as unknown as TResult)
-          );
+          callback: Callback<{ foo: string }>
+        ): void {
+          callback(null, { foo: 'bar' });
         }
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
+      new Lambda().handler(event, context, () =>
         console.log('Lambda invoked!')
       );
 
@@ -832,23 +810,19 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public handler<TEvent, TResult>(
-          _event: TEvent,
+        public handler(
+          _event: unknown,
           _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
-          return new Promise((resolve, _reject) =>
-            resolve({
-              foo: 'bar',
-            } as unknown as TResult)
-          );
+          callback: Callback<{ foo: string }>
+        ): void {
+          callback(null, {
+            foo: 'bar',
+          });
         }
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
+      new Lambda().handler(event, context, () =>
         console.log('Lambda invoked!')
       );
 
@@ -881,23 +855,18 @@ describe('Class: Tracer', () => {
         }
 
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
-          return <TResult>(`memberVariable:${this.memberVariable}` as unknown);
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return `memberVariable:${this.memberVariable}`;
         }
       }
 
       // Act / Assess
       const lambda = new Lambda('someValue');
       const handler = lambda.handler.bind(lambda);
-      expect(
-        await handler({}, context, () => console.log('Lambda invoked!'))
-      ).toEqual('memberVariable:someValue');
+      expect(await handler({}, context)).toEqual('memberVariable:someValue');
     });
 
     test('when used as decorator on an async method, the method is awaited correctly', async () => {
@@ -922,13 +891,10 @@ describe('Class: Tracer', () => {
         }
 
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<void> {
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<void> {
           await this.dummyMethod();
           this.otherDummyMethod();
 
@@ -946,7 +912,7 @@ describe('Class: Tracer', () => {
         .spyOn(lambda, 'otherDummyMethod')
         .mockImplementation();
       const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
+      await handler({}, context);
 
       // Assess
       // Here we assert that the otherDummyMethodSpy method is called before the cleanup logic (inside the finally of decorator)
@@ -969,30 +935,20 @@ describe('Class: Tracer', () => {
       );
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        public async dummyMethod(some: string): Promise<any> {
-          return new Promise((resolve, _reject) => resolve(some));
+        public async dummyMethod(some: string): Promise<string> {
+          return some;
         }
 
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): Promise<TResult> {
-          const result = await this.dummyMethod('foo bar');
-
-          return new Promise((resolve, _reject) =>
-            resolve(result as unknown as TResult)
-          );
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod('foo bar');
         }
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toBeCalledTimes(0);
@@ -1012,31 +968,20 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(some: string): Promise<string> {
-          return new Promise((resolve, _reject) =>
-            setTimeout(() => resolve(some), 3000)
-          );
+          return some;
         }
 
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): Promise<TResult> {
-          const result = await this.dummyMethod('foo bar');
-
-          return new Promise((resolve, _reject) =>
-            resolve(result as unknown as TResult)
-          );
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod('foo bar');
         }
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -1065,31 +1010,20 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureMethod({ captureResponse: false })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(some: string): Promise<string> {
-          return new Promise((resolve, _reject) =>
-            setTimeout(() => resolve(some), 3000)
-          );
+          return some;
         }
 
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): Promise<TResult> {
-          const result = await this.dummyMethod('foo bar');
-
-          return new Promise((resolve, _reject) =>
-            resolve(result as unknown as TResult)
-          );
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod('foo bar');
         }
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -1114,31 +1048,20 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(some: string): Promise<string> {
-          return new Promise((resolve, _reject) =>
-            setTimeout(() => resolve(some), 3000)
-          );
+          return some;
         }
 
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): Promise<TResult> {
-          const result = await this.dummyMethod('foo bar');
-
-          return new Promise((resolve, _reject) =>
-            resolve(result as unknown as TResult)
-          );
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod('foo bar');
         }
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -1163,29 +1086,22 @@ describe('Class: Tracer', () => {
       const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(_some: string): Promise<string> {
           throw new Error('Exception thrown!');
         }
 
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): Promise<TResult> {
-          const result = await this.dummyMethod('foo bar');
-
-          return new Promise((resolve, _reject) =>
-            resolve(result as unknown as TResult)
-          );
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod('foo bar');
         }
       }
 
       // Act / Assess
-      await expect(
-        new Lambda().handler({}, context, () => console.log('Lambda invoked!'))
-      ).rejects.toThrowError(Error);
+      await expect(new Lambda().handler({}, context)).rejects.toThrowError(
+        Error
+      );
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(newSubsegment).toEqual(
         expect.objectContaining({
@@ -1214,21 +1130,16 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(): Promise<string> {
           return `otherMethod:${this.otherMethod()}`;
         }
 
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
-          return <TResult>((await this.dummyMethod()) as unknown);
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod();
         }
 
         public otherMethod(): string {
@@ -1237,11 +1148,9 @@ describe('Class: Tracer', () => {
       }
 
       // Act / Assess
-      expect(
-        await new Lambda().handler({}, context, () =>
-          console.log('Lambda invoked!')
-        )
-      ).toEqual('otherMethod:otherMethod');
+      expect(await new Lambda().handler({}, context)).toEqual(
+        'otherMethod:otherMethod'
+      );
     });
 
     test('when used as decorator and when calling a method in the class, it has access to member variables', async () => {
@@ -1263,21 +1172,16 @@ describe('Class: Tracer', () => {
         }
 
         @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(): Promise<string> {
           return `memberVariable:${this.memberVariable}`;
         }
 
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
-          return <TResult>((await this.dummyMethod()) as unknown);
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod();
         }
       }
 
@@ -1304,16 +1208,13 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(): Promise<void> {
           return;
         }
 
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
+        public async handler(
+          _event: unknown,
+          _context: Context
         ): Promise<void> {
           await this.dummyMethod();
           this.otherDummyMethod();
@@ -1332,7 +1233,7 @@ describe('Class: Tracer', () => {
         .spyOn(lambda, 'otherDummyMethod')
         .mockImplementation();
       const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
+      await handler({}, context);
 
       // Here we assert that the subsegment.close() (inside the finally of decorator) is called before the other otherDummyMethodSpy method
       // that should always be called after the handler has returned. If subsegment.close() is called after it means the
@@ -1371,16 +1272,13 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         @passThrough()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(): Promise<string> {
           return `foo`;
         }
 
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
+        public async handler(
+          _event: unknown,
+          _context: Context
         ): Promise<void> {
           await this.dummyMethod();
 
@@ -1391,7 +1289,7 @@ describe('Class: Tracer', () => {
       // Act / Assess
       const lambda = new Lambda();
       const handler = lambda.handler.bind(lambda);
-      await handler({}, context, () => console.log('Lambda invoked!'));
+      await handler({}, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledWith(
@@ -1417,31 +1315,20 @@ describe('Class: Tracer', () => {
       );
       class Lambda implements LambdaInterface {
         @tracer.captureMethod({ subSegmentName: '#### myCustomMethod' })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async dummyMethod(some: string): Promise<string> {
-          return new Promise((resolve, _reject) =>
-            setTimeout(() => resolve(some), 3000)
-          );
+          return some;
         }
 
-        public async handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): Promise<TResult> {
-          const result = await this.dummyMethod('foo bar');
-
-          return new Promise((resolve, _reject) =>
-            resolve(result as unknown as TResult)
-          );
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod('foo bar');
         }
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);

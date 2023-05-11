@@ -8,7 +8,6 @@
  * @abstract
  */
 abstract class ConfigService {
-
   /**
    * It returns the value of an environment variable that has given name.
    *
@@ -26,7 +25,7 @@ abstract class ConfigService {
 
   /**
    * It returns the value of the _X_AMZN_TRACE_ID environment variable.
-   * 
+   *
    * The AWS X-Ray Trace data available in the environment variable has this format:
    * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
    *
@@ -45,6 +44,4 @@ abstract class ConfigService {
   public abstract isValueTrue(value: string): boolean;
 }
 
-export {
-  ConfigService,
-};
+export { ConfigService };

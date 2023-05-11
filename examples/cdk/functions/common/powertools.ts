@@ -6,7 +6,7 @@ const awsLambdaPowertoolsVersion = '1.5.0';
 
 const defaultValues = {
   region: process.env.AWS_REGION || 'N/A',
-  executionEnv: process.env.AWS_EXECUTION_ENV || 'N/A'
+  executionEnv: process.env.AWS_EXECUTION_ENV || 'N/A',
 };
 
 const logger = new Logger({
@@ -15,18 +15,14 @@ const logger = new Logger({
     logger: {
       name: '@aws-lambda-powertools/logger',
       version: awsLambdaPowertoolsVersion,
-    }
+    },
   },
 });
 
 const metrics = new Metrics({
-  defaultDimensions: defaultValues
+  defaultDimensions: defaultValues,
 });
 
 const tracer = new Tracer();
 
-export {
-  logger,
-  metrics,
-  tracer
-};
+export { logger, metrics, tracer };

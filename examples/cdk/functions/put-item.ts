@@ -1,4 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import { tableName } from './common/constants';
 import { logger, tracer, metrics } from './common/powertools';
 import { docClient } from './common/dynamodb-client';
@@ -9,7 +13,7 @@ import type { Subsegment } from 'aws-xray-sdk-core';
 /**
  *
  * This example uses the manual instrumentation.
- * 
+ *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
  * @param {APIGatewayProxyEvent} event - API Gateway Lambda Proxy Input Format
  *
@@ -17,9 +21,14 @@ import type { Subsegment } from 'aws-xray-sdk-core';
  * @returns {Promise<APIGatewayProxyResult>} object - API Gateway Lambda Proxy Output Format
  *
  */
-export const handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: Context
+): Promise<APIGatewayProxyResult> => {
   if (event.httpMethod !== 'POST') {
-    throw new Error(`putItem only accepts POST method, you tried: ${event.httpMethod}`);
+    throw new Error(
+      `putItem only accepts POST method, you tried: ${event.httpMethod}`
+    );
   }
 
   // Logger: Log the incoming event
@@ -80,13 +89,15 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
     const body = JSON.parse(event.body);
     const { id, name } = body;
 
-    await docClient.send(new PutCommand({
-      TableName: tableName,
-      Item: {
-        id,
-        name
-      }
-    }));
+    await docClient.send(
+      new PutCommand({
+        TableName: tableName,
+        Item: {
+          id,
+          name,
+        },
+      })
+    );
 
     logger.info(`Response ${event.path}`, {
       statusCode: 200,
@@ -95,7 +106,7 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
 
     return {
       statusCode: 200,
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     };
   } catch (err) {
     tracer.addErrorAsMetadata(err as Error);
@@ -103,7 +114,7 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
 
     return {
       statusCode: 500,
-      body: JSON.stringify({ 'error': 'Error writing data to table.' })
+      body: JSON.stringify({ error: 'Error writing data to table.' }),
     };
   } finally {
     if (segment && handlerSegment) {

@@ -10,7 +10,10 @@ import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
 import { XRayClient } from '@aws-sdk/client-xray';
 import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
-import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
+import {
+  deployStack,
+  destroyStack,
+} from '../../../commons/tests/utils/cdk-cli';
 import {
   getTraces,
   getInvocationSubsegment,
@@ -24,19 +27,19 @@ import {
   generateUniqueName,
   isValidRuntimeKey,
 } from '../../../commons/tests/utils/e2eUtils';
-import { 
+import {
   RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT, 
-  TEARDOWN_TIMEOUT, 
+  SETUP_TIMEOUT,
+  TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-  expectedCustomAnnotationKey, 
-  expectedCustomAnnotationValue, 
-  expectedCustomMetadataKey, 
-  expectedCustomMetadataValue, 
-  expectedCustomResponseValue, 
+  expectedCustomAnnotationKey,
+  expectedCustomAnnotationValue,
+  expectedCustomMetadataKey,
+  expectedCustomMetadataValue,
+  expectedCustomResponseValue,
   expectedCustomErrorMessage,
 } from './constants';
-import { 
+import {
   assertAnnotation,
   assertErrorAndFault,
 } from '../helpers/traceAssertions';
@@ -55,7 +58,12 @@ if (!isValidRuntimeKey(runtime)) {
  * Each stack must use a unique `serviceName` as it's used to for retrieving the trace.
  * Using the same one will result in traces from different test cases mixing up.
  */
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'AllFeatures-Decorator');
+const stackName = generateUniqueName(
+  RESOURCE_NAME_PREFIX,
+  v4(),
+  runtime,
+  'AllFeatures-Decorator'
+);
 const lambdaFunctionCodeFile = 'allFeatures.decorator.test.functionCode.ts';
 let startTime: Date;
 
@@ -63,28 +71,50 @@ let startTime: Date;
  * Function #1 is with all flags enabled.
  */
 const uuidFunction1 = v4();
-const functionNameWithAllFlagsEnabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction1, runtime, 'AllFeatures-Decorator-AllFlagsEnabled');
-const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled; 
+const functionNameWithAllFlagsEnabled = generateUniqueName(
+  RESOURCE_NAME_PREFIX,
+  uuidFunction1,
+  runtime,
+  'AllFeatures-Decorator-AllFlagsEnabled'
+);
+const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled;
 
 /**
  * Function #2 doesn't capture error or response
  */
 const uuidFunction2 = v4();
-const functionNameWithNoCaptureErrorOrResponse = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction2, runtime, 'AllFeatures-Decorator-NoCaptureErrorOrResponse');
-const serviceNameWithNoCaptureErrorOrResponse = functionNameWithNoCaptureErrorOrResponse; 
+const functionNameWithNoCaptureErrorOrResponse = generateUniqueName(
+  RESOURCE_NAME_PREFIX,
+  uuidFunction2,
+  runtime,
+  'AllFeatures-Decorator-NoCaptureErrorOrResponse'
+);
+const serviceNameWithNoCaptureErrorOrResponse =
+  functionNameWithNoCaptureErrorOrResponse;
 /**
  * Function #3 disables tracer
  */
 const uuidFunction3 = v4();
-const functionNameWithTracerDisabled = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction3, runtime, 'AllFeatures-Decorator-TracerDisabled');
-const serviceNameWithTracerDisabled = functionNameWithNoCaptureErrorOrResponse; 
+const functionNameWithTracerDisabled = generateUniqueName(
+  RESOURCE_NAME_PREFIX,
+  uuidFunction3,
+  runtime,
+  'AllFeatures-Decorator-TracerDisabled'
+);
+const serviceNameWithTracerDisabled = functionNameWithNoCaptureErrorOrResponse;
 
 /**
  * Function #4 disables capture response via decorator options
  */
 const uuidFunction4 = v4();
-const functionNameWithCaptureResponseFalse = generateUniqueName(RESOURCE_NAME_PREFIX, uuidFunction4, runtime, 'AllFeatures-Decorator-CaptureResponseFalse');
-const serviceNameWithCaptureResponseFalse = functionNameWithCaptureResponseFalse;
+const functionNameWithCaptureResponseFalse = generateUniqueName(
+  RESOURCE_NAME_PREFIX,
+  uuidFunction4,
+  runtime,
+  'AllFeatures-Decorator-CaptureResponseFalse'
+);
+const serviceNameWithCaptureResponseFalse =
+  functionNameWithCaptureResponseFalse;
 
 const xrayClient = new XRayClient({});
 const stsClient = new STSClient({});
@@ -94,9 +124,7 @@ const integTestApp = new App();
 let stack: Stack;
 
 describe(`Tracer E2E tests, all features with decorator instantiation for runtime: ${runtime}`, () => {
-
   beforeAll(async () => {
-    
     // Prepare
     startTime = new Date();
     const ddbTableName = stackName + '-table';
@@ -106,10 +134,10 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
       tableName: ddbTableName,
       partitionKey: {
         name: 'id',
-        type: AttributeType.STRING
+        type: AttributeType.STRING,
       },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     const entry = path.join(__dirname, lambdaFunctionCodeFile);
@@ -124,23 +152,24 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
         POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
         POWERTOOLS_TRACE_ENABLED: 'true',
       },
-      runtime
+      runtime,
     });
     ddbTable.grantWriteData(functionWithAllFlagsEnabled);
 
-    const functionThatDoesNotCapturesErrorAndResponse = createTracerTestFunction({
-      stack,
-      functionName: functionNameWithNoCaptureErrorOrResponse,
-      entry,
-      expectedServiceName: serviceNameWithNoCaptureErrorOrResponse,
-      environmentParams: {
-        TEST_TABLE_NAME: ddbTableName,
-        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'false',
-        POWERTOOLS_TRACER_CAPTURE_ERROR: 'false',
-        POWERTOOLS_TRACE_ENABLED: 'true',
-      },
-      runtime
-    });
+    const functionThatDoesNotCapturesErrorAndResponse =
+      createTracerTestFunction({
+        stack,
+        functionName: functionNameWithNoCaptureErrorOrResponse,
+        entry,
+        expectedServiceName: serviceNameWithNoCaptureErrorOrResponse,
+        environmentParams: {
+          TEST_TABLE_NAME: ddbTableName,
+          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'false',
+          POWERTOOLS_TRACER_CAPTURE_ERROR: 'false',
+          POWERTOOLS_TRACE_ENABLED: 'true',
+        },
+        runtime,
+      });
     ddbTable.grantWriteData(functionThatDoesNotCapturesErrorAndResponse);
 
     const functionWithTracerDisabled = createTracerTestFunction({
@@ -154,7 +183,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
         POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
         POWERTOOLS_TRACE_ENABLED: 'false',
       },
-      runtime
+      runtime,
     });
     ddbTable.grantWriteData(functionWithTracerDisabled);
 
@@ -170,7 +199,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
         POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
         POWERTOOLS_TRACE_ENABLED: 'true',
       },
-      runtime
+      runtime,
     });
     ddbTable.grantWriteData(functionWithCaptureResponseFalse);
 
@@ -183,7 +212,6 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
       invokeAllTestCases(functionNameWithTracerDisabled),
       invokeAllTestCases(functionNameWithCaptureResponseFalse),
     ]);
-    
   }, SETUP_TIMEOUT);
 
   afterAll(async () => {
@@ -192,216 +220,279 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     }
   }, TEARDOWN_TIMEOUT);
 
-  it('should generate all custom traces', async () => {
-    
-    const tracesWhenAllFlagsEnabled = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled), invocations, 4);
-    
-    expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
+  it(
+    'should generate all custom traces',
+    async () => {
+      const tracesWhenAllFlagsEnabled = await getTraces(
+        xrayClient,
+        startTime,
+        await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled),
+        invocations,
+        4
+      );
 
-    // Assess
-    for (let i = 0; i < invocations; i++) {
-      const trace = tracesWhenAllFlagsEnabled[i];
+      expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
 
-      /**
-       * Expect the trace to have 4 segments:
-       * 1. Lambda Context (AWS::Lambda)
-       * 2. Lambda Function (AWS::Lambda::Function)
-       * 4. DynamoDB (AWS::DynamoDB)
-       * 4. Remote call (awslabs.github.io)
-       */
-      expect(trace.Segments.length).toBe(4);
-      const invocationSubsegment = getInvocationSubsegment(trace);
-      
-      /**
-       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
-       * '## index.handler' subsegment should have 3 subsegments
-       * 1. DynamoDB (PutItem on the table)
-       * 2. awslabs.github.io (Remote call)
-       * 3. '### myMethod' (method decorator)
-       */
-      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
-      expect(handlerSubsegment.name).toBe('## index.handler');
-      expect(handlerSubsegment?.subsegments).toHaveLength(3);
+      // Assess
+      for (let i = 0; i < invocations; i++) {
+        const trace = tracesWhenAllFlagsEnabled[i];
 
-      if (!handlerSubsegment.subsegments) {
-        fail('"## index.handler" subsegment should have subsegments');
+        /**
+         * Expect the trace to have 4 segments:
+         * 1. Lambda Context (AWS::Lambda)
+         * 2. Lambda Function (AWS::Lambda::Function)
+         * 4. DynamoDB (AWS::DynamoDB)
+         * 4. Remote call (awslabs.github.io)
+         */
+        expect(trace.Segments.length).toBe(4);
+        const invocationSubsegment = getInvocationSubsegment(trace);
+
+        /**
+         * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+         * '## index.handler' subsegment should have 3 subsegments
+         * 1. DynamoDB (PutItem on the table)
+         * 2. awslabs.github.io (Remote call)
+         * 3. '### myMethod' (method decorator)
+         */
+        const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+        expect(handlerSubsegment.name).toBe('## index.handler');
+        expect(handlerSubsegment?.subsegments).toHaveLength(3);
+
+        if (!handlerSubsegment.subsegments) {
+          fail('"## index.handler" subsegment should have subsegments');
+        }
+        const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [
+          'DynamoDB',
+          'awslabs.github.io',
+          '### myMethod',
+        ]);
+        expect(subsegments.get('DynamoDB')?.length).toBe(1);
+        expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
+        expect(subsegments.get('### myMethod')?.length).toBe(1);
+        expect(subsegments.get('other')?.length).toBe(0);
+
+        const shouldThrowAnError = i === invocations - 1;
+        if (shouldThrowAnError) {
+          assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
+        }
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io', '### myMethod' ]);
-      expect(subsegments.get('DynamoDB')?.length).toBe(1);
-      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
-      expect(subsegments.get('### myMethod')?.length).toBe(1);
-      expect(subsegments.get('other')?.length).toBe(0);
-      
-      const shouldThrowAnError = (i === (invocations - 1));
-      if (shouldThrowAnError) {
-        assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
+    },
+    TEST_CASE_TIMEOUT
+  );
+
+  it(
+    'should have correct annotations and metadata',
+    async () => {
+      const tracesWhenAllFlagsEnabled = await getTraces(
+        xrayClient,
+        startTime,
+        await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled),
+        invocations,
+        4
+      );
+
+      for (let i = 0; i < invocations; i++) {
+        const trace = tracesWhenAllFlagsEnabled[i];
+        const invocationSubsegment = getInvocationSubsegment(trace);
+        const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+        const { annotations, metadata } = handlerSubsegment;
+
+        const isColdStart = i === 0;
+        assertAnnotation({
+          annotations,
+          isColdStart,
+          expectedServiceName: serviceNameWithAllFlagsEnabled,
+          expectedCustomAnnotationKey,
+          expectedCustomAnnotationValue,
+        });
+
+        if (!metadata) {
+          fail('metadata is missing');
+        }
+        expect(
+          metadata[serviceNameWithAllFlagsEnabled][expectedCustomMetadataKey]
+        ).toEqual(expectedCustomMetadataValue);
+
+        const shouldThrowAnError = i === invocations - 1;
+        if (!shouldThrowAnError) {
+          // Assert that the metadata object contains the response
+          expect(
+            metadata[serviceNameWithAllFlagsEnabled]['index.handler response']
+          ).toEqual(expectedCustomResponseValue);
+        }
       }
-    }
+    },
+    TEST_CASE_TIMEOUT
+  );
 
-  }, TEST_CASE_TIMEOUT);
-  
-  it('should have correct annotations and metadata', async () => {
-    const tracesWhenAllFlagsEnabled = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled), invocations, 4);
+  it(
+    'should not capture error nor response when the flags are false',
+    async () => {
+      const tracesWithNoCaptureErrorOrResponse = await getTraces(
+        xrayClient,
+        startTime,
+        await getFunctionArn(
+          stsClient,
+          functionNameWithNoCaptureErrorOrResponse
+        ),
+        invocations,
+        4
+      );
 
-    for (let i = 0; i < invocations; i++) {
-      const trace = tracesWhenAllFlagsEnabled[i];
-      const invocationSubsegment = getInvocationSubsegment(trace);
-      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
-      const { annotations, metadata } = handlerSubsegment;
+      expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocations);
 
-      const isColdStart = (i === 0);
-      assertAnnotation({
-        annotations,
-        isColdStart,
-        expectedServiceName: serviceNameWithAllFlagsEnabled,
-        expectedCustomAnnotationKey,
-        expectedCustomAnnotationValue,
-      });
-      
-      if (!metadata) {
-        fail('metadata is missing');
+      // Assess
+      for (let i = 0; i < invocations; i++) {
+        const trace = tracesWithNoCaptureErrorOrResponse[i];
+
+        /**
+         * Expect the trace to have 4 segments:
+         * 1. Lambda Context (AWS::Lambda)
+         * 2. Lambda Function (AWS::Lambda::Function)
+         * 3. DynamoDB (AWS::DynamoDB)
+         * 4. Remote call (awslabs.github.io)
+         */
+        expect(trace.Segments.length).toBe(4);
+        const invocationSubsegment = getInvocationSubsegment(trace);
+
+        /**
+         * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+         * '## index.handler' subsegment should have 3 subsegments
+         * 1. DynamoDB (PutItem on the table)
+         * 2. awslabs.github.io (Remote call)
+         * 3. '### myMethod' (method decorator)
+         */
+        const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+        expect(handlerSubsegment.name).toBe('## index.handler');
+        expect(handlerSubsegment?.subsegments).toHaveLength(3);
+
+        if (!handlerSubsegment.subsegments) {
+          fail('"## index.handler" subsegment should have subsegments');
+        }
+        const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [
+          'DynamoDB',
+          'awslabs.github.io',
+          '### myMethod',
+        ]);
+        expect(subsegments.get('DynamoDB')?.length).toBe(1);
+        expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
+        expect(subsegments.get('### myMethod')?.length).toBe(1);
+        expect(subsegments.get('other')?.length).toBe(0);
+
+        const shouldThrowAnError = i === invocations - 1;
+        if (shouldThrowAnError) {
+          // Assert that the subsegment has the expected fault
+          expect(invocationSubsegment.error).toBe(true);
+          expect(handlerSubsegment.error).toBe(true);
+          // Assert that no error was captured on the subsegment
+          expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
+        }
       }
-      expect(metadata[serviceNameWithAllFlagsEnabled][expectedCustomMetadataKey])
-        .toEqual(expectedCustomMetadataValue);
+    },
+    TEST_CASE_TIMEOUT
+  );
 
-      const shouldThrowAnError = (i === (invocations - 1));
-      if (!shouldThrowAnError) {
-        // Assert that the metadata object contains the response
-        expect(metadata[serviceNameWithAllFlagsEnabled]['index.handler response'])
-          .toEqual(expectedCustomResponseValue);
+  it(
+    'should not capture response when captureResponse is set to false',
+    async () => {
+      const tracesWithCaptureResponseFalse = await getTraces(
+        xrayClient,
+        startTime,
+        await getFunctionArn(stsClient, functionNameWithCaptureResponseFalse),
+        invocations,
+        4
+      );
+
+      expect(tracesWithCaptureResponseFalse.length).toBe(invocations);
+
+      // Assess
+      for (let i = 0; i < invocations; i++) {
+        const trace = tracesWithCaptureResponseFalse[i];
+
+        /**
+         * Expect the trace to have 4 segments:
+         * 1. Lambda Context (AWS::Lambda)
+         * 2. Lambda Function (AWS::Lambda::Function)
+         * 3. DynamoDB (AWS::DynamoDB)
+         * 4. Remote call (awslabs.github.io)
+         */
+        expect(trace.Segments.length).toBe(4);
+        const invocationSubsegment = getInvocationSubsegment(trace);
+
+        /**
+         * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+         * '## index.handler' subsegment should have 3 subsegments
+         * 1. DynamoDB (PutItem on the table)
+         * 2. awslabs.github.io (Remote call)
+         * 3. '### myMethod' (method decorator)
+         */
+        const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
+        expect(handlerSubsegment.name).toBe(
+          '## index.handlerWithCaptureResponseFalse'
+        );
+        expect(handlerSubsegment?.subsegments).toHaveLength(3);
+
+        if (!handlerSubsegment.subsegments) {
+          fail(
+            '"## index.handlerWithCaptureResponseFalse" subsegment should have subsegments'
+          );
+        }
+        const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [
+          'DynamoDB',
+          'awslabs.github.io',
+          '### myMethod',
+        ]);
+        expect(subsegments.get('DynamoDB')?.length).toBe(1);
+        expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
+        expect(subsegments.get('### myMethod')?.length).toBe(1);
+        expect(subsegments.get('other')?.length).toBe(0);
+
+        // No metadata because capturing the response was disabled and that's
+        // the only metadata that could be in the subsegment for the test.
+        const myMethodSegment = subsegments.get('### myMethod')?.[0];
+        expect(myMethodSegment).toBeDefined();
+        expect(myMethodSegment).not.toHaveProperty('metadata');
+
+        const shouldThrowAnError = i === invocations - 1;
+        if (shouldThrowAnError) {
+          assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
+        }
       }
-    }
-  }, TEST_CASE_TIMEOUT);
+    },
+    TEST_CASE_TIMEOUT
+  );
 
-  it('should not capture error nor response when the flags are false', async () => {
-    
-    const tracesWithNoCaptureErrorOrResponse = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithNoCaptureErrorOrResponse), invocations, 4);
-    
-    expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocations);
+  it(
+    'should not capture any custom traces when disabled',
+    async () => {
+      const expectedNoOfTraces = 2;
+      const tracesWithTracerDisabled = await getTraces(
+        xrayClient,
+        startTime,
+        await getFunctionArn(stsClient, functionNameWithTracerDisabled),
+        invocations,
+        expectedNoOfTraces
+      );
 
-    // Assess
-    for (let i = 0; i < invocations; i++) {
-      const trace = tracesWithNoCaptureErrorOrResponse[i];
+      expect(tracesWithTracerDisabled.length).toBe(invocations);
 
-      /**
-       * Expect the trace to have 4 segments:
-       * 1. Lambda Context (AWS::Lambda)
-       * 2. Lambda Function (AWS::Lambda::Function)
-       * 3. DynamoDB (AWS::DynamoDB)
-       * 4. Remote call (awslabs.github.io)
-       */
-      expect(trace.Segments.length).toBe(4);
-      const invocationSubsegment = getInvocationSubsegment(trace);
-      
-      /**
-       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
-       * '## index.handler' subsegment should have 3 subsegments
-       * 1. DynamoDB (PutItem on the table)
-       * 2. awslabs.github.io (Remote call)
-       * 3. '### myMethod' (method decorator)
-       */
-      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
-      expect(handlerSubsegment.name).toBe('## index.handler');
-      expect(handlerSubsegment?.subsegments).toHaveLength(3);
+      // Assess
+      for (let i = 0; i < invocations; i++) {
+        const trace = tracesWithTracerDisabled[i];
+        expect(trace.Segments.length).toBe(2);
 
-      if (!handlerSubsegment.subsegments) {
-        fail('"## index.handler" subsegment should have subsegments');
+        /**
+         * Expect no subsegment in the invocation
+         */
+        const invocationSubsegment = getInvocationSubsegment(trace);
+        expect(invocationSubsegment?.subsegments).toBeUndefined();
+
+        const shouldThrowAnError = i === invocations - 1;
+        if (shouldThrowAnError) {
+          expect(invocationSubsegment.error).toBe(true);
+        }
       }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io', '### myMethod' ]);
-      expect(subsegments.get('DynamoDB')?.length).toBe(1);
-      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
-      expect(subsegments.get('### myMethod')?.length).toBe(1);
-      expect(subsegments.get('other')?.length).toBe(0);
-      
-      const shouldThrowAnError = (i === (invocations - 1));
-      if (shouldThrowAnError) {
-        // Assert that the subsegment has the expected fault
-        expect(invocationSubsegment.error).toBe(true);
-        expect(handlerSubsegment.error).toBe(true);
-        // Assert that no error was captured on the subsegment
-        expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
-      }
-    }
-
-  }, TEST_CASE_TIMEOUT);
-
-  it('should not capture response when the decorator\'s captureResponse is set to false', async () => {
-
-    const tracesWithCaptureResponseFalse = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithCaptureResponseFalse), invocations, 4);
-
-    expect(tracesWithCaptureResponseFalse.length).toBe(invocations);
-
-    // Assess
-    for (let i = 0; i < invocations; i++) {
-      const trace = tracesWithCaptureResponseFalse[i];
-
-      /**
-       * Expect the trace to have 4 segments:
-       * 1. Lambda Context (AWS::Lambda)
-       * 2. Lambda Function (AWS::Lambda::Function)
-       * 3. DynamoDB (AWS::DynamoDB)
-       * 4. Remote call (awslabs.github.io)
-       */
-      expect(trace.Segments.length).toBe(4);
-      const invocationSubsegment = getInvocationSubsegment(trace);
-
-      /**
-       * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
-       * '## index.handler' subsegment should have 3 subsegments
-       * 1. DynamoDB (PutItem on the table)
-       * 2. awslabs.github.io (Remote call)
-       * 3. '### myMethod' (method decorator)
-       */
-      const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
-      expect(handlerSubsegment.name).toBe('## index.handlerWithCaptureResponseFalse');
-      expect(handlerSubsegment?.subsegments).toHaveLength(3);
-
-      if (!handlerSubsegment.subsegments) {
-        fail('"## index.handlerWithCaptureResponseFalse" subsegment should have subsegments');
-      }
-      const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [ 'DynamoDB', 'awslabs.github.io', '### myMethod' ]);
-      expect(subsegments.get('DynamoDB')?.length).toBe(1);
-      expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
-      expect(subsegments.get('### myMethod')?.length).toBe(1);
-      expect(subsegments.get('other')?.length).toBe(0);
-
-      // No metadata because capturing the response was disabled and that's
-      // the only metadata that could be in the subsegment for the test.
-      const myMethodSegment = subsegments.get('### myMethod')?.[0];
-      expect(myMethodSegment).toBeDefined();
-      expect(myMethodSegment).not.toHaveProperty('metadata');
-
-      const shouldThrowAnError = (i === (invocations - 1));
-      if (shouldThrowAnError) {
-        assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
-      }
-    }
-
-  }, TEST_CASE_TIMEOUT);
-
-  it('should not capture any custom traces when disabled', async () => {
-    const expectedNoOfTraces = 2;
-    const tracesWithTracerDisabled = await getTraces(xrayClient, startTime, await getFunctionArn(stsClient, functionNameWithTracerDisabled), invocations, expectedNoOfTraces);
-    
-    expect(tracesWithTracerDisabled.length).toBe(invocations);
-
-    // Assess
-    for (let i = 0; i < invocations; i++) {
-      const trace = tracesWithTracerDisabled[i];
-      expect(trace.Segments.length).toBe(2);
-      
-      /**
-       * Expect no subsegment in the invocation
-       */
-      const invocationSubsegment = getInvocationSubsegment(trace);
-      expect(invocationSubsegment?.subsegments).toBeUndefined();
-      
-      const shouldThrowAnError = (i === (invocations - 1));
-      if (shouldThrowAnError) {
-        expect(invocationSubsegment.error).toBe(true);
-      }
-    }
-
-  }, TEST_CASE_TIMEOUT);
+    },
+    TEST_CASE_TIMEOUT
+  );
 });
-

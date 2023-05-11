@@ -30,16 +30,16 @@ describe('Helper: createTracer function', () => {
 
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: true,
-        serviceName: 'hello-world',
-        captureHTTPsRequests: true
-      }));
-            
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+          serviceName: 'hello-world',
+          captureHTTPsRequests: true,
+        })
+      );
     });
 
     test('when all tracer options are passed, returns a Tracer instance with the correct properties', () => {
-
       // Prepare
       const tracerOptions = {
         enabled: false,
@@ -52,19 +52,19 @@ describe('Helper: createTracer function', () => {
 
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: false,
-        serviceName: 'my-lambda-service',
-        captureHTTPsRequests: false,
-      }));
-      
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+          serviceName: 'my-lambda-service',
+          captureHTTPsRequests: false,
+        })
+      );
     });
 
     test('when a custom serviceName is passed, returns a Tracer instance with the correct properties', () => {
-
       // Prepare
       const tracerOptions = {
-        serviceName: 'my-lambda-service'
+        serviceName: 'my-lambda-service',
       };
 
       // Act
@@ -72,19 +72,19 @@ describe('Helper: createTracer function', () => {
 
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: true,
-        serviceName: 'my-lambda-service',
-        captureHTTPsRequests: true,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+          serviceName: 'my-lambda-service',
+          captureHTTPsRequests: true,
+        })
+      );
     });
 
     test('when a custom, but invalid, serviceName is passed, returns a Tracer instance with the correct properties', () => {
-
       // Prepare
       const tracerOptions = {
-        serviceName: ''
+        serviceName: '',
       };
 
       // Act
@@ -92,19 +92,19 @@ describe('Helper: createTracer function', () => {
 
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: true,
-        serviceName: 'hello-world',
-        captureHTTPsRequests: true,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+          serviceName: 'hello-world',
+          captureHTTPsRequests: true,
+        })
+      );
     });
 
     test('when (tracing) disabled is passed, returns a Tracer instance with the correct properties', () => {
-
       // Prepare
       const tracerOptions = {
-        enabled: false
+        enabled: false,
       };
 
       // Act
@@ -112,16 +112,16 @@ describe('Helper: createTracer function', () => {
 
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: false,
-        serviceName: 'hello-world',
-        captureHTTPsRequests: true,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+          serviceName: 'hello-world',
+          captureHTTPsRequests: true,
+        })
+      );
     });
 
     test('when a custom customConfigService is passed, returns a Logger instance with the correct proprieties', () => {
-
       const configService: ConfigServiceInterface = {
         get(name: string): string {
           return `a-string-from-${name}`;
@@ -140,70 +140,69 @@ describe('Helper: createTracer function', () => {
         },
         getServiceName(): string {
           return 'my-backend-service';
-        }
+        },
       };
       // Prepare
       const tracerOptions: TracerOptions = {
-        customConfigService: configService
+        customConfigService: configService,
       };
-      
+
       // Act
       const tracer = createTracer(tracerOptions);
-      
+
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
-      expect(tracer).toEqual(expect.objectContaining({
-        customConfigService: configService,
-        tracingEnabled: false,
-        serviceName: 'my-backend-service',
-        captureHTTPsRequests: false,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          customConfigService: configService,
+          tracingEnabled: false,
+          serviceName: 'my-backend-service',
+          captureHTTPsRequests: false,
+        })
+      );
     });
 
     test('when tracing is enabled and patching of http requests is opted-out, captureHTTPsRequests is false', () => {
-
       // Prepare
       const tracerOptions = {
         enabled: true,
-        captureHTTPsRequests: false
+        captureHTTPsRequests: false,
       };
-      
+
       // Act
       const tracer = createTracer(tracerOptions);
 
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: true,
-        captureHTTPsRequests: false,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+          captureHTTPsRequests: false,
+        })
+      );
     });
 
     test('when tracing is enabled captureHTTPsGlobal is true', () => {
-
       // Prepare
       const tracerOptions = {
         enabled: true,
       };
-      
+
       // Act
       const tracer = createTracer(tracerOptions);
 
       // Assess
       expect(tracer).toBeInstanceOf(Tracer);
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: true,
-        captureHTTPsRequests: true,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+          captureHTTPsRequests: true,
+        })
+      );
     });
-
   });
 
   describe('Environment Variables configs', () => {
-
     test('when AWS_EXECUTION_ENV environment variable is equal to AWS_Lambda_amplify-mock, tracing is disabled', () => {
       // Prepare
       process.env.AWS_EXECUTION_ENV = 'AWS_Lambda_amplify-mock';
@@ -212,10 +211,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: false,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+        })
+      );
     });
 
     test('when AWS_SAM_LOCAL environment variable is set, tracing is disabled', () => {
@@ -226,10 +226,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: false,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+        })
+      );
     });
 
     test('when AWS_EXECUTION_ENV environment variable is set, tracing is enabled', () => {
@@ -240,10 +241,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: true,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+        })
+      );
     });
 
     test('when AWS_EXECUTION_ENV environment variable is NOT set, tracing is disabled', () => {
@@ -254,9 +256,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: false,
-      }));
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+        })
+      );
     });
 
     test('when POWERTOOLS_TRACE_ENABLED environment variable is set, a tracer with tracing disabled is returned', () => {
@@ -267,10 +271,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        tracingEnabled: false,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+        })
+      );
     });
 
     test('when POWERTOOLS_SERVICE_NAME environment variable is set, a tracer with the correct serviceName is returned', () => {
@@ -281,10 +286,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        serviceName: 'my-backend-service'
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          serviceName: 'my-backend-service',
+        })
+      );
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set, a tracer with captureResponse disabled is returned', () => {
@@ -295,10 +301,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        captureResponse: false
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureResponse: false,
+        })
+      );
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set to invalid value, a tracer with captureResponse enabled is returned', () => {
@@ -309,10 +316,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        captureResponse: true
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureResponse: true,
+        })
+      );
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_ERROR environment variable is set, a tracer with captureError disabled is returned', () => {
@@ -323,10 +331,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        captureError: false
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureError: false,
+        })
+      );
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_ERROR environment variable is set to invalid value, a tracer with captureError enabled is returned', () => {
@@ -337,10 +346,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        captureError: true
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureError: true,
+        })
+      );
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable is set, captureHTTPsGlobal is called', () => {
@@ -351,10 +361,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        captureHTTPsRequests: false,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureHTTPsRequests: false,
+        })
+      );
     });
 
     test('when POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable is set to invalid value, captureHTTPsGlobal is called', () => {
@@ -365,11 +376,11 @@ describe('Helper: createTracer function', () => {
       const tracer = createTracer();
 
       // Assess
-      expect(tracer).toEqual(expect.objectContaining({
-        captureHTTPsRequests: true,
-      }));
-
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureHTTPsRequests: true,
+        })
+      );
     });
-
   });
 });

@@ -1,5 +1,5 @@
 import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
-import type { SecretsManagerClientConfig } from '@aws-sdk/client-secretsmanager';
+import type { SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager';
 
 const clientConfig: SecretsManagerClientConfig = { region: 'us-east-1' };
 const secretsProvider = new SecretsProvider({ clientConfig });

@@ -1,10 +1,10 @@
 import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
 
 const dynamoDBProvider = new DynamoDBProvider({
-	  tableName: 'my-table',
-	  clientConfig: {
-	    endpoint: 'http://localhost:8000'
-	  },
+  tableName: 'my-table',
+  clientConfig: {
+    endpoint: 'http://localhost:8000',
+  },
 });
 
 export const handler = async (): Promise<void> => {

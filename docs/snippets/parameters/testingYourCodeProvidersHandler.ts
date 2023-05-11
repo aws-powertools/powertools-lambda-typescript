@@ -5,10 +5,13 @@ const provider = new AppConfigProvider({
   application: 'my-app',
 });
 
-export const handler = async (_event: unknown, _context: unknown): Promise<Record<string, unknown>> => {
+export const handler = async (
+  _event: unknown,
+  _context: unknown
+): Promise<Record<string, unknown>> => {
   const config = await provider.get('my-config');
 
   return {
-    value: config
+    value: config,
   };
 };

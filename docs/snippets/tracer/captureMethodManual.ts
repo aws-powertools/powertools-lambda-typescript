@@ -27,7 +27,9 @@ const getChargeId = async (): Promise<unknown> => {
   return res;
 };
 
-export const handler = async (_event: unknown, _context: unknown): Promise<void> => {
+export const handler = async (
+  _event: unknown,
+  _context: unknown
+): Promise<void> => {
   await getChargeId();
-  
 };

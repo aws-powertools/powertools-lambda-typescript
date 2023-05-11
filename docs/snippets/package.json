@@ -11,8 +11,8 @@
     "test:e2e": "echo 'Not Applicable'",
     "package": "echo 'Not applicable'",
     "build": "echo 'Not Applicable'",
-    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern logger tracer metrics parameters",
-    "lint-fix": "eslint --fix --ext .ts --no-error-on-unmatched-pattern logger tracer metrics parameters"
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern ."
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix"

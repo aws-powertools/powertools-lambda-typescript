@@ -8,7 +8,6 @@ import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 
 describe('Function tests', () => {
-  
   const client = mockClient(SecretsManagerClient);
 
   beforeEach(() => {
@@ -20,22 +19,20 @@ describe('Function tests', () => {
   });
 
   test('it returns the correct error message', async () => {
-
     // Prepare
-    client.on(GetSecretValueCommand)
-      .rejectsOnce(new ResourceNotFoundException({
+    client.on(GetSecretValueCommand).rejectsOnce(
+      new ResourceNotFoundException({
         $metadata: {
           httpStatusCode: 404,
         },
         message: 'Unable to retrieve secret',
-      }));
+      })
+    );
 
     // Act
     const result = await handler({}, {});
 
     // Assess
     expect(result).toStrictEqual({ message: 'Unable to retrieve secret' });
-
   });
-
 });

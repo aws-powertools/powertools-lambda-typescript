@@ -5,7 +5,7 @@ const secretsProvider = new SecretsProvider();
 
 export const handler = async (): Promise<void> => {
   const sdkOptions: Partial<GetSecretValueCommandInput> = {
-    VersionId: 'e62ec170-6b01-48c7-94f3-d7497851a8d2'
+    VersionId: 'e62ec170-6b01-48c7-94f3-d7497851a8d2',
   };
   /**
    * The 'VersionId' argument will be passed to the underlying

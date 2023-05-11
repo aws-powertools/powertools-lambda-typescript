@@ -2,18 +2,18 @@ import { handler } from './testingYourCodeFunctionsHandler';
 import { getParameter } from '@aws-lambda-powertools/parameters/ssm';
 
 jest.mock('@aws-lambda-powertools/parameters/ssm', () => ({
-  getParameter: jest.fn()
+  getParameter: jest.fn(),
 }));
-const mockedGetParameter = getParameter as jest.MockedFunction<typeof getParameter>;
+const mockedGetParameter = getParameter as jest.MockedFunction<
+  typeof getParameter
+>;
 
 describe('Function tests', () => {
-
   beforeEach(() => {
     mockedGetParameter.mockClear();
   });
 
   test('it returns the correct response', async () => {
-
     // Prepare
     mockedGetParameter.mockResolvedValue('my/param');
 
@@ -24,7 +24,5 @@ describe('Function tests', () => {
     expect(result).toEqual({
       value: 'my/param',
     });
-
   });
-
 });

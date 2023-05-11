@@ -15,6 +15,6 @@ class Lambda implements LambdaInterface {
     await this.getChargeId();
   }
 }
- 
+
 const handlerClass = new Lambda();
 export const handler = handlerClass.handler.bind(handlerClass); // (2)

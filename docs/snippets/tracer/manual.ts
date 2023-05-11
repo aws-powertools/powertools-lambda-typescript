@@ -2,7 +2,10 @@ import { Tracer } from '@aws-lambda-powertools/tracer';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-export const handler = async (_event: unknown, _context: unknown): Promise<unknown> => {
+export const handler = async (
+  _event: unknown,
+  _context: unknown
+): Promise<unknown> => {
   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
   // Create subsegment for the function & set it as active
   const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
@@ -11,10 +14,9 @@ export const handler = async (_event: unknown, _context: unknown): Promise<unkno
   // Annotate the subsegment with the cold start & serviceName
   tracer.annotateColdStart();
   tracer.addServiceNameAnnotation();
-  
+
   try {
-   
-    // Add the response as metadata 
+    // Add the response as metadata
     tracer.addResponseAsMetadata({}, process.env._HANDLER);
   } catch (err) {
     // Add the error as metadata

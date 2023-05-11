@@ -1,9 +1,4 @@
-import {
-  CfnOutput,
-  RemovalPolicy,
-  Stack,
-  StackProps
-} from 'aws-cdk-lib';
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import {
   LayerVersion,
@@ -14,19 +9,25 @@ import {
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 export interface LayerPublisherStackProps extends StackProps {
-  readonly layerName?: string
-  readonly powertoolsPackageVersion?: string
-  readonly ssmParameterLayerArn: string
+  readonly layerName?: string;
+  readonly powertoolsPackageVersion?: string;
+  readonly ssmParameterLayerArn: string;
 }
 
 export class LayerPublisherStack extends Stack {
   public readonly lambdaLayerVersion: LayerVersion;
-  public constructor(scope: Construct, id: string, props: LayerPublisherStackProps) {
+  public constructor(
+    scope: Construct,
+    id: string,
+    props: LayerPublisherStackProps
+  ) {
     super(scope, id, props);
 
     const { layerName, powertoolsPackageVersion } = props;
 
-    console.log(`publishing layer ${layerName} version : ${powertoolsPackageVersion}`);
+    console.log(
+      `publishing layer ${layerName} version : ${powertoolsPackageVersion}`
+    );
 
     this.lambdaLayerVersion = new LayerVersion(this, 'LambdaPowertoolsLayer', {
       layerVersionName: props?.layerName,
@@ -34,7 +35,7 @@ export class LayerPublisherStack extends Stack {
       compatibleRuntimes: [
         Runtime.NODEJS_14_X,
         Runtime.NODEJS_16_X,
-        Runtime.NODEJS_18_X
+        Runtime.NODEJS_18_X,
       ],
       license: 'MIT-0',
       // This is needed because the following regions do not support the compatibleArchitectures property #1400
@@ -42,11 +43,15 @@ export class LayerPublisherStack extends Stack {
       code: Code.fromAsset('../tmp'),
     });
 
-    const layerPermission = new CfnLayerVersionPermission(this, 'PublicLayerAccess', {
-      action: 'lambda:GetLayerVersion',
-      layerVersionArn: this.lambdaLayerVersion.layerVersionArn,
-      principal: '*',
-    });
+    const layerPermission = new CfnLayerVersionPermission(
+      this,
+      'PublicLayerAccess',
+      {
+        action: 'lambda:GetLayerVersion',
+        layerVersionArn: this.lambdaLayerVersion.layerVersionArn,
+        principal: '*',
+      }
+    );
 
     layerPermission.applyRemovalPolicy(RemovalPolicy.RETAIN);
     this.lambdaLayerVersion.applyRemovalPolicy(RemovalPolicy.RETAIN);

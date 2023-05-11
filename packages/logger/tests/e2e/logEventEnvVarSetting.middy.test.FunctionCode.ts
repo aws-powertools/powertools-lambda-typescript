@@ -5,10 +5,13 @@ import middy from '@middy/core';
 
 const logger = new Logger();
 
-const testFunction = async (_event: TestEvent, context: Context): TestOutput => ({
+const testFunction = async (
+  _event: TestEvent,
+  context: Context
+): TestOutput => ({
   requestId: context.awsRequestId,
 });
 
 export const handler = middy(testFunction)
   // The event should be logged because POWERTOOLS_LOGGER_LOG_EVENT is set to true
-  .use(injectLambdaContext(logger)); 
+  .use(injectLambdaContext(logger));

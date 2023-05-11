@@ -1,5 +1,5 @@
 export type TestEvent = {
-  invocation: number
+  invocation: number;
 };
 
-export type TestOutput = Promise<{requestId: string}>;
+export type TestOutput = Promise<{ requestId: string }>;

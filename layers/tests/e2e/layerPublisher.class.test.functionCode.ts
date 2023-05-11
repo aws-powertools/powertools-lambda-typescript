@@ -4,20 +4,22 @@ import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
 const logger = new Logger({
-  logLevel: 'DEBUG'
+  logLevel: 'DEBUG',
 });
 const metrics = new Metrics();
 const tracer = new Tracer();
 
 export const handler = (): void => {
-
   // Check that the packages version matches the expected one
   try {
     const packageJSON = JSON.parse(
-      readFileSync('/opt/nodejs/node_modules/@aws-lambda-powertools/logger/package.json', {
-        encoding: 'utf8',
-        flag: 'r',
-      })
+      readFileSync(
+        '/opt/nodejs/node_modules/@aws-lambda-powertools/logger/package.json',
+        {
+          encoding: 'utf8',
+          flag: 'r',
+        }
+      )
     );
 
     if (packageJSON.version != process.env.POWERTOOLS_PACKAGE_VERSION) {
@@ -42,5 +44,4 @@ export const handler = (): void => {
   tracer.annotateColdStart();
   handlerSegment.close();
   tracer.setSegment(segment);
-
 };

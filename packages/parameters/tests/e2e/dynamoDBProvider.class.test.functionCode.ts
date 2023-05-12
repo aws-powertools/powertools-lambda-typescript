@@ -14,7 +14,8 @@ const logger = new TinyLogger();
 const tableGet = process.env.TABLE_GET ?? 'my-table';
 const tableGetMultiple = process.env.TABLE_GET_MULTIPLE ?? 'my-table';
 const tableGetCustomkeys = process.env.TABLE_GET_CUSTOM_KEYS ?? 'my-table';
-const tableGetMultipleCustomkeys = process.env.TABLE_GET_MULTIPLE_CUSTOM_KEYS ?? 'my-table';
+const tableGetMultipleCustomkeys =
+  process.env.TABLE_GET_MULTIPLE_CUSTOM_KEYS ?? 'my-table';
 const keyAttr = process.env.KEY_ATTR ?? 'id';
 const sortAttr = process.env.SORT_ATTR ?? 'sk';
 const valueAttr = process.env.VALUE_ATTR ?? 'value';
@@ -54,18 +55,18 @@ const _call_get = async (
   paramName: string,
   testName: string,
   provider: DynamoDBProvider,
-  options?: DynamoDBGetOptionsInterface,
+  options?: DynamoDBGetOptionsInterface
 ): Promise<void> => {
   try {
     const parameterValue = await provider.get(paramName, options);
     logger.log({
       test: testName,
-      value: parameterValue
+      value: parameterValue,
     });
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message
+      error: err.message,
     });
   }
 };
@@ -75,52 +76,61 @@ const _call_get_multiple = async (
   paramPath: string,
   testName: string,
   provider: DynamoDBProvider,
-  options?: DynamoDBGetMultipleOptionsInterface,
+  options?: DynamoDBGetMultipleOptionsInterface
 ): Promise<void> => {
   try {
-    const parameterValues = await provider.getMultiple(
-      paramPath,
-      options
-    );
+    const parameterValues = await provider.getMultiple(paramPath, options);
     logger.log({
       test: testName,
-      value: parameterValues
+      value: parameterValues,
     });
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message
+      error: err.message,
     });
   }
 };
 
-export const handler = async (_event: unknown, _context: Context): Promise<void> => {
+export const handler = async (
+  _event: unknown,
+  _context: Context
+): Promise<void> => {
   // Test 1 - get a single parameter with default options (keyAttr: 'id', valueAttr: 'value')
   await _call_get('my-param', 'get', providerGet);
-  
+
   // Test 2 - get multiple parameters with default options (keyAttr: 'id', sortAttr: 'sk', valueAttr: 'value')
   await _call_get_multiple('my-params', 'get-multiple', providerGetMultiple);
-  
+
   // Test 3 - get a single parameter with custom options (keyAttr: 'key', valueAttr: 'val')
   await _call_get('my-param', 'get-custom', providerGetCustomKeys);
 
   // Test 4 - get multiple parameters with custom options (keyAttr: 'key', sortAttr: 'sort', valueAttr: 'val')
-  await _call_get_multiple('my-params', 'get-multiple-custom', providerGetMultipleCustomKeys);
+  await _call_get_multiple(
+    'my-params',
+    'get-multiple-custom',
+    providerGetMultipleCustomKeys
+  );
 
   // Test 5 - get a single parameter with json transform
   await _call_get('my-param-json', 'get-json-transform', providerGet, {
-    transform: 'json'
+    transform: 'json',
   });
-  
+
   // Test 6 - get a single parameter with binary transform
   await _call_get('my-param-binary', 'get-binary-transform', providerGet, {
-    transform: 'binary'
+    transform: 'binary',
   });
 
   // Test 7 - get multiple parameters with auto transform
-  await _call_get_multiple('my-encoded-params', 'get-multiple-auto-transform', providerGetMultiple, {
-    transform: 'auto'
-  });
+  await _call_get_multiple(
+    'my-encoded-params',
+    'get-multiple-auto-transform',
+    providerGetMultiple,
+    {
+      transform: 'auto',
+    }
+  );
 
   // Test 8
   // get parameter twice with middleware, which counts the number of requests, we check later if we only called DynamoDB once
@@ -131,12 +141,12 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     await providerWithMiddleware.get('my-param');
     logger.log({
       test: 'get-cached',
-      value: middleware.counter // should be 1
+      value: middleware.counter, // should be 1
     });
   } catch (err) {
     logger.log({
       test: 'get-cached',
-      error: err.message
+      error: err.message,
     });
   }
 
@@ -149,13 +159,12 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     await providerWithMiddleware.get('my-param', { forceFetch: true });
     logger.log({
       test: 'get-forced',
-      value: middleware.counter // should be 2
+      value: middleware.counter, // should be 2
     });
   } catch (err) {
     logger.log({
       test: 'get-forced',
-      error: err.message
+      error: err.message,
     });
   }
-
 };

@@ -2,12 +2,12 @@ import type {
   SSMClient,
   SSMClientConfig,
   GetParameterCommandInput,
-  GetParametersByPathCommandInput
+  GetParametersByPathCommandInput,
 } from '@aws-sdk/client-ssm';
 import type {
   GetOptionsInterface,
   GetMultipleOptionsInterface,
-  TransformOptions
+  TransformOptions,
 } from './BaseProvider';
 
 /**
@@ -18,8 +18,8 @@ import type {
  * @property {never} [awsSdkV3Client] - This property should never be passed.
  */
 interface SSMProviderOptionsWithClientConfig {
-  clientConfig?: SSMClientConfig
-  awsSdkV3Client?: never
+  clientConfig?: SSMClientConfig;
+  awsSdkV3Client?: never;
 }
 
 /**
@@ -30,8 +30,8 @@ interface SSMProviderOptionsWithClientConfig {
  * @property {never} [clientConfig] - This property should never be passed.
  */
 interface SSMProviderOptionsWithClientInstance {
-  awsSdkV3Client?: SSMClient
-  clientConfig?: never
+  awsSdkV3Client?: SSMClient;
+  clientConfig?: never;
 }
 
 /**
@@ -41,7 +41,9 @@ interface SSMProviderOptionsWithClientInstance {
  * @property {SSMClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
  * @property {SSMClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation. Mutually exclusive with clientConfig.
  */
-type SSMProviderOptions = SSMProviderOptionsWithClientConfig | SSMProviderOptionsWithClientInstance;
+type SSMProviderOptions =
+  | SSMProviderOptionsWithClientConfig
+  | SSMProviderOptionsWithClientInstance;
 
 /**
  * Options for the SSMProvider getMultiple method.
@@ -58,43 +60,50 @@ interface SSMGetOptions extends GetOptionsInterface {
   /**
    * If true, the parameter will be decrypted. Defaults to `false`.
    */
-  decrypt?: boolean
+  decrypt?: boolean;
   /**
    * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetParameterCommandInput`.
    */
-  sdkOptions?: Partial<GetParameterCommandInput>
+  sdkOptions?: Partial<GetParameterCommandInput>;
 
-  transform?: Exclude<TransformOptions, 'auto'>
+  transform?: Exclude<TransformOptions, 'auto'>;
 }
 
 interface SSMGetOptionsTransformJson extends SSMGetOptions {
-  transform: 'json'
+  transform: 'json';
 }
 
 interface SSMGetOptionsTransformBinary extends SSMGetOptions {
-  transform: 'binary'
+  transform: 'binary';
 }
 
 interface SSMGetOptionsTransformNone extends SSMGetOptions {
-  transform?: never
+  transform?: never;
 }
 
 type SSMGetOptionsUnion =
-  SSMGetOptionsTransformJson |
-  SSMGetOptionsTransformBinary |
-  SSMGetOptionsTransformNone |
-  undefined;
+  | SSMGetOptionsTransformJson
+  | SSMGetOptionsTransformBinary
+  | SSMGetOptionsTransformNone
+  | undefined;
 
 /**
  * Generic output type for the SSMProvider get method.
  */
-type SSMGetOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
-  undefined extends ExplicitUserProvidedType ? 
-    undefined extends InferredFromOptionsType ? string :
-      InferredFromOptionsType extends SSMGetOptionsTransformNone | SSMGetOptionsTransformBinary ? string :
-        InferredFromOptionsType extends SSMGetOptionsTransformJson ? Record<string, unknown> :
-          never
-    : ExplicitUserProvidedType;
+type SSMGetOutput<
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType = undefined
+> = undefined extends ExplicitUserProvidedType
+  ? undefined extends InferredFromOptionsType
+    ? string
+    : InferredFromOptionsType extends
+        | SSMGetOptionsTransformNone
+        | SSMGetOptionsTransformBinary
+    ? string
+    : InferredFromOptionsType extends SSMGetOptionsTransformJson
+    ? Record<string, unknown>
+    : never
+  : ExplicitUserProvidedType;
 
 /**
  * Options for the SSMProvider getMultiple method.
@@ -113,55 +122,63 @@ interface SSMGetMultipleOptions extends GetMultipleOptionsInterface {
   /**
    * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetParametersByPathCommandInput`.
    */
-  sdkOptions?: Partial<GetParametersByPathCommandInput>
+  sdkOptions?: Partial<GetParametersByPathCommandInput>;
   /**
    * If true, the parameters will be decrypted. Defaults to `false`.
    */
-  decrypt?: boolean
+  decrypt?: boolean;
   /**
    * If true, the parameters will be fetched recursively. Defaults to `false`.
    */
-  recursive?: boolean
+  recursive?: boolean;
   /**
    * If true, the method will throw an error if the transform fails.
    */
-  throwOnTransformError?: boolean
+  throwOnTransformError?: boolean;
 }
 
 interface SSMGetMultipleOptionsTransformJson extends SSMGetMultipleOptions {
-  transform: 'json'
+  transform: 'json';
 }
 
 interface SSMGetMultipleOptionsTransformBinary extends SSMGetMultipleOptions {
-  transform: 'binary'
+  transform: 'binary';
 }
 
 interface SSMGetMultipleOptionsTransformAuto extends SSMGetMultipleOptions {
-  transform: 'auto'
+  transform: 'auto';
 }
 
 interface SSMGetMultipleOptionsTransformNone extends SSMGetMultipleOptions {
-  transform?: never
+  transform?: never;
 }
 
-type SSMGetMultipleOptionsUnion = 
-  SSMGetMultipleOptionsTransformJson |
-  SSMGetMultipleOptionsTransformBinary |
-  SSMGetMultipleOptionsTransformAuto |
-  SSMGetMultipleOptionsTransformNone |
-  undefined;
+type SSMGetMultipleOptionsUnion =
+  | SSMGetMultipleOptionsTransformJson
+  | SSMGetMultipleOptionsTransformBinary
+  | SSMGetMultipleOptionsTransformAuto
+  | SSMGetMultipleOptionsTransformNone
+  | undefined;
 
 /**
  * Generic output type for the SSMProvider getMultiple method.
  */
-type SSMGetMultipleOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
-  undefined extends ExplicitUserProvidedType ? 
-    undefined extends InferredFromOptionsType ? Record<string, string> :
-      InferredFromOptionsType extends SSMGetMultipleOptionsTransformNone | SSMGetMultipleOptionsTransformBinary ? Record<string, string> :
-        InferredFromOptionsType extends SSMGetMultipleOptionsTransformAuto ? Record<string, unknown> :
-          InferredFromOptionsType extends SSMGetMultipleOptionsTransformJson ? Record<string, Record<string, unknown>> :
-            never
-    : Record<string, ExplicitUserProvidedType>;
+type SSMGetMultipleOutput<
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType = undefined
+> = undefined extends ExplicitUserProvidedType
+  ? undefined extends InferredFromOptionsType
+    ? Record<string, string>
+    : InferredFromOptionsType extends
+        | SSMGetMultipleOptionsTransformNone
+        | SSMGetMultipleOptionsTransformBinary
+    ? Record<string, string>
+    : InferredFromOptionsType extends SSMGetMultipleOptionsTransformAuto
+    ? Record<string, unknown>
+    : InferredFromOptionsType extends SSMGetMultipleOptionsTransformJson
+    ? Record<string, Record<string, unknown>>
+    : never
+  : Record<string, ExplicitUserProvidedType>;
 
 /**
  * Options for the SSMProvider getParametersByName method.
@@ -173,43 +190,43 @@ type SSMGetMultipleOutput<ExplicitUserProvidedType = undefined, InferredFromOpti
  * @property {boolean} throwOnError - If true, the method will throw an error if one of the parameters cannot be fetched. Otherwise it will aggregate the errors under an _errors key in the response.
  */
 interface SSMGetParametersByNameOptions {
-  maxAge?: number
-  throwOnError?: boolean
-  decrypt?: boolean
-  transform?: Exclude<TransformOptions, 'auto'>
+  maxAge?: number;
+  throwOnError?: boolean;
+  decrypt?: boolean;
+  transform?: Exclude<TransformOptions, 'auto'>;
 }
 
 /**
  * Output type for the SSMProvider splitBatchAndDecryptParameters method.
  */
 type SSMSplitBatchAndDecryptParametersOutputType = {
-  parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptions>
-  parametersToDecrypt: Record<string, SSMGetParametersByNameOptions>
+  parametersToFetchInBatch: Record<string, SSMGetParametersByNameOptions>;
+  parametersToDecrypt: Record<string, SSMGetParametersByNameOptions>;
 };
 
 /**
  * Output type for the SSMProvider getParametersByName method.
  */
 interface SSMGetParametersByNameOutputInterface {
-  response: Record<string, unknown>
-  errors: string[]
+  response: Record<string, unknown>;
+  errors: string[];
 }
 
 /**
  * Output type for the SSMProvider getParametersByNameFromCache method.
  */
 type SSMGetParametersByNameFromCacheOutputType = {
-  cached: Record<string, string | Record<string, unknown>>
-  toFetch: Record<string, SSMGetParametersByNameOptions>
+  cached: Record<string, string | Record<string, unknown>>;
+  toFetch: Record<string, SSMGetParametersByNameOptions>;
 };
 
 /**
  * Generic output type for the SSMProvider getParametersByName method.
  */
-type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> = 
-  undefined extends InferredFromOptionsType ?
-    Record<string, unknown> & { _errors?: string[] } :
-    Record<string, InferredFromOptionsType> & { _errors?: string[] };
+type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> =
+  undefined extends InferredFromOptionsType
+    ? Record<string, unknown> & { _errors?: string[] }
+    : Record<string, InferredFromOptionsType> & { _errors?: string[] };
 
 export type {
   SSMProviderOptions,

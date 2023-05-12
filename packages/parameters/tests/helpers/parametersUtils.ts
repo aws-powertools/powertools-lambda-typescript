@@ -12,13 +12,13 @@ import {
 } from 'aws-cdk-lib/aws-appconfig';
 import {
   AwsCustomResource,
-  AwsCustomResourcePolicy
+  AwsCustomResourcePolicy,
 } from 'aws-cdk-lib/custom-resources';
 import { marshall } from '@aws-sdk/util-dynamodb';
 
 export type CreateDynamoDBTableOptions = {
-  stack: Stack
-  id: string
+  stack: Stack;
+  id: string;
 } & TableProps;
 
 const createDynamoDBTable = (options: CreateDynamoDBTableOptions): Table => {
@@ -33,50 +33,48 @@ const createDynamoDBTable = (options: CreateDynamoDBTableOptions): Table => {
 };
 
 export type AppConfigResourcesOptions = {
-  stack: Stack
-  applicationName: string
-  environmentName: string
-  deploymentStrategyName: string
+  stack: Stack;
+  applicationName: string;
+  environmentName: string;
+  deploymentStrategyName: string;
 };
 
 type AppConfigResourcesOutput = {
-  application: CfnApplication
-  environment: CfnEnvironment
-  deploymentStrategy: CfnDeploymentStrategy
+  application: CfnApplication;
+  environment: CfnEnvironment;
+  deploymentStrategy: CfnDeploymentStrategy;
 };
 
 /**
  * Utility function to create the base resources for an AppConfig application.
  */
-const createBaseAppConfigResources = (options: AppConfigResourcesOptions): AppConfigResourcesOutput => {
-  const {
-    stack,
-    applicationName,
-    environmentName,
-    deploymentStrategyName,
-  } = options;
+const createBaseAppConfigResources = (
+  options: AppConfigResourcesOptions
+): AppConfigResourcesOutput => {
+  const { stack, applicationName, environmentName, deploymentStrategyName } =
+    options;
 
   // create a new app config application.
-  const application = new CfnApplication(
-    stack,
-    'application',
-    {
-      name: applicationName,
-    }
-  );
+  const application = new CfnApplication(stack, 'application', {
+    name: applicationName,
+  });
 
   const environment = new CfnEnvironment(stack, 'environment', {
     name: environmentName,
     applicationId: application.ref,
   });
 
-  const deploymentStrategy = new CfnDeploymentStrategy(stack, 'deploymentStrategy', {
-    name: deploymentStrategyName,
-    deploymentDurationInMinutes: 0,
-    growthFactor: 100,
-    replicateTo: 'NONE',
-    finalBakeTimeInMinutes: 0,
-  });
+  const deploymentStrategy = new CfnDeploymentStrategy(
+    stack,
+    'deploymentStrategy',
+    {
+      name: deploymentStrategyName,
+      deploymentDurationInMinutes: 0,
+      growthFactor: 100,
+      replicateTo: 'NONE',
+      finalBakeTimeInMinutes: 0,
+    }
+  );
 
   return {
     application,
@@ -86,22 +84,24 @@ const createBaseAppConfigResources = (options: AppConfigResourcesOptions): AppCo
 };
 
 export type CreateAppConfigConfigurationProfileOptions = {
-  stack: Stack
-  name: string
-  application: CfnApplication
-  environment: CfnEnvironment
-  deploymentStrategy: CfnDeploymentStrategy
-  type: 'AWS.Freeform' | 'AWS.AppConfig.FeatureFlags'
+  stack: Stack;
+  name: string;
+  application: CfnApplication;
+  environment: CfnEnvironment;
+  deploymentStrategy: CfnDeploymentStrategy;
+  type: 'AWS.Freeform' | 'AWS.AppConfig.FeatureFlags';
   content: {
-    contentType: 'application/json' | 'application/x-yaml' | 'text/plain'
-    content: string
-  }
+    contentType: 'application/json' | 'application/x-yaml' | 'text/plain';
+    content: string;
+  };
 };
 
 /**
  * Utility function to create an AppConfig configuration profile and deployment.
  */
-const createAppConfigConfigurationProfile = (options: CreateAppConfigConfigurationProfileOptions): CfnDeployment => {
+const createAppConfigConfigurationProfile = (
+  options: CreateAppConfigConfigurationProfileOptions
+): CfnDeployment => {
   const {
     stack,
     name,
@@ -111,19 +111,27 @@ const createAppConfigConfigurationProfile = (options: CreateAppConfigConfigurati
     type,
     content,
   } = options;
-  
-  const configProfile = new CfnConfigurationProfile(stack, `${name}-configProfile`, {
-    name,
-    applicationId: application.ref,
-    locationUri: 'hosted',
-    type,
-  });
 
-  const configVersion = new CfnHostedConfigurationVersion(stack, `${name}-configVersion`, {
-    applicationId: application.ref,
-    configurationProfileId: configProfile.ref,
-    ...content
-  });
+  const configProfile = new CfnConfigurationProfile(
+    stack,
+    `${name}-configProfile`,
+    {
+      name,
+      applicationId: application.ref,
+      locationUri: 'hosted',
+      type,
+    }
+  );
+
+  const configVersion = new CfnHostedConfigurationVersion(
+    stack,
+    `${name}-configVersion`,
+    {
+      applicationId: application.ref,
+      configurationProfileId: configProfile.ref,
+      ...content,
+    }
+  );
 
   return new CfnDeployment(stack, `${name}-deployment`, {
     applicationId: application.ref,
@@ -135,13 +143,15 @@ const createAppConfigConfigurationProfile = (options: CreateAppConfigConfigurati
 };
 
 export type CreateSSMSecureStringOptions = {
-  stack: Stack
-  id: string
-  name: string
-  value: string
+  stack: Stack;
+  id: string;
+  name: string;
+  value: string;
 };
 
-const createSSMSecureString = (options: CreateSSMSecureStringOptions): IStringParameter => {
+const createSSMSecureString = (
+  options: CreateSSMSecureStringOptions
+): IStringParameter => {
   const { stack, id, name, value } = options;
 
   const paramCreator = new AwsCustomResource(stack, `create-${id}`, {
@@ -176,13 +186,15 @@ const createSSMSecureString = (options: CreateSSMSecureStringOptions): IStringPa
 };
 
 export type PutDynamoDBItemOptions = {
-  stack: Stack
-  id: string
-  table: Table
-  item: Record<string, unknown>
+  stack: Stack;
+  id: string;
+  table: Table;
+  item: Record<string, unknown>;
 };
 
-const putDynamoDBItem = async (options: PutDynamoDBItemOptions): Promise<void> => {
+const putDynamoDBItem = async (
+  options: PutDynamoDBItemOptions
+): Promise<void> => {
   const { stack, id, table, item } = options;
 
   new AwsCustomResource(stack, id, {

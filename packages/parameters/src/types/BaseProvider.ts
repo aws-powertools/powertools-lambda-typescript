@@ -15,19 +15,19 @@ interface GetOptionsInterface {
   /**
    * Maximum age of the value in the cache, in seconds.
    */
-  maxAge?: number
+  maxAge?: number;
   /**
    * Force fetch the value from the parameter store, ignoring the cache.
    */
-  forceFetch?: boolean
+  forceFetch?: boolean;
   /**
    * Options to pass to the underlying SDK.
    */
-  sdkOptions?: unknown
+  sdkOptions?: unknown;
   /**
    * Transform to be applied, can be `json` or `binary`.
    */
-  transform?: Omit<TransformOptions, 'auto'>
+  transform?: Omit<TransformOptions, 'auto'>;
 }
 
 /**
@@ -43,11 +43,11 @@ interface GetMultipleOptionsInterface extends GetOptionsInterface {
   /**
    * Transform to be applied, can be `json`, `binary`, or `auto`.
    */
-  transform?: TransformOptions
+  transform?: TransformOptions;
   /**
    * Whether to throw an error if a value cannot be transformed.
    */
-  throwOnTransformError?: boolean
+  throwOnTransformError?: boolean;
 }
 
 /**
@@ -57,19 +57,25 @@ interface ExpirableValueInterface {
   /**
    * Value of the parameter.
    */
-  value: string | Uint8Array | Record<string, unknown>
+  value: string | Uint8Array | Record<string, unknown>;
   /**
    * Expiration timestamp of the value.
    */
-  ttl: number
+  ttl: number;
 }
 
 /**
  * Interface for a parameter store provider.
  */
 interface BaseProviderInterface {
-  get(name: string, options?: GetOptionsInterface): Promise<undefined | string | Uint8Array | Record<string, unknown>>
-  getMultiple(path: string, options?: GetMultipleOptionsInterface): Promise<void | Record<string, unknown>>
+  get(
+    name: string,
+    options?: GetOptionsInterface
+  ): Promise<undefined | string | Uint8Array | Record<string, unknown>>;
+  getMultiple(
+    path: string,
+    options?: GetMultipleOptionsInterface
+  ): Promise<void | Record<string, unknown>>;
 }
 
 export type {

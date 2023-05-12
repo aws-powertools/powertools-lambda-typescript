@@ -181,7 +181,7 @@ describe('Class: AppConfigProvider', () => {
       }).toThrow();
     });
 
-    test('when configuration response doesn\'t have the next token it should force a new session by removing the stored token', async () => {
+    test('when configuration response does not have the next token it should force a new session by removing the stored token', async () => {
       // Prepare
       class AppConfigProviderMock extends AppConfigProvider {
         public _addToStore(key: string, value: string): void {
@@ -214,7 +214,7 @@ describe('Class: AppConfigProvider', () => {
       expect(provider._storeHas(name)).toBe(false);
     });
 
-    test('when session response doesn\'t have an initial token, it throws an error', async () => {
+    test('when session response does not have an initial token, it throws an error', async () => {
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -232,7 +232,6 @@ describe('Class: AppConfigProvider', () => {
     });
 
     test('when session returns an empty configuration on the second call, it returns the last value', async () => {
-
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -302,7 +301,7 @@ describe('Class: ExpirableValue', () => {
       // Prepare
       const seconds = 10;
       const nowTimestamp = Date.now();
-      const futureTimestampSeconds = nowTimestamp/1000+(seconds);
+      const futureTimestampSeconds = nowTimestamp / 1000 + seconds;
 
       // Act
       const expirableValue = new ExpirableValue('foo', seconds);
@@ -322,7 +321,7 @@ describe('Class: ExpirableValue', () => {
 
       // Assess
       expect(expirableValue.isExpired()).toBeFalsy();
-    }); 
+    });
 
     test('when called, it returns false when maxAge is in the past', () => {
       // Prepare
@@ -333,6 +332,6 @@ describe('Class: ExpirableValue', () => {
 
       // Assess
       expect(expirableValue.isExpired()).toBeTruthy();
-    }); 
+    });
   });
 });

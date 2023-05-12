@@ -4,13 +4,19 @@ import type { GetMultipleOptionsInterface } from './types';
 
 /**
  * Options for the `getMultiple` method.
- * 
+ *
  * Extends the `GetOptions` class and adds the `throwOnTransformError` option.
  */
-class GetMultipleOptions extends GetOptions implements GetMultipleOptionsInterface {
-  public throwOnTransformError: boolean = false;
+class GetMultipleOptions
+  extends GetOptions
+  implements GetMultipleOptionsInterface
+{
+  public throwOnTransformError = false;
 
-  public constructor(options: GetMultipleOptionsInterface = {}, envVarsService: EnvironmentVariablesService) {
+  public constructor(
+    options: GetMultipleOptionsInterface = {},
+    envVarsService: EnvironmentVariablesService
+  ) {
     super(options, envVarsService);
 
     if (options.throwOnTransformError !== undefined) {
@@ -19,6 +25,4 @@ class GetMultipleOptions extends GetOptions implements GetMultipleOptionsInterfa
   }
 }
 
-export {
-  GetMultipleOptions
-};
+export { GetMultipleOptions };

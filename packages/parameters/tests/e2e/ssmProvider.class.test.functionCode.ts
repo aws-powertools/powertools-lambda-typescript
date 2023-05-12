@@ -1,11 +1,9 @@
 import { Context } from 'aws-lambda';
-import {
-  SSMProvider,
-} from '../../src/ssm';
+import { SSMProvider } from '../../src/ssm';
 import {
   SSMGetOptionsInterface,
   SSMGetMultipleOptionsInterface,
-  SSMGetParametersByNameOptionsInterface
+  SSMGetParametersByNameOptionsInterface,
 } from '../../src/types';
 import { TinyLogger } from '../helpers/tinyLogger';
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
@@ -19,7 +17,7 @@ const defaultProvider = new SSMProvider();
 const customClient = new SSMClient({});
 customClient.middlewareStack.use(middleware);
 const providerWithMiddleware = new SSMProvider({
-  awsSdkV3Client: customClient
+  awsSdkV3Client: customClient,
 });
 
 const paramA = process.env.PARAM_A ?? 'my-param';
@@ -48,12 +46,12 @@ const _call_get = async (
     const parameterValue = await currentProvider.get(paramName, options);
     logger.log({
       test: testName,
-      value: parameterValue
+      value: parameterValue,
     });
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message
+      error: err.message,
     });
   }
 };
@@ -74,12 +72,12 @@ const _call_get_multiple = async (
     );
     logger.log({
       test: testName,
-      value: parameterValues
+      value: parameterValues,
     });
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message
+      error: err.message,
     });
   }
 };
@@ -94,26 +92,32 @@ const _call_get_parameters_by_name = async (
   try {
     const currentProvider = resolveProvider(provider);
 
-    const parameterValues = await currentProvider.getParametersByName(params, options);
+    const parameterValues = await currentProvider.getParametersByName(
+      params,
+      options
+    );
     logger.log({
       test: testName,
-      value: parameterValues
+      value: parameterValues,
     });
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message
+      error: err.message,
     });
   }
 };
 
-export const handler = async (_event: unknown, _context: Context): Promise<void> => {
+export const handler = async (
+  _event: unknown,
+  _context: Context
+): Promise<void> => {
   // Test 1 - get a single parameter by name with default options
   await _call_get(paramA, 'get');
-  
+
   // Test 2 - get a single parameter by name with decrypt
   await _call_get(paramEncryptedA, 'get-decrypt', { decrypt: true });
-  
+
   // Test 3 - get multiple parameters by path with default options
   // Get path (/param/get)
   const parameterPath = paramA.substring(0, paramA.lastIndexOf('/'));
@@ -125,25 +129,38 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     0,
     paramA.substring(1, paramA.length).indexOf('/') + 1
   );
-  await _call_get_multiple(parameterRoot, 'get-multiple-recursive', { recursive: true });
-  
+  await _call_get_multiple(parameterRoot, 'get-multiple-recursive', {
+    recursive: true,
+  });
+
   // Test 5 - get multiple parameters by path with decrypt
   // Get parameters path (i.e. from /param/get/a & /param/get/b to /param/get)
-  const parameterPathDecrypt = paramEncryptedA.substring(0, paramEncryptedA.lastIndexOf('/'));
-  await _call_get_multiple(parameterPathDecrypt, 'get-multiple-decrypt', { decrypt: true });
+  const parameterPathDecrypt = paramEncryptedA.substring(
+    0,
+    paramEncryptedA.lastIndexOf('/')
+  );
+  await _call_get_multiple(parameterPathDecrypt, 'get-multiple-decrypt', {
+    decrypt: true,
+  });
 
   // Test 6 - get multiple parameters by name with default options
-  await _call_get_parameters_by_name({
-    [paramA]: {},
-    [paramB]: {},
-  }, 'get-multiple-by-name');
-  
+  await _call_get_parameters_by_name(
+    {
+      [paramA]: {},
+      [paramB]: {},
+    },
+    'get-multiple-by-name'
+  );
+
   // Test 7 - get multiple parameters by name, some of them encrypted and some not
-  await _call_get_parameters_by_name({
-    [paramA]: {},
-    [paramEncryptedA]: { decrypt: true },
-    [paramEncryptedB]: { decrypt: true },
-  }, 'get-multiple-by-name-mixed-decrypt');
+  await _call_get_parameters_by_name(
+    {
+      [paramA]: {},
+      [paramEncryptedA]: { decrypt: true },
+      [paramEncryptedB]: { decrypt: true },
+    },
+    'get-multiple-by-name-mixed-decrypt'
+  );
 
   // Test 8
   // get parameter twice with middleware, which counts the number of requests, we check later if we only called SSM API once
@@ -154,12 +171,12 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     await providerWithMiddleware.get(paramA);
     logger.log({
       test: 'get-cached',
-      value: middleware.counter // should be 1
+      value: middleware.counter, // should be 1
     });
   } catch (err) {
     logger.log({
       test: 'get-cached',
-      error: err.message
+      error: err.message,
     });
   }
 
@@ -172,12 +189,12 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     await providerWithMiddleware.get(paramA, { forceFetch: true });
     logger.log({
       test: 'get-forced',
-      value: middleware.counter // should be 2
+      value: middleware.counter, // should be 2
     });
   } catch (err) {
     logger.log({
       test: 'get-forced',
-      error: err.message
+      error: err.message,
     });
   }
 };

@@ -1,7 +1,5 @@
 import { ConfigServiceInterface } from './ConfigServiceInterface';
-import {
-  EnvironmentVariablesService as CommonEnvironmentVariablesService
-} from '@aws-lambda-powertools/commons';
+import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
 /**
  * Class EnvironmentVariablesService
@@ -17,8 +15,10 @@ import {
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
  */
-class EnvironmentVariablesService extends CommonEnvironmentVariablesService implements ConfigServiceInterface {
-  
+class EnvironmentVariablesService
+  extends CommonEnvironmentVariablesService
+  implements ConfigServiceInterface
+{
   // Reserved environment variables
   private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
 
@@ -30,9 +30,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
   public getFunctionName(): string {
     return this.get(this.functionNameVariable);
   }
-
 }
 
-export {
-  EnvironmentVariablesService
-};
+export { EnvironmentVariablesService };

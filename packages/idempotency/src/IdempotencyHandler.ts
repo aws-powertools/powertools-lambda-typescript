@@ -22,7 +22,7 @@ export class IdempotencyHandler<U> {
       functionPayloadToBeHashed,
       idempotencyConfig,
       fullFunctionPayload,
-      persistenceStore
+      persistenceStore,
     } = options;
     this.functionToMakeIdempotent = functionToMakeIdempotent;
     this.functionPayloadToBeHashed = functionPayloadToBeHashed;
@@ -32,11 +32,13 @@ export class IdempotencyHandler<U> {
     this.persistenceStore = persistenceStore;
 
     this.persistenceStore.configure({
-      config: this.idempotencyConfig
+      config: this.idempotencyConfig,
     });
   }
 
-  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U {
+  public determineResultFromIdempotencyRecord(
+    idempotencyRecord: IdempotencyRecord
+  ): Promise<U> | U {
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError(
         'Item has expired during processing and may not longer be valid.'
@@ -47,7 +49,7 @@ export class IdempotencyHandler<U> {
       if (
         idempotencyRecord.inProgressExpiryTimestamp &&
         idempotencyRecord.inProgressExpiryTimestamp <
-        new Date().getUTCMilliseconds()
+          new Date().getUTCMilliseconds()
       ) {
         throw new IdempotencyInconsistentStateError(
           'Item is in progress but the in progress expiry timestamp has expired.'
@@ -66,19 +68,27 @@ export class IdempotencyHandler<U> {
     let result: U;
     try {
       result = await this.functionToMakeIdempotent(this.fullFunctionPayload);
-
     } catch (e) {
       try {
-        await this.persistenceStore.deleteRecord(this.functionPayloadToBeHashed);
+        await this.persistenceStore.deleteRecord(
+          this.functionPayloadToBeHashed
+        );
       } catch (e) {
-        throw new IdempotencyPersistenceLayerError('Failed to delete record from idempotency store');
+        throw new IdempotencyPersistenceLayerError(
+          'Failed to delete record from idempotency store'
+        );
       }
       throw e;
     }
     try {
-      await this.persistenceStore.saveSuccess(this.functionPayloadToBeHashed, result as Record<string, unknown>);
+      await this.persistenceStore.saveSuccess(
+        this.functionPayloadToBeHashed,
+        result as Record<string, unknown>
+      );
     } catch (e) {
-      throw new IdempotencyPersistenceLayerError('Failed to update success record to idempotency store');
+      throw new IdempotencyPersistenceLayerError(
+        'Failed to update success record to idempotency store'
+      );
     }
 
     return result;
@@ -91,13 +101,15 @@ export class IdempotencyHandler<U> {
    * In most cases we can retry successfully on this exception.
    */
   public async handle(): Promise<U> {
-
     const MAX_RETRIES = 2;
     for (let i = 1; i <= MAX_RETRIES; i++) {
       try {
         return await this.processIdempotency();
       } catch (e) {
-        if (!(e instanceof IdempotencyAlreadyInProgressError) || i === MAX_RETRIES) {
+        if (
+          !(e instanceof IdempotencyAlreadyInProgressError) ||
+          i === MAX_RETRIES
+        ) {
           throw e;
         }
       }
@@ -109,14 +121,12 @@ export class IdempotencyHandler<U> {
   public async processIdempotency(): Promise<U> {
     try {
       await this.persistenceStore.saveInProgress(
-        this.functionPayloadToBeHashed,
+        this.functionPayloadToBeHashed
       );
     } catch (e) {
       if (e instanceof IdempotencyItemAlreadyExistsError) {
         const idempotencyRecord: IdempotencyRecord =
-          await this.persistenceStore.getRecord(
-            this.functionPayloadToBeHashed
-          );
+          await this.persistenceStore.getRecord(this.functionPayloadToBeHashed);
 
         return this.determineResultFromIdempotencyRecord(idempotencyRecord);
       } else {
@@ -126,5 +136,4 @@ export class IdempotencyHandler<U> {
 
     return this.getFunctionResult();
   }
-
 }

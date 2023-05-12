@@ -6,17 +6,24 @@
 import { IdempotencyFunctionOptions } from '../../src/types/IdempotencyOptions';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
-import type { AnyIdempotentFunction, IdempotencyRecordOptions } from '../../src/types';
+import type {
+  AnyIdempotentFunction,
+  IdempotencyRecordOptions,
+} from '../../src/types';
 import { IdempotencyRecordStatus } from '../../src/types';
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
-  IdempotencyPersistenceLayerError
+  IdempotencyPersistenceLayerError,
 } from '../../src/Exceptions';
 
-const mockSaveInProgress = jest.spyOn(BasePersistenceLayer.prototype, 'saveInProgress').mockImplementation();
-const mockGetRecord = jest.spyOn(BasePersistenceLayer.prototype, 'getRecord').mockImplementation();
+const mockSaveInProgress = jest
+  .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')
+  .mockImplementation();
+const mockGetRecord = jest
+  .spyOn(BasePersistenceLayer.prototype, 'getRecord')
+  .mockImplementation();
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -29,10 +36,13 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
   beforeEach(() => jest.clearAllMocks());
   describe('Given options for idempotency', (options: IdempotencyFunctionOptions = {
     persistenceStore: new PersistenceLayerTestClass(),
-    dataKeywordArgument: 'testingKey'
+    dataKeywordArgument: 'testingKey',
   }) => {
     const keyValueToBeSaved = 'thisWillBeSaved';
-    const inputRecord = { testingKey: keyValueToBeSaved, otherKey: 'thisWillNot' };
+    const inputRecord = {
+      testingKey: keyValueToBeSaved,
+      otherKey: 'thisWillNot',
+    };
     describe('When wrapping a function with no previous executions', () => {
       let resultingFunction: AnyIdempotentFunction<string>;
       beforeEach(async () => {
@@ -53,12 +63,16 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       let resultingFunction: AnyIdempotentFunction<string>;
       let resultingError: Error;
       beforeEach(async () => {
-        mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+        mockSaveInProgress.mockRejectedValue(
+          new IdempotencyItemAlreadyExistsError()
+        );
         const idempotencyOptions: IdempotencyRecordOptions = {
           idempotencyKey: 'key',
-          status: IdempotencyRecordStatus.INPROGRESS
+          status: IdempotencyRecordStatus.INPROGRESS,
         };
-        mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));
+        mockGetRecord.mockResolvedValue(
+          new IdempotencyRecord(idempotencyOptions)
+        );
         resultingFunction = makeFunctionIdempotent(functionToWrap, options);
         try {
           await resultingFunction(inputRecord);
@@ -80,7 +94,9 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
 
       test('Then an IdempotencyAlreadyInProgressError is thrown', () => {
-        expect(resultingError).toBeInstanceOf(IdempotencyAlreadyInProgressError);
+        expect(resultingError).toBeInstanceOf(
+          IdempotencyAlreadyInProgressError
+        );
       });
     });
 
@@ -88,12 +104,16 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       let resultingFunction: AnyIdempotentFunction<string>;
       let resultingError: Error;
       beforeEach(async () => {
-        mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+        mockSaveInProgress.mockRejectedValue(
+          new IdempotencyItemAlreadyExistsError()
+        );
         const idempotencyOptions: IdempotencyRecordOptions = {
           idempotencyKey: 'key',
-          status: IdempotencyRecordStatus.EXPIRED
+          status: IdempotencyRecordStatus.EXPIRED,
         };
-        mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));
+        mockGetRecord.mockResolvedValue(
+          new IdempotencyRecord(idempotencyOptions)
+        );
         resultingFunction = makeFunctionIdempotent(functionToWrap, options);
         try {
           await resultingFunction(inputRecord);
@@ -115,19 +135,25 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
 
       test('Then an IdempotencyInconsistentStateError is thrown', () => {
-        expect(resultingError).toBeInstanceOf(IdempotencyInconsistentStateError);
+        expect(resultingError).toBeInstanceOf(
+          IdempotencyInconsistentStateError
+        );
       });
     });
 
     describe('When wrapping a function with previous execution that is COMPLETED', () => {
       let resultingFunction: AnyIdempotentFunction<string>;
       beforeEach(async () => {
-        mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+        mockSaveInProgress.mockRejectedValue(
+          new IdempotencyItemAlreadyExistsError()
+        );
         const idempotencyOptions: IdempotencyRecordOptions = {
           idempotencyKey: 'key',
-          status: IdempotencyRecordStatus.COMPLETED
+          status: IdempotencyRecordStatus.COMPLETED,
         };
-        mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));
+        mockGetRecord.mockResolvedValue(
+          new IdempotencyRecord(idempotencyOptions)
+        );
         resultingFunction = makeFunctionIdempotent(functionToWrap, options);
         await resultingFunction(inputRecord);
       });
@@ -143,7 +169,6 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       test('Then it will not call the function that was wrapped with the whole input record', () => {
         expect(functionToWrap).not.toBeCalledWith(inputRecord);
       });
-
     });
 
     describe('When wrapping a function with issues saving the record', () => {

@@ -6,8 +6,4 @@ type AnyFunctionWithRecord<U> = (record: GenericTempRecord) => Promise<U> | U;
 
 type AnyIdempotentFunction<U> = (record: GenericTempRecord) => Promise<U>;
 
-export {
-  GenericTempRecord,
-  AnyFunctionWithRecord,
-  AnyIdempotentFunction,
-};
+export { GenericTempRecord, AnyFunctionWithRecord, AnyIdempotentFunction };

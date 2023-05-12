@@ -4,7 +4,7 @@ const DEFAULT_MAX_SIZE = 100;
 const NEWER = Symbol('newer');
 const OLDER = Symbol('older');
 
-class Item<K, V>{
+class Item<K, V> {
   public readonly key: K;
   public value: V;
   private [NEWER]: Item<K, V> | undefined;
@@ -21,7 +21,7 @@ class Item<K, V>{
 /**
  * A simple LRU cache implementation that uses a doubly linked list to track the order of items in
  * an hash map.
- * 
+ *
  * Illustration of the design:
  *```text
  *   oldest                                                   newest
@@ -33,23 +33,23 @@ class Item<K, V>{
  *
  *  removed  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  added
  * ```
- * 
+ *
  * Items are added to the cache using the `add()` method. When an item is added, it's marked
  * as the most recently used item. If the cache is full, the oldest item is removed from the
  * cache.
- * 
+ *
  * Each item also tracks the item that was added before it, and the item that was added after
  * it. This allows us to quickly remove the oldest item from the cache without having to
  * iterate through the entire cache.
- * 
+ *
  * **Note**: This implementation is loosely based on the implementation found in the lru_map package
  * which is licensed under the MIT license and [recommends users to copy the code into their
  * own projects](https://github.com/rsms/js-lru/tree/master#usage).
- * 
+ *
  * @typeparam K - The type of the key
  * @typeparam V - The type of the value
  */
-class LRUCache<K, V>{
+class LRUCache<K, V> {
   private leastRecentlyUsed?: Item<K, V>;
   private readonly map: Map<K, Item<K, V>>;
   private readonly maxSize: number;
@@ -58,40 +58,39 @@ class LRUCache<K, V>{
   /**
    * A simple LRU cache implementation that uses a doubly linked list to track the order of items in
    * an hash map.
-   * 
+   *
    * When instatiating the cache, you can optionally specify the type of the key and value, as well
    * as the maximum size of the cache. If no maximum size is specified, the cache will default to
    * a size of 100.
-   * 
+   *
    * @example
    * ```typescript
    * const cache = new LRUCache<string, number>({ maxSize: 100 });
    * // or
    * // const cache = new LRUCache();
-   * 
+   *
    * cache.add('a', 1);
    * cache.add('b', 2);
-   * 
+   *
    * cache.get('a');
-   * 
+   *
    * console.log(cache.size()); // 2
    * ```
-   * 
+   *
    * @param config - The configuration options for the cache
    */
   public constructor(config?: LRUCacheOptions) {
-    this.maxSize = config?.maxSize !== undefined ?
-      config.maxSize :
-      DEFAULT_MAX_SIZE;
+    this.maxSize =
+      config?.maxSize !== undefined ? config.maxSize : DEFAULT_MAX_SIZE;
     this.map = new Map();
   }
 
   /**
    * Adds a new item to the cache.
-   * 
+   *
    * If the key already exists, it updates the value and marks the item as the most recently used.
    * If inserting the new item would exceed the max size, the oldest item is removed from the cache.
-   * 
+   *
    * @param key - The key to add to the cache
    * @param value - The value to add to the cache
    */
@@ -131,9 +130,9 @@ class LRUCache<K, V>{
 
   /**
    * Returns a value from the cache, or undefined if it's not in the cache.
-   * 
+   *
    * When a value is returned, it's marked as the most recently used item in the cache.
-   * 
+   *
    * @param key - The key to retrieve from the cache
    */
   public get(key: K): V | undefined {
@@ -146,7 +145,7 @@ class LRUCache<K, V>{
 
   /**
    * Returns `true` if the key exists in the cache, `false` otherwise.
-   * 
+   *
    * @param key - The key to check for in the cache
    */
   public has(key: K): boolean {
@@ -155,7 +154,7 @@ class LRUCache<K, V>{
 
   /**
    * Removes an item from the cache, while doing so it also reconciles the linked list.
-   * 
+   *
    * @param key - The key to remove from the cache
    */
   public remove(key: K): void {
@@ -211,7 +210,7 @@ class LRUCache<K, V>{
 
   /**
    * Marks an item as the most recently used item in the cache.
-   * 
+   *
    * @param item - The item to mark as the most recently used
    */
   private trackItemUse(item: Item<K, V>): void {
@@ -237,6 +236,4 @@ class LRUCache<K, V>{
   }
 }
 
-export {
-  LRUCache,
-};
+export { LRUCache };

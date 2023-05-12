@@ -3,16 +3,11 @@
  *
  * @group unit/idempotency/persistence/lru-cache
  */
-import {
-  LRUCache,
-} from '../../../src/persistence/LRUCache';
+import { LRUCache } from '../../../src/persistence/LRUCache';
 
 describe('Class: LRUMap', () => {
-
   describe('Method: add', () => {
-
     test('when called it adds items to the cache', () => {
-
       // Prepare
       const cache = new LRUCache();
 
@@ -24,11 +19,9 @@ describe('Class: LRUMap', () => {
       expect(cache.size()).toBe(2);
       expect(cache.get('a')).toBe(1);
       expect(cache.get('b')).toBe(2);
-
     });
 
     test('when called it updates the value of an existing key', () => {
-
       // Prepare
       const cache = new LRUCache();
       cache.add('a', 1);
@@ -39,11 +32,9 @@ describe('Class: LRUMap', () => {
       // Assess
       expect(cache.size()).toBe(1);
       expect(cache.get('a')).toBe(2);
-
     });
 
     test('when called it removes the oldest item when the cache is full', () => {
-
       // Prepare
       const cache = new LRUCache({ maxSize: 2 });
       cache.add('a', 1);
@@ -57,11 +48,9 @@ describe('Class: LRUMap', () => {
       expect(cache.get('a')).toBeUndefined();
       expect(cache.get('b')).toBe(2);
       expect(cache.get('c')).toBe(3);
-
     });
 
     test('when called and maxSize is 0, it skips cache', () => {
-
       // Prepare
       const cache = new LRUCache({ maxSize: 0 });
 
@@ -70,15 +59,11 @@ describe('Class: LRUMap', () => {
 
       // Assess
       expect(cache.size()).toBe(0);
-
     });
-
   });
 
   describe('Method: get', () => {
-
     test('when called it returns the value of an existing key', () => {
-
       // Prepare
       const cache = new LRUCache();
       cache.add('a', 1);
@@ -88,11 +73,9 @@ describe('Class: LRUMap', () => {
 
       // Assess
       expect(value).toBe(1);
-
     });
 
     test('when called it returns undefined for a non-existing key', () => {
-
       // Prepare
       const cache = new LRUCache();
 
@@ -101,11 +84,9 @@ describe('Class: LRUMap', () => {
 
       // Assess
       expect(value).toBeUndefined();
-
     });
 
     test('when called it marks the item as the most recently used', () => {
-
       // Prepare
       const cache = new LRUCache();
       cache.add('a', 1);
@@ -119,15 +100,11 @@ describe('Class: LRUMap', () => {
       expect(cache.get('a')).toBe(1);
       expect(cache.get('b')).toBe(2);
       expect(cache.get('c')).toBe(3);
-
     });
-
   });
 
   describe('Method: has', () => {
-
     test('when called it returns true for an existing key', () => {
-
       // Prepare
       const cache = new LRUCache();
       cache.add('a', 1);
@@ -137,11 +114,9 @@ describe('Class: LRUMap', () => {
 
       // Assess
       expect(hasKey).toBe(true);
-
     });
 
     test('when called it returns false for a non-existing key', () => {
-
       // Prepare
       const cache = new LRUCache();
 
@@ -150,15 +125,11 @@ describe('Class: LRUMap', () => {
 
       // Assess
       expect(hasKey).toBe(false);
-
     });
-
   });
 
   describe('Method: remove', () => {
-
     test('when called it removes the item from the cache', () => {
-
       // Prepare
       const cache = new LRUCache();
       cache.add('a', 1);
@@ -173,11 +144,9 @@ describe('Class: LRUMap', () => {
       // Assess
       expect(cache.size()).toBe(0);
       expect(cache.get('a')).toBeUndefined();
-
     });
 
     test('when called on an empty cache it does nothing', () => {
-
       // Prepare
       const cache = new LRUCache();
       cache.add('a', 1);
@@ -190,9 +159,6 @@ describe('Class: LRUMap', () => {
 
       // Assess
       expect(cache.size()).toBe(0);
-
     });
-
   });
-
 });

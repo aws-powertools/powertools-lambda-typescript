@@ -1,11 +1,9 @@
 import {
   IdempotencyItemAlreadyExistsError,
-  IdempotencyItemNotFoundError
+  IdempotencyItemNotFoundError,
 } from '../Exceptions';
 import { IdempotencyRecordStatus } from '../types';
-import type {
-  DynamoPersistenceOptions
-} from '../types';
+import type { DynamoPersistenceOptions } from '../types';
 import {
   DynamoDBClient,
   DynamoDBClientConfig,
@@ -16,10 +14,7 @@ import {
   UpdateItemCommand,
   AttributeValue,
 } from '@aws-sdk/client-dynamodb';
-import {
-  marshall,
-  unmarshall,
-} from '@aws-sdk/util-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { BasePersistenceLayer } from './BasePersistenceLayer';
 
@@ -43,7 +38,8 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     this.keyAttr = config.keyAttr ?? 'id';
     this.statusAttr = config.statusAttr ?? 'status';
     this.expiryAttr = config.expiryAttr ?? 'expiration';
-    this.inProgressExpiryAttr = config.inProgressExpiryAttr ?? 'in_progress_expiry_attr';
+    this.inProgressExpiryAttr =
+      config.inProgressExpiryAttr ?? 'in_progress_expiry_attr';
     this.dataAttr = config.dataAttr ?? 'data';
     this.validationKeyAttr = config.validationKeyAttr ?? 'validation';
     if (config.sortKeyAttr === this.keyAttr) {
@@ -52,13 +48,16 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       );
     }
     this.sortKeyAttr = config.sortKeyAttr;
-    this.staticPkValue = config.staticPkValue ?? `idempotency#${this.idempotencyKeyPrefix}`;
+    this.staticPkValue =
+      config.staticPkValue ?? `idempotency#${this.idempotencyKeyPrefix}`;
 
     if (config?.awsSdkV3Client) {
       if (config?.awsSdkV3Client instanceof DynamoDBClient) {
         this.client = config.awsSdkV3Client;
       } else {
-        console.warn('Invalid AWS SDK V3 client passed to DynamoDBPersistenceLayer. Using default client.');
+        console.warn(
+          'Invalid AWS SDK V3 client passed to DynamoDBPersistenceLayer. Using default client.'
+        );
       }
     } else {
       this.clientConfig = config?.clientConfig ?? {};
@@ -67,21 +66,24 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 
   protected async _deleteRecord(record: IdempotencyRecord): Promise<void> {
     const client = this.getClient();
-    await client.send(new DeleteItemCommand({
-      TableName: this.tableName,
-      Key: this.getKey(record.idempotencyKey),
-    }));
+    await client.send(
+      new DeleteItemCommand({
+        TableName: this.tableName,
+        Key: this.getKey(record.idempotencyKey),
+      })
+    );
   }
 
-  protected async _getRecord(idempotencyKey: string): Promise<IdempotencyRecord> {
+  protected async _getRecord(
+    idempotencyKey: string
+  ): Promise<IdempotencyRecord> {
     const client = this.getClient();
-    const result = await client.send(new GetItemCommand(
-      {
+    const result = await client.send(
+      new GetItemCommand({
         TableName: this.tableName,
         Key: this.getKey(idempotencyKey),
-        ConsistentRead: true
-      }
-    )
+        ConsistentRead: true,
+      })
     );
 
     if (!result.Item) {
@@ -90,11 +92,11 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     const item = unmarshall(result.Item);
 
     return new IdempotencyRecord({
-      idempotencyKey: item[this.keyAttr], 
-      status: item[this.statusAttr], 
-      expiryTimestamp: item[this.expiryAttr], 
-      inProgressExpiryTimestamp: item[this.inProgressExpiryAttr], 
-      responseData: item[this.dataAttr]
+      idempotencyKey: item[this.keyAttr],
+      status: item[this.statusAttr],
+      expiryTimestamp: item[this.expiryAttr],
+      inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
+      responseData: item[this.dataAttr],
     });
   }
 
@@ -103,21 +105,21 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 
     const item = {
       ...this.getKey(record.idempotencyKey),
-      ...marshall({ 
-        [this.expiryAttr]: record.expiryTimestamp, 
-        [this.statusAttr]: record.getStatus()
-      })
+      ...marshall({
+        [this.expiryAttr]: record.expiryTimestamp,
+        [this.statusAttr]: record.getStatus(),
+      }),
     };
 
     if (record.inProgressExpiryTimestamp !== undefined) {
       item[this.inProgressExpiryAttr] = {
-        N: record.inProgressExpiryTimestamp.toString()
+        N: record.inProgressExpiryTimestamp.toString(),
       };
     }
 
     if (this.isPayloadValidationEnabled() && record.payloadHash !== undefined) {
       item[this.validationKeyAttr] = {
-        S: record.payloadHash as string
+        S: record.payloadHash as string,
       };
     }
 
@@ -128,7 +130,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
        * |             Lambda                                              Idempotency Record
        * |             Timeout                                                 Timeout
        * |       (in_progress_expiry)                                          (expiry)
-       * 
+       *
        * Conditions to successfully save a record:
        * * The idempotency key does not exist:
        *   - first time that this invocation key is used
@@ -151,31 +153,33 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       ].join(' OR ');
 
       const now = Date.now();
-      await client.send(new PutItemCommand({ 
-        TableName: this.tableName, 
-        Item: item, 
-        ExpressionAttributeNames: { 
-          '#id': this.keyAttr, 
-          '#expiry': this.expiryAttr, 
-          '#in_progress_expiry': this.inProgressExpiryAttr,
-          '#status': this.statusAttr 
-        }, 
-        ExpressionAttributeValues: marshall({
-          ':now': now / 1000,
-          ':now_in_millis': now,
-          ':inprogress': IdempotencyRecordStatus.INPROGRESS
-        }),
-        ConditionExpression: conditionExpression 
-      }));
-    } catch (error){
+      await client.send(
+        new PutItemCommand({
+          TableName: this.tableName,
+          Item: item,
+          ExpressionAttributeNames: {
+            '#id': this.keyAttr,
+            '#expiry': this.expiryAttr,
+            '#in_progress_expiry': this.inProgressExpiryAttr,
+            '#status': this.statusAttr,
+          },
+          ExpressionAttributeValues: marshall({
+            ':now': now / 1000,
+            ':now_in_millis': now,
+            ':inprogress': IdempotencyRecordStatus.INPROGRESS,
+          }),
+          ConditionExpression: conditionExpression,
+        })
+      );
+    } catch (error) {
       if (error instanceof DynamoDBServiceException) {
-        if (error.name === 'ConditionalCheckFailedException'){
+        if (error.name === 'ConditionalCheckFailedException') {
           throw new IdempotencyItemAlreadyExistsError(
             `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`
           );
         }
       }
-      
+
       throw error;
     }
   }
@@ -206,15 +210,13 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     }
 
     await client.send(
-      new UpdateItemCommand(
-        {
-          TableName: this.tableName, 
-          Key: this.getKey(record.idempotencyKey),
-          UpdateExpression: `SET ${updateExpressionFields.join(', ')}`,
-          ExpressionAttributeNames: expressionAttributeNames,
-          ExpressionAttributeValues: marshall(expressionAttributeValues),
-        }
-      )
+      new UpdateItemCommand({
+        TableName: this.tableName,
+        Key: this.getKey(record.idempotencyKey),
+        UpdateExpression: `SET ${updateExpressionFields.join(', ')}`,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: marshall(expressionAttributeValues),
+      })
     );
   }
 
@@ -228,27 +230,24 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 
   /**
    * Build primary key attribute simple or composite based on params.
-   * 
+   *
    * When sortKeyAttr is set, we must return a composite key with staticPkValue,
    * otherwise we use the idempotency key given.
-   * 
-   * @param idempotencyKey 
+   *
+   * @param idempotencyKey
    */
   private getKey(idempotencyKey: string): Record<string, AttributeValue> {
     if (this.sortKeyAttr) {
       return marshall({
         [this.keyAttr]: this.staticPkValue,
-        [this.sortKeyAttr]: idempotencyKey
+        [this.sortKeyAttr]: idempotencyKey,
       });
     }
 
     return marshall({
-      [this.keyAttr]: idempotencyKey
+      [this.keyAttr]: idempotencyKey,
     });
   }
 }
 
-export {
-  DynamoDBPersistenceLayer
-};
-
+export { DynamoDBPersistenceLayer };

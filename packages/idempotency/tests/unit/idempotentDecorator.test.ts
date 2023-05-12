@@ -5,19 +5,28 @@
  */
 
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
-import { idempotentFunction, idempotentLambdaHandler } from '../../src/idempotentDecorator';
+import {
+  idempotentFunction,
+  idempotentLambdaHandler,
+} from '../../src/idempotentDecorator';
 import type { IdempotencyRecordOptions } from '../../src/types';
 import { IdempotencyRecordStatus } from '../../src/types';
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
-  IdempotencyPersistenceLayerError
+  IdempotencyPersistenceLayerError,
 } from '../../src/Exceptions';
 
-const mockSaveInProgress = jest.spyOn(BasePersistenceLayer.prototype, 'saveInProgress').mockImplementation();
-const mockSaveSuccess = jest.spyOn(BasePersistenceLayer.prototype, 'saveSuccess').mockImplementation();
-const mockGetRecord = jest.spyOn(BasePersistenceLayer.prototype, 'getRecord').mockImplementation();
+const mockSaveInProgress = jest
+  .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')
+  .mockImplementation();
+const mockSaveSuccess = jest
+  .spyOn(BasePersistenceLayer.prototype, 'saveSuccess')
+  .mockImplementation();
+const mockGetRecord = jest
+  .spyOn(BasePersistenceLayer.prototype, 'getRecord')
+  .mockImplementation();
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -29,7 +38,9 @@ class PersistenceLayerTestClass extends BasePersistenceLayer {
 const functionalityToDecorate = jest.fn();
 
 class TestinClassWithLambdaHandler {
-  @idempotentLambdaHandler({ persistenceStore: new PersistenceLayerTestClass() })
+  @idempotentLambdaHandler({
+    persistenceStore: new PersistenceLayerTestClass(),
+  })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public testing(record: Record<string, unknown>): string {
@@ -40,14 +51,16 @@ class TestinClassWithLambdaHandler {
 }
 
 class TestingClassWithFunctionDecorator {
-
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public handler(record: Record<string, unknown>): string {
     return this.proccessRecord(record);
   }
 
-  @idempotentFunction({ persistenceStore: new PersistenceLayerTestClass(), dataKeywordArgument: 'testingKey' })
+  @idempotentFunction({
+    persistenceStore: new PersistenceLayerTestClass(),
+    dataKeywordArgument: 'testingKey',
+  })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public proccessRecord(record: Record<string, unknown>): string {
@@ -57,10 +70,12 @@ class TestingClassWithFunctionDecorator {
   }
 }
 
-describe('Given a class with a function to decorate', (classWithLambdaHandler = new TestinClassWithLambdaHandler(),
-  classWithFunctionDecorator = new TestingClassWithFunctionDecorator()) => {
+describe('Given a class with a function to decorate', (classWithLambdaHandler = new TestinClassWithLambdaHandler(), classWithFunctionDecorator = new TestingClassWithFunctionDecorator()) => {
   const keyValueToBeSaved = 'thisWillBeSaved';
-  const inputRecord = { testingKey: keyValueToBeSaved, otherKey: 'thisWillNot' };
+  const inputRecord = {
+    testingKey: keyValueToBeSaved,
+    otherKey: 'thisWillNot',
+  };
   beforeEach(() => jest.clearAllMocks());
 
   describe('When wrapping a function with no previous executions', () => {
@@ -77,9 +92,11 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will save the record to COMPLETED with function return value', () => {
-      expect(mockSaveSuccess).toBeCalledWith(keyValueToBeSaved, 'Processed Record');
+      expect(mockSaveSuccess).toBeCalledWith(
+        keyValueToBeSaved,
+        'Processed Record'
+      );
     });
-
   });
   describe('When wrapping a function with no previous executions', () => {
     beforeEach(async () => {
@@ -102,12 +119,16 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
   describe('When decorating a function with previous execution that is INPROGRESS', () => {
     let resultingError: Error;
     beforeEach(async () => {
-      mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      mockSaveInProgress.mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError()
+      );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
-        status: IdempotencyRecordStatus.INPROGRESS
+        status: IdempotencyRecordStatus.INPROGRESS,
       };
-      mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));
+      mockGetRecord.mockResolvedValue(
+        new IdempotencyRecord(idempotencyOptions)
+      );
       try {
         await classWithLambdaHandler.testing(inputRecord);
       } catch (e) {
@@ -135,12 +156,16 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
   describe('When decorating a function with previous execution that is EXPIRED', () => {
     let resultingError: Error;
     beforeEach(async () => {
-      mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      mockSaveInProgress.mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError()
+      );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
-        status: IdempotencyRecordStatus.EXPIRED
+        status: IdempotencyRecordStatus.EXPIRED,
       };
-      mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));
+      mockGetRecord.mockResolvedValue(
+        new IdempotencyRecord(idempotencyOptions)
+      );
       try {
         await classWithLambdaHandler.testing(inputRecord);
       } catch (e) {
@@ -167,13 +192,17 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
 
   describe('When wrapping a function with previous execution that is COMPLETED', () => {
     beforeEach(async () => {
-      mockSaveInProgress.mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      mockSaveInProgress.mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError()
+      );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
         status: IdempotencyRecordStatus.COMPLETED,
       };
 
-      mockGetRecord.mockResolvedValue(new IdempotencyRecord(idempotencyOptions));
+      mockGetRecord.mockResolvedValue(
+        new IdempotencyRecord(idempotencyOptions)
+      );
       await classWithLambdaHandler.testing(inputRecord);
     });
 
@@ -188,7 +217,6 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     test('Then it will not call decorated functionality', () => {
       expect(functionalityToDecorate).not.toBeCalledWith(inputRecord);
     });
-
   });
 
   describe('When wrapping a function with issues saving the record', () => {
@@ -210,6 +238,4 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
       expect(resultingError).toBeInstanceOf(IdempotencyPersistenceLayerError);
     });
   });
-
 });
-

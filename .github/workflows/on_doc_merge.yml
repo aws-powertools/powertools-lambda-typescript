@@ -15,5 +15,5 @@ jobs:
       pages: write
     uses: ./.github/workflows/reusable-publish-docs.yml
     with:
-      version: stage
+      version: main
       alias: stage

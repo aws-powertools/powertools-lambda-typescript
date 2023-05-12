@@ -1,9 +1,23 @@
 import type { Context } from 'aws-lambda';
 import { BasePersistenceLayer } from '../persistence/BasePersistenceLayer';
+import { AnyFunctionWithRecord } from 'types/AnyFunction';
+import { IdempotencyConfig } from '../IdempotencyConfig';
 
-type IdempotencyOptions = {
-  dataKeywordArgument: string
+type IdempotencyLambdaHandlerOptions = {
   persistenceStore: BasePersistenceLayer
+  config?: IdempotencyConfig
+};
+
+type IdempotencyFunctionOptions = IdempotencyLambdaHandlerOptions & {
+  dataKeywordArgument: string
+};
+
+type IdempotencyHandlerOptions<U> = {
+  functionToMakeIdempotent: AnyFunctionWithRecord<U>
+  functionPayloadToBeHashed: Record<string, unknown>
+  persistenceStore: BasePersistenceLayer
+  idempotencyConfig: IdempotencyConfig
+  fullFunctionPayload: Record<string, unknown>
 };
 
 /**
@@ -45,6 +59,8 @@ type IdempotencyConfigOptions = {
 };
 
 export {
-  IdempotencyOptions,
-  IdempotencyConfigOptions
+  IdempotencyConfigOptions,
+  IdempotencyFunctionOptions,
+  IdempotencyLambdaHandlerOptions,
+  IdempotencyHandlerOptions
 };

@@ -13,10 +13,10 @@
     "commit": "commit",
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
-    "test:e2e:nodejs14x": "echo \"Not implemented\"",
-    "test:e2e:nodejs16x": "echo \"Not implemented\"",
-    "test:e2e:nodejs18x": "echo \"Not implemented\"",
-    "test:e2e": "echo \"Not implemented\"",
+    "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
+    "test:e2e:nodejs16x": "RUNTIME=nodejs16x jest --group=e2e",
+    "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
+    "test:e2e": "jest --group=e2e --detectOpenHandles",
     "watch": "jest --watch --group=unit",
     "build": "tsc",
     "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
@@ -57,6 +57,7 @@
   ],
   "devDependencies": {
     "@types/jmespath": "^0.15.0",
+    "@aws-sdk/client-dynamodb": "^3.231.0",
     "aws-sdk-client-mock": "^2.0.1",
     "aws-sdk-client-mock-jest": "^2.0.1"
   }

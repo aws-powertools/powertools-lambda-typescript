@@ -5,13 +5,15 @@
  */
 
 import {
-  IdempotencyAlreadyInProgressError, IdempotencyInconsistentStateError,
+  IdempotencyAlreadyInProgressError,
+  IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError
 } from '../../src/Exceptions';
-import { IdempotencyOptions, IdempotencyRecordStatus } from '../../src/types';
+import { IdempotencyFunctionOptions, IdempotencyRecordStatus, } from '../../src/types';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
+import { IdempotencyConfig } from '../..//src/IdempotencyConfig';
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -22,16 +24,17 @@ class PersistenceLayerTestClass extends BasePersistenceLayer {
 
 const mockFunctionToMakeIdempotent = jest.fn();
 const mockFunctionPayloadToBeHashed = {};
-const mockIdempotencyOptions: IdempotencyOptions = {
+const mockIdempotencyOptions: IdempotencyFunctionOptions = {
   persistenceStore: new PersistenceLayerTestClass(),
-  dataKeywordArgument: 'testingKey'
+  dataKeywordArgument: 'testKeywordArgument',
+  config: new IdempotencyConfig({})
 };
 const mockFullFunctionPayload = {};
 
 const idempotentHandler = new IdempotencyHandler(
   mockFunctionToMakeIdempotent,
   mockFunctionPayloadToBeHashed,
-  mockIdempotencyOptions,
+  mockIdempotencyOptions.persistenceStore,
   mockFullFunctionPayload,
 );
 
@@ -174,5 +177,50 @@ describe('Class IdempotencyHandler', () => {
     });
   });
 
+  describe('Method: getFunctionResult', () => {
+    test('when function returns a result, it saves the successful result and returns it', async () => {
+      const mockSaveSuccessfulResult = jest.spyOn(mockIdempotencyOptions.persistenceStore, 'saveSuccess').mockResolvedValue();
+      mockFunctionToMakeIdempotent.mockImplementation(() => Promise.resolve('result'));
+
+      await expect(
+        idempotentHandler.getFunctionResult()
+      ).resolves.toBe('result');
+      expect(mockSaveSuccessfulResult).toHaveBeenCalledTimes(1);
+    });
+
+    test('when function throws an error, it deletes the in progress record and throws the error', async () => {
+      mockFunctionToMakeIdempotent.mockImplementation(() => Promise.reject(new Error('Some error')));
+
+      const mockDeleteInProgress = jest.spyOn(mockIdempotencyOptions.persistenceStore, 'deleteRecord').mockResolvedValue();
+
+      await expect(
+        idempotentHandler.getFunctionResult()
+      ).rejects.toThrow(Error);
+      expect(mockDeleteInProgress).toHaveBeenCalledTimes(1);
+    });
+
+    test('when deleteRecord throws an error, it wraps the error to IdempotencyPersistenceLayerError', async () => {
+      mockFunctionToMakeIdempotent.mockImplementation(() => Promise.reject(new Error('Some error')));
+
+      const mockDeleteInProgress = jest.spyOn(mockIdempotencyOptions.persistenceStore, 'deleteRecord').mockRejectedValue(new Error('Some error'));
+
+      await expect(
+        idempotentHandler.getFunctionResult()
+      ).rejects.toThrow(IdempotencyPersistenceLayerError);
+      expect(mockDeleteInProgress).toHaveBeenCalledTimes(1);
+    });
+
+    test('when saveSuccessfulResult throws an error, it wraps the error to IdempotencyPersistenceLayerError', async () => {
+      mockFunctionToMakeIdempotent.mockImplementation(() => Promise.resolve('result'));
+
+      const mockSaveSuccessfulResult = jest.spyOn(mockIdempotencyOptions.persistenceStore, 'saveSuccess').mockRejectedValue(new Error('Some error'));
+
+      await expect(
+        idempotentHandler.getFunctionResult()
+      ).rejects.toThrow(IdempotencyPersistenceLayerError);
+      expect(mockSaveSuccessfulResult).toHaveBeenCalledTimes(1);
+    });
+
+  });
 });
 

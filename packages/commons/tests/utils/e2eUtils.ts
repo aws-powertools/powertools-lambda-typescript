@@ -9,7 +9,7 @@ import {
 } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { fromUtf8 } from '@aws-sdk/util-utf8-node';
 
 import { InvocationLogs } from './InvocationLogs';
@@ -38,7 +38,7 @@ export type StackWithLambdaFunctionOptions = {
   timeout?: Duration;
 };
 
-type FunctionPayload = { [key: string]: string | boolean | number };
+type FunctionPayload = { [key: string]: string | boolean | number | Array<Record<string, unknown>> };
 
 export const isValidRuntimeKey = (
   runtime: string
@@ -82,27 +82,26 @@ export const generateUniqueName = (
 
 export const invokeFunction = async (
   functionName: string,
-  times = 1,
+  times: number = 1,
   invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL',
-  payload: FunctionPayload = {}
+  payload: FunctionPayload = {},
+  includeIndex = true
 ): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];
 
-  const promiseFactory = (index?: number): Promise<void> => {
+  const promiseFactory = (index?: number, includeIndex?: boolean): Promise<void> => {
+
+    // in some cases we need to send a payload without the index, i.e. idempotency tests
+    const payloadToSend = includeIndex ? { invocation: index, ...payload } : { ...payload };
+
     const invokePromise = lambdaClient
       .send(
         new InvokeCommand({
           FunctionName: functionName,
           InvocationType: 'RequestResponse',
           LogType: 'Tail', // Wait until execution completes and return all logs
-          Payload: fromUtf8(
-            JSON.stringify({
-              invocation: index,
-              ...payload,
-            })
-          ),
-        })
-      )
+          Payload: fromUtf8(JSON.stringify(payloadToSend)),
+      }))
       .then((response) => {
         if (response?.LogResult) {
           invocationLogs.push(new InvocationLogs(response?.LogResult));
@@ -117,9 +116,10 @@ export const invokeFunction = async (
   };
 
   const promiseFactories = Array.from({ length: times }, () => promiseFactory);
+
   const invocation =
     invocationMode == 'PARALLEL'
-      ? Promise.all(promiseFactories.map((factory, index) => factory(index)))
+      ? Promise.all(promiseFactories.map((factory, index) => factory(index, includeIndex)))
       : chainPromises(promiseFactories);
   await invocation;
 

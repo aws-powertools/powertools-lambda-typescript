@@ -3,7 +3,7 @@
  *
  * @group unit/idempotency/makeFunctionIdempotent
  */
-import { IdempotencyOptions } from '../../src/types/IdempotencyOptions';
+import { IdempotencyFunctionOptions } from '../../src/types/IdempotencyOptions';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
 import type { AnyIdempotentFunction, IdempotencyRecordOptions } from '../../src/types';
@@ -27,7 +27,7 @@ class PersistenceLayerTestClass extends BasePersistenceLayer {
 
 describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
   beforeEach(() => jest.clearAllMocks());
-  describe('Given options for idempotency', (options: IdempotencyOptions = {
+  describe('Given options for idempotency', (options: IdempotencyFunctionOptions = {
     persistenceStore: new PersistenceLayerTestClass(),
     dataKeywordArgument: 'testingKey'
   }) => {
@@ -140,10 +140,10 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
         expect(mockGetRecord).toBeCalledWith(keyValueToBeSaved);
       });
 
-      //This should be the saved record once FR3 is complete https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447
-      test('Then it will call the function that was wrapped with the whole input record', () => {
-        expect(functionToWrap).toBeCalledWith(inputRecord);
+      test('Then it will not call the function that was wrapped with the whole input record', () => {
+        expect(functionToWrap).not.toBeCalledWith(inputRecord);
       });
+
     });
 
     describe('When wrapping a function with issues saving the record', () => {

@@ -1,4 +1,4 @@
-import type { AnyFunctionWithRecord, IdempotencyOptions } from './types';
+import type { AnyFunctionWithRecord, IdempotencyHandlerOptions } from './types';
 import { IdempotencyRecordStatus } from './types';
 import {
   IdempotencyAlreadyInProgressError,
@@ -6,20 +6,37 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
 } from './Exceptions';
-import { IdempotencyRecord } from './persistence';
+import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
+import { IdempotencyConfig } from './IdempotencyConfig';
 
 export class IdempotencyHandler<U> {
-  public constructor(
-    private functionToMakeIdempotent: AnyFunctionWithRecord<U>,
-    private functionPayloadToBeHashed: Record<string, unknown>,
-    private idempotencyOptions: IdempotencyOptions,
-    private fullFunctionPayload: Record<string, unknown>,
-  ) {
+  private readonly fullFunctionPayload: Record<string, unknown>;
+  private readonly functionPayloadToBeHashed: Record<string, unknown>;
+  private readonly functionToMakeIdempotent: AnyFunctionWithRecord<U>;
+  private readonly idempotencyConfig: IdempotencyConfig;
+  private readonly persistenceStore: BasePersistenceLayer;
+
+  public constructor(options: IdempotencyHandlerOptions<U>) {
+    const {
+      functionToMakeIdempotent,
+      functionPayloadToBeHashed,
+      idempotencyConfig,
+      fullFunctionPayload,
+      persistenceStore
+    } = options;
+    this.functionToMakeIdempotent = functionToMakeIdempotent;
+    this.functionPayloadToBeHashed = functionPayloadToBeHashed;
+    this.idempotencyConfig = idempotencyConfig;
+    this.fullFunctionPayload = fullFunctionPayload;
+
+    this.persistenceStore = persistenceStore;
+
+    this.persistenceStore.configure({
+      config: this.idempotencyConfig
+    });
   }
 
-  public determineResultFromIdempotencyRecord(
-    idempotencyRecord: IdempotencyRecord
-  ): Promise<U> | U {
+  public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U {
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError(
         'Item has expired during processing and may not longer be valid.'
@@ -40,10 +57,31 @@ export class IdempotencyHandler<U> {
           `There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`
         );
       }
-    } else {
-      // Currently recalling the method as this fulfills FR1. FR3 will address using the previously stored value https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447
-      return this.functionToMakeIdempotent(this.fullFunctionPayload);
     }
+
+    return idempotencyRecord.getResponse() as U;
+  }
+
+  public async getFunctionResult(): Promise<U> {
+    let result: U;
+    try {
+      result = await this.functionToMakeIdempotent(this.fullFunctionPayload);
+
+    } catch (e) {
+      try {
+        await this.persistenceStore.deleteRecord(this.functionPayloadToBeHashed);
+      } catch (e) {
+        throw new IdempotencyPersistenceLayerError('Failed to delete record from idempotency store');
+      }
+      throw e;
+    }
+    try {
+      await this.persistenceStore.saveSuccess(this.functionPayloadToBeHashed, result as Record<string, unknown>);
+    } catch (e) {
+      throw new IdempotencyPersistenceLayerError('Failed to update success record to idempotency store');
+    }
+
+    return result;
   }
 
   /**
@@ -70,13 +108,13 @@ export class IdempotencyHandler<U> {
 
   public async processIdempotency(): Promise<U> {
     try {
-      await this.idempotencyOptions.persistenceStore.saveInProgress(
+      await this.persistenceStore.saveInProgress(
         this.functionPayloadToBeHashed,
       );
     } catch (e) {
       if (e instanceof IdempotencyItemAlreadyExistsError) {
         const idempotencyRecord: IdempotencyRecord =
-          await this.idempotencyOptions.persistenceStore.getRecord(
+          await this.persistenceStore.getRecord(
             this.functionPayloadToBeHashed
           );
 
@@ -86,6 +124,7 @@ export class IdempotencyHandler<U> {
       }
     }
 
-    return this.functionToMakeIdempotent(this.fullFunctionPayload);
+    return this.getFunctionResult();
   }
+
 }

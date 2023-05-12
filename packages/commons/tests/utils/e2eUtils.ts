@@ -38,7 +38,9 @@ export type StackWithLambdaFunctionOptions = {
   timeout?: Duration;
 };
 
-type FunctionPayload = { [key: string]: string | boolean | number | Array<Record<string, unknown>> };
+type FunctionPayload = {
+  [key: string]: string | boolean | number | Array<Record<string, unknown>>;
+};
 
 export const isValidRuntimeKey = (
   runtime: string
@@ -82,17 +84,21 @@ export const generateUniqueName = (
 
 export const invokeFunction = async (
   functionName: string,
-  times: number = 1,
+  times = 1,
   invocationMode: 'PARALLEL' | 'SEQUENTIAL' = 'PARALLEL',
   payload: FunctionPayload = {},
   includeIndex = true
 ): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];
 
-  const promiseFactory = (index?: number, includeIndex?: boolean): Promise<void> => {
-
+  const promiseFactory = (
+    index?: number,
+    includeIndex?: boolean
+  ): Promise<void> => {
     // in some cases we need to send a payload without the index, i.e. idempotency tests
-    const payloadToSend = includeIndex ? { invocation: index, ...payload } : { ...payload };
+    const payloadToSend = includeIndex
+      ? { invocation: index, ...payload }
+      : { ...payload };
 
     const invokePromise = lambdaClient
       .send(
@@ -101,7 +107,8 @@ export const invokeFunction = async (
           InvocationType: 'RequestResponse',
           LogType: 'Tail', // Wait until execution completes and return all logs
           Payload: fromUtf8(JSON.stringify(payloadToSend)),
-      }))
+        })
+      )
       .then((response) => {
         if (response?.LogResult) {
           invocationLogs.push(new InvocationLogs(response?.LogResult));
@@ -119,7 +126,9 @@ export const invokeFunction = async (
 
   const invocation =
     invocationMode == 'PARALLEL'
-      ? Promise.all(promiseFactories.map((factory, index) => factory(index, includeIndex)))
+      ? Promise.all(
+          promiseFactories.map((factory, index) => factory(index, includeIndex))
+        )
       : chainPromises(promiseFactories);
   await invocation;
 

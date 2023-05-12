@@ -1,13 +1,9 @@
 interface ConfigServiceInterface {
+  get(name: string): string;
 
-  get(name: string): string
+  getServiceName(): string;
 
-  getServiceName(): string
-
-  getFunctionName(): string
-
+  getFunctionName(): string;
 }
 
-export {
-  ConfigServiceInterface
-};
+export { ConfigServiceInterface };

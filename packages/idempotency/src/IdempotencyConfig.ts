@@ -27,6 +27,4 @@ class IdempotencyConfig {
   }
 }
 
-export {
-  IdempotencyConfig,
-};
+export { IdempotencyConfig };

@@ -5,7 +5,15 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { TEST_RUNTIMES } from '../../../commons/tests/utils/e2eUtils';
 import path from 'path';
 
-export const createIdempotencyResources = (stack: Stack, runtime: string, ddbTableName: string, pathToFunction: string, functionName: string, handler: string, ddbPkId?: string): void => {
+export const createIdempotencyResources = (
+  stack: Stack,
+  runtime: string,
+  ddbTableName: string,
+  pathToFunction: string,
+  functionName: string,
+  handler: string,
+  ddbPkId?: string
+): void => {
   const uniqueTableId = ddbTableName + v4().substring(0, 5);
   const ddbTable = new Table(stack, uniqueTableId, {
     tableName: ddbTableName,
@@ -14,7 +22,7 @@ export const createIdempotencyResources = (stack: Stack, runtime: string, ddbTab
       type: AttributeType.STRING,
     },
     billingMode: BillingMode.PAY_PER_REQUEST,
-    removalPolicy: RemovalPolicy.DESTROY
+    removalPolicy: RemovalPolicy.DESTROY,
   });
 
   const uniqueFunctionId = functionName + v4().substring(0, 5);
@@ -27,9 +35,8 @@ export const createIdempotencyResources = (stack: Stack, runtime: string, ddbTab
     environment: {
       IDEMPOTENCY_TABLE_NAME: ddbTableName,
       POWERTOOLS_LOGGER_LOG_EVENT: 'true',
-    }
+    },
   });
 
   ddbTable.grantReadWriteData(nodeJsFunction);
-
 };

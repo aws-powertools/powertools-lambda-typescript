@@ -18,15 +18,15 @@ import type {
  * @property {string} [staticPkValue] - The DynamoDB table static partition key value, use only with sortKeyAttr. Defaults to `idempotency#{LAMBDA_FUNCTION_NAME}`.
  */
 interface DynamoPersistenceOptionsBaseInterface {
-  tableName: string
-  keyAttr?: string
-  expiryAttr?: string
-  inProgressExpiryAttr?: string
-  statusAttr?: string
-  dataAttr?: string
-  validationKeyAttr?: string
-  sortKeyAttr?: string
-  staticPkValue?: string
+  tableName: string;
+  keyAttr?: string;
+  expiryAttr?: string;
+  inProgressExpiryAttr?: string;
+  statusAttr?: string;
+  dataAttr?: string;
+  validationKeyAttr?: string;
+  sortKeyAttr?: string;
+  staticPkValue?: string;
 }
 
 /**
@@ -37,9 +37,10 @@ interface DynamoPersistenceOptionsBaseInterface {
  * @property {DynamoDBClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
  * @property {never} [awsSdkV3Client] - This property should never be passed.
  */
-interface DynamoPersistenceOptionsWithClientConfig extends DynamoPersistenceOptionsBaseInterface {
-  clientConfig?: DynamoDBClientConfig
-  awsSdkV3Client?: never
+interface DynamoPersistenceOptionsWithClientConfig
+  extends DynamoPersistenceOptionsBaseInterface {
+  clientConfig?: DynamoDBClientConfig;
+  awsSdkV3Client?: never;
 }
 
 /**
@@ -50,9 +51,10 @@ interface DynamoPersistenceOptionsWithClientConfig extends DynamoPersistenceOpti
  * @property {DynamoDBClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during AppConfigProvider class instantiation
  * @property {never} [clientConfig] - This property should never be passed.
  */
-interface DynamoPersistenceOptionsWithClientInstance extends DynamoPersistenceOptionsBaseInterface {
-  awsSdkV3Client?: DynamoDBClient
-  clientConfig?: never
+interface DynamoPersistenceOptionsWithClientInstance
+  extends DynamoPersistenceOptionsBaseInterface {
+  awsSdkV3Client?: DynamoDBClient;
+  clientConfig?: never;
 }
 
 /**
@@ -71,8 +73,8 @@ interface DynamoPersistenceOptionsWithClientInstance extends DynamoPersistenceOp
  * @property {DynamoDBClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
  * @property {DynamoDBClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation. Mutually exclusive with clientConfig.
  */
-type DynamoPersistenceOptions = DynamoPersistenceOptionsWithClientConfig | DynamoPersistenceOptionsWithClientInstance;
+type DynamoPersistenceOptions =
+  | DynamoPersistenceOptionsWithClientConfig
+  | DynamoPersistenceOptionsWithClientInstance;
 
-export type {
-  DynamoPersistenceOptions,
-};
+export type { DynamoPersistenceOptions };

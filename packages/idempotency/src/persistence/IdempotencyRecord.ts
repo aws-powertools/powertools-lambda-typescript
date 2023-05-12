@@ -1,7 +1,5 @@
 import { IdempotencyRecordStatus } from '../types';
-import type {
-  IdempotencyRecordOptions
-} from '../types';
+import type { IdempotencyRecordOptions } from '../types';
 import { IdempotencyInvalidStatusError } from '../Exceptions';
 
 /**
@@ -39,10 +37,11 @@ class IdempotencyRecord {
   }
 
   public isExpired(): boolean {
-    return this.expiryTimestamp !== undefined && ((Date.now() / 1000) > this.expiryTimestamp);
+    return (
+      this.expiryTimestamp !== undefined &&
+      Date.now() / 1000 > this.expiryTimestamp
+    );
   }
 }
 
-export {
-  IdempotencyRecord
-};
+export { IdempotencyRecord };

@@ -1,30 +1,28 @@
-import {
-  createHash,
-  Hash
-} from 'node:crypto';
+import { createHash, Hash } from 'node:crypto';
 import { search } from 'jmespath';
 import { IdempotencyRecordStatus } from '../types';
-import type {
-  BasePersistenceLayerOptions
-} from '../types';
+import type { BasePersistenceLayerOptions } from '../types';
 import { EnvironmentVariablesService } from '../config';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { BasePersistenceLayerInterface } from './BasePersistenceLayerInterface';
-import { IdempotencyItemAlreadyExistsError, IdempotencyValidationError } from '../Exceptions';
+import {
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyValidationError,
+} from '../Exceptions';
 import { LRUCache } from './LRUCache';
 
 abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   public idempotencyKeyPrefix: string;
   private cache?: LRUCache<string, IdempotencyRecord>;
-  private configured: boolean = false;
+  private configured = false;
   // envVarsService is always initialized in the constructor
   private envVarsService!: EnvironmentVariablesService;
   private eventKeyJmesPath?: string;
   private expiresAfterSeconds: number = 60 * 60; // 1 hour default
-  private hashFunction: string = 'md5';
-  private payloadValidationEnabled: boolean = false;
-  private throwOnNoIdempotencyKey: boolean = false;
-  private useLocalCache: boolean = false;
+  private hashFunction = 'md5';
+  private payloadValidationEnabled = false;
+  private throwOnNoIdempotencyKey = false;
+  private useLocalCache = false;
   private validationKeyJmesPath?: string;
 
   public constructor() {
@@ -34,7 +32,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
   /**
    * Initialize the base persistence layer from the configuration settings
-   * 
+   *
    * @param {BasePersistenceLayerConfigureOptions} config - configuration object for the persistence layer
    */
   public configure(config: BasePersistenceLayerOptions): void {
@@ -53,26 +51,30 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
     this.eventKeyJmesPath = idempotencyConfig?.eventKeyJmesPath;
     this.validationKeyJmesPath = idempotencyConfig?.payloadValidationJmesPath;
-    this.payloadValidationEnabled = this.validationKeyJmesPath !== undefined || false;
-    this.throwOnNoIdempotencyKey = idempotencyConfig?.throwOnNoIdempotencyKey || false;
+    this.payloadValidationEnabled =
+      this.validationKeyJmesPath !== undefined || false;
+    this.throwOnNoIdempotencyKey =
+      idempotencyConfig?.throwOnNoIdempotencyKey || false;
     this.eventKeyJmesPath = idempotencyConfig.eventKeyJmesPath;
     this.expiresAfterSeconds = idempotencyConfig.expiresAfterSeconds; // 1 hour default
     this.useLocalCache = idempotencyConfig.useLocalCache;
     if (this.useLocalCache) {
-      this.cache = new LRUCache({ maxSize: idempotencyConfig.maxLocalCacheSize });
+      this.cache = new LRUCache({
+        maxSize: idempotencyConfig.maxLocalCacheSize,
+      });
     }
     this.hashFunction = idempotencyConfig.hashFunction;
   }
 
   /**
    * Deletes a record from the persistence store for the persistence key generated from the data passed in.
-   * 
+   *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    */
   public async deleteRecord(data: Record<string, unknown>): Promise<void> {
     const idempotencyRecord = new IdempotencyRecord({
       idempotencyKey: this.getHashedIdempotencyKey(data),
-      status: IdempotencyRecordStatus.EXPIRED
+      status: IdempotencyRecordStatus.EXPIRED,
     });
 
     await this._deleteRecord(idempotencyRecord);
@@ -82,10 +84,12 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
   /**
    * Retrieves idempotency key for the provided data and fetches data for that key from the persistence store
-   * 
+   *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    */
-  public async getRecord(data: Record<string, unknown>): Promise<IdempotencyRecord> {
+  public async getRecord(
+    data: Record<string, unknown>
+  ): Promise<IdempotencyRecord> {
     const idempotencyKey = this.getHashedIdempotencyKey(data);
 
     const cachedRecord = this.getFromCache(idempotencyKey);
@@ -108,11 +112,14 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
   /**
    * Saves a record indicating that the function's execution is currently in progress
-   * 
+   *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    * @param remainingTimeInMillis - the remaining time left in the lambda execution context
    */
-  public async saveInProgress(data: Record<string, unknown>, remainingTimeInMillis?: number): Promise<void> {
+  public async saveInProgress(
+    data: Record<string, unknown>,
+    remainingTimeInMillis?: number
+  ): Promise<void> {
     const idempotencyRecord = new IdempotencyRecord({
       idempotencyKey: this.getHashedIdempotencyKey(data),
       status: IdempotencyRecordStatus.INPROGRESS,
@@ -121,7 +128,8 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     });
 
     if (remainingTimeInMillis) {
-      idempotencyRecord.inProgressExpiryTimestamp = new Date().getTime() + remainingTimeInMillis;
+      idempotencyRecord.inProgressExpiryTimestamp =
+        new Date().getTime() + remainingTimeInMillis;
     } else {
       console.warn(
         'Could not determine remaining time left. Did you call registerLambdaContext on IdempotencyConfig?'
@@ -138,11 +146,14 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   /**
    * Saves a record of the function completing successfully. This will create a record with a COMPLETED status
    * and will save the result of the completed function in the idempotency record.
-   * 
+   *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    * @param result - the result of the successfully completed function
    */
-  public async saveSuccess(data: Record<string, unknown>, result: Record<string, unknown>): Promise<void> {
+  public async saveSuccess(
+    data: Record<string, unknown>,
+    result: Record<string, unknown>
+  ): Promise<void> {
     const idempotencyRecord = new IdempotencyRecord({
       idempotencyKey: this.getHashedIdempotencyKey(data),
       status: IdempotencyRecordStatus.COMPLETED,
@@ -157,7 +168,9 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   }
 
   protected abstract _deleteRecord(record: IdempotencyRecord): Promise<void>;
-  protected abstract _getRecord(idempotencyKey: string): Promise<IdempotencyRecord>;
+  protected abstract _getRecord(
+    idempotencyKey: string
+  ): Promise<IdempotencyRecord>;
   protected abstract _putRecord(record: IdempotencyRecord): Promise<void>;
   protected abstract _updateRecord(record: IdempotencyRecord): Promise<void>;
 
@@ -171,7 +184,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
   /**
    * Generates a hash of the data and returns the digest of that hash
-   * 
+   *
    * @param data the data payload that will generate the hash
    * @returns the digest of the generated hash
    */
@@ -192,7 +205,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
   /**
    * Creates the expiry timestamp for the idempotency record
-   * 
+   *
    * @returns the expiry time for the record expressed as number of seconds past the UNIX epoch
    */
   private getExpiryTimestamp(): number {
@@ -214,7 +227,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
   /**
    * Generates the idempotency key used to identify records in the persistence store.
-   * 
+   *
    * @param data the data payload that will be hashed to create the hash portion of the idempotency key
    * @returns the idempotency key
    */
@@ -227,15 +240,19 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       if (this.throwOnNoIdempotencyKey) {
         throw new Error('No data found to create a hashed idempotency_key');
       }
-      console.warn(`No value found for idempotency_key. jmespath: ${this.eventKeyJmesPath}`);
+      console.warn(
+        `No value found for idempotency_key. jmespath: ${this.eventKeyJmesPath}`
+      );
     }
 
-    return `${this.idempotencyKeyPrefix}#${this.generateHash(JSON.stringify(data))}`;
+    return `${this.idempotencyKeyPrefix}#${this.generateHash(
+      JSON.stringify(data)
+    )}`;
   }
 
   /**
    * Extract payload using validation key jmespath and return a hashed representation
-   * 
+   *
    * @param data payload
    */
   private getHashedPayload(data: Record<string, unknown>): string {
@@ -248,7 +265,9 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     return this.generateHash(JSON.stringify(data));
   }
 
-  private static isMissingIdempotencyKey(data: Record<string, unknown>): boolean {
+  private static isMissingIdempotencyKey(
+    data: Record<string, unknown>
+  ): boolean {
     if (Array.isArray(data) || typeof data === 'object') {
       if (data === null) return true;
       for (const value of Object.values(data)) {
@@ -265,10 +284,10 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
   /**
    * Save record to local cache except for when status is `INPROGRESS`.
-   * 
+   *
    * We can't cache `INPROGRESS` records because we have no way to reflect updates
    * that might happen to the record outside of the execution context of the function.
-   * 
+   *
    * @param record - record to save
    */
   private saveToCache(record: IdempotencyRecord): void {
@@ -277,17 +296,19 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     this.cache?.add(record.idempotencyKey, record);
   }
 
-  private validatePayload(data: Record<string, unknown>, record: IdempotencyRecord): void {
+  private validatePayload(
+    data: Record<string, unknown>,
+    record: IdempotencyRecord
+  ): void {
     if (this.payloadValidationEnabled) {
       const hashedPayload: string = this.getHashedPayload(data);
       if (hashedPayload !== record.payloadHash) {
-        throw new IdempotencyValidationError('Payload does not match stored record for this event key');
+        throw new IdempotencyValidationError(
+          'Payload does not match stored record for this event key'
+        );
       }
     }
   }
-
 }
 
-export {
-  BasePersistenceLayer
-};
+export { BasePersistenceLayer };

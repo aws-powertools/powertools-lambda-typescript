@@ -6,7 +6,6 @@
 import { EnvironmentVariablesService } from '../../../src/config';
 
 describe('Class: EnvironmentVariableService', () => {
-
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
@@ -19,9 +18,7 @@ describe('Class: EnvironmentVariableService', () => {
   });
 
   describe('Method: getFunctionName', () => {
-    
     test('When called, it gets the Lambda function name from the environment variable', () => {
-      
       // Prepare
       const expectedName = process.env.AWS_LAMBDA_FUNCTION_NAME;
 
@@ -30,11 +27,9 @@ describe('Class: EnvironmentVariableService', () => {
 
       // Assess
       expect(lambdaName).toEqual(expectedName);
-
     });
 
     test('When called without the environment variable set, it returns an empty string', () => {
-      
       // Prepare
       delete process.env.AWS_LAMBDA_FUNCTION_NAME;
 
@@ -43,8 +38,6 @@ describe('Class: EnvironmentVariableService', () => {
 
       // Assess
       expect(lambdaName).toEqual('');
-
     });
-
   });
 });

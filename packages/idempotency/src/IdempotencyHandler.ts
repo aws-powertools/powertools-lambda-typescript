@@ -7,13 +7,11 @@ import {
   IdempotencyPersistenceLayerError,
 } from './Exceptions';
 import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
-import { IdempotencyConfig } from './IdempotencyConfig';
 
 export class IdempotencyHandler<U> {
   public constructor(
     private functionToMakeIdempotent: AnyFunctionWithRecord<U>,
     private functionPayloadToBeHashed: Record<string, unknown>,
-    private config: IdempotencyConfig,
     private persistenceStore: BasePersistenceLayer,
     private fullFunctionPayload: Record<string, unknown>,
   ) {

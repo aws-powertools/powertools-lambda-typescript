@@ -3,7 +3,7 @@ import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
-const IDEMPOTENCY_TABLE_NAME = process.env.IDEMPOTENCY_TABLE_NAME;
+const IDEMPOTENCY_TABLE_NAME = process.env.IDEMPOTENCY_TABLE_NAME || 'table_name';
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer({
   tableName: IDEMPOTENCY_TABLE_NAME,
 });
@@ -25,18 +25,18 @@ interface EventRecords {
 
 const logger = new Logger();
 
+const processRecord = (record: Record<string, unknown>): string => {
+  logger.info(`Got test event: ${JSON.stringify(record)}`);
+
+  return 'Processing done: ' + record['foo'];
+};
+
 const processIdempotently = makeFunctionIdempotent(
   processRecord,
   {
     persistenceStore: dynamoDBPersistenceLayer,
     dataKeywordArgument: 'foo'
   });
-
-function processRecord(record: Record<string, unknown>): string {
-  logger.info(`Got test event: ${JSON.stringify(record)}`);
-
-  return 'Processing done: ' + record['foo'];
-}
 
 export const handler = async (_event: EventRecords, _context: Context): Promise<void> => {
   for (const record of _event.records) {

@@ -3,7 +3,7 @@
  *
  * @group unit/idempotency/makeFunctionIdempotent
  */
-import { IdempotencyOptions } from '../../src/types/IdempotencyOptions';
+import { IdempotencyFunctionOptions } from '../../src/types/IdempotencyOptions';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
 import type { AnyIdempotentFunction, IdempotencyRecordOptions } from '../../src/types';
@@ -27,7 +27,7 @@ class PersistenceLayerTestClass extends BasePersistenceLayer {
 
 describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
   beforeEach(() => jest.clearAllMocks());
-  describe('Given options for idempotency', (options: IdempotencyOptions = {
+  describe('Given options for idempotency', (options: IdempotencyFunctionOptions = {
     persistenceStore: new PersistenceLayerTestClass(),
     dataKeywordArgument: 'testingKey'
   }) => {

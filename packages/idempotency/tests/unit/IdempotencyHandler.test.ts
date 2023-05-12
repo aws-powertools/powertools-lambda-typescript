@@ -10,7 +10,7 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError
 } from '../../src/Exceptions';
-import { IdempotencyRecordStatus, IdempotencyOptions, } from '../../src/types';
+import { IdempotencyFunctionOptions, IdempotencyRecordStatus, } from '../../src/types';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
 import { IdempotencyConfig } from '../..//src/IdempotencyConfig';
@@ -24,8 +24,9 @@ class PersistenceLayerTestClass extends BasePersistenceLayer {
 
 const mockFunctionToMakeIdempotent = jest.fn();
 const mockFunctionPayloadToBeHashed = {};
-const mockIdempotencyOptions: IdempotencyOptions = {
+const mockIdempotencyOptions: IdempotencyFunctionOptions = {
   persistenceStore: new PersistenceLayerTestClass(),
+  dataKeywordArgument: 'testKeywordArgument',
   config: new IdempotencyConfig({})
 };
 const mockFullFunctionPayload = {};
@@ -33,7 +34,6 @@ const mockFullFunctionPayload = {};
 const idempotentHandler = new IdempotencyHandler(
   mockFunctionToMakeIdempotent,
   mockFunctionPayloadToBeHashed,
-  new IdempotencyConfig({}),
   mockIdempotencyOptions.persistenceStore,
   mockFullFunctionPayload,
 );

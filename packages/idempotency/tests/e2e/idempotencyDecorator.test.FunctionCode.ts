@@ -1,10 +1,10 @@
 import { LambdaInterface } from '@aws-lambda-powertools/commons';
 import { DynamoDBPersistenceLayer } from '../../src/persistence';
-import { idempotent } from '../../src/idempotentDecorator';
+import { idempotentFunction, idempotentLambdaHandler } from '../../src/idempotentDecorator';
 import { Context } from 'aws-lambda';
 import { Logger } from '../../../logger';
 
-const IDEMPOTENCY_TABLE_NAME = process.env.IDEMPOTENCY_TABLE_NAME;
+const IDEMPOTENCY_TABLE_NAME = process.env.IDEMPOTENCY_TABLE_NAME || 'table_name';
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer({
   tableName: IDEMPOTENCY_TABLE_NAME,
 });
@@ -30,7 +30,7 @@ interface EventRecords {
 
 class DefaultLambda implements LambdaInterface {
 
-  @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
+  @idempotentLambdaHandler({ persistenceStore: dynamoDBPersistenceLayer })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public async handler(_event: Record, _context: Context): Promise<string> {
@@ -41,7 +41,7 @@ class DefaultLambda implements LambdaInterface {
     return 'Hello World';
   }
 
-  @idempotent({ persistenceStore: ddbPersistenceLayerCustomized })
+  @idempotentLambdaHandler({ persistenceStore: ddbPersistenceLayerCustomized })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public async handlerCustomized(_event: TestEvent, _context: Context): Promise<string> {
@@ -51,7 +51,7 @@ class DefaultLambda implements LambdaInterface {
     return 'Hello World Customized';
   }
 
-  @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
+  @idempotentLambdaHandler({ persistenceStore: dynamoDBPersistenceLayer })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public async handlerFails(_event: TestEvent, _context: Context): Promise<string> {
@@ -81,7 +81,7 @@ class LambdaWithKeywordArgument implements LambdaInterface {
     return 'Hello World Keyword Argument';
   }
 
-  @idempotent({ persistenceStore: dynamoDBPersistenceLayer, dataKeywordArgument: 'foo' })
+  @idempotentFunction({ persistenceStore: dynamoDBPersistenceLayer, dataKeywordArgument: 'foo' })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   public async process(record: Record<string, unknown>): string {

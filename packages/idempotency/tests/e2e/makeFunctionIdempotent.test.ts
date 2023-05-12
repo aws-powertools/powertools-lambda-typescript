@@ -23,26 +23,25 @@ const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'makeF
 const makeFunctionIdepmpotentFile = 'makeFunctionIdempotent.test.FunctionCode.ts';
 
 const app = new App();
-let stack: Stack;
 
-describe('Idempotency e2e test, default settings', () => {
-  const ddb = new DynamoDBClient({ region: 'eu-west-1' });
-  stack = new Stack(app, stackName);
+const ddb = new DynamoDBClient({ region: 'eu-west-1' });
+const stack = new Stack(app, stackName);
 
-  const functionNameDefault = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'default');
-  const ddbTableNameDefault = stackName + '-default-table';
-  createIdempotencyResources(stack, runtime, ddbTableNameDefault, makeFunctionIdepmpotentFile, functionNameDefault, 'handler');
+const functionNameDefault = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'default');
+const ddbTableNameDefault = stackName + '-default-table';
+createIdempotencyResources(stack, runtime, ddbTableNameDefault, makeFunctionIdepmpotentFile, functionNameDefault, 'handler');
 
-  const functionNameCustom = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'custom');
-  const ddbTableNameCustom = stackName + '-custom-table';
-  createIdempotencyResources(stack, runtime, ddbTableNameCustom, makeFunctionIdepmpotentFile, functionNameCustom, 'handlerCustomized', 'customId');
+const functionNameCustom = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'custom');
+const ddbTableNameCustom = stackName + '-custom-table';
+createIdempotencyResources(stack, runtime, ddbTableNameCustom, makeFunctionIdepmpotentFile, functionNameCustom, 'handlerCustomized', 'customId');
 
-  const functionNameKeywordArg = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'keywordarg');
-  const ddbTableNameKeywordArg = stackName + '-keywordarg-table';
-  createIdempotencyResources(stack, runtime, ddbTableNameKeywordArg, makeFunctionIdepmpotentFile, functionNameKeywordArg, 'handlerWithKeywordArgument');
+const functionNameKeywordArg = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'keywordarg');
+const ddbTableNameKeywordArg = stackName + '-keywordarg-table';
+createIdempotencyResources(stack, runtime, ddbTableNameKeywordArg, makeFunctionIdepmpotentFile, functionNameKeywordArg, 'handlerWithKeywordArgument');
+
+describe('Idempotency e2e test function wrapper, default settings', () => {
 
   beforeAll(async () => {
-
     await deployStack(app, stack);
 
   }, SETUP_TIMEOUT);
@@ -54,26 +53,22 @@ describe('Idempotency e2e test, default settings', () => {
     const payloadHashFirst = createHash('md5').update(JSON.stringify('bar')).digest('base64');
     const payloadHashSecond = createHash('md5').update(JSON.stringify('baz')).digest('base64');
 
-    await ddb.send(new ScanCommand({ TableName: ddbTableNameDefault })).then((result) => {
-      expect(result?.Items?.length).toEqual(2);
-    });
+    const result = await ddb.send(new ScanCommand({ TableName: ddbTableNameDefault }));
+    expect(result?.Items?.length).toEqual(2);
 
-    await ddb.send(new GetCommand({
+    const resultFirst = await ddb.send(new GetCommand({
       TableName: ddbTableNameDefault,
       Key: { id: `${functionNameDefault}#${payloadHashFirst}` }
-    })).then((result) => {
-      expect(result?.Item?.data).toEqual('Processing done: bar');
-      expect(result?.Item?.status).toEqual('COMPLETED');
+    }));
+    expect(resultFirst?.Item?.data).toEqual('Processing done: bar');
+    expect(resultFirst?.Item?.status).toEqual('COMPLETED');
 
-    });
-
-    await ddb.send(new GetCommand({
+    const resultSecond = await ddb.send(new GetCommand({
       TableName: ddbTableNameDefault,
       Key: { id: `${functionNameDefault}#${payloadHashSecond}` }
-    })).then((result) => {
-      expect(result?.Item?.data).toEqual('Processing done: baz');
-      expect(result?.Item?.status).toEqual('COMPLETED');
-    });
+    }));
+    expect(resultSecond?.Item?.data).toEqual('Processing done: baz');
+    expect(resultSecond?.Item?.status).toEqual('COMPLETED');
 
   }, TEST_CASE_TIMEOUT);
 
@@ -82,16 +77,15 @@ describe('Idempotency e2e test, default settings', () => {
     const payloadHash = createHash('md5').update('"bar"').digest('base64');
 
     const invocationLogsCustmozed = await invokeFunction(functionNameCustom, 2, 'SEQUENTIAL', payload, false);
-    await ddb.send(new GetCommand({
+    const result = await ddb.send(new GetCommand({
       TableName: ddbTableNameCustom,
       Key: { customId: `${functionNameCustom}#${payloadHash}` }
-    })).then((data) => {
-      console.log(data);
-      expect(data?.Item?.dataattr).toEqual('Processing done: bar');
-      expect(data?.Item?.statusattr).toEqual('COMPLETED');
-      expect(data?.Item?.expiryattr).toBeGreaterThan(Date.now() / 1000);
-      expect(invocationLogsCustmozed[0].getFunctionLogs().toString()).toContain('Got test event');
-    });
+    }));
+    console.log(result);
+    expect(result?.Item?.dataattr).toEqual('Processing done: bar');
+    expect(result?.Item?.statusattr).toEqual('COMPLETED');
+    expect(result?.Item?.expiryattr).toBeGreaterThan(Date.now() / 1000);
+    expect(invocationLogsCustmozed[0].getFunctionLogs().toString()).toContain('Got test event');
   }, TEST_CASE_TIMEOUT);
 
   afterAll(async () => {

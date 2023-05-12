@@ -7,12 +7,20 @@ import {
   createStackWithLambdaFunction,
   generateUniqueName,
   invokeFunction,
-  isValidRuntimeKey
+  isValidRuntimeKey,
 } from '../../../commons/tests/utils/e2eUtils';
-import { RESOURCE_NAME_PREFIX, SETUP_TIMEOUT, TEARDOWN_TIMEOUT, TEST_CASE_TIMEOUT } from './constants';
+import {
+  RESOURCE_NAME_PREFIX,
+  SETUP_TIMEOUT,
+  TEARDOWN_TIMEOUT,
+  TEST_CASE_TIMEOUT,
+} from './constants';
 import { v4 } from 'uuid';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
-import { deployStack, destroyStack } from '../../../commons/tests/utils/cdk-cli';
+import {
+  deployStack,
+  destroyStack,
+} from '../../../commons/tests/utils/cdk-cli';
 import { App, Aspects, SecretValue, Stack } from 'aws-cdk-lib';
 import path from 'path';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
@@ -44,11 +52,20 @@ if (!isValidRuntimeKey(runtime)) {
  *
  */
 describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () => {
-
   const uuid = v4();
   let invocationLogs: InvocationLogs[];
-  const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'secretsProvider');
-  const functionName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'secretsProvider');
+  const stackName = generateUniqueName(
+    RESOURCE_NAME_PREFIX,
+    uuid,
+    runtime,
+    'secretsProvider'
+  );
+  const functionName = generateUniqueName(
+    RESOURCE_NAME_PREFIX,
+    uuid,
+    runtime,
+    'secretsProvider'
+  );
   const lambdaFunctionCodeFile = 'secretsProvider.class.test.functionCode.ts';
 
   const invocationCount = 1;
@@ -57,15 +74,49 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
   let stack: Stack;
 
   beforeAll(async () => {
-
     // use unique names for each test to keep a clean state
-    const secretNamePlain = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretPlain');
-    const secretNameObject = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretObject');
-    const secretNameBinary = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretBinary');
-    const secretNameObjectWithSuffix = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretObject.json');
-    const secretNameBinaryWithSuffix = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretObject.binary');
-    const secretNamePlainCached = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretPlainCached');
-    const secretNamePlainForceFetch = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'testSecretPlainForceFetch');
+    const secretNamePlain = generateUniqueName(
+      RESOURCE_NAME_PREFIX,
+      uuid,
+      runtime,
+      'testSecretPlain'
+    );
+    const secretNameObject = generateUniqueName(
+      RESOURCE_NAME_PREFIX,
+      uuid,
+      runtime,
+      'testSecretObject'
+    );
+    const secretNameBinary = generateUniqueName(
+      RESOURCE_NAME_PREFIX,
+      uuid,
+      runtime,
+      'testSecretBinary'
+    );
+    const secretNameObjectWithSuffix = generateUniqueName(
+      RESOURCE_NAME_PREFIX,
+      uuid,
+      runtime,
+      'testSecretObject.json'
+    );
+    const secretNameBinaryWithSuffix = generateUniqueName(
+      RESOURCE_NAME_PREFIX,
+      uuid,
+      runtime,
+      'testSecretObject.binary'
+    );
+    const secretNamePlainCached = generateUniqueName(
+      RESOURCE_NAME_PREFIX,
+      uuid,
+      runtime,
+      'testSecretPlainCached'
+    );
+    const secretNamePlainForceFetch = generateUniqueName(
+      RESOURCE_NAME_PREFIX,
+      uuid,
+      runtime,
+      'testSecretPlainForceFetch'
+    );
 
     // creates the test fuction that uses powertools secret provider we want to test
     // pass env vars with secret names we want to fetch
@@ -85,102 +136,140 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
         SECRET_NAME_PLAIN_CACHED: secretNamePlainCached,
         SECRET_NAME_PLAIN_FORCE_FETCH: secretNamePlainForceFetch,
       },
-      runtime: runtime
+      runtime: runtime,
     });
 
     const secretString = new Secret(stack, 'testSecretPlain', {
       secretName: secretNamePlain,
-      secretStringValue: SecretValue.unsafePlainText('foo')
+      secretStringValue: SecretValue.unsafePlainText('foo'),
     });
 
     const secretObject = new Secret(stack, 'testSecretObject', {
       secretName: secretNameObject,
       secretObjectValue: {
         foo: SecretValue.unsafePlainText('bar'),
-      }
+      },
     });
 
     const secretBinary = new Secret(stack, 'testSecretBinary', {
       secretName: secretNameBinary,
-      secretStringValue: SecretValue.unsafePlainText('Zm9v') // 'foo' encoded in base64
+      secretStringValue: SecretValue.unsafePlainText('Zm9v'), // 'foo' encoded in base64
     });
 
-    const secretObjectWithSuffix = new Secret(stack, 'testSecretObjectWithSuffix', {
-      secretName: secretNameObjectWithSuffix,
-      secretObjectValue: {
-        foo: SecretValue.unsafePlainText('bar')
+    const secretObjectWithSuffix = new Secret(
+      stack,
+      'testSecretObjectWithSuffix',
+      {
+        secretName: secretNameObjectWithSuffix,
+        secretObjectValue: {
+          foo: SecretValue.unsafePlainText('bar'),
+        },
       }
-    });
+    );
 
-    const secretBinaryWithSuffix = new Secret(stack, 'testSecretBinaryWithSuffix', {
-      secretName: secretNameBinaryWithSuffix,
-      secretStringValue: SecretValue.unsafePlainText('Zm9v') // 'foo' encoded in base64
-    });
+    const secretBinaryWithSuffix = new Secret(
+      stack,
+      'testSecretBinaryWithSuffix',
+      {
+        secretName: secretNameBinaryWithSuffix,
+        secretStringValue: SecretValue.unsafePlainText('Zm9v'), // 'foo' encoded in base64
+      }
+    );
 
     const secretStringCached = new Secret(stack, 'testSecretStringCached', {
       secretName: secretNamePlainCached,
-      secretStringValue: SecretValue.unsafePlainText('foo')
+      secretStringValue: SecretValue.unsafePlainText('foo'),
     });
 
-    const secretStringForceFetch = new Secret(stack, 'testSecretStringForceFetch', {
-      secretName: secretNamePlainForceFetch,
-      secretStringValue: SecretValue.unsafePlainText('foo')
-    });
+    const secretStringForceFetch = new Secret(
+      stack,
+      'testSecretStringForceFetch',
+      {
+        secretName: secretNamePlainForceFetch,
+        secretStringValue: SecretValue.unsafePlainText('foo'),
+      }
+    );
 
     // add secrets here to grant lambda permisisons to access secrets
-    Aspects.of(stack).add(new ResourceAccessGranter([
-      secretString, secretObject, secretBinary, secretObjectWithSuffix, secretBinaryWithSuffix, secretStringCached, secretStringForceFetch ]));
+    Aspects.of(stack).add(
+      new ResourceAccessGranter([
+        secretString,
+        secretObject,
+        secretBinary,
+        secretObjectWithSuffix,
+        secretBinaryWithSuffix,
+        secretStringCached,
+        secretStringForceFetch,
+      ])
+    );
 
     await deployStack(integTestApp, stack);
 
-    invocationLogs = await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
-
+    invocationLogs = await invokeFunction(
+      functionName,
+      invocationCount,
+      'SEQUENTIAL'
+    );
   }, SETUP_TIMEOUT);
 
   describe('SecretsProvider usage', () => {
+    it(
+      'should retrieve a secret as plain string',
+      async () => {
+        const logs = invocationLogs[0].getFunctionLogs();
+        const testLog = InvocationLogs.parseFunctionLog(logs[0]);
 
-    it('should retrieve a secret as plain string', async () => {
+        expect(testLog).toStrictEqual({
+          test: 'get-plain',
+          value: 'foo',
+        });
+      },
+      TEST_CASE_TIMEOUT
+    );
 
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[0]);
+    it(
+      'should retrieve a secret using transform json option',
+      async () => {
+        const logs = invocationLogs[0].getFunctionLogs();
+        const testLog = InvocationLogs.parseFunctionLog(logs[1]);
 
-      expect(testLog).toStrictEqual({
-        test: 'get-plain',
-        value: 'foo'
-      });
-    }, TEST_CASE_TIMEOUT);
+        expect(testLog).toStrictEqual({
+          test: 'get-transform-json',
+          value: { foo: 'bar' },
+        });
+      },
+      TEST_CASE_TIMEOUT
+    );
 
-    it('should retrieve a secret using transform json option', async () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[1]);
+    it(
+      'should retrieve a secret using transform binary option',
+      async () => {
+        const logs = invocationLogs[0].getFunctionLogs();
+        const testLog = InvocationLogs.parseFunctionLog(logs[2]);
 
-      expect(testLog).toStrictEqual({
-        test: 'get-transform-json',
-        value: { foo: 'bar' }
-      });
-    }, TEST_CASE_TIMEOUT);
-
-    it('should retrieve a secret using transform binary option', async () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[2]);
-
-      expect(testLog).toStrictEqual({
-        test: 'get-transform-binary',
-        value: 'foo'
-      });
-    }, TEST_CASE_TIMEOUT);
+        expect(testLog).toStrictEqual({
+          test: 'get-transform-binary',
+          value: 'foo',
+        });
+      },
+      TEST_CASE_TIMEOUT
+    );
   });
 
-  it('should retrieve a secret using transform auto option with implicit json', async () => {
-    const logs = invocationLogs[0].getFunctionLogs();
-    const testLog = InvocationLogs.parseFunctionLog(logs[3]);
+  it(
+    'should retrieve a secret using transform auto option with implicit json',
+    async () => {
+      const logs = invocationLogs[0].getFunctionLogs();
+      const testLog = InvocationLogs.parseFunctionLog(logs[3]);
 
-    // result should be a json object
-    expect(testLog).toStrictEqual({
-      test: 'get-transform-auto-json',
-      value: { foo: 'bar' }
-    });
-  }, TEST_CASE_TIMEOUT);
+      // result should be a json object
+      expect(testLog).toStrictEqual({
+        test: 'get-transform-auto-json',
+        value: { foo: 'bar' },
+      });
+    },
+    TEST_CASE_TIMEOUT
+  );
 
   it('should retrieve a secret using transform auto option with implicit binary', async () => {
     const logs = invocationLogs[0].getFunctionLogs();
@@ -188,7 +277,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
 
     expect(testLog).toStrictEqual({
       test: 'get-transform-auto-binary',
-      value: 'foo'
+      value: 'foo',
     });
   });
 
@@ -199,7 +288,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
     // we fetch twice, but we expect to make an API call only once
     expect(testLogFirst).toStrictEqual({
       test: 'get-plain-cached',
-      value: 1
+      value: 1,
     });
   });
 
@@ -210,7 +299,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
     // we fetch twice, 2nd time with forceFetch: true flag, we expect two api calls
     expect(testLogFirst).toStrictEqual({
       test: 'get-plain-force',
-      value: 2
+      value: 2,
     });
   });
 

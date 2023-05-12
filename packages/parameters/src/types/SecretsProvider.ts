@@ -1,11 +1,8 @@
-import type {
-  GetOptionsInterface,
-  TransformOptions
-} from './BaseProvider';
+import type { GetOptionsInterface, TransformOptions } from './BaseProvider';
 import type {
   SecretsManagerClient,
   SecretsManagerClientConfig,
-  GetSecretValueCommandInput
+  GetSecretValueCommandInput,
 } from '@aws-sdk/client-secrets-manager';
 
 /**
@@ -16,8 +13,8 @@ import type {
  *  @property {never} [awsSdkV3Client] - This property should never be passed.
  */
 interface SecretsProviderOptionsWithClientConfig {
-  clientConfig?: SecretsManagerClientConfig
-  awsSdkV3Client?: never
+  clientConfig?: SecretsManagerClientConfig;
+  awsSdkV3Client?: never;
 }
 
 /**
@@ -29,8 +26,8 @@ interface SecretsProviderOptionsWithClientConfig {
  *  @property {never} [clientConfig] - This property should never be passed.
  */
 interface SecretsProviderOptionsWithClientInstance {
-  awsSdkV3Client?: SecretsManagerClient
-  clientConfig?: never
+  awsSdkV3Client?: SecretsManagerClient;
+  clientConfig?: never;
 }
 
 /**
@@ -40,11 +37,13 @@ interface SecretsProviderOptionsWithClientInstance {
  * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
  * @property {AppConfigDataClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during SecretsProvider class instantiation. Mutually exclusive with clientConfig.
  */
-type SecretsProviderOptions = SecretsProviderOptionsWithClientConfig | SecretsProviderOptionsWithClientInstance;
+type SecretsProviderOptions =
+  | SecretsProviderOptionsWithClientConfig
+  | SecretsProviderOptionsWithClientInstance;
 
 /**
  * Options to configure the retrieval of a secret.
- * 
+ *
  * @interface SecretsGetOptionsInterface
  * @extends {GetOptionsInterface}
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
@@ -56,39 +55,45 @@ interface SecretsGetOptions extends GetOptionsInterface {
   /**
    * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetSecretValueCommandInput`.
    */
-  sdkOptions?: Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>
-  transform?: Exclude<TransformOptions, 'auto'>
+  sdkOptions?: Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>;
+  transform?: Exclude<TransformOptions, 'auto'>;
 }
 
 interface SecretsGetOptionsTransformJson extends SecretsGetOptions {
-  transform: 'json'
+  transform: 'json';
 }
 
 interface SecretsGetOptionsTransformBinary extends SecretsGetOptions {
-  transform: 'binary'
+  transform: 'binary';
 }
 
 interface SecretsGetOptionsTransformNone extends SecretsGetOptions {
-  transform?: never
+  transform?: never;
 }
 
 type SecretsGetOptionsUnion =
-  SecretsGetOptionsTransformNone | 
-  SecretsGetOptionsTransformJson |
-  SecretsGetOptionsTransformBinary |
-  undefined;
+  | SecretsGetOptionsTransformNone
+  | SecretsGetOptionsTransformJson
+  | SecretsGetOptionsTransformBinary
+  | undefined;
 
 /**
  * Generic output type for the SecretsProvider get method.
  */
-type SecretsGetOutput<ExplicitUserProvidedType = undefined, InferredFromOptionsType = undefined> =
-  undefined extends ExplicitUserProvidedType ? 
-    undefined extends InferredFromOptionsType ? string | Uint8Array :
-      InferredFromOptionsType extends SecretsGetOptionsTransformNone ? string | Uint8Array :
-        InferredFromOptionsType extends SecretsGetOptionsTransformBinary ? string :
-          InferredFromOptionsType extends SecretsGetOptionsTransformJson ? Record<string, unknown> :
-            never
-    : ExplicitUserProvidedType;
+type SecretsGetOutput<
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType = undefined
+> = undefined extends ExplicitUserProvidedType
+  ? undefined extends InferredFromOptionsType
+    ? string | Uint8Array
+    : InferredFromOptionsType extends SecretsGetOptionsTransformNone
+    ? string | Uint8Array
+    : InferredFromOptionsType extends SecretsGetOptionsTransformBinary
+    ? string
+    : InferredFromOptionsType extends SecretsGetOptionsTransformJson
+    ? Record<string, unknown>
+    : never
+  : ExplicitUserProvidedType;
 
 export type {
   SecretsProviderOptions,

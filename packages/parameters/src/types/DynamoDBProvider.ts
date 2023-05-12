@@ -1,5 +1,13 @@
-import type { GetOptionsInterface, GetMultipleOptionsInterface } from './BaseProvider';
-import type { DynamoDBClient, GetItemCommandInput, QueryCommandInput, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
+import type {
+  GetOptionsInterface,
+  GetMultipleOptionsInterface,
+} from './BaseProvider';
+import type {
+  DynamoDBClient,
+  GetItemCommandInput,
+  QueryCommandInput,
+  DynamoDBClientConfig,
+} from '@aws-sdk/client-dynamodb';
 
 /**
  * Base interface for DynamoDBProviderOptions.
@@ -11,10 +19,10 @@ import type { DynamoDBClient, GetItemCommandInput, QueryCommandInput, DynamoDBCl
  * @property {string} [valueAttr] - The DynamoDB table value attribute name. Defaults to 'value'.
  */
 interface DynamoDBProviderOptionsBaseInterface {
-  tableName: string
-  keyAttr?: string
-  sortAttr?: string
-  valueAttr?: string
+  tableName: string;
+  keyAttr?: string;
+  sortAttr?: string;
+  valueAttr?: string;
 }
 
 /**
@@ -25,9 +33,10 @@ interface DynamoDBProviderOptionsBaseInterface {
  * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
  * @property {never} [awsSdkV3Client] - This property should never be passed.
  */
-interface DynamoDBProviderOptionsWithClientConfig extends DynamoDBProviderOptionsBaseInterface {
-  clientConfig?: DynamoDBClientConfig
-  awsSdkV3Client?: never
+interface DynamoDBProviderOptionsWithClientConfig
+  extends DynamoDBProviderOptionsBaseInterface {
+  clientConfig?: DynamoDBClientConfig;
+  awsSdkV3Client?: never;
 }
 
 /**
@@ -38,9 +47,10 @@ interface DynamoDBProviderOptionsWithClientConfig extends DynamoDBProviderOption
  * @property {AppConfigDataClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during AppConfigProvider class instantiation
  * @property {never} [clientConfig] - This property should never be passed.
  */
-interface DynamoDBProviderOptionsWithClientInstance extends DynamoDBProviderOptionsBaseInterface {
-  awsSdkV3Client?: DynamoDBClient
-  clientConfig?: never
+interface DynamoDBProviderOptionsWithClientInstance
+  extends DynamoDBProviderOptionsBaseInterface {
+  awsSdkV3Client?: DynamoDBClient;
+  clientConfig?: never;
 }
 
 /**
@@ -54,7 +64,9 @@ interface DynamoDBProviderOptionsWithClientInstance extends DynamoDBProviderOpti
  * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
  * @property {AppConfigDataClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation. Mutually exclusive with clientConfig.
  */
-type DynamoDBProviderOptions = DynamoDBProviderOptionsWithClientConfig | DynamoDBProviderOptionsWithClientInstance;
+type DynamoDBProviderOptions =
+  | DynamoDBProviderOptionsWithClientConfig
+  | DynamoDBProviderOptionsWithClientInstance;
 
 /**
  * Options for the DynamoDBProvider get method.
@@ -67,7 +79,10 @@ type DynamoDBProviderOptions = DynamoDBProviderOptionsWithClientConfig | DynamoD
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  */
 interface DynamoDBGetOptionsInterface extends GetOptionsInterface {
-  sdkOptions?: Omit<Partial<GetItemCommandInput>, 'Key' | 'TableName' | 'ProjectionExpression'>
+  sdkOptions?: Omit<
+    Partial<GetItemCommandInput>,
+    'Key' | 'TableName' | 'ProjectionExpression'
+  >;
 }
 
 /**
@@ -81,8 +96,9 @@ interface DynamoDBGetOptionsInterface extends GetOptionsInterface {
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  * @property {boolean} throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
  */
-interface DynamoDBGetMultipleOptionsInterface extends GetMultipleOptionsInterface {
-  sdkOptions?: Partial<QueryCommandInput>
+interface DynamoDBGetMultipleOptionsInterface
+  extends GetMultipleOptionsInterface {
+  sdkOptions?: Partial<QueryCommandInput>;
 }
 
 export type {

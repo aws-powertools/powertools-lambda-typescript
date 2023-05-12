@@ -2,8 +2,10 @@ import { ConfigServiceInterface } from './ConfigServiceInterface';
 import { DEFAULT_MAX_AGE_SECS } from '../constants';
 import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
-class EnvironmentVariablesService extends CommonEnvironmentVariablesService implements ConfigServiceInterface {
-
+class EnvironmentVariablesService
+  extends CommonEnvironmentVariablesService
+  implements ConfigServiceInterface
+{
   // Environment variables
   private parametersMaxAgeVariable = 'POWERTOOLS_PARAMETERS_MAX_AGE';
   private ssmDecryptVariable = 'POWERTOOLS_PARAMETERS_SSM_DECRYPT';
@@ -12,7 +14,7 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
     const maxAge = this.get(this.parametersMaxAgeVariable);
 
     if (maxAge.length === 0) return undefined;
-    
+
     const maxAgeAsNumber = parseInt(maxAge, 10);
     if (isNaN(maxAgeAsNumber)) {
       console.warn(
@@ -26,9 +28,6 @@ class EnvironmentVariablesService extends CommonEnvironmentVariablesService impl
   public getSSMDecrypt(): string {
     return this.get(this.ssmDecryptVariable);
   }
-
 }
 
-export {
-  EnvironmentVariablesService,
-};
+export { EnvironmentVariablesService };

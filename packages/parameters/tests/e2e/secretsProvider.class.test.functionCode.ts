@@ -11,19 +11,27 @@ const defaultProvider = new SecretsProvider();
 const secretNamePlain = process.env.SECRET_NAME_PLAIN || '';
 const secretNameObject = process.env.SECRET_NAME_OBJECT || '';
 const secretNameBinary = process.env.SECRET_NAME_BINARY || '';
-const secretNameObjectWithSuffix = process.env.SECRET_NAME_OBJECT_WITH_SUFFIX || '';
-const secretNameBinaryWithSuffix = process.env.SECRET_NAME_BINARY_WITH_SUFFIX || '';
+const secretNameObjectWithSuffix =
+  process.env.SECRET_NAME_OBJECT_WITH_SUFFIX || '';
+const secretNameBinaryWithSuffix =
+  process.env.SECRET_NAME_BINARY_WITH_SUFFIX || '';
 const secretNamePlainChached = process.env.SECRET_NAME_PLAIN_CACHED || '';
-const secretNamePlainForceFetch = process.env.SECRET_NAME_PLAIN_FORCE_FETCH || '';
+const secretNamePlainForceFetch =
+  process.env.SECRET_NAME_PLAIN_FORCE_FETCH || '';
 
 // Provider test 8, 9
 const customClient = new SecretsManagerClient({});
 customClient.middlewareStack.use(middleware);
 const providerWithMiddleware = new SecretsProvider({
-  awsSdkV3Client: customClient
+  awsSdkV3Client: customClient,
 });
 
-const _call_get = async (paramName: string, testName: string, options?: SecretsGetOptionsInterface, provider?: SecretsProvider,): Promise<void> => {
+const _call_get = async (
+  paramName: string,
+  testName: string,
+  options?: SecretsGetOptionsInterface,
+  provider?: SecretsProvider
+): Promise<void> => {
   try {
     // we might get a provider with specific sdk options, otherwise fallback to default
     const currentProvider = provider ? provider : defaultProvider;
@@ -31,32 +39,42 @@ const _call_get = async (paramName: string, testName: string, options?: SecretsG
     const parameterValue = await currentProvider.get(paramName, options);
     logger.log({
       test: testName,
-      value: parameterValue
+      value: parameterValue,
     });
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message
+      error: err.message,
     });
   }
 };
 
-export const handler = async (_event: unknown, _context: Context): Promise<void> => {
-
+export const handler = async (
+  _event: unknown,
+  _context: Context
+): Promise<void> => {
   // Test 1 get single secret as plaintext
   await _call_get(secretNamePlain, 'get-plain');
 
   // Test 2 get single secret with transform json
-  await _call_get(secretNameObject, 'get-transform-json', { transform: 'json' });
+  await _call_get(secretNameObject, 'get-transform-json', {
+    transform: 'json',
+  });
 
   // Test 3 get single secret with transform binary
-  await _call_get(secretNameBinary, 'get-transform-binary', { transform: 'binary' });
+  await _call_get(secretNameBinary, 'get-transform-binary', {
+    transform: 'binary',
+  });
 
   // Test 4 get single secret with transform auto json
-  await _call_get(secretNameObjectWithSuffix, 'get-transform-auto-json', { transform: 'auto' });
+  await _call_get(secretNameObjectWithSuffix, 'get-transform-auto-json', {
+    transform: 'auto',
+  });
 
   // Test 5 get single secret with transform auto binary
-  await _call_get(secretNameBinaryWithSuffix, 'get-transform-auto-binary', { transform: 'auto' });
+  await _call_get(secretNameBinaryWithSuffix, 'get-transform-auto-binary', {
+    transform: 'auto',
+  });
 
   // Test 6
   // get secret twice with middleware, which counts number of SDK requests, we check later if we only called SecretManager API once
@@ -66,12 +84,12 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     await providerWithMiddleware.get(secretNamePlainChached);
     logger.log({
       test: 'get-plain-cached',
-      value: middleware.counter // should be 1
+      value: middleware.counter, // should be 1
     });
   } catch (err) {
     logger.log({
       test: secretNamePlainChached,
-      error: err.message
+      error: err.message,
     });
   }
   // Test 7
@@ -80,16 +98,17 @@ export const handler = async (_event: unknown, _context: Context): Promise<void>
     middleware.counter = 0;
     providerWithMiddleware.clearCache();
     await providerWithMiddleware.get(secretNamePlainForceFetch);
-    await providerWithMiddleware.get(secretNamePlainForceFetch, { forceFetch: true });
+    await providerWithMiddleware.get(secretNamePlainForceFetch, {
+      forceFetch: true,
+    });
     logger.log({
       test: 'get-plain-force',
-      value: middleware.counter // should be 2
+      value: middleware.counter, // should be 2
     });
   } catch (err) {
     logger.log({
       test: secretNamePlainChached,
-      error: err.message
+      error: err.message,
     });
   }
-
 };

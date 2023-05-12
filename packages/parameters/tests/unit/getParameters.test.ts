@@ -14,25 +14,29 @@ import 'aws-sdk-client-mock-jest';
  * generic types defined in the utility are working as expected. If they are not, the tests will fail to compile.
  */
 describe('Function: getParameters', () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('when called and a default provider doesn\'t exist, it instantiates one and returns the value', async () => {
-
+  test('when called and a default provider does not exist, it instantiates one and returns the value', async () => {
     // Prepare
     const parameterPath = '/foo';
     const parameterValue = 'bar';
-    const client = mockClient(SSMClient).on(GetParametersByPathCommand).resolves({
-      Parameters: [{
-        Name: '/foo/bar',
-        Value: parameterValue,
-      }],
-    });
+    const client = mockClient(SSMClient)
+      .on(GetParametersByPathCommand)
+      .resolves({
+        Parameters: [
+          {
+            Name: '/foo/bar',
+            Value: parameterValue,
+          },
+        ],
+      });
 
     // Act
-    const parameters: Record<string, string> | undefined = await getParameters(parameterPath);
+    const parameters: Record<string, string> | undefined = await getParameters(
+      parameterPath
+    );
 
     // Assess
     expect(client).toReceiveCommandWith(GetParametersByPathCommand, {
@@ -41,91 +45,99 @@ describe('Function: getParameters', () => {
     expect(parameters).toEqual({
       bar: parameterValue,
     });
-
   });
 
   test('when called and a default provider exists, it uses it and returns the value', async () => {
-
     // Prepare
     const provider = new SSMProvider();
     DEFAULT_PROVIDERS.ssm = provider;
     const parameterPath = '/foo';
     const parameterValue = 'bar';
-    const client = mockClient(SSMClient).on(GetParametersByPathCommand).resolves({
-      Parameters: [{
-        Name: '/foo/bar',
-        Value: parameterValue,
-      }],
-    });
+    const client = mockClient(SSMClient)
+      .on(GetParametersByPathCommand)
+      .resolves({
+        Parameters: [
+          {
+            Name: '/foo/bar',
+            Value: parameterValue,
+          },
+        ],
+      });
 
     // Act
-    const parameters: Record<string, string> | undefined = await getParameters(parameterPath);
+    const parameters: Record<string, string> | undefined = await getParameters(
+      parameterPath
+    );
 
     // Assess
     expect(client).toReceiveCommandWith(GetParametersByPathCommand, {
       Path: parameterPath,
     });
     expect(parameters).toEqual({
-      'bar': parameterValue,
+      bar: parameterValue,
     });
     expect(DEFAULT_PROVIDERS.ssm).toBe(provider);
-
   });
 
   test('when called and transform `JSON` is specified, it returns an object with correct type', async () => {
-
     // Prepare
     const provider = new SSMProvider();
     DEFAULT_PROVIDERS.ssm = provider;
     const parameterPath = '/foo';
     const parameterValue = JSON.stringify({ hello: 'world' });
-    const client = mockClient(SSMClient).on(GetParametersByPathCommand).resolves({
-      Parameters: [{
-        Name: '/foo/bar',
-        Value: parameterValue,
-      }],
-    });
+    const client = mockClient(SSMClient)
+      .on(GetParametersByPathCommand)
+      .resolves({
+        Parameters: [
+          {
+            Name: '/foo/bar',
+            Value: parameterValue,
+          },
+        ],
+      });
 
     // Act
-    const parameters: Record<string, Record<string, unknown>> | undefined = await getParameters(parameterPath);
+    const parameters: Record<string, Record<string, unknown>> | undefined =
+      await getParameters(parameterPath);
 
     // Assess
     expect(client).toReceiveCommandWith(GetParametersByPathCommand, {
       Path: parameterPath,
     });
     expect(parameters).toStrictEqual({
-      'bar': parameterValue,
+      bar: parameterValue,
     });
     expect(DEFAULT_PROVIDERS.ssm).toBe(provider);
-
   });
 
   test('when called and transform `JSON` is specified as well as an explicit `K` type, it returns a result with correct type', async () => {
-
     // Prepare
     const provider = new SSMProvider();
     DEFAULT_PROVIDERS.ssm = provider;
     const parameterPath = '/foo';
     const parameterValue = JSON.stringify(5);
-    const client = mockClient(SSMClient).on(GetParametersByPathCommand).resolves({
-      Parameters: [{
-        Name: '/foo/bar',
-        Value: parameterValue,
-      }],
-    });
+    const client = mockClient(SSMClient)
+      .on(GetParametersByPathCommand)
+      .resolves({
+        Parameters: [
+          {
+            Name: '/foo/bar',
+            Value: parameterValue,
+          },
+        ],
+      });
 
     // Act
-    const parameters: Record<string, Record<string, number>> | undefined = await getParameters<Record<string, number>>(parameterPath);
+    const parameters: Record<string, Record<string, number>> | undefined =
+      await getParameters<Record<string, number>>(parameterPath);
 
     // Assess
     expect(client).toReceiveCommandWith(GetParametersByPathCommand, {
       Path: parameterPath,
     });
     expect(parameters).toStrictEqual({
-      'bar': parameterValue,
+      bar: parameterValue,
     });
     expect(DEFAULT_PROVIDERS.ssm).toBe(provider);
-
   });
-
 });

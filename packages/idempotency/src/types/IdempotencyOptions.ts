@@ -1,6 +1,6 @@
 import type { Context } from 'aws-lambda';
 import { BasePersistenceLayer } from '../persistence/BasePersistenceLayer';
-import { IdempotencyConfig } from 'IdempotencyConfig';
+import { IdempotencyConfig } from '../IdempotencyConfig';
 
 type IdempotencyOptions = {
   persistenceStore: BasePersistenceLayer

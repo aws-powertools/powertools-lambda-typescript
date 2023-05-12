@@ -11,7 +11,7 @@ export const handler = async (): Promise<void> => {
 
   // Retrieve multiple parameters from a path prefix
   const parameters = await parametersProvider.getMultiple('/my/path/prefix');
-  for (const [ key, value ] of Object.entries(parameters || {})) {
+  for (const [key, value] of Object.entries(parameters || {})) {
     console.log(`${key}: ${value}`);
   }
 };

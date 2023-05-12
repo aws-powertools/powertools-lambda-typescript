@@ -88,7 +88,7 @@ For multiple parameters, you can use either:
 
 === "getParametersByName"
 
-    ```typescript hl_lines="1-4 7-9 14" title="Fetching multiple parameters by names from SSM"
+    ```typescript hl_lines="1-2 4-11 15" title="Fetching multiple parameters by names from SSM"
     --8<-- "docs/snippets/parameters/getParametersByName.ts"
     ```
 
@@ -101,7 +101,7 @@ For multiple parameters, you can use either:
 	* Keep only successful parameter names and their values in the response
 	* Throw `GetParameterError` if any of your parameters is named `_errors`
 
-```typescript hl_lines="1-4 7-8 13 15 18"
+```typescript hl_lines="9 13-15 18"
 --8<-- "docs/snippets/parameters/getParametersByNameGracefulErrorHandling.ts"
 ```
 
@@ -134,7 +134,7 @@ You can adjust how long values should be kept in cache by using the param `maxAg
 ???+ tip
 	If you want to set the same TTL for all parameters, you can set the `POWERTOOLS_PARAMETERS_MAX_AGE` environment variable. **This will override the default TTL of 5 seconds but can be overridden by the `maxAge` parameter**.
 
-```typescript hl_lines="7 11" title="Caching parameters values in memory for longer than 5 seconds"
+```typescript hl_lines="8 14" title="Caching parameters values in memory for longer than 5 seconds"
 --8<-- "docs/snippets/parameters/adjustingCacheTTL.ts"
 ```
 
@@ -174,7 +174,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 ???+ tip
 	If you want to always decrypt parameters, you can set the `POWERTOOLS_PARAMETERS_SSM_DECRYPT=true` environment variable. **This will override the default value of `false` but can be overridden by the `decrypt` parameter**.
 
-```typescript hl_lines="6 9" title="Example with get() and getMultiple()"
+```typescript hl_lines="6 12" title="Example with get() and getMultiple()"
 --8<-- "docs/snippets/parameters/ssmProviderDecryptAndRecursive.ts"
 ```
 
@@ -300,7 +300,7 @@ You can override this by setting the `throwOnTransformError` argument to `true`.
 
 For example, if you have three parameters, */param/a*, */param/b* and */param/c*, but */param/c* is malformed:
 
-```typescript hl_lines="19-22" title="Throwing TransformParameterError at first malformed parameter"
+```typescript hl_lines="23" title="Throwing TransformParameterError at first malformed parameter"
 --8<-- "docs/snippets/parameters/transformPartialFailures.ts"
 ```
 
@@ -313,7 +313,7 @@ You can do this with a single request by using `transform: 'auto'`. This will in
 ???+ info
     `transform: 'auto'` feature is available across all providers, including the high level functions.
 
-```typescript hl_lines="6" title="Deserializing parameter values based on their suffix"
+```typescript hl_lines="7" title="Deserializing parameter values based on their suffix"
 --8<-- "docs/snippets/parameters/transformAuto.ts"
 ```
 
@@ -380,12 +380,12 @@ You can use the `awsSdkV3Client` parameter via any of the available [Provider Cl
 	```
 
 === "SecretsProvider"
-	```typescript hl_lines="5 7"
+	```typescript hl_lines="5 8"
 	--8<-- "docs/snippets/parameters/secretsProviderCustomClient.ts"
 	```
 
 === "AppConfigProvider"
-	```typescript hl_lines="5 7"
+	```typescript hl_lines="5 8"
 	--8<-- "docs/snippets/parameters/appConfigProviderCustomClient.ts"
 	```
 
@@ -415,7 +415,7 @@ The **`clientConfig`** parameter enables you to pass in a custom [config object]
 For unit testing your applications, you can mock the calls to the parameters utility to avoid calling AWS APIs. This can be achieved in a number of ways - in this example, we use [Jest mock functions](https://jestjs.io/docs/es6-class-mocks#the-4-ways-to-create-an-es6-class-mock) to patch the `getParameters` function.
 
 === "handler.test.ts"
-	```typescript hl_lines="2 4-7 12 18"
+	```typescript hl_lines="2 4-9 13 18"
 	--8<-- "docs/snippets/parameters/testingYourCodeFunctionsJestMock.ts"
 	```
 
@@ -429,7 +429,7 @@ With this pattern in place, you can customize the return values of the mocked fu
 A similar pattern can be applied also to any of the built-in provider classes - in this other example, we use [Jest spyOn method](https://jestjs.io/docs/es6-class-mocks#mocking-a-specific-method-of-a-class) to patch the `get` function of the `AppConfigProvider` class. This is useful also when you want to test that the correct arguments are being passed to the Parameters utility.
 
 === "handler.test.ts"
-	```typescript hl_lines="2 6 9 21"
+	```typescript hl_lines="2 5 8 19 26-27"
 	--8<-- "docs/snippets/parameters/testingYourCodeProvidersJestMock.ts"
 	```
 
@@ -441,7 +441,7 @@ A similar pattern can be applied also to any of the built-in provider classes - 
 In some other cases, you might want to mock the AWS SDK v3 client itself, in these cases we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-jest`](https://www.npmjs.com/package/aws-sdk-client-mock-jest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
 
 === "handler.test.ts"
-	```typescript hl_lines="2-8 12 19 25-31"
+	```typescript hl_lines="2-8 11 14 18 23-30"
 	--8<-- "docs/snippets/parameters/testingYourCodeClientJestMock.ts"
 	```
 
@@ -457,6 +457,6 @@ Parameters utility caches all parameter values for performance and cost reasons.
 Within your tests, you can use `clearCache` method available in [every provider](#built-in-provider-class). When using multiple providers or higher level functions like `getParameter`, use the `clearCaches` standalone function to clear cache globally.
 
 === "handler.test.ts"
-	```typescript hl_lines="1 9-11"
+	```typescript hl_lines="1 9"
 	--8<-- "docs/snippets/parameters/testingYourCodeClearCache.ts"
 	```

@@ -53,7 +53,7 @@ The `Metrics` utility must always be instantiated outside of the Lambda handler.
 
 === "handler.ts"
 
-    ```typescript hl_lines="1 3"
+    ```typescript hl_lines="1 3-6"
     --8<-- "docs/snippets/metrics/basicUsage.ts"
     ```
 
@@ -63,10 +63,10 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all metrics emitted:
 
-| Setting              | Description                                                     | Environment variable          | Default            | Allowed Values | Example            | Constructor parameter |
-|----------------------|-----------------------------------------------------------------|-------------------------------|--------------------|----------------|--------------------|-----------------------|
-| **Service**          | Optionally, sets **service** metric dimension across all metrics| `POWERTOOLS_SERVICE_NAME`     | `service_undefined`| Any string     | `serverlessAirline`| `serviceName`         |
-| **Metric namespace** | Logical container where all metrics will be placed              | `POWERTOOLS_METRICS_NAMESPACE`| `default_namespace`| Any string     | `serverlessAirline`|  `default_namespace`          |
+| Setting              | Description                                                      | Environment variable           | Default             | Allowed Values | Example             | Constructor parameter |
+| -------------------- | ---------------------------------------------------------------- | ------------------------------ | ------------------- | -------------- | ------------------- | --------------------- |
+| **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`      | `service_undefined` | Any string     | `serverlessAirline` | `serviceName`         |
+| **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE` | `default_namespace` | Any string     | `serverlessAirline` | `default_namespace`   |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics
@@ -103,13 +103,13 @@ You can create metrics using the `addMetric` method, and you can create dimensio
 
 === "Metrics"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="12"
     --8<-- "docs/snippets/metrics/createMetrics.ts"
     ```
 
 === "Metrics with custom dimensions"
 
-    ```typescript hl_lines="6-7"
+    ```typescript hl_lines="12-13"
     --8<-- "docs/snippets/metrics/customDimensions.ts"
     ```
 
@@ -131,7 +131,7 @@ You can create [high-resolution metrics](https://aws.amazon.com/about-aws/whats-
 
 === "Metrics with high resolution"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="4 20"
     --8<-- "docs/snippets/metrics/addHighResolutionMetric.ts"
     ```
 
@@ -144,7 +144,7 @@ You can call `addMetric()` with the same name multiple times. The values will be
 
 === "addMetric() with the same name"
 
-    ```typescript hl_lines="7 9"
+    ```typescript hl_lines="12 14"
     --8<-- "docs/snippets/metrics/multiValueMetrics.ts"
     ```
 === "Example CloudWatch Logs excerpt"
@@ -199,19 +199,19 @@ You can add default dimensions to your metrics by passing them as parameters in 
         You can install Middy by running `npm i @middy/core`.
         Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
 
-    ```typescript hl_lines="1-2 11 13"
+    ```typescript hl_lines="24-26"
     --8<-- "docs/snippets/metrics/defaultDimensionsMiddy.ts"
     ```
 
 === "setDefaultDimensions method"
 
-    ```typescript hl_lines="4"
+    ```typescript hl_lines="7"
     --8<-- "docs/snippets/metrics/setDefaultDimensions.ts"
     ```
 
 === "with logMetrics decorator"
 
-    ```typescript hl_lines="9"
+    ```typescript hl_lines="12"
     --8<-- "docs/snippets/metrics/defaultDimensionsDecorator.ts"
     ```
 
@@ -245,7 +245,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
 
 === "handler.ts"
 
-    ```typescript hl_lines="1-2 7 10-11"
+    ```typescript hl_lines="20"
     --8<-- "docs/snippets/metrics/middy.ts"
     ```
 
@@ -285,7 +285,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 
 === "handler.ts"
 
-    ```typescript hl_lines="8"
+    ```typescript hl_lines="10"
     --8<-- "docs/snippets/metrics/decorator.ts"
     ```
 
@@ -326,7 +326,7 @@ You can manually flush the metrics with `publishStoredMetrics` as follows:
 
 === "handler.ts"
 
-    ```typescript hl_lines="7"
+    ```typescript hl_lines="13"
     --8<-- "docs/snippets/metrics/manual.ts"
     ```
 
@@ -364,7 +364,7 @@ If you want to ensure that at least one metric is emitted before you flush them,
 
 === "handler.ts"
 
-    ```typescript hl_lines="11"
+    ```typescript hl_lines="21"
     --8<-- "docs/snippets/metrics/throwOnEmptyMetrics.ts"
     ```
 
@@ -374,13 +374,13 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="11"
+    ```typescript hl_lines="21"
     --8<-- "docs/snippets/metrics/captureColdStartMetricMiddy.ts"
     ```
 
 === "logMetrics decorator"
 
-    ```typescript hl_lines="8"
+    ```typescript hl_lines="10"
     --8<-- "docs/snippets/metrics/captureColdStartMetricDecorator.ts"
     ```
 
@@ -404,7 +404,7 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
 
 === "handler.ts"
 
-    ```typescript hl_lines="8"
+    ```typescript hl_lines="18"
     --8<-- "docs/snippets/metrics/addMetadata.ts"
     ```
 
@@ -456,13 +456,13 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="11 13-14"
+    ```typescript hl_lines="21 23-24"
     --8<-- "docs/snippets/metrics/singleMetricDifferentDimsMiddy.ts"
     ```
 
 === "logMetrics decorator"
 
-    ```typescript hl_lines="14 16-17"
+    ```typescript hl_lines="16 18-19"
     --8<-- "docs/snippets/metrics/singleMetricDifferentDimsDecorator.ts"
     ```
 

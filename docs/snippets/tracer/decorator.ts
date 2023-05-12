@@ -10,6 +10,6 @@ class Lambda implements LambdaInterface {
     tracer.getSegment();
   }
 }
- 
+
 const handlerClass = new Lambda();
 export const handler = handlerClass.handler.bind(handlerClass); // (1)

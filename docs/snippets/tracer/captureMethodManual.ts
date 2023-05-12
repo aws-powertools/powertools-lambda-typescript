@@ -4,9 +4,12 @@ const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
 const getChargeId = async (): Promise<unknown> => {
   const parentSubsegment = tracer.getSegment(); // This is the subsegment currently active
-  // Create subsegment for the function & set it as active
-  const subsegment = parentSubsegment.addNewSubsegment(`### chargeId`);
-  tracer.setSegment(subsegment);
+  let subsegment;
+  if (parentSubsegment) {
+    // Create subsegment for the function & set it as active
+    subsegment = parentSubsegment.addNewSubsegment(`### chargeId`);
+    tracer.setSegment(subsegment);
+  }
 
   let res;
   try {
@@ -19,15 +22,19 @@ const getChargeId = async (): Promise<unknown> => {
     throw err;
   }
 
-  // Close subsegment (the AWS Lambda one is closed automatically)
-  subsegment.close();
-  // Set the facade segment as active again
-  tracer.setSegment(parentSubsegment);
+  if (parentSubsegment && subsegment) {
+    // Close subsegment (the AWS Lambda one is closed automatically)
+    subsegment.close();
+    // Set the facade segment as active again
+    tracer.setSegment(parentSubsegment);
+  }
 
   return res;
 };
 
-export const handler = async (_event: unknown, _context: unknown): Promise<void> => {
+export const handler = async (
+  _event: unknown,
+  _context: unknown
+): Promise<void> => {
   await getChargeId();
-  
 };

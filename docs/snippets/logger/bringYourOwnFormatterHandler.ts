@@ -10,15 +10,15 @@ const logger = new Logger({
     awsAccountId: process.env.AWS_ACCOUNT_ID,
     logger: {
       name: '@aws-lambda-powertools/logger',
-      version: '0.0.1'
-    }
+      version: '0.0.1',
+    },
   },
 });
 
 export const handler = async (event, context): Promise<void> => {
-
   logger.addContext(context);
 
-  logger.info('This is an INFO log', { correlationIds: { myCustomCorrelationId: 'foo-bar-baz' } });
-
+  logger.info('This is an INFO log', {
+    correlationIds: { myCustomCorrelationId: 'foo-bar-baz' },
+  });
 };

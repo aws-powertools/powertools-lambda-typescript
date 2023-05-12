@@ -44,13 +44,13 @@ The `Tracer` utility must always be instantiated outside of the Lambda handler. 
 
 The library has three optional settings. You can set them as environment variables, or pass them in the constructor:
 
-| Setting                    | Description                                                           | Environment variable                       | Default            | Allowed Values   | Example            | Constructor parameter  |
-|----------------------------|-----------------------------------------------------------------------| -------------------------------------------|--------------------|------------------|--------------------|------------------------|
-| **Service name**           | Sets an annotation with the **name of the service** across all traces | `POWERTOOLS_SERVICE_NAME`                  | `service_undefined`| Any string       | `serverlessAirline`| `serviceName`          |
-| **Tracing enabled**        | Enables or disables tracing.                                          | `POWERTOOLS_TRACE_ENABLED`                 | `true             `| `true` or `false`| `false`            | `enabled`              |
-| **Capture HTTPs Requests** | Defines whether HTTPs requests will be traced or not                  | `POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS` | `true`             | `true` or `false`| `false`            | `captureHTTPsRequests` |
-| **Capture Response**       | Defines whether functions responses are serialized as metadata        | `POWERTOOLS_TRACER_CAPTURE_RESPONSE`       | `true`             | `true` or `false`| `false`            | `captureResult`        |
-| **Capture Errors**         | Defines whether functions errors are serialized as metadata           | `POWERTOOLS_TRACER_CAPTURE_ERROR`          | `true`             | `true` or `false`| `false`            | N/A                    |
+| Setting                    | Description                                                           | Environment variable                       | Default             | Allowed Values    | Example             | Constructor parameter  |
+| -------------------------- | --------------------------------------------------------------------- | ------------------------------------------ | ------------------- | ----------------- | ------------------- | ---------------------- |
+| **Service name**           | Sets an annotation with the **name of the service** across all traces | `POWERTOOLS_SERVICE_NAME`                  | `service_undefined` | Any string        | `serverlessAirline` | `serviceName`          |
+| **Tracing enabled**        | Enables or disables tracing.                                          | `POWERTOOLS_TRACE_ENABLED`                 | `true             ` | `true` or `false` | `false`             | `enabled`              |
+| **Capture HTTPs Requests** | Defines whether HTTPs requests will be traced or not                  | `POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS` | `true`              | `true` or `false` | `false`             | `captureHTTPsRequests` |
+| **Capture Response**       | Defines whether functions responses are serialized as metadata        | `POWERTOOLS_TRACER_CAPTURE_RESPONSE`       | `true`              | `true` or `false` | `false`             | `captureResult`        |
+| **Capture Errors**         | Defines whether functions errors are serialized as metadata           | `POWERTOOLS_TRACER_CAPTURE_ERROR`          | `true`              | `true` or `false` | `false`             | N/A                    |
 
 !!! note
     Before your use this utility, your AWS Lambda function must have [Active Tracing enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html) as well as [have permissions](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html#services-xray-permissions) to send traces to AWS X-Ray
@@ -89,7 +89,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         You can install Middy by running `npm i @middy/core`.
         Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
 
-    ```typescript hl_lines="1-2 11 13"
+    ```typescript hl_lines="1-2 14 16"
     --8<-- "docs/snippets/tracer/middy.ts"
     ```
 
@@ -110,7 +110,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Manual"
 
-    ```typescript hl_lines="6 8-9 12-13 19 22 26 28"
+    ```typescript hl_lines="9-15 18-19 23 26 29-34"
     --8<-- "docs/snippets/tracer/manual.ts"
     ```
 
@@ -131,13 +131,13 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
 === "Annotations"
     You can add annotations using `putAnnotation` method.
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="9"
     --8<-- "docs/snippets/tracer/putAnnotation.ts"
     ```
 === "Metadata"
     You can add metadata using `putMetadata` method.
 
-    ```typescript hl_lines="7"
+    ```typescript hl_lines="9-11"
     --8<-- "docs/snippets/tracer/putMetadata.ts"
     ```
 
@@ -161,7 +161,7 @@ You can trace other Class methods using the `captureMethod` decorator or any arb
 
 === "Manual"
 
-    ```typescript hl_lines="6 8-9 15 18 23 25"
+    ```typescript hl_lines="6-12 18 21 25-30"
     --8<-- "docs/snippets/tracer/captureMethodManual.ts"
     ```
 
@@ -188,7 +188,7 @@ You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
 
 === "index.ts"
 
-    ```typescript hl_lines="4"
+    ```typescript hl_lines="5"
     --8<-- "docs/snippets/tracer/captureAWSAll.ts"
     ```
 
@@ -212,7 +212,7 @@ You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HT
 
 === "index.ts"
 
-    ```typescript hl_lines="2 7"
+    ```typescript hl_lines="2"
     --8<-- "docs/snippets/tracer/captureHTTP.ts"
     ```
 
@@ -263,7 +263,7 @@ Alternatively, use the `captureResponse: false` option in both `tracer.captureLa
 
 === "method.ts"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="7"
     --8<-- "docs/snippets/tracer/disableCaptureResponseMethod.ts"
     ```
 
@@ -275,7 +275,7 @@ Alternatively, use the `captureResponse: false` option in both `tracer.captureLa
 
 === "middy.ts"
 
-    ```typescript hl_lines="14"
+    ```typescript hl_lines="17"
     --8<-- "docs/snippets/tracer/disableCaptureResponseMiddy.ts"
     ```
 
@@ -298,7 +298,7 @@ Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [
 
 === "index.ts"
 
-    ```typescript hl_lines="9"
+    ```typescript hl_lines="11"
     --8<-- "docs/snippets/tracer/accessRootTraceId.ts"
     ```
 

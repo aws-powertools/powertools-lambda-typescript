@@ -46,12 +46,12 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all logs emitted:
 
-| Setting                 | Description                                                                                                      | Environment variable            | Default Value       | Allowed Values                            | Example Value      | Constructor parameter |
-|-------------------------|------------------------------------------------------------------------------------------------------------------|---------------------------------|---------------------|-------------------------------------------|--------------------|-----------------------|
-| **Service name**        | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                | `serverlessAirline`| `serviceName`         |
-| **Logging level**       | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `LOG_LEVEL`                     | `info`              |`DEBUG`, `INFO`, `WARN`, `ERROR`, `SILENT` | `ERROR`            | `logLevel`            |
-| **Log incoming event**  | Whether to log or not the incoming event when using the decorator or middleware                                  | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                           | `false`            | `logEvent`            |
-| **Debug log sampling**  | Probability that a Lambda invocation will print all the log items regardless of the log level setting            | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1`                              | `0.5`              | `sampleRateValue`     |
+| Setting                | Description                                                                                                      | Environment variable            | Default Value       | Allowed Values                             | Example Value       | Constructor parameter |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- | ------------------------------------------ | ------------------- | --------------------- |
+| **Service name**       | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                 | `serverlessAirline` | `serviceName`         |
+| **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `LOG_LEVEL`                     | `info`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `SILENT` | `ERROR`             | `logLevel`            |
+| **Log incoming event** | Whether to log or not the incoming event when using the decorator or middleware                                  | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                            | `false`             | `logEvent`            |
+| **Debug log sampling** | Probability that a Lambda invocation will print all the log items regardless of the log level setting            | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1`                               | `0.5`               | `sampleRateValue`     |
 
 #### Example using AWS Serverless Application Model (SAM)
 
@@ -80,7 +80,7 @@ These settings will be used across all logs emitted:
 Your Logger will include the following keys to your structured logging (default log formatter):
 
 | Key                         | Example                                                                                                          | Note                                                                                                                                                                                                                            |
-|-----------------------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **level**: `string`         | `INFO`                                                                                                           | Logging level set for the Lambda function's invocation                                                                                                                                                                          |
 | **message**: `string`       | `Query performed to DynamoDB`                                                                                    | A descriptive, human-readable representation of this log item                                                                                                                                                                   |
 | **sampling_rate**: `float`  | `0.1`                                                                                                            | When enabled, it prints all the logs of a percentage of invocations, e.g. 10%                                                                                                                                                   |
@@ -98,13 +98,13 @@ You can enrich your structured logs with key Lambda context information in multi
 
 This functionality will include the following keys in your structured logs:
 
-Key | Example
-------------------------------------------------- | ---------------------------------------------------------------------------------
-**cold_start**: `bool` | `false`
-**function_name** `string` | `shopping-cart-api-lambda-prod-eu-west-1`
-**function_memory_size**: `number` | `128`
-**function_arn**: `string` | `arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1`
-**function_request_id**: `string` | `c6af9ac6-7b61-11e6-9a41-93e812345678`
+| Key                                | Example                                                                                  |
+| ---------------------------------- | ---------------------------------------------------------------------------------------- |
+| **cold_start**: `bool`             | `false`                                                                                  |
+| **function_name** `string`         | `shopping-cart-api-lambda-prod-eu-west-1`                                                |
+| **function_memory_size**: `number` | `128`                                                                                    |
+| **function_arn**: `string`         | `arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1` |
+| **function_request_id**: `string`  | `c6af9ac6-7b61-11e6-9a41-93e812345678`                                                   |
 
 === "Middy Middleware"
 
@@ -112,7 +112,7 @@ Key | Example
         You can install Middy by running `npm i @middy/core`.
         Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
 
-    ```typescript hl_lines="1-2 10-11"
+    ```typescript hl_lines="1-2 13"
     --8<-- "docs/snippets/logger/middy.ts"
     ```
 
@@ -126,7 +126,7 @@ Key | Example
 
 === "Manual"
 
-    ```typescript hl_lines="7"
+    ```typescript hl_lines="6"
     --8<-- "docs/snippets/logger/manual.ts"
     ```
 
@@ -158,7 +158,7 @@ When debugging in non-production environments, you can instruct Logger to log th
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="11"
+    ```typescript hl_lines="10"
     --8<-- "docs/snippets/logger/eventMiddy.ts"
     ```
 
@@ -182,7 +182,7 @@ To remove the keys you added, you can use the `removeKeys` method.
 
 === "handler.ts"
 
-    ```typescript hl_lines="5-13 17-25 30"
+    ```typescript hl_lines="5-13 17-25 32"
     --8<-- "docs/snippets/logger/appendKeys.ts"
     ```
 === "Example CloudWatch Logs excerpt"
@@ -229,7 +229,7 @@ If you want to make sure that persistent attributes added **inside the handler f
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="27"
+    ```typescript hl_lines="30"
     --8<-- "docs/snippets/logger/clearStateMiddy.ts"
     ```
 
@@ -294,7 +294,7 @@ You can append additional data to a single log item by passing objects as additi
 
 === "handler.ts"
 
-    ```typescript hl_lines="14 18-20 24 32"
+    ```typescript hl_lines="16-18 23-25 37"
     --8<-- "docs/snippets/logger/extraData.ts"
     ```
 === "Example CloudWatch Logs excerpt"
@@ -347,7 +347,7 @@ The error will be logged with default key name `error`, but you can also pass yo
 
 === "handler.ts"
 
-    ```typescript hl_lines="11 18"
+    ```typescript hl_lines="13 20-22"
     --8<-- "docs/snippets/logger/logError.ts"
     ```
 
@@ -396,7 +396,7 @@ The `createChild` method allows you to create a child instance of the Logger, wh
 
 === "handler.ts"
 
-    ```typescript hl_lines="9-11 18-19"
+    ```typescript hl_lines="16-18"
     --8<-- "docs/snippets/logger/createChild.ts"
     ```
 
@@ -447,7 +447,8 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
 
     However, it might still be useful to print all the logs (including debug ones) of a very small percentage of invocations to have a better understanding of the behaviour of your code in production even when there are no errors.
     
-    Sampling decision happens at the Logger initialization. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
+    **Sampling decision happens at the Logger initialization**. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
+    If you want to reset the sampling decision and refresh it for each invocation, you can call the `logger.refreshSampleRateCalculation()` method at the beginning or end of your handler.
 
 === "handler.ts"
 

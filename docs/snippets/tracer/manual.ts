@@ -7,9 +7,12 @@ export const handler = async (
   _context: unknown
 ): Promise<unknown> => {
   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
-  // Create subsegment for the function & set it as active
-  const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
-  tracer.setSegment(subsegment);
+  let subsegment;
+  if (segment) {
+    // Create subsegment for the function & set it as active
+    subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
+    tracer.setSegment(subsegment);
+  }
 
   // Annotate the subsegment with the cold start & serviceName
   tracer.annotateColdStart();
@@ -23,10 +26,12 @@ export const handler = async (
     tracer.addErrorAsMetadata(err as Error);
     throw err;
   } finally {
-    // Close subsegment (the AWS Lambda one is closed automatically)
-    subsegment.close();
-    // Set back the facade segment as active again
-    tracer.setSegment(segment);
+    if (segment && subsegment) {
+      // Close subsegment (the AWS Lambda one is closed automatically)
+      subsegment.close();
+      // Set back the facade segment as active again
+      tracer.setSegment(segment);
+    }
   }
 
   return {};

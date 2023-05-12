@@ -12,13 +12,14 @@
     "test": "echo 'Not applicable'",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
-    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
-    "lint-fix": "eslint --fix --ext .ts --fix --no-error-on-unmatched-pattern src tests",
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --fix --no-error-on-unmatched-pattern .",
     "test:unit": "jest --group=unit",
     "test:e2e": "RUNTIME=nodejs14x jest --group=e2e"
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix"
+    "*.ts": "npm run lint-fix",
+    "*.js": "npm run lint-fix"
   },
   "repository": {
     "type": "git",

@@ -42,27 +42,28 @@ const getMetrics = async (
   }, retryOptions);
 };
 
-const setupDecoratorLambdaHandler = (metrics: Metrics, options: ExtraOptions = {}): Handler => {
-    
+const setupDecoratorLambdaHandler = (
+  metrics: Metrics,
+  options: ExtraOptions = {}
+): Handler => {
   class LambdaFunction implements LambdaInterface {
     @metrics.logMetrics(options)
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    public async handler<TEvent>(_event: TEvent, _context: Context): Promise<string> {
+    public async handler<TEvent>(
+      _event: TEvent,
+      _context: Context
+    ): Promise<string> {
       metrics.addMetric('decorator-lambda-test-metric', MetricUnits.Count, 1);
-        
+
       return 'Lambda invoked!';
     }
   }
-  
+
   const handlerClass = new LambdaFunction();
   const handler = handlerClass.handler.bind(handlerClass);
-  
+
   return handler;
 };
 
-export {
-  getMetrics,
-  setupDecoratorLambdaHandler
-};
-
+export { getMetrics, setupDecoratorLambdaHandler };

@@ -1,6 +1,4 @@
-import {
-  ContextMissingStrategy
-} from 'aws-xray-sdk-core/dist/lib/context_utils';
+import { ContextMissingStrategy } from 'aws-xray-sdk-core/dist/lib/context_utils';
 import { Namespace } from 'cls-hooked';
 import { ProviderServiceInterface } from '.';
 import {
@@ -18,7 +16,7 @@ import {
   setContextMissingStrategy,
   setDaemonAddress,
   setLogger,
-  Logger
+  Logger,
 } from 'aws-xray-sdk-core';
 
 class ProviderService implements ProviderServiceInterface {
@@ -36,11 +34,19 @@ class ProviderService implements ProviderServiceInterface {
     return captureAWSv3Client(service as any);
   }
 
-  public captureAsyncFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, _parent?: Segment | Subsegment): unknown {
+  public captureAsyncFunc(
+    name: string,
+    fcn: (subsegment?: Subsegment) => unknown,
+    _parent?: Segment | Subsegment
+  ): unknown {
     return captureAsyncFunc(name, fcn);
   }
-  
-  public captureFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, _parent?: Segment | Subsegment): unknown {
+
+  public captureFunc(
+    name: string,
+    fcn: (subsegment?: Subsegment) => unknown,
+    _parent?: Segment | Subsegment
+  ): unknown {
     return captureFunc(name, fcn);
   }
 
@@ -62,13 +68,17 @@ class ProviderService implements ProviderServiceInterface {
   public putAnnotation(key: string, value: string | number | boolean): void {
     const segment = this.getSegment();
     if (segment === undefined) {
-      console.warn('No active segment or subsegment found, skipping annotation');
+      console.warn(
+        'No active segment or subsegment found, skipping annotation'
+      );
 
       return;
     }
     if (segment instanceof Segment) {
-      console.warn('You cannot annotate the main segment in a Lambda execution environment');
-      
+      console.warn(
+        'You cannot annotate the main segment in a Lambda execution environment'
+      );
+
       return;
     }
     segment.addAnnotation(key, value);
@@ -77,13 +87,17 @@ class ProviderService implements ProviderServiceInterface {
   public putMetadata(key: string, value: unknown, namespace?: string): void {
     const segment = this.getSegment();
     if (segment === undefined) {
-      console.warn('No active segment or subsegment found, skipping metadata addition');
+      console.warn(
+        'No active segment or subsegment found, skipping metadata addition'
+      );
 
       return;
     }
     if (segment instanceof Segment) {
-      console.warn('You cannot add metadata to the main segment in a Lambda execution environment');
-      
+      console.warn(
+        'You cannot add metadata to the main segment in a Lambda execution environment'
+      );
+
       return;
     }
     segment.addMetadata(key, value, namespace);
@@ -100,13 +114,10 @@ class ProviderService implements ProviderServiceInterface {
   public setLogger(logObj: unknown): void {
     setLogger(logObj as Logger);
   }
-  
+
   public setSegment(segment: Segment | Subsegment): void {
     setSegment(segment);
   }
-
 }
 
-export {
-  ProviderService
-};
+export { ProviderService };

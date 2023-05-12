@@ -12,7 +12,7 @@ const CHILD_LOG_LEVEL = (process.env.CHILD_LOG_LEVEL || 'warn') as LogLevel;
 const parentLogger = new Logger({
   persistentLogAttributes: {
     [PERSISTENT_KEY]: PERSISTENT_VALUE,
-  }
+  },
 });
 
 // Create a child logger
@@ -20,9 +20,12 @@ const childLogger = parentLogger.createChild({
   logLevel: CHILD_LOG_LEVEL,
 });
 
-export const handler = async (_event: TestEvent, context: Context): TestOutput => {
+export const handler = async (
+  _event: TestEvent,
+  context: Context
+): TestOutput => {
   parentLogger.addContext(context);
-  
+
   childLogger.info(CHILD_LOG_MSG);
   childLogger.error(CHILD_LOG_MSG);
   parentLogger.info(PARENT_LOG_MSG);

@@ -19,14 +19,15 @@
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
     "build": "tsc",
-    "lint": "eslint --ext .ts --no-error-on-unmatched-pattern src tests",
-    "lint-fix": "eslint --fix --ext .ts --no-error-on-unmatched-pattern src tests",
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "package-bundle": "../../package-bundler.sh tracer-bundle ./dist",
     "prepare": "npm run build"
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix"
+    "*.ts": "npm run lint-fix",
+    "*.js": "npm run lint-fix"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/tracer#readme",
   "license": "MIT-0",

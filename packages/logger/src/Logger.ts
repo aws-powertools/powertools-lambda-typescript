@@ -44,7 +44,7 @@ import type {
  * // Logger parameters fetched from the environment variables:
  * const logger = new Logger();
  * ```
- * 
+ *
  * ### Functions usage with middleware
  *
  * If you use function-based Lambda handlers you can use the [injectLambdaContext()](#injectLambdaContext)
@@ -76,9 +76,9 @@ import type {
  * const logger = new Logger();
  *
  * class Lambda implements LambdaInterface {
- * 
+ *
  *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@logger* instead of `@logger.injectLambdaContext`
- * 
+ *
  *     // Decorate your handler class method
  *     @logger.injectLambdaContext()
  *     public async handler(_event: any, _context: any): Promise<void> {
@@ -89,7 +89,7 @@ import type {
  * const handlerClass = new Lambda();
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
- * 
+ *
  * ### Functions usage with manual instrumentation
  *
  * If you prefer to manually instrument your Lambda handler you can use the methods in the Logger class directly.
@@ -111,7 +111,6 @@ import type {
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/
  */
 class Logger extends Utility implements ClassThatLogs {
-
   // console is initialized in the constructor in setOptions()
   private console!: Console;
 
@@ -122,7 +121,7 @@ class Logger extends Utility implements ClassThatLogs {
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
 
-  private logEvent: boolean = false;
+  private logEvent = false;
 
   private logFormatter?: LogFormatterInterface;
 
@@ -140,7 +139,7 @@ class Logger extends Utility implements ClassThatLogs {
     SILENT: 28,
   };
 
-  private logsSampled: boolean = false;
+  private logsSampled = false;
 
   private persistentLogAttributes?: LogAttributes = {};
 
@@ -212,7 +211,9 @@ class Logger extends Utility implements ClassThatLogs {
       logFormatter: this.getLogFormatter(),
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
-    const childLogger = new Logger(merge(parentsOptions, parentsPowertoolsLogData, options));
+    const childLogger = new Logger(
+      merge(parentsOptions, parentsPowertoolsLogData, options)
+    );
 
     const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
     childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);
@@ -226,11 +227,14 @@ class Logger extends Utility implements ClassThatLogs {
 
   /**
    * It prints a log item with level CRITICAL.
-   * 
+   *
    * @param {LogItemMessage} input
    * @param {Error | LogAttributes | string} extraInput
    */
-  public critical(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
+  public critical(
+    input: LogItemMessage,
+    ...extraInput: LogItemExtraInput
+  ): void {
     this.processLogItem('CRITICAL', input, extraInput);
   }
 
@@ -283,7 +287,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {LogAttributes}
    */
   public getPersistentLogAttributes(): LogAttributes {
-    return <LogAttributes> this.persistentLogAttributes;
+    return this.persistentLogAttributes as LogAttributes;
   }
 
   /**
@@ -300,13 +304,13 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * Method decorator that adds the current Lambda function context as extra
    * information in all log items.
-   * 
+   *
    * The decorator can be used only when attached to a Lambda function handler which
    * is written as method of a class, and should be declared just before the handler declaration.
    *
    * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
    * function syntax, you should use the middleware instead.
-   * 
+   *
    * @example
    * ```typescript
    * import { Logger } from '@aws-lambda-powertools/logger';
@@ -325,7 +329,7 @@ class Logger extends Utility implements ClassThatLogs {
    * const handlerClass = new Lambda();
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
-   * 
+   *
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */
@@ -341,36 +345,55 @@ class Logger extends Utility implements ClassThatLogs {
       const loggerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
-      descriptor.value = (async function (this: Handler, event, context, callback) {
-
+      descriptor.value = async function (
+        this: Handler,
+        event,
+        context,
+        callback
+      ) {
         let initialPersistentAttributes = {};
         if (options && options.clearState === true) {
-          initialPersistentAttributes = { ...loggerRef.getPersistentLogAttributes() };
+          initialPersistentAttributes = {
+            ...loggerRef.getPersistentLogAttributes(),
+          };
         }
 
         Logger.injectLambdaContextBefore(loggerRef, event, context, options);
 
         let result: unknown;
         try {
-          result = await originalMethod.apply(this, [ event, context, callback ]);
+          result = await originalMethod.apply(this, [event, context, callback]);
         } catch (error) {
           throw error;
         } finally {
-          Logger.injectLambdaContextAfterOrOnError(loggerRef, initialPersistentAttributes, options);
+          Logger.injectLambdaContextAfterOrOnError(
+            loggerRef,
+            initialPersistentAttributes,
+            options
+          );
         }
 
         return result;
-      });
+      };
     };
   }
 
-  public static injectLambdaContextAfterOrOnError(logger: Logger, initialPersistentAttributes: LogAttributes, options?: HandlerOptions): void {
+  public static injectLambdaContextAfterOrOnError(
+    logger: Logger,
+    initialPersistentAttributes: LogAttributes,
+    options?: HandlerOptions
+  ): void {
     if (options && options.clearState === true) {
       logger.setPersistentLogAttributes(initialPersistentAttributes);
     }
   }
 
-  public static injectLambdaContextBefore(logger: Logger, event: unknown, context: Context, options?: HandlerOptions): void {
+  public static injectLambdaContextBefore(
+    logger: Logger,
+    event: unknown,
+    context: Context,
+    options?: HandlerOptions
+  ): void {
     logger.addContext(context);
 
     let shouldLogEvent = undefined;
@@ -487,7 +510,9 @@ class Logger extends Utility implements ClassThatLogs {
    * @private
    * @returns {void}
    */
-  private addToPowertoolLogData(...attributesArray: Array<Partial<PowertoolLogData>>): void {
+  private addToPowertoolLogData(
+    ...attributesArray: Array<Partial<PowertoolLogData>>
+  ): void {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
       merge(this.powertoolLogData, attributes);
     });
@@ -504,17 +529,26 @@ class Logger extends Utility implements ClassThatLogs {
    * @param {LogItemExtraInput} extraInput
    * @returns {LogItem}
    */
-  private createAndPopulateLogItem(logLevel: LogLevel, input: LogItemMessage, extraInput: LogItemExtraInput): LogItem {
+  private createAndPopulateLogItem(
+    logLevel: LogLevel,
+    input: LogItemMessage,
+    extraInput: LogItemExtraInput
+  ): LogItem {
     // TODO: this method's logic is hard to understand, there is an opportunity here to simplify this logic.
-    const unformattedBaseAttributes = merge({
-      logLevel,
-      timestamp: new Date(),
-      message: typeof input === 'string' ? input : input.message,
-      xRayTraceId: this.envVarsService.getXrayTraceId(),
-    }, this.getPowertoolLogData());
+    const unformattedBaseAttributes = merge(
+      {
+        logLevel,
+        timestamp: new Date(),
+        message: typeof input === 'string' ? input : input.message,
+        xRayTraceId: this.envVarsService.getXrayTraceId(),
+      },
+      this.getPowertoolLogData()
+    );
 
     const logItem = new LogItem({
-      baseAttributes: this.getLogFormatter().formatAttributes(unformattedBaseAttributes),
+      baseAttributes: this.getLogFormatter().formatAttributes(
+        unformattedBaseAttributes
+      ),
       persistentAttributes: this.getPersistentLogAttributes(),
     });
 
@@ -524,9 +558,11 @@ class Logger extends Utility implements ClassThatLogs {
     }
     extraInput.forEach((item: Error | LogAttributes | string) => {
       const attributes: LogAttributes =
-        item instanceof Error ? { error: item } :
-          typeof item === 'string' ? { extra: item } :
-            item;
+        item instanceof Error
+          ? { error: item }
+          : typeof item === 'string'
+          ? { extra: item }
+          : item;
 
       logItem.addAttributes(attributes);
     });
@@ -551,7 +587,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {EnvironmentVariablesService}
    */
   private getEnvVarsService(): EnvironmentVariablesService {
-    return <EnvironmentVariablesService> this.envVarsService;
+    return this.envVarsService as EnvironmentVariablesService;
   }
 
   /**
@@ -562,12 +598,12 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {LogFormatterInterface}
    */
   private getLogFormatter(): LogFormatterInterface {
-    return <LogFormatterInterface> this.logFormatter;
+    return this.logFormatter as LogFormatterInterface;
   }
 
   /**
    * It returns the log level set for the Logger instance.
-   * 
+   *
    * Even though logLevel starts as undefined, it will always be set to a value
    * during the Logger instance's initialization. So, we can safely use the non-null
    * assertion operator here.
@@ -599,9 +635,12 @@ class Logger extends Utility implements ClassThatLogs {
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
    * @private
    */
-  private getReplacer(): (key: string, value: LogAttributes | Error | bigint) => void {
+  private getReplacer(): (
+    key: string,
+    value: LogAttributes | Error | bigint
+  ) => void {
     const references = new WeakSet();
-  
+
     return (key, value) => {
       let item = value;
       if (item instanceof Error) {
@@ -616,7 +655,7 @@ class Logger extends Utility implements ClassThatLogs {
         }
         references.add(item);
       }
-  
+
       return item;
     };
   }
@@ -632,9 +671,9 @@ class Logger extends Utility implements ClassThatLogs {
       this.setSampleRateValue();
     }
 
-    return <number> this.powertoolLogData.sampleRateValue;
+    return this.powertoolLogData.sampleRateValue as number;
   }
-  
+
   /**
    * It returns true and type guards the log level if a given log level is valid.
    *
@@ -642,7 +681,9 @@ class Logger extends Utility implements ClassThatLogs {
    * @private
    * @returns {boolean}
    */
-  private isValidLogLevel(logLevel?: LogLevel | string): logLevel is Uppercase<LogLevel> {
+  private isValidLogLevel(
+    logLevel?: LogLevel | string
+  ): logLevel is Uppercase<LogLevel> {
     return typeof logLevel === 'string' && logLevel in this.logLevelThresholds;
   }
 
@@ -657,11 +698,17 @@ class Logger extends Utility implements ClassThatLogs {
     log.prepareForPrint();
 
     const consoleMethod =
-      logLevel === 'CRITICAL' ?
-        'error' :
-        logLevel.toLowerCase() as keyof Omit<ClassThatLogs, 'critical'>;
+      logLevel === 'CRITICAL'
+        ? 'error'
+        : (logLevel.toLowerCase() as keyof Omit<ClassThatLogs, 'critical'>);
 
-    this.console[consoleMethod](JSON.stringify(log.getAttributes(), this.getReplacer(), this.logIndentation));
+    this.console[consoleMethod](
+      JSON.stringify(
+        log.getAttributes(),
+        this.getReplacer(),
+        this.logIndentation
+      )
+    );
   }
 
   /**
@@ -672,11 +719,18 @@ class Logger extends Utility implements ClassThatLogs {
    * @param {LogItemExtraInput} extraInput
    * @private
    */
-  private processLogItem(logLevel: Uppercase<LogLevel>, input: LogItemMessage, extraInput: LogItemExtraInput): void {
+  private processLogItem(
+    logLevel: Uppercase<LogLevel>,
+    input: LogItemMessage,
+    extraInput: LogItemExtraInput
+  ): void {
     if (!this.shouldPrint(logLevel)) {
       return;
     }
-    this.printLog(logLevel, this.createAndPopulateLogItem(logLevel, input, extraInput));
+    this.printLog(
+      logLevel,
+      this.createAndPopulateLogItem(logLevel, input, extraInput)
+    );
   }
 
   /**
@@ -688,7 +742,10 @@ class Logger extends Utility implements ClassThatLogs {
    */
   private setConsole(): void {
     if (!this.getEnvVarsService().isDevMode()) {
-      this.console = new Console({ stdout: process.stdout, stderr: process.stderr });
+      this.console = new Console({
+        stdout: process.stdout,
+        stderr: process.stderr,
+      });
     } else {
       this.console = console;
     }
@@ -702,8 +759,12 @@ class Logger extends Utility implements ClassThatLogs {
    * @param {ConfigServiceInterface} customConfigService
    * @returns {void}
    */
-  private setCustomConfigService(customConfigService?: ConfigServiceInterface): void {
-    this.customConfigService = customConfigService ? customConfigService : undefined;
+  private setCustomConfigService(
+    customConfigService?: ConfigServiceInterface
+  ): void {
+    this.customConfigService = customConfigService
+      ? customConfigService
+      : undefined;
   }
 
   /**
@@ -711,7 +772,6 @@ class Logger extends Utility implements ClassThatLogs {
    * to fetch environment variables.
    *
    * @private
-   * @param {ConfigServiceInterface} customConfigService
    * @returns {void}
    */
   private setEnvVarsService(): void {
@@ -778,9 +838,7 @@ class Logger extends Utility implements ClassThatLogs {
 
       return;
     }
-    const envVarsValue = this.getEnvVarsService()
-      ?.getLogLevel()
-      ?.toUpperCase();
+    const envVarsValue = this.getEnvVarsService()?.getLogLevel()?.toUpperCase();
     if (this.isValidLogLevel(envVarsValue)) {
       this.logLevel = envVarsValue;
 
@@ -800,7 +858,9 @@ class Logger extends Utility implements ClassThatLogs {
   private setLogsSampled(): void {
     const sampleRateValue = this.getSampleRateValue();
     // TODO: revisit Math.random() as it's not a real randomization
-    this.logsSampled = sampleRateValue !== undefined && (sampleRateValue === 1 || Math.random() < sampleRateValue);
+    this.logsSampled =
+      sampleRateValue !== undefined &&
+      (sampleRateValue === 1 || Math.random() < sampleRateValue);
   }
 
   /**
@@ -833,7 +893,7 @@ class Logger extends Utility implements ClassThatLogs {
     this.setPowertoolLogData(serviceName, environment);
     this.setLogEvent();
     this.setLogIndentation();
-    
+
     this.addPersistentLogAttributes(persistentLogAttributes);
 
     return this;
@@ -851,7 +911,7 @@ class Logger extends Utility implements ClassThatLogs {
   private setPowertoolLogData(
     serviceName?: string,
     environment?: Environment,
-    persistentLogAttributes: LogAttributes = {},
+    persistentLogAttributes: LogAttributes = {}
   ): void {
     this.addToPowertoolLogData(
       {
@@ -862,9 +922,12 @@ class Logger extends Utility implements ClassThatLogs {
           this.getEnvVarsService().getCurrentEnvironment(),
         sampleRateValue: this.getSampleRateValue(),
         serviceName:
-          serviceName || this.getCustomConfigService()?.getServiceName() || this.getEnvVarsService().getServiceName() || this.getDefaultServiceName(),
+          serviceName ||
+          this.getCustomConfigService()?.getServiceName() ||
+          this.getEnvVarsService().getServiceName() ||
+          this.getDefaultServiceName(),
       },
-      persistentLogAttributes,
+      persistentLogAttributes
     );
   }
 

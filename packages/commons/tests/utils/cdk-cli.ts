@@ -4,7 +4,11 @@ import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deploy
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { DeployStackResult } from 'aws-cdk/lib/api/deploy-stack';
 
-export const deployStack = async (app: App, stack: Stack, quiet?: boolean): Promise<DeployStackResult> => {
+export const deployStack = async (
+  app: App,
+  stack: Stack,
+  quiet?: boolean
+): Promise<DeployStackResult> => {
   const stackArtifact = getStackArtifact(app, stack);
 
   const cloudFormation = await createCloudFormationDeployments();
@@ -15,7 +19,11 @@ export const deployStack = async (app: App, stack: Stack, quiet?: boolean): Prom
   });
 };
 
-export const destroyStack = async (app: App, stack: Stack, quiet?: boolean): Promise<void> => {
+export const destroyStack = async (
+  app: App,
+  stack: Stack,
+  quiet?: boolean
+): Promise<void> => {
   const stackArtifact = getStackArtifact(app, stack);
 
   const cloudFormation = await createCloudFormationDeployments();
@@ -26,7 +34,10 @@ export const destroyStack = async (app: App, stack: Stack, quiet?: boolean): Pro
   });
 };
 
-const getStackArtifact = (app: App, stack: Stack): cxapi.CloudFormationStackArtifact => {
+const getStackArtifact = (
+  app: App,
+  stack: Stack
+): cxapi.CloudFormationStackArtifact => {
   const synthesized = app.synth();
 
   // Reload the synthesized artifact for stack using the cxapi from dependencies
@@ -39,11 +50,12 @@ const getStackArtifact = (app: App, stack: Stack): cxapi.CloudFormationStackArti
   ) as cxapi.CloudFormationStackArtifact;
 };
 
-const createCloudFormationDeployments = async (): Promise<CloudFormationDeployments> => {
-  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-    profile: process.env.AWS_PROFILE,
-  });
-  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
+const createCloudFormationDeployments =
+  async (): Promise<CloudFormationDeployments> => {
+    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
+      profile: process.env.AWS_PROFILE,
+    });
+    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
 
-  return cloudFormation;
-};
+    return cloudFormation;
+  };

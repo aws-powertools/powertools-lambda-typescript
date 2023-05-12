@@ -9,10 +9,14 @@ const REMOVABLE_KEY = process.env.REMOVABLE_KEY || 'removableKey';
 const REMOVABLE_VALUE = process.env.REMOVABLE_VALUE || 'remvovableValue';
 const ERROR_MSG = process.env.ERROR_MSG || 'error';
 const RUNTIME_ADDED_KEY = process.env.RUNTIME_ADDED_KEY || 'runtimeAddedKey';
-const SINGLE_LOG_ITEM_KEY = process.env.SINGLE_LOG_ITEM_KEY || 'keyForSingleLogItem';
-const SINGLE_LOG_ITEM_VALUE = process.env.SINGLE_LOG_ITEM_VALUE || 'valueForSingleLogItem';
-const ARBITRARY_OBJECT_KEY = process.env.ARBITRARY_OBJECT_KEY || 'keyForArbitraryObject';
-const ARBITRARY_OBJECT_DATA = process.env.ARBITRARY_OBJECT_DATA || 'arbitrary object data';
+const SINGLE_LOG_ITEM_KEY =
+  process.env.SINGLE_LOG_ITEM_KEY || 'keyForSingleLogItem';
+const SINGLE_LOG_ITEM_VALUE =
+  process.env.SINGLE_LOG_ITEM_VALUE || 'valueForSingleLogItem';
+const ARBITRARY_OBJECT_KEY =
+  process.env.ARBITRARY_OBJECT_KEY || 'keyForArbitraryObject';
+const ARBITRARY_OBJECT_DATA =
+  process.env.ARBITRARY_OBJECT_DATA || 'arbitrary object data';
 
 const logger = new Logger({
   persistentLogAttributes: {
@@ -26,10 +30,11 @@ const testFunction = async (event: TestEvent, context: Context): TestOutput => {
   // Test feature 2: Event log (this log should have the event data)
   // Test feature 3: Log level filtering (log level is set to INFO)
   logger.debug('##### This should not appear');
-  
+
   // Test feature 4: Add and remove persistent additional log keys and value
   logger.removeKeys([REMOVABLE_KEY]); // This key should not appear in any log (except the event log)
-  logger.appendKeys({ // This key-value pair should appear in every log (except the event log)
+  logger.appendKeys({
+    // This key-value pair should appear in every log (except the event log)
     [RUNTIME_ADDED_KEY]: event.invocation,
   });
 
@@ -50,12 +55,14 @@ const testFunction = async (event: TestEvent, context: Context): TestOutput => {
     principalId: ARBITRARY_OBJECT_DATA,
     policyDocument: {
       Version: 'Version 1',
-      Statement: [{
-        Effect: 'Allow',
-        Action: 'geo:*',
-        Resource: '*',
-      }]
-    }
+      Statement: [
+        {
+          Effect: 'Allow',
+          Action: 'geo:*',
+          Resource: '*',
+        },
+      ],
+    },
   };
   logger.info('A log entry with an object', { [ARBITRARY_OBJECT_KEY]: obj });
 
@@ -66,5 +73,6 @@ const testFunction = async (event: TestEvent, context: Context): TestOutput => {
   };
 };
 
-export const handler = middy(testFunction)
-  .use(injectLambdaContext(logger, { clearState: true, logEvent: true }));
+export const handler = middy(testFunction).use(
+  injectLambdaContext(logger, { clearState: true, logEvent: true })
+);

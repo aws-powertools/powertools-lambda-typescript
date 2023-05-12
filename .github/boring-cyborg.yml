@@ -1,0 +1,173 @@
+##### Labeler ##########################################################################################################
+labelPRBasedOnFilePath:
+  area/logger:
+    - packages/logger/src/*
+    - packages/logger/src/**/*
+  area/tracer:
+    - packages/tracer/src/*
+    - packages/tracer/src/**/*
+  area/metrics:
+    - packages/metrics/src/*
+    - packages/metrics/src/**/*
+  area/idempotency:
+    - packages/idempotency/src/*
+    - packages/idempotency/src/**/*
+  area/parameters:
+    - packages/parameters/src/*
+    - packages/parameters/src/**/*
+  area/parser:
+    - packages/parser/src/*
+    - packages/parser/src/**/*
+  area/validator:
+    - packages/validator/src/*
+    - packages/validator/src/**/*
+  area/batch:
+    - packages/batch/src/*
+    - packages/batch/src/**/*
+  area/commons:
+    - packages/commons/src/*
+    - packages/commons/src/**/*
+
+  area/layers:
+    - layers/src/*
+    - layers/src/**/*
+    - layers/bin/*
+    - layers/cdk.json
+
+  type/tests:
+    - packages/logger/tests/*
+    - packages/logger/tests/**/*
+    - packages/logger/jest.config.js
+    - packages/tracer/tests/*
+    - packages/tracer/tests/**/*
+    - packages/tracer/jest.config.js
+    - packages/metrics/tests/*
+    - packages/metrics/tests/**/*
+    - packages/metrics/jest.config.js
+    - packages/idempotency/tests/*
+    - packages/idempotency/tests/**/*
+    - packages/idempotency/jest.config.js
+    - packages/parameters/tests/*
+    - packages/parameters/tests/**/*
+    - packages/parameters/jest.config.js
+    - packages/parser/tests/*
+    - packages/parser/tests/**/*
+    - packages/parser/jest.config.js
+    - packages/validator/tests/*
+    - packages/validator/tests/**/*
+    - packages/validator/jest.config.js
+    - packages/batch/tests/*
+    - packages/batch/tests/**/*
+    - packages/batch/jest.config.js
+    - packages/commons/tests/*
+    - packages/commons/tests/**/*
+    - packages/commons/jest.config.js
+    - layers/jest.config.js
+    - layers/tests/*
+    - layers/tests/**/*
+
+  area/documentation:
+    - docs/*
+    - docs/**/*
+    - mkdocs.yml
+    - typedoc.js
+    - examples/cdk/bin/*
+    - examples/cdk/functions/*
+    - examples/cdk/functions/**/*
+    - examples/cdk/src/*
+    - examples/cdk/src/**/*
+    - examples/cdk/tests/*
+    - examples/cdk/tests/**/*
+    - examples/cdk/README.md
+    - examples/cdk/cdk.json
+    - examples/sam/events/*
+    - examples/sam/src/*
+    - examples/sam/src/**/*
+    - examples/sam/tests/*
+    - examples/sam/tests/**/*
+    - examples/sam/README.md
+    - examples/sam/template.yaml
+
+  area/automation:
+    - .github/scripts/*
+    - .github/scripts/**/*
+    - .github/workflows/*
+    - .github/workflows/**/*
+    - .github/actions/*
+    - .github/actions/**/*
+    - .github/release-drafter.yml
+    - .github/boring-cyborg.yml
+    - .github/semantic.yml
+
+  type/internal:
+    - .github/CODEOWNERS
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/ISSUE_TEMPLATE/*
+    - CONTRIBUTING.md
+    - MAINTAINERS.md
+    - CODE_OF_CONDUCT.md
+    - SECURITY.md
+    - LICENSE
+    - LICENSE-THIRD-PARTY
+    - lerna.json
+    - .nvmrc
+    - .eslintrc.js
+    - .eslintignore
+    - .npmignore
+    - .gitpod.yml
+    - .husky/*
+    - .devcontainer/*
+    - packages/logger/tsconfig*.json
+    - packages/logger/README.md
+    - packages/metrics/tsconfig*.json
+    - packages/metrics/README.md
+    - packages/tracer/tsconfig*.json
+    - packages/tracer/README.md
+    - packages/parser/tsconfig*.json
+    - packages/parser/README.md
+    - packages/idempotency/tsconfig*.json
+    - packages/idempotency/README.md
+    - packages/batch/tsconfig*.json
+    - packages/batch/README.md
+    - packages/commons/tsconfig*.json
+    - packages/commons/README.md
+    - packages/validator/tsconfig*.json
+    - packages/validator/README.md
+    - packages/parser/tsconfig*.json
+    - packages/parser/README.md
+    - layers/tsconfig*.json
+    - layers/README.md
+    - examples/sam/tsconfig*.json
+    - examples/cdk/tsconfig*.json
+
+  type/dependencies:
+    - package.json
+    - package-lock.json
+    - packages/tracer/package.json
+    - packages/metrics/package.json
+    - packages/logger/package.json
+    - packages/commons/package.json
+    - packages/parameters/package.json
+    - packages/idempotency/package.json
+    - packages/parser/package.json
+    - packages/validator/package.json
+    - packages/batch/package.json
+    - layers/package.json
+    - examples/cdk/package.json
+    - examples/sam/package.json
+
+##### Greetings ########################################################################################################
+firstPRWelcomeComment: >
+  Thanks a lot for your first contribution! Please check out our [contributing guidelines](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/chore/pr_automation/CONTRIBUTING.md) and don't hesitate to ask whatever you need.
+
+  In the meantime, check out the #typescript channel on our AWS Lambda Powertools Discord: [Invite link](https://discord.gg/B8zZKbbyET)
+
+# Comment to be posted to congratulate user on their first merged PR
+firstPRMergeComment: >
+  Awesome work, congrats on your first merged pull request and thank you for helping improve everyone's experience!
+
+# Comment to be posted to on first time issues
+firstIssueWelcomeComment: >
+  Thanks for opening your first issue here! We'll come back to you as soon as we can.
+
+  In the meantime, check out the #typescript channel on our AWS Lambda Powertools Discord: [Invite link](https://discord.gg/B8zZKbbyET)

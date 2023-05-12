@@ -2,35 +2,41 @@ import { Namespace } from 'cls-hooked';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 
 interface ProviderServiceInterface {
-  getNamespace(): Namespace
+  getNamespace(): Namespace;
 
-  getSegment(): Segment | Subsegment | undefined
+  getSegment(): Segment | Subsegment | undefined;
 
-  setSegment(segment: Segment | Subsegment): void
+  setSegment(segment: Segment | Subsegment): void;
 
-  setLogger(logObj: unknown): void
+  setLogger(logObj: unknown): void;
 
-  setDaemonAddress(address: string): void
+  setDaemonAddress(address: string): void;
 
-  setContextMissingStrategy(strategy: unknown): void
+  setContextMissingStrategy(strategy: unknown): void;
 
-  captureAWS<T>(awsservice: T): T
+  captureAWS<T>(awsservice: T): T;
 
-  captureAWSClient<T>(awsservice: T): T
+  captureAWSClient<T>(awsservice: T): T;
 
-  captureAWSv3Client<T>(awsservice: T): T
+  captureAWSv3Client<T>(awsservice: T): T;
 
-  captureAsyncFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment): unknown
-  
-  captureFunc(name: string, fcn: (subsegment?: Subsegment) => unknown, parent?: Segment | Subsegment): unknown
+  captureAsyncFunc(
+    name: string,
+    fcn: (subsegment?: Subsegment) => unknown,
+    parent?: Segment | Subsegment
+  ): unknown;
 
-  captureHTTPsGlobal(): void
+  captureFunc(
+    name: string,
+    fcn: (subsegment?: Subsegment) => unknown,
+    parent?: Segment | Subsegment
+  ): unknown;
 
-  putAnnotation(key: string, value: string | number | boolean): void
+  captureHTTPsGlobal(): void;
 
-  putMetadata(key: string, value: unknown, namespace?: string): void
+  putAnnotation(key: string, value: string | number | boolean): void;
+
+  putMetadata(key: string, value: unknown, namespace?: string): void;
 }
 
-export {
-  ProviderServiceInterface
-};
+export { ProviderServiceInterface };

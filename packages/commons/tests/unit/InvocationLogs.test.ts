@@ -1,8 +1,8 @@
 /**
  * Test InvocationLogs class
- * 
+ *
  * @group unit/commons/invocationLogs
- * 
+ *
  */
 
 import { InvocationLogs, LEVEL } from '../utils/InvocationLogs';
@@ -17,28 +17,34 @@ REPORT RequestId: c6af9ac6-7b61-11e6-9a41-93e812345678\tDuration: 2.16 ms\tBille
 
 describe('Constructor', () => {
   test('it should parse base64 text correctly', () => {
-    const invocationLogs = new InvocationLogs(Buffer.from(exampleLogs).toString('base64'));
+    const invocationLogs = new InvocationLogs(
+      Buffer.from(exampleLogs).toString('base64')
+    );
     expect(invocationLogs.getFunctionLogs(LEVEL.DEBUG).length).toBe(1);
     expect(invocationLogs.getFunctionLogs(LEVEL.INFO).length).toBe(2);
     expect(invocationLogs.getFunctionLogs(LEVEL.ERROR).length).toBe(1);
   });
-
 });
 
 describe('doesAnyFunctionLogsContains()', () => {
   let invocationLogs: InvocationLogs;
 
   beforeEach(() => {
-    invocationLogs = new InvocationLogs(Buffer.from(exampleLogs).toString('base64'));
+    invocationLogs = new InvocationLogs(
+      Buffer.from(exampleLogs).toString('base64')
+    );
   });
   test('it should return true if the text appear in any logs', () => {
     const phraseInMessage = 'This is';
-    expect(invocationLogs.doesAnyFunctionLogsContains(phraseInMessage)).toBe(true);
-
+    expect(invocationLogs.doesAnyFunctionLogsContains(phraseInMessage)).toBe(
+      true
+    );
   });
   test('it should return false if the text does not appear in any logs', () => {
     const phraseNotInMessage = 'A quick brown fox jumps over the lazy dog';
-    expect(invocationLogs.doesAnyFunctionLogsContains(phraseNotInMessage)).toBe(false);
+    expect(invocationLogs.doesAnyFunctionLogsContains(phraseNotInMessage)).toBe(
+      false
+    );
   });
 
   test('it should return true for key in the log', () => {
@@ -54,21 +60,35 @@ describe('doesAnyFunctionLogsContains()', () => {
     const textInStartLine = 'Version: $LATEST';
     const textInEndLine = 'END RequestId';
     const textInReportLine = 'Billed Duration';
-    expect(invocationLogs.doesAnyFunctionLogsContains(textInStartLine)).toBe(false);
-    expect(invocationLogs.doesAnyFunctionLogsContains(textInEndLine)).toBe(false);
-    expect(invocationLogs.doesAnyFunctionLogsContains(textInReportLine)).toBe(false);
+    expect(invocationLogs.doesAnyFunctionLogsContains(textInStartLine)).toBe(
+      false
+    );
+    expect(invocationLogs.doesAnyFunctionLogsContains(textInEndLine)).toBe(
+      false
+    );
+    expect(invocationLogs.doesAnyFunctionLogsContains(textInReportLine)).toBe(
+      false
+    );
   });
 
   test('it should apply filter log based on the given level', () => {
-    const debugLogHasWordINFO = invocationLogs.doesAnyFunctionLogsContains('INFO', LEVEL.DEBUG);
+    const debugLogHasWordINFO = invocationLogs.doesAnyFunctionLogsContains(
+      'INFO',
+      LEVEL.DEBUG
+    );
     expect(debugLogHasWordINFO).toBe(true);
 
-    const infoLogHasWordINFO = invocationLogs.doesAnyFunctionLogsContains('INFO', LEVEL.INFO);
+    const infoLogHasWordINFO = invocationLogs.doesAnyFunctionLogsContains(
+      'INFO',
+      LEVEL.INFO
+    );
     expect(infoLogHasWordINFO).toBe(true);
 
-    const errorLogHasWordINFO = invocationLogs.doesAnyFunctionLogsContains('INFO', LEVEL.ERROR);
+    const errorLogHasWordINFO = invocationLogs.doesAnyFunctionLogsContains(
+      'INFO',
+      LEVEL.ERROR
+    );
     expect(errorLogHasWordINFO).toBe(false);
-
   });
 });
 
@@ -76,7 +96,9 @@ describe('getFunctionLogs()', () => {
   let invocationLogs: InvocationLogs;
 
   beforeEach(() => {
-    invocationLogs = new InvocationLogs(Buffer.from(exampleLogs).toString('base64'));
+    invocationLogs = new InvocationLogs(
+      Buffer.from(exampleLogs).toString('base64')
+    );
   });
 
   test('it should retrive logs of the given level only', () => {
@@ -104,17 +126,21 @@ describe('getFunctionLogs()', () => {
 
 describe('parseFunctionLog()', () => {
   test('it should return object with the correct values based on the given log', () => {
-    const rawLogStr = '{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"DEBUG","message":"This is a DEBUG log but contains the word INFO some context and persistent key","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works"}';
+    const rawLogStr =
+      '{"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"DEBUG","message":"This is a DEBUG log but contains the word INFO some context and persistent key","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works"}';
 
     const logObj = InvocationLogs.parseFunctionLog(rawLogStr);
     expect(logObj).toStrictEqual({
       cold_start: true,
-      function_arn: 'arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c',
+      function_arn:
+        'arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c',
       function_memory_size: 128,
-      function_name: 'loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c',
+      function_name:
+        'loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c',
       function_request_id: '7f586697-238a-4c3b-9250-a5f057c1119c',
       level: 'DEBUG',
-      message: 'This is a DEBUG log but contains the word INFO some context and persistent key',
+      message:
+        'This is a DEBUG log but contains the word INFO some context and persistent key',
       service: 'logger-e2e-testing',
       timestamp: '2022-01-27T16:04:39.323Z',
       persistentKey: 'works',

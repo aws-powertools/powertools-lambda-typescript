@@ -1,18 +1,15 @@
 interface ConfigServiceInterface {
+  get(name: string): string;
 
-  get(name: string): string
+  getCaptureHTTPsRequests(): string;
 
-  getCaptureHTTPsRequests(): string
+  getTracingEnabled(): string;
 
-  getTracingEnabled(): string
+  getServiceName(): string;
 
-  getServiceName(): string
+  getTracingCaptureResponse(): string;
 
-  getTracingCaptureResponse(): string
-
-  getTracingCaptureError(): string
+  getTracingCaptureError(): string;
 }
 
-export {
-  ConfigServiceInterface
-};
+export { ConfigServiceInterface };

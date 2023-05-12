@@ -1,7 +1,3 @@
-
-# Created by https://www.toptal.com/developers/gitignore/api/osx,node,linux,windows,sam
-# Edit at https://www.toptal.com/developers/gitignore?templates=osx,node,linux,windows,sam
-
 ### Linux ###
 *~
 
@@ -208,4 +204,5 @@ $RECYCLE.BIN/
 # SAM
 samconfig.toml
 
-# End of https://www.toptal.com/developers/gitignore/api/osx,node,linux,windows,sam
+# npm lock file - this is managed by the npm workspace
+package-lock.json

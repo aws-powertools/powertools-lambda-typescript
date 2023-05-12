@@ -60,31 +60,20 @@ jobs:
           ]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
       - name: aws credentials
-        uses: aws-actions/configure-aws-credentials@186395a8644e48f35e7b453e8a7128d9a3948296
+        uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef # v2.0.0
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.target-account-role }}
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: "18"
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
-        with:
-          path: "./node_modules"
-          # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
-          # if one of them changes the cache is invalidated/discarded
-          key: 18-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}
-      - name: Install dependencies
-        # We can skip the installation if there was a cache hit
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        # See https://github.com/npm/cli/issues/4475 to see why --foreground-scripts
-        run: npm ci --foreground-scripts
+      - name: Setup dependencies
+        uses: ./.github/actions/cached-node-modules
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: ${{ inputs.artifact-name }}
       - name: Unzip artifact
@@ -99,7 +88,7 @@ jobs:
           cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt
       - name: Save Layer ARN artifact
         if: ${{ inputs.stage == 'PROD' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: cdk-layer-stack
           path: ./cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.

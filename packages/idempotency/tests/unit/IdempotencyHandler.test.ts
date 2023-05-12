@@ -3,20 +3,16 @@
  *
  * @group unit/idempotency/IdempotencyHandler
  */
-
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
 } from '../../src/Exceptions';
-import {
-  IdempotencyFunctionOptions,
-  IdempotencyRecordStatus,
-} from '../../src/types';
+import { IdempotencyRecordStatus } from '../../src/types';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
-import { IdempotencyConfig } from '../..//src/IdempotencyConfig';
+import { IdempotencyConfig } from '../../src/IdempotencyConfig';
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -27,19 +23,20 @@ class PersistenceLayerTestClass extends BasePersistenceLayer {
 
 const mockFunctionToMakeIdempotent = jest.fn();
 const mockFunctionPayloadToBeHashed = {};
-const mockIdempotencyOptions: IdempotencyFunctionOptions = {
+const mockIdempotencyOptions = {
   persistenceStore: new PersistenceLayerTestClass(),
   dataKeywordArgument: 'testKeywordArgument',
   config: new IdempotencyConfig({}),
 };
 const mockFullFunctionPayload = {};
 
-const idempotentHandler = new IdempotencyHandler(
-  mockFunctionToMakeIdempotent,
-  mockFunctionPayloadToBeHashed,
-  mockIdempotencyOptions.persistenceStore,
-  mockFullFunctionPayload
-);
+const idempotentHandler = new IdempotencyHandler({
+  functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+  functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+  persistenceStore: mockIdempotencyOptions.persistenceStore,
+  fullFunctionPayload: mockFullFunctionPayload,
+  idempotencyConfig: mockIdempotencyOptions.config,
+});
 
 describe('Class IdempotencyHandler', () => {
   beforeEach(() => jest.resetAllMocks());

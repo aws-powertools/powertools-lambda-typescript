@@ -7,7 +7,7 @@ import {
   IdempotencyPersistenceLayerError,
 } from './Exceptions';
 import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
-import { IdempotencyConfig } from 'IdempotencyConfig';
+import { IdempotencyConfig } from './IdempotencyConfig';
 
 export class IdempotencyHandler<U> {
   public constructor(

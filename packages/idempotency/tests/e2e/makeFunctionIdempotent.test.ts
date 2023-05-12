@@ -18,7 +18,8 @@ const runtime: string = process.env.RUNTIME || 'nodejs18x';
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'makeFnIdempotent');
+const uuid = v4();
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'makeFnIdempotent');
 const makeFunctionIdepmpotentFile = 'makeFunctionIdempotent.test.FunctionCode.ts';
 
 const app = new App();
@@ -28,15 +29,15 @@ describe('Idempotency e2e test, default settings', () => {
   const ddb = new DynamoDBClient({ region: 'eu-west-1' });
   stack = new Stack(app, stackName);
 
-  const functionNameDefault = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'default');
+  const functionNameDefault = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'default');
   const ddbTableNameDefault = stackName + '-default-table';
   createIdempotencyResources(stack, runtime, ddbTableNameDefault, makeFunctionIdepmpotentFile, functionNameDefault, 'handler');
 
-  const functionNameCustom = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'custom');
+  const functionNameCustom = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'custom');
   const ddbTableNameCustom = stackName + '-custom-table';
   createIdempotencyResources(stack, runtime, ddbTableNameCustom, makeFunctionIdepmpotentFile, functionNameCustom, 'handlerCustomized', 'customId');
 
-  const functionNameKeywordArg = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'keywordarg');
+  const functionNameKeywordArg = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'keywordarg');
   const ddbTableNameKeywordArg = stackName + '-keywordarg-table';
   createIdempotencyResources(stack, runtime, ddbTableNameKeywordArg, makeFunctionIdepmpotentFile, functionNameKeywordArg, 'handlerWithKeywordArgument');
 

@@ -20,7 +20,8 @@ if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
 
-const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'Idempotency');
+const uuid = v4();
+const stackName = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'Idempotency');
 const decoratorFunctionFile = 'idempotencyDecorator.test.FunctionCode.ts';
 
 const app = new App();
@@ -31,19 +32,19 @@ describe('Idempotency e2e test, default settings', () => {
   const ddb = new DynamoDBClient({ region: 'eu-west-1' });
   stack = new Stack(app, stackName);
 
-  const functionNameDefault = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'default');
+  const functionNameDefault = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'default');
   const ddbTableNameDefault = stackName + '-default-table';
   createIdempotencyResources(stack, runtime, ddbTableNameDefault, decoratorFunctionFile, functionNameDefault, 'handler');
 
-  const functionNameCustom = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'custom');
+  const functionNameCustom = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'custom');
   const ddbTableNameCustom = stackName + '-custom-table';
   createIdempotencyResources(stack, runtime, ddbTableNameCustom, decoratorFunctionFile, functionNameCustom, 'handlerCustomized', 'customId');
 
-  const functionNameKeywordArg = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'keywordarg');
+  const functionNameKeywordArg = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'keywordarg');
   const ddbTableNameKeywordArg = stackName + '-keywordarg-table';
   createIdempotencyResources(stack, runtime, ddbTableNameKeywordArg, decoratorFunctionFile, functionNameKeywordArg, 'handlerWithKeywordArgument');
 
-  const functionNameFails = generateUniqueName(RESOURCE_NAME_PREFIX, v4(), runtime, 'fails');
+  const functionNameFails = generateUniqueName(RESOURCE_NAME_PREFIX, uuid, runtime, 'fails');
   const ddbTableNameFails = stackName + '-fails-table';
   createIdempotencyResources(stack, runtime, ddbTableNameFails, decoratorFunctionFile, functionNameFails, 'handlerFails');
 

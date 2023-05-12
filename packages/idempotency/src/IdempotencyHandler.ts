@@ -1,4 +1,4 @@
-import type { AnyFunctionWithRecord } from './types';
+import type { AnyFunctionWithRecord, IdempotencyHandlerOptions } from './types';
 import { IdempotencyRecordStatus } from './types';
 import {
   IdempotencyAlreadyInProgressError,
@@ -7,14 +7,33 @@ import {
   IdempotencyPersistenceLayerError,
 } from './Exceptions';
 import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
+import { IdempotencyConfig } from './IdempotencyConfig';
 
 export class IdempotencyHandler<U> {
-  public constructor(
-    private functionToMakeIdempotent: AnyFunctionWithRecord<U>,
-    private functionPayloadToBeHashed: Record<string, unknown>,
-    private persistenceStore: BasePersistenceLayer,
-    private fullFunctionPayload: Record<string, unknown>,
-  ) {
+  private readonly fullFunctionPayload: Record<string, unknown>;
+  private readonly functionPayloadToBeHashed: Record<string, unknown>;
+  private readonly functionToMakeIdempotent: AnyFunctionWithRecord<U>;
+  private readonly idempotencyConfig: IdempotencyConfig;
+  private readonly persistenceStore: BasePersistenceLayer;
+
+  public constructor(options: IdempotencyHandlerOptions<U>) {
+    const {
+      functionToMakeIdempotent,
+      functionPayloadToBeHashed,
+      idempotencyConfig,
+      fullFunctionPayload,
+      persistenceStore
+    } = options;
+    this.functionToMakeIdempotent = functionToMakeIdempotent;
+    this.functionPayloadToBeHashed = functionPayloadToBeHashed;
+    this.idempotencyConfig = idempotencyConfig;
+    this.fullFunctionPayload = fullFunctionPayload;
+
+    this.persistenceStore = persistenceStore;
+
+    this.persistenceStore.configure({
+      config: this.idempotencyConfig
+    });
   }
 
   public determineResultFromIdempotencyRecord(idempotencyRecord: IdempotencyRecord): Promise<U> | U {

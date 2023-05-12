@@ -1,5 +1,11 @@
-import type { AnyFunctionWithRecord, AnyIdempotentFunction, GenericTempRecord, IdempotencyFunctionOptions, } from './types';
+import type {
+  AnyFunctionWithRecord,
+  AnyIdempotentFunction,
+  GenericTempRecord,
+  IdempotencyFunctionOptions,
+} from './types';
 import { IdempotencyHandler } from './IdempotencyHandler';
+import { IdempotencyConfig } from './IdempotencyConfig';
 
 const makeFunctionIdempotent = function <U>(
   fn: AnyFunctionWithRecord<U>,
@@ -9,11 +15,14 @@ const makeFunctionIdempotent = function <U>(
     if (options.dataKeywordArgument === undefined) {
       throw new Error(`Missing data keyword argument ${options.dataKeywordArgument}`);
     }
-    const idempotencyHandler: IdempotencyHandler<U> = new IdempotencyHandler<U>(
-      fn,
-      record[options.dataKeywordArgument],
-      options.persistenceStore,
-      record);
+    const idempotencyConfig = options.config ? options.config : new IdempotencyConfig({});
+    const idempotencyHandler: IdempotencyHandler<U> = new IdempotencyHandler<U>({
+      functionToMakeIdempotent: fn,
+      functionPayloadToBeHashed: record[options.dataKeywordArgument],
+      idempotencyConfig: idempotencyConfig,
+      persistenceStore: options.persistenceStore,
+      fullFunctionPayload: record
+    });
 
     return idempotencyHandler.handle();
   };

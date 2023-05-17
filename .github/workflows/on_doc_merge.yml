@@ -13,6 +13,7 @@ jobs:
     permissions:
       contents: write
       pages: write
+      id-token: write
     uses: ./.github/workflows/reusable-publish-docs.yml
     with:
       version: main

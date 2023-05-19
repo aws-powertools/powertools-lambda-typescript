@@ -72,7 +72,7 @@ The `Tracer` utility is instantiated outside of the Lambda handler. In doing thi
       HelloWorldFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs16.x
+          Runtime: nodejs18.x
           Tracing: Active
           Environment:
             Variables:
@@ -89,7 +89,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         You can install Middy by running `npm i @middy/core`.
         Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
 
-    ```typescript hl_lines="1-2 14 16"
+    ```typescript hl_lines="1 14 16"
     --8<-- "docs/snippets/tracer/middy.ts"
     ```
 

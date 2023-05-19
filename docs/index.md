@@ -31,13 +31,13 @@ You can install Powertools using one of the following options:
 
 ### Lambda Layer
 
-???+ warning "As of now, Container Image deployment (OCI) or inline Lambda functions do not support Lambda Layers."
+??? warning "As of now, Container Image deployment (OCI) or inline Lambda functions do not support Lambda Layers"
 
 [Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html){target="_blank"} is a .zip file archive that can contain additional code, pre-packaged dependencies, data,  or configuration files. Layers promote code sharing and separation of responsibilities so that you can iterate faster on writing business logic.
 
 You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https://docs.aws.amazon.com/lambda/latest/dg/invocation-layers.html#invocation-layers-using){target="_blank"}, or your preferred deployment framework.
 
-??? note "Note: Click to expand and copy any regional Lambda Layer ARN"
+??? note "Click to expand and copy any regional Lambda Layer ARN"
 
     | Region           | Layer ARN                                                                                                    |
     | ---------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -67,7 +67,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
     | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:11](#){: .copyMe}:clipboard:     |
     | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:11](#){: .copyMe}:clipboard:     |
 
-??? note "Note: Click to expand and copy code snippets for popular frameworks"
+??? note "Click to expand and copy code snippets for popular frameworks"
     
     === "SAM"
 
@@ -81,7 +81,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
         If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools` from being bundled since the packages will be already present the Layer:
 
-        ```yaml hl_lines="5"
+        ```yaml hl_lines="5-14"
         MyLambdaFunction:
           Type: AWS::Serverless::Function
           Properties:
@@ -173,7 +173,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
     === "Terraform"
 
-        ```terraform hl_lines="9 36"
+        ```terraform hl_lines="18"
         terraform {
           required_version = "~> 1.0.5"
           required_providers {
@@ -224,7 +224,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
 
     === "Amplify"
 
-        ```zsh
+        ```zsh hl_lines="9 19"
         # Create a new one with the layer
         ❯ amplify add function
         ? Select which capability you want to add: Lambda function (serverless function)
@@ -247,7 +247,7 @@ You can include Lambda Powertools Lambda Layer using [AWS Lambda Console](https:
         ? Do you want to edit the local lambda function now? No
         ```
 
-!!! info "Using Powertools via Lambda Layer? Simply add the Powertools utilities you are using as a development dependency."
+!!! info "Using Powertools via Lambda Layer? Simply add the Powertools utilities you are using as a development dependency"
 
 ??? question "Want to inspect the contents of the Layer?"
 	Change {region} to your AWS region, e.g. `eu-west-1`

@@ -7,6 +7,13 @@ env:
 
 on:
   workflow_call:
+    secrets:
+      AWS_DOCS_ROLE_ARN:
+        description: zomg
+        required: false
+      AWS_DOCS_BUCKET:
+        description: zomg
+        required: false
     inputs:
       version:
         description: "Version to build and publish docs (1.28.0, develop)"

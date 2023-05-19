@@ -22,9 +22,15 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+  id-token: write
+  pages: write
+
 jobs:
   publish-docs:
     runs-on: ubuntu-latest
+    environment: Docs
     steps:
       - name: Checkout code
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
@@ -87,3 +93,28 @@ jobs:
           publish_dir: ./api
           keep_files: true
           destination_dir: latest/api
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef # v2.0.0
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
+      - name: Copy API Docs
+        run: |
+          cp -r api site/
+      - name: Deploy Docs (Version)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
+        run: |
+          aws s3 sync \
+            site/ \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-test/${{ env.VERSION }}/
+      - name: Deploy Docs (Alias)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
+        run: |
+          aws s3 sync \
+            site/ \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-test/${{ env.ALIAS }}/

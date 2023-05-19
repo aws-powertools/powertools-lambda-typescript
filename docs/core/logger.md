@@ -68,7 +68,7 @@ These settings will be used across all logs emitted:
       ShoppingCartApiFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs16.x
+          Runtime: nodejs18.x
           Environment:
             Variables:
               LOG_LEVEL: WARN
@@ -112,7 +112,7 @@ This functionality will include the following keys in your structured logs:
         You can install Middy by running `npm i @middy/core`.
         Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
 
-    ```typescript hl_lines="1-2 13"
+    ```typescript hl_lines="1 13"
     --8<-- "docs/snippets/logger/middy.ts"
     ```
 
@@ -402,7 +402,7 @@ The `createChild` method allows you to create a child instance of the Logger, wh
 
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="15-21"
+    ```json hl_lines="21"
     {
         "level": "INFO",
         "message": "This is an INFO log, from the parent logger",
@@ -590,31 +590,31 @@ This is how the printed log would look:
 === "Example CloudWatch Logs excerpt"
 
     ```json
-        {
-            "message": "This is an INFO log",
-            "service": "serverlessAirline",
-            "awsRegion": "eu-west-1",
-            "correlationIds": {
-                "awsRequestId": "c6af9ac6-7b61-11e6-9a41-93e812345678",
-                "xRayTraceId": "abcdef123456abcdef123456abcdef123456",
-                "myCustomCorrelationId": "foo-bar-baz"
-            },
-            "lambdaFunction": {
-                "name": "shopping-cart-api-lambda-prod-eu-west-1",
-                "arn": "arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1",
-                "memoryLimitInMB": 128,
-                "version": "$LATEST",
-                "coldStart": true
-            },
-            "logLevel": "INFO",
-            "timestamp": "2021-12-12T23:13:53.404Z",
-            "logger": {
-                "sampleRateValue": "0.5",
-                "name": "aws-lambda-powertools-typescript",
-                "version": "0.0.1"
-            },
-            "awsAccountId": "123456789012"
-        }
+    {
+        "message": "This is an INFO log",
+        "service": "serverlessAirline",
+        "awsRegion": "eu-west-1",
+        "correlationIds": {
+            "awsRequestId": "c6af9ac6-7b61-11e6-9a41-93e812345678",
+            "xRayTraceId": "abcdef123456abcdef123456abcdef123456",
+            "myCustomCorrelationId": "foo-bar-baz"
+        },
+        "lambdaFunction": {
+            "name": "shopping-cart-api-lambda-prod-eu-west-1",
+            "arn": "arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1",
+            "memoryLimitInMB": 128,
+            "version": "$LATEST",
+            "coldStart": true
+        },
+        "logLevel": "INFO",
+        "timestamp": "2021-12-12T23:13:53.404Z",
+        "logger": {
+            "sampleRateValue": "0.5",
+            "name": "aws-lambda-powertools-typescript",
+            "version": "0.0.1"
+        },
+        "awsAccountId": "123456789012"
+    }
     ```
 
 !!! tip "Custom Log formatter and Child loggers"

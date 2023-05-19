@@ -251,25 +251,21 @@ See below an example of how to automatically flush metrics with the Middy-compat
 
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="2 7 10 15 22"
+    ```json
     {
         "successfulBooking": 1.0,
         "_aws": {
-        "Timestamp": 1592234975665,
-        "CloudWatchMetrics": [
-            {
-            "Namespace": "serverlessAirline",
-            "Dimensions": [
-                [
-                "service"
-                ]
-            ],
-            "Metrics": [
-                {
-                "Name": "successfulBooking",
-                "Unit": "Count"
-                }
-            ]
+            "Timestamp": 1592234975665,
+            "CloudWatchMetrics": [{
+                "Namespace": "serverlessAirline",
+                "Dimensions": [
+                    [ "service" ]
+                ],
+                "Metrics": [{
+                    "Name": "successfulBooking",
+                    "Unit": "Count"
+                }]
+            }]
         },
         "service": "orders"
     }
@@ -293,25 +289,21 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="2 7 10 15 22"
+    ```json
     {
         "successfulBooking": 1.0,
         "_aws": {
-        "Timestamp": 1592234975665,
-        "CloudWatchMetrics": [
-            {
-            "Namespace": "successfulBooking",
-            "Dimensions": [
-                [
-                "service"
-                ]
-            ],
-            "Metrics": [
-                {
-                "Name": "successfulBooking",
-                "Unit": "Count"
-                }
-            ]
+            "Timestamp": 1592234975665,
+            "CloudWatchMetrics": [{
+                "Namespace": "successfulBooking",
+                "Dimensions": [
+                    [ "service" ]
+                ],
+                "Metrics": [{
+                    "Name": "successfulBooking",
+                    "Unit": "Count"
+                }]
+            }]
         },
         "service": "orders"
     }
@@ -332,27 +324,21 @@ You can manually flush the metrics with `publishStoredMetrics` as follows:
 
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="2 7 10 15 22"
+    ```json
     {
         "successfulBooking": 1.0,
         "_aws": {
-        "Timestamp": 1592234975665,
-        "CloudWatchMetrics": [
-            {
-            "Namespace": "successfulBooking",
-            "Dimensions": [
-                [
-                "service"
-                ]
-            ],
-            "Metrics": [
-                {
-                "Name": "successfulBooking",
-                "Unit": "Count"
-                }
-            ]
-            }
-        ]
+            "Timestamp": 1592234975665,
+            "CloudWatchMetrics": [{
+                "Namespace": "successfulBooking",
+                "Dimensions": [
+                    [ "service" ]
+                ],
+                "Metrics": [{
+                    "Name": "successfulBooking",
+                    "Unit": "Count"
+                }]
+            }]
         },
         "service": "orders"
     }
@@ -410,35 +396,27 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
 
 === "Example CloudWatch Logs excerpt"
 
-    ```json hl_lines="23"
+    ```json hl_lines="31"
     {
         "successfulBooking": 1.0,
         "_aws": {
-        "Timestamp": 1592234975665,
-        "CloudWatchMetrics": [
-            {
-            "Namespace": "serverlessAirline",
-            "Dimensions": [
-                [
-                "service"
-                ]
-            ],
-            "Metrics": [
-                {
-                "Namespace": "exampleApplication",
+            "Timestamp": 1592234975665,
+            "CloudWatchMetrics": [{
+                "Namespace": "serverlessAirline",
                 "Dimensions": [
-                    [
-                    "service"
-                    ]
+                    [ "service" ]
                 ],
-                "Metrics": [
-                    {
-                    "Name": "successfulBooking",
-                    "Unit": "Count"
-                    }
-                ]
-                }
-            ]
+                "Metrics": [{
+                    "Namespace": "exampleApplication",
+                    "Dimensions": [
+                        [ "service" ]
+                    ],
+                    "Metrics": [{
+                        "Name": "successfulBooking",
+                        "Unit": "Count"
+                    }]
+                }]
+            }]
         },
         "service": "orders",
         "bookingId": "7051cd10-6283-11ec-90d6-0242ac120003"

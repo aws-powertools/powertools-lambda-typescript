@@ -143,7 +143,7 @@ You can find more information and examples about filtering Lambda function logs 
 
 ## Switch to Lambda Layer
 
-In this example we are including Powertools for AWS Lambda (TypeScript) as a dependency in our function's `package.json`. This is the recommended approach for development and testing. However, for production, you can also use the Powertools for AWS Lambda (TypeScript) as a Lambda Layer.
+In this example we are including Powertools for AWS Lambda (TypeScript) as a dependency in our function's `package.json`. This is the recommended approach for development and testing. However, for production, you can also use Powertools for AWS as a Lambda Layer.
 
 To start using the public Lambda Layer, you need to:
 1. Specify the Layer's ARN in `Layers` section under each function's `Properties` section

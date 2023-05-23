@@ -1,6 +1,6 @@
-# Lambda Powertools for TypeScript Layer Publisher
+# Powertools for AWS Lambda (TypeScript) Layer Publisher
 
-This CDK app is meant to be used to publish Powertools for TypeScript Lambda Layer. It is composed of a single stack deploying the Layer into the target account.
+This CDK app is meant to be used to publish Powertools for AWS Lambda (TypeScript) Lambda Layer. It is composed of a single stack deploying the Layer into the target account.
 
 # Usage
 
@@ -32,7 +32,7 @@ npm run test:e2e
 
 PS: You can force 
 * the lambda runtime to test with the RUNTIME env variable
-* the Powertools version with VERSION env variable
+* the Powertools for AWS Lambda (TypeScript) version with VERSION env variable
 ```sh 
 RUNTIME=node12.x VERSION=0.9.0 npm run test:e2e
 ```

@@ -1,6 +1,6 @@
 ---
 title: We Made This (Community)
-description: Blog posts, tutorials, and videos about AWS Lambda Powertools created by the Powertools Community.
+description: Blog posts, tutorials, and videos about Powertools for AWS Lambda (TypeScript) created by the Powertools Community.
 ---
 
 This space is dedicated to highlight our awesome community content featuring Powertools 🙏!
@@ -15,15 +15,15 @@ Join us on [Discord](https://discord.gg/B8zZKbbyET){target="_blank"} to connect 
 
 ## Blog posts
 
-### Lambda Powertools - great defaults for batteries that aren't quite (but should be) included
+### Powertools for AWS Lambda (TypeScript) - great defaults for batteries that aren't quite (but should be) included
 
 > **Author: [Mike Roberts](mailto:mike@symphonia.io) [:material-twitter:](https://twitter.com/mikebroberts){target="_blank"}**
 
-This article discusses why you should consider using Powertools in your Lambda functions.
+This article discusses why you should consider using Powertools for AWS Lambda (TypeScript) in your Lambda functions.
 
 * [https://blog.symphonia.io/posts/2022-10-24_lambda-powertools](https://blog.symphonia.io/posts/2022-10-24_lambda-powertools){target="_blank"}
 
-### Test Drive AWS Lambda Powertools for Typescript
+### Test Drive Powertools for AWS Lambda (TypeScript)
 
 > **Author: [Matt Lewis](https://twitter.com/m_lewis){target="_blank"} :material-twitter:**
 
@@ -31,7 +31,7 @@ This article gives an overview Powertools' core utilities: Logger, Metrics, and 
 
 * [https://dev.to/aws-heroes/test-drive-aws-lambda-powertools-for-typescript-h3p](https://dev.to/aws-heroes/test-drive-aws-lambda-powertools-for-typescript-h3p){target="_blank"}
 
-### Power-up Lambda functions with AWS Lambda Powertools for TypeScript
+### Power-up Lambda functions with Powertools for AWS Lambda (TypeScript)
 
 > **Author: [Ryan Toler](https://www.linkedin.com/in/ryantoler/){target="_blank"} :material-linkedin:**
 
@@ -43,16 +43,16 @@ Discover how easy it is to quickly “power-up” your Node.js Lambda functions 
 
 > **Author: [Eoin Shanaghy](https://twitter.com/eoins){target="_blank"} :material-twitter:**
 
-This post shows how to use AWS Lambda Powertools to quickly build Well-Architected serverless applications.
+This post shows how to use Powertools for AWS Lambda (TypeScript) to quickly build Well-Architected serverless applications.
 
 * [https://fourtheorem.com/aws-lambda-powertools/](https://fourtheorem.com/aws-lambda-powertools/){target="_blank"}
 
-### AWS Lambda Powertools TypeScript
+### Powertools for AWS Lambda (TypeScript)
 
 > **Author: [Matt Morgan](https://twitter.com/NullishCoalesce){target="_blank"} :material-twitter:**
 
-A two parts series that gives an overview of Powertools and its features starting from the beta phase to the General Availability release.
+A two parts series that gives an overview of Powertools for AWS Lambda (TypeScript) and its features starting from the beta phase to the General Availability release.
 
-* [First Look at Lambda Powertools TypeScript](https://dev.to/aws-builders/first-look-at-lambda-powertools-typescript-2k3p){target="_blank"}
+* [First Look at Powertools for AWS Lambda (TypeScript)](https://dev.to/aws-builders/first-look-at-lambda-powertools-typescript-2k3p){target="_blank"}
 
-* [Lambda Powertools TypeScript is Generally Available](https://dev.to/aws-builders/lambda-powertools-typescript-is-generally-available-1dm8){target="_blank"}
+* [Powertools for AWS Lambda (TypeScript) is Generally Available](https://dev.to/aws-builders/lambda-powertools-typescript-is-generally-available-1dm8){target="_blank"}

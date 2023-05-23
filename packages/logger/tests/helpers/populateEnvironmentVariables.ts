@@ -10,6 +10,6 @@ if (
   process.env.AWS_REGION = 'eu-west-1';
 }
 
-// Powertools variables
+// Powertools for AWS Lambda (TypeScript) variables
 process.env.LOG_LEVEL = 'DEBUG';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';

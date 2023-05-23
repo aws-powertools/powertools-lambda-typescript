@@ -60,7 +60,7 @@ reported the issue. Please try to include as much information as you can. Detail
 
 ## Getting Started
 
-The following steps describe how to set up the AWS Lambda Powertools for TypeScript repository on your local machine.
+The following steps describe how to set up the Powertools for AWS Lambda (TypeScript) repository on your local machine.
 
 The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [GitHub CodeSpaces](https://github.com/features/codespaces) for your development. To quickly get up and running you can click one of these button to open a cloned version of this repo with all of the prerequisites and dependencies installed:
 
@@ -98,11 +98,11 @@ the [eslint extension](https://marketplace.visualstudio.com/items?itemName=dbaeu
 
 ### Repo Layout
 
-The AWS Lambda Powertools is a npm project written in [TypeScript](https://www.typescriptlang.org/).
+The Powertools for AWS Lambda (TypeScript) is a npm project written in [TypeScript](https://www.typescriptlang.org/).
 More specifically, it is a [monorepo managed using npm workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces).
 If you're unfamiliar with any of these technologies, it is useful to learn about them and will make understanding the codebase easier but strictly not necessary for simple contributions.
 
-The repo contains `packages/` directory that contains the Powertools utilities modules. For instance, the source code for the Logger utility can be found at the location `packages/logger` and so on.
+The repo contains `packages/` directory that contains the Powertools for AWS Lambda (TypeScript) utilities modules. For instance, the source code for the Logger utility can be found at the location `packages/logger` and so on.
 The repo also contains a `packages/commons` directory that holds code and logic shared between one or more utilities and that is published as a separate npm package.
 
 ### Tests
@@ -205,7 +205,7 @@ You can run the end-to-end tests automatically on your forked project by followi
 
 ### Examples
 
-As part of the repo you will find an examples folder at the root. This folder contains examples (written with CDK and SAM) of deployable AWS Lambda functions using Powertools.
+As part of the repo you will find an examples folder at the root. This folder contains examples (written with CDK and SAM) of deployable AWS Lambda functions using Powertools for AWS Lambda (TypeScript).
 
 To test your updates with these examples, you just have to:
 
@@ -314,7 +314,7 @@ Work your magic. Before starting, make sure to check the [Getting Started](#Gett
 
 * Create a commit with your changes and push them to a
   [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
-  > Note: Core members can push directly to a branch on the AWS Lambda Powertools (TypeScript) repo (following the same conventions detailed below).
+  > Note: Core members can push directly to a branch on the Powertools for AWS Lambda (TypeScript) repo (following the same conventions detailed below).
 * Create a [pull request on GitHub](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 * Pull request title and message (and PR title and description) must adhere to

@@ -11,6 +11,6 @@ if (
 }
 process.env._HANDLER = 'index.handler';
 
-// Powertools variables
+// Powertools for AWS Lambda (TypeScript) variables
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 process.env.AWS_XRAY_LOGGING_LEVEL = 'silent';

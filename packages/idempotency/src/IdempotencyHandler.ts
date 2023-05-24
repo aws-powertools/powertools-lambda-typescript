@@ -36,9 +36,9 @@ export class IdempotencyHandler<U> {
     });
   }
 
-  public determineResultFromIdempotencyRecord(
+  public static determineResultFromIdempotencyRecord(
     idempotencyRecord: IdempotencyRecord
-  ): Promise<U> | U {
+  ): Promise<unknown> | unknown {
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError(
         'Item has expired during processing and may not longer be valid.'
@@ -61,7 +61,7 @@ export class IdempotencyHandler<U> {
       }
     }
 
-    return idempotencyRecord.getResponse() as U;
+    return idempotencyRecord.getResponse();
   }
 
   public async getFunctionResult(): Promise<U> {
@@ -115,7 +115,9 @@ export class IdempotencyHandler<U> {
       }
     }
     /* istanbul ignore next */
-    throw new Error('This should never happen');
+    throw new Error(
+      'This should never happen, if you see this please open an issue.'
+    );
   }
 
   public async processIdempotency(): Promise<U> {
@@ -128,7 +130,9 @@ export class IdempotencyHandler<U> {
         const idempotencyRecord: IdempotencyRecord =
           await this.persistenceStore.getRecord(this.functionPayloadToBeHashed);
 
-        return this.determineResultFromIdempotencyRecord(idempotencyRecord);
+        return IdempotencyHandler.determineResultFromIdempotencyRecord(
+          idempotencyRecord
+        ) as U;
       } else {
         throw new IdempotencyPersistenceLayerError();
       }

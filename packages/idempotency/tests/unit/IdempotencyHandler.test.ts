@@ -56,7 +56,7 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
 
       try {
-        await idempotentHandler.determineResultFromIdempotencyRecord(
+        await IdempotencyHandler.determineResultFromIdempotencyRecord(
           stubRecord
         );
       } catch (e) {
@@ -78,7 +78,7 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
 
       try {
-        await idempotentHandler.determineResultFromIdempotencyRecord(
+        await IdempotencyHandler.determineResultFromIdempotencyRecord(
           stubRecord
         );
       } catch (e) {
@@ -100,7 +100,7 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.EXPIRED);
 
       try {
-        await idempotentHandler.determineResultFromIdempotencyRecord(
+        await IdempotencyHandler.determineResultFromIdempotencyRecord(
           stubRecord
         );
       } catch (e) {
@@ -157,11 +157,8 @@ describe('Class IdempotencyHandler', () => {
         .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
         .mockRejectedValue(new Error('Some error'));
       const mockDetermineResultFromIdempotencyRecord = jest
-        .spyOn(
-          IdempotencyHandler.prototype,
-          'determineResultFromIdempotencyRecord'
-        )
-        .mockResolvedValue('result');
+        .spyOn(IdempotencyHandler, 'determineResultFromIdempotencyRecord')
+        .mockImplementation(() => 'result');
 
       await expect(idempotentHandler.processIdempotency()).rejects.toThrow(
         IdempotencyPersistenceLayerError
@@ -191,11 +188,8 @@ describe('Class IdempotencyHandler', () => {
         .spyOn(mockIdempotencyOptions.persistenceStore, 'getRecord')
         .mockImplementation(() => Promise.resolve(stubRecord));
       const mockDetermineResultFromIdempotencyRecord = jest
-        .spyOn(
-          IdempotencyHandler.prototype,
-          'determineResultFromIdempotencyRecord'
-        )
-        .mockResolvedValue('result');
+        .spyOn(IdempotencyHandler, 'determineResultFromIdempotencyRecord')
+        .mockImplementation(() => 'result');
 
       await expect(idempotentHandler.processIdempotency()).resolves.toBe(
         'result'

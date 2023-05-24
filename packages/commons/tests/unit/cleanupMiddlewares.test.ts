@@ -1,16 +1,16 @@
 /**
- * Test Middy cleanupPowertools function
+ * Test Middy cleanupMiddlewares function
  *
- * @group unit/commons/cleanupPowertools
+ * @group unit/commons/cleanupMiddlewares
  */
 import {
-  cleanupPowertools,
+  cleanupMiddlewares,
   TRACER_KEY,
   METRICS_KEY,
 } from '../../src/middleware';
 import { helloworldContext as context } from '../../src/samples/resources/contexts/hello-world';
 
-describe('Function: cleanupPowertools', () => {
+describe('Function: cleanupMiddlewares', () => {
   it('calls the cleanup function that are present', async () => {
     // Prepare
     const mockCleanupFunction1 = jest.fn();
@@ -27,7 +27,7 @@ describe('Function: cleanupPowertools', () => {
     };
 
     // Act
-    await cleanupPowertools(mockRequest);
+    await cleanupMiddlewares(mockRequest);
 
     // Assess
     expect(mockCleanupFunction1).toHaveBeenCalledTimes(1);
@@ -46,7 +46,7 @@ describe('Function: cleanupPowertools', () => {
     };
 
     // Act & Assess
-    await expect(cleanupPowertools(mockRequest)).resolves.toBeUndefined();
+    await expect(cleanupMiddlewares(mockRequest)).resolves.toBeUndefined();
   });
   it('resolves successfully if cleanup function is not a function', async () => {
     // Prepare
@@ -61,6 +61,6 @@ describe('Function: cleanupPowertools', () => {
     };
 
     // Act & Assess
-    await expect(cleanupPowertools(mockRequest)).resolves.toBeUndefined();
+    await expect(cleanupMiddlewares(mockRequest)).resolves.toBeUndefined();
   });
 });

@@ -1,2 +1,2 @@
-export * from './cleanupPowertools';
+export * from './cleanupMiddlewares';
 export * from './constants';

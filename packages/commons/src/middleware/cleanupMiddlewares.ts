@@ -34,7 +34,7 @@ const isFunction = (obj: unknown): obj is CleanupFunction => {
  * @example
  * ```typescript
  * import middy from '@middy/core';
- * import { cleanupPowertools } from '@aws-lambda-powertools/commons/lib/middleware';
+ * import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
  *
  * // Example middleware that returns early
  * const myCustomMiddleware = (): middy.MiddlewareObj => {
@@ -42,7 +42,7 @@ const isFunction = (obj: unknown): obj is CleanupFunction => {
  *     // If the request is a GET, return early (as an example)
  *     if (request.event.httpMethod === 'GET') {
  *       // Cleanup Powertools resources
- *       await cleanupPowertools(request);
+ *       await cleanupMiddlewares(request);
  *       // Then return early
  *       return 'GET method not supported';
  *     }
@@ -57,7 +57,7 @@ const isFunction = (obj: unknown): obj is CleanupFunction => {
  * @param request - The Middy request object
  * @param options - An optional object that can be used to pass options to the function
  */
-const cleanupPowertools = async (request: MiddyLikeRequest): Promise<void> => {
+const cleanupMiddlewares = async (request: MiddyLikeRequest): Promise<void> => {
   const cleanupFunctionNames = [
     TRACER_KEY,
     METRICS_KEY,
@@ -74,4 +74,4 @@ const cleanupPowertools = async (request: MiddyLikeRequest): Promise<void> => {
   }
 };
 
-export { cleanupPowertools };
+export { cleanupMiddlewares };

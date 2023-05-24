@@ -31,9 +31,9 @@ describe('Function: cleanupPowertools', () => {
 
     // Assess
     expect(mockCleanupFunction1).toHaveBeenCalledTimes(1);
-    expect(mockCleanupFunction1).toHaveBeenCalledWith(mockRequest, undefined);
+    expect(mockCleanupFunction1).toHaveBeenCalledWith(mockRequest);
     expect(mockCleanupFunction2).toHaveBeenCalledTimes(1);
-    expect(mockCleanupFunction2).toHaveBeenCalledWith(mockRequest, undefined);
+    expect(mockCleanupFunction2).toHaveBeenCalledWith(mockRequest);
   });
   it('resolves successfully if no cleanup function is present', async () => {
     // Prepare

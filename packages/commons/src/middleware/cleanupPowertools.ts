@@ -12,8 +12,9 @@ const isFunction = (obj: unknown): obj is CleanupFunction => {
 };
 
 /**
- * Function used to cleanup Powertools resources when a Middy middleware
- * returns early and terminates the middleware chain.
+ * Function used to cleanup Powertools for AWS resources when a Middy
+ * middleware [returns early](https://middy.js.org/docs/intro/early-interrupt)
+ * and terminates the middleware chain.
  *
  * When a middleware returns early, all the middleware lifecycle functions
  * that come after it are not executed. This means that if a middleware
@@ -33,7 +34,7 @@ const isFunction = (obj: unknown): obj is CleanupFunction => {
  * @example
  * ```typescript
  * import middy from '@middy/core';
- * import { cleanupPowertools } from '@aws-lambda-powertools/commons';
+ * import { cleanupPowertools } from '@aws-lambda-powertools/commons/lib/middleware';
  *
  * // Example middleware that returns early
  * const myCustomMiddleware = (): middy.MiddlewareObj => {

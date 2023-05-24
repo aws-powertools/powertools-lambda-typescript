@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 
 /**
  * We need to define these types and interfaces here because we can't import them from @middy/core.
@@ -22,14 +22,14 @@ type Request<
   };
 };
 
-declare type MiddlewareFn<
+type MiddlewareFn<
   TEvent = unknown,
   TResult = unknown,
   TErr = Error,
   TContext extends Context = Context
 > = (request: Request<TEvent, TResult, TErr, TContext>) => unknown;
 
-export type MiddlewareLikeObj<
+type MiddlewareLikeObj<
   TEvent = unknown,
   TResult = unknown,
   TErr = Error,
@@ -40,9 +40,21 @@ export type MiddlewareLikeObj<
   onError?: MiddlewareFn<TEvent, TResult, TErr, TContext>;
 };
 
-export type MiddyLikeRequest = {
+type MiddyLikeRequest = {
   event: unknown;
   context: Context;
   response: unknown | null;
   error: Error | null;
+  internal: {
+    [key: string]: unknown;
+  };
 };
+
+/**
+ * Cleanup function that is used to cleanup resources when a middleware returns early.
+ * Each Powertools for AWS middleware that needs to perform cleanup operations will
+ * store a cleanup function with this signature in the `request.internal` object.
+ */
+type CleanupFunction = (request: MiddyLikeRequest) => Promise<void>;
+
+export { MiddlewareLikeObj, MiddyLikeRequest, CleanupFunction };

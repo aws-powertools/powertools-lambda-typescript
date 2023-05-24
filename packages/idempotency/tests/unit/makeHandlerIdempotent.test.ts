@@ -3,7 +3,6 @@
  *
  * @group unit/idempotency/makeHandlerIdempotent
  */
-
 import { makeHandlerIdempotent } from '../../src/middleware';
 import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
 import { Custom as dummyEvent } from '../../../commons/src/samples/resources/events';
@@ -16,10 +15,6 @@ import {
 import { IdempotencyConfig } from '../../src/IdempotencyConfig';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-
-jest.spyOn(console, 'debug').mockImplementation(() => null);
-jest.spyOn(console, 'warn').mockImplementation(() => null);
-jest.spyOn(console, 'error').mockImplementation(() => null);
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -45,6 +40,9 @@ describe('Middy middleware', () => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
+    jest.spyOn(console, 'debug').mockImplementation(() => null);
+    jest.spyOn(console, 'warn').mockImplementation(() => null);
+    jest.spyOn(console, 'error').mockImplementation(() => null);
   });
 
   afterAll(() => {

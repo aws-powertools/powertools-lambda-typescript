@@ -25,7 +25,7 @@ import type { IdempotencyLambdaHandlerOptions } from '../types';
  *
  * const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer({
  *   tableName: 'idempotencyTable',
- * })
+ * });
  *
  * const lambdaHandler = async (_event: unknown, _context: unknown) => {
  *   //...

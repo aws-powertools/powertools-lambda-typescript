@@ -133,7 +133,7 @@ Review pull requests regularly, comment, suggest, reject, merge and close. Accep
 
 PRs are [labeled](#labels) based on file changes and semantic title. Pay attention to whether labels reflect the current state of the PR and correct accordingly.
 
-Use and enforce [semantic versioning](https://semver.org/) pull request titles, as these will be used for [CHANGELOG](CHANGELOG.md) and [Release notes](https://github.com/awslabs/aws-lambda-powertools-typescript/releases) - make sure they communicate their intent at the human level.
+Use and enforce [semantic versioning](https://semver.org/) pull request titles, as these will be used for [CHANGELOG](CHANGELOG.md) and [Release notes](https://github.com/aws-powertools/lambda-typescript/releases) - make sure they communicate their intent at the human level.
 
 For issues linked to a PR, our automation should apply the `status/pending-release` label. Make sure the label is always applied when merging. [Upon release](#releasing-a-new-version), these issues will be notified which release version contains their change.
 
@@ -175,7 +175,7 @@ RFC is a collaborative process to help us get to the most optimal solution given
 
 Make sure you ask these questions in mind when reviewing:
 
-- Does it use our [RFC template](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=RFC%2Ctriage&template=rfc.yml&title=RFC%3A+TITLE)?
+- Does it use our [RFC template](https://github.com/aws-powertools/lambda-typescript/issues/new?assignees=&labels=RFC%2Ctriage&template=rfc.yml&title=RFC%3A+TITLE)?
 - Does the match our [Tenets](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets)?
 - Does the proposal address the use case? If so, is the recommended usage explicit?
 - Does it focus on the mechanics to solve the use case over fine-grained implementation details?
@@ -186,7 +186,7 @@ Make sure you ask these questions in mind when reviewing:
 
 When necessary, be upfront that the time to review, approve, and implement a RFC can vary - see [Contribution is stuck](#contribution-is-stuck). Some RFCs may be further updated after implementation, as certain areas become clearer.
 
-An example of a successful RFC: [#447](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447)
+An example of a successful RFC: [#447](https://github.com/aws-powertools/lambda-typescript/issues/447)
 
 ### Releasing a new version
 
@@ -194,7 +194,7 @@ An example of a successful RFC: [#447](https://github.com/awslabs/aws-lambda-pow
 
 #### Drafting release notes
 
-Visit the [Releases page](https://github.com/awslabs/aws-lambda-powertools-typescript/releases) and choose the edit pencil button.
+Visit the [Releases page](https://github.com/aws-powertools/lambda-typescript/releases) and choose the edit pencil button.
 
 Make sure the `tag` field reflects the new version you're releasing, the target branch field is set to `main`, and `release title` matches your tag e.g., `v1.4.1`.
 
@@ -202,7 +202,7 @@ You'll notice we group all changes based on their [labels](#labels) like `type/f
 
 **I spotted a typo or incorrect grouping - how do I fix it?**
 
-Edit the respective PR title and update their [labels](#labels). Then run the [Release Drafter workflow](https://github.com/awslabs/aws-lambda-powertools-typescript/actions/workflows/release-drafter.yml) to update the Draft release.
+Edit the respective PR title and update their [labels](#labels). Then run the [Release Drafter workflow](https://github.com/aws-powertools/lambda-typescript/actions/workflows/release-drafter.yml) to update the Draft release.
 
 **All looking good, what's next?**
 
@@ -218,17 +218,17 @@ These are some questions to keep in mind when drafting your first or future rele
 
 Once you're happy, hit `Publish release` 🎉🎉🎉.
 
-This will kick off the [Publish docs on release](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/workflows/publish-docs-on-release.yml) workflow and within a few minutes you should see the latest version in PyPi, and all issues labeled as `pending-release` will be closed and notified.
+This will kick off the [Publish docs on release](https://github.com/aws-powertools/lambda-typescript/blob/main/.github/workflows/publish-docs-on-release.yml) workflow and within a few minutes you should see the latest version in PyPi, and all issues labeled as `pending-release` will be closed and notified.
 
 ### Run end to end tests
 
-E2E tests should be ran before every merge to `main` or manually via [run-e2e-tests workflow](https://github.com/awslabs/aws-lambda-powertools-typescript/actions/workflows/run-e2e-tests.yml) before making a release.
+E2E tests should be ran before every merge to `main` or manually via [run-e2e-tests workflow](https://github.com/aws-powertools/lambda-typescript/actions/workflows/run-e2e-tests.yml) before making a release.
 
 To run locally, you need [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_prerequisites) and an [account bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) (`cdk bootstrap`). With a default AWS CLI profile configured, or `AWS_PROFILE` environment variable set, run `npm run test:e2e -ws`.
 
 ### Releasing a documentation hotfix
 
-You can rebuild the latest documentation without a full release via this [GitHub Actions Workflow](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/workflows/publish-docs-on-release.yml). Choose `Run workflow`, keep `main` as the branch, and input the latest Powertools version available i.e. `v1.4.1`.
+You can rebuild the latest documentation without a full release via this [GitHub Actions Workflow](https://github.com/aws-powertools/lambda-typescript/blob/main/.github/workflows/publish-docs-on-release.yml). Choose `Run workflow`, keep `main` as the branch, and input the latest Powertools version available i.e. `v1.4.1`.
 
 This workflow will update both user guide and API documentation.
 
@@ -276,7 +276,7 @@ Note that issues marked as `need-response` will be automatically closed after 3 
 
 ### Crediting contributions
 
-We credit all contributions as part of each [release note](https://github.com/awslabs/aws-lambda-powertools-typescript/releases) as an automated process. If you find contributors are missing from the release note you're producing, please add them manually.
+We credit all contributions as part of each [release note](https://github.com/aws-powertools/lambda-typescript/releases) as an automated process. If you find contributors are missing from the release note you're producing, please add them manually.
 
 ### Is that a bug?
 

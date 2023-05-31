@@ -6,7 +6,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 > Also available in [Python](https://github.com/awslabs/aws-lambda-powertools-python), [Java](https://github.com/awslabs/aws-lambda-powertools-java), and [.NET](https://awslabs.github.io/aws-lambda-powertools-dotnet/).
 
-**[Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/roadmap)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
+**[Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/roadmap)** | **[Examples](https://github.com/aws-powertools/lambda-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
 
 ## Table of contents <!-- omit in toc -->
 
@@ -60,8 +60,8 @@ Or refer to the installation guide of each utility:
 
 ### Examples
 
-* [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)
-* [SAM](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/sam)
+* [CDK](https://github.com/aws-powertools/lambda-typescript/tree/main/examples/cdk)
+* [SAM](https://github.com/aws-powertools/lambda-typescript/tree/main/examples/sam)
 
 ### Serverless TypeScript Demo application
 
@@ -70,12 +70,12 @@ You can find instructions on how to deploy and load test this application in the
 
 ## Contribute
 
-If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/CONTRIBUTING.md).
+If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/aws-powertools/lambda-typescript/blob/main/CONTRIBUTING.md).
 
 ## Roadmap
 
 The roadmap of Powertools is driven by customers’ demand.  
-Help us prioritize upcoming functionalities or utilities by [upvoting existing RFCs and feature requests](https://github.com/awslabs/aws-lambda-powertools-typescript/issues), or [creating new ones](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new/choose), in this GitHub repository.
+Help us prioritize upcoming functionalities or utilities by [upvoting existing RFCs and feature requests](https://github.com/aws-powertools/lambda-typescript/issues), or [creating new ones](https://github.com/aws-powertools/lambda-typescript/issues/new/choose), in this GitHub repository.
 
 ## Connect
 
@@ -86,7 +86,7 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ### Becoming a reference customer
 
-Knowing which companies are using this library is important to help prioritize the project internally. If your company is using AWS Lambda Powertools for TypeScript, you can request to have your name and logo added to the README file by raising a [Support Lambda Powertools (become a reference)](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E){target="_blank"} issue.
+Knowing which companies are using this library is important to help prioritize the project internally. If your company is using AWS Lambda Powertools for TypeScript, you can request to have your name and logo added to the README file by raising a [Support Lambda Powertools (become a reference)](https://github.com/aws-powertools/lambda-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E){target="_blank"} issue.
 
 The following companies, among others, use Powertools:
 

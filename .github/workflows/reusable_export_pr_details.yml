@@ -36,7 +36,7 @@ on:
 jobs:
   export_pr_details:
     # see https://github.com/awslabs/aws-lambda-powertools-python/issues/1349
-    if: inputs.workflow_origin == 'awslabs/aws-lambda-powertools-typescript'
+    if: inputs.workflow_origin == 'aws-powertools/lambda-typescript'
     runs-on: ubuntu-latest
     env:
       FILENAME: pr.txt

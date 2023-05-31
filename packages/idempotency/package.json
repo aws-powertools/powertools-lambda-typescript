@@ -28,7 +28,7 @@
   "lint-staged": {
     "*.ts": "npm run lint-fix"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/idempotency#readme",
+  "homepage": "https://github.com/aws-powertools/lambda-typescript/tree/main/packages/idempotency#readme",
   "license": "MIT",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -38,10 +38,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+    "url": "git+https://github.com/aws-powertools/lambda-typescript.git"
   },
   "bugs": {
-    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+    "url": "https://github.com/aws-powertools/lambda-typescript/issues"
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^1.5.0",

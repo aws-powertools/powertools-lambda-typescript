@@ -14,9 +14,9 @@ You can use Powertools in both TypeScript and JavaScript code bases.
 
     You can choose to support us in three ways:
 
-    1) [**Become a reference customer**](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E). This gives us permission to list your company in our documentation.
+    1) [**Become a reference customer**](https://github.com/aws-powertools/lambda-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E). This gives us permission to list your company in our documentation.
 
-    2) [**Share your work**](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=community-content&template=share_your_work.yml&title=%5BI+Made+This%5D%3A+%3CTITLE%3E). Blog posts, video, sample projects you used Powertools!
+    2) [**Share your work**](https://github.com/aws-powertools/lambda-typescript/issues/new?assignees=&labels=community-content&template=share_your_work.yml&title=%5BI+Made+This%5D%3A+%3CTITLE%3E). Blog posts, video, sample projects you used Powertools!
 
     3) Use [**Lambda Layers**](#lambda-layer), if possible. This helps us understand who uses Powertools in a non-intrusive way, and helps us gain future investments for other Lambda Powertools languages.
 
@@ -272,8 +272,8 @@ The examples in this documentation will feature all the approaches described abo
 
 The project's repository includes examples of how to instrument your functions both in AWS CDK and AWS SAM:
 
-* [AWS CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk){target="_blank"}
-* [AWS SAM](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/sam){target="_blank"}
+* [AWS CDK](https://github.com/aws-powertools/lambda-typescript/tree/main/examples/cdk){target="_blank"}
+* [AWS SAM](https://github.com/aws-powertools/lambda-typescript/tree/main/examples/sam){target="_blank"}
 
 If instead you want to see Powertools for TypeScript in a slightly more complex use case, check the [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo). You can find instructions on how to deploy and load test this application in the [repository](https://github.com/aws-samples/serverless-typescript-demo).
 
@@ -314,7 +314,7 @@ Each Utility page provides information on example values and allowed values.
 
 ### Becoming a reference customer
 
-Knowing which companies are using this library is important to help prioritize the project internally. If your company is using AWS Lambda Powertools for TypeScript, you can request to have your name and logo added to the README file by raising a [Support Lambda Powertools (become a reference)](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E){target="_blank"} issue.
+Knowing which companies are using this library is important to help prioritize the project internally. If your company is using AWS Lambda Powertools for TypeScript, you can request to have your name and logo added to the README file by raising a [Support Lambda Powertools (become a reference)](https://github.com/aws-powertools/lambda-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E){target="_blank"} issue.
 
 The following companies, among others, use Powertools:
 

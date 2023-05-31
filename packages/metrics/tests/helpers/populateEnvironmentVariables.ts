@@ -10,5 +10,5 @@ if (
   process.env.AWS_REGION = 'eu-west-1';
 }
 
-// Powertools variables
+// Powertools for AWS Lambda (TypeScript) variables
 process.env.POWERTOOLS_METRICS_NAMESPACE = 'hello-world';

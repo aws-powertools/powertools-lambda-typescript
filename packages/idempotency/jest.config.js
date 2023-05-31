@@ -1,6 +1,6 @@
 module.exports = {
   displayName: {
-    name: 'AWS Lambda Powertools utility: IDEMPOTENCY',
+    name: 'Powertools for AWS Lambda (TypeScript) utility: IDEMPOTENCY',
     color: 'yellow',
   },
   runner: 'groups',

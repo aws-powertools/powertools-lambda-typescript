@@ -1,7 +1,7 @@
 {
   "name": "docs",
   "version": "0.0.1",
-  "description": "A collection code snippets for the AWS Lambda Powertools for TypeScript docs",
+  "description": "A collection code snippets for the Powertools for AWS Lambda (TypeScript) docs",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"

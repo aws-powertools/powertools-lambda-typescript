@@ -1,4 +1,4 @@
-# AWS Lambda Powertools for TypeScript examples in SAM
+# Powertools for AWS Lambda (TypeScript) examples in SAM
 
 This project contains source code and supporting files for a serverless application that you can deploy with the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html). The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.
 
@@ -143,9 +143,9 @@ You can find more information and examples about filtering Lambda function logs 
 
 ## Switch to Lambda Layer
 
-In this example we are including AWS Lambda Powertools as a dependency in our function's `package.json`. This is the recommended approach for development and testing. However, for production, you can also use the AWS Lambda Powertools as a Lambda Layer.
+In this example we are including Powertools for AWS Lambda (TypeScript) as a dependency in our function's `package.json`. This is the recommended approach for development and testing. However, for production, you can also use Powertools for AWS as a Lambda Layer.
 
-To start using the AWS Lambda Powertools as a Lambda Layer, you need to:
+To start using the public Lambda Layer, you need to:
 1. Specify the Layer's ARN in `Layers` section under each function's `Properties` section
 2. Instruct `esbuild` to not bundle `@aws-lambda-powertools` under each function's `Metadata/BuildProperties` section
 
@@ -184,7 +184,7 @@ Metadata:
       EntryPoints:
 ```
 
-Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Lambda Powertools for TypeScript layers [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#lambda-layer).
+Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Powertools for AWS Lambda (TypeScript) layers [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#lambda-layer).
 
 ## Cleanup
 

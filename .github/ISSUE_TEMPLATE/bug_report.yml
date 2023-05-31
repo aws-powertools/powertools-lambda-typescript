@@ -56,7 +56,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: AWS Lambda Powertools for TypeScript version
+      label: Powertools for AWS Lambda (TypeScript) version
       placeholder: "latest, 1.3.0"
       value: latest
     validations:

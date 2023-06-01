@@ -11,10 +11,12 @@ import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import {
   IdempotencyPersistenceLayerError,
   IdempotencyItemAlreadyExistsError,
+  IdempotencyInconsistentStateError,
 } from '../../src/Exceptions';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
+import { MAX_RETRIES } from '../../src/constants';
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -184,6 +186,70 @@ describe('Middy middleware', () => {
       expect(result).toStrictEqual({ response: false });
       expect(getRecordSpy).toHaveBeenCalledTimes(1);
       expect(getRecordSpy).toHaveBeenCalledWith(event);
+    });
+    it('retries if the record is in an inconsistent state', async () => {
+      // Prepare
+      const handler = middy(
+        async (_event: unknown, _context: Context): Promise<boolean> => true
+      ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+      jest
+        .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
+        .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      const stubRecordInconsistent = new IdempotencyRecord({
+        idempotencyKey: 'idempotencyKey',
+        expiryTimestamp: Date.now() + 10000,
+        inProgressExpiryTimestamp: 0,
+        responseData: { response: false },
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.EXPIRED,
+      });
+      const stubRecord = new IdempotencyRecord({
+        idempotencyKey: 'idempotencyKey',
+        expiryTimestamp: Date.now() + 10000,
+        inProgressExpiryTimestamp: 0,
+        responseData: { response: false },
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.COMPLETED,
+      });
+      const getRecordSpy = jest
+        .spyOn(mockIdempotencyOptions.persistenceStore, 'getRecord')
+        .mockResolvedValueOnce(stubRecordInconsistent)
+        .mockResolvedValueOnce(stubRecord);
+
+      // Act
+      const result = await handler(event, context);
+
+      // Assess
+      expect(result).toStrictEqual({ response: false });
+      expect(getRecordSpy).toHaveBeenCalledTimes(2);
+    });
+    it('throws after all the retries have been exhausted if the record is in an inconsistent state', async () => {
+      // Prepare
+      const handler = middy(
+        async (_event: unknown, _context: Context): Promise<boolean> => true
+      ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+      jest
+        .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
+        .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      const stubRecordInconsistent = new IdempotencyRecord({
+        idempotencyKey: 'idempotencyKey',
+        expiryTimestamp: Date.now() + 10000,
+        inProgressExpiryTimestamp: 0,
+        responseData: { response: false },
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.EXPIRED,
+      });
+      const getRecordSpy = jest
+        .spyOn(mockIdempotencyOptions.persistenceStore, 'getRecord')
+        .mockResolvedValue(stubRecordInconsistent);
+
+      // Act & Assess
+      await expect(handler(event, context)).rejects.toThrowError(
+        new IdempotencyInconsistentStateError(
+          'Item has expired during processing and may not longer be valid.'
+        )
+      );
+      expect(getRecordSpy).toHaveBeenCalledTimes(MAX_RETRIES + 1);
     });
   });
 });

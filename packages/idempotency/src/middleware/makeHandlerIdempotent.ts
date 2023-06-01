@@ -4,8 +4,10 @@ import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middlewar
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
+  IdempotencyInconsistentStateError,
 } from '../Exceptions';
 import { IdempotencyRecord } from '../persistence';
+import { MAX_RETRIES } from '../constants';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
@@ -59,9 +61,16 @@ const makeHandlerIdempotent = (
    * If there is no execution in progress, we need to save a record to the
    * idempotency store to indicate that an execution is in progress.
    *
+   * In some rare cases, when the persistent state changes in small time
+   * window, we might get an `IdempotencyInconsistentStateError`. In such
+   * cases we can safely retry the handling a few times.
+   *
    * @param request - The Middy request object
    */
-  const before = async (request: MiddyLikeRequest): Promise<unknown | void> => {
+  const before = async (
+    request: MiddyLikeRequest,
+    retryNo = 0
+  ): Promise<unknown | void> => {
     try {
       await persistenceStore.saveInProgress(
         request.event as Record<string, unknown>,
@@ -74,15 +83,28 @@ const makeHandlerIdempotent = (
             request.event as Record<string, unknown>
           );
 
-        const response =
-          await IdempotencyHandler.determineResultFromIdempotencyRecord(
-            idempotencyRecord
-          );
-        if (response) {
-          // Cleanup other middlewares
-          cleanupMiddlewares(request);
+        try {
+          const response =
+            await IdempotencyHandler.determineResultFromIdempotencyRecord(
+              idempotencyRecord
+            );
+          if (response) {
+            // Cleanup other middlewares
+            cleanupMiddlewares(request);
 
-          return response;
+            return response;
+          }
+        } catch (error) {
+          if (
+            error instanceof IdempotencyInconsistentStateError &&
+            retryNo < MAX_RETRIES
+          ) {
+            // Retry
+            return await before(request, retryNo + 1);
+          } else {
+            // Retries exhausted or other error
+            throw error;
+          }
         }
       } else {
         throw new IdempotencyPersistenceLayerError(

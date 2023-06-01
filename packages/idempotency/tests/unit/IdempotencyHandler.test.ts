@@ -13,6 +13,7 @@ import { IdempotencyRecordStatus } from '../../src/types';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig';
+import { MAX_RETRIES } from '../../src/constants';
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -112,7 +113,7 @@ describe('Class IdempotencyHandler', () => {
   describe('Method: handle', () => {
     afterAll(() => jest.restoreAllMocks()); // restore processIdempotency for other tests
 
-    test('when IdempotencyAlreadyInProgressError is thrown, it retries two times', async () => {
+    test('when IdempotencyAlreadyInProgressError is thrown, it retries once', async () => {
       const mockProcessIdempotency = jest
         .spyOn(IdempotencyHandler.prototype, 'processIdempotency')
         .mockRejectedValue(
@@ -123,7 +124,17 @@ describe('Class IdempotencyHandler', () => {
       await expect(idempotentHandler.handle()).rejects.toThrow(
         IdempotencyAlreadyInProgressError
       );
-      expect(mockProcessIdempotency).toHaveBeenCalledTimes(2);
+      expect(mockProcessIdempotency).toHaveBeenCalledTimes(1);
+    });
+
+    test('when IdempotencyInconsistentStateError is thrown, it retries until max retries are exhausted', async () => {
+      const mockProcessIdempotency = jest
+        .spyOn(IdempotencyHandler.prototype, 'processIdempotency')
+        .mockRejectedValue(new IdempotencyInconsistentStateError());
+      await expect(idempotentHandler.handle()).rejects.toThrow(
+        IdempotencyInconsistentStateError
+      );
+      expect(mockProcessIdempotency).toHaveBeenCalledTimes(MAX_RETRIES + 1);
     });
 
     test('when non IdempotencyAlreadyInProgressError is thrown, it rejects', async () => {

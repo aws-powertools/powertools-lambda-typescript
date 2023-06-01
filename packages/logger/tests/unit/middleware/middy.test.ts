@@ -73,7 +73,7 @@ describe('Middy middleware', () => {
             },
             envVarsService: expect.any(EnvironmentVariablesService),
             customConfigService: undefined,
-            logLevel: 'DEBUG',
+            logLevel: 8,
             logFormatter: expect.any(PowertoolLogFormatter),
           })
         );
@@ -112,7 +112,7 @@ describe('Middy middleware', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: 'DEBUG',
+          logLevel: 8,
           logFormatter: expect.any(PowertoolLogFormatter),
           console: expect.any(Console),
         });

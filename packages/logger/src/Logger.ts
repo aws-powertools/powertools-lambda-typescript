@@ -292,7 +292,7 @@ class Logger extends Utility implements ClassThatLogs {
    * It returns the log level name, i.e. `INFO`, `DEBUG`, etc.
    * To get the log level as a number, use the {@link Logger.level} property.
    *
-   * @returns {string} The log level name.
+   * @returns {Uppercase<LogLevel>} The log level name.
    */
   public getLevelName(): Uppercase<LogLevel> {
     return this.getLogLevelNameFromNumber(this.logLevel);

@@ -23,7 +23,6 @@ information to effectively respond to your bug report or contribution.
       - [Write](#write-1)
       - [Run](#run-1)
       - [Automate](#automate)
-  - [Examples](#examples)
   - [Local documentation](#local-documentation)
     - [API reference](#api-reference)
     - [Docs website](#docs-website)
@@ -71,11 +70,10 @@ The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [
 
 The following tools need to be installed on your system prior to starting working on a pull request:
 
-- [Node.js >= 18.x](https://nodejs.org/download/release/latest-v18.x/)
-  - We recommend using a version in [Active LTS](https://nodejs.org/en/about/releases/)
-  - If you use [nvm](https://github.com/nvm-sh/nvm#nvmrc) or [fnm](https://github.com/Schniz/fnm) you can install the latest LTS version with `nvm use` or `fnm use` respectively. Both will use the `.nvmrc` file in the project's root.
-- [npm 8.x](https://www.npmjs.com/)
-  - After installing Node.js, you can install `npm` with `npm install -g npm@next-8` 
+- [Node.js 18.x](https://nodejs.org/download/release/latest-v18.x/)
+  - If you use [nvm](https://github.com/nvm-sh/nvm#nvmrc) or [fnm](https://github.com/Schniz/fnm) you can install the version used in the project with `nvm use` or `fnm use` respectively. Both will use the `.nvmrc` file in the project's root.
+- [npm 9.x](https://www.npmjs.com/)
+  - After installing the Node.js version above, your npm version should be already 9.x as it comes bundled with Node.js.
 - [AWS SAM CLI >= 1.65.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
   - AWS SAM CLI is a command line interface for AWS Serverless Application Model (SAM), it's used in one of the examples, and it's part of the pre-push hook.
 - [Docker](https://docs.docker.com/get-docker/)
@@ -84,7 +82,7 @@ The following tools need to be installed on your system prior to starting workin
 First, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository, and then run the following commands to clone and initialize the repository locally.
 
 > **Note**
-> In order for the commands below to work you need Node.js `18.x` and npm `8.x`
+> In order for the commands below to work you need Node.js `18.x` and npm `9.x`
 
 ```console
 git clone https://github.com/{your-account}/aws-lambda-powertools-typescript.git
@@ -93,27 +91,28 @@ npm run setup-local
 ```
 
 We recommend that you use [Visual Studio Code](https://code.visualstudio.com/) to work on the repo.
-We use `eslint` to keep our code consistent in terms of style and reducing defects. We recommend installing
-the [eslint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) as well.
+We use `eslint` and `prettier` to keep our code consistent in terms of style and reducing defects.
+We recommend installing the [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) extensions as well.
 
 ### Repo Layout
 
-The Powertools for AWS Lambda (TypeScript) is a npm project written in [TypeScript](https://www.typescriptlang.org/).
-More specifically, it is a [monorepo managed using npm workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces).
+The Powertools for AWS Lambda (TypeScript) is fully written in [TypeScript](https://www.typescriptlang.org/) and uses a monorepo structure [managed using npm workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces).
 If you're unfamiliar with any of these technologies, it is useful to learn about them and will make understanding the codebase easier but strictly not necessary for simple contributions.
 
 The repo contains `packages/` directory that contains the Powertools for AWS Lambda (TypeScript) utilities modules. For instance, the source code for the Logger utility can be found at the location `packages/logger` and so on.
 The repo also contains a `packages/commons` directory that holds code and logic shared between one or more utilities and that is published as a separate npm package.
 
+There are also other workspaces that are not part of the Powertools for AWS Lambda (TypeScript) utilities modules, but are used for examples (`examples/*`), documentation (`docs/snippets`), and Lambda Layers (`layers`).
+
 ### Tests
 
-Tests are under the `tests` folder of each module and split into two categories: unit tests and e2e (end-to-end) tests.
+Tests are under the `tests` folder of each module and split into two categories: unit tests and e2e (end-to-end/integration) tests.
 
 You can run each group separately or all together thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups).
 
 Unit tests, under `tests/unit` folder, are standard [Jest](https://jestjs.io) tests.
 
-End-to-end tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use [aws-cdk](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) v2 library with TypeScript for creating infrastructure, and [aws-sdk-js v2](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/) for invoking the functions and asserting on the expected behaviors. All steps are also executed by Jest.
+Integration tests, under `tests/e2e` folder, will test the module features by deploying AWS Lambda functions into your AWS Account. We use [aws-cdk](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) v2 library with TypeScript for creating infrastructure, and the AWS SDK for invoking the functions and asserting on the expected behaviors. All steps are also executed by Jest.
 
 Running end-to-end tests will deploy AWS resources. You will need an AWS account, and the tests might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. If you don't have an AWS Account, follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 
@@ -203,37 +202,6 @@ You can run the end-to-end tests automatically on your forked project by followi
 
 > :warning: **Don't automatically run end-to-end tests on branch push or PRs**. A malicious attacker can submit a pull request to attack your AWS account. Ideally, use a blank account without any important workload/data, and limit `AWS_ROLE_ARN_TO_ASSUME` permission to least minimum privilege.
 
-### Examples
-
-As part of the repo you will find an examples folder at the root. This folder contains examples (written with CDK and SAM) of deployable AWS Lambda functions using Powertools for AWS Lambda (TypeScript).
-
-To test your updates with these examples, you just have to:
-
-1. Build your local version of *aws-lambda-powertools-typescript* npm packages with `npm run package -ws` while in the root folder
-2. Move to the examples folder of your choice
-    ```sh
-    cd packages/examples/cdk
-    # or
-    cd packages/examples/sam
-    ```
-3. Update their references in examples
-    ```sh   
-    npm install ../../packages/**/dist/aws-lambda-powertools-*
-    ```
-4. Run cdk tests
-    ```sh
-    npm run test
-    ```
-5. Deploy
-    ```sh
-    npm run cdk deploy
-    # or
-    sam build  --beta-features
-    sam deploy --guided
-    ```
-
-The last step will deploy AWS resources, therefore, you will need an AWS account, and it might incur some costs which should be covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all). If you don't have an AWS Account, follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
-
 ### Local documentation
 
 You might find useful to run both the documentation website and the API reference locally while contributing.
@@ -260,8 +228,8 @@ Alternatively you can run these two commands:
 
 | Category          | Convention                                                                                                                                                                                                                             |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Docstring**     | We use [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) annotations to provide type information and create API references.                                                                             |
-| **Style guide**   | We use `eslint` to keep our code consistent in terms of style and reducing defects.                                                                                                                                                    |
+| **Docstring**     | We use [TypeDoc](https://typedoc.org) annotations to provide type information and create API references.                                                                                                                               |
+| **Style guide**   | We use `eslint` & `prettier` to keep our code consistent in terms of style and reducing defects.                                                                                                                                       |
 | **Test coverage** | We use [Jest](https://jestjs.io/) to test our code and [Codecov](https://codecov.io/) to report test coverage. We aim to have 100% test coverage in our unit tests.                                                                    |
 | **Git commits**   | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). These are not enforced as we squash and merge PRs, but PR titles are enforced during CI.                                                             |
 | **Documentation** | API reference docs are generated from docstrings which should have an Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strives to be concise. |
@@ -272,7 +240,7 @@ Contributions via pull requests are much appreciated.
 
 ### Summary
 
-* This project uses `node@18.x` and `npm@8.x` for development (see [Setup](#setup)).
+* This project uses `node@18.x` and `npm@9.x` for development (see [Setup](#setup)).
 * Before opening a Pull Request, please find the existing related issue or open a new one to discuss the proposed changes. A PR without a related issue or discussion has a high risk of being rejected. We are very appreciative and thankful for your time and efforts, and we want to make sure they are not wasted.
 * After your proposal has been reviewed and accepted by at least one of the project's maintainers, you can submit a pull request.
 * When opening a PR, make sure to follow the checklist inside the pull request template.

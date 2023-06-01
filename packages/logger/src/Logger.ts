@@ -294,7 +294,7 @@ class Logger extends Utility implements ClassThatLogs {
    *
    * @returns {string} The log level name.
    */
-  public getLevelName(): string {
+  public getLevelName(): Uppercase<LogLevel> {
     return this.getLogLevelNameFromNumber(this.logLevel);
   }
 

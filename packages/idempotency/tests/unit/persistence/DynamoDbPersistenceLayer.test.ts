@@ -3,7 +3,7 @@
  *
  * @group unit/idempotency/persistence/dynamodb
  */
-import { DynamoDBPersistenceLayer } from '../../../src/dynamodb';
+import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDBPersistenceLayer';
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,

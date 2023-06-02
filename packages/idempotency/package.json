@@ -33,28 +33,31 @@
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/idempotency#readme",
   "license": "MIT",
   "exports": {
-    ".": "./lib/index.js",
-    "./persistence": "./lib/persistence.js",
-    "./dynamodb": "./lib/dynamodb.js",
-    "./*": "./lib/*.js"
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    },
+    "./persistence": {
+      "import": "./lib/persistence/index.js",
+      "require": "./lib/persistence/index.js"
+    },
+    "./dynamodb": {
+      "import": "./lib/persistence/DynamoDbPersistenceLayer.js",
+      "require": "./lib/persistence/DynamoDbPersistenceLayer.js"
+    }
   },
-  "types": "./lib/index.d.ts",
   "typesVersions": {
     "*": {
-      "lib/index.d.ts": [
-        "lib/index.d.ts"
+      "persistence": [
+        "lib/persistence/index.d.ts"
       ],
-      "lib/persistence.d.ts": [
-        "lib/persistence.d.ts"
-      ],
-      "lib/dynamodb.d.ts": [
-        "lib/dynamodb.d.ts"
-      ],
-      "*": [
-        "lib/*"
+      "dynamodb": [
+        "lib/persistence/DynamoDbPersistenceLayer.d.ts"
       ]
     }
   },
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "typedocMain": "src/file_that_does_not_exist_so_its_ignored_from_api_docs.ts",
   "files": [
     "lib"
@@ -79,8 +82,8 @@
     "nodejs"
   ],
   "devDependencies": {
-    "@types/jmespath": "^0.15.0",
     "@aws-sdk/client-dynamodb": "^3.231.0",
+    "@types/jmespath": "^0.15.0",
     "aws-sdk-client-mock": "^2.0.1",
     "aws-sdk-client-mock-jest": "^2.0.1"
   }

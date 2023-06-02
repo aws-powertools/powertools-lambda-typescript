@@ -4,7 +4,7 @@
  * @group unit/idempotency/persistence/idempotencyRecord
  */
 import { IdempotencyInvalidStatusError } from '../../../src/Exceptions';
-import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
+import { IdempotencyRecord } from '../../../src/persistence';
 import { IdempotencyRecordStatus } from '../../../src/types';
 
 const mockIdempotencyKey = '123';

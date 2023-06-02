@@ -4,7 +4,7 @@
  * @group unit/idempotency/persistence/base
  */
 import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
-import { IdempotencyConfig } from '../../../src/IdempotencyConfig';
+import { IdempotencyConfig } from '../../../src';
 import {
   IdempotencyRecord,
   BasePersistenceLayer,

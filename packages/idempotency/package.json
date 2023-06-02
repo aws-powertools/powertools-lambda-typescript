@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/idempotency",
-  "version": "0.0.11",
+  "version": "1.8.0",
   "description": "The idempotency package for the Powertools for AWS Lambda (TypeScript) library. It provides options to make your Lambda functions idempotent and safe to retry.",
   "author": {
     "name": "Amazon Web Services",
@@ -23,15 +23,38 @@
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "package-bundle": "../../package-bundler.sh idempotency-bundle ./dist",
+    "preprepare": "rm -rf ./lib",
     "prepare": "npm run build"
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix"
+    "*.ts": "npm run lint-fix",
+    "*.js": "npm run lint-fix"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/idempotency#readme",
   "license": "MIT",
-  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./persistence": "./lib/persistence.js",
+    "./dynamodb": "./lib/dynamodb.js",
+    "./*": "./lib/*.js"
+  },
   "types": "./lib/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "lib/index.d.ts": [
+        "lib/index.d.ts"
+      ],
+      "lib/persistence.d.ts": [
+        "lib/persistence.d.ts"
+      ],
+      "lib/dynamodb.d.ts": [
+        "lib/dynamodb.d.ts"
+      ],
+      "*": [
+        "lib/*"
+      ]
+    }
+  },
   "typedocMain": "src/file_that_does_not_exist_so_its_ignored_from_api_docs.ts",
   "files": [
     "lib"

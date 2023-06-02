@@ -3,12 +3,12 @@
  *
  * @group unit/idempotency/persistence/dynamodb
  */
-import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDBPersistenceLayer';
+import { DynamoDBPersistenceLayer } from '../../../src/dynamodb';
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
 } from '../../../src/Exceptions';
-import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
+import { IdempotencyRecord } from '../../../src/persistence';
 import type { DynamoPersistenceOptions } from '../../../src/types';
 import { IdempotencyRecordStatus } from '../../../src/types';
 import {

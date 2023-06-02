@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { TEST_RUNTIMES } from '../../../commons/tests/utils/e2eUtils';
+import { BasePersistenceLayer } from '../../src/persistence';
 import path from 'path';
 
 export const createIdempotencyResources = (
@@ -40,3 +41,17 @@ export const createIdempotencyResources = (
 
   ddbTable.grantReadWriteData(nodeJsFunction);
 };
+
+/**
+ * Dummy class to test the abstract class BasePersistenceLayer.
+ *
+ * This class is used in the unit tests.
+ */
+class PersistenceLayerTestClass extends BasePersistenceLayer {
+  protected _deleteRecord = jest.fn();
+  protected _getRecord = jest.fn();
+  protected _putRecord = jest.fn();
+  protected _updateRecord = jest.fn();
+}
+
+export { PersistenceLayerTestClass };

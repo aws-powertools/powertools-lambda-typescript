@@ -165,7 +165,9 @@ const makeHandlerIdempotent = (
     };
   } else {
     return {
-      before: () => ({}),
+      before: () => {
+        return undefined;
+      },
     };
   }
 };

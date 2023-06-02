@@ -31,7 +31,7 @@
     "*.js": "npm run lint-fix"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/idempotency#readme",
-  "license": "MIT",
+  "license": "MIT-0",
   "exports": {
     ".": {
       "import": "./lib/index.js",

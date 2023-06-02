@@ -4,6 +4,8 @@ interface ConfigServiceInterface {
   getServiceName(): string;
 
   getFunctionName(): string;
+
+  getIdempotencyEnabled(): boolean;
 }
 
 export { ConfigServiceInterface };

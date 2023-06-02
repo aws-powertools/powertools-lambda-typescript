@@ -251,5 +251,28 @@ describe('Middy middleware', () => {
       );
       expect(getRecordSpy).toHaveBeenCalledTimes(MAX_RETRIES + 1);
     });
+    it('does not do anything if idempotency is disabled', async () => {
+      // Prepare
+      process.env.POWERTOOLS_IDEMPOTENCY_DISABLED = 'true';
+      const handler = middy(
+        async (_event: unknown, _context: Context): Promise<boolean> => true
+      ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+      const saveInProgressSpy = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      );
+      const saveSuccessSpy = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveSuccess'
+      );
+
+      // Act
+      const result = await handler(event, context);
+
+      // Assess
+      expect(result).toBe(true);
+      expect(saveInProgressSpy).toHaveBeenCalledTimes(0);
+      expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
+    });
   });
 });

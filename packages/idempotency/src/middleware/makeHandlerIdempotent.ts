@@ -66,6 +66,7 @@ const makeHandlerIdempotent = (
    * cases we can safely retry the handling a few times.
    *
    * @param request - The Middy request object
+   * @param retryNo - The number of times the handler has been retried
    */
   const before = async (
     request: MiddyLikeRequest,
@@ -156,11 +157,17 @@ const makeHandlerIdempotent = (
     }
   };
 
-  return {
-    before,
-    after,
-    onError,
-  };
+  if (idempotencyConfig.isEnabled()) {
+    return {
+      before,
+      after,
+      onError,
+    };
+  } else {
+    return {
+      before: () => ({}),
+    };
+  }
 };
 
 export { makeHandlerIdempotent };

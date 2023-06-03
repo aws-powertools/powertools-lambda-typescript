@@ -1,0 +1,50 @@
+{
+  "name": "@aws-lambda-powertools/jmespath",
+  "version": "1.8.0-alpha.0",
+  "description": "The jmespath package for the Powertools for AWS Lambda (TypeScript) library",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
+    "test:e2e:nodejs16x": "RUNTIME=nodejs16x jest --group=e2e",
+    "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
+    "test:e2e": "jest --group=e2e",
+    "build": "tsc",
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern ."
+  },
+  "lint-staged": {
+    "*.ts": "npm run lint-fix",
+    "*.js": "npm run lint-fix"
+  },
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/jmespath#readme",
+  "license": "MIT-0",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "jmespath",
+    "functions",
+    "serverless",
+    "nodejs"
+  ]
+}

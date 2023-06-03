@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "noImplicitAny": true,
+        "target": "ES2020",
+        "module": "commonjs",
+        "declaration": true,
+        "declarationMap": true,
+        "outDir": "lib",
+        "removeComments": false,
+        "strict": true,
+        "inlineSourceMap": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "pretty": true,
+        "baseUrl": "src/",
+        "rootDirs": [
+            "src/"
+        ],
+        "esModuleInterop": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "./node_modules"
+    ],
+    "watchOptions": {
+        "watchFile": "useFsEvents",
+        "watchDirectory": "useFsEvents",
+        "fallbackPolling": "dynamicPriority"
+    },
+    "lib": [
+        "es2020"
+    ],
+    "types": [
+        "node"
+    ]
+}

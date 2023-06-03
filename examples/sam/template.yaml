@@ -5,7 +5,7 @@
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  An example application with PowerTools for TypeScript instrumented. Its purpose is to demonstrate how to use the PowerTools with AWS SAM. The application an API with contains 3 endpoints (get all items, get an item by ids, put an item). Each Lambda function utilises Logger, Metrics, and Tracers.
+  An example application with Powertools for AWS Lambda (TypeScript) instrumented. Its purpose is to demonstrate how to use the Powertools for AWS Lambda (TypeScript) with AWS SAM. The application an API with contains 3 endpoints (get all items, get an item by ids, put an item). Each Lambda function utilises Logger, Metrics, and Tracers.
 
 # Transform section specifies one or more macros that AWS CloudFormation uses to process your template
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html

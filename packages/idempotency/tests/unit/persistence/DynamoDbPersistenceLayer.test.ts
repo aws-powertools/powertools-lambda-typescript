@@ -8,7 +8,7 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
 } from '../../../src/Exceptions';
-import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord';
+import { IdempotencyRecord } from '../../../src/persistence';
 import type { DynamoPersistenceOptions } from '../../../src/types';
 import { IdempotencyRecordStatus } from '../../../src/types';
 import {

@@ -1,4 +1,5 @@
-import { Console } from 'console';
+import { randomInt } from 'node:crypto';
+import { Console } from 'node:console';
 import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
@@ -111,12 +112,20 @@ import type {
  * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/
  */
 class Logger extends Utility implements ClassThatLogs {
-  // console is initialized in the constructor in setOptions()
+  /**
+   * Console instance used to print logs.
+   *
+   * In AWS Lambda, we create a new instance of the Console class so that we can have
+   * full control over the output of the logs. In testing environments, we use the
+   * default console instance.
+   *
+   * This property is initialized in the constructor in setOptions().
+   *
+   * @private
+   */
   private console!: Console;
 
   private customConfigService?: ConfigServiceInterface;
-
-  private static readonly defaultLogLevel: Uppercase<LogLevel> = 'INFO';
 
   // envVarsService is always initialized in the constructor in setOptions()
   private envVarsService!: EnvironmentVariablesService;
@@ -127,9 +136,16 @@ class Logger extends Utility implements ClassThatLogs {
 
   private logIndentation: number = LogJsonIndent.COMPACT;
 
-  private logLevel?: Uppercase<LogLevel>;
+  /**
+   * Log level used internally by the current instance of Logger.
+   */
+  private logLevel = 12;
 
-  // Log levels are in ascending order from the most verbose to the least verbose (no logs)
+  /**
+   * Log level thresholds used internally by the current instance of Logger.
+   *
+   * The levels are in ascending order from the most verbose to the least verbose (no logs).
+   */
   private readonly logLevelThresholds: LogLevelThresholds = {
     DEBUG: 8,
     INFO: 12,
@@ -144,6 +160,16 @@ class Logger extends Utility implements ClassThatLogs {
   private persistentLogAttributes?: LogAttributes = {};
 
   private powertoolLogData: PowertoolLogData = <PowertoolLogData>{};
+
+  /**
+   * Log level used by the current instance of Logger.
+   *
+   * Returns the log level as a number. The higher the number, the less verbose the logs.
+   * To get the log level name, use the {@link getLevelName()} method.
+   */
+  public get level(): number {
+    return this.logLevel;
+  }
 
   /**
    * It initializes the Logger class with an optional set of options (settings).
@@ -206,7 +232,7 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public createChild(options: ConstructorOptions = {}): Logger {
     const parentsOptions = {
-      logLevel: this.getLogLevel(),
+      logLevel: this.getLevelName(),
       customConfigService: this.getCustomConfigService(),
       logFormatter: this.getLogFormatter(),
     };
@@ -235,7 +261,7 @@ class Logger extends Utility implements ClassThatLogs {
     input: LogItemMessage,
     ...extraInput: LogItemExtraInput
   ): void {
-    this.processLogItem('CRITICAL', input, extraInput);
+    this.processLogItem(24, input, extraInput);
   }
 
   /**
@@ -246,7 +272,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem('DEBUG', input, extraInput);
+    this.processLogItem(8, input, extraInput);
   }
 
   /**
@@ -257,7 +283,19 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem('ERROR', input, extraInput);
+    this.processLogItem(20, input, extraInput);
+  }
+
+  /**
+   * Get the log level name of the current instance of Logger.
+   *
+   * It returns the log level name, i.e. `INFO`, `DEBUG`, etc.
+   * To get the log level as a number, use the {@link Logger.level} property.
+   *
+   * @returns {Uppercase<LogLevel>} The log level name.
+   */
+  public getLevelName(): Uppercase<LogLevel> {
+    return this.getLogLevelNameFromNumber(this.logLevel);
   }
 
   /**
@@ -298,7 +336,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem('INFO', input, extraInput);
+    this.processLogItem(12, input, extraInput);
   }
 
   /**
@@ -454,6 +492,19 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * Set the log level for this Logger instance.
+   *
+   * @param logLevel The log level to set, i.e. `error`, `warn`, `info`, `debug`, etc.
+   */
+  public setLogLevel(logLevel: LogLevel): void {
+    if (this.isValidLogLevel(logLevel)) {
+      this.logLevel = this.logLevelThresholds[logLevel];
+    } else {
+      throw new Error(`Invalid log level: ${logLevel}`);
+    }
+  }
+
+  /**
    * It sets the given attributes (key-value pairs) to all log items generated by this Logger instance.
    * Note: this replaces the pre-existing value.
    *
@@ -500,7 +551,28 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem('WARN', input, extraInput);
+    this.processLogItem(16, input, extraInput);
+  }
+
+  /**
+   * Decides whether the current log item should be printed or not.
+   *
+   * The decision is based on the log level and the sample rate value.
+   * A log item will be printed if:
+   * 1. The log level is greater than or equal to the Logger's log level.
+   * 2. The log level is less than the Logger's log level, but the
+   * current sampling value is set to `true`.
+   *
+   * @param {number} logLevel
+   * @returns {boolean}
+   * @protected
+   */
+  protected shouldPrint(logLevel: number): boolean {
+    if (logLevel >= this.logLevel) {
+      return true;
+    }
+
+    return this.getLogsSampled();
   }
 
   /**
@@ -524,20 +596,20 @@ class Logger extends Utility implements ClassThatLogs {
    * - Formats all the log attributes;
    *
    * @private
-   * @param {LogLevel} logLevel
+   * @param {number} logLevel
    * @param {LogItemMessage} input
    * @param {LogItemExtraInput} extraInput
    * @returns {LogItem}
    */
   private createAndPopulateLogItem(
-    logLevel: LogLevel,
+    logLevel: number,
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): LogItem {
     // TODO: this method's logic is hard to understand, there is an opportunity here to simplify this logic.
     const unformattedBaseAttributes = merge(
       {
-        logLevel,
+        logLevel: this.getLogLevelNameFromNumber(logLevel),
         timestamp: new Date(),
         message: typeof input === 'string' ? input : input.message,
         xRayTraceId: this.envVarsService.getXrayTraceId(),
@@ -602,17 +674,23 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It returns the log level set for the Logger instance.
+   * Get the log level name from the log level number.
    *
-   * Even though logLevel starts as undefined, it will always be set to a value
-   * during the Logger instance's initialization. So, we can safely use the non-null
-   * assertion operator here.
+   * For example, if the log level is 16, it will return 'WARN'.
    *
-   * @private
-   * @returns {LogLevel}
+   * @param logLevel - The log level to get the name of
+   * @returns - The name of the log level
    */
-  private getLogLevel(): Uppercase<LogLevel> {
-    return this.logLevel!;
+  private getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
+    const found = Object.entries(this.logLevelThresholds).find(
+      ([key, value]) => {
+        if (value === logLevel) {
+          return key;
+        }
+      }
+    )!;
+
+    return found[0] as Uppercase<LogLevel>;
   }
 
   /**
@@ -690,17 +768,20 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * It prints a given log with given log level.
    *
-   * @param {LogLevel} logLevel
+   * @param {number} logLevel
    * @param {LogItem} log
    * @private
    */
-  private printLog(logLevel: LogLevel, log: LogItem): void {
+  private printLog(logLevel: number, log: LogItem): void {
     log.prepareForPrint();
 
     const consoleMethod =
-      logLevel === 'CRITICAL'
+      logLevel === 24
         ? 'error'
-        : (logLevel.toLowerCase() as keyof Omit<ClassThatLogs, 'critical'>);
+        : (this.getLogLevelNameFromNumber(logLevel).toLowerCase() as keyof Omit<
+            ClassThatLogs,
+            'critical'
+          >);
 
     this.console[consoleMethod](
       JSON.stringify(
@@ -714,13 +795,13 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * It prints a given log with given log level.
    *
-   * @param {Uppercase<LogLevel>} logLevel
+   * @param {number} logLevel
    * @param {LogItemMessage} input
    * @param {LogItemExtraInput} extraInput
    * @private
    */
   private processLogItem(
-    logLevel: Uppercase<LogLevel>,
+    logLevel: number,
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): void {
@@ -779,6 +860,40 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * Sets the initial Logger log level based on the following order:
+   * 1. If a log level is passed to the constructor, it sets it.
+   * 2. If a log level is set via custom config service, it sets it.
+   * 3. If a log level is set via env variables, it sets it.
+   *
+   * If none of the above is true, the default log level applies (INFO).
+   *
+   * @private
+   * @param {LogLevel} [logLevel] - Log level passed to the constructor
+   */
+  private setInitialLogLevel(logLevel?: LogLevel): void {
+    const constructorLogLevel = logLevel?.toUpperCase();
+    if (this.isValidLogLevel(constructorLogLevel)) {
+      this.logLevel = this.logLevelThresholds[constructorLogLevel];
+
+      return;
+    }
+    const customConfigValue = this.getCustomConfigService()
+      ?.getLogLevel()
+      ?.toUpperCase();
+    if (this.isValidLogLevel(customConfigValue)) {
+      this.logLevel = this.logLevelThresholds[customConfigValue];
+
+      return;
+    }
+    const envVarsValue = this.getEnvVarsService()?.getLogLevel()?.toUpperCase();
+    if (this.isValidLogLevel(envVarsValue)) {
+      this.logLevel = this.logLevelThresholds[envVarsValue];
+
+      return;
+    }
+  }
+
+  /**
    * If the log event feature is enabled via env variable, it sets a property that tracks whether
    * the event passed to the Lambda function handler should be logged or not.
    *
@@ -817,38 +932,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It sets the Logger's instance log level.
-   *
-   * @private
-   * @param {LogLevel} logLevel
-   * @returns {void}
-   */
-  private setLogLevel(logLevel?: LogLevel): void {
-    const constructorLogLevel = logLevel?.toUpperCase();
-    if (this.isValidLogLevel(constructorLogLevel)) {
-      this.logLevel = constructorLogLevel;
-
-      return;
-    }
-    const customConfigValue = this.getCustomConfigService()
-      ?.getLogLevel()
-      ?.toUpperCase();
-    if (this.isValidLogLevel(customConfigValue)) {
-      this.logLevel = customConfigValue;
-
-      return;
-    }
-    const envVarsValue = this.getEnvVarsService()?.getLogLevel()?.toUpperCase();
-    if (this.isValidLogLevel(envVarsValue)) {
-      this.logLevel = envVarsValue;
-
-      return;
-    }
-
-    this.logLevel = Logger.defaultLogLevel;
-  }
-
-  /**
    * If the sample rate feature is enabled, it sets a property that tracks whether this Lambda function invocation
    * will print logs or not.
    *
@@ -857,10 +940,9 @@ class Logger extends Utility implements ClassThatLogs {
    */
   private setLogsSampled(): void {
     const sampleRateValue = this.getSampleRateValue();
-    // TODO: revisit Math.random() as it's not a real randomization
     this.logsSampled =
       sampleRateValue !== undefined &&
-      (sampleRateValue === 1 || Math.random() < sampleRateValue);
+      (sampleRateValue === 1 || randomInt(0, 100) / 100 <= sampleRateValue);
   }
 
   /**
@@ -886,7 +968,7 @@ class Logger extends Utility implements ClassThatLogs {
     // order is important, it uses EnvVarsService()
     this.setConsole();
     this.setCustomConfigService(customConfigService);
-    this.setLogLevel(logLevel);
+    this.setInitialLogLevel(logLevel);
     this.setSampleRateValue(sampleRateValue);
     this.setLogsSampled();
     this.setLogFormatter(logFormatter);
@@ -929,24 +1011,6 @@ class Logger extends Utility implements ClassThatLogs {
       },
       persistentLogAttributes
     );
-  }
-
-  /**
-   * It checks whether the current log item should/can be printed.
-   *
-   * @param {Uppercase<LogLevel>} logLevel
-   * @private
-   * @returns {boolean}
-   */
-  private shouldPrint(logLevel: Uppercase<LogLevel>): boolean {
-    if (
-      this.logLevelThresholds[logLevel] >=
-      this.logLevelThresholds[this.getLogLevel()]
-    ) {
-      return true;
-    }
-
-    return this.getLogsSampled();
   }
 }
 

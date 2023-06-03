@@ -1,6 +1,6 @@
 module.exports = {
   displayName: {
-    name: 'AWS Lambda Powertools utility: LAYERS',
+    name: 'Powertools for AWS Lambda (TypeScript) utility: LAYERS',
     color: 'black',
   },
   runner: 'groups',

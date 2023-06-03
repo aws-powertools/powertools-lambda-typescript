@@ -17,7 +17,7 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
 } from '../../src/Exceptions';
-import { IdempotencyConfig } from '../../src/IdempotencyConfig';
+import { IdempotencyConfig } from '../../src';
 
 const mockSaveInProgress = jest
   .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')

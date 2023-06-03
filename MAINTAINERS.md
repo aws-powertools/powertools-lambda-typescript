@@ -228,7 +228,7 @@ To run locally, you need [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/
 
 ### Releasing a documentation hotfix
 
-You can rebuild the latest documentation without a full release via this [GitHub Actions Workflow](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/workflows/publish-docs-on-release.yml). Choose `Run workflow`, keep `main` as the branch, and input the latest Powertools version available i.e. `v1.4.1`.
+You can rebuild the latest documentation without a full release via this [GitHub Actions Workflow](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/workflows/publish-docs-on-release.yml). Choose `Run workflow`, keep `main` as the branch, and input the latest Powertools for AWS Lambda (TypeScript) version available i.e. `v1.4.1`.
 
 This workflow will update both user guide and API documentation.
 

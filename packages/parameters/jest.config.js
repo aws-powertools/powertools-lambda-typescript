@@ -1,6 +1,6 @@
 module.exports = {
   displayName: {
-    name: 'AWS Lambda Powertools utility: PARAMETERS',
+    name: 'Powertools for AWS Lambda (TypeScript) utility: PARAMETERS',
     color: 'magenta',
   },
   runner: 'groups',

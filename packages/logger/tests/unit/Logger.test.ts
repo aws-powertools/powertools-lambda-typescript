@@ -16,6 +16,7 @@ import {
   LogJsonIndent,
   ConstructorOptions,
   LogLevelThresholds,
+  LogLevel,
 } from '../../src/types';
 import { Context } from 'aws-lambda';
 import { Console } from 'console';
@@ -798,7 +799,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1621,7 +1622,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1644,7 +1645,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1667,7 +1668,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1733,7 +1734,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1756,7 +1757,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1782,7 +1783,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1805,7 +1806,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'ERROR',
+        logLevel: 20,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1849,7 +1850,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1872,7 +1873,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1902,7 +1903,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -1943,7 +1944,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 'DEBUG',
+        logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2172,6 +2173,30 @@ describe('Class: Logger', () => {
         ...logger,
         console: console,
       });
+    });
+  });
+
+  describe('Method: setLogLevel', () => {
+    test('it sets the correct log level provided', () => {
+      // Prepare
+      const logger = new Logger();
+
+      // Act
+      logger.setLogLevel('ERROR');
+
+      // Assess
+      expect(logger.level).toBe(20);
+      expect(logger.getLevelName()).toBe('ERROR');
+    });
+
+    test('it throws when passed an invalid log level name', () => {
+      // Prepare
+      const logger = new Logger();
+
+      // Act & Assess
+      expect(() => logger.setLogLevel('INVALID' as LogLevel)).toThrow(
+        'Invalid log level: INVALID'
+      );
     });
   });
 });

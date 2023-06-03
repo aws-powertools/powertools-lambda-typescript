@@ -1,6 +1,6 @@
 module.exports = {
   displayName: {
-    name: 'AWS Lambda Powertools utility: COMMONS',
+    name: 'Powertools for AWS Lambda (TypeScript) utility: COMMONS',
     color: 'red',
   },
   preset: 'ts-jest',

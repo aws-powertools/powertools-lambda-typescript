@@ -1,21 +1,9 @@
-/**
- * TODO: finalize ASTThing type & extract
- */
-type ASTThing = {
-  type: string;
-  children: unknown[];
-  value?: unknown;
-};
-
+import type { JSONValue, Node } from './types';
 /**
  * TODO: write docs for comparator()
  * TODO: finalize types for comparator()
  */
-const comparator = (
-  name: unknown,
-  first: unknown,
-  second: unknown
-): ASTThing => ({
+const comparator = (name: unknown, first: unknown, second: unknown): Node => ({
   type: 'comparator',
   children: [first, second],
   value: name,
@@ -25,7 +13,7 @@ const comparator = (
  * TODO: write docs for currentNode()
  * TODO: finalize types for currentNode()
  */
-const currentNode = (): ASTThing => ({
+const currentNode = (): Node => ({
   type: 'current',
   children: [],
 });
@@ -34,7 +22,7 @@ const currentNode = (): ASTThing => ({
  * TODO: write docs for expref()
  * TODO: finalize types for expref()
  */
-const expref = (expression: unknown): ASTThing => ({
+const expref = (expression: unknown): Node => ({
   type: 'expref',
   children: [expression],
 });
@@ -43,7 +31,7 @@ const expref = (expression: unknown): ASTThing => ({
  * TODO: write docs for functionExpression()
  * TODO: finalize types for functionExpression()
  */
-const functionExpression = (name: unknown, args: unknown[]): ASTThing => ({
+const functionExpression = (name: unknown, args: unknown[]): Node => ({
   type: 'function_expression',
   children: args,
   value: name,
@@ -53,7 +41,7 @@ const functionExpression = (name: unknown, args: unknown[]): ASTThing => ({
  * TODO: write docs for field()
  * TODO: finalize types for field()
  */
-const field = (name: unknown): ASTThing => ({
+const field = (name: unknown): Node => ({
   type: 'field',
   children: [],
   value: name,
@@ -72,7 +60,7 @@ const filterProjection = (
   left: unknown,
   right: unknown,
   comparator: unknown
-): ASTThing => ({
+): Node => ({
   type: 'filter_projection',
   children: [left, right, comparator],
 });
@@ -86,7 +74,7 @@ const filterProjection = (
  * @param comparator
  * @returns
  */
-const flatten = (node: unknown): ASTThing => ({
+const flatten = (node: unknown): Node => ({
   type: 'flatten',
   children: [node],
 });
@@ -100,7 +88,7 @@ const flatten = (node: unknown): ASTThing => ({
  * @param comparator
  * @returns
  */
-const identity = (): ASTThing => ({ type: 'identity', children: [] });
+const identity = (): Node => ({ type: 'identity', children: [] });
 
 /**
  * TODO: write docs for index()
@@ -111,7 +99,7 @@ const identity = (): ASTThing => ({ type: 'identity', children: [] });
  * @param comparator
  * @returns
  */
-const index = (index: unknown): ASTThing => ({
+const index = (index: unknown): Node => ({
   type: 'index',
   value: index,
   children: [],
@@ -126,7 +114,7 @@ const index = (index: unknown): ASTThing => ({
  * @param comparator
  * @returns
  */
-const indexExpression = (children: unknown[]): ASTThing => ({
+const indexExpression = (children: unknown[]): Node => ({
   type: 'index_expression',
   children: children,
 });
@@ -135,12 +123,10 @@ const indexExpression = (children: unknown[]): ASTThing => ({
  * TODO: write docs for keyValPair()
  * TODO: finalize types for keyValPair()
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * @param keyName
+ * @param node
  */
-const keyValPair = (keyName: string, node: unknown): ASTThing => ({
+const keyValPair = (keyName: JSONValue, node: Node): Node => ({
   type: 'key_val_pair',
   children: [node],
   value: keyName,
@@ -150,12 +136,9 @@ const keyValPair = (keyName: string, node: unknown): ASTThing => ({
  * TODO: write docs for literal()
  * TODO: finalize types for literal()
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * @param literalValue
  */
-const literal = (literalValue: unknown): ASTThing => ({
+const literal = (literalValue: unknown): Node => ({
   type: 'literal',
   value: literalValue,
   children: [],
@@ -166,12 +149,9 @@ const literal = (literalValue: unknown): ASTThing => ({
  * TODO: finalize types for multiSelectDict()
  * TODO: check if multiSelectDict() could be possibly be renamed to multiSelectObject() / multiSelectMap() / multiSelectHash()
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * @param nodes
  */
-const multiSelectDict = (nodes: unknown[]): ASTThing => ({
+const multiSelectDict = (nodes: Node[]): Node => ({
   type: 'multi_select_dict',
   children: nodes,
 });
@@ -181,108 +161,91 @@ const multiSelectDict = (nodes: unknown[]): ASTThing => ({
  * TODO: finalize types for multiSelectList()
  * TODO: check if multiSelectList() could be possibly be renamed to multiSelectArray()
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * @param nodes
  */
-const multiSelectList = (nodes: unknown[]): ASTThing => ({
+const multiSelectList = (nodes: Node[]): Node => ({
   type: 'multi_select_list',
   children: nodes,
 });
 
 /**
- *
+ * TODO: write docs for orExpression()
  * @param left
  * @param right
- * @param comparator
- * @returns
  */
-const orExpression = (left: unknown, right: unknown): ASTThing => ({
+const orExpression = (left: Node, right: Node): Node => ({
   type: 'or_expression',
   children: [left, right],
 });
 
 /**
- *
+ * TODO: write docs for andExpression()
  * @param left
  * @param right
- * @param comparator
- * @returns
  */
-const andExpression = (left: unknown, right: unknown): ASTThing => ({
+const andExpression = (left: Node, right: Node): Node => ({
   type: 'and_expression',
   children: [left, right],
 });
 
 /**
- *
+ * TODO: write docs for notExpression()
  * @param left
  * @param right
- * @param comparator
- * @returns
  */
-const notExpression = (expr: unknown): ASTThing => ({
+const notExpression = (expr: Node): Node => ({
   type: 'not_expression',
   children: [expr],
 });
 
 /**
- *
+ * TODO: write docs for multiSelectList()
  * @param left
  * @param right
- * @param comparator
- * @returns
  */
-const pipe = (left: unknown, right: unknown): ASTThing => ({
+const pipe = (left: Node, right: Node): Node => ({
   type: 'pipe',
   children: [left, right],
 });
 
 /**
- *
+ * TODO: write docs for projection()
  * @param left
  * @param right
- * @param comparator
- * @returns
  */
-const projection = (left: unknown, right: unknown): ASTThing => ({
+const projection = (left: Node, right: Node): Node => ({
   type: 'projection',
   children: [left, right],
 });
 
 /**
- *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * TODO: write docs for subexpression()
+ * @param children
  */
-const subexpression = (children: unknown[]): ASTThing => ({
+const subexpression = (children: Node[]): Node => ({
   type: 'subexpression',
   children: children,
 });
 
 /**
+ * TODO: write docs for slice()
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * @param start
+ * @param end
+ * @param step
  */
-const slice = (start: unknown, end: unknown, step: unknown): ASTThing => ({
+const slice = (start: unknown, end: unknown, step: unknown): Node => ({
   type: 'slice',
   children: [start, end, step],
 });
 
 /**
+ * TODO: write docs for valueProjection()
  *
  * @param left
  * @param right
- * @param comparator
- * @returns
  */
-const valueProjection = (left: unknown, right: unknown): ASTThing => ({
+const valueProjection = (left: Node, right: Node): Node => ({
   type: 'value_projection',
   children: [left, right],
 });

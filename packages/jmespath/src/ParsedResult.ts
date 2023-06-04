@@ -1,10 +1,11 @@
 import { TreeInterpreter, GraphvizVisitor } from './visitor';
+import type { Node } from './types';
 
 class ParsedResult {
   public expression: string;
-  public parsed: unknown[];
+  public parsed: Node;
 
-  public constructor(expression: string, parsed: unknown[]) {
+  public constructor(expression: string, parsed: Node) {
     this.expression = expression;
     this.parsed = parsed;
   }
@@ -14,6 +15,7 @@ class ParsedResult {
    *
    * TODO: write docs for ParsedResult#renderDotFile()
    * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/parser.py#L515-L519
+   *
    */
   public renderDotFile(): string {
     const renderer = new GraphvizVisitor();

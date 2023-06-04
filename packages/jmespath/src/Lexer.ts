@@ -6,16 +6,7 @@ import {
   SIMPLE_TOKENS,
 } from './constants';
 import { LexerError, EmptyExpressionError } from './errors';
-
-/**
- * TODO: write docs for Token type & extract to own file.
- */
-type Token = {
-  type: string;
-  value: string | number;
-  start: number;
-  end: number;
-};
+import type { Token } from './types';
 
 class Lexer {
   #position!: number;
@@ -293,7 +284,11 @@ class Lexer {
    * @param elseType
    * @returns
    */
-  #matchOrElse(expected: string, matchType: string, elseType: string): Token {
+  #matchOrElse(
+    expected: string,
+    matchType: Token['type'],
+    elseType: Token['type']
+  ): Token {
     const start = this.#position;
     const current = this.#current;
     const nextChar = this.#next();

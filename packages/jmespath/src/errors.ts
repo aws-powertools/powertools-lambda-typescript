@@ -1,3 +1,5 @@
+import type { Token } from './types';
+
 /**
  * TODO: write docs for JMESPathError
  */
@@ -48,20 +50,20 @@ class ParseError extends JMESPathError {
   public expression?: string;
   public lexPosition: number;
   public reason?: string;
-  public tokenType: string;
-  public tokenValue: string;
+  public tokenType: Token['type'];
+  public tokenValue: Token['value'];
 
   public constructor(options: {
     lexPosition: number;
-    tokenValue: string;
-    tokenType: string;
+    tokenValue: Token['value'];
+    tokenType: Token['type'];
     reason?: string;
   }) {
     super('Invalid jmespath expression');
     this.name = 'ParseError';
     this.lexPosition = options.lexPosition;
     this.tokenValue = options.tokenValue;
-    this.tokenType = options.tokenType.toUpperCase();
+    this.tokenType = options.tokenType;
     this.reason = options.reason;
 
     // Set the message to include the lexer position and token info.

@@ -1,6 +1,6 @@
 import { search } from '../../src';
 
-describe('Base tests', () => {
+describe('Unicode tests', () => {
   it.each([
     {
       expression: 'foo[]."✓"',

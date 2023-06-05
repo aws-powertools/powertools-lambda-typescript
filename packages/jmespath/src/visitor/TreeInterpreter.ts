@@ -1,18 +1,6 @@
 import type { JSONValue, Node, TreeInterpreterOptions } from '../types';
 import { Functions } from '../functions';
-
-/**
- * TODO: write docs for isRecord() type guard
- *
- * @param value
- * @returns
- */
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return (
-    Object.prototype.toString.call(value) === '[object Object]' &&
-    !Object.is(value, null)
-  );
-};
+import { Expression, isRecord, isTruthy } from './utils';
 
 class TreeInterpreter {
   #functions: Functions;
@@ -43,19 +31,48 @@ class TreeInterpreter {
     } else if (nodeType === 'field') {
       return this.#visitField(node, value);
       /* } else if (nodeType === 'comparator') {
-      return this.#visitComparator(node, value);
+      return this.#visitComparator(node, value); */
     } else if (nodeType === 'current') {
       return this.#visitCurrent(node, value);
     } else if (nodeType === 'expref') {
+      // TODO: review #visitExpref() return type
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore-next-line
       return this.#visitExpref(node, value);
-    } else if (nodeType === 'filter_projection') {
-      return this.#visitFilterProjection(node, value); */
     } else if (nodeType === 'function_expression') {
       return this.#visitFunctionExpression(node, value);
-    } else if (nodeType === 'current') {
-      return this.#visitCurrent(node, value);
+    } else if (nodeType === 'filter_projection') {
+      return this.#visitFilterProjection(node, value);
+    } else if (nodeType === 'flatten') {
+      return this.#visitFlatten(node, value);
     } else if (nodeType === 'identity') {
       return this.#visitIdentity(node, value);
+    } else if (nodeType === 'index') {
+      return this.#visitIndex(node, value);
+    } else if (nodeType === 'index_expression') {
+      return this.#visitIndexExpression(node, value);
+      /* } else if (nodeType === 'slice') {
+      return this.#visitSlice(node, value); */
+    } else if (nodeType === 'key_val_pair') {
+      return this.#visitKeyValPair(node, value);
+    } else if (nodeType === 'literal') {
+      return this.#visitLiteral(node, value);
+    } else if (nodeType === 'multi_select_dict') {
+      return this.#visitMultiSelectDict(node, value);
+    } else if (nodeType === 'multi_select_list') {
+      return this.#visitMultiSelectList(node, value);
+    } else if (nodeType === 'or_expression') {
+      return this.#visitOrExpression(node, value);
+    } else if (nodeType === 'and_expression') {
+      return this.#visitAndExpression(node, value);
+      /* } else if (nodeType === 'not_expression') {
+      return this.#visitNotExpression(node, value); */
+    } else if (nodeType === 'pipe') {
+      return this.#visitPipe(node, value);
+    } else if (nodeType === 'projection') {
+      return this.#visitProjection(node, value);
+      /* } else if (nodeType === 'value_projection') {
+      return this.#visitValueProjection(node, value); */
     } else {
       // TODO: convert to a custom error
       throw new Error(`Not Implemented: Invalid node type: ${node.type}`);
@@ -96,6 +113,12 @@ class TreeInterpreter {
     }
   }
 
+  /**
+   * TODO: write docs for TreeInterpreter.visitComparator()
+   * @param node
+   * @param value
+   * @returns
+   */
   /* #visitComparator(node: Node, value: JSONValue): JSONValue {
     return true;
   }
@@ -110,12 +133,16 @@ class TreeInterpreter {
   #visitCurrent(_node: Node, value: JSONValue): JSONValue {
     return value;
   }
-  /*
 
-  #visitExpref(node: Node, value: JSONValue): JSONValue {
-    return true;
+  /**
+   * TODO: write docs for TreeInterpreter.visitExpref()
+   * @param node
+   * @param value
+   * @returns
+   */
+  #visitExpref(node: Node, _value: JSONValue): Expression {
+    return new Expression(node.children[0], this);
   }
-  */
 
   /**
    * TODO: write docs for TreeInterpreter.visitFunctionExpression()
@@ -149,24 +176,52 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitIndex()
+   * TODO: write docs for TreeInterpreter.visitFilterProjection()
    * @param node
    * @param value
    * @returns
    */
-  /* #visitFilterProjection(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitFilterProjection(node: Node, value: JSONValue): JSONValue {
+    const base = this.visit(node.children[0], value);
+    if (!Array.isArray(base)) {
+      return null;
+    }
+    const comparatorNode = node.children[2];
+    const collected = [];
+    for (const item of base) {
+      if (isTruthy(this.visit(comparatorNode, item))) {
+        const current = this.visit(node.children[1], item);
+        if (current !== null) {
+          collected.push(current);
+        }
+      }
+    }
+
+    return collected;
+  }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitIndex()
+   * TODO: write docs for TreeInterpreter.visitFlatten()
    * @param node
    * @param value
    * @returns
    */
-  /* #visitFlatten(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitFlatten(node: Node, value: JSONValue): JSONValue {
+    const base = this.visit(node.children[0], value);
+    if (!Array.isArray(base)) {
+      return null;
+    }
+    const mergedList = [];
+    for (const item of base) {
+      if (Array.isArray(item)) {
+        mergedList.push(...item);
+      } else {
+        mergedList.push(item);
+      }
+    }
+
+    return mergedList;
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitIdentity()
@@ -184,9 +239,22 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitIndex(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitIndex(node: Node, value: JSONValue): JSONValue {
+    // The Python implementation doesn't support string indexing
+    // even though we could, so we won't either for now.
+    if (!Array.isArray(value)) {
+      return null;
+    }
+    if (typeof node.value !== 'number') {
+      throw new Error(`Invalid index: ${node.value}`);
+    }
+    const found = value[node.value];
+    if (found === undefined) {
+      return null;
+    }
+
+    return found;
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitIndexExpression()
@@ -194,9 +262,14 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitIndexExpression(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitIndexExpression(node: Node, value: JSONValue): JSONValue {
+    let result = value;
+    for (const child of node.children) {
+      result = this.visit(child, result);
+    }
+
+    return result;
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitSlice()
@@ -215,9 +288,9 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitKeyValPair(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitKeyValPair(node: Node, value: JSONValue): JSONValue {
+    return this.visit(node.children[0], value);
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitLiteral()
@@ -225,9 +298,9 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitLiteral(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitLiteral(node: Node, _value: JSONValue): JSONValue {
+    return node.value || null;
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitMultiSelectDict()
@@ -235,9 +308,19 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitMultiSelectDict(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitMultiSelectDict(node: Node, value: JSONValue): JSONValue {
+    if (Object.is(value, null)) {
+      return null;
+    }
+    const collected: JSONValue = {};
+    for (const child of node.children) {
+      if (typeof child.value === 'string') {
+        collected[child.value] = this.visit(child, value);
+      }
+    }
+
+    return collected;
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitMultiSelectList()
@@ -245,9 +328,17 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitMultiSelectList(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitMultiSelectList(node: Node, value: JSONValue): JSONValue {
+    if (Object.is(value, null)) {
+      return null;
+    }
+    const collected = [];
+    for (const child of node.children) {
+      collected.push(this.visit(child, value));
+    }
+
+    return collected;
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitOrExpression()
@@ -255,9 +346,14 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitOrExpression(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitOrExpression(node: Node, value: JSONValue): JSONValue {
+    const matched = this.visit(node.children[0], value);
+    if (!isTruthy(matched)) {
+      return matched;
+    }
+
+    return this.visit(node.children[1], value);
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitAndExpression()
@@ -265,9 +361,14 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitAndExpression(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitAndExpression(node: Node, value: JSONValue): JSONValue {
+    const matched = this.visit(node.children[0], value);
+    if (!isTruthy(matched)) {
+      return matched;
+    }
+
+    return this.visit(node.children[1], value);
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitNotExpression()
@@ -285,9 +386,14 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitPipe(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitPipe(node: Node, value: JSONValue): JSONValue {
+    let result = value;
+    for (const child of node.children) {
+      result = this.visit(child, result);
+    }
+
+    return result;
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitProjection()
@@ -295,9 +401,21 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitProjection(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitProjection(node: Node, value: JSONValue): JSONValue {
+    const base = this.visit(node.children[0], value);
+    if (!Array.isArray(base)) {
+      return null;
+    }
+    const collected = [];
+    for (const item of base) {
+      const current = this.visit(node.children[1], item);
+      if (current !== null) {
+        collected.push(current);
+      }
+    }
+
+    return collected;
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitValueProjection()

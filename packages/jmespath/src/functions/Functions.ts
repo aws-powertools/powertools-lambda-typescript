@@ -50,6 +50,17 @@ class Functions {
   }
 
   /**
+   * Get the ceiling of the provided number.
+   *
+   * @param args The number to get the ceiling of
+   * @returns The ceiling of the number
+   */
+  @Functions.signature({ argumentsSpecs: [['number']] })
+  public funcCeil(args: number): number {
+    return Math.ceil(args);
+  }
+
+  /**
    * Determine if the provided value is contained in the provided item.
    * TODO: write docs for funcContains()
    */
@@ -59,6 +70,43 @@ class Functions {
   public funcContains(haystack: string, needle: string): boolean {
     // TODO: review this implementation
     return haystack.includes(needle);
+  }
+
+  /**
+   * Determines if the provided string ends with the provided suffix.
+   *
+   * @param args The string to check
+   * @returns True if the string ends with the suffix, false otherwise
+   */
+  @Functions.signature({
+    argumentsSpecs: [['string'], ['string']],
+  })
+  public funcEndsWith(str: string, suffix: string): boolean {
+    return str.endsWith(suffix);
+  }
+
+  /**
+   * Get the floor of the provided number.
+   *
+   * @param args The number to get the floor of
+   * @returns The floor of the number
+   */
+  @Functions.signature({ argumentsSpecs: [['number']] })
+  public funcFloor(args: number): number {
+    return Math.floor(args);
+  }
+
+  /**
+   * Get the number of items in the provided item.
+   *
+   * @param args The array to get the length of
+   * @returns The length of the array
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array', 'string']],
+  })
+  public funcLength(arg: string | Array<unknown>): number {
+    return arg.length;
   }
 
   /**
@@ -74,6 +122,34 @@ class Functions {
   })
   public funcNotNull(args: Array<JSONValue>): JSONValue | null {
     return args.find((arg) => !Object.is(arg, null)) || null;
+  }
+
+  /**
+   * Reverses the provided string or array.
+   *
+   * @param args The string or array to reverse
+   * @returns The reversed string or array
+   */
+  @Functions.signature({
+    argumentsSpecs: [['string', 'array']],
+  })
+  public funcReverse(arg: string | Array<unknown>): string | Array<unknown> {
+    return Array.isArray(arg)
+      ? arg.reverse()
+      : arg.split('').reverse().join('');
+  }
+
+  /**
+   * Determines if the provided string starts with the provided suffix.
+   *
+   * @param args The string to check
+   * @returns True if the string ends with the suffix, false otherwise
+   */
+  @Functions.signature({
+    argumentsSpecs: [['string'], ['string']],
+  })
+  public funcStartsWith(str: string, suffix: string): boolean {
+    return str.startsWith(suffix);
   }
 
   /**

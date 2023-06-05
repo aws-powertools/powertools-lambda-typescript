@@ -30,7 +30,6 @@
   "license": "MIT-0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "typedocMain": "src/index.ts",
   "files": [
     "lib"
   ],

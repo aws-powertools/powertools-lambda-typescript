@@ -1,0 +1,10 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": [
+    "./src/appconfig/index.ts",
+    "./src/ssm/index.ts",
+    "./src/dynamodb/index.ts",
+    "./src/secrets/index.ts",
+    "./src/types/index.ts"],
+  "readme": "README.md"
+}

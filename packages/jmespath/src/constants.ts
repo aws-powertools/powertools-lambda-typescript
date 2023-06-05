@@ -40,7 +40,7 @@ const START_IDENTIFIER = new Set(ASCII_LETTERS + '_');
 const VALID_IDENTIFIER = new Set(ASCII_LETTERS + DIGITS + '_');
 const VALID_NUMBER = new Set(DIGITS);
 const WHITESPACE = new Set(' \t\n\r');
-const SIMPLE_TOKENS = new Map([
+const SIMPLE_TOKENS: Map<string, keyof typeof BINDING_POWER> = new Map([
   ['.', 'dot'],
   ['*', 'star'],
   [':', 'colon'],

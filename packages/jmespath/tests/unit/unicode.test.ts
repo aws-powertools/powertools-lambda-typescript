@@ -22,11 +22,11 @@ describe('Unicode tests', () => {
 
   it.each([
     {
-      expression: '☯',
+      expression: '"☯"',
       expected: true,
     },
     {
-      expression: '☃',
+      expression: '"☃"',
       expected: undefined,
     },
   ])(
@@ -44,24 +44,8 @@ describe('Unicode tests', () => {
   );
 
   it.each([
-    { expression: 'a', expected: undefined },
-    { expression: 'b', expected: undefined },
-    { expression: 'c', expected: undefined },
-    { expression: 'a.b', expected: undefined },
-  ])('should parse an array', ({ expression, expected }) => {
-    // Prepare
-    const data = ['a', 'b', 'c'];
-
-    // Act
-    const result = search(expression, data);
-
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
-
-  it.each([
     {
-      expression: '♪♫•*¨*•.¸¸❤¸¸.•*¨*•♫♪',
+      expression: '"♪♫•*¨*•.¸¸❤¸¸.•*¨*•♫♪"',
       expected: true,
     },
   ])(

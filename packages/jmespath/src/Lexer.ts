@@ -123,17 +123,20 @@ class Lexer {
         // TODO: see if we can pass a message `Unknown token ${this.#current}` to LexerError
         throw new LexerError(this.#position, this.#current);
       }
-      yield { type: 'eof', value: '', start: this.#length, end: this.#length };
     }
+    yield { type: 'eof', value: '', start: this.#length, end: this.#length };
   }
 
   /**
-   * TODO: write docs for Lexer.#consumeNumber()
-   * TODO: finalize types for Lexer.#consumeNumber()
+   * Consume a raw string that is a number.
+   *
+   * It takes the current position and advances
+   * the lexer until it finds a character that
+   * is not a number.
    */
   #consumeNumber(): string {
     let buff = this.#current;
-    while (this.#next() in VALID_NUMBER) {
+    while (VALID_NUMBER.has(this.#next())) {
       buff += this.#current;
     }
 

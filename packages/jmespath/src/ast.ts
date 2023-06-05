@@ -20,9 +20,8 @@ const currentNode = (): Node => ({
 
 /**
  * TODO: write docs for expref()
- * TODO: finalize types for expref()
  */
-const expref = (expression: unknown): Node => ({
+const expref = (expression: Node): Node => ({
   type: 'expref',
   children: [expression],
 });

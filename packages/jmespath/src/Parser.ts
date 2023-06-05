@@ -17,6 +17,12 @@ import {
   multiSelectList,
   multiSelectDict,
   keyValPair,
+  filterProjection,
+  functionExpression,
+  pipe,
+  orExpression,
+  andExpression,
+  subexpression,
 } from './ast';
 import { Lexer } from './Lexer';
 import { ParsedResult } from './ParsedResult';
@@ -118,7 +124,6 @@ class Parser {
    */
   #parse(expression: string): ParsedResult {
     this.#tokenizer = new Lexer();
-    // TODO: see if we can use the generator properly instead of converting to an array in Parser.#Parse()
     this.#tokens = [...this.#tokenizer.tokenize(expression)];
     this.#index = 0;
     const parsed = this.#expression(0);
@@ -143,9 +148,8 @@ class Parser {
     let left = this.#getNudFunction(leftToken);
     let currentToken = this.#currentToken();
     while (bindingPower < BINDING_POWER[currentToken]) {
-      const ledFunction = this.#getLedFunction(currentToken);
       this.#advance();
-      left = ledFunction(left);
+      left = this.#getLedFunction(currentToken, left);
       currentToken = this.#currentToken();
     }
 
@@ -154,19 +158,18 @@ class Parser {
 
   /**
    * TODO: write docs for arser.#advance()
-   * TODO: complete `Parser.#getNudFunction()` implementation using `ast.tokenType`
    * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/parser.py#L121-L123
    * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/parser.py#L137-L138
    *
    * @param tokenType The type of token to get the nud function for.
-   * @returns not sure
    */
   #getNudFunction(token: Token): Node {
-    if (token.type === 'literal') {
+    const { type: tokenType } = token;
+    if (tokenType === 'literal') {
       return literal(token.value);
-    } else if (token.type === 'unquoted_identifier') {
+    } else if (tokenType === 'unquoted_identifier') {
       return field(token.value);
-    } else if (token.type === 'quoted_identifier') {
+    } else if (tokenType === 'quoted_identifier') {
       const fieldValue = field(token.value);
       // You can't have a quoted identifier as a function name
       if (this.#currentToken() === 'lparen') {
@@ -180,7 +183,7 @@ class Parser {
       }
 
       return fieldValue;
-    } else if (token.type === 'star') {
+    } else if (tokenType === 'star') {
       const left = identity();
       let right;
       if (this.#currentToken() === 'rbracket') {
@@ -190,25 +193,25 @@ class Parser {
       }
 
       return valueProjection(left, right);
-    } else if (token.type === 'filter') {
-      return this.#tokenLedFilter(identity());
-    } else if (token.type === 'lbrace') {
+    } else if (tokenType === 'filter') {
+      return this.#getLedFunction(tokenType, identity());
+    } else if (tokenType === 'lbrace') {
       return this.#parseMultiSelectHash();
-    } else if (token.type === 'lparen') {
+    } else if (tokenType === 'lparen') {
       const expression = this.#expression();
       this.#match('rparen');
 
       return expression;
-    } else if (token.type === 'flatten') {
+    } else if (tokenType === 'flatten') {
       const left = flatten(identity());
       const right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
 
       return projection(left, right);
-    } else if (token.type === 'not') {
+    } else if (tokenType === 'not') {
       const expression = this.#expression(BINDING_POWER['not']);
 
       return notExpression(expression);
-    } else if (token.type === 'lbracket') {
+    } else if (tokenType === 'lbracket') {
       if (['number', 'colon'].includes(this.#currentToken())) {
         const right = this.#parseIndexExpression();
         // We could optimize this and remove the identity() node
@@ -229,8 +232,12 @@ class Parser {
       } else {
         return this.#parseMultiSelectList();
       }
+    } else if (tokenType === 'current') {
+      return currentNode();
+    } else if (tokenType === 'expref') {
+      return expref(this.#expression(BINDING_POWER['expref']));
     } else {
-      if (token.type === 'eof') {
+      if (tokenType === 'eof') {
         throw new IncompleteExpressionError({
           lexPosition: token.start,
           tokenValue: token.value,
@@ -247,23 +254,104 @@ class Parser {
     }
   }
 
-  #getLedFunction(token: Token): Node {
-    if (token.type === 'dot') {
-    } else if (token.type === 'pipe') {
-    } else if (token.type === 'or') {
-    } else if (token.type === 'and') {
-    } else if (token.type === 'lparen') {
-    } else if (token.type === 'filter') {
-    } else if (token.type === 'eq') {
-    } else if (token.type === 'ne') {
-    } else if (token.type === 'gt') {
-    } else if (token.type === 'gte') {
-    } else if (token.type === 'lt') {
-    } else if (token.type === 'lte') {
-    } else if (token.type === 'flatten') {
-    } else if (token.type === 'lbracket') {
-    } else if (token.type === 'slice') {
+  #getLedFunction(tokenType: Token['type'], leftNode: Node): Node {
+    if (tokenType === 'dot') {
+      if (this.#currentToken() !== 'star') {
+        const right = this.#parseDotRhs(BINDING_POWER[tokenType]);
+        if (leftNode.type === 'subexpression') {
+          leftNode.children.push(right);
+
+          return leftNode;
+        } else {
+          return subexpression([leftNode, right]);
+        }
+      } else {
+        // We are creating a value projection
+        this.#advance();
+        const right = this.#parseProjectionRhs(BINDING_POWER[tokenType]);
+
+        return valueProjection(leftNode, right);
+      }
+    } else if (tokenType === 'pipe') {
+      const right = this.#expression(BINDING_POWER[tokenType]);
+
+      return pipe(leftNode, right);
+    } else if (tokenType === 'or') {
+      const right = this.#expression(BINDING_POWER[tokenType]);
+
+      return orExpression(leftNode, right);
+    } else if (tokenType === 'and') {
+      const right = this.#expression(BINDING_POWER[tokenType]);
+
+      return andExpression(leftNode, right);
+    } else if (tokenType === 'lparen') {
+      if (leftNode.type !== 'field') {
+        //  0 - first func arg or closing parenthesis
+        // -1 - '(' token
+        // -2 - invalid func "name"
+        const previousToken = this.#lookaheadToken(-2);
+        throw new ParseError({
+          lexPosition: previousToken.start,
+          tokenValue: previousToken.value,
+          tokenType: previousToken.type,
+          reason: `Invalid function name '${previousToken.value}'`,
+        });
+      }
+      const name = leftNode.value;
+      const args = [];
+      while (this.#currentToken() !== 'rparen') {
+        const expression = this.#expression();
+        if (this.#currentToken() === 'comma') {
+          this.#match('comma');
+        }
+        args.push(expression);
+      }
+      this.#match('rparen');
+
+      return functionExpression(name, args);
+    } else if (tokenType === 'filter') {
+      // Filters are projections
+      const condition = this.#expression(0);
+      this.#match('rbracket');
+      let right: Node;
+      if (this.#currentToken() === 'flatten') {
+        right = identity();
+      } else {
+        right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
+      }
+
+      return filterProjection(leftNode, right, condition);
+    } else if (['eq', 'ne', 'gt', 'gte', 'lt', 'lte'].includes(tokenType)) {
+      return this.#parseComparator(leftNode, tokenType);
+    } else if (tokenType === 'flatten') {
+      const left = flatten(leftNode);
+      const right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
+
+      return projection(left, right);
+    } else if (tokenType === 'lbracket') {
+      const token = this.#lookaheadToken(0);
+      if (['number', 'colon'].includes(token.type)) {
+        const right = this.#parseIndexExpression();
+        if (leftNode.type === 'index_expression') {
+          // Optimization: if the left node is an index expression
+          // we can avoid creating another node and instead just
+          // add the right node as a child of the left node.
+          leftNode.children.push(right);
+
+          return leftNode;
+        } else {
+          return this.#projectIfSlice(leftNode, right);
+        }
+      } else {
+        // We have a projection
+        this.#match('star');
+        this.#match('rbracket');
+        const right = this.#parseProjectionRhs(BINDING_POWER['star']);
+
+        return projection(leftNode, right);
+      }
     } else {
+      const token = this.#lookaheadToken(0);
       throw new ParseError({
         lexPosition: token.start,
         tokenValue: token.value,
@@ -363,12 +451,12 @@ class Parser {
 
   /**
    * TODO: write docs for Parser.#parseComparator()
-   * TODO: complete `Parser.#parseComparator()` types
+   * TODO: narrow comparatorChar type to only values like 'eq', 'ne', etc.
    *
    * @param left
    * @param comparatorChar
    */
-  #parseComparator(left: Token, comparatorChar: string): Node {
+  #parseComparator(left: Token | Node, comparatorChar: Token['type']): Node {
     return comparator(
       comparatorChar,
       left,
@@ -468,7 +556,9 @@ class Parser {
     // you can have:
     const lookahead = this.#currentToken();
     // Common case "foo.bar", so first check for an identifier.
-    if (lookahead in ['quoted_identifier', 'unquoted_identifier', 'star']) {
+    if (
+      ['quoted_identifier', 'unquoted_identifier', 'star'].includes(lookahead)
+    ) {
       return this.#expression(bindingPower);
     } else if (lookahead == 'lbracket') {
       this.#match('lbracket');
@@ -502,7 +592,7 @@ class Parser {
    */
   #match(tokenType: Token['type']): void {
     const currentToken = this.#currentToken();
-    if (currentToken !== tokenType) {
+    if (currentToken === tokenType) {
       this.#advance();
     } else {
       const token = this.#lookaheadToken(0);

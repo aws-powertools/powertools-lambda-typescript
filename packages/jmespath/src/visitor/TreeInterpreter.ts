@@ -1,4 +1,5 @@
 class TreeInterpreter {
+  #functions: unknown;
   /**
    * TODO: implement TreeInterpreter constructor
    * @param _options

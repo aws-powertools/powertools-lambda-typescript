@@ -54,10 +54,6 @@ const SIMPLE_TOKENS: Map<string, keyof typeof BINDING_POWER> = new Map([
   ['}', 'rbrace'],
 ]);
 
-/**
- * A map of JavaScript types to JMESPath types.
- */
-
 export {
   BINDING_POWER,
   WHITESPACE,

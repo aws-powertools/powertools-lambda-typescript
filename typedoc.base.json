@@ -1,0 +1,11 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "includeVersion": false,
+  "excludePrivate": true,
+  "exclude": [
+    "**/node_modules/**",
+    "**/*.test.ts",
+    "**/*.json",
+    "docs/snippets"
+  ]
+}

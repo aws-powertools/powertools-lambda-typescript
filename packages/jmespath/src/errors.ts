@@ -38,8 +38,6 @@ class LexerError extends JMESPathError {
 
 /**
  * TODO: write docs for ParseError
- *
- * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/exceptions.py#L9
  */
 class ParseError extends JMESPathError {
   /**
@@ -93,10 +91,8 @@ class IncompleteExpressionError extends ParseError {
 
 /**
  * TODO: write docs for ArityError
- * TODO: complete ArityError implementation
- * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/exceptions.py#LL66C1-L85C30
  */
-/* class ArityError extends ParseError {
+class ArityError extends JMESPathError {
   public actualArity: number;
   public expectedArity: number;
   public functionName: string;
@@ -106,25 +102,37 @@ class IncompleteExpressionError extends ParseError {
     actualArity: number;
     functionName: string;
   }) {
+    super('Invalid arity for JMESPath function');
     this.name = 'ArityError';
     this.actualArity = options.actualArity;
     this.expectedArity = options.expectedArity;
     this.functionName = options.functionName;
+
+    // Set the message to include the error info.
+    this.message = `Expected at least ${this.expectedArity} ${this.pluralize(
+      'argument',
+      this.expectedArity
+    )} for function ${this.functionName}, received: ${this.actualArity}`;
   }
 
-  #pluralize(word: string, count: number): string {
+  protected pluralize(word: string, count: number): string {
     return count === 1 ? word : `${word}s`;
   }
-} */
+}
 
 /**
  * TODO: write docs for VariadicArityError
- * TODO: complete VariadicArityError implementation
- * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/exceptions.py#L89-L96
- * TODO: change extends to ArityError
- * TODO: add `name` to `VariadicArityError`
  */
-class VariadicArityError extends ParseError {}
+class VariadicArityError extends ArityError {
+  public constructor(options: {
+    expectedArity: number;
+    actualArity: number;
+    functionName: string;
+  }) {
+    super(options);
+    this.name = 'VariadicArityError';
+  }
+}
 
 /**
  * TODO: write docs for JMESPathTypeError
@@ -175,7 +183,7 @@ export {
   LexerError,
   ParseError,
   IncompleteExpressionError,
-  // ArityError,
+  ArityError,
   VariadicArityError,
   JMESPathTypeError,
   EmptyExpressionError,

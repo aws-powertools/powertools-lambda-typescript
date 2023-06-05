@@ -1,8 +1,8 @@
 import { Parser } from './Parser';
+import type { JSONValue, ParsingOptions } from './types';
 
 /**
  * TODO: write docs for search()
- * TODO: fix types for search()
  *
  * @param expression
  * @param data
@@ -11,8 +11,8 @@ import { Parser } from './Parser';
  */
 const search = (
   expression: string,
-  data: unknown,
-  options?: unknown
+  data: JSONValue,
+  options?: ParsingOptions
 ): unknown => {
   return new Parser().parse(expression).search(data, options);
 };

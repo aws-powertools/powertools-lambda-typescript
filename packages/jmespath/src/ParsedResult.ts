@@ -1,5 +1,5 @@
 import { TreeInterpreter } from './visitor';
-import type { Node } from './types';
+import type { Node, JSONValue, ParsingOptions } from './types';
 
 class ParsedResult {
   public expression: string;
@@ -10,7 +10,7 @@ class ParsedResult {
     this.parsed = parsed;
   }
 
-  public search(value: unknown, options?: unknown): unknown {
+  public search(value: JSONValue, options?: ParsingOptions): unknown {
     const interpreter = new TreeInterpreter(options);
 
     return interpreter.visit(this.parsed, value);

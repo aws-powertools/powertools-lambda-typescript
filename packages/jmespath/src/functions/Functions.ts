@@ -1,4 +1,5 @@
-import type { JSONArray, JSONValue } from './types';
+import type { JSONArray, JSONValue } from '../types';
+import { typeCheck, arityCheck } from './typeChecking';
 
 /**
  * TODO: validate SignatureDecorator type and extract to a separate file
@@ -30,6 +31,7 @@ class Functions {
    * @param args The number to get the absolute value of
    * @returns The absolute value of the number
    */
+  @Functions.signature({ argumentsSpecs: [['number']] })
   public funcAbs(args: number): number {
     return Math.abs(args);
   }
@@ -40,8 +42,23 @@ class Functions {
    * @param args The numbers to average
    * @returns The average of the numbers
    */
+  @Functions.signature({
+    argumentsSpecs: [['array-number']],
+  })
   public funcAvg(args: Array<number>): number {
     return args.reduce((a, b) => a + b, 0) / args.length;
+  }
+
+  /**
+   * Determine if the provided value is contained in the provided item.
+   * TODO: write docs for funcContains()
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array', 'string'], ['any']],
+  })
+  public funcContains(haystack: string, needle: string): boolean {
+    // TODO: review this implementation
+    return haystack.includes(needle);
   }
 
   /**
@@ -51,6 +68,10 @@ class Functions {
    * @param args The keys of the items to check
    * @returns The first key that is not null or null if all keys are null
    */
+  @Functions.signature({
+    argumentsSpecs: [[]],
+    variadic: true,
+  })
   public funcNotNull(args: Array<JSONValue>): JSONValue | null {
     return args.find((arg) => !Object.is(arg, null)) || null;
   }
@@ -112,7 +133,7 @@ class Functions {
    * @param options
    * @returns
    */
-  public signature(options: SignatureOptions): SignatureDecorator {
+  public static signature(options: SignatureOptions): SignatureDecorator {
     return (_target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
       if (typeof originalMethod !== 'function') {
@@ -120,68 +141,19 @@ class Functions {
       }
       const methodName = originalMethod.name;
 
-      // We need to use `functionsRef` instead of `this` because we want to
-      // access other methods on the class from within the decorated method.
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const functionsRef = this;
-
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
       descriptor.value = function (args: unknown[]) {
         const { variadic, argumentsSpecs } = options;
-        if (variadic) {
-          if (args.length < argumentsSpecs.length) {
-            // TODO: throw VariadictArityError
-            /* raise exceptions.VariadictArityError(
-              len(signature), len(args), function_name) */
-          }
-        } else if (args.length !== argumentsSpecs.length) {
-          // TODO: throw ArityError
-          /* raise exceptions.ArityError(
-            len(signature), len(args), function_name) */
-        }
+        arityCheck(args, argumentsSpecs, methodName, variadic);
+        typeCheck(args, argumentsSpecs, methodName);
 
-        functionsRef.#typeCheck(args, argumentsSpecs, methodName);
-
-        return originalMethod.apply(args);
+        return originalMethod.apply(this, args);
       };
 
       return descriptor;
     };
   }
-
-  /**
-   * TODO: write docs for Functions.#typeCheck()
-   * @param args
-   * @param argumentsSpecs
-   * @param name
-   */
-  #typeCheck(
-    args: unknown[],
-    argumentsSpecs: Array<Array<string>>,
-    decoratedFuncName: string
-  ): void {
-    argumentsSpecs.forEach((argumentSpec, index) => {
-      this.#typeCheckArgument(args[index], argumentSpec, decoratedFuncName);
-    });
-  }
-
-  /**
-   * TODO: write docs for Functions.#typeCheckArgument()
-   *
-   * Type checking at runtime involves checking the top level type,
-   * and in the case of arrays, potentially checking the types of
-   * the elements in the array.
-   *
-   * @param arg
-   * @param argumentSpec
-   * @param decoratedFuncName
-   */
-  #typeCheckArgument(
-    arg: unknown,
-    argumentSpec: Array<string>,
-    decoratedFuncName: string
-  ): void {}
 }
 
 export { Functions };

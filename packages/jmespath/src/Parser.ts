@@ -285,7 +285,7 @@ class Parser {
 
       return andExpression(leftNode, right);
     } else if (tokenType === 'lparen') {
-      if (leftNode.type !== 'field') {
+      if (leftNode.type !== 'field' || typeof leftNode.value !== 'string') {
         //  0 - first func arg or closing parenthesis
         // -1 - '(' token
         // -2 - invalid func "name"
@@ -437,7 +437,7 @@ class Parser {
    * @param left
    * @param right
    */
-  #projectIfSlice(left: Token | Node, right: Token | Node): Node {
+  #projectIfSlice(left: Node, right: Node): Node {
     const idxExpression = indexExpression([left, right]);
     if (right.type === 'slice') {
       return projection(
@@ -456,7 +456,7 @@ class Parser {
    * @param left
    * @param comparatorChar
    */
-  #parseComparator(left: Token | Node, comparatorChar: Token['type']): Node {
+  #parseComparator(left: Node, comparatorChar: Token['type']): Node {
     return comparator(
       comparatorChar,
       left,

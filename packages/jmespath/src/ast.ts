@@ -1,9 +1,9 @@
 import type { JSONValue, Node } from './types';
+
 /**
  * TODO: write docs for comparator()
- * TODO: finalize types for comparator()
  */
-const comparator = (name: unknown, first: unknown, second: unknown): Node => ({
+const comparator = (name: string, first: Node, second: Node): Node => ({
   type: 'comparator',
   children: [first, second],
   value: name,
@@ -11,7 +11,6 @@ const comparator = (name: unknown, first: unknown, second: unknown): Node => ({
 
 /**
  * TODO: write docs for currentNode()
- * TODO: finalize types for currentNode()
  */
 const currentNode = (): Node => ({
   type: 'current',
@@ -28,9 +27,8 @@ const expref = (expression: Node): Node => ({
 
 /**
  * TODO: write docs for functionExpression()
- * TODO: finalize types for functionExpression()
  */
-const functionExpression = (name: unknown, args: unknown[]): Node => ({
+const functionExpression = (name: string, args: Node[]): Node => ({
   type: 'function_expression',
   children: args,
   value: name,
@@ -38,9 +36,8 @@ const functionExpression = (name: unknown, args: unknown[]): Node => ({
 
 /**
  * TODO: write docs for field()
- * TODO: finalize types for field()
  */
-const field = (name: unknown): Node => ({
+const field = (name: JSONValue): Node => ({
   type: 'field',
   children: [],
   value: name,
@@ -48,39 +45,32 @@ const field = (name: unknown): Node => ({
 
 /**
  * TODO: write docs for fieldExpression()
- * TODO: finalize types for fieldExpression()
  *
  * @param left
  * @param right
  * @param comparator
  * @returns
  */
-const filterProjection = (
-  left: unknown,
-  right: unknown,
-  comparator: unknown
-): Node => ({
+const filterProjection = (left: Node, right: Node, comparator: Node): Node => ({
   type: 'filter_projection',
   children: [left, right, comparator],
 });
 
 /**
  * TODO: write docs for flatten()
- * TODO: finalize types for flatten()
  *
  * @param left
  * @param right
  * @param comparator
  * @returns
  */
-const flatten = (node: unknown): Node => ({
+const flatten = (node: Node): Node => ({
   type: 'flatten',
   children: [node],
 });
 
 /**
  * TODO: write docs for identity()
- * TODO: finalize types for identity()
  *
  * @param left
  * @param right
@@ -91,14 +81,13 @@ const identity = (): Node => ({ type: 'identity', children: [] });
 
 /**
  * TODO: write docs for index()
- * TODO: finalize types for index()
  *
  * @param left
  * @param right
  * @param comparator
  * @returns
  */
-const index = (index: unknown): Node => ({
+const index = (index: JSONValue): Node => ({
   type: 'index',
   value: index,
   children: [],
@@ -106,21 +95,19 @@ const index = (index: unknown): Node => ({
 
 /**
  * TODO: write docs for indexExpression()
- * TODO: finalize types for indexExpression()
  *
  * @param left
  * @param right
  * @param comparator
  * @returns
  */
-const indexExpression = (children: unknown[]): Node => ({
+const indexExpression = (children: Node[]): Node => ({
   type: 'index_expression',
   children: children,
 });
 
 /**
  * TODO: write docs for keyValPair()
- * TODO: finalize types for keyValPair()
  *
  * @param keyName
  * @param node
@@ -133,11 +120,10 @@ const keyValPair = (keyName: JSONValue, node: Node): Node => ({
 
 /**
  * TODO: write docs for literal()
- * TODO: finalize types for literal()
  *
  * @param literalValue
  */
-const literal = (literalValue: unknown): Node => ({
+const literal = (literalValue: JSONValue): Node => ({
   type: 'literal',
   value: literalValue,
   children: [],
@@ -145,7 +131,6 @@ const literal = (literalValue: unknown): Node => ({
 
 /**
  * TODO: write docs for multiSelectDict()
- * TODO: finalize types for multiSelectDict()
  * TODO: check if multiSelectDict() could be possibly be renamed to multiSelectObject() / multiSelectMap() / multiSelectHash()
  *
  * @param nodes
@@ -157,7 +142,6 @@ const multiSelectDict = (nodes: Node[]): Node => ({
 
 /**
  * TODO: write docs for multiSelectList()
- * TODO: finalize types for multiSelectList()
  * TODO: check if multiSelectList() could be possibly be renamed to multiSelectArray()
  *
  * @param nodes
@@ -228,14 +212,15 @@ const subexpression = (children: Node[]): Node => ({
 
 /**
  * TODO: write docs for slice()
+ * TODO: fix type for slice()
  *
  * @param start
  * @param end
  * @param step
  */
-const slice = (start: unknown, end: unknown, step: unknown): Node => ({
+const slice = (start: JSONValue, end: JSONValue, step: JSONValue): Node => ({
   type: 'slice',
-  children: [start, end, step],
+  children: [start as Node, end as Node, step as Node],
 });
 
 /**

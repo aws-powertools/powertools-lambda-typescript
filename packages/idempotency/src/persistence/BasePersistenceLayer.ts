@@ -11,6 +11,14 @@ import {
 } from '../Exceptions';
 import { LRUCache } from './LRUCache';
 
+/**
+ * Base class for all persistence layers. This class provides the basic functionality for
+ * saving, retrieving, and deleting idempotency records. It also provides the ability to
+ * configure the persistence layer from the idempotency config.
+ * @abstract
+ * @class
+ * @implements {BasePersistenceLayerInterface}
+ */
 abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   public idempotencyKeyPrefix: string;
   private cache?: LRUCache<string, IdempotencyRecord>;

@@ -8,6 +8,7 @@ import {
 } from './Exceptions';
 import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
 import { IdempotencyConfig } from './IdempotencyConfig';
+import { MAX_RETRIES } from './constants';
 
 export class IdempotencyHandler<U> {
   private readonly fullFunctionPayload: Record<string, unknown>;
@@ -36,9 +37,9 @@ export class IdempotencyHandler<U> {
     });
   }
 
-  public determineResultFromIdempotencyRecord(
+  public static determineResultFromIdempotencyRecord(
     idempotencyRecord: IdempotencyRecord
-  ): Promise<U> | U {
+  ): Promise<unknown> | unknown {
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
       throw new IdempotencyInconsistentStateError(
         'Item has expired during processing and may not longer be valid.'
@@ -61,7 +62,7 @@ export class IdempotencyHandler<U> {
       }
     }
 
-    return idempotencyRecord.getResponse() as U;
+    return idempotencyRecord.getResponse();
   }
 
   public async getFunctionResult(): Promise<U> {
@@ -96,26 +97,30 @@ export class IdempotencyHandler<U> {
 
   /**
    * Main entry point for the handler
-   * IdempotencyInconsistentStateError can happen under rare but expected cases
-   * when persistent state changes in the small time between put & get requests.
-   * In most cases we can retry successfully on this exception.
+   *
+   * In some rare cases, when the persistent state changes in small time
+   * window, we might get an `IdempotencyInconsistentStateError`. In such
+   * cases we can safely retry the handling a few times.
    */
   public async handle(): Promise<U> {
-    const MAX_RETRIES = 2;
-    for (let i = 1; i <= MAX_RETRIES; i++) {
+    let e;
+    for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
         return await this.processIdempotency();
-      } catch (e) {
+      } catch (error) {
         if (
-          !(e instanceof IdempotencyAlreadyInProgressError) ||
-          i === MAX_RETRIES
+          error instanceof IdempotencyInconsistentStateError &&
+          retryNo < MAX_RETRIES
         ) {
-          throw e;
+          // Retry
+          continue;
         }
+        // Retries exhausted or other error
+        e = error;
+        break;
       }
     }
-    /* istanbul ignore next */
-    throw new Error('This should never happen');
+    throw e;
   }
 
   public async processIdempotency(): Promise<U> {
@@ -128,7 +133,9 @@ export class IdempotencyHandler<U> {
         const idempotencyRecord: IdempotencyRecord =
           await this.persistenceStore.getRecord(this.functionPayloadToBeHashed);
 
-        return this.determineResultFromIdempotencyRecord(idempotencyRecord);
+        return IdempotencyHandler.determineResultFromIdempotencyRecord(
+          idempotencyRecord
+        ) as U;
       } else {
         throw new IdempotencyPersistenceLayerError();
       }

@@ -1,3 +1,4 @@
+import { EnvironmentVariablesService } from './config';
 import type { Context } from 'aws-lambda';
 import type { IdempotencyConfigOptions } from './types';
 
@@ -10,6 +11,8 @@ class IdempotencyConfig {
   public payloadValidationJmesPath?: string;
   public throwOnNoIdempotencyKey: boolean;
   public useLocalCache: boolean;
+  readonly #envVarsService: EnvironmentVariablesService;
+  readonly #enabled: boolean = true;
 
   public constructor(config: IdempotencyConfigOptions) {
     this.eventKeyJmesPath = config.eventKeyJmesPath ?? '';
@@ -20,6 +23,17 @@ class IdempotencyConfig {
     this.maxLocalCacheSize = config.maxLocalCacheSize ?? 1000;
     this.hashFunction = config.hashFunction ?? 'md5';
     this.lambdaContext = config.lambdaContext;
+    this.#envVarsService = new EnvironmentVariablesService();
+    this.#enabled = this.#envVarsService.getIdempotencyEnabled();
+  }
+
+  /**
+   * Determines if the idempotency feature is enabled.
+   *
+   * @returns {boolean} Returns true if the idempotency feature is enabled.
+   */
+  public isEnabled(): boolean {
+    return this.#enabled;
   }
 
   public registerLambdaContext(context: Context): void {

@@ -24,10 +24,16 @@
     "*.ts": "npm run lint-fix",
     "*.js": "npm run lint-fix"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/jmespath#readme",
-  "license": "MIT-0",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    }
+  },
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/jmespath#readme",
+  "license": "MIT-0",
   "files": [
     "lib"
   ],

@@ -85,7 +85,6 @@ class Lexer {
             end: start + buff.length,
           };
         } else {
-          // TODO: see if we can pass the error message `"Unknown token '%s'" % buff` to the LexerError
           throw new LexerError(start, buff);
         }
       } else if (this.#current === '"') {
@@ -116,11 +115,9 @@ class Lexer {
           } else {
             position = this.#position - 1;
           }
-          // TODO: see if we can pass a message "Unknown token '='" to LexerError
           throw new LexerError(position, '=');
         }
       } else {
-        // TODO: see if we can pass a message `Unknown token ${this.#current}` to LexerError
         throw new LexerError(this.#position, this.#current);
       }
     }

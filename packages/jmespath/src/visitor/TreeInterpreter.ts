@@ -24,14 +24,14 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  public visit(node: Node, value: JSONValue): JSONValue {
+  public visit(node: Node, value: JSONValue): JSONValue | undefined {
     const nodeType = node.type;
     if (nodeType === 'subexpression') {
       return this.#visitSubexpression(node, value);
     } else if (nodeType === 'field') {
       return this.#visitField(node, value);
-      /* } else if (nodeType === 'comparator') {
-      return this.#visitComparator(node, value); */
+    } else if (nodeType === 'comparator') {
+      return this.#visitComparator(node, value);
     } else if (nodeType === 'current') {
       return this.#visitCurrent(node, value);
     } else if (nodeType === 'expref') {
@@ -65,14 +65,14 @@ class TreeInterpreter {
       return this.#visitOrExpression(node, value);
     } else if (nodeType === 'and_expression') {
       return this.#visitAndExpression(node, value);
-      /* } else if (nodeType === 'not_expression') {
-      return this.#visitNotExpression(node, value); */
+    } else if (nodeType === 'not_expression') {
+      return this.#visitNotExpression(node, value);
     } else if (nodeType === 'pipe') {
       return this.#visitPipe(node, value);
     } else if (nodeType === 'projection') {
       return this.#visitProjection(node, value);
-      /* } else if (nodeType === 'value_projection') {
-      return this.#visitValueProjection(node, value); */
+    } else if (nodeType === 'value_projection') {
+      return this.#visitValueProjection(node, value);
     } else {
       // TODO: convert to a custom error
       throw new Error(`Not Implemented: Invalid node type: ${node.type}`);
@@ -119,10 +119,39 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitComparator(node: Node, value: JSONValue): JSONValue {
-    return true;
+  #visitComparator(node: Node, value: JSONValue): JSONValue {
+    const comparator = node.value;
+    const left = this.visit(node.children[0], value);
+    const right = this.visit(node.children[1], value);
+    if (
+      typeof comparator === 'string' &&
+      ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'].includes(comparator)
+    ) {
+      // Common cases: comparator is == or !=
+      if (comparator === 'eq') {
+        return left === right;
+      } else if (comparator === 'ne') {
+        return left !== right;
+      } else if (typeof left === 'number' && typeof right === 'number') {
+        // Ordering operators only work on numbers. Evaluating them on other
+        // types will return null.
+        if (comparator === 'lt') {
+          return left < right;
+        } else if (comparator === 'lte') {
+          return left <= right;
+        } else if (comparator === 'gt') {
+          return left > right;
+        } else {
+          return left >= right;
+        }
+      } else {
+        return null;
+      }
+    } else {
+      // TODO: make invalid comparator a custom error
+      throw new Error(`Invalid comparator: ${comparator}`);
+    }
   }
-  */
 
   /**
    * TODO: write docs for TreeInterpreter.visitCurrent()
@@ -155,15 +184,23 @@ class TreeInterpreter {
     for (const child of node.children) {
       args.push(this.visit(child, value));
     }
+    // check that method name is a string
+    if (typeof node.value !== 'string') {
+      throw new Error(`Function name must be a string, got ${node.value}`);
+    }
     const methods = Object.getOwnPropertyNames(
       Object.getPrototypeOf(this.#functions)
     );
+    // convert snake_case to camelCase
+    const normalizedFunctionName = node.value.replace(/_([a-z])/g, (g) =>
+      g[1].toUpperCase()
+    );
     const methodName = methods.find(
-      (method) => method.replace('func', '').toLowerCase() === node.value
+      (method) => method === `func${normalizedFunctionName}`
     );
     if (!methodName) {
       // TODO: convert to a custom error
-      throw new Error(`Function not found: ${methodName}`);
+      throw new Error(`Function not found: ${node.value}`);
     }
 
     // We know that methodName is a key of this.#functions, but TypeScript
@@ -349,10 +386,10 @@ class TreeInterpreter {
   #visitOrExpression(node: Node, value: JSONValue): JSONValue {
     const matched = this.visit(node.children[0], value);
     if (!isTruthy(matched)) {
-      return matched;
+      return this.visit(node.children[1], value);
     }
 
-    return this.visit(node.children[1], value);
+    return matched;
   }
 
   /**
@@ -376,9 +413,16 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitNotExpression(node: Node, value: JSONValue): JSONValue {
-    return true;
-  } */
+  #visitNotExpression(node: Node, value: JSONValue): JSONValue {
+    const originalResult = this.visit(node.children[0], value);
+    if (typeof originalResult === 'number' && originalResult === 0) {
+      // Special case for 0, !0 should be false, not true.
+      // 0 is not a special cased integer in jmespath.
+      return false;
+    }
+
+    return !isTruthy(originalResult);
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitPipe()
@@ -423,9 +467,22 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitValueProjection(node: Node, value: JSONValue): JSONValue {
+  #visitValueProjection(node: Node, value: JSONValue): JSONValue {
     const base = this.visit(node.children[0], value);
-  } */
+    if (!isRecord(base)) {
+      return null;
+    }
+    const values = Object.values(base);
+    const collected = [];
+    for (const item of values) {
+      const current = this.visit(node.children[1], item);
+      if (current !== null) {
+        collected.push(current);
+      }
+    }
+
+    return collected;
+  }
 }
 
 export { TreeInterpreter };

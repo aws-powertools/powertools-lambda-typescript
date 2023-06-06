@@ -38,13 +38,19 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
  * @returns
  */
 const isTruthy = (value: unknown): boolean => {
-  return (
-    value !== '' ||
-    (Array.isArray(value) && value.length > 0) ||
-    (isRecord(value) && Object(value).keys().length > 0) ||
-    value !== undefined ||
-    Object.is(value, true)
-  );
+  if (typeof value === 'string') {
+    return value !== '';
+  } else if (typeof value === 'number') {
+    return value !== 0;
+  } else if (typeof value === 'boolean') {
+    return value;
+  } else if (Array.isArray(value)) {
+    return value.length > 0;
+  } else if (isRecord(value)) {
+    return Object.keys(value).length > 0;
+  } else {
+    return Object.is(value, true);
+  }
 };
 
 export { Expression, isRecord, isTruthy };

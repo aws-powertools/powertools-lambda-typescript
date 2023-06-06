@@ -69,6 +69,11 @@ describe('Boolean tests', () => {
       expression: 'outer.empty_string || outer.foo',
       expected: 'foo',
     },
+    {
+      expression:
+        'outer.nokey || outer.bool || outer.empty_list || outer.empty_string || outer.foo',
+      expected: 'foo',
+    },
   ])(
     'should support multiple boolean OR comparisons',
     ({ expression, expected }) => {

@@ -104,14 +104,12 @@ class Parser {
     try {
       return this.#parse(expression);
     } catch (error) {
-      if (error instanceof LexerError) {
-        error.expression = expression;
-        throw error;
-      } else if (error instanceof IncompleteExpressionError) {
-        error.expression = expression;
-        throw error;
-      } else if (error instanceof ParseError) {
-        error.expression = expression;
+      if (
+        error instanceof LexerError ||
+        error instanceof IncompleteExpressionError ||
+        error instanceof ParseError
+      ) {
+        error.setExpression(expression);
         throw error;
       } else {
         throw error;
@@ -580,7 +578,7 @@ class Parser {
         lexPosition: token.start,
         tokenValue: token.value,
         tokenType: token.type,
-        reason: `Expecting: ${allowed.join(', ')}, got: ${token.type}`,
+        reason: `Expecting one of: ${allowed.join(', ')}, got: ${token.type}`,
       });
     }
   }

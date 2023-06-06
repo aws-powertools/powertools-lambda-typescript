@@ -5,10 +5,7 @@
  */
 
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
-import {
-  idempotentFunction,
-  idempotentLambdaHandler,
-} from '../../src/idempotentDecorator';
+import { idempotentFunction, idempotentLambdaHandler } from '../../src/';
 import type { IdempotencyRecordOptions } from '../../src/types';
 import { IdempotencyRecordStatus } from '../../src/types';
 import {
@@ -17,7 +14,7 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
 } from '../../src/Exceptions';
-import { IdempotencyConfig } from '../../src/IdempotencyConfig';
+import { IdempotencyConfig } from '../../src';
 
 const mockSaveInProgress = jest
   .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')

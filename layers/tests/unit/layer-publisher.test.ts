@@ -29,7 +29,7 @@ describe('Class: LayerPublisherStack', () => {
       /* CompatibleArchitectures: [
         'x86_64',
       ], */
-      Description: 'AWS Lambda Powertools for TypeScript version 1.0.1',
+      Description: 'Powertools for AWS Lambda (TypeScript) version 1.0.1',
       LayerName: 'AWSLambdaPowertoolsTypeScript',
     });
 

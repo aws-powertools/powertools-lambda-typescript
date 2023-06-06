@@ -1,6 +1,6 @@
 /**
  * ## Intro
- * Utility is a base class that other Powertools utilites can extend to inherit shared logic.
+ * Utility is a base class that other Powertools for AWS Lambda (TypeScript) utilites can extend to inherit shared logic.
  *
  *
  * ## Key features
@@ -14,7 +14,7 @@
  *
  * To learn more about the Lambda execution environment lifecycle, see the [Execution environment section](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html) of the AWS Lambda documentation.
  *
- * As a Powertools user you probably won't be using this class directly, in fact if you use other Powertools utilities the cold start heuristic found here is already used to:
+ * As a Powertools for AWS Lambda (TypeScript) user you probably won't be using this class directly, in fact if you use other Powertools for AWS utilities the cold start heuristic found here is already used to:
  * * Add a `coldStart` key to the structured logs when injecting context information in `Logger`
  * * Emit a metric during a cold start function invocation in `Metrics`
  * * Annotate the invocation segment with a `coldStart` key in `Tracer`

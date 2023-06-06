@@ -3,8 +3,6 @@ tasks:
       # Install Nodejs version specified in .nvmrc
       nvm install
       nvm use
-      # Install npm 8.x
-      npm i -g npm@next-8
       # Install AWS SAM CLI
       wget https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
       unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
@@ -17,4 +15,4 @@ vscode:
     - dbaeumer.vscode-eslint
     - esbenp.prettier-vscode
     - firsttris.vscode-jest-runner
-    - ms-azuretools.vscode-docker
+    - amazonwebservices.aws-toolkit-vscode

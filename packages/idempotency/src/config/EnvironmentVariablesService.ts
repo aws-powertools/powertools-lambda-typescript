@@ -21,6 +21,7 @@ class EnvironmentVariablesService
 {
   // Reserved environment variables
   private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
+  private idempotencyDisabledVariable = 'POWERTOOLS_IDEMPOTENCY_DISABLED';
 
   /**
    * It returns the value of the AWS_LAMBDA_FUNCTION_NAME environment variable.
@@ -29,6 +30,17 @@ class EnvironmentVariablesService
    */
   public getFunctionName(): string {
     return this.get(this.functionNameVariable);
+  }
+
+  /**
+   * It returns whether the idempotency feature is enabled or not.
+   *
+   * Reads the value of the POWERTOOLS_IDEMPOTENCY_DISABLED environment variable.
+   *
+   * @returns {boolean}
+   */
+  public getIdempotencyEnabled(): boolean {
+    return !this.isValueTrue(this.get(this.idempotencyDisabledVariable));
   }
 }
 

@@ -1,0 +1,40 @@
+{
+  "name": "docs",
+  "version": "0.0.1",
+  "description": "A collection code snippets for the Powertools for AWS Lambda (TypeScript) docs",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "scripts": {
+    "test": "echo 'Not Applicable'",
+    "test:e2e": "echo 'Not Applicable'",
+    "package": "echo 'Not applicable'",
+    "build": "echo 'Not Applicable'",
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern ."
+  },
+  "lint-staged": {
+    "*.ts": "npm run lint-fix"
+  },
+  "license": "MIT-0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+  },
+  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
+  "devDependencies": {
+    "@aws-sdk/client-appconfigdata": "^3.245.0",
+    "@aws-sdk/client-dynamodb": "^3.245.0",
+    "@aws-sdk/client-secrets-manager": "^3.250.0",
+    "@aws-sdk/client-ssm": "^3.245.0",
+    "@aws-sdk/util-dynamodb": "^3.245.0",
+    "aws-sdk": "^2.1354.0",
+    "aws-sdk-client-mock": "^2.0.1",
+    "aws-sdk-client-mock-jest": "^2.0.1",
+    "axios": "^1.2.4"
+  }
+}

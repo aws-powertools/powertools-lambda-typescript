@@ -1,10 +1,7 @@
+import type { Context } from 'aws-lambda';
 import { LambdaInterface } from '@aws-lambda-powertools/commons';
-import { DynamoDBPersistenceLayer } from '../../src/persistence';
-import {
-  idempotentFunction,
-  idempotentLambdaHandler,
-} from '../../src/idempotentDecorator';
-import { Context } from 'aws-lambda';
+import { DynamoDBPersistenceLayer } from '../../src/dynamodb';
+import { idempotentFunction, idempotentLambdaHandler } from '../../src';
 import { Logger } from '../../../logger';
 
 const IDEMPOTENCY_TABLE_NAME =

@@ -3,4 +3,4 @@ export * from './IdempotencyConfig';
 export * from './idempotentDecorator';
 export * from './IdempotencyHandler';
 export * from './makeFunctionIdempotent';
-export * from './middleware/makeHandlerIdempotent';
+export * from './middleware';

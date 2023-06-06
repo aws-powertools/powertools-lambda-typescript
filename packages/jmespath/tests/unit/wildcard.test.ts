@@ -1,3 +1,8 @@
+/**
+ * Test Compliance with the JMESPath specification
+ *
+ * @group unit/jmespath/compliance/wildcard
+ */
 import { search } from '../../src';
 
 describe('Wildcard tests', () => {

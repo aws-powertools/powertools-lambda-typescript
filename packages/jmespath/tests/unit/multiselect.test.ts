@@ -1,3 +1,8 @@
+/**
+ * Test Compliance with the JMESPath specification
+ *
+ * @group unit/jmespath/compliance/multiselect
+ */
 import { search } from '../../src';
 
 describe('Multiselect expressions tests', () => {
@@ -563,7 +568,7 @@ describe('Multiselect expressions tests', () => {
     'should handle nested multiselect with empty arrays',
     ({ expression, expected }) => {
       // Prepare
-      const data = [];
+      const data: string[] = [];
 
       // Act
       const result = search(expression, data);

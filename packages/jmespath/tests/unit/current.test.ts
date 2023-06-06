@@ -1,3 +1,8 @@
+/**
+ * Test Compliance with the JMESPath specification
+ *
+ * @group unit/jmespath/compliance/current
+ */
 import { search } from '../../src';
 
 describe('Current operator tests', () => {

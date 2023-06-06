@@ -1,3 +1,8 @@
+/**
+ * Test Compliance with the JMESPath specification
+ *
+ * @group unit/jmespath/compliance/functions
+ */
 import { search } from '../../src';
 
 describe('Functions tests', () => {

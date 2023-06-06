@@ -1,3 +1,8 @@
+/**
+ * Test Compliance with the JMESPath specification
+ *
+ * @group unit/jmespath/compliance/identifiers
+ */
 import { search } from '../../src';
 
 describe('Identifiers tests', () => {

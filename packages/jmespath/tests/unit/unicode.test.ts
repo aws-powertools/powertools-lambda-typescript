@@ -1,3 +1,8 @@
+/**
+ * Test Compliance with the JMESPath specification
+ *
+ * @group unit/jmespath/compliance/unicode
+ */
 import { search } from '../../src';
 
 describe('Unicode tests', () => {

@@ -1,3 +1,8 @@
+/**
+ * Test Compliance with the JMESPath specification
+ *
+ * @group unit/jmespath/compliance/pipe
+ */
 import { search } from '../../src';
 
 describe('Pipe expressions tests', () => {

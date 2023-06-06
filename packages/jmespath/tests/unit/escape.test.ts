@@ -1,3 +1,8 @@
+/**
+ * Test Compliance with the JMESPath specification
+ *
+ * @group unit/jmespath/compliance/escape
+ */
 import { search } from '../../src';
 
 describe('Escape characters tests', () => {

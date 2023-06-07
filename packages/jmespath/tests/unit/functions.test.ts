@@ -62,20 +62,22 @@ describe('Functions tests', () => {
     {
       expression: 'abs(str)',
       error:
-        'TypeError: abs() expected argument 1 to be type (number) but received type string instead.',
+        'Invalid argument type for function abs(), expected "number" but found "string" in expression: abs(str)',
     },
     {
       expression: 'abs(`false`)',
       error:
-        'TypeError: abs() expected argument 1 to be type (number) but received type boolean instead.',
+        'Invalid argument type for function abs(), expected "number" but found "boolean" in expression: abs(`false`)',
     },
     {
       expression: 'abs(`1`, `2`)',
-      error: 'ArgumentError: abs() takes 1 argument but received 2',
+      error:
+        'Expected at most 1 argument for function abs(), received 2 in expression: abs(`1`, `2`)',
     },
     {
       expression: 'abs()',
-      error: 'ArgumentError: abs() takes 1 argument but received 0',
+      error:
+        'Expected at least 1 argument for function abs(), received 0 in expression: abs()',
     },
   ])('abs() function errors', ({ expression, error }) => {
     // TODO: see if we can assert the error type as well in abs() fn errors tests

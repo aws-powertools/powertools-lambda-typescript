@@ -11,20 +11,17 @@ import { JMESPathTypeError, ArityError, VariadicArityError } from '../errors';
 const arityCheck = (
   args: unknown[],
   argumentsSpecs: Array<Array<string>>,
-  decoratedFuncName: string,
   variadic?: boolean
 ): void => {
   if (variadic) {
     if (args.length < argumentsSpecs.length) {
       throw new VariadicArityError({
-        functionName: decoratedFuncName,
         expectedArity: argumentsSpecs.length,
         actualArity: args.length,
       });
     }
   } else if (args.length !== argumentsSpecs.length) {
     throw new ArityError({
-      functionName: decoratedFuncName,
       expectedArity: argumentsSpecs.length,
       actualArity: args.length,
     });
@@ -35,15 +32,13 @@ const arityCheck = (
  * TODO: write docs for typeCheck()
  * @param args
  * @param argumentsSpecs
- * @param name
  */
 const typeCheck = (
   args: unknown[],
-  argumentsSpecs: Array<Array<string>>,
-  decoratedFuncName: string
+  argumentsSpecs: Array<Array<string>>
 ): void => {
   argumentsSpecs.forEach((argumentSpec, index) => {
-    typeCheckArgument(args[index], argumentSpec, decoratedFuncName);
+    typeCheckArgument(args[index], argumentSpec);
   });
 };
 
@@ -56,13 +51,8 @@ const typeCheck = (
  *
  * @param arg
  * @param argumentSpec
- * @param decoratedFuncName
  */
-const typeCheckArgument = (
-  arg: unknown,
-  argumentSpec: Array<string>,
-  decoratedFuncName: string
-): void => {
+const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
   // TODO: check if all types in argumentSpec are valid
   if (argumentSpec.length === 0 || argumentSpec[0] === 'any') {
     return;
@@ -71,34 +61,31 @@ const typeCheckArgument = (
     if (type.startsWith('array')) {
       if (!Array.isArray(arg)) {
         throw new JMESPathTypeError({
-          functionName: decoratedFuncName,
           currentValue: arg,
-          expectedTypes: argumentSpec.join(', '),
+          expectedTypes: argumentSpec,
           actualType: typeof arg,
         });
       }
       if (type.includes('-')) {
         const arrayItemsType = type.slice(6);
         arg.forEach((element) => {
-          typeCheckArgument(element, [arrayItemsType], decoratedFuncName);
+          typeCheckArgument(element, [arrayItemsType]);
         });
       }
     } else {
       if (type === 'string' || type === 'number' || type === 'boolean') {
         if (typeof arg !== type) {
           throw new JMESPathTypeError({
-            functionName: decoratedFuncName,
             currentValue: arg,
-            expectedTypes: argumentSpec.join(', '),
-            actualType: typeof arg,
+            expectedTypes: argumentSpec,
+            actualType: type === 'boolean' ? 'boolean' : typeof arg, // TODO: fix this
           });
         }
       } else if (type === 'null') {
         if (!Object.is(arg, null)) {
           throw new JMESPathTypeError({
-            functionName: decoratedFuncName,
             currentValue: arg,
-            expectedTypes: argumentSpec.join(', '),
+            expectedTypes: argumentSpec,
             actualType: typeof arg,
           });
         }

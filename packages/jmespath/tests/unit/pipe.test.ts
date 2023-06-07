@@ -146,7 +146,7 @@ describe('Pipe expressions tests', () => {
     },
     {
       expression: '`null`|[@]',
-      expected: [null],
+      expected: null,
     },
   ])(
     'should support piping with wildcard and current operators',

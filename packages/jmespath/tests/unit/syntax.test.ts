@@ -32,37 +32,37 @@ describe('Syntax tests', () => {
     {
       expression: 'foo.1',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "1" (number) for expression: foo.1',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "1" (number) in expression: foo.1',
     },
     {
       expression: 'foo.-11',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "-11" (number) for expression: foo.-11',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "-11" (number) in expression: foo.-11',
     },
     {
       expression: 'foo.',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected end of expression (EOF) for expression: foo.',
+        'Invalid jmespath expression: parse error at column 4, found unexpected end of expression (EOF) in expression: foo.',
     },
     {
       expression: '.foo',
       error:
-        'Invalid jmespath expression: parse error at column 0, found unexpected token "." (dot) for expression: .foo',
+        'Invalid jmespath expression: parse error at column 0, found unexpected token "." (dot) in expression: .foo',
     },
     {
       expression: 'foo..bar',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "." (dot) for expression: foo..bar',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "." (dot) in expression: foo..bar',
     },
     {
       expression: 'foo.bar.',
       error:
-        'Invalid jmespath expression: parse error at column 8, found unexpected end of expression (EOF) for expression: foo.',
+        'Invalid jmespath expression: parse error at column 8, found unexpected end of expression (EOF) in expression: foo.',
     },
     {
       expression: 'foo[.]',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "." (dot) for expression: foo[.]',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "." (dot) in expression: foo[.]',
     },
   ])('dot syntax errors', ({ expression, error }) => {
     // Prepare
@@ -78,72 +78,72 @@ describe('Syntax tests', () => {
     {
       expression: '.',
       error:
-        'Invalid jmespath expression: parse error at column 0, found unexpected token "." (dot) for expression: .',
+        'Invalid jmespath expression: parse error at column 0, found unexpected token "." (dot) in expression: .',
     },
     {
       expression: ':',
       error:
-        'Invalid jmespath expression: parse error at column 0, found unexpected token ":" (colon) for expression: :',
+        'Invalid jmespath expression: parse error at column 0, found unexpected token ":" (colon) in expression: :',
     },
     {
       expression: ',',
       error:
-        'Invalid jmespath expression: parse error at column 0, found unexpected token "," (comma) for expression: ,',
+        'Invalid jmespath expression: parse error at column 0, found unexpected token "," (comma) in expression: ,',
     },
     {
       expression: ']',
       error:
-        'Invalid jmespath expression: parse error at column 0, found unexpected token "]" (rbracket) for expression: ]',
+        'Invalid jmespath expression: parse error at column 0, found unexpected token "]" (rbracket) in expression: ]',
     },
     {
       expression: '[',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) for expression: [',
+        'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) in expression: [',
     },
     {
       expression: '}',
       error:
-        'Invalid jmespath expression: parse error at column 0, found unexpected token "}" (rbrace) for expression: }',
+        'Invalid jmespath expression: parse error at column 0, found unexpected token "}" (rbrace) in expression: }',
     },
     {
       expression: '{',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) for expression: {',
+        'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) in expression: {',
     },
     {
       expression: ')',
       error:
-        'Invalid jmespath expression: parse error at column 0, found unexpected token ")" (rparen) for expression: )',
+        'Invalid jmespath expression: parse error at column 0, found unexpected token ")" (rparen) in expression: )',
     },
     {
       expression: '(',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) for expression: (',
+        'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) in expression: (',
     },
     {
       expression: '((&',
       error:
-        'Invalid jmespath expression: parse error at column 3, found unexpected end of expression (EOF) for expression: ((&',
+        'Invalid jmespath expression: parse error at column 3, found unexpected end of expression (EOF) in expression: ((&',
     },
     {
       expression: 'a[',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected end of expression (EOF) for expression: a[',
+        'Invalid jmespath expression: parse error at column 2, found unexpected end of expression (EOF) in expression: a[',
     },
     {
       expression: 'a]',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected token "]" (rbracket) for expression: a]',
+        'Invalid jmespath expression: parse error at column 1, found unexpected token "]" (rbracket) in expression: a]',
     },
     {
       expression: 'a][',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected token "]" (rbracket) for expression: a]',
+        'Invalid jmespath expression: parse error at column 1, found unexpected token "]" (rbracket) in expression: a]',
     },
     {
       expression: '!',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) for expression: !',
+        'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) in expression: !',
     },
   ])('simple token errors', ({ expression, error }) => {
     // Prepare
@@ -159,7 +159,7 @@ describe('Syntax tests', () => {
     {
       expression: '![!(!',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected end of expression (EOF) for expression: ![!(!',
+        'Invalid jmespath expression: parse error at column 5, found unexpected end of expression (EOF) in expression: ![!(!',
     },
   ])('boolean token errors', ({ expression, error }) => {
     // Prepare
@@ -205,27 +205,27 @@ describe('Syntax tests', () => {
     {
       expression: '.*',
       error:
-        'Invalid jmespath expression: parse error at column 0, found unexpected token "." (dot) for expression: .*',
+        'Invalid jmespath expression: parse error at column 0, found unexpected token "." (dot) in expression: .*',
     },
     {
       expression: '*foo',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected token "foo" (unquoted_identifier) for expression: *foo',
+        'Invalid jmespath expression: parse error at column 1, found unexpected token "foo" (unquoted_identifier) in expression: *foo',
     },
     {
       expression: '*0',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected token "0" (number) for expression: *0',
+        'Invalid jmespath expression: parse error at column 1, found unexpected token "0" (number) in expression: *0',
     },
     {
       expression: 'foo[*]bar',
       error:
-        'Invalid jmespath expression: parse error at column 6, found unexpected token "bar" (unquoted_identifier) for expression: foo[*]bar',
+        'Invalid jmespath expression: parse error at column 6, found unexpected token "bar" (unquoted_identifier) in expression: foo[*]bar',
     },
     {
       expression: 'foo[*]*',
       error:
-        'Invalid jmespath expression: parse error at column 6, found unexpected token "*" (star) for expression: foo[*]*',
+        'Invalid jmespath expression: parse error at column 6, found unexpected token "*" (star) in expression: foo[*]*',
     },
   ])('wildcard token errors', ({ expression, error }) => {
     // Prepare
@@ -293,12 +293,12 @@ describe('Syntax tests', () => {
     {
       expression: '*.[0]',
       error:
-        'Invalid jmespath expression: parse error at column 3, found unexpected token "0" (number) for expression: *.[0]',
+        'Invalid jmespath expression: parse error at column 3, found unexpected token "0" (number) in expression: *.[0]',
     },
     {
       expression: 'foo[#]',
       error:
-        'Bad jmespath expression: unknown token "#" at column 4 for expression: foo[#]',
+        'Bad jmespath expression: unknown token "#" at column 4 in expression: foo[#]',
     },
   ])('simple breacket errors', ({ expression, error }) => {
     // Prepare
@@ -347,85 +347,85 @@ describe('Syntax tests', () => {
       comment: 'Valid multi-select of a list',
       expression: 'foo[0, 1]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "," (comma) for expression: foo[0, 1]',
+        'Invalid jmespath expression: parse error at column 5, found unexpected token "," (comma) in expression: foo[0, 1]',
     },
     {
       expression: 'foo.[0]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "0" (number) for expression: foo.[0]',
+        'Invalid jmespath expression: parse error at column 5, found unexpected token "0" (number) in expression: foo.[0]',
     },
     {
       comment: 'Multi-select of a list with trailing comma',
       expression: 'foo[0, ]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "," (comma) for expression: foo[0, ]',
+        'Invalid jmespath expression: parse error at column 5, found unexpected token "," (comma) in expression: foo[0, ]',
     },
     {
       comment: 'Multi-select of a list with trailing comma and no close',
       expression: 'foo[0,',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "," (comma) for expression: foo[0,',
+        'Invalid jmespath expression: parse error at column 5, found unexpected token "," (comma) in expression: foo[0,',
     },
     {
       comment: 'Multi-select of a list with trailing comma and no close',
       expression: 'foo.[a',
       error:
-        'Invalid jmespath expression: parse error at column 6, found unexpected end of expression (EOF) for expression: foo.[a',
+        'Invalid jmespath expression: parse error at column 6, found unexpected end of expression (EOF) in expression: foo.[a',
     },
     {
       comment: 'Multi-select of a list with extra comma',
       expression: 'foo[0,, 1]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "," (comma) for expression: foo[0,, 1]',
+        'Invalid jmespath expression: parse error at column 5, found unexpected token "," (comma) in expression: foo[0,, 1]',
     },
     {
       comment: 'Multi-select of a list using an identifier index',
       expression: 'foo[abc]',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "abc" (unquoted_identifier) for expression: foo[abc]',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "abc" (unquoted_identifier) in expression: foo[abc]',
     },
     {
       comment: 'Multi-select of a list using identifier indices',
       expression: 'foo[abc, def]',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "abc" (unquoted_identifier) for expression: foo[abc, def]',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "abc" (unquoted_identifier) in expression: foo[abc, def]',
     },
     {
       comment: 'Multi-select of a list using an identifier index',
       expression: 'foo[abc, 1]',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "abc" (unquoted_identifier) for expression: foo[abc, 1]',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "abc" (unquoted_identifier) in expression: foo[abc, 1]',
     },
     {
       comment:
         'Multi-select of a list using an identifier index with trailing comma',
       expression: 'foo[abc, ]',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "abc" (unquoted_identifier) for expression: foo[abc, ]',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "abc" (unquoted_identifier) in expression: foo[abc, ]',
     },
     {
       comment: 'Multi-select of a hash using a numeric index',
       expression: 'foo.[abc, 1]',
       error:
-        'Invalid jmespath expression: parse error at column 10, found unexpected token "1" (number) for expression: foo.[abc, 1]',
+        'Invalid jmespath expression: parse error at column 10, found unexpected token "1" (number) in expression: foo.[abc, 1]',
     },
     {
       comment: 'Multi-select of a hash with a trailing comma',
       expression: 'foo.[abc, ]',
       error:
-        'Invalid jmespath expression: parse error at column 10, found unexpected token "]" (rbracket) for expression: foo.[abc, ]',
+        'Invalid jmespath expression: parse error at column 10, found unexpected token "]" (rbracket) in expression: foo.[abc, ]',
     },
     {
       comment: 'Multi-select of a hash with extra commas',
       expression: 'foo.[abc,, def]',
       error:
-        'Invalid jmespath expression: parse error at column 9, found unexpected token "," (comma) for expression: foo.[abc,, def]',
+        'Invalid jmespath expression: parse error at column 9, found unexpected token "," (comma) in expression: foo.[abc,, def]',
     },
     {
       comment: 'Multi-select of a hash using number indices',
       expression: 'foo.[0, 1]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "0" (number) for expression: foo.[0, 1]',
+        'Invalid jmespath expression: parse error at column 5, found unexpected token "0" (number) in expression: foo.[0, 1]',
     },
   ])('multi-select list errors', ({ expression, error }) => {
     // Prepare
@@ -473,108 +473,108 @@ describe('Syntax tests', () => {
       comment: 'No key or value',
       expression: 'a{}',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "}" (rbrace) for expression: a{}',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "}" (rbrace) in expression: a{}',
     },
     {
       comment: 'No closing token',
       expression: 'a{',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected end of expression (EOF) for expression: a{',
+        'Invalid jmespath expression: parse error at column 2, found unexpected end of expression (EOF) in expression: a{',
     },
     {
       comment: 'Not a key value pair',
       expression: 'a{foo}',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) for expression: a{foo}',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) in expression: a{foo}',
     },
     {
       comment: 'Missing value and closing character',
       expression: 'a{foo:',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) for expression: a{foo:',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) in expression: a{foo:',
     },
     {
       comment: 'Missing closing character',
       expression: 'a{foo: 0',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) for expression: a{foo: 0',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) in expression: a{foo: 0',
     },
     {
       comment: 'Missing value',
       expression: 'a{foo:}',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) for expression: a{foo:}',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) in expression: a{foo:}',
     },
     {
       comment: 'Trailing comma and no closing character',
       expression: 'a{foo: 0, ',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) for expression: a{foo: 0, ',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) in expression: a{foo: 0, ',
     },
     {
       comment: 'Missing value with trailing comma',
       expression: 'a{foo: ,}',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) for expression: a{foo: ,}',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) in expression: a{foo: ,}',
     },
     {
       comment: 'Accessing Array using an identifier',
       expression: 'a{foo: bar}',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) for expression: a{foo: bar}',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) in expression: a{foo: bar}',
     },
     {
       expression: 'a{foo: 0}',
       error:
-        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) for expression: a{foo: 0}',
+        'Invalid jmespath expression: parse error at column 2, found unexpected token "foo" (unquoted_identifier) in expression: a{foo: 0}',
     },
     {
       comment: 'Missing key-value pair',
       expression: 'a.{}',
       error:
-        'Invalid jmespath expression: parse error at column 3, found unexpected token "}" (rbrace) for expression: a.{}',
+        'Invalid jmespath expression: parse error at column 3, found unexpected token "}" (rbrace) in expression: a.{}',
     },
     {
       comment: 'Not a key-value pair',
       expression: 'a.{foo}',
       error:
-        'Invalid jmespath expression: parse error at column 6, found unexpected token "}" (rbrace) for expression: a.{foo}',
+        'Invalid jmespath expression: parse error at column 6, found unexpected token "}" (rbrace) in expression: a.{foo}',
     },
     {
       comment: 'Missing value',
       expression: 'a.{foo:}',
       error:
-        'Invalid jmespath expression: parse error at column 7, found unexpected token "}" (rbrace) for expression: a.{foo:}',
+        'Invalid jmespath expression: parse error at column 7, found unexpected token "}" (rbrace) in expression: a.{foo:}',
     },
     {
       comment: 'Missing value with trailing comma',
       expression: 'a.{foo: ,}',
       error:
-        'Invalid jmespath expression: parse error at column 8, found unexpected token "," (comma) for expression: a.{foo: ,}',
+        'Invalid jmespath expression: parse error at column 8, found unexpected token "," (comma) in expression: a.{foo: ,}',
     },
     {
       comment: 'Trailing comma',
       expression: 'a.{foo: bar, }',
       error:
-        'Invalid jmespath expression: parse error at column 13, found unexpected token "}" (rbrace) for expression: a.{foo: bar, }',
+        'Invalid jmespath expression: parse error at column 13, found unexpected token "}" (rbrace) in expression: a.{foo: bar, }',
     },
     {
       comment: 'Missing key in second key-value pair',
       expression: 'a.{foo: bar, baz}',
       error:
-        'Invalid jmespath expression: parse error at column 16, found unexpected token "}" (rbrace) for expression: a.{foo: bar, baz}',
+        'Invalid jmespath expression: parse error at column 16, found unexpected token "}" (rbrace) in expression: a.{foo: bar, baz}',
     },
     {
       comment: 'Missing value in second key-value pair',
       expression: 'a.{foo: bar, baz:}',
       error:
-        'Invalid jmespath expression: parse error at column 17, found unexpected token "}" (rbrace) for expression: a.{foo: bar, baz:}',
+        'Invalid jmespath expression: parse error at column 17, found unexpected token "}" (rbrace) in expression: a.{foo: bar, baz:}',
     },
     {
       comment: 'Trailing comma',
       expression: 'a.{foo: bar, baz: bam, }',
       error:
-        'Invalid jmespath expression: parse error at column 23, found unexpected token "}" (rbrace) for expression: a.{foo: bar, baz: bam, }',
+        'Invalid jmespath expression: parse error at column 23, found unexpected token "}" (rbrace) in expression: a.{foo: bar, baz: bam, }',
     },
   ])('multi-select hash errors', ({ expression, error }) => {
     // Prepare
@@ -612,32 +612,32 @@ describe('Syntax tests', () => {
     {
       expression: 'foo ||',
       error:
-        'Invalid jmespath expression: parse error at column 6, found unexpected end of expression (EOF) for expression: foo ||',
+        'Invalid jmespath expression: parse error at column 6, found unexpected end of expression (EOF) in expression: foo ||',
     },
     {
       expression: 'foo.|| bar',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "||" (or) for expression: foo.|| bar',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "||" (or) in expression: foo.|| bar',
     },
     {
       expression: ' || foo',
       error:
-        'Invalid jmespath expression: parse error at column 1, found unexpected token "||" (or) for expression:  || foo',
+        'Invalid jmespath expression: parse error at column 1, found unexpected token "||" (or) in expression:  || foo',
     },
     {
       expression: 'foo || || foo',
       error:
-        'Invalid jmespath expression: parse error at column 7, found unexpected token "||" (or) for expression: foo || || foo',
+        'Invalid jmespath expression: parse error at column 7, found unexpected token "||" (or) in expression: foo || || foo',
     },
     {
       expression: 'foo.[a ||]',
       error:
-        'Invalid jmespath expression: parse error at column 9, found unexpected token "]" (rbracket) for expression: foo.[a ||]',
+        'Invalid jmespath expression: parse error at column 9, found unexpected token "]" (rbracket) in expression: foo.[a ||]',
     },
     {
       expression: '"foo',
       error:
-        'Bad jmespath expression: unknown token ""foo" at column 0 for expression: "foo',
+        'Bad jmespath expression: unknown token ""foo" at column 0 in expression: "foo',
     },
   ])('boolean OR errors', ({ expression, error }) => {
     // Prepare
@@ -702,109 +702,109 @@ describe('Syntax tests', () => {
     {
       expression: 'foo[ ?bar==`"baz"`]',
       error:
-        'Bad jmespath expression: unknown token "?" at column 5 for expression: foo[ ?bar==`"baz"`]',
+        'Bad jmespath expression: unknown token "?" at column 5 in expression: foo[ ?bar==`"baz"`]',
     },
     {
       expression: 'foo[?bar==]',
       error:
-        'Invalid jmespath expression: parse error at column 10, found unexpected token "]" (rbracket) for expression: foo[?bar==]',
+        'Invalid jmespath expression: parse error at column 10, found unexpected token "]" (rbracket) in expression: foo[?bar==]',
     },
     {
       expression: 'foo[?==]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "==" (eq) for expression: foo[?==]',
+        'Invalid jmespath expression: parse error at column 5, found unexpected token "==" (eq) in expression: foo[?==]',
     },
     {
       expression: 'foo[?==bar]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "==" (eq) for expression: foo[?==bar]',
+        'Invalid jmespath expression: parse error at column 5, found unexpected token "==" (eq) in expression: foo[?==bar]',
     },
     {
       expression: 'foo[?bar==baz?]',
       error:
-        'Bad jmespath expression: unknown token "?" at column 13 for expression: foo[?bar==baz?]',
+        'Bad jmespath expression: unknown token "?" at column 13 in expression: foo[?bar==baz?]',
     },
     {
       comment: 'Literal char not escaped',
       expression: 'foo[?bar==`["foo`bar"]`]',
       error:
-        'Bad jmespath expression: unknown token "["foo" at column 10 for expression: foo[?bar==`["foo`bar"]`]',
+        'Bad jmespath expression: unknown token "["foo" at column 10 in expression: foo[?bar==`["foo`bar"]`]',
     },
     {
       comment: 'Unknown comparator',
       expression: 'foo[?bar<>baz]',
       error:
-        'Invalid jmespath expression: parse error at column 9, found unexpected token ">" (gt) for expression: foo[?bar<>baz]',
+        'Invalid jmespath expression: parse error at column 9, found unexpected token ">" (gt) in expression: foo[?bar<>baz]',
     },
     {
       comment: 'Unknown comparator',
       expression: 'foo[?bar^baz]',
       error:
-        'Bad jmespath expression: unknown token "^" at column 8 for expression: foo[?bar^baz]',
+        'Bad jmespath expression: unknown token "^" at column 8 in expression: foo[?bar^baz]',
     },
     {
       expression: 'foo[bar==baz]',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "bar" (unquoted_identifier) for expression: foo[bar==baz]',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "bar" (unquoted_identifier) in expression: foo[bar==baz]',
     },
     {
       expression: 'bar.`"anything"`',
       error:
-        'Invalid jmespath expression: parse error at column 4, found unexpected token "anything" (literal) for expression: bar.`"anything"`',
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "anything" (literal) in expression: bar.`"anything"`',
     },
     {
       expression: 'bar.baz.noexists.`"literal"`',
       error:
-        'Invalid jmespath expression: parse error at column 17, found unexpected token "literal" (literal) for expression: bar.baz.noexists.`"literal"`',
+        'Invalid jmespath expression: parse error at column 17, found unexpected token "literal" (literal) in expression: bar.baz.noexists.`"literal"`',
     },
     {
       comment: 'Literal wildcard projection',
       expression: 'foo[*].`"literal"`',
       error:
-        'Invalid jmespath expression: parse error at column 7, found unexpected token "literal" (literal) for expression: foo[*].`"literal"`',
+        'Invalid jmespath expression: parse error at column 7, found unexpected token "literal" (literal) in expression: foo[*].`"literal"`',
     },
     {
       expression: 'foo[*].name.`"literal"`',
       error:
-        'Invalid jmespath expression: parse error at column 12, found unexpected token "literal" (literal) for expression: foo[*].name.`"literal"`',
+        'Invalid jmespath expression: parse error at column 12, found unexpected token "literal" (literal) in expression: foo[*].name.`"literal"`',
     },
     {
       expression: 'foo[].name.`"literal"`',
       error:
-        'Invalid jmespath expression: parse error at column 11, found unexpected token "literal" (literal) for expression: foo[].name.`"literal"`',
+        'Invalid jmespath expression: parse error at column 11, found unexpected token "literal" (literal) in expression: foo[].name.`"literal"`',
     },
     {
       expression: 'foo[].name.`"literal"`.`"subliteral"`',
       error:
-        'Invalid jmespath expression: parse error at column 11, found unexpected token "literal" (literal) for expression: foo[].name.`"literal"`.`"subliteral"`',
+        'Invalid jmespath expression: parse error at column 11, found unexpected token "literal" (literal) in expression: foo[].name.`"literal"`.`"subliteral"`',
     },
     {
       comment: 'Projecting a literal onto an empty list',
       expression: 'foo[*].name.noexist.`"literal"`',
       error:
-        'Invalid jmespath expression: parse error at column 20, found unexpected token "literal" (literal) for expression: foo[*].name.noexist.`"literal"`',
+        'Invalid jmespath expression: parse error at column 20, found unexpected token "literal" (literal) in expression: foo[*].name.noexist.`"literal"`',
     },
     {
       expression: 'foo[].name.noexist.`"literal"`',
       error:
-        'Invalid jmespath expression: parse error at column 19, found unexpected token "literal" (literal) for expression: foo[].name.noexist.`"literal"`',
+        'Invalid jmespath expression: parse error at column 19, found unexpected token "literal" (literal) in expression: foo[].name.noexist.`"literal"`',
     },
     {
       expression: 'twolen[*].`"foo"`',
       error:
-        'Invalid jmespath expression: parse error at column 10, found unexpected token "foo" (literal) for expression: twolen[*].`"foo"`',
+        'Invalid jmespath expression: parse error at column 10, found unexpected token "foo" (literal) in expression: twolen[*].`"foo"`',
     },
     {
       comment: 'Two level projection of a literal',
       expression: 'twolen[*].threelen[*].`"bar"`',
       error:
-        'Invalid jmespath expression: parse error at column 22, found unexpected token "bar" (literal) for expression: twolen[*].threelen[*].`"bar"`',
+        'Invalid jmespath expression: parse error at column 22, found unexpected token "bar" (literal) in expression: twolen[*].threelen[*].`"bar"`',
     },
     {
       comment: 'Two level flattened projection of a literal',
       expression: 'twolen[].threelen[].`"bar"`',
       error:
-        'Invalid jmespath expression: parse error at column 20, found unexpected token "bar" (literal) for expression: twolen[].threelen[].`"bar"`',
+        'Invalid jmespath expression: parse error at column 20, found unexpected token "bar" (literal) in expression: twolen[].threelen[].`"bar"`',
     },
   ])('filter errors', ({ expression, error }) => {
     // Prepare

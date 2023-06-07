@@ -1,6 +1,12 @@
 import type { JSONValue, Node, TreeInterpreterOptions } from '../types';
 import { Functions } from '../functions';
 import { Expression, isRecord, isTruthy } from './utils';
+import {
+  ArityError,
+  JMESPathTypeError,
+  UnknownFunctionError,
+  VariadicArityError,
+} from '../errors';
 
 class TreeInterpreter {
   #functions: Functions;
@@ -195,21 +201,34 @@ class TreeInterpreter {
     const normalizedFunctionName = node.value.replace(/_([a-z])/g, (g) =>
       g[1].toUpperCase()
     );
-    const methodName = methods.find(
-      (method) => method === `func${normalizedFunctionName}`
-    );
+    // capitalize first letter & add `func` prefix
+    const funcName = `func${
+      normalizedFunctionName.charAt(0).toUpperCase() +
+      normalizedFunctionName.slice(1)
+    }`;
+    const methodName = methods.find((method) => method === funcName);
     if (!methodName) {
-      // TODO: convert to a custom error
-      throw new Error(`Function not found: ${node.value}`);
+      throw new UnknownFunctionError();
     }
 
-    // We know that methodName is a key of this.#functions, but TypeScript
-    // doesn't know that, so we have to use @ts-ignore to tell it that it's
-    // okay. We could use a type assertion like `as keyof Functions`, but
-    // we also want to keep the args generic, so for now we'll just ignore it.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore-next-line
-    return this.#functions[methodName](args);
+    try {
+      // We know that methodName is a key of this.#functions, but TypeScript
+      // doesn't know that, so we have to use @ts-ignore to tell it that it's
+      // okay. We could use a type assertion like `as keyof Functions`, but
+      // we also want to keep the args generic, so for now we'll just ignore it.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore-next-line
+      return this.#functions[methodName](args);
+    } catch (error) {
+      if (
+        error instanceof JMESPathTypeError ||
+        error instanceof ArityError ||
+        error instanceof VariadicArityError
+      ) {
+        error.setFunctionName(node.value);
+        throw error;
+      }
+    }
   }
 
   /**

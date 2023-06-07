@@ -215,14 +215,13 @@ class Functions {
       if (typeof originalMethod !== 'function') {
         throw new TypeError('Only methods can be decorated with @signature.');
       }
-      const methodName = originalMethod.name;
 
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
       descriptor.value = function (args: unknown[]) {
         const { variadic, argumentsSpecs } = options;
-        arityCheck(args, argumentsSpecs, methodName, variadic);
-        typeCheck(args, argumentsSpecs, methodName);
+        arityCheck(args, argumentsSpecs, variadic);
+        typeCheck(args, argumentsSpecs);
 
         return originalMethod.apply(this, args);
       };

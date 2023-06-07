@@ -29,7 +29,7 @@ class JMESPathError extends Error {
     this.expression = expression;
 
     // Set the message to include the expression.
-    this.message = `${this.message} for expression: ${this.expression}`;
+    this.message = `${this.message} in expression: ${this.expression}`;
   }
 }
 
@@ -119,29 +119,87 @@ class IncompleteExpressionError extends ParseError {
 }
 
 /**
- * TODO: write docs for ArityError
+ * TODO: write docs for EmptyExpressionError
+ * TODO: see if this is ever being thrown
  */
-class ArityError extends JMESPathError {
+class EmptyExpressionError extends JMESPathError {
+  public constructor() {
+    super('Invalid JMESPath expression: cannot be empty.');
+    this.name = 'EmptyExpressionError';
+  }
+}
+
+/**
+ * Base class for errors thrown during function execution.
+ *
+ * When writing a JMESPath expression, you can use functions to transform the
+ * data. For example, the `abs()` function returns the absolute value of a number.
+ *
+ * If an error occurs during function execution, the error is thrown as a
+ * subclass of `FunctionError`. The subclass is determined by the type of error
+ * that occurred.
+ *
+ * Errors can be thrown while validating the arguments passed to a function, or
+ * while executing the function itself.
+ */
+class FunctionError extends JMESPathError {
+  /**
+   * Function that was being executed when the error occurred.
+   * Can be set by whatever catches the error.
+   */
+  public functionName?: string;
+
+  public constructor(message: string) {
+    super(message);
+    this.name = 'FunctionError';
+  }
+
+  /**
+   * Set the function that was being validated or executed when the error occurred.
+   *
+   * The separate method allows the name to be set after the error is
+   * thrown. In most cases the error is thrown down the call stack, but we want
+   * to show the actual function name used in the expression rather than an internal
+   * alias. To avoid passing the function name down the call stack, we set it
+   * after the error is thrown.
+   *
+   * @param functionName The function that was being validated or executed when the error occurred.
+   */
+  public setFunctionName(functionName: string): void {
+    this.message = this.message.replace(
+      'for function undefined',
+      `for function ${functionName}()`
+    );
+  }
+}
+
+/**
+ * Error thrown when an unexpected argument is passed to a function.
+ *
+ * Function arguments are validated before the function is executed. If an
+ * invalid argument is passed, the error is thrown. For example, the `abs()`
+ * function expects exactly one argument. If more than one argument is passed,
+ * an `ArityError` is thrown.
+ */
+class ArityError extends FunctionError {
   public actualArity: number;
   public expectedArity: number;
-  public functionName: string;
 
-  public constructor(options: {
-    expectedArity: number;
-    actualArity: number;
-    functionName: string;
-  }) {
+  public constructor(options: { expectedArity: number; actualArity: number }) {
     super('Invalid arity for JMESPath function');
     this.name = 'ArityError';
     this.actualArity = options.actualArity;
     this.expectedArity = options.expectedArity;
-    this.functionName = options.functionName;
+
+    const arityParticle =
+      this.actualArity > this.expectedArity ? 'at most' : 'at least';
 
     // Set the message to include the error info.
-    this.message = `Expected at least ${this.expectedArity} ${this.pluralize(
-      'argument',
+    this.message = `Expected ${arityParticle} ${
       this.expectedArity
-    )} for function ${this.functionName}, received: ${this.actualArity}`;
+    } ${this.pluralize('argument', this.expectedArity)} for function ${
+      this.functionName
+    }, received ${this.actualArity}`;
   }
 
   protected pluralize(word: string, count: number): string {
@@ -153,59 +211,73 @@ class ArityError extends JMESPathError {
  * TODO: write docs for VariadicArityError
  */
 class VariadicArityError extends ArityError {
-  public constructor(options: {
-    expectedArity: number;
-    actualArity: number;
-    functionName: string;
-  }) {
+  public constructor(options: { expectedArity: number; actualArity: number }) {
     super(options);
     this.name = 'VariadicArityError';
+
+    // Set the message to include the error info.
+    this.message = `Expected ${this.expectedArity} ${this.pluralize(
+      'argument',
+      this.expectedArity
+    )} for function ${this.functionName}, received ${this.actualArity}`;
   }
 }
 
 /**
- * TODO: write docs for JMESPathTypeError
+ * Error thrown when an invalid argument type is passed to a built-in function.
+ *
+ * Function arguments are validated before the function is executed. If an
+ * invalid argument type is found, this error is thrown. For example, the
+ * `abs()` function expects a number as its argument. If a string is passed
+ * instead, this error is thrown.
  */
-class JMESPathTypeError extends JMESPathError {
+class JMESPathTypeError extends FunctionError {
   public actualType: string;
   public currentValue: unknown;
-  public expectedTypes: string;
-  public functionName: string;
+  public expectedTypes: string[];
 
   public constructor(options: {
-    functionName: string;
     currentValue: unknown;
     actualType: string;
-    expectedTypes: string;
+    expectedTypes: string[];
   }) {
     super('Invalid type for JMESPath expression');
     this.name = 'JMESPathTypeError';
-    this.functionName = options.functionName;
     this.currentValue = options.currentValue;
     this.actualType = options.actualType;
     this.expectedTypes = options.expectedTypes;
 
     // Set the message to include the error info.
-    this.message = `${super.message}: function ${
+    this.message = `Invalid argument type for function ${
       this.functionName
-    } expected one of: ${this.expectedTypes}, received: ${this.actualType}`;
+    }, expected ${this.serializeExpectedTypes()} but found "${
+      this.actualType
+    }"`;
+  }
+
+  protected serializeExpectedTypes(): string {
+    return this.expectedTypes.length === 1
+      ? `"${this.expectedTypes[0]}"`
+      : `one of ${this.expectedTypes.map((type) => `"${type}"`).join(', ')}`;
   }
 }
 
 /**
- * TODO: write docs for EmptyExpressionError
+ * Error thrown when an unknown function is used in an expression.
+ *
+ * When evaluating a JMESPath expression, the interpreter looks up the function
+ * name in a table of built-in functions, as well as any custom functions
+ * provided by the user. If the function name is not found, this error is thrown.
  */
-class EmptyExpressionError extends JMESPathError {
+class UnknownFunctionError extends FunctionError {
   public constructor() {
-    super('Invalid JMESPath expression: cannot be empty.');
-    this.name = 'EmptyExpressionError';
+    super('Unknown function');
+    this.name = 'UnknownFunctionError';
+
+    // Set the message to include the error info.
+    this.message = `Unknown function:`;
   }
 }
-
-/**
- * TODO: write docs for UnknownFunctionError
- */
-class UnknownFunctionError extends JMESPathError {}
 
 export {
   JMESPathError,

@@ -32,7 +32,7 @@ describe('Unicode tests', () => {
     },
     {
       expression: '"☃"',
-      expected: undefined,
+      expected: null,
     },
   ])(
     'should parse an object with unicode chars as keys',

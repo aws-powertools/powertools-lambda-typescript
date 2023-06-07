@@ -1,4 +1,10 @@
 import { TreeInterpreter } from './visitor';
+import {
+  JMESPathTypeError,
+  UnknownFunctionError,
+  ArityError,
+  VariadicArityError,
+} from './errors';
 import type { Node, JSONValue, ParsingOptions } from './types';
 
 class ParsedResult {
@@ -13,7 +19,19 @@ class ParsedResult {
   public search(value: JSONValue, options?: ParsingOptions): unknown {
     const interpreter = new TreeInterpreter(options);
 
-    return interpreter.visit(this.parsed, value);
+    try {
+      return interpreter.visit(this.parsed, value);
+    } catch (error) {
+      if (
+        error instanceof JMESPathTypeError ||
+        error instanceof UnknownFunctionError ||
+        error instanceof ArityError ||
+        error instanceof VariadicArityError
+      ) {
+        error.setExpression(this.expression);
+      }
+      throw error;
+    }
   }
 }
 

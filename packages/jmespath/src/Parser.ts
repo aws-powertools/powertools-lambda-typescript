@@ -111,9 +111,9 @@ class Parser {
       ) {
         error.setExpression(expression);
         throw error;
-      } else {
-        throw error;
       }
+
+      throw error;
     }
   }
 

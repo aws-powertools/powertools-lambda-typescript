@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/idempotency",
-  "version": "1.8.0-alpha.0",
+  "version": "1.8.0-alpha.1",
   "description": "The idempotency package for the Powertools for AWS Lambda (TypeScript) library. It provides options to make your Lambda functions idempotent and safe to retry.",
   "author": {
     "name": "Amazon Web Services",
@@ -23,8 +23,7 @@
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
     "package-bundle": "../../package-bundler.sh idempotency-bundle ./dist",
-    "preprepare": "rm -rf ./lib",
-    "prepare": "npm run build"
+    "prebuild": "rm -rf ./lib"
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix",
@@ -42,8 +41,16 @@
       "require": "./lib/persistence/index.js"
     },
     "./dynamodb": {
-      "import": "./lib/persistence/DynamoDbPersistenceLayer.js",
-      "require": "./lib/persistence/DynamoDbPersistenceLayer.js"
+      "import": "./lib/persistence/DynamoDBPersistenceLayer.js",
+      "require": "./lib/persistence/DynamoDBPersistenceLayer.js"
+    },
+    "./middleware": {
+      "import": "./lib/middleware/index.js",
+      "require": "./lib/middleware/index.js"
+    },
+    "./types": {
+      "import": "./lib/types/index.d.ts",
+      "require": "./lib/types/index.d.ts"
     }
   },
   "typesVersions": {
@@ -52,7 +59,13 @@
         "lib/persistence/index.d.ts"
       ],
       "dynamodb": [
-        "lib/persistence/DynamoDbPersistenceLayer.d.ts"
+        "lib/persistence/DynamoDBPersistenceLayer.d.ts"
+      ],
+      "middleware": [
+        "lib/middleware/index.d.ts"
+      ],
+      "types": [
+        "lib/types/index.d.ts"
       ]
     }
   },

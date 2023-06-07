@@ -85,6 +85,32 @@ const idempotentLambdaHandler = function (
 ) => PropertyDescriptor {
   return idempotent(options);
 };
+/**
+ * Use this decorator to make any class function idempotent.
+ * Similar to the `idempotentLambdaHandler` decorator, you need to provide a persistence layer to store the idempotency information.
+ * @example
+ * ```ts
+ * import {
+ *  DynamoDBPersistenceLayer,
+ *  idempotentFunction
+ *  } from '@aws-lambda-powertools/idempotency'
+ *
+ *  class MyClass {
+ *
+ *  public async handler(_event: any, _context: any) {
+ *    for(const record of _event.records){
+ *      await this.process(record);
+ *      }
+ *    }
+ *
+ *  @idempotentFunction({ persistenceStore: new DynamoDBPersistenceLayer() })
+ *  public async process(record: Record<stiring, unknown) {
+ *     // do some processing
+ *  }
+ *  ```
+ *  @see {@link DynamoDBPersistenceLayer}
+ * @param options
+ */
 const idempotentFunction = function (
   options: IdempotencyFunctionOptions
 ): (

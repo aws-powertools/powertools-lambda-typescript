@@ -251,3 +251,4 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 }
 
 export { DynamoDBPersistenceLayer };
+export type { DynamoPersistenceOptions as DynamoDBPersistenceLayerOptions };

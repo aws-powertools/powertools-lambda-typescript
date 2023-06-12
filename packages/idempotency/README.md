@@ -57,12 +57,13 @@ See the [API documentation](https://awslabs.github.io/aws-lambda-powertools-type
 ```ts
 import { idempotentLambdaHandler } from "@aws-lambda-powertools/idempotency";
 import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
+import type { Context } from 'aws-lambda';
 
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
 
 class MyLambdaHandler implements LambdaInterface {
   @idempotentLambdaHandler({ persistenceStore: dynamoDBPersistenceLayer })
-  public async handler(_event: Record, _context: Context): Promise<string> {
+  public async handler(_event: any, _context: Context): Promise<string> {
     // your lambda code here
     return "Hello World";
   }
@@ -77,13 +78,14 @@ export const handler = lambdaClass.handler.bind(lambdaClass);
 ```ts
 import { idempotentLambdaHandler } from "@aws-lambda-powertools/idempotency";
 import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
+import type { Context } from 'aws-lambda';
 
 
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
 
 class MyLambdaHandler implements LambdaInterface {
   
-  public async handler(_event: Event, _context: Context): Promise<void> {
+  public async handler(_event: any, _context: Context): Promise<void> {
     for(const record of _event.Records) {
       await this.processRecord(record);
     }
@@ -119,6 +121,7 @@ In case where you don't use classes and decorators you can wrap your function to
 ```ts
 import { makeFunctionIdempotent } from "@aws-lambda-powertools/idempotency";
 import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
+import type { Context } from 'aws-lambda';
 
 
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
@@ -132,7 +135,7 @@ const processIdempotently = makeFunctionIdempotent(proccessingFunction, {
 });
 
 export const handler = async (
-  _event: Event,
+  _event: any,
   _context: Context
 ): Promise<void> => {
   for (const record of _event.Records) {

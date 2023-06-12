@@ -1,11 +1,18 @@
 # Powertools for AWS Lambda (TypeScript) - Idempotency Utility <!-- omit in toc -->
 
+
+| ⚠️ **WARNING: Do not use this utility in production just yet!** ⚠️                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**.. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/10) we might introduce significant breaking changes and improvements in response to customers feedback. | _ |
+
+
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#features).
 
 ## Intro
 
 This package provides a utility to implement idempotency in your Lambda functions. 
 You can either use it as a decorator on your Lambda handler or as a wrapper on any other function.
+If you use middy, we also provide a middleware to make your Lambda handler idempotent.
 The current implementation provides a persistance layer for Amazon DynamoDB, which offers a variety of configuration options. 
 You can also bring your own persistance layer by implementing the `IdempotencyPersistanceLayer` interface.
 
@@ -35,6 +42,7 @@ A more common approach is to use the function wrapper.
 Similar to `@idempotentFunction` decorator you need to pass keyword argument to indicate which part of the payload will be hashed. 
 
 ### Middy middleware
+// TODO: after e2e tests are implemented
 
 ### DynamoDB peristance layer
 To store the idempotency information offer a DynamoDB persistance layer. 
@@ -47,6 +55,8 @@ See the [API documentation](https://awslabs.github.io/aws-lambda-powertools-type
 ### Decorator Lambda handler
 
 ```ts
+import { idempotentLambdaHandler } from "@aws-lambda-powertools/idempotency";
+import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
 
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
 
@@ -65,7 +75,9 @@ export const handler = lambdaClass.handler.bind(lambdaClass);
 ### Decorator function
 
 ```ts
-import { makeFunctionIdempotent, DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency";
+import { idempotentLambdaHandler } from "@aws-lambda-powertools/idempotency";
+import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
+
 
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
 
@@ -105,7 +117,9 @@ You can use `transactionId` as the idempotency key. This will ensure that the sa
 In case where you don't use classes and decorators you can wrap your function to make it idempotent.
 
 ```ts
-import { makeFunctionIdempotent, DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency";
+import { makeFunctionIdempotent } from "@aws-lambda-powertools/idempotency";
+import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
+
 
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
 const processingFunction = async (payload: Record<string, unknown>): Promise<void> => {

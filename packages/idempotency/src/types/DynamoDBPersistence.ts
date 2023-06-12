@@ -39,8 +39,8 @@ interface DynamoPersistenceOptionsBaseInterface {
  */
 interface DynamoPersistenceOptionsWithClientConfig
   extends DynamoPersistenceOptionsBaseInterface {
-  clientConfig?: DynamoDBClientConfig;
   awsSdkV3Client?: never;
+  clientConfig?: DynamoDBClientConfig;
 }
 
 /**

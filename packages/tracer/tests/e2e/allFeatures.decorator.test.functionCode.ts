@@ -53,7 +53,7 @@ export class MyFunctionBase {
         })
         .promise(),
       axios.get(
-        'https://awslabs.github.io/aws-lambda-powertools-typescript/latest/',
+        'https://docs.powertools.aws.dev/lambda-typescript/latest/',
         { timeout: 5000 }
       ),
       new Promise((resolve, reject) => {

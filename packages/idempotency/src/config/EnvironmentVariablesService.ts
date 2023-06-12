@@ -13,7 +13,7 @@ import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from
  * @extends {CommonEnvironmentVariablesService}
  * @implements {ConfigServiceInterface}
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
- * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
+ * @see https://docs.powertools.aws.dev/lambda-typescript/latest/#environment-variables
  */
 class EnvironmentVariablesService
   extends CommonEnvironmentVariablesService

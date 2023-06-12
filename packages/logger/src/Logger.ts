@@ -33,7 +33,7 @@ import type {
  *
  * ## Usage
  *
- * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/core/logger/).
  *
  * ### Basic usage
  *
@@ -108,7 +108,7 @@ import type {
  *
  * @class
  * @implements {ClassThatLogs}
- * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/
+ * @see https://docs.powertools.aws.dev/lambda-typescript/latest/core/logger/
  */
 class Logger extends Utility implements ClassThatLogs {
   // console is initialized in the constructor in setOptions()

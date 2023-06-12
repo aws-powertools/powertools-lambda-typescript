@@ -10,6 +10,9 @@ import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
 import { IdempotencyConfig } from './IdempotencyConfig';
 import { MAX_RETRIES } from './constants';
 
+/**
+ * @internal
+ */
 export class IdempotencyHandler<U> {
   private readonly fullFunctionPayload: Record<string, unknown>;
   private readonly functionPayloadToBeHashed: Record<string, unknown>;

@@ -1,5 +1,5 @@
 import type { Context } from 'aws-lambda';
-import { DynamoDBPersistenceLayer } from '../../src/dynamodb';
+import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer';
 import { makeFunctionIdempotent } from '../../src';
 import { Logger } from '@aws-lambda-powertools/logger';
 

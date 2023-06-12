@@ -1,71 +1,148 @@
-# Powertools for AWS Lambda (TypeScript) <!-- omit in toc -->
+# Powertools for AWS Lambda (TypeScript) - Idempotency Utility <!-- omit in toc -->
+
+
+| ⚠️ **WARNING: Do not use this utility in production just yet!** ⚠️                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**.. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/10) we might introduce significant breaking changes and improvements in response to customers feedback. | _ |
+
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#features).
 
-You can use the library in both TypeScript and JavaScript code bases.
+## Intro
 
-[Powertools for AWS Lambda (Python)](https://github.com/awslabs/aws-lambda-powertools-python) and  [Powertools for AWS Lambda (Java)](https://github.com/awslabs/aws-lambda-powertools-java) are also available.
+This package provides a utility to implement idempotency in your Lambda functions. 
+You can either use it as a decorator on your Lambda handler or as a wrapper on any other function.
+If you use middy, we also provide a middleware to make your Lambda handler idempotent.
+The current implementation provides a persistance layer for Amazon DynamoDB, which offers a variety of configuration options. 
+You can also bring your own persistance layer by implementing the `IdempotencyPersistanceLayer` interface.
 
-**[📜 Documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/)** | **[NPM](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://github.com/awslabs/aws-lambda-powertools-roadmap/projects/1)** | **[Examples](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
+## Key features
+* Prevent Lambda handler from executing more than once on the same event payload during a time window
+* Ensure Lambda handler returns the same result when called with the same payload
+* Select a subset of the event as the idempotency key using JMESPath expressions
+* Set a time window in which records with the same payload should be considered duplicates
+* Expires in-progress executions if the Lambda function times out halfway through 
 
-## Table of contents <!-- omit in toc -->
+## Usage
 
-- [Features](#features)
-- [Getting started](#getting-started)
-  - [Installation](#installation)
-  - [Examples](#examples)
-  - [Serverless TypeScript Demo application](#serverless-typescript-demo-application)
-- [Contribute](#contribute)
-- [Roadmap](#roadmap)
-- [Connect](#connect)
-- [How to support Powertools for AWS Lambda (TypeScript)?](#how-to-support-powertools-for-aws-lambda-typescript)
-  - [Becoming a reference customer](#becoming-a-reference-customer)
-  - [Sharing your work](#sharing-your-work)
-  - [Using Lambda Layer](#using-lambda-layer)
-- [Credits](#credits)
-- [License](#license)
+### Decorators
+If you use classes to define your Lambda handlers, you can use the decorators to make your handler idempotent or a specific function idempotent.
+We offer two decorators: 
+* `@idempotentLambdaHandler`: makes the handler idempotent. 
+* `@idempotentFunction`: makes any function within your class idempotent
 
-## Features
+The first can only be applied to the handler function with the specific signature of a Lambda handler.
+The second can be applied to any function within your class. In this case you need to pass a `Record` object and provide the `dataKeywordArgument` parameter to specify the name of the argument that contains the data to be used as the idempotency key.
+In any of both cases yoiu need to pass the persistance layer where we will store the idempotency information.
 
-* **[Tracer](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
-* **[Logger](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
-* **[Metrics](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
-* **[Parameters (beta)](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM, Secrets Manager, AppConfig, and DynamoDB
 
-## Getting started
+### Function wrapper
 
-Find the complete project's [documentation here](https://awslabs.github.io/aws-lambda-powertools-typescript).
+A more common approach is to use the function wrapper. 
+Similar to `@idempotentFunction` decorator you need to pass keyword argument to indicate which part of the payload will be hashed. 
 
-### Installation
+### Middy middleware
+// TODO: after e2e tests are implemented
 
-The Powertools for AWS Lambda (TypeScript) utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).  
-Each TypeScript utility is installed as standalone NPM package.
+### DynamoDB peristance layer
+To store the idempotency information offer a DynamoDB persistance layer. 
+This enables you to store the hash key, payload, status for progress and expiration and much more. 
+You can customise most of the configuration options of the DynamoDB table, i.e the names of the attributes.
+See the [API documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/modules/.index.DynamoDBPersistenceLayer.html) for more details.
 
-Install all three core utilities at once with this single command:
+## Examples
 
-```shell
-npm install @aws-lambda-powertools/logger @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics
+### Decorator Lambda handler
+
+```ts
+import { idempotentLambdaHandler } from "@aws-lambda-powertools/idempotency";
+import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
+import type { Context } from 'aws-lambda';
+
+const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
+
+class MyLambdaHandler implements LambdaInterface {
+  @idempotentLambdaHandler({ persistenceStore: dynamoDBPersistenceLayer })
+  public async handler(_event: any, _context: Context): Promise<string> {
+    // your lambda code here
+    return "Hello World";
+  }
+}
+
+const lambdaClass = new MyLambdaHandler();
+export const handler = lambdaClass.handler.bind(lambdaClass);
 ```
 
-Or refer to the installation guide of each utility:
+### Decorator function
 
-👉 [Installation guide for the **Tracer** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer#getting-started)
+```ts
+import { idempotentLambdaHandler } from "@aws-lambda-powertools/idempotency";
+import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
+import type { Context } from 'aws-lambda';
 
-👉 [Installation guide for the **Logger** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger#getting-started)
 
-👉 [Installation guide for the **Metrics** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics#getting-started)
+const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
 
-👉 [Installation guide for the **Parameters** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/#getting-started)
+class MyLambdaHandler implements LambdaInterface {
+  
+  public async handler(_event: any, _context: Context): Promise<void> {
+    for(const record of _event.Records) {
+      await this.processRecord(record);
+    }
+  }
+  
+  @idempotentFunction({ persistenceStore: dynamoDBPersistenceLayer, dataKeywordArgument: "payload" })
+  public async process(payload: Record<string, unknown>): Promise<void> {
+    // your lambda code here
+  }
+}
+```
 
-### Examples
+The `dataKeywordArgument` parameter is optional. If not provided, the whole event will be used as the idempotency key.
+Otherwise, you need to specify the string name of the argument that contains the data to be used as the idempotency key.
+For example if you have an input like this:
 
-* [CDK](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/cdk)
-* [SAM](https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/examples/sam)
 
-### Serverless TypeScript Demo application
+```json
+{
+  "transactionId": 1235,
+  "product": "book",
+  "quantity": 1,
+  "price": 10
+}
+```
 
-The [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) shows how to use Powertools for AWS Lambda (TypeScript).  
-You can find instructions on how to deploy and load test this application in the [repository](https://github.com/aws-samples/serverless-typescript-demo).
+You can use `transactionId` as the idempotency key. This will ensure that the same transaction is not processed twice.
+
+### Function wrapper
+
+In case where you don't use classes and decorators you can wrap your function to make it idempotent.
+
+```ts
+import { makeFunctionIdempotent } from "@aws-lambda-powertools/idempotency";
+import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
+import type { Context } from 'aws-lambda';
+
+
+const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
+const processingFunction = async (payload: Record<string, unknown>): Promise<void> => {
+  // your lambda code here
+};
+
+const processIdempotently = makeFunctionIdempotent(proccessingFunction, {
+  persistenceStore: dynamoDBPersistenceLayer,
+  dataKeywordArgument: "transactionId"
+});
+
+export const handler = async (
+  _event: any,
+  _context: Context
+): Promise<void> => {
+  for (const record of _event.Records) {
+    await processIdempotently(record);
+  }
+};
+```
 
 ## Contribute
 

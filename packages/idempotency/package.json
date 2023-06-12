@@ -71,7 +71,6 @@
   },
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "typedocMain": "src/file_that_does_not_exist_so_its_ignored_from_api_docs.ts",
   "files": [
     "lib"
   ],
@@ -91,6 +90,7 @@
     "aws",
     "lambda",
     "powertools",
+    "idempotency",
     "serverless",
     "nodejs"
   ],

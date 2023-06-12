@@ -18,6 +18,15 @@ import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { BasePersistenceLayer } from './BasePersistenceLayer';
 
+/**
+ * DynamoDB persistence layer for idempotency records. This class will use the AWS SDK V3 to write and read idempotency records from DynamoDB.
+ * There are various options to configure the persistence layer, such as the table name, the key attribute, the status attribute, etc.
+ * With default configuration you don't need to create the table beforehand, the persistence layer will create it for you.
+ * You can also bring your own AWS SDK V3 client, or configure the client with the `clientConfig` option.
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/index.html
+ * @category Persistence Layer
+ * @implements {BasePersistenceLayer}
+ */
 class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   private client?: DynamoDBClient;
   private clientConfig: DynamoDBClientConfig = {};

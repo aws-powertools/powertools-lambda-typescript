@@ -33,7 +33,6 @@
   "license": "MIT",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "typedocMain": "src/index.ts",
   "devDependencies": {
     "@types/lodash.merge": "^4.6.7"
   },

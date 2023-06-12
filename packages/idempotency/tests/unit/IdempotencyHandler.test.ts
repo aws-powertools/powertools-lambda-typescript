@@ -12,7 +12,7 @@ import {
 import { IdempotencyRecordStatus } from '../../src/types';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
-import { IdempotencyConfig } from '../../src/IdempotencyConfig';
+import { IdempotencyConfig } from '../../src/';
 import { MAX_RETRIES } from '../../src/constants';
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {

@@ -26,9 +26,7 @@
     "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertools-typescript/docs",
     "docs-api-build-run": "npm run docs-generateApiDoc && npx live-server api",
     "docs-generateApiDoc": "typedoc .",
-    "docs-runLocalApiDoc": "npx live-server api",
-    "version": "lerna version --conventional-commits --force-publish --no-commit-hooks --yes",
-    "version:dry-run": "lerna version --conventional-commits --force-publish --no-commit-hooks --no-git-tag-version --no-push"
+    "docs-runLocalApiDoc": "npx live-server api"
   },
   "repository": {
     "type": "git",

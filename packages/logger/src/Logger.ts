@@ -617,16 +617,9 @@ class Logger extends Utility implements ClassThatLogs {
       this.getPowertoolLogData()
     );
 
-    const logItem = new LogItem({
-      baseAttributes: this.getLogFormatter().formatAttributes(
-        unformattedBaseAttributes
-      ),
-      persistentAttributes: this.getPersistentLogAttributes(),
-    });
-
-    // Add ephemeral attributes
+    let additionalLogAttributes: LogAttributes = {};
     if (typeof input !== 'string') {
-      logItem.addAttributes(input);
+      additionalLogAttributes = merge(additionalLogAttributes, input);
     }
     extraInput.forEach((item: Error | LogAttributes | string) => {
       const attributes: LogAttributes =
@@ -636,8 +629,14 @@ class Logger extends Utility implements ClassThatLogs {
           ? { extra: item }
           : item;
 
-      logItem.addAttributes(attributes);
+      additionalLogAttributes = merge(additionalLogAttributes, attributes);
     });
+
+    const logItem = this.getLogFormatter().formatAttributes(
+      unformattedBaseAttributes,
+      this.getPersistentLogAttributes(),
+      additionalLogAttributes
+    );
 
     return logItem;
   }

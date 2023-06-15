@@ -369,7 +369,7 @@ describe('Class: BasePersistenceLayer', () => {
           idempotencyKey: 'my-lambda-function#mocked-hash',
           status: IdempotencyRecordStatus.INPROGRESS,
           expiryTimestamp: Date.now() / 1000 + 3600,
-          payloadHash: 'mocked-hash',
+          payloadHash: '',
           inProgressExpiryTimestamp: Date.now() + remainingTimeInMs,
           responseData: undefined,
         })
@@ -455,7 +455,7 @@ describe('Class: BasePersistenceLayer', () => {
           idempotencyKey: 'my-lambda-function#mocked-hash',
           status: IdempotencyRecordStatus.COMPLETED,
           expiryTimestamp: Date.now() / 1000 + 3600,
-          payloadHash: 'mocked-hash',
+          payloadHash: '',
           inProgressExpiryTimestamp: undefined,
           responseData: result,
         })

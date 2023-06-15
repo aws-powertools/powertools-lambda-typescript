@@ -26,7 +26,8 @@
     "docs-runLocalDocker": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertools-typescript/docs",
     "docs-api-build-run": "npm run docs-generateApiDoc && npx live-server api",
     "docs-generateApiDoc": "typedoc .",
-    "docs-runLocalApiDoc": "npx live-server api"
+    "docs-runLocalApiDoc": "npx live-server api",
+    "postversion": "git restore ."
   },
   "repository": {
     "type": "git",

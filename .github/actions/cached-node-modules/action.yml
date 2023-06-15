@@ -15,7 +15,7 @@ runs:
       id: cache-node-modules
       uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
       with:
-        path: "./node_modules"
+        path: '**/node_modules'
         # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
         # if one of them changes the cache is invalidated/discarded
         key: ${{ inputs.nodeVersion }}-cache-utilities-node-modules-${{ hashFiles('./package-lock.json') }}

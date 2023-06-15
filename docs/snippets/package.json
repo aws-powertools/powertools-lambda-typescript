@@ -1,6 +1,6 @@
 {
   "name": "docs",
-  "version": "0.0.1",
+  "version": "1.9.0",
   "description": "A collection code snippets for the Powertools for AWS Lambda (TypeScript) docs",
   "author": {
     "name": "Amazon Web Services",
@@ -9,13 +9,13 @@
   "scripts": {
     "test": "echo 'Not Applicable'",
     "test:e2e": "echo 'Not Applicable'",
-    "package": "echo 'Not applicable'",
     "build": "echo 'Not Applicable'",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern ."
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix"
+    "*.ts": "npm run lint-fix",
+    "*.js": "npm run lint-fix"
   },
   "license": "MIT-0",
   "repository": {

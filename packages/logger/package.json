@@ -28,7 +28,7 @@
     "*.js": "npm run lint-fix"
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/logger#readme",
-  "license": "MIT",
+  "license": "MIT-0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {

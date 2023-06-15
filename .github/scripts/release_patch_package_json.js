@@ -1,3 +1,13 @@
+/**
+ * This script is used to update the package.json file of an utility to include pre-release suffixes
+ * and remove fields that are not needed in the tarball that will be published to npm.
+ *
+ * We read the original package.json file and extract all the fields. Then, if the is an
+ * alpha or beta package, we update the version number to include a suffix. Finally, we write the updated
+ * package.json file to disk that includes the patched version number and all the fields we want to keep.
+ *
+ * The file will be restored to its original state after the release is complete.
+ */
 const { readFileSync, writeFileSync } = require('node:fs');
 const { join, resolve } = require('node:path');
 
@@ -7,32 +17,9 @@ if (process.argv.length < 3) {
 }
 const basePath = resolve(process.argv[2]);
 const packageJsonPath = join(basePath, 'package.json');
-const outDirPath = join(basePath, 'lib');
 const alphaPackages = ['@aws-lambda-powertools/idempotency'];
 const betaPackages = ['@aws-lambda-powertools/parameters'];
 
-/**
- * This script is used to create a new package.json file for the tarball that will be published to npm.
- *
- * The original package.json file is read and the following fields are extracted:
- * - name
- * - version
- * - description
- * - author
- * - license
- * - homepage
- * - repository
- * - bugs
- * - keywords
- * - dependencies
- * - devDependencies
- *
- * For beta packages, the version number is updated to include a beta suffix.
- *
- * The new package.json file is written to the lib folder, which is the folder that will be packed and published to npm.
- * For beta packages, the original package.json file is also temporarily updated with the new beta version number so that
- * the version number in the registry is correct and matches the tarball.
- */
 (() => {
   try {
     // Read the original package.json file
@@ -82,6 +69,8 @@ const betaPackages = ['@aws-lambda-powertools/parameters'];
       files,
     };
 
+    // Not all utilities have these fields, so only add them if they exist to avoid
+    // having empty or undefined fields in the package.json file.
     if (exports) {
       newPkgJson.exports = exports;
     }
@@ -92,10 +81,9 @@ const betaPackages = ['@aws-lambda-powertools/parameters'];
       newPkgJson.private = private;
     }
 
-    // Temporarily update the original package.json file with the new beta version.
-    // This version number will be picked up during the `npm publish` step, so that
-    // the version number in the registry is correct and matches the tarball.
-    // The original package.json file will be restored by lerna after the publish step.
+    // Temporarily update the original package.json file.
+    // This version will be picked up during the `npm publish` step, so that
+    // the version number and metadata in the registry are correct and match the tarball.
     writeFileSync('package.json', JSON.stringify(newPkgJson, null, 2));
   } catch (err) {
     throw err;

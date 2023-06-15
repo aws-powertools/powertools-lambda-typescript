@@ -82,7 +82,7 @@ const betaPackages = ['@aws-lambda-powertools/parameters'];
       JSON.stringify(newPkgJson, null, 2)
     );
 
-    if (betaPackages.includes(name)) {
+    if (betaPackages.includes(name) || alphaPackages.includes(name)) {
       // Temporarily update the original package.json file with the new beta version.
       // This version number will be picked up during the `npm publish` step, so that
       // the version number in the registry is correct and matches the tarball.

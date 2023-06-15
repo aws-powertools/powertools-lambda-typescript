@@ -132,7 +132,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       idempotencyKey: this.getHashedIdempotencyKey(data),
       status: IdempotencyRecordStatus.INPROGRESS,
       expiryTimestamp: this.getExpiryTimestamp(),
-      payloadHash: this.generateHash(JSON.stringify(data)),
+      payloadHash: this.getHashedPayload(data),
     });
 
     if (remainingTimeInMillis) {
@@ -167,7 +167,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       status: IdempotencyRecordStatus.COMPLETED,
       expiryTimestamp: this.getExpiryTimestamp(),
       responseData: result,
-      payloadHash: this.generateHash(JSON.stringify(data)),
+      payloadHash: this.getHashedPayload(data),
     });
 
     await this._updateRecord(idempotencyRecord);
@@ -264,13 +264,13 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * @param data payload
    */
   private getHashedPayload(data: Record<string, unknown>): string {
-    // This method is only called when payload validation is enabled.
-    // For payload validation to be enabled, the validation key jmespath must be set.
-    // Therefore, the assertion is safe.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    data = search(data, this.validationKeyJmesPath!);
+    if (this.isPayloadValidationEnabled() && this.validationKeyJmesPath) {
+      data = search(data, this.validationKeyJmesPath);
 
-    return this.generateHash(JSON.stringify(data));
+      return this.generateHash(JSON.stringify(data));
+    } else {
+      return '';
+    }
   }
 
   private static isMissingIdempotencyKey(

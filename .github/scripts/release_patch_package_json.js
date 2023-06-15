@@ -7,6 +7,7 @@ if (process.argv.length < 3) {
 }
 const basePath = resolve(process.argv[2]);
 const packageJsonPath = join(basePath, 'package.json');
+const outDirPath = join(basePath, 'lib');
 const alphaPackages = ['@aws-lambda-powertools/idempotency'];
 const betaPackages = ['@aws-lambda-powertools/parameters'];
 
@@ -52,6 +53,8 @@ const betaPackages = ['@aws-lambda-powertools/parameters'];
       typesVersions,
       main,
       types,
+      files,
+      private,
     } = pkgJson;
 
     let version = originalVersion;
@@ -74,24 +77,26 @@ const betaPackages = ['@aws-lambda-powertools/parameters'];
       bugs,
       keywords,
       dependencies,
+      main,
+      types,
+      files,
     };
 
-    // Write the new package.json file inside the folder that will be packed
-    writeFileSync(
-      `${outDir}/package.json`,
-      JSON.stringify(newPkgJson, null, 2)
-    );
-
-    if (betaPackages.includes(name) || alphaPackages.includes(name)) {
-      // Temporarily update the original package.json file with the new beta version.
-      // This version number will be picked up during the `npm publish` step, so that
-      // the version number in the registry is correct and matches the tarball.
-      // The original package.json file will be restored by lerna after the publish step.
-      writeFileSync(
-        'package.json',
-        JSON.stringify({ ...pkgJson, version }, null, 2)
-      );
+    if (exports) {
+      newPkgJson.exports = exports;
     }
+    if (typesVersions) {
+      newPkgJson.typesVersions = typesVersions;
+    }
+    if (private) {
+      newPkgJson.private = private;
+    }
+
+    // Temporarily update the original package.json file with the new beta version.
+    // This version number will be picked up during the `npm publish` step, so that
+    // the version number in the registry is correct and matches the tarball.
+    // The original package.json file will be restored by lerna after the publish step.
+    writeFileSync('package.json', JSON.stringify(newPkgJson, null, 2));
   } catch (err) {
     throw err;
   }

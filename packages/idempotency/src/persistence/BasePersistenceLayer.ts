@@ -297,7 +297,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * Save record to local cache except for when status is `INPROGRESS`.
    *
    * We can't cache `INPROGRESS` records because we have no way to reflect updates
-   * that might happen to the record outside of the execution context of the function.
+   * that might happen to the record outside the execution context of the function.
    *
    * @param record - record to save
    */

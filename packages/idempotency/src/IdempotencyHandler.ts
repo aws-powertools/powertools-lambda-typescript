@@ -129,7 +129,13 @@ export class IdempotencyHandler<U> {
 
   public async processIdempotency(): Promise<U> {
     // early return if we should skip idempotency completely
-    if (this.shouldSkipIdempotency()) {
+    if (
+      IdempotencyHandler.shouldSkipIdempotency(
+        this.idempotencyConfig.eventKeyJmesPath,
+        this.idempotencyConfig.throwOnNoIdempotencyKey,
+        this.fullFunctionPayload
+      )
+    ) {
       return await this.functionToMakeIdempotent(this.fullFunctionPayload);
     }
 
@@ -153,13 +159,22 @@ export class IdempotencyHandler<U> {
     return this.getFunctionResult();
   }
 
-  private shouldSkipIdempotency(): boolean {
-    // if throwOnNoIdempotencyKey is false and the key is not present, we skip idempotency
-    return (this.idempotencyConfig.eventKeyJmesPath &&
-      !this.idempotencyConfig.throwOnNoIdempotencyKey &&
-      !search(
-        this.fullFunctionPayload,
-        this.idempotencyConfig.eventKeyJmesPath
-      )) as boolean;
+  /**
+   * avoid idempotency if the eventKeyJmesPath is not present in the payload and throwOnNoIdempotencyKey is false
+   * static so {@link makeHandlerIdempotent} middleware can use it
+   * TOOD: refactor so middy uses IdempotencyHandler internally wihtout reimplementing the logic
+   * @param eventKeyJmesPath
+   * @param throwOnNoIdempotencyKey
+   * @param fullFunctionPayload
+   * @private
+   */
+  public static shouldSkipIdempotency(
+    eventKeyJmesPath: string,
+    throwOnNoIdempotencyKey: boolean,
+    fullFunctionPayload: Record<string, unknown>
+  ): boolean {
+    return (eventKeyJmesPath &&
+      !throwOnNoIdempotencyKey &&
+      !search(fullFunctionPayload, eventKeyJmesPath)) as boolean;
   }
 }

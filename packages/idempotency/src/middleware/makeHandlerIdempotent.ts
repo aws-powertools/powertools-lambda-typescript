@@ -72,7 +72,15 @@ const makeHandlerIdempotent = (
     request: MiddyLikeRequest,
     retryNo = 0
   ): Promise<unknown | void> => {
-    // skip idempotency
+    if (
+      IdempotencyHandler.shouldSkipIdempotency(
+        idempotencyConfig.eventKeyJmesPath,
+        idempotencyConfig.throwOnNoIdempotencyKey,
+        request.event as Record<string, unknown>
+      )
+    ) {
+      return;
+    }
     try {
       await persistenceStore.saveInProgress(
         request.event as Record<string, unknown>,
@@ -115,7 +123,6 @@ const makeHandlerIdempotent = (
       }
     }
   };
-
   /**
    * Function called after the handler has executed successfully.
    *
@@ -126,7 +133,15 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const after = async (request: MiddyLikeRequest): Promise<void> => {
-    // todo skip idempotency
+    if (
+      IdempotencyHandler.shouldSkipIdempotency(
+        idempotencyConfig.eventKeyJmesPath,
+        idempotencyConfig.throwOnNoIdempotencyKey,
+        request.event as Record<string, unknown>
+      )
+    ) {
+      return;
+    }
     try {
       await persistenceStore.saveSuccess(
         request.event as Record<string, unknown>,

@@ -82,7 +82,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           keyAttr: 'id',
           statusAttr: 'status',
           expiryAttr: 'expiration',
-          inProgressExpiryAttr: 'in_progress_expiry_attr',
+          inProgressExpiryAttr: 'in_progress_expiration',
           dataAttr: 'data',
           validationKeyAttr: 'validation',
           staticPkValue: 'idempotency#my-lambda-function',
@@ -230,7 +230,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           '#id': 'id',
           '#expiry': 'expiration',
           '#status': 'status',
-          '#in_progress_expiry': 'in_progress_expiry_attr',
+          '#in_progress_expiry': 'in_progress_expiration',
         },
         ExpressionAttributeValues: marshall({
           ':now': Date.now() / 1000,
@@ -273,7 +273,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           '#id': 'id',
           '#expiry': 'expiration',
           '#status': 'status',
-          '#in_progress_expiry': 'in_progress_expiry_attr',
+          '#in_progress_expiry': 'in_progress_expiration',
         },
         ExpressionAttributeValues: marshall({
           ':now': Date.now() / 1000,
@@ -310,13 +310,13 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           id: dummyKey,
           expiration: expiryTimestamp,
           status,
-          in_progress_expiry_attr: inProgressExpiryTimestamp,
+          in_progress_expiration: inProgressExpiryTimestamp,
         }),
         ExpressionAttributeNames: {
           '#id': 'id',
           '#expiry': 'expiration',
           '#status': 'status',
-          '#in_progress_expiry': 'in_progress_expiry_attr',
+          '#in_progress_expiry': 'in_progress_expiration',
         },
         ExpressionAttributeValues: marshall({
           ':now': Date.now() / 1000,
@@ -361,7 +361,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           '#id': 'id',
           '#expiry': 'expiration',
           '#status': 'status',
-          '#in_progress_expiry': 'in_progress_expiry_attr',
+          '#in_progress_expiry': 'in_progress_expiration',
         },
         ExpressionAttributeValues: marshall({
           ':now': Date.now() / 1000,
@@ -433,7 +433,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           id: dummyKey,
           status: IdempotencyRecordStatus.INPROGRESS,
           expiration: getFutureTimestamp(15),
-          in_progress_expiry_attr: getFutureTimestamp(10),
+          in_progress_expiration: getFutureTimestamp(10),
           data: {},
         }),
       });
@@ -465,7 +465,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           id: dummyKey,
           status,
           expiration: expiryTimestamp,
-          in_progress_expiry_attr: inProgressExpiryTimestamp,
+          in_progress_expiration: inProgressExpiryTimestamp,
           data: responseData,
         }),
       });
@@ -525,6 +525,36 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         }),
         ConsistentRead: true,
       });
+    });
+
+    test('when called with a record that had the ', async () => {
+      // Prepare
+      const persistenceLayer = new TestDynamoDBPersistenceLayer({
+        tableName: dummyTableName,
+        staticPkValue: 'idempotency#my-lambda-function',
+        sortKeyAttr: 'sortKey',
+      });
+      client.on(GetItemCommand).resolves({
+        Item: marshall({
+          id: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiration: getFutureTimestamp(15),
+          in_progress_expiration: getFutureTimestamp(10),
+          data: {},
+          validation: 'someHash',
+        }),
+      });
+
+      // Act
+      const record = await persistenceLayer._getRecord(dummyKey);
+
+      // Assess
+      expect(record.idempotencyKey).toEqual(dummyKey);
+      expect(record.getStatus()).toEqual(IdempotencyRecordStatus.INPROGRESS);
+      expect(record.expiryTimestamp).toEqual(getFutureTimestamp(15));
+      expect(record.inProgressExpiryTimestamp).toEqual(getFutureTimestamp(10));
+      expect(record.responseData).toStrictEqual({});
+      expect(record.payloadHash).toEqual('someHash');
     });
   });
 

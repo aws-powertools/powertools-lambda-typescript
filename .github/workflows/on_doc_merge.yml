@@ -14,10 +14,8 @@ jobs:
       contents: write
       pages: write
       id-token: write
+    secrets: inherit
     uses: ./.github/workflows/reusable-publish-docs.yml
     with:
       version: main
       alias: stage
-    secrets:
-      AWS_DOCS_ROLE_ARN: ${{ secrets.AWS_DOCS_ROLE_ARN }}
-      AWS_DOCS_BUCKET: ${{ secrets.AWS_DOCS_BUCKET }}

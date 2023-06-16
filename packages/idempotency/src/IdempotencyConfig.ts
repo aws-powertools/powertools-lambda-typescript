@@ -2,14 +2,48 @@ import { EnvironmentVariablesService } from './config';
 import type { Context } from 'aws-lambda';
 import type { IdempotencyConfigOptions } from './types';
 
+/**
+ * Configuration for the idempotency feature.
+ */
 class IdempotencyConfig {
+  /**
+   * The JMESPath expression used to extract the idempotency key from the event.
+   * @default ''
+   */
   public eventKeyJmesPath: string;
+  /**
+   * The number of seconds the idempotency key is valid.
+   * @default 3600 (1 hour)
+   */
   public expiresAfterSeconds: number;
+  /**
+   * The hash function used to generate the idempotency key.
+   * @see https://nodejs.org/api/crypto.html#crypto_crypto_createhash_algorithm_options
+   * @default 'md5'
+   */
   public hashFunction: string;
+  /**
+   * The lambda context object.
+   */
   public lambdaContext?: Context;
+  /**
+   * The maximum number of items to store in the local cache.
+   * @default 1000
+   */
   public maxLocalCacheSize: number;
+  /**
+   * The JMESPath expression used to extract the payload to validate.
+   */
   public payloadValidationJmesPath?: string;
+  /**
+   * Throw an error if the idempotency key is not found in the event.
+   * In some cases, you may want to allow the request to continue without idempotency.
+   */
   public throwOnNoIdempotencyKey: boolean;
+  /**
+   * Use the local cache to store idempotency keys.
+   * @see {@link LRUCache}
+   */
   public useLocalCache: boolean;
   readonly #envVarsService: EnvironmentVariablesService;
   readonly #enabled: boolean = true;

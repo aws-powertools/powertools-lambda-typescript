@@ -13,7 +13,7 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyInconsistentStateError,
 } from '../../src/Exceptions';
-import { IdempotencyConfig } from '../../src/IdempotencyConfig';
+import { IdempotencyConfig } from '../../src/';
 import middy from '@middy/core';
 import { MAX_RETRIES } from '../../src/constants';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';

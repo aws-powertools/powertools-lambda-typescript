@@ -98,7 +98,6 @@ Resources:
       BuildProperties:
         Minify: true
         Target: "ES2020"
-        ExperimentalDecorators: true
         Sourcemap: true
         External:
           - "@aws-sdk/lib-dynamodb"

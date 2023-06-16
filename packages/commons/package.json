@@ -10,7 +10,6 @@
     "access": "public"
   },
   "scripts": {
-    "commit": "commit",
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e": "echo 'Not Applicable'",
@@ -18,9 +17,8 @@
     "build": "tsc",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
-    "package-bundle": "../../package-bundler.sh commons-bundle ./dist",
-    "prepare": "npm run build"
+    "prebuild": "rimraf ./lib",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix",

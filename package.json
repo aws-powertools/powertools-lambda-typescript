@@ -2,8 +2,6 @@
   "name": "aws-lambda-powertools-typescript",
   "version": "0.0.1",
   "description": "A suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.",
-  "main": "lib/index.js",
-  "types": "lib/",
   "workspaces": [
     "packages/commons",
     "packages/logger",
@@ -21,7 +19,7 @@
     "test": "npm t -ws",
     "commit": "commit",
     "package": "npm run package -ws",
-    "setup-local": "npm ci --foreground-scripts && npm run init-environment",
+    "setup-local": "npm ci && npm run build && npm run init-environment",
     "build": "npm run build -ws",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",
     "docs-buildDockerImage": "docker build -t powertools-typescript/docs ./docs/",
@@ -29,8 +27,7 @@
     "docs-api-build-run": "npm run docs-generateApiDoc && npx live-server api",
     "docs-generateApiDoc": "typedoc .",
     "docs-runLocalApiDoc": "npx live-server api",
-    "version": "lerna version --conventional-commits --force-publish=packages/commons,packages/tracer,packages/logger,packages/metrics,packages/parameters --no-commit-hooks --yes",
-    "version:dry-run": "lerna version --conventional-commits --force-publish=packages/commons,packages/tracer,packages/logger,packages/metrics,packages/parameters --no-commit-hooks --no-git-tag-version --no-push"
+    "postpublish": "git restore ."
   },
   "repository": {
     "type": "git",
@@ -76,6 +73,7 @@
     "prettier": "^2.8.8",
     "promptly": "^3.2.0",
     "proxy-agent": "^5.0.0",
+    "rimraf": "^5.0.1",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "typedoc": "^0.24.7",
@@ -83,9 +81,6 @@
     "typescript": "^4.9.4",
     "uuid": "^9.0.0"
   },
-  "files": [
-    "lib/**/*"
-  ],
   "engines": {
     "node": ">=14"
   }

@@ -7,11 +7,9 @@
     "url": "https://aws.amazon.com"
   },
   "publishConfig": {
-    "access": "public",
-    "directory": "lib"
+    "access": "public"
   },
   "scripts": {
-    "commit": "commit",
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
@@ -22,11 +20,8 @@
     "build": "tsc",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "package": "mkdir -p dist/ && npm pack && mv *.tgz dist/",
-    "package-bundle": "../../package-bundler.sh parameters-bundle ./dist",
-    "prepare": "npm run build",
-    "prepack": "cp ../../.github/scripts/release_patch_package_json.js . && node release_patch_package_json.js",
-    "postpack": "rm release_patch_package_json.js"
+    "prebuild": "rimraf ./lib",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix",
@@ -34,6 +29,65 @@
   },
   "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/parameters#readme",
   "license": "MIT-0",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    },
+    "./base": {
+      "import": "./lib/base/index.js",
+      "require": "./lib/base/index.js"
+    },
+    "./ssm": {
+      "import": "./lib/ssm/index.js",
+      "require": "./lib/ssm/index.js"
+    },
+    "./secrets": {
+      "import": "./lib/secrets/index.js",
+      "require": "./lib/secrets/index.js"
+    },
+    "./dynamodb": {
+      "import": "./lib/dynamodb/index.js",
+      "require": "./lib/dynamodb/index.js"
+    },
+    "./appconfig": {
+      "import": "./lib/appconfig/index.js",
+      "require": "./lib/appconfig/index.js"
+    },
+    "./errors": {
+      "import": "./lib/Exceptions.js",
+      "require": "./lib/Exceptions.js"
+    },
+    "./types": {
+      "import": "./lib/types/index.d.ts",
+      "require": "./lib/types/index.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "base": [
+        "lib/base/index.d.ts"
+      ],
+      "ssm": [
+        "lib/ssm/index.d.ts"
+      ],
+      "secrets": [
+        "lib/secrets/index.d.ts"
+      ],
+      "dynamodb": [
+        "lib/dynamodb/index.d.ts"
+      ],
+      "appconfig": [
+        "lib/appconfig/index.d.ts"
+      ],
+      "errors": [
+        "lib/Exceptions.d.ts"
+      ],
+      "types": [
+        "lib/types/index.d.ts"
+      ]
+    }
+  },
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "files": [

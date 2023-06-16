@@ -7,15 +7,14 @@
   "private": true,
   "description": "This CDK app is meant to be used to publish Powertools for AWS Lambda (TypeScript) Lambda Layer. It is composed of a single stack deploying the Layer into the target account.",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
+    "build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
     "test": "echo 'Not applicable'",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --fix --no-error-on-unmatched-pattern .",
     "test:unit": "jest --group=unit",
-    "test:e2e": "RUNTIME=nodejs14x jest --group=e2e"
+    "test:e2e": "jest --group=e2e"
   },
   "lint-staged": {
     "*.ts": "npm run lint-fix",

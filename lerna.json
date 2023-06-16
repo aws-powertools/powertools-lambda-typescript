@@ -5,6 +5,7 @@
     "packages/logger",
     "packages/metrics",
     "packages/parameters",
+    "packages/idempotency",
     "examples/cdk",
     "examples/sam",
     "layers"

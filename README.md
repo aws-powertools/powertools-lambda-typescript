@@ -35,6 +35,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 * **[Logger](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
 * **[Metrics](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
 * **[Parameters (beta)](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
+* **[Idempotency (beta)](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
 
 ## Getting started
 
@@ -72,6 +73,8 @@ Or refer to the installation guide of each utility:
 👉 [Installation guide for the **Metrics** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/metrics#getting-started)
 
 👉 [Installation guide for the **Parameters** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/#getting-started)
+
+👉 [Installation guide for the **Idempotency** utility](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/idempotency/#getting-started)
 
 ### Examples
 

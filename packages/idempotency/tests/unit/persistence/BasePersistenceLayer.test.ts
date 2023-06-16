@@ -6,8 +6,8 @@
 import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
 import { IdempotencyConfig } from '../../../src';
 import {
-  IdempotencyRecord,
   BasePersistenceLayer,
+  IdempotencyRecord,
 } from '../../../src/persistence';
 import {
   IdempotencyItemAlreadyExistsError,

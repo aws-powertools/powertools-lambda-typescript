@@ -9,6 +9,7 @@ import {
 import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
 import { IdempotencyConfig } from './IdempotencyConfig';
 import { MAX_RETRIES } from './constants';
+import { search } from 'jmespath';
 
 /**
  * @internal
@@ -127,6 +128,11 @@ export class IdempotencyHandler<U> {
   }
 
   public async processIdempotency(): Promise<U> {
+    // early return if we should skip idempotency completely
+    if (this.shouldSkipIdempotency()) {
+      return await this.functionToMakeIdempotent(this.fullFunctionPayload);
+    }
+
     try {
       await this.persistenceStore.saveInProgress(
         this.functionPayloadToBeHashed
@@ -145,5 +151,15 @@ export class IdempotencyHandler<U> {
     }
 
     return this.getFunctionResult();
+  }
+
+  private shouldSkipIdempotency(): boolean {
+    // if throwOnNoIdempotencyKey is false and the key is not present, we skip idempotency
+    return (this.idempotencyConfig.eventKeyJmesPath &&
+      !this.idempotencyConfig.throwOnNoIdempotencyKey &&
+      !search(
+        this.fullFunctionPayload,
+        this.idempotencyConfig.eventKeyJmesPath
+      )) as boolean;
   }
 }

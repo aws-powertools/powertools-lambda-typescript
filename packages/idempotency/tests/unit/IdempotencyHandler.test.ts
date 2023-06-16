@@ -209,6 +209,44 @@ describe('Class IdempotencyHandler', () => {
       expect(mockGetRecord).toHaveBeenCalledTimes(1);
       expect(mockDetermineResultFromIdempotencyRecord).toHaveBeenCalledTimes(1);
     });
+
+    test('when throwOnNoIdempotencyKey is false and the key is missing, we skip idempotency', async () => {
+      const idempotentHandlerSkips = new IdempotencyHandler({
+        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+        persistenceStore: mockIdempotencyOptions.persistenceStore,
+        fullFunctionPayload: mockFullFunctionPayload,
+        idempotencyConfig: new IdempotencyConfig({
+          throwOnNoIdempotencyKey: false,
+          eventKeyJmesPath: 'idempotencyKey',
+        }),
+      });
+
+      const mockSaveInProgress = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      );
+
+      const mockSaveSuccessfulResult = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveSuccess'
+      );
+      const mockGetRecord = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'getRecord'
+      );
+
+      mockFunctionToMakeIdempotent.mockImplementation(() => {
+        return 'result';
+      });
+
+      await expect(idempotentHandlerSkips.processIdempotency()).resolves.toBe(
+        'result'
+      );
+      expect(mockSaveInProgress).toHaveBeenCalledTimes(0);
+      expect(mockGetRecord).toHaveBeenCalledTimes(0);
+      expect(mockSaveSuccessfulResult).toHaveBeenCalledTimes(0);
+    });
   });
 
   describe('Method: getFunctionResult', () => {

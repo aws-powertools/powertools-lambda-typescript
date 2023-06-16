@@ -2,7 +2,7 @@
  * E2E utils is used by e2e tests. They are helper function that calls either CDK or SDK
  * to interact with services.
  */
-import { App, CfnOutput, Stack, Duration } from 'aws-cdk-lib';
+import { App, CfnOutput, Duration, Stack } from 'aws-cdk-lib';
 import {
   NodejsFunction,
   NodejsFunctionProps,
@@ -93,13 +93,12 @@ export const invokeFunction = async (
 
   const promiseFactory = (
     index?: number,
-    includeIndex = true
+    includeIndex?: boolean
   ): Promise<void> => {
     // in some cases we need to send a payload without the index, i.e. idempotency tests
     const payloadToSend = includeIndex
       ? { invocation: index, ...payload }
       : { ...payload };
-
     const invokePromise = lambdaClient
       .send(
         new InvokeCommand({
@@ -136,7 +135,10 @@ export const invokeFunction = async (
 };
 
 const chainPromises = async (
-  promiseFactories: ((index?: number) => Promise<void>)[]
+  promiseFactories: ((
+    index?: number,
+    includeIndex?: boolean
+  ) => Promise<void>)[]
 ): Promise<void> => {
   for (let index = 0; index < promiseFactories.length; index++) {
     await promiseFactories[index](index);

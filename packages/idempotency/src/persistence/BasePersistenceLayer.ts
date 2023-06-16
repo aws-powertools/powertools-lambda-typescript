@@ -1,7 +1,7 @@
 import { createHash, Hash } from 'node:crypto';
 import { search } from 'jmespath';
-import { IdempotencyRecordStatus } from '../types';
 import type { BasePersistenceLayerOptions } from '../types';
+import { IdempotencyRecordStatus } from '../types';
 import { EnvironmentVariablesService } from '../config';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { BasePersistenceLayerInterface } from './BasePersistenceLayerInterface';
@@ -176,10 +176,13 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   }
 
   protected abstract _deleteRecord(record: IdempotencyRecord): Promise<void>;
+
   protected abstract _getRecord(
     idempotencyKey: string
   ): Promise<IdempotencyRecord>;
+
   protected abstract _putRecord(record: IdempotencyRecord): Promise<void>;
+
   protected abstract _updateRecord(record: IdempotencyRecord): Promise<void>;
 
   private deleteFromCache(idempotencyKey: string): void {
@@ -271,23 +274,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     data = search(data, this.validationKeyJmesPath!);
 
     return this.generateHash(JSON.stringify(data));
-  }
-
-  private static isMissingIdempotencyKey(
-    data: Record<string, unknown>
-  ): boolean {
-    if (Array.isArray(data) || typeof data === 'object') {
-      if (data === null) return true;
-      for (const value of Object.values(data)) {
-        if (value) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    return !data;
   }
 
   /**

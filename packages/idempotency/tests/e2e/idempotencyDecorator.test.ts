@@ -22,7 +22,7 @@ import {
   destroyStack,
 } from '../../../commons/tests/utils/cdk-cli';
 import { LEVEL } from '../../../commons/tests/utils/InvocationLogs';
-import { GetCommand } from '@aws-sdk/lib-dynamodb';
+import { GetCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { createHash } from 'node:crypto';
 import { createIdempotencyResources } from '../helpers/idempotencyUtils';
 
@@ -110,6 +110,23 @@ createIdempotencyResources(
   functionNameFails,
   'handlerFails'
 );
+
+const functionNameOptionalIdempotencyKey = generateUniqueName(
+  RESOURCE_NAME_PREFIX,
+  uuid,
+  runtime,
+  'optionalIdempotencyKey'
+);
+const ddbTableNameOptionalIdempotencyKey =
+  stackName + '-optional-idempotencyKey-table';
+createIdempotencyResources(
+  stack,
+  runtime,
+  ddbTableNameOptionalIdempotencyKey,
+  decoratorFunctionFile,
+  functionNameOptionalIdempotencyKey,
+  'handlerWithOptionalIdempoitencyKey'
+);
 describe('Idempotency e2e test decorator, default settings', () => {
   beforeAll(async () => {
     await deployStack(app, stack);
@@ -123,6 +140,7 @@ describe('Idempotency e2e test decorator, default settings', () => {
         .update(JSON.stringify(payload))
         .digest('base64');
 
+      console.log('payloadHash', payloadHash);
       const invocationLogsSequential = await invokeFunction(
         functionNameDefault,
         2,
@@ -281,6 +299,27 @@ describe('Idempotency e2e test decorator, default settings', () => {
       expect(resultSecond?.Item?.data).toEqual('idempotent result: baq');
       expect(resultSecond?.Item?.status).toEqual('COMPLETED');
       expect(resultSecond?.Item?.expiration).toBeGreaterThan(Date.now() / 1000);
+    },
+    TEST_CASE_TIMEOUT
+  );
+
+  test(
+    'when called with a function with optional idempotency key and thorwOnNoIdempotencyKey is false, it does not create ddb entry',
+    async () => {
+      const payload = { foo: 'baz' }; // we set eventKeyJmesPath: 'idempotencyKey' in the idempotency configuration
+      await invokeFunction(
+        functionNameOptionalIdempotencyKey,
+        2,
+        'PARALLEL',
+        payload,
+        false
+      );
+      const result = await ddb.send(
+        new ScanCommand({
+          TableName: ddbTableNameOptionalIdempotencyKey,
+        })
+      );
+      expect(result?.Items).toEqual([]);
     },
     TEST_CASE_TIMEOUT
   );

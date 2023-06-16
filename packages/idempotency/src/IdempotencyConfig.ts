@@ -38,6 +38,8 @@ class IdempotencyConfig {
   /**
    * Throw an error if the idempotency key is not found in the event.
    * In some cases, you may want to allow the request to continue without idempotency.
+   * If set to false and idempotency key is not found, the request will continue without idempotency.
+   * @default false
    */
   public throwOnNoIdempotencyKey: boolean;
   /**

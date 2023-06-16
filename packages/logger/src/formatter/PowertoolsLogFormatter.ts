@@ -20,11 +20,9 @@ class PowertoolsLogFormatter extends LogFormatter {
    */
   public formatAttributes(
     attributes: UnformattedAttributes,
-    persistentLogAttributes: LogAttributes,
     additionalLogAttributes: LogAttributes
   ): LogItem {
     const baseAttributes: PowertoolsLog = {
-      // standard attributes from UnformattedAttributes
       cold_start: attributes.lambdaContext?.coldStart,
       function_arn: attributes.lambdaContext?.invokedFunctionArn,
       function_memory_size: attributes.lambdaContext?.memoryLimitInMB,
@@ -40,7 +38,6 @@ class PowertoolsLogFormatter extends LogFormatter {
 
     const powertoolLogItem = new LogItem({ attributes: baseAttributes });
 
-    powertoolLogItem.addAttributes(persistentLogAttributes);
     powertoolLogItem.addAttributes(additionalLogAttributes);
 
     return powertoolLogItem;

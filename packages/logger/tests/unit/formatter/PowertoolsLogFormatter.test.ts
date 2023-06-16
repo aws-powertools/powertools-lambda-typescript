@@ -29,13 +29,11 @@ describe('Class: PowertoolsLogFormatter', () => {
         timestamp: new Date(),
         message: 'This is a WARN log',
       };
-      const persistentLogAttributes: LogAttributes = {};
       const additionalLogAttributes: LogAttributes = {};
 
       // Act
       const value = formatter.formatAttributes(
         unformattedAttributes,
-        persistentLogAttributes,
         additionalLogAttributes
       );
 
@@ -78,13 +76,11 @@ describe('Class: PowertoolsLogFormatter', () => {
           awsRequestId: 'abcdefg123456789',
         },
       };
-      const persistentLogAttributes: LogAttributes = {};
       const additionalLogAttributes: LogAttributes = {};
 
       // Act
       const value = formatter.formatAttributes(
         unformattedAttributes,
-        persistentLogAttributes,
         additionalLogAttributes
       );
 

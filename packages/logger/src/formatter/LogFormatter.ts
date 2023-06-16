@@ -14,13 +14,11 @@ abstract class LogFormatter implements LogFormatterInterface {
    * It formats key-value pairs of log attributes.
    *
    * @param {UnformattedAttributes} attributes
-   * @param {LogAttributes} persistentLogAttributes
    * @param {LogAttributes} additionalLogAttributes
    * @returns {LogItem}
    */
   public abstract formatAttributes(
     attributes: UnformattedAttributes,
-    persistentLogAttributes: LogAttributes,
     additionalLogAttributes: LogAttributes
   ): LogItem;
 

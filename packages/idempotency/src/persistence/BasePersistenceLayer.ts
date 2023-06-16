@@ -276,6 +276,23 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     return this.generateHash(JSON.stringify(data));
   }
 
+  private static isMissingIdempotencyKey(
+    data: Record<string, unknown>
+  ): boolean {
+    if (Array.isArray(data) || typeof data === 'object') {
+      if (data === null) return true;
+      for (const value of Object.values(data)) {
+        if (value) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    return !data;
+  }
+
   /**
    * Save record to local cache except for when status is `INPROGRESS`.
    *

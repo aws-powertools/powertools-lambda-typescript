@@ -123,3 +123,4 @@ jobs:
         run: |
           aws s3 sync \
             site/ \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-typescript/${{ env.ALIAS }}/

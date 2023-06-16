@@ -140,7 +140,6 @@ describe('Idempotency e2e test decorator, default settings', () => {
         .update(JSON.stringify(payload))
         .digest('base64');
 
-      console.log('payloadHash', payloadHash);
       const invocationLogsSequential = await invokeFunction(
         functionNameDefault,
         2,

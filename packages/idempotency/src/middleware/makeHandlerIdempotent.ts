@@ -2,9 +2,9 @@ import { IdempotencyHandler } from '../IdempotencyHandler';
 import { IdempotencyConfig } from '../IdempotencyConfig';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
 import {
+  IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-  IdempotencyInconsistentStateError,
 } from '../Exceptions';
 import { IdempotencyRecord } from '../persistence';
 import { MAX_RETRIES } from '../constants';
@@ -72,6 +72,7 @@ const makeHandlerIdempotent = (
     request: MiddyLikeRequest,
     retryNo = 0
   ): Promise<unknown | void> => {
+    // skip idempotency
     try {
       await persistenceStore.saveInProgress(
         request.event as Record<string, unknown>,
@@ -125,6 +126,7 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const after = async (request: MiddyLikeRequest): Promise<void> => {
+    // todo skip idempotency
     try {
       await persistenceStore.saveSuccess(
         request.event as Record<string, unknown>,

@@ -1,6 +1,6 @@
 import { LogFormatter } from '.';
 import { LogAttributes, UnformattedAttributes } from '../types';
-import { PowertoolLog } from '../types/formats';
+import { PowertoolsLog } from '../types/formats';
 import { LogItem } from '../log';
 
 /**
@@ -10,13 +10,20 @@ import { LogItem } from '../log';
  * @class
  * @extends {LogFormatter}
  */
-class PowertoolLogFormatter extends LogFormatter {
+class PowertoolsLogFormatter extends LogFormatter {
+  /**
+   * It formats key-value pairs of log attributes.
+   *
+   * @param {UnformattedAttributes} attributes
+   * @param {LogAttributes} additionalLogAttributes
+   * @returns {PowertoolsLog}
+   */
   public formatAttributes(
     attributes: UnformattedAttributes,
     persistentLogAttributes: LogAttributes,
     additionalLogAttributes: LogAttributes
   ): LogItem {
-    const baseAttributes: PowertoolLog = {
+    const baseAttributes: PowertoolsLog = {
       // standard attributes from UnformattedAttributes
       cold_start: attributes.lambdaContext?.coldStart,
       function_arn: attributes.lambdaContext?.invokedFunctionArn,
@@ -38,28 +45,6 @@ class PowertoolLogFormatter extends LogFormatter {
 
     return powertoolLogItem;
   }
-
-  /**
-   * It formats key-value pairs of log attributes.
-   *
-   * @param {UnformattedAttributes} attributes
-   * @returns {PowertoolLog}
-   
-  public formatAttributes(attributes: UnformattedAttributes): PowertoolLog {
-    return {
-      cold_start: attributes.lambdaContext?.coldStart,
-      function_arn: attributes.lambdaContext?.invokedFunctionArn,
-      function_memory_size: attributes.lambdaContext?.memoryLimitInMB,
-      function_name: attributes.lambdaContext?.functionName,
-      function_request_id: attributes.lambdaContext?.awsRequestId,
-      level: attributes.logLevel,
-      message: attributes.message,
-      sampling_rate: attributes.sampleRateValue,
-      service: attributes.serviceName,
-      timestamp: this.formatTimestamp(attributes.timestamp),
-      xray_trace_id: attributes.xRayTraceId,
-    };
-  }*/
 }
 
-export { PowertoolLogFormatter };
+export { PowertoolsLogFormatter };

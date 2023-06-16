@@ -5,7 +5,7 @@
  */
 import { AssertionError, strictEqual } from 'assert';
 import { PowertoolLogFormatter } from '../../../src/formatter';
-import { UnformattedAttributes } from '../../../src/types';
+import { LogAttributes, UnformattedAttributes } from '../../../src/types';
 
 describe('Class: PowertoolLogFormatter', () => {
   const mockDate = new Date(1466424490000);
@@ -29,12 +29,18 @@ describe('Class: PowertoolLogFormatter', () => {
         timestamp: new Date(),
         message: 'This is a WARN log',
       };
+      const persistentLogAttributes: LogAttributes = {};
+      const additionalLogAttributes: LogAttributes = {};
 
       // Act
-      const value = formatter.formatAttributes(unformattedAttributes);
+      const value = formatter.formatAttributes(
+        unformattedAttributes,
+        persistentLogAttributes,
+        additionalLogAttributes
+      );
 
       // Assess
-      expect(value).toEqual({
+      expect(value.getAttributes()).toEqual({
         cold_start: undefined,
         function_arn: undefined,
         function_memory_size: undefined,
@@ -72,12 +78,18 @@ describe('Class: PowertoolLogFormatter', () => {
           awsRequestId: 'abcdefg123456789',
         },
       };
+      const persistentLogAttributes: LogAttributes = {};
+      const additionalLogAttributes: LogAttributes = {};
 
       // Act
-      const value = formatter.formatAttributes(unformattedAttributes);
+      const value = formatter.formatAttributes(
+        unformattedAttributes,
+        persistentLogAttributes,
+        additionalLogAttributes
+      );
 
       // Assess
-      expect(value).toEqual({
+      expect(value.getAttributes()).toEqual({
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
         function_memory_size: 123,

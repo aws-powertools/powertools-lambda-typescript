@@ -1,4 +1,4 @@
-import { isNullOrUndefined, isString } from './utils';
+import { isNullOrUndefined, isRecord, isString } from './utils';
 import { isUint8Array } from 'node:util/types';
 import { fromBase64 } from '@aws-sdk/util-base64-node';
 import { GetOptions } from './GetOptions';
@@ -121,9 +121,14 @@ abstract class BaseProvider implements BaseProviderInterface {
       return this.store.get(key)!.value as Record<string, unknown>;
     }
 
-    let values: Record<string, unknown> = {};
+    let values;
     try {
       values = await this._getMultiple(path, options);
+      if (!isRecord(values)) {
+        throw new GetParameterError(
+          `Expected result to be a Record<string, unknown> but got ${typeof values}`
+        );
+      }
     } catch (error) {
       throw new GetParameterError((error as Error).message);
     }
@@ -186,7 +191,7 @@ abstract class BaseProvider implements BaseProviderInterface {
   protected abstract _getMultiple(
     path: string,
     options?: unknown
-  ): Promise<Record<string, unknown>>;
+  ): Promise<Record<string, unknown> | void>;
 }
 
 /**

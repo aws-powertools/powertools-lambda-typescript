@@ -72,7 +72,7 @@ interface BaseProviderInterface {
   getMultiple(
     path: string,
     options?: GetMultipleOptionsInterface
-  ): Promise<unknown>;
+  ): Promise<unknown | void>;
 }
 
 type JSONPrimitive = string | number | boolean | null | undefined;

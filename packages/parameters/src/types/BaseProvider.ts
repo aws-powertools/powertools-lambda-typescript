@@ -57,7 +57,7 @@ interface ExpirableValueInterface {
   /**
    * Value of the parameter.
    */
-  value: string | Uint8Array | Record<string, unknown>;
+  value: unknown;
   /**
    * Expiration timestamp of the value.
    */
@@ -68,15 +68,17 @@ interface ExpirableValueInterface {
  * Interface for a parameter store provider.
  */
 interface BaseProviderInterface {
-  get(
-    name: string,
-    options?: GetOptionsInterface
-  ): Promise<undefined | string | Uint8Array | Record<string, unknown>>;
+  get(name: string, options?: GetOptionsInterface): Promise<unknown>;
   getMultiple(
     path: string,
     options?: GetMultipleOptionsInterface
-  ): Promise<void | Record<string, unknown>>;
+  ): Promise<unknown>;
 }
+
+type JSONPrimitive = string | number | boolean | null | undefined;
+type JSONValue = JSONPrimitive | JSONObject | JSONArray;
+type JSONObject = { [key: string]: JSONValue };
+type JSONArray = Array<JSONValue>;
 
 export type {
   GetOptionsInterface,
@@ -84,4 +86,8 @@ export type {
   BaseProviderInterface,
   ExpirableValueInterface,
   TransformOptions,
+  JSONPrimitive,
+  JSONValue,
+  JSONObject,
+  JSONArray,
 };

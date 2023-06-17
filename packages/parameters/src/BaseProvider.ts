@@ -1,3 +1,5 @@
+import { isNullOrUndefined, isString } from './utils';
+import { isUint8Array } from 'node:util/types';
 import { fromBase64 } from '@aws-sdk/util-base64-node';
 import { GetOptions } from './GetOptions';
 import { GetMultipleOptions } from './GetMultipleOptions';
@@ -9,6 +11,7 @@ import type {
   BaseProviderInterface,
   GetMultipleOptionsInterface,
   GetOptionsInterface,
+  JSONValue,
   TransformOptions,
 } from './types';
 
@@ -50,11 +53,7 @@ abstract class BaseProvider implements BaseProviderInterface {
    * @param {string | Uint8Array | Record<string, unknown>} value - Value to be cached
    * @param {number} maxAge - Maximum age in seconds for the value to be cached
    */
-  public addToCache(
-    key: string,
-    value: string | Uint8Array | Record<string, unknown>,
-    maxAge: number
-  ): void {
+  public addToCache(key: string, value: unknown, maxAge: number): void {
     if (maxAge <= 0) return;
 
     this.store.set(key, new ExpirableValue(value, maxAge));
@@ -76,32 +75,30 @@ abstract class BaseProvider implements BaseProviderInterface {
   public async get(
     name: string,
     options?: GetOptionsInterface
-  ): Promise<undefined | string | Uint8Array | Record<string, unknown>> {
+  ): Promise<unknown | undefined> {
     const configs = new GetOptions(options, this.envVarsService);
     const key = [name, configs.transform].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
-      // If the code enters in this block, then the key must exist & not have been expired
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return this.store.get(key)!.value;
+      return this.store.get(key)?.value;
     }
 
-    let value;
     try {
-      value = await this._get(name, options);
+      let value = await this._get(name, options);
+
+      if (isNullOrUndefined(value)) return undefined;
+
+      if (configs.transform && (isString(value) || isUint8Array(value))) {
+        value = transformValue(value, configs.transform, true, name);
+      }
+
+      this.addToCache(key, value, configs.maxAge);
+
+      return value;
     } catch (error) {
+      if (error instanceof TransformParameterError) throw error;
       throw new GetParameterError((error as Error).message);
     }
-
-    if (value && configs.transform) {
-      value = transformValue(value, configs.transform, true, name);
-    }
-
-    if (value) {
-      this.addToCache(key, value, configs.maxAge);
-    }
-
-    return value;
   }
 
   /**
@@ -114,7 +111,7 @@ abstract class BaseProvider implements BaseProviderInterface {
   public async getMultiple(
     path: string,
     options?: GetMultipleOptionsInterface
-  ): Promise<undefined | Record<string, unknown>> {
+  ): Promise<unknown> {
     const configs = new GetMultipleOptions(options, this.envVarsService);
     const key = [path, configs.transform].toString();
 
@@ -124,22 +121,34 @@ abstract class BaseProvider implements BaseProviderInterface {
       return this.store.get(key)!.value as Record<string, unknown>;
     }
 
-    let values = {};
+    let values: Record<string, unknown> = {};
     try {
       values = await this._getMultiple(path, options);
     } catch (error) {
       throw new GetParameterError((error as Error).message);
     }
 
-    if (Object.keys(values) && configs.transform) {
-      values = transformValues(
-        values,
-        configs.transform,
-        configs.throwOnTransformError
-      );
+    if (configs.transform) {
+      for (const [entryKey, entryValue] of Object.entries(values)) {
+        if (!(isString(entryValue) || isUint8Array(entryValue))) continue;
+        try {
+          values[entryKey] = transformValue(
+            entryValue,
+            configs.transform,
+            configs.throwOnTransformError,
+            entryKey
+          );
+        } catch (error) {
+          if (configs.throwOnTransformError)
+            throw new TransformParameterError(
+              configs.transform,
+              (error as Error).message
+            );
+        }
+      }
     }
 
-    if (Array.from(Object.keys(values)).length !== 0) {
+    if (Object.keys(values).length !== 0) {
       this.addToCache(key, values, configs.maxAge);
     }
 
@@ -166,10 +175,7 @@ abstract class BaseProvider implements BaseProviderInterface {
    * @param {string} name - Parameter name
    * @param {unknown} options - Options to pass to the underlying implemented method
    */
-  protected abstract _get(
-    name: string,
-    options?: unknown
-  ): Promise<string | Uint8Array | undefined>;
+  protected abstract _get(name: string, options?: unknown): Promise<unknown>;
 
   /**
    * Retrieve multiple parameter values from the underlying parameter store.
@@ -180,7 +186,7 @@ abstract class BaseProvider implements BaseProviderInterface {
   protected abstract _getMultiple(
     path: string,
     options?: unknown
-  ): Promise<Record<string, string | undefined>>;
+  ): Promise<Record<string, unknown>>;
 }
 
 /**
@@ -188,37 +194,37 @@ abstract class BaseProvider implements BaseProviderInterface {
  *
  * It supports JSON and binary transformations, as well as an 'auto' mode that will try to transform the value based on the key.
  *
- * @param {string | Uint8Array | undefined} value - Value to be transformed
+ * @param {string | Uint8Array} value - Value to be transformed
  * @param {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'
  * @param {boolean} throwOnTransformError - Whether to throw an error if the transformation fails, when transforming multiple values this can be set to false
  * @param {string} key - Key of the value to be transformed, used to determine the transformation method when using 'auto'
  */
 const transformValue = (
-  value: string | Uint8Array | undefined,
+  value: string | Uint8Array,
   transform: TransformOptions,
   throwOnTransformError: boolean,
   key: string
-): string | Record<string, unknown> | undefined => {
+): string | JSONValue | Uint8Array | undefined => {
   try {
     const normalizedTransform = transform.toLowerCase();
-
-    if (value instanceof Uint8Array) {
-      value = new TextDecoder('utf-8').decode(value);
-    }
 
     if (
       (normalizedTransform === TRANSFORM_METHOD_JSON ||
         (normalizedTransform === 'auto' &&
           key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_JSON}`))) &&
-      typeof value === 'string'
+      isString(value)
     ) {
-      return JSON.parse(value) as Record<string, unknown>;
+      return JSON.parse(value) as JSONValue;
     } else if (
       (normalizedTransform === TRANSFORM_METHOD_BINARY ||
         (normalizedTransform === 'auto' &&
           key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_BINARY}`))) &&
-      typeof value === 'string'
+      (isString(value) || isUint8Array(value))
     ) {
+      if (value instanceof Uint8Array) {
+        value = new TextDecoder('utf-8').decode(value);
+      }
+
       return new TextDecoder('utf-8').decode(fromBase64(value));
     } else {
       return value;
@@ -229,41 +235,6 @@ const transformValue = (
 
     return;
   }
-};
-
-/**
- * Utility function to transform multiple values.
- *
- * It iterates over the values and applies the transformation to each one by calling the `transformValue` function.
- *
- * @param {Record<string, string | undefined>} value - Values to be transformed
- * @param {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'
- * @param {boolean} throwOnTransformError - Whether to throw an error if the transformation fails, when transforming multiple values this can be set to false
- */
-const transformValues = (
-  value: Record<string, string | undefined>,
-  transform: TransformOptions,
-  throwOnTransformError: boolean
-): Record<string, string | Record<string, unknown> | undefined> => {
-  const transformedValues: Record<
-    string,
-    string | Record<string, unknown> | undefined
-  > = {};
-  for (const [entryKey, entryValue] of Object.entries(value)) {
-    try {
-      transformedValues[entryKey] = transformValue(
-        entryValue,
-        transform,
-        throwOnTransformError,
-        entryKey
-      );
-    } catch (error) {
-      if (throwOnTransformError)
-        throw new TransformParameterError(transform, (error as Error).message);
-    }
-  }
-
-  return transformedValues;
 };
 
 /**

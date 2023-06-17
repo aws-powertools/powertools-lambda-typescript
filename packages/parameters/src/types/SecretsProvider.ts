@@ -1,4 +1,8 @@
-import type { GetOptionsInterface, TransformOptions } from './BaseProvider';
+import type {
+  GetOptionsInterface,
+  JSONValue,
+  TransformOptions,
+} from './BaseProvider';
 import type {
   SecretsManagerClient,
   SecretsManagerClientConfig,
@@ -34,8 +38,8 @@ interface SecretsProviderOptionsWithClientInstance {
  * Options for the SecretsProvider class constructor.
  *
  * @type SecretsProviderOptions
- * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
- * @property {AppConfigDataClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during SecretsProvider class instantiation. Mutually exclusive with clientConfig.
+ * @property {SecretsManagerClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
+ * @property {SecretsManagerClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during SecretsProvider class instantiation. Mutually exclusive with clientConfig.
  */
 type SecretsProviderOptions =
   | SecretsProviderOptionsWithClientConfig
@@ -51,27 +55,27 @@ type SecretsProviderOptions =
  * @property {GetSecretValueCommandInput} sdkOptions - Options to pass to the underlying SDK.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  */
-interface SecretsGetOptions extends GetOptionsInterface {
+interface SecretsGetOptionsBase extends GetOptionsInterface {
   /**
-   * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetSecretValueCommandInput`.
+   * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetSecretValueCommandInput` except `SecretId`.
    */
   sdkOptions?: Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>;
   transform?: Exclude<TransformOptions, 'auto'>;
 }
 
-interface SecretsGetOptionsTransformJson extends SecretsGetOptions {
+interface SecretsGetOptionsTransformJson extends SecretsGetOptionsBase {
   transform: 'json';
 }
 
-interface SecretsGetOptionsTransformBinary extends SecretsGetOptions {
+interface SecretsGetOptionsTransformBinary extends SecretsGetOptionsBase {
   transform: 'binary';
 }
 
-interface SecretsGetOptionsTransformNone extends SecretsGetOptions {
+interface SecretsGetOptionsTransformNone extends SecretsGetOptionsBase {
   transform?: never;
 }
 
-type SecretsGetOptionsUnion =
+type SecretsGetOptions =
   | SecretsGetOptionsTransformNone
   | SecretsGetOptionsTransformJson
   | SecretsGetOptionsTransformBinary
@@ -91,13 +95,8 @@ type SecretsGetOutput<
     : InferredFromOptionsType extends SecretsGetOptionsTransformBinary
     ? string
     : InferredFromOptionsType extends SecretsGetOptionsTransformJson
-    ? Record<string, unknown>
+    ? JSONValue
     : never
   : ExplicitUserProvidedType;
 
-export type {
-  SecretsProviderOptions,
-  SecretsGetOptions,
-  SecretsGetOutput,
-  SecretsGetOptionsUnion,
-};
+export type { SecretsProviderOptions, SecretsGetOptions, SecretsGetOutput };

@@ -85,21 +85,6 @@ jobs:
         run: |
           rm -rf api
           npm run docs-generateApiDoc
-      - name: Release API docs
-        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./api
-          keep_files: true
-          destination_dir: ${{ env.VERSION }}/api
-      - name: Release API docs to latest
-        if: ${{ inputs.alias == 'latest' }}
-        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./api
-          keep_files: true
-          destination_dir: latest/api
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef # v2.0.0
         with:

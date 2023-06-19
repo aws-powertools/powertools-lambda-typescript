@@ -56,7 +56,7 @@ export class MyFunctionBase {
         })
       );
       await axios.get(
-        'https://awslabs.github.io/aws-lambda-powertools-typescript/latest/',
+        'https://docs.powertools.aws.dev/lambda-typescript/latest/',
         { timeout: 5000 }
       );
 

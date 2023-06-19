@@ -234,7 +234,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript DynamoDB client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/dynamodbclient.html).
  *
- * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  */
 class DynamoDBProvider extends BaseProvider {
   public client: DynamoDBClient;
@@ -295,7 +295,7 @@ class DynamoDBProvider extends BaseProvider {
    *
    * @param {string} name - The name of the value to retrieve (i.e. the partition key)
    * @param {DynamoDBGetOptionsInterface} options - Options to configure the provider
-   * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async get(
     name: string,
@@ -334,7 +334,7 @@ class DynamoDBProvider extends BaseProvider {
    *
    * @param {string} path - The path of the values to retrieve (i.e. the partition key)
    * @param {DynamoDBGetMultipleOptionsInterface} options - Options to configure the provider
-   * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async getMultiple(
     path: string,

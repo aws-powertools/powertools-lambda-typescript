@@ -18,7 +18,7 @@ import { default as request } from 'phin';
  * This example uses the Middy middleware instrumentation.
  * It is the best choice if your existing code base relies on the Middy middleware engine.
  * Powertools for AWS Lambda (TypeScript) offers compatible Middy middleware to make this integration seamless.
- * Find more Information in the docs: https://awslabs.github.io/aws-lambda-powertools-typescript/
+ * Find more Information in the docs: https://docs.powertools.aws.dev/lambda-typescript/
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
  * @param {Object} event - API Gateway Lambda Proxy Input Format

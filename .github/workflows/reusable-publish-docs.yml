@@ -2,7 +2,7 @@ name: Reusable Publish docs
 
 env:
   BRANCH: main
-  ORIGIN: awslabs/aws-lambda-powertools-typescript
+  ORIGIN: aws-powertools/powertools-lambda-typescript
   VERSION: ""
 
 on:

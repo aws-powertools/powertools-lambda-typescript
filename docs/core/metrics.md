@@ -377,7 +377,7 @@ If it's a cold start invocation, this feature will:
 
 This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
 
-!!! info "We do not emit 0 as a value for the ColdStart metric for cost-efficiency reasons. [Let us know](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd prefer a flag to override it."
+!!! info "We do not emit 0 as a value for the ColdStart metric for cost-efficiency reasons. [Let us know](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd prefer a flag to override it."
 
 ## Advanced
 

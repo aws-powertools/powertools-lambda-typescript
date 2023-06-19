@@ -31,7 +31,7 @@ module.exports = Object.freeze({
   "LABEL_RELEASED": "status/completed",
 
   /** @type {string} */
-  "HANDLE_MAINTAINERS_TEAM": "@awslabs/aws-lambda-powertools-typescript",
+  "HANDLE_MAINTAINERS_TEAM": "@aws-powertools/lambda-typescript",
 
   /** @type {string[]} */
   "IGNORE_AUTHORS": ["dependabot[bot]"],

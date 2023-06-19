@@ -78,9 +78,9 @@ jobs:
         run: |
           rm -rf site
           mkdocs build
-          mike deploy --push --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }}
+          mike deploy --push --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }} --branch backup-gh-pages
           # Set latest version as a default
-          mike set-default --push latest
+          mike set-default --push latest --branch backup-gh-pages
       - name: Build API docs
         run: |
           rm -rf api
@@ -92,6 +92,7 @@ jobs:
           publish_dir: ./api
           keep_files: true
           destination_dir: ${{ env.VERSION }}/api
+          publish_branch: 'backup-gh-pages'
       - name: Release API docs to latest
         if: ${{ inputs.alias == 'latest' }}
         uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
@@ -100,6 +101,7 @@ jobs:
           publish_dir: ./api
           keep_files: true
           destination_dir: latest/api
+          publish_branch: 'backup-gh-pages'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef # v2.0.0
         with:

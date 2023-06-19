@@ -34,16 +34,15 @@ jobs:
         uses: ./.github/actions/cached-node-modules
       - name: Version
         run: |
-          npm run version
-          git push --tags
+          npx lerna version --conventional-commits --force-publish --no-commit-hooks --yes
       - name: Publish to npm
         run: |
           npx lerna publish from-git --yes
       - name: Set release version
         id: set-release-version
         run: |
-          RELEASE=$(npm view  @aws-lambda-powertools/tracer version)
-          echo RELEASE_VERSION="$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          VERSION=$(cat lerna.json | jq .version -r)
+          echo RELEASE_VERSION="$VERSION" >> "$GITHUB_OUTPUT"
 
   # NOTE: Watch out for the depth limit of 4 nested workflow_calls.
   # publish_layer -> reusable_deploy_layer_stack -> reusable_update_layer_arn_docs

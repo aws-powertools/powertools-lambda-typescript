@@ -152,7 +152,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
         const invocationSubsegment = getInvocationSubsegment(trace);
 
         /**
-         * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Powertools Tracer)
+         * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Tracer)
          * '## index.handler' subsegment should have 2 subsegments
          * 1. DynamoDB (PutItem on the table)
          * 2. awslabs.github.io (Remote call)

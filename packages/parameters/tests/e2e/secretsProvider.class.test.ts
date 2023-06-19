@@ -118,7 +118,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
       'testSecretPlainForceFetch'
     );
 
-    // creates the test fuction that uses powertools secret provider we want to test
+    // creates the test fuction that uses Powertools for AWS Lambda (TypeScript) secret provider we want to test
     // pass env vars with secret names we want to fetch
     stack = createStackWithLambdaFunction({
       app: integTestApp,

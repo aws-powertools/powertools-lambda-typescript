@@ -1,0 +1,23 @@
+{
+  "entryPoints": ["packages/*"],
+  "entryPointStrategy": "packages",
+  "name": "Powertools for AWS Lambda (Typescript) API Reference",
+  "readme": "README.md",
+  "out": "api",
+  "exclude": [
+    "**/node_modules/**",
+    "**/*.test.ts",
+    "**/*.json",
+    "docs/snippets",
+    "layers",
+    "examples/**"
+  ],
+  "skipErrorChecking": true,
+  "excludePrivate": true,
+  "visibilityFilters": {
+    "protected": true,
+    "private": false,
+    "inherited": true,
+    "external": true
+  }
+}

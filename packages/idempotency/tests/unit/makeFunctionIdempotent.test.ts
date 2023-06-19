@@ -3,9 +3,9 @@
  *
  * @group unit/idempotency/makeFunctionIdempotent
  */
-import { IdempotencyFunctionOptions } from '../../src/types/IdempotencyOptions';
+import { IdempotencyFunctionOptions } from '../../src/types/';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
-import { makeFunctionIdempotent } from '../../src/makeFunctionIdempotent';
+import { makeFunctionIdempotent } from '../../src';
 import type {
   AnyIdempotentFunction,
   IdempotencyRecordOptions,

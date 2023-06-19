@@ -388,6 +388,40 @@ The error will be logged with default key name `error`, but you can also pass yo
 
 ## Advanced
 
+### Log levels
+
+The default log level is `INFO` and can be set using the `logLevel` constructor option or by using the `LOG_LEVEL` environment variable.
+
+Logger supports the following log levels:
+
+| Level      | Numeric value |
+| ---------- | ------------- |
+| `DEBUG`    | 8             |
+| `INFO`     | 12            |
+| `WARN`     | 16            |
+| `ERROR`    | 20            |
+| `CRITICAL` | 24            |
+| `SILENT`   | 28            |
+
+You can access the current log level by using the `getLevelName()` method. This method returns the name of the current log level as a string. If you want to change the log level at runtime, you can use the `setLogLevel()` method. This method accepts a string value that represents the log level you want to set, both lower and upper case values are supported.
+
+```typescript
+--8<-- "docs/snippets/logger/logLevel.ts"
+```
+
+If you want to access the numeric value of the current log level, you can use the `level` property. For example, if the current log level is `INFO`, `logger.level` property will return `12`.
+
+#### Silencing logs
+
+The `SILENT` log level provides a simple and efficient way to suppress all log messages without the need to modify your code. When you set this log level, all log messages, regardless of their severity, will be silenced.
+
+This feature is useful when you want to have your code instrumented to produce logs, but due to some requirement or business decision, you prefer to not emit them.
+
+By setting the log level to `SILENT`, which can be done either through the `logLevel` constructor option or by using the `LOG_LEVEL` environment variable, you can easily suppress all logs as needed.
+
+!!! note
+    Use the `SILENT` log level with care, as it can make it more challenging to monitor and debug your application. Therefore, we advise using this log level judiciously.
+
 ### Using multiple Logger instances across your code
 
 The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [persistent attributes](#appending-persistent-additional-log-keys-and-values), and [the log formatter](#custom-log-formatter-bring-your-own-formatter). Once a child logger is created, the logger and its parent will act as separate instances of the Logger class, and as such any change to one won't be applied to the other. 
@@ -555,17 +589,6 @@ For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda i
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
-
-### Silencing logs
-
-The `SILENT` log level provides a simple and efficient way to suppress all log messages without the need to modify your code. When you set this log level, all log messages, regardless of their severity, will be silenced.
-
-This feature is useful when you want to have your code instrumented to produce logs, but due to some requirement or business decision, you prefer to not emit them.
-
-By setting the log level to `SILENT`, which can be done either through the `logLevel` constructor option  or by using the `LOG_LEVEL` environment variable, you can easily suppress all logs as needed.
-
-!!! note
-    Use the `SILENT` log level with care, as it can make it more challenging to monitor and debug your application. Therefore, we advise using this log level judiciously.
 
 ### Custom Log formatter (Bring Your Own Formatter)
 

@@ -39,8 +39,8 @@ interface DynamoPersistenceOptionsBaseInterface {
  */
 interface DynamoPersistenceOptionsWithClientConfig
   extends DynamoPersistenceOptionsBaseInterface {
-  clientConfig?: DynamoDBClientConfig;
   awsSdkV3Client?: never;
+  clientConfig?: DynamoDBClientConfig;
 }
 
 /**
@@ -58,9 +58,9 @@ interface DynamoPersistenceOptionsWithClientInstance
 }
 
 /**
- * Options for the AppConfigProvider class constructor.
+ * Options for the {@link DynamoDBPersistenceLayer} class constructor.
  *
- * @type AppConfigProviderOptions
+ * @type DynamoPersistenceOptions
  * @property {string} tableName - The DynamoDB table name.
  * @property {string} [keyAttr] - The DynamoDB table key attribute name. Defaults to 'id'.
  * @property {string} [expiryAttr] - The DynamoDB table expiry attribute name. Defaults to 'expiration'.

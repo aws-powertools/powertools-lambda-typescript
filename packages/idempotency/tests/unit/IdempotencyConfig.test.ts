@@ -4,7 +4,7 @@
  * @group unit/idempotency/config
  */
 import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
-import { IdempotencyConfig } from '../../src/IdempotencyConfig';
+import { IdempotencyConfig } from '../../src';
 import type { IdempotencyConfigOptions } from '../../src/types';
 
 describe('Class: IdempotencyConfig', () => {

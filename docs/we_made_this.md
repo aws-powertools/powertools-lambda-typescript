@@ -1,6 +1,6 @@
 ---
 title: We Made This (Community)
-description: Blog posts, tutorials, and videos about AWS Lambda Powertools created by the Powertools Community.
+description: Blog posts, tutorials, and videos about Powertools for AWS Lambda (TypeScript) created by the Powertools Community.
 ---
 
 This space is dedicated to highlight our awesome community content featuring Powertools 🙏!

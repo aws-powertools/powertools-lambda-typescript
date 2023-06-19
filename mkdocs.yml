@@ -1,7 +1,7 @@
 site_name: Powertools for AWS Lambda (TypeScript)
 site_description: Powertools for AWS Lambda (TypeScript)
 site_author: Amazon Web Services
-repo_url: https://github.com/awslabs/aws-lambda-powertools-typescript
+repo_url: https://github.com/aws-powertools/powertools-lambda-typescript
 edit_uri: edit/main/docs
 
 nav:
@@ -99,7 +99,7 @@ extra:
     default: latest
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/awslabs/aws-lambda-powertools-typescript
+      link: https://github.com/aws-powertools/powertools-lambda-typescript
     - icon: fontawesome/brands/discord
       link: https://discord.gg/B8zZKbbyET
       name: Join our Discord Server!

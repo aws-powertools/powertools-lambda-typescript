@@ -2,7 +2,7 @@ name: Reusable Publish docs
 
 env:
   BRANCH: main
-  ORIGIN: awslabs/aws-lambda-powertools-typescript
+  ORIGIN: aws-powertools/powertools-lambda-typescript
   VERSION: ""
 
 on:
@@ -123,3 +123,4 @@ jobs:
         run: |
           aws s3 sync \
             site/ \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-typescript/${{ env.ALIAS }}/

@@ -48,7 +48,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     this.statusAttr = config.statusAttr ?? 'status';
     this.expiryAttr = config.expiryAttr ?? 'expiration';
     this.inProgressExpiryAttr =
-      config.inProgressExpiryAttr ?? 'in_progress_expiry_attr';
+      config.inProgressExpiryAttr ?? 'in_progress_expiration';
     this.dataAttr = config.dataAttr ?? 'data';
     this.validationKeyAttr = config.validationKeyAttr ?? 'validation';
     if (config.sortKeyAttr === this.keyAttr) {
@@ -106,6 +106,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       expiryTimestamp: item[this.expiryAttr],
       inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
       responseData: item[this.dataAttr],
+      payloadHash: item[this.validationKeyAttr],
     });
   }
 

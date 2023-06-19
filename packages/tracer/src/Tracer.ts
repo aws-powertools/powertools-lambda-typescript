@@ -31,7 +31,7 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
  *
  * ## Usage
  *
- * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/core/tracer/).
  *
  * ### Functions usage with middleware
  *
@@ -289,7 +289,7 @@ class Tracer extends Utility implements TracerInterface {
       try {
         // This is needed because some aws-sdk clients like AWS.DynamoDB.DocumentDB don't comply with the same
         // instrumentation contract like most base clients.
-        // For detailed explanation see: https://github.com/awslabs/aws-lambda-powertools-typescript/issues/524#issuecomment-1024493662
+        // For detailed explanation see: https://github.com/aws-powertools/powertools-lambda-typescript/issues/524#issuecomment-1024493662
         this.provider.captureAWSClient((service as T & { service: T }).service);
 
         return service;
@@ -542,7 +542,7 @@ class Tracer extends Utility implements TracerInterface {
    * Usually you won't need to call this method unless you are creating custom subsegments or using manual mode.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-segments
-   * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/tracer/#escape-hatch-mechanism
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/core/tracer/#escape-hatch-mechanism
    *
    * @example
    * ```typescript

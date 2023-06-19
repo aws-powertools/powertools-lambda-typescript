@@ -7,15 +7,16 @@ const {
   HANDLE_MAINTAINERS_TEAM,
   PR_IS_MERGED,
   RELATED_ISSUE_REGEX,
-} = require("./constants");
+  LABEL_RELEASED,
+} = require('./constants');
 
 module.exports = async ({ github, context, core }) => {
   if (IGNORE_AUTHORS.includes(PR_AUTHOR)) {
-    return core.notice("Author in IGNORE_AUTHORS list; skipping...");
+    return core.notice('Author in IGNORE_AUTHORS list; skipping...');
   }
 
-  if (PR_IS_MERGED == "false") {
-    return core.notice("Only merged PRs to avoid spam; skipping");
+  if (PR_IS_MERGED == 'false') {
+    return core.notice('Only merged PRs to avoid spam; skipping');
   }
 
   const isMatch = RELATED_ISSUE_REGEX.exec(PR_BODY);
@@ -60,22 +61,28 @@ module.exports = async ({ github, context, core }) => {
   /**
    * Keep all labels except those that start with 'status/' or 'need-' or equal to 'help-wanted'
    * as those are contextual to issues still in progress.
+   *
+   * If the issue was already marked with the 'status/completed' label, then we'll keep that, otherwise
+   * we'll add the 'status/pending-release' label.
    */
+  let hasCompletedLabel = false;
   const newLabels = currentLabels.data
-    .filter(
-      (label) =>
-        !label.name.startsWith("status/") &&
-        !label.name.startsWith("need-") &&
-        label.name !== "help-wanted"
-    )
+    .filter((label) => {
+      if (label.name === LABEL_RELEASED) {
+        hasCompletedLabel = true;
+      }
+      return (
+        !label.name.startsWith('status/') &&
+        !label.name.startsWith('need-') &&
+        label.name !== 'help-wanted'
+      );
+    })
     .map((label) => label.name);
-  // Add the status/pending-release label
-  newLabels.push(LABEL_PENDING_RELEASE);
+  // Add the status/pending-release or status/completed label
+  newLabels.push(hasCompletedLabel ? LABEL_RELEASED : LABEL_PENDING_RELEASE);
 
   try {
-    core.info(
-      `Auto-labeling related issue ${issue} for release while removing 'status/*' and 'need-*' labels`
-    );
+    core.info(`Auto-labeling related issue ${issue} completed`);
     return await github.rest.issues.setLabels({
       issue_number: issue,
       owner: context.repo.owner,

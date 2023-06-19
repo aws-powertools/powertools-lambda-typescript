@@ -48,9 +48,9 @@ body:
     attributes:
       label: Acknowledgment
       options:
-        - label: This request meets [Powertools for AWS Lambda (TypeScript) Tenets](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets)
+        - label: This request meets [Powertools for AWS Lambda (TypeScript) Tenets](https://docs.powertools.aws.dev/lambda-typescript/latest/#tenets)
           required: true
-        - label: Should this be considered in other Powertools for AWS Lambda languages? i.e. [Python](https://github.com/awslabs/aws-lambda-powertools-python/), [Java](https://github.com/awslabs/aws-lambda-powertools-java/), and [.NET](https://github.com/awslabs/aws-lambda-powertools-dotnet/)
+        - label: Should this be considered in other Powertools for AWS Lambda languages? i.e. [Python](https://github.com/aws-powertools/powertools-lambda-python/), [Java](https://github.com/aws-powertools/powertools-lambda-java/), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet/)
           required: false
   - type: markdown
     attributes:

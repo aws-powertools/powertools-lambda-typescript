@@ -1,6 +1,6 @@
 <!--- 
 Instructions:
-1. Make sure you follow our Contributing Guidelines: https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/CONTRIBUTING.md
+1. Make sure you follow our Contributing Guidelines: https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md
 2. Please follow the template, and do not remove any section/item. If something is not applicable leave it empty, but leave it in the PR. 
 3. -->
 
@@ -28,13 +28,13 @@ Note: If no issue is present the PR might get blocked and not be reviewed.
 
 ## Checklist
 
-- [ ] [My changes meet the tenets criteria](https://awslabs.github.io/aws-lambda-powertools-typescript/#tenets)
+- [ ] [My changes meet the tenets criteria](https://docs.powertools.aws.dev/lambda-typescript/#tenets)
 - [ ] I have performed a *self-review* of my own code
 - [ ] I have *commented* my code where necessary, particularly in areas that should be flagged with a TODO, or hard-to-understand areas
 - [ ] I have made corresponding changes to the *documentation*
 - [ ] My changes generate *no new warnings*
 - [ ] I have *added tests* that prove my change is effective and works
-- [ ] The PR title follows the [conventional commit semantics](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/.github/semantic.yml#L2)
+- [ ] The PR title follows the [conventional commit semantics](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/semantic.yml#L2)
 
 ### Breaking change checklist
 

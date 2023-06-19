@@ -5,8 +5,8 @@
  */
 
 import path from 'path';
-import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
-import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { XRayClient } from '@aws-sdk/client-xray';
 import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
@@ -15,13 +15,13 @@ import {
   destroyStack,
 } from '../../../commons/tests/utils/cdk-cli';
 import {
-  getTraces,
-  getInvocationSubsegment,
-  splitSegmentsByName,
-  invokeAllTestCases,
   createTracerTestFunction,
-  getFunctionArn,
   getFirstSubsegment,
+  getFunctionArn,
+  getInvocationSubsegment,
+  getTraces,
+  invokeAllTestCases,
+  splitSegmentsByName,
 } from '../helpers/tracesUtils';
 import type { ParsedTrace } from '../helpers/traceUtils.types';
 import {
@@ -29,20 +29,20 @@ import {
   isValidRuntimeKey,
 } from '../../../commons/tests/utils/e2eUtils';
 import {
+  expectedCustomAnnotationKey,
+  expectedCustomAnnotationValue,
+  expectedCustomErrorMessage,
+  expectedCustomMetadataKey,
+  expectedCustomMetadataValue,
+  expectedCustomResponseValue,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-  expectedCustomAnnotationKey,
-  expectedCustomAnnotationValue,
-  expectedCustomMetadataKey,
-  expectedCustomMetadataValue,
-  expectedCustomResponseValue,
-  expectedCustomErrorMessage,
 } from './constants';
 import {
-  assertErrorAndFault,
   assertAnnotation,
+  assertErrorAndFault,
 } from '../helpers/traceAssertions';
 
 const runtime: string = process.env.RUNTIME || 'nodejs18x';

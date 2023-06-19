@@ -2,25 +2,25 @@ import promiseRetry from 'promise-retry';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Duration } from 'aws-cdk-lib';
 import { Architecture, Tracing } from 'aws-cdk-lib/aws-lambda';
-import {
-  GetTraceSummariesCommand,
-  BatchGetTracesCommand,
-} from '@aws-sdk/client-xray';
 import type { XRayClient } from '@aws-sdk/client-xray';
+import {
+  BatchGetTracesCommand,
+  GetTraceSummariesCommand,
+} from '@aws-sdk/client-xray';
 import type { STSClient } from '@aws-sdk/client-sts';
 import { GetCallerIdentityCommand } from '@aws-sdk/client-sts';
 import {
   expectedCustomAnnotationKey,
   expectedCustomAnnotationValue,
+  expectedCustomErrorMessage,
   expectedCustomMetadataKey,
   expectedCustomMetadataValue,
   expectedCustomResponseValue,
-  expectedCustomErrorMessage,
 } from '../e2e/constants';
 import {
   invokeFunction,
-  TestRuntimesKey,
   TEST_RUNTIMES,
+  TestRuntimesKey,
 } from '../../../commons/tests/utils/e2eUtils';
 import { FunctionSegmentNotDefinedError } from './FunctionSegmentNotDefinedError';
 import type {
@@ -229,18 +229,36 @@ const splitSegmentsByName = (
  * @param functionName
  */
 const invokeAllTestCases = async (functionName: string): Promise<void> => {
-  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
-    invocation: 1,
-    throw: false,
-  });
-  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
-    invocation: 2,
-    throw: false,
-  });
-  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
-    invocation: 3,
-    throw: true, // only last invocation should throw
-  });
+  await invokeFunction(
+    functionName,
+    1,
+    'SEQUENTIAL',
+    {
+      invocation: 1,
+      throw: false,
+    },
+    false
+  );
+  await invokeFunction(
+    functionName,
+    1,
+    'SEQUENTIAL',
+    {
+      invocation: 2,
+      throw: false,
+    },
+    false
+  );
+  await invokeFunction(
+    functionName,
+    1,
+    'SEQUENTIAL',
+    {
+      invocation: 3,
+      throw: true, // only last invocation should throw
+    },
+    false
+  );
 };
 
 const createTracerTestFunction = (

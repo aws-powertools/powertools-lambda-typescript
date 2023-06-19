@@ -91,10 +91,7 @@ export const invokeFunction = async (
 ): Promise<InvocationLogs[]> => {
   const invocationLogs: InvocationLogs[] = [];
 
-  const promiseFactory = (
-    index?: number,
-    includeIndex = true
-  ): Promise<void> => {
+  const promiseFactory = (index?: number): Promise<void> => {
     // in some cases we need to send a payload without the index, i.e. idempotency tests
     const payloadToSend = includeIndex
       ? { invocation: index, ...payload }
@@ -125,9 +122,7 @@ export const invokeFunction = async (
 
   const invocation =
     invocationMode == 'PARALLEL'
-      ? Promise.all(
-          promiseFactories.map((factory, index) => factory(index, includeIndex))
-        )
+      ? Promise.all(promiseFactories.map((factory, index) => factory(index)))
       : chainPromises(promiseFactories);
   await invocation;
 
@@ -135,11 +130,11 @@ export const invokeFunction = async (
 };
 
 const chainPromises = async (
-  promiseFactories: ((
-    index?: number,
-    includeIndex?: boolean
-  ) => Promise<void>)[]
+  promiseFactories: ((index?: number) => Promise<void>)[]
 ): Promise<void> => {
+  for (const promiseToCall of promiseFactories) {
+    await promiseToCall();
+  }
   for (let index = 0; index < promiseFactories.length; index++) {
     await promiseFactories[index](index);
   }

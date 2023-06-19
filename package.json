@@ -19,6 +19,7 @@
   "scripts": {
     "init-environment": "husky install",
     "test": "npm t -ws",
+    "test:e2e": "npm run test:e2e -ws",
     "commit": "commit",
     "package": "npm run package -ws",
     "setup-local": "npm ci --foreground-scripts && npm run init-environment",

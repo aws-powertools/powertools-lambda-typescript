@@ -22,7 +22,6 @@ import type {
   SSMGetOptions,
   SSMGetOutput,
   SSMGetMultipleOptions,
-  SSMGetMultipleOptionsUnion,
   SSMGetMultipleOutput,
   SSMGetParametersByNameOutput,
   SSMGetParametersByNameOutputInterface,
@@ -371,7 +370,7 @@ class SSMProvider extends BaseProvider {
   public async getMultiple<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
-      | SSMGetMultipleOptionsUnion
+      | SSMGetMultipleOptions
       | undefined = undefined
   >(
     path: string,

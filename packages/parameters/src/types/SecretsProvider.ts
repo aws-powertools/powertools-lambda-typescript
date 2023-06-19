@@ -88,9 +88,7 @@ type SecretsGetOutput<
   ExplicitUserProvidedType = undefined,
   InferredFromOptionsType = undefined
 > = undefined extends ExplicitUserProvidedType
-  ? undefined extends InferredFromOptionsType
-    ? string | Uint8Array
-    : InferredFromOptionsType extends SecretsGetOptionsTransformNone
+  ? undefined extends InferredFromOptionsType | SecretsGetOptionsTransformNone
     ? string | Uint8Array
     : InferredFromOptionsType extends SecretsGetOptionsTransformBinary
     ? string

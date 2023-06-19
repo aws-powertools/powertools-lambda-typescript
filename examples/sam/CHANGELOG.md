@@ -11,7 +11,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package sam-example
 
-# [1.7.0](https://github.com/aws-powertools/lambda-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
+# [1.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
 
 **Note:** Version bump only for package sam-example
 
@@ -45,7 +45,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - Revert "chore(release): v1.3.0 [skip ci]" ([237b99f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/237b99f9f6eff5e6e26d779603cf13cd4422c156))
 
-## [1.2.1](https://github.com/aws-powertools/lambda-typescript/compare/v1.2.0...v1.2.1) (2022-08-25)
+## [1.2.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.2.0...v1.2.1) (2022-08-25)
 
 **Note:** Version bump only for package powertools-typescript-sam-example
 
@@ -80,7 +80,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Revert "chore(release): v0.12.0-rc.0 [skip ci]" ([9397f1d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9397f1d3624eb0bfbeb5e4c2702ae51e558a5b4a))
 - Revert "chore(release): v0.12.0-rc.0 [skip ci]" (#1017) ([51c18da](https://github.com/aws-powertools/powertools-lambda-typescript/commit/51c18da20db434f8b12f320e5074e3e0a146046e)), closes [#1017](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1017)
 
-## [0.11.1-rc.0](https://github.com/aws-powertools/lambda-typescript/compare/v0.11.0...v0.11.1-rc.0) (2022-06-24)
+## [0.11.1-rc.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.11.0...v0.11.1-rc.0) (2022-06-24)
 
 **Note:** Version bump only for package powertools-typescript-sam-example
 
@@ -94,7 +94,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **all:** nodejs16x support ([#877](https://github.com/aws-powertools/powertools-lambda-typescript/issues/877)) ([d2b13c9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d2b13c945adb1a74b7c5f76d45f28a6979ce6429))
 
-## [0.9.1](https://github.com/aws-powertools/lambda-typescript/compare/v0.9.0...v0.9.1) (2022-05-24)
+## [0.9.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.9.0...v0.9.1) (2022-05-24)
 
 **Note:** Version bump only for package powertools-typescript-sam-example
 

@@ -289,7 +289,7 @@ class Tracer extends Utility implements TracerInterface {
       try {
         // This is needed because some aws-sdk clients like AWS.DynamoDB.DocumentDB don't comply with the same
         // instrumentation contract like most base clients.
-        // For detailed explanation see: https://github.com/aws-powertools/lambda-typescript/issues/524#issuecomment-1024493662
+        // For detailed explanation see: https://github.com/aws-powertools/powertools-lambda-typescript/issues/524#issuecomment-1024493662
         this.provider.captureAWSClient((service as T & { service: T }).service);
 
         return service;

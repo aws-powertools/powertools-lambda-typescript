@@ -146,7 +146,7 @@ export const handler = async (
 
 ## Contribute
 
-If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/aws-powertools/lambda-typescript/blob/main/CONTRIBUTING.md).
+If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md).
 
 ## Roadmap
 

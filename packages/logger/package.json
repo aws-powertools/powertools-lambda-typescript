@@ -39,10 +39,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aws-powertools/lambda-typescript.git"
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
   "bugs": {
-    "url": "https://github.com/aws-powertools/lambda-typescript/issues"
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^1.9.0",

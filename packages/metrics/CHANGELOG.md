@@ -13,13 +13,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **metrics:** log warning on empty metrics ([#1397](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1397)) ([31ae936](https://github.com/aws-powertools/powertools-lambda-typescript/commit/31ae936831177f58edff43ce3850ed13c964fc87))
 
-# [1.7.0](https://github.com/aws-powertools/lambda-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
+# [1.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
 
 ### Features
 
 - **metrics:** support high resolution metrics ([#1369](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1369)) ([79a321b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/79a321b199ef51a024dc25b83673baf2eb03de69))
 
-# [1.6.0](https://github.com/aws-powertools/lambda-typescript/compare/v1.5.1...v1.6.0) (2023-03-02)
+# [1.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.5.1...v1.6.0) (2023-03-02)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics
 
@@ -37,7 +37,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **metrics:** store service name in defaultDimensions to avoid clearing it ([#1146](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1146)) ([a979202](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a979202ae0563f8ce00dee98bbf15d0bcfcfd3cc))
 
-# [1.4.0](https://github.com/aws-powertools/lambda-typescript/compare/v1.3.0...v1.4.0) (2022-10-27)
+# [1.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.3.0...v1.4.0) (2022-10-27)
 
 ### Bug Fixes
 
@@ -47,7 +47,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **all:** moved EnvService to commons + exposed getXrayTraceId in tracer ([#1123](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1123)) ([c8e3c15](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c8e3c15b64142ebe6f43835a5917ecba26293a32))
 
-# [1.3.0](https://github.com/aws-powertools/lambda-typescript/compare/v1.2.1...v1.3.0) (2022-10-17)
+# [1.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.2.1...v1.3.0) (2022-10-17)
 
 ### Bug Fixes
 
@@ -58,7 +58,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - Revert "chore(release): v1.3.0 [skip ci]" ([237b99f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/237b99f9f6eff5e6e26d779603cf13cd4422c156))
 
-## [1.2.1](https://github.com/aws-powertools/lambda-typescript/compare/v1.2.0...v1.2.1) (2022-08-25)
+## [1.2.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.2.0...v1.2.1) (2022-08-25)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics
 
@@ -68,7 +68,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **metrics:** increase maximum dimensions to 29 ([#1072](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1072)) ([7b9a027](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7b9a0278ccf801a521cab3f74372a4748231fd11))
 
-## [1.1.1](https://github.com/aws-powertools/lambda-typescript/compare/v1.1.0...v1.1.1) (2022-08-18)
+## [1.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.1.0...v1.1.1) (2022-08-18)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics
 
@@ -95,7 +95,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Revert "chore(release): v0.12.0-rc.0 [skip ci]" ([9397f1d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9397f1d3624eb0bfbeb5e4c2702ae51e558a5b4a))
 - Revert "chore(release): v0.12.0-rc.0 [skip ci]" (#1017) ([51c18da](https://github.com/aws-powertools/powertools-lambda-typescript/commit/51c18da20db434f8b12f320e5074e3e0a146046e)), closes [#1017](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1017)
 
-## [0.11.1-rc.0](https://github.com/aws-powertools/lambda-typescript/compare/v0.11.0...v0.11.1-rc.0) (2022-06-24)
+## [0.11.1-rc.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.11.0...v0.11.1-rc.0) (2022-06-24)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics
 
@@ -109,7 +109,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **all:** nodejs16x support ([#877](https://github.com/aws-powertools/powertools-lambda-typescript/issues/877)) ([d2b13c9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d2b13c945adb1a74b7c5f76d45f28a6979ce6429))
 
-## [0.9.1](https://github.com/aws-powertools/lambda-typescript/compare/v0.9.0...v0.9.1) (2022-05-24)
+## [0.9.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.9.0...v0.9.1) (2022-05-24)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics
 
@@ -135,13 +135,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **tracer, metrics:** use polling instead of fixed wait in e2e tests ([#654](https://github.com/aws-powertools/powertools-lambda-typescript/issues/654)) ([6d4ab75](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6d4ab751bc98eb823d2a68b4973fa9f8405971a2))
 
-# [0.7.0](https://github.com/aws-powertools/lambda-typescript/compare/v0.6.0...v0.7.0) (2022-03-08)
+# [0.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.6.0...v0.7.0) (2022-03-08)
 
 ### Features
 
 - **metrics:** adopted Utility class ([#548](https://github.com/aws-powertools/powertools-lambda-typescript/issues/548)) ([672e6a8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/672e6a82a2c66f99153c63a53e9d31481afd897a))
 
-# [0.6.0](https://github.com/aws-powertools/lambda-typescript/compare/v0.5.1...v0.6.0) (2022-02-17)
+# [0.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.5.1...v0.6.0) (2022-02-17)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics
 
@@ -152,7 +152,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Revert "build(deps-dev): bump aws-cdk from 1.139.0 to 1.143.0 (#532)" (#544) ([e96c9ba](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e96c9ba5bd4f738e5ed7c5850e06856a8c69bff1)), closes [#532](https://github.com/aws-powertools/powertools-lambda-typescript/issues/532) [#544](https://github.com/aws-powertools/powertools-lambda-typescript/issues/544)
 - Revert "build(deps-dev): bump @aws-cdk/aws-lambda-nodejs from 1.139.0 to 1.143.0 (#531)" (#545) ([7dffbd8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7dffbd8708555fcc9817ea4373ccf71b0aea3c89)), closes [#531](https://github.com/aws-powertools/powertools-lambda-typescript/issues/531) [#545](https://github.com/aws-powertools/powertools-lambda-typescript/issues/545)
 
-# [0.5.0](https://github.com/aws-powertools/lambda-typescript/compare/v0.4.0...v0.5.0) (2022-01-26)
+# [0.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.4.0...v0.5.0) (2022-01-26)
 
 ### Bug Fixes
 
@@ -163,7 +163,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **all:** make `@middy/core` optional ([#511](https://github.com/aws-powertools/powertools-lambda-typescript/issues/511)) ([1107f96](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1107f96e9b4c678d34ee36757366f150d99be4dc))
 
-# [0.4.0](https://github.com/aws-powertools/lambda-typescript/compare/v0.3.3...v0.4.0) (2022-01-20)
+# [0.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.3.3...v0.4.0) (2022-01-20)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics
 
@@ -181,7 +181,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **all:** fix latest release broken by change of npm pack result on common ([#470](https://github.com/aws-powertools/powertools-lambda-typescript/issues/470)) ([2c3df93](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2c3df9378ac191f6da6cb5f458f6227d6466cafa)), closes [#417](https://github.com/aws-powertools/powertools-lambda-typescript/issues/417)
 
-# [0.3.0](https://github.com/aws-powertools/lambda-typescript/compare/v0.2.0...v0.3.0) (2022-01-14)
+# [0.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v0.2.0...v0.3.0) (2022-01-14)
 
 ### Bug Fixes
 

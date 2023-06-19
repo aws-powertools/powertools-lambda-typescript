@@ -8,7 +8,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 > Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [Java](https://github.com/aws-powertools/powertools-lambda-java), and [.NET](https://docs.powertools.aws.dev/lambda-dotnet/).
 
-**[Documentation](https://docs.powertools.aws.dev/lambda-typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap)** | **[Examples](https://github.com/aws-powertools/lambda-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
+**[Documentation](https://docs.powertools.aws.dev/lambda-typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap)** | **[Examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
 
 ## Table of contents <!-- omit in toc -->
 
@@ -78,8 +78,8 @@ Or refer to the installation guide of each utility:
 
 ### Examples
 
-* [CDK](https://github.com/aws-powertools/lambda-typescript/tree/main/examples/cdk)
-* [SAM](https://github.com/aws-powertools/lambda-typescript/tree/main/examples/sam)
+* [CDK](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/cdk)
+* [SAM](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/sam)
 
 ### Serverless TypeScript Demo application
 
@@ -88,7 +88,7 @@ You can find instructions on how to deploy and load test this application in the
 
 ## Contribute
 
-If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/aws-powertools/lambda-typescript/blob/main/CONTRIBUTING.md).
+If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md).
 
 ## Roadmap
 
@@ -130,4 +130,4 @@ Credits for the Powertools for AWS Lambda (TypeScript) idea go to [DAZN](https:/
 
 ## License
 
-This library is licensed under the MIT-0 License. See the [LICENSE](https://github.com/aws-powertools/lambda-typescript/blob/main/LICENSE) file.
+This library is licensed under the MIT-0 License. See the [LICENSE](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/LICENSE) file.

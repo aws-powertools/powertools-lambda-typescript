@@ -21,7 +21,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - **parameters:** add `clearCaches` function ([#1382](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1382)) ([ec49023](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ec49023c44c3873ba5396a45ee9b2a8ee031e84b))
 - **parameters:** stronger types for SSM getParameter ([#1387](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1387)) ([9d53942](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9d53942fdd272213cf39c7fa87ffa78513dff37d))
 
-# [1.7.0](https://github.com/aws-powertools/lambda-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
+# [1.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.6.0...v1.7.0) (2023-03-20)
 
 ### Features
 

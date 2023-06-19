@@ -93,7 +93,7 @@ export const invokeFunction = async (
 
   const promiseFactory = (
     index?: number,
-    includeIndex?: boolean
+    includeIndex = true
   ): Promise<void> => {
     // in some cases we need to send a payload without the index, i.e. idempotency tests
     const payloadToSend = includeIndex

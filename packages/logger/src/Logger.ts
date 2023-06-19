@@ -617,8 +617,11 @@ class Logger extends Utility implements ClassThatLogs {
       this.getPowertoolLogData()
     );
 
-    let additionalLogAttributes: LogAttributes =
-      this.getPersistentLogAttributes();
+    let additionalLogAttributes: LogAttributes = {};
+    additionalLogAttributes = merge(
+      additionalLogAttributes,
+      this.getPersistentLogAttributes()
+    );
     if (typeof input !== 'string') {
       additionalLogAttributes = merge(additionalLogAttributes, input);
     }

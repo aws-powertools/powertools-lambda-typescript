@@ -50,6 +50,9 @@ const makeHandlerIdempotent = (
     config: idempotencyConfig,
   });
 
+  // keep the flag for after and onError checks
+  let shouldSkipIdempotency = false;
+
   /**
    * Function called before the handler is executed.
    *
@@ -79,6 +82,9 @@ const makeHandlerIdempotent = (
         request.event as Record<string, unknown>
       )
     ) {
+      // set the flag to skip checks in after and onError
+      shouldSkipIdempotency = true;
+
       return;
     }
     try {
@@ -133,13 +139,7 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const after = async (request: MiddyLikeRequest): Promise<void> => {
-    if (
-      IdempotencyHandler.shouldSkipIdempotency(
-        idempotencyConfig.eventKeyJmesPath,
-        idempotencyConfig.throwOnNoIdempotencyKey,
-        request.event as Record<string, unknown>
-      )
-    ) {
+    if (shouldSkipIdempotency) {
       return;
     }
     try {
@@ -163,6 +163,9 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const onError = async (request: MiddyLikeRequest): Promise<void> => {
+    if (shouldSkipIdempotency) {
+      return;
+    }
     try {
       await persistenceStore.deleteRecord(
         request.event as Record<string, unknown>

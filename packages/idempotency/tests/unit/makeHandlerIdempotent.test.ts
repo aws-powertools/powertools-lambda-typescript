@@ -299,4 +299,29 @@ describe('Middleware: makeHandlerIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledTimes(0);
     expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
   });
+
+  it(' skips idempotency if error is thrown in the middleware', async () => {
+    const handler = middy(
+      async (_event: unknown, _context: Context): Promise<void> => {
+        throw new Error('Something went wrong');
+      }
+    ).use(
+      makeHandlerIdempotent({
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({
+          eventKeyJmesPath: 'idempotencyKey',
+          throwOnNoIdempotencyKey: false,
+        }),
+      })
+    );
+
+    const deleteRecordSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'deleteRecord'
+    );
+
+    await expect(handler(event, context)).rejects.toThrowError();
+
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
+  });
 });

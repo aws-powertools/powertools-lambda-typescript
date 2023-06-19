@@ -229,36 +229,18 @@ const splitSegmentsByName = (
  * @param functionName
  */
 const invokeAllTestCases = async (functionName: string): Promise<void> => {
-  await invokeFunction(
-    functionName,
-    1,
-    'SEQUENTIAL',
-    {
-      invocation: 1,
-      throw: false,
-    },
-    false
-  );
-  await invokeFunction(
-    functionName,
-    1,
-    'SEQUENTIAL',
-    {
-      invocation: 2,
-      throw: false,
-    },
-    false
-  );
-  await invokeFunction(
-    functionName,
-    1,
-    'SEQUENTIAL',
-    {
-      invocation: 3,
-      throw: true, // only last invocation should throw
-    },
-    false
-  );
+  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
+    invocation: 1,
+    throw: false,
+  });
+  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
+    invocation: 2,
+    throw: false,
+  });
+  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
+    invocation: 3,
+    throw: true, // only last invocation should throw
+  });
 };
 
 const createTracerTestFunction = (

@@ -132,9 +132,6 @@ export const invokeFunction = async (
 const chainPromises = async (
   promiseFactories: ((index?: number) => Promise<void>)[]
 ): Promise<void> => {
-  for (const promiseToCall of promiseFactories) {
-    await promiseToCall();
-  }
   for (let index = 0; index < promiseFactories.length; index++) {
     await promiseFactories[index](index);
   }

@@ -1,10 +1,10 @@
 # Powertools for AWS Lambda (TypeScript) <!-- omit in toc -->
 
-Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#features).
+Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda-typescript/latest/#features).
 
 You can use the library in both TypeScript and JavaScript code bases.
 
-> Also available in [Python](https://github.com/awslabs/aws-lambda-powertools-python), [Java](https://github.com/awslabs/aws-lambda-powertools-java), and [.NET](https://awslabs.github.io/aws-lambda-powertools-dotnet/).
+> Also available in [Python](https://github.com/awslabs/aws-lambda-powertools-python), [Java](https://github.com/awslabs/aws-lambda-powertools-java), and [.NET](https://docs.powertools.aws.dev/lambda-dotnet/).
 
 **[Documentation](https://docs.powertools.aws.dev/lambda-typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap)** | **[Examples](https://github.com/aws-powertools/lambda-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
 
@@ -34,7 +34,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 ## Getting started
 
-Find the complete project's [documentation here](https://awslabs.github.io/aws-lambda-powertools-typescript).
+Find the complete project's [documentation here](https://docs.powertools.aws.dev/lambda-typescript).
 
 ### Installation
 
@@ -100,7 +100,7 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/we_made_this).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://docs.powertools.aws.dev/lambda-typescript/latest/we_made_this).
 
 ### Using Lambda Layer
 

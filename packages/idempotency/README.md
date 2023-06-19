@@ -6,7 +6,7 @@
 | **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**.. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/awslabs/aws-lambda-powertools-typescript/milestone/10) we might introduce significant breaking changes and improvements in response to customers feedback. | _ |
 
 
-Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#features).
+Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda-typescript/latest/#features).
 
 ## Intro
 
@@ -48,7 +48,7 @@ Similar to `@idempotentFunction` decorator you need to pass keyword argument to 
 To store the idempotency information offer a DynamoDB persistance layer. 
 This enables you to store the hash key, payload, status for progress and expiration and much more. 
 You can customise most of the configuration options of the DynamoDB table, i.e the names of the attributes.
-See the [API documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/modules/.index.DynamoDBPersistenceLayer.html) for more details.
+See the [API documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/modules/.index.DynamoDBPersistenceLayer.html) for more details.
 
 ## Examples
 
@@ -176,7 +176,7 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/we_made_this).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://docs.powertools.aws.dev/lambda-typescript/latest/we_made_this).
 
 ### Using Lambda Layer
 

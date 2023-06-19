@@ -8,7 +8,7 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 You can use Powertools for AWS Lambda (TypeScript) in both TypeScript and JavaScript code bases.
 
 ???+ tip
-    Powertools for AWS Lambda is also available for [Python](https://awslabs.github.io/aws-lambda-powertools-python/){target="_blank"}, [Java](https://awslabs.github.io/aws-lambda-powertools-java/){target="_blank"}, and [.NET](https://awslabs.github.io/aws-lambda-powertools-dotnet/){target="_blank"}
+    Powertools for AWS Lambda is also available for [Python](https://docs.powertools.aws.dev/lambda-python/){target="_blank"}, [Java](https://docs.powertools.aws.dev/lambda-java/){target="_blank"}, and [.NET](https://docs.powertools.aws.dev/lambda-dotnet/){target="_blank"}
 
 ??? hint "Support this project by becoming a reference customer, sharing your work, or using Layers :heart:"
 

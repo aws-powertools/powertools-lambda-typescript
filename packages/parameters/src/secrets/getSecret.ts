@@ -1,4 +1,4 @@
-import { DEFAULT_PROVIDERS } from '../BaseProvider';
+import { DEFAULT_PROVIDERS } from '../base';
 import { SecretsProvider } from './SecretsProvider';
 import type {
   SecretsGetOptions,

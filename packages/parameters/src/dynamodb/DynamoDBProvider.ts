@@ -1,4 +1,4 @@
-import { BaseProvider } from '../BaseProvider';
+import { BaseProvider } from '../base';
 import {
   DynamoDBClient,
   GetItemCommand,
@@ -10,13 +10,14 @@ import type {
   DynamoDBGetOptions,
   DynamoDBGetMultipleOptions,
   DynamoDBGetOutput,
+  DynamoDBGetMultipleOutput,
 } from '../types/DynamoDBProvider';
 import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import type { PaginationConfiguration } from '@aws-sdk/types';
-import { JSONValue } from 'types';
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -347,11 +348,28 @@ class DynamoDBProvider extends BaseProvider {
    * @param {DynamoDBGetMultipleOptions} options - Options to configure the provider
    * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
-  public async getMultiple(
+  public async getMultiple<
+    ExplicitUserProvidedType = undefined,
+    InferredFromOptionsType extends
+      | DynamoDBGetMultipleOptions
+      | undefined = DynamoDBGetMultipleOptions
+  >(
     path: string,
-    options?: DynamoDBGetMultipleOptions
-  ): Promise<Record<string, JSONValue>> {
-    return super.getMultiple(path, options);
+    options?: InferredFromOptionsType & DynamoDBGetMultipleOptions
+  ): Promise<
+    | DynamoDBGetMultipleOutput<
+        ExplicitUserProvidedType,
+        InferredFromOptionsType
+      >
+    | undefined
+  > {
+    return super.getMultiple(path, options) as Promise<
+      | DynamoDBGetMultipleOutput<
+          ExplicitUserProvidedType,
+          InferredFromOptionsType
+        >
+      | undefined
+    >;
   }
 
   /**

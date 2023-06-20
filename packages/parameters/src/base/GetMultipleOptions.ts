@@ -1,6 +1,6 @@
 import { GetOptions } from './GetOptions';
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService';
-import type { GetMultipleOptionsInterface } from './types';
+import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService';
+import type { GetMultipleOptionsInterface } from '../types';
 
 /**
  * Options for the `getMultiple` method.

@@ -1,4 +1,4 @@
-import type { ExpirableValueInterface } from './types';
+import type { ExpirableValueInterface } from '../types';
 
 /**
  * Class to represent a value that can expire.

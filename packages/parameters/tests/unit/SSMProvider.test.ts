@@ -20,7 +20,7 @@ import type {
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface,
 } from '../../src/types/SSMProvider';
-import { ExpirableValue } from '../../src/BaseProvider';
+import { ExpirableValue } from '../../src/base/ExpirableValue';
 import { toBase64 } from '@aws-sdk/util-base64';
 
 const encoder = new TextEncoder();

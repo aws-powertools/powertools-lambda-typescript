@@ -3,7 +3,7 @@ import {
   DEFAULT_PROVIDERS,
   transformValue,
 } from '../BaseProvider';
-import { GetParameterError } from '../Exceptions';
+import { GetParameterError } from '../errors';
 import { DEFAULT_MAX_AGE_SECS } from '../constants';
 import {
   SSMClient,

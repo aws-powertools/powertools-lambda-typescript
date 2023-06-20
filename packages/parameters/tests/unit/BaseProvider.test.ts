@@ -3,14 +3,9 @@
  *
  * @group unit/parameters/baseProvider/class
  */
-import {
-  BaseProvider,
-  ExpirableValue,
-  GetParameterError,
-  TransformParameterError,
-  clearCaches,
-  DEFAULT_PROVIDERS,
-} from '../../src';
+import { BaseProvider, clearCaches, DEFAULT_PROVIDERS } from '../../src/base';
+import { ExpirableValue } from '../../src/base/ExpirableValue';
+import { GetParameterError, TransformParameterError } from '../../src/errors';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 
 const encoder = new TextEncoder();

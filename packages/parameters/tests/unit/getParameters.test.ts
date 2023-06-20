@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/ssm/getParameters/function
  */
-import { DEFAULT_PROVIDERS } from '../../src/BaseProvider';
+import { DEFAULT_PROVIDERS } from '../../src/base';
 import { SSMProvider, getParameters } from '../../src/ssm';
 import { SSMClient, GetParametersByPathCommand } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';

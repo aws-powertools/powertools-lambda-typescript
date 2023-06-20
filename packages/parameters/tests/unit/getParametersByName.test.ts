@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/ssm/getParametersByName/function
  */
-import { DEFAULT_PROVIDERS } from '../../src/BaseProvider';
+import { DEFAULT_PROVIDERS } from '../../src/base';
 import { SSMProvider, getParametersByName } from '../../src/ssm';
 import type { SSMGetParametersByNameOptions } from '../../src/types/SSMProvider';
 

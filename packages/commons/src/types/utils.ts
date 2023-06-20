@@ -32,12 +32,29 @@ const isTruthy = (value: unknown): boolean => {
   }
 };
 
+/**
+ * TODO: write docs for isNullOrUndefined()
+ * @param value
+ * @returns
+ */
 const isNullOrUndefined = (value: unknown): value is null | undefined => {
   return Object.is(value, null) || Object.is(value, undefined);
 };
 
+/**
+ * TODO: write docs for isString()
+ * @param value
+ * @returns
+ */
 const isString = (value: unknown): value is string => {
   return typeof value === 'string';
 };
 
 export { isRecord, isString, isTruthy, isNullOrUndefined };
+
+type JSONPrimitive = string | number | boolean | null | undefined;
+type JSONValue = JSONPrimitive | JSONObject | JSONArray;
+type JSONObject = { [key: string]: JSONValue };
+type JSONArray = Array<JSONValue>;
+
+export type { JSONPrimitive, JSONValue, JSONObject, JSONArray };

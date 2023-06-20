@@ -73,12 +73,8 @@ interface BaseProviderInterface {
     path: string,
     options?: GetMultipleOptionsInterface
   ): Promise<unknown | void>;
+  clearCache?(): void;
 }
-
-type JSONPrimitive = string | number | boolean | null | undefined;
-type JSONValue = JSONPrimitive | JSONObject | JSONArray;
-type JSONObject = { [key: string]: JSONValue };
-type JSONArray = Array<JSONValue>;
 
 export type {
   GetOptionsInterface,
@@ -86,8 +82,4 @@ export type {
   BaseProviderInterface,
   ExpirableValueInterface,
   TransformOptions,
-  JSONPrimitive,
-  JSONValue,
-  JSONObject,
-  JSONArray,
 };

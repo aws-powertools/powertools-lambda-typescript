@@ -113,12 +113,12 @@ type DynamoDBGetOutput<
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? JSONValue
-    : InferredFromOptionsType extends DynamoDBGetOptionsTransformNone
+    : InferredFromOptionsType extends
+        | DynamoDBGetOptionsTransformNone
+        | DynamoDBGetOptionsTransformJson
     ? JSONValue
     : InferredFromOptionsType extends DynamoDBGetOptionsTransformBinary
     ? string
-    : InferredFromOptionsType extends DynamoDBGetOptionsTransformJson
-    ? Record<string, unknown>
     : never
   : ExplicitUserProvidedType;
 
@@ -133,13 +133,59 @@ type DynamoDBGetOutput<
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  * @property {boolean} throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
  */
-interface DynamoDBGetMultipleOptions extends GetMultipleOptionsInterface {
+interface DynamoDBGetMultipleOptionsBase extends GetMultipleOptionsInterface {
   sdkOptions?: Partial<QueryCommandInput>;
 }
+
+interface DynamoDBGetMultipleOptionsTransformJson
+  extends DynamoDBGetMultipleOptionsBase {
+  transform: 'json';
+}
+
+interface DynamoDBGetMultipleOptionsTransformBinary
+  extends DynamoDBGetMultipleOptionsBase {
+  transform: 'binary';
+}
+
+interface DynamoDBGetMultipleOptionsTransformAuto
+  extends DynamoDBGetMultipleOptionsBase {
+  transform: 'auto';
+}
+
+interface DynamoDBGetMultipleOptionsTransformNone
+  extends DynamoDBGetMultipleOptionsBase {
+  transform?: never;
+}
+
+type DynamoDBGetMultipleOptions =
+  | DynamoDBGetMultipleOptionsTransformJson
+  | DynamoDBGetMultipleOptionsTransformBinary
+  | DynamoDBGetMultipleOptionsTransformAuto
+  | DynamoDBGetMultipleOptionsTransformNone;
+
+/**
+ * Generic output type for DynamoDBProvider getMultiple method.
+ */
+type DynamoDBGetMultipleOutput<
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType = undefined
+> = undefined extends ExplicitUserProvidedType
+  ? undefined extends InferredFromOptionsType
+    ? JSONValue
+    : InferredFromOptionsType extends
+        | DynamoDBGetMultipleOptionsTransformNone
+        | DynamoDBGetMultipleOptionsTransformAuto
+        | DynamoDBGetMultipleOptionsTransformJson
+    ? JSONValue
+    : InferredFromOptionsType extends DynamoDBGetOptionsTransformBinary
+    ? string
+    : never
+  : ExplicitUserProvidedType;
 
 export type {
   DynamoDBProviderOptions,
   DynamoDBGetOptions,
   DynamoDBGetOutput,
   DynamoDBGetMultipleOptions,
+  DynamoDBGetMultipleOutput,
 };

@@ -1,4 +1,4 @@
-import { BaseProvider } from '../BaseProvider';
+import { BaseProvider } from '../base';
 import {
   SecretsManagerClient,
   GetSecretValueCommand,

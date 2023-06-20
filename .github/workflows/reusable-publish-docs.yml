@@ -2,7 +2,7 @@ name: Reusable Publish docs
 
 env:
   BRANCH: main
-  ORIGIN: awslabs/aws-lambda-powertools-typescript
+  ORIGIN: aws-powertools/powertools-lambda-typescript
   VERSION: ""
 
 on:
@@ -78,9 +78,9 @@ jobs:
         run: |
           rm -rf site
           mkdocs build
-          mike deploy --push --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }}
+          mike deploy --push --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }} --branch backup-gh-pages
           # Set latest version as a default
-          mike set-default --push latest
+          mike set-default --push latest --branch backup-gh-pages
       - name: Build API docs
         run: |
           rm -rf api

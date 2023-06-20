@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
   "author": {
     "name": "Amazon Web Services",
@@ -30,9 +30,9 @@
   },
   "license": "MIT-0",
   "bugs": {
-    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
     "source-map-support": "^0.5.21"
   }

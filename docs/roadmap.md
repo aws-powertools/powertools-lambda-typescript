@@ -8,21 +8,21 @@ This is our public roadmap that outlines the high level direction we are working
 
 !!! info "Operational Excellence is priority number 1."
 
-Themes are key activities maintainers are focusing on, besides bug reports. These are updated periodically and you can get an idea of the overall progress in the [Milestones section](https://github.com/awslabs/aws-lambda-powertools-typescript/milestones){target="_blank"}.
+Themes are key activities maintainers are focusing on, besides bug reports. These are updated periodically and you can get an idea of the overall progress in the [Milestones section](https://github.com/aws-powertools/powertools-lambda-typescript/milestones){target="_blank"}.
 
 ### New utilities
 
-After going GA, we want to start working on new utilities, specifically but not limited to the most commonly asked: **(1)** [Idempotency](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/447) and **(2)** [Parameters](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/846).
+After going GA, we want to start working on new utilities, specifically but not limited to the most commonly asked: **(1)** [Idempotency](https://github.com/aws-powertools/powertools-lambda-typescript/issues/447) and **(2)** [Parameters](https://github.com/aws-powertools/powertools-lambda-typescript/issues/846).
 
 ### Lambda Layers
 
 We want to publish and maintain public Lambda Layers.
 
-Work on this area is mostly complete and layers are already available in all commercial regions, however we still have some [work to do around automation](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/1124).
+Work on this area is mostly complete and layers are already available in all commercial regions, however we still have some [work to do around automation](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1124).
 
 ### ES Modules support
 
-Another one of the most requested features is [ES Modules support](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/521). This topic requires some in-depth investigation to understand how to move forward and how to deal with some of our upstream dependencies.
+Another one of the most requested features is [ES Modules support](https://github.com/aws-powertools/powertools-lambda-typescript/issues/521). This topic requires some in-depth investigation to understand how to move forward and how to deal with some of our upstream dependencies.
 
 When the time comes, we might open a RFC to discuss options.
 
@@ -72,14 +72,14 @@ graph LR
 
 Our end-to-end mechanism follows four major steps:
 
-* **Feature Request**. Ideas start with a [feature request](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=type/feature-request%2Ctriage&template=feature_request.yml&title=Feature+request%3A+TITLE){target="_blank"} to outline their use case at a high level. For complex use cases, maintainers might ask for/write a RFC.
+* **Feature Request**. Ideas start with a [feature request](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type/feature-request%2Ctriage&template=feature_request.yml&title=Feature+request%3A+TITLE){target="_blank"} to outline their use case at a high level. For complex use cases, maintainers might ask for/write a RFC.
     * Maintainers review requests based on [project tenets](index.md#tenets){target="_blank"}, customers reaction (👍), and use cases.
-* **Request-for-comments (RFC)**. Design proposals use our [RFC issue template](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=type/RFC%2Ctriage&template=rfc.yml&title=RFC%3A+TITLE){target="_blank"} to describe its implementation, challenges, developer experience, dependencies, and alternative solutions.
+* **Request-for-comments (RFC)**. Design proposals use our [RFC issue template](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type/RFC%2Ctriage&template=rfc.yml&title=RFC%3A+TITLE){target="_blank"} to describe its implementation, challenges, developer experience, dependencies, and alternative solutions.
     * This helps refine the initial idea with community feedback before a decision is made.
 * **Decision**. After carefully reviewing and discussing them, maintainers make a final decision on whether to start implementation, defer or reject it, and update everyone with the next steps.
 * **Implementation**. For approved features, maintainers give priority to the original authors for implementation unless it is a sensitive task that is best handled by maintainers.
 
-??? info "See [Maintainers](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/develop/MAINTAINERS.md) document to understand how we triage issues and pull requests, labels and governance."
+??? info "See [Maintainers](https://github.com/aws-powertools/powertools-lambda-typescript/blob/develop/MAINTAINERS.md) document to understand how we triage issues and pull requests, labels and governance."
 
 ## Disclaimer
 

@@ -63,7 +63,7 @@ The following steps describe how to set up the Powertools for AWS Lambda (TypeSc
 
 The alternative is to use a Cloud IDE like [Gitpod](https://www.gitpod.io/) or [GitHub CodeSpaces](https://github.com/features/codespaces) for your development. To quickly get up and running you can click one of these button to open a cloned version of this repo with all of the prerequisites and dependencies installed:
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/awslabs/aws-lambda-powertools-typescript)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/aws-powertools/powertools-lambda-typescript)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=305501331)
 
 ### Setup
@@ -248,10 +248,10 @@ Contributions via pull requests are much appreciated.
 ### Step 1: Find something to work on
 
 If you want to contribute a specific feature or fix you have in mind, look at active [pull
-requests](https://github.com/awslabs/aws-lambda-powertools-typescript/pulls) to see if someone else is already working on it. If not, you can start designing your changes. 
+requests](https://github.com/aws-powertools/powertools-lambda-typescript/pulls) to see if someone else is already working on it. If not, you can start designing your changes. 
 
 On the other hand, if you are here looking for an issue to work on, check out our [backlog of
-issues](https://github.com/awslabs/aws-lambda-powertools-typescript/issues) and find something that piques your interest. Our project, by default, uses the default GitHub issue labels (enhancement/bug/help wanted/invalid/question/documentation), looking at any issue labeled as 'help wanted' or 'good-first-issue' is a great place to start.
+issues](https://github.com/aws-powertools/powertools-lambda-typescript/issues) and find something that piques your interest. Our project, by default, uses the default GitHub issue labels (enhancement/bug/help wanted/invalid/question/documentation), looking at any issue labeled as 'help wanted' or 'good-first-issue' is a great place to start.
 
 It's a good idea to keep the priority of issues in mind when deciding what to
 work on. If we have labelled an issue as `priority:medium` or `priority:low`, it means it's something we won't
@@ -259,11 +259,11 @@ get to soon while `priority:high` issues have a bigger impact, so we are much mo
 
 ### Step 2: Design
 
-You can start by checking the project's tenets [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#tenets).
+You can start by checking the project's tenets [here](https://docs.powertools.aws.dev/lambda-typescript/latest/#tenets).
 
 We ask you to seek feedback and consensus on your proposed change by iterating on a design document. This is especially useful when you plan a big change or feature, or you want advice on what would be the best path forward.
 
-If you're picking up an existing issue, you can simply post your comment and discuss your proposed changes. If instead you're proposing a new feature, you can start by creating a new [RFC issue](https://github.com/awslabs/aws-lambda-powertools-typescript/issues/new?assignees=&labels=RFC%2C+triage&template=rfc.md&title=RFC%3A+) and discuss your proposed change with the maintainers.
+If you're picking up an existing issue, you can simply post your comment and discuss your proposed changes. If instead you're proposing a new feature, you can start by creating a new [RFC issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=RFC%2C+triage&template=rfc.md&title=RFC%3A+) and discuss your proposed change with the maintainers.
 
 This is a great way to get feedback on your proposed change and make sure that it is in line with the project's direction and community needs. You can start working on the change when you've gotten approved by at least one maintainer - we would hate for your time to be wasted.
 

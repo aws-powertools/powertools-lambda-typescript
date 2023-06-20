@@ -27,7 +27,7 @@
     "*.ts": "npm run lint-fix",
     "*.js": "npm run lint-fix"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/parameters#readme",
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parameters#readme",
   "license": "MIT-0",
   "exports": {
     ".": {
@@ -95,10 +95,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
   "bugs": {
-    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "keywords": [
     "aws",

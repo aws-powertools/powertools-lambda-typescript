@@ -5,8 +5,8 @@
  */
 
 import path from 'path';
-import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
-import { App, Stack, RemovalPolicy } from 'aws-cdk-lib';
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { XRayClient } from '@aws-sdk/client-xray';
 import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
@@ -15,29 +15,29 @@ import {
   destroyStack,
 } from '../../../commons/tests/utils/cdk-cli';
 import {
-  getTraces,
-  getInvocationSubsegment,
-  splitSegmentsByName,
-  invokeAllTestCases,
   createTracerTestFunction,
-  getFunctionArn,
   getFirstSubsegment,
+  getFunctionArn,
+  getInvocationSubsegment,
+  getTraces,
+  invokeAllTestCases,
+  splitSegmentsByName,
 } from '../helpers/tracesUtils';
 import {
   generateUniqueName,
   isValidRuntimeKey,
 } from '../../../commons/tests/utils/e2eUtils';
 import {
+  expectedCustomAnnotationKey,
+  expectedCustomAnnotationValue,
+  expectedCustomErrorMessage,
+  expectedCustomMetadataKey,
+  expectedCustomMetadataValue,
+  expectedCustomResponseValue,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-  expectedCustomAnnotationKey,
-  expectedCustomAnnotationValue,
-  expectedCustomMetadataKey,
-  expectedCustomMetadataValue,
-  expectedCustomResponseValue,
-  expectedCustomErrorMessage,
 } from './constants';
 import {
   assertAnnotation,
@@ -242,7 +242,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
          * 1. Lambda Context (AWS::Lambda)
          * 2. Lambda Function (AWS::Lambda::Function)
          * 4. DynamoDB (AWS::DynamoDB)
-         * 4. Remote call (awslabs.github.io)
+         * 4. Remote call (docs.powertools.aws.dev)
          */
         expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
@@ -251,7 +251,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
          * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Tracer)
          * '## index.handler' subsegment should have 3 subsegments
          * 1. DynamoDB (PutItem on the table)
-         * 2. awslabs.github.io (Remote call)
+         * 2. docs.powertools.aws.dev (Remote call)
          * 3. '### myMethod' (method decorator)
          */
         const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
@@ -263,11 +263,11 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
         }
         const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [
           'DynamoDB',
-          'awslabs.github.io',
+          'docs.powertools.aws.dev',
           '### myMethod',
         ]);
         expect(subsegments.get('DynamoDB')?.length).toBe(1);
-        expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
+        expect(subsegments.get('docs.powertools.aws.dev')?.length).toBe(1);
         expect(subsegments.get('### myMethod')?.length).toBe(1);
         expect(subsegments.get('other')?.length).toBe(0);
 
@@ -350,7 +350,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
          * 1. Lambda Context (AWS::Lambda)
          * 2. Lambda Function (AWS::Lambda::Function)
          * 3. DynamoDB (AWS::DynamoDB)
-         * 4. Remote call (awslabs.github.io)
+         * 4. Remote call (docs.powertools.aws.dev)
          */
         expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
@@ -359,7 +359,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
          * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Tracer)
          * '## index.handler' subsegment should have 3 subsegments
          * 1. DynamoDB (PutItem on the table)
-         * 2. awslabs.github.io (Remote call)
+         * 2. docs.powertools.aws.dev (Remote call)
          * 3. '### myMethod' (method decorator)
          */
         const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
@@ -371,11 +371,11 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
         }
         const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [
           'DynamoDB',
-          'awslabs.github.io',
+          'docs.powertools.aws.dev',
           '### myMethod',
         ]);
         expect(subsegments.get('DynamoDB')?.length).toBe(1);
-        expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
+        expect(subsegments.get('docs.powertools.aws.dev')?.length).toBe(1);
         expect(subsegments.get('### myMethod')?.length).toBe(1);
         expect(subsegments.get('other')?.length).toBe(0);
 
@@ -414,7 +414,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
          * 1. Lambda Context (AWS::Lambda)
          * 2. Lambda Function (AWS::Lambda::Function)
          * 3. DynamoDB (AWS::DynamoDB)
-         * 4. Remote call (awslabs.github.io)
+         * 4. Remote call (docs.powertools.aws.dev)
          */
         expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
@@ -423,7 +423,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
          * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Tracer)
          * '## index.handler' subsegment should have 3 subsegments
          * 1. DynamoDB (PutItem on the table)
-         * 2. awslabs.github.io (Remote call)
+         * 2. docs.powertools.aws.dev (Remote call)
          * 3. '### myMethod' (method decorator)
          */
         const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
@@ -439,11 +439,11 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
         }
         const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [
           'DynamoDB',
-          'awslabs.github.io',
+          'docs.powertools.aws.dev',
           '### myMethod',
         ]);
         expect(subsegments.get('DynamoDB')?.length).toBe(1);
-        expect(subsegments.get('awslabs.github.io')?.length).toBe(1);
+        expect(subsegments.get('docs.powertools.aws.dev')?.length).toBe(1);
         expect(subsegments.get('### myMethod')?.length).toBe(1);
         expect(subsegments.get('other')?.length).toBe(0);
 

@@ -3,6 +3,7 @@ import { LambdaInterface } from '@aws-lambda-powertools/commons';
 import { idempotentFunction, idempotentLambdaHandler } from '../../src';
 import { Logger } from '../../../logger';
 import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer';
+import { IdempotencyConfig } from '../../src/';
 
 const IDEMPOTENCY_TABLE_NAME =
   process.env.IDEMPOTENCY_TABLE_NAME || 'table_name';
@@ -62,9 +63,24 @@ class DefaultLambda implements LambdaInterface {
     _context: Context
   ): Promise<string> {
     logger.info(`Got test event: ${JSON.stringify(_event)}`);
-    // sleep for 5 seconds
 
     throw new Error('Failed');
+  }
+
+  @idempotentLambdaHandler({
+    persistenceStore: dynamoDBPersistenceLayer,
+    config: new IdempotencyConfig({
+      eventKeyJmesPath: 'idempotencyKey',
+      throwOnNoIdempotencyKey: false,
+    }),
+  })
+  public async handlerWithOptionalIdempoitencyKey(
+    _event: TestEvent,
+    _context: Context
+  ): Promise<string> {
+    logger.info(`Got test event: ${JSON.stringify(_event)}`);
+
+    return 'This should not be stored in DynamoDB';
   }
 }
 
@@ -73,6 +89,9 @@ export const handler = defaultLambda.handler.bind(defaultLambda);
 export const handlerCustomized =
   defaultLambda.handlerCustomized.bind(defaultLambda);
 export const handlerFails = defaultLambda.handlerFails.bind(defaultLambda);
+
+export const handlerWithOptionalIdempoitencyKey =
+  defaultLambda.handlerWithOptionalIdempoitencyKey.bind(defaultLambda);
 
 const logger = new Logger();
 

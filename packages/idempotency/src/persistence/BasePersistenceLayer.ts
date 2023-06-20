@@ -1,7 +1,7 @@
 import { createHash, Hash } from 'node:crypto';
 import { search } from 'jmespath';
-import { IdempotencyRecordStatus } from '../types';
 import type { BasePersistenceLayerOptions } from '../types';
+import { IdempotencyRecordStatus } from '../types';
 import { EnvironmentVariablesService } from '../config';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { BasePersistenceLayerInterface } from './BasePersistenceLayerInterface';
@@ -176,10 +176,13 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   }
 
   protected abstract _deleteRecord(record: IdempotencyRecord): Promise<void>;
+
   protected abstract _getRecord(
     idempotencyKey: string
   ): Promise<IdempotencyRecord>;
+
   protected abstract _putRecord(record: IdempotencyRecord): Promise<void>;
+
   protected abstract _updateRecord(record: IdempotencyRecord): Promise<void>;
 
   private deleteFromCache(idempotencyKey: string): void {
@@ -294,7 +297,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * Save record to local cache except for when status is `INPROGRESS`.
    *
    * We can't cache `INPROGRESS` records because we have no way to reflect updates
-   * that might happen to the record outside of the execution context of the function.
+   * that might happen to the record outside the execution context of the function.
    *
    * @param record - record to save
    */

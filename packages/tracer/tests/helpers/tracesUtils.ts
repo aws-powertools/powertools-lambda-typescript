@@ -2,25 +2,25 @@ import promiseRetry from 'promise-retry';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Duration } from 'aws-cdk-lib';
 import { Architecture, Tracing } from 'aws-cdk-lib/aws-lambda';
-import {
-  GetTraceSummariesCommand,
-  BatchGetTracesCommand,
-} from '@aws-sdk/client-xray';
 import type { XRayClient } from '@aws-sdk/client-xray';
+import {
+  BatchGetTracesCommand,
+  GetTraceSummariesCommand,
+} from '@aws-sdk/client-xray';
 import type { STSClient } from '@aws-sdk/client-sts';
 import { GetCallerIdentityCommand } from '@aws-sdk/client-sts';
 import {
   expectedCustomAnnotationKey,
   expectedCustomAnnotationValue,
+  expectedCustomErrorMessage,
   expectedCustomMetadataKey,
   expectedCustomMetadataValue,
   expectedCustomResponseValue,
-  expectedCustomErrorMessage,
 } from '../e2e/constants';
 import {
   invokeFunction,
-  TestRuntimesKey,
   TEST_RUNTIMES,
+  TestRuntimesKey,
 } from '../../../commons/tests/utils/e2eUtils';
 import { FunctionSegmentNotDefinedError } from './FunctionSegmentNotDefinedError';
 import type {

@@ -12,7 +12,7 @@ Themes are key activities maintainers are focusing on, besides bug reports. Thes
 
 ### Feature Parity
 
-We want to close the gap between this version of Powertools for AWS Lambda and the [Python version](). This means that in the fullness of time, we want to have the same or equivalent features in both versions.
+We want to close the gap between this version of Powertools for AWS Lambda and the [Python version](https://github.com/aws-powertools/powertools-lambda-python). This means that in the fullness of time, we want to have the same or equivalent features in both versions.
 
 In the first half of 2023 we have released the [Parameters utility](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/10), and are working on Idempotency. We are currently running a private beta for Idempotency, and plan on releasing the [public beta around July 2023](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/7) at the latest.
 

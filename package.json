@@ -19,7 +19,6 @@
     "test": "npm t -ws",
     "test:e2e": "npm run test:e2e -ws",
     "commit": "commit",
-    "package": "npm run package -ws",
     "setup-local": "npm ci && npm run build && npm run init-environment",
     "build": "npm run build -ws",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",

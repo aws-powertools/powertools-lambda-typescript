@@ -12,9 +12,9 @@
   - [Triage New Issues](#triage-new-issues)
   - [Triage Bug Reports](#triage-bug-reports)
   - [Triage RFCs](#triage-rfcs)
+  - [Run end to end tests](#run-end-to-end-tests)
   - [Releasing a new version](#releasing-a-new-version)
     - [Drafting release notes](#drafting-release-notes)
-  - [Run end to end tests](#run-end-to-end-tests)
   - [Releasing a documentation hotfix](#releasing-a-documentation-hotfix)
   - [Maintain Overall Health of the Repo](#maintain-overall-health-of-the-repo)
   - [Manage Roadmap](#manage-roadmap)
@@ -28,7 +28,6 @@
   - [Is that a bug?](#is-that-a-bug)
   - [Mentoring contributions](#mentoring-contributions)
   - [Long running issues or PRs](#long-running-issues-or-prs)
-- [E2E framework](#e2e-framework)
 - [Automation](#automation)
 
 ## Overview
@@ -42,7 +41,6 @@ This is document explains who the maintainers are (see below), what they do in t
 | Maintainer         | GitHub ID                                   | Affiliation |
 | ------------------ | ------------------------------------------- | ----------- |
 | Andrea Amorosi     | [dreamorosi](https://github.com/dreamorosi) | Amazon      |
-| Sara Gerion        | [saragerion](https://github.com/saragerion) | Amazon      |
 | Alexander Schueren | [am29d](https://github.com/am29d)           | Amazon      |
 
 ## Emeritus
@@ -51,6 +49,7 @@ Previous active maintainers who contributed to this project.
 
 | Maintainer                 | GitHub ID                                     | Affiliation |
 | -------------------------- | --------------------------------------------- | ----------- |
+| Sara Gerion                | [saragerion](https://github.com/saragerion)   | Amazon      |
 | Florian Chazal             | [flochaz](https://github.com/flochaz)         | Amazon      |
 | Chadchapol Vittavutkarnvej | [ijemmy](https://github.com/ijemmy)           | Booking.com |
 | Alan Churley               | [alan-churley](alan-churley)                  | CloudCall   |
@@ -151,7 +150,7 @@ This allows you to have control over the commit message although it should match
 
 Manage [labels](#labels), review issues regularly, and create new labels as needed by the project. Remove `triage` label when you're able to confirm the validity of a request, a bug can be reproduced, etc. Give priority to the original author for implementation, unless it is a sensitive task that is best handled by maintainers.
 
-Make sure issues are assigned to our [board of activities](https://github.com/orgs/awslabs/projects/76/) and have the right [status](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap/#roadmap-status-definition).
+Make sure issues are assigned to our [board of activities](https://github.com/orgs/aws-powertools/projects/7) and have the right [status](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap/#roadmap-status-definition).
 
 Use our [labels](#labels) to signal good first issues to new community members, and to set expectation that this might need additional feedback from the author, other customers, experienced community members and/or maintainers.
 
@@ -188,6 +187,12 @@ When necessary, be upfront that the time to review, approve, and implement a RFC
 
 An example of a successful RFC: [#447](https://github.com/aws-powertools/powertools-lambda-typescript/issues/447)
 
+### Run end to end tests
+
+E2E tests should be ran before every merge to `main` or manually via [run-e2e-tests workflow](https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/run-e2e-tests.yml) before making a release.
+
+To run locally, you need [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_prerequisites) and an [account bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) (`cdk bootstrap`). With a default AWS CLI profile configured, or `AWS_PROFILE` environment variable set, run `npm run test:e2e -ws`. For more information on how the tests are structured, see [Integration Tests](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md#integration-tests).
+
 ### Releasing a new version
 
 🚧 WIP 🚧
@@ -199,10 +204,6 @@ Visit the [Releases page](https://github.com/aws-powertools/powertools-lambda-ty
 Make sure the `tag` field reflects the new version you're releasing, the target branch field is set to `main`, and `release title` matches your tag e.g., `v1.4.1`.
 
 You'll notice we group all changes based on their [labels](#labels) like `type/feature`, `type/bug`, `type/documentation`, etc.
-
-**I spotted a typo or incorrect grouping - how do I fix it?**
-
-Edit the respective PR title and update their [labels](#labels). Then run the [Release Drafter workflow](https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/release-drafter.yml) to update the Draft release.
 
 **All looking good, what's next?**
 
@@ -218,17 +219,13 @@ These are some questions to keep in mind when drafting your first or future rele
 
 Once you're happy, hit `Publish release` 🎉🎉🎉.
 
-This will kick off the [Publish docs on release](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/workflows/publish-docs-on-release.yml) workflow and within a few minutes you should see the latest version in PyPi, and all issues labeled as `pending-release` will be closed and notified.
-
-### Run end to end tests
-
-E2E tests should be ran before every merge to `main` or manually via [run-e2e-tests workflow](https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/run-e2e-tests.yml) before making a release.
-
-To run locally, you need [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_prerequisites) and an [account bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) (`cdk bootstrap`). With a default AWS CLI profile configured, or `AWS_PROFILE` environment variable set, run `npm run test:e2e -ws`.
+This will kick off the [Publish docs on release](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/workflows/publish-docs-on-release.yml) workflow that will will notify all the issues labeled as `status/pending-release` of the new release.
 
 ### Releasing a documentation hotfix
 
-You can rebuild the latest documentation without a full release via this [GitHub Actions Workflow](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/workflows/publish-docs-on-release.yml). Choose `Run workflow`, keep `main` as the branch, and input the latest Powertools for AWS Lambda (TypeScript) version available i.e. `v1.4.1`.
+You can rebuild the latest documentation without a full release via this [GitHub Actions Workflow](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/workflows/rebuild-latest-docs.yml).
+
+Choose `Run workflow`, keep `main` as the branch, and input the latest Powertools for AWS Lambda (TypeScript) version available i.e. `v1.4.1`.
 
 This workflow will update both user guide and API documentation.
 
@@ -295,10 +292,6 @@ Make use of `help-wanted` and `good-first-issue` to signal additional contributi
 Try offering a 1:1 call in the attempt to get to a mutual understanding and clarify areas that maintainers could help.
 
 In the rare cases where both parties don't have the bandwidth or expertise to continue, it's best to use the `status/on-hold` label. By then, see if it's possible to break the PR or issue in smaller chunks, and eventually close if there is no progress.
-
-## E2E framework
-
-🚧 WIP 🚧
 
 ## Automation
 

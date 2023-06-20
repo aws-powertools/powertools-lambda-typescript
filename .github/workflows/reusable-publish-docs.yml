@@ -130,14 +130,6 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
           ALIAS: ${{ inputs.alias }}
-        run: |
-          aws s3 cp \
-            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-typescript/versions.json \
-            versions_old.json
-      - name: Deploy Docs (Version JSON)
-        env:
-          VERSION: ${{ inputs.version }}
-          ALIAS: ${{ inputs.alias }}
         # We originally used "mike" from PyPi to manage versions for us, but since we moved to S3, we can't use it to manage versions any more.
         # Instead, we're using some shell script that manages the versions.
         #

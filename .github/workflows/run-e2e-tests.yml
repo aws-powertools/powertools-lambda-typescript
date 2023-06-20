@@ -105,4 +105,4 @@ jobs:
           export VERSION=latest
           bash .github/scripts/setup_tmp_layer_files.sh
       - name: Run integration test on layers
-        run: RUNTIME=nodejs${{ matrix.version }}.x npm run test:e2e -w layers
+        run: RUNTIME=nodejs${{ matrix.version }}x npm run test:e2e -w layers

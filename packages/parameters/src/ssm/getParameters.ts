@@ -1,7 +1,6 @@
 import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
 import type {
   SSMGetMultipleOptions,
-  SSMGetMultipleOptionsUnion,
   SSMGetMultipleOutput,
 } from '../types/SSMProvider';
 
@@ -144,8 +143,8 @@ import type {
 const getParameters = async <
   ExplicitUserProvidedType = undefined,
   InferredFromOptionsType extends
-    | SSMGetMultipleOptionsUnion
-    | undefined = SSMGetMultipleOptionsUnion
+    | SSMGetMultipleOptions
+    | undefined = SSMGetMultipleOptions
 >(
   path: string,
   options?: InferredFromOptionsType & SSMGetMultipleOptions

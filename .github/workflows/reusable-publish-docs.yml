@@ -134,7 +134,7 @@ jobs:
           aws s3 cp \
             s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-typescript/versions.json \
             versions_old.json
-                - name: Deploy Docs (Version)
+      - name: Deploy Docs (Version)
         env:
           VERSION: ${{ inputs.version }}
           ALIAS: ${{ inputs.alias }}

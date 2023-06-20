@@ -30,7 +30,7 @@ import { v4 } from 'uuid';
 import path from 'path';
 import packageJson from '../../package.json';
 
-const runtime: string = process.env.RUNTIME || 'nodejs1x';
+const runtime: string = process.env.RUNTIME || 'nodejs18x';
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key: ${runtime}`);

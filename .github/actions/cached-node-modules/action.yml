@@ -11,6 +11,10 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Install npm
+      if: ${{ inputs.nodeVersion != '18' }}
+      shell: bash
+      run: npm i -g npm@next-9
     - name: Cache node modules
       id: cache-node-modules
       uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6

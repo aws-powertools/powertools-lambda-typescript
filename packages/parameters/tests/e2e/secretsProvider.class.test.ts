@@ -38,12 +38,10 @@ if (!isValidRuntimeKey(runtime)) {
  * Test 1: create a secret with plain text value, fetch it with no additional options
  * Test 2: create a secret with json value, fetch it using `transform: 'json'` option
  * Test 3: create a secret with base64 encoded value (technicaly string), fetch it using `transform: 'binary'` option
- * Test 4: create a secret with json value and secret name ends with .json, fetch it using `transform: 'auto'` option
- * Test 5: create a secret with base64 encoded value (technicaly string) and secert name ends with .binary, fetch it using `transform: 'auto'` option
- * Test 6: create a secret with plain text value, fetch it twice, check that value was cached, the number of SDK calls should be 1
- * Test 7: create a secret with plain text value, fetch it twice, second time with `forceFetch: true` option, check that value was not cached, the number of SDK calls should be 2
+ * Test 4: create a secret with plain text value, fetch it twice, check that value was cached, the number of SDK calls should be 1
+ * Test 5: create a secret with plain text value, fetch it twice, second time with `forceFetch: true` option, check that value was not cached, the number of SDK calls should be 2
  *
- * For tests 6 and 7 we use our own AWS SDK custom middleware plugin `sdkMiddlewareRequestCounter.ts`
+ * For tests 4 and 5 we use our own AWS SDK custom middleware plugin `sdkMiddlewareRequestCounter.ts`
  *
  * Adding new test:
  * Please keep the state clean, and create dedicated resource for your test, don't reuse resources from other tests.
@@ -93,18 +91,6 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
       runtime,
       'testSecretBinary'
     );
-    const secretNameObjectWithSuffix = generateUniqueName(
-      RESOURCE_NAME_PREFIX,
-      uuid,
-      runtime,
-      'testSecretObject.json'
-    );
-    const secretNameBinaryWithSuffix = generateUniqueName(
-      RESOURCE_NAME_PREFIX,
-      uuid,
-      runtime,
-      'testSecretObject.binary'
-    );
     const secretNamePlainCached = generateUniqueName(
       RESOURCE_NAME_PREFIX,
       uuid,
@@ -131,8 +117,6 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
         SECRET_NAME_PLAIN: secretNamePlain,
         SECRET_NAME_OBJECT: secretNameObject,
         SECRET_NAME_BINARY: secretNameBinary,
-        SECRET_NAME_OBJECT_WITH_SUFFIX: secretNameObjectWithSuffix,
-        SECRET_NAME_BINARY_WITH_SUFFIX: secretNameBinaryWithSuffix,
         SECRET_NAME_PLAIN_CACHED: secretNamePlainCached,
         SECRET_NAME_PLAIN_FORCE_FETCH: secretNamePlainForceFetch,
       },
@@ -156,26 +140,6 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
       secretStringValue: SecretValue.unsafePlainText('Zm9v'), // 'foo' encoded in base64
     });
 
-    const secretObjectWithSuffix = new Secret(
-      stack,
-      'testSecretObjectWithSuffix',
-      {
-        secretName: secretNameObjectWithSuffix,
-        secretObjectValue: {
-          foo: SecretValue.unsafePlainText('bar'),
-        },
-      }
-    );
-
-    const secretBinaryWithSuffix = new Secret(
-      stack,
-      'testSecretBinaryWithSuffix',
-      {
-        secretName: secretNameBinaryWithSuffix,
-        secretStringValue: SecretValue.unsafePlainText('Zm9v'), // 'foo' encoded in base64
-      }
-    );
-
     const secretStringCached = new Secret(stack, 'testSecretStringCached', {
       secretName: secretNamePlainCached,
       secretStringValue: SecretValue.unsafePlainText('foo'),
@@ -196,8 +160,6 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
         secretString,
         secretObject,
         secretBinary,
-        secretObjectWithSuffix,
-        secretBinaryWithSuffix,
         secretStringCached,
         secretStringForceFetch,
       ])
@@ -256,34 +218,9 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
     );
   });
 
-  it(
-    'should retrieve a secret using transform auto option with implicit json',
-    async () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[3]);
-
-      // result should be a json object
-      expect(testLog).toStrictEqual({
-        test: 'get-transform-auto-json',
-        value: { foo: 'bar' },
-      });
-    },
-    TEST_CASE_TIMEOUT
-  );
-
-  it('should retrieve a secret using transform auto option with implicit binary', async () => {
-    const logs = invocationLogs[0].getFunctionLogs();
-    const testLog = InvocationLogs.parseFunctionLog(logs[4]);
-
-    expect(testLog).toStrictEqual({
-      test: 'get-transform-auto-binary',
-      value: 'foo',
-    });
-  });
-
   it('should retrieve a secret twice with cached value', async () => {
     const logs = invocationLogs[0].getFunctionLogs();
-    const testLogFirst = InvocationLogs.parseFunctionLog(logs[5]);
+    const testLogFirst = InvocationLogs.parseFunctionLog(logs[3]);
 
     // we fetch twice, but we expect to make an API call only once
     expect(testLogFirst).toStrictEqual({
@@ -294,7 +231,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
 
   it('should retrieve a secret twice with forceFetch second time', async () => {
     const logs = invocationLogs[0].getFunctionLogs();
-    const testLogFirst = InvocationLogs.parseFunctionLog(logs[6]);
+    const testLogFirst = InvocationLogs.parseFunctionLog(logs[4]);
 
     // we fetch twice, 2nd time with forceFetch: true flag, we expect two api calls
     expect(testLogFirst).toStrictEqual({

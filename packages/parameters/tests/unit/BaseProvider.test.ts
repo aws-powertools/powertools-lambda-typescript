@@ -281,6 +281,23 @@ describe('Class: BaseProvider', () => {
       );
     });
 
+    test('when the underlying _getMultiple does not return an object, it throws a GetParameterError', async () => {
+      // Prepare
+      const provider = new TestProvider();
+      jest.spyOn(provider, '_getMultiple').mockImplementation(
+        () =>
+          new Promise((resolve, _reject) =>
+            // need to type cast to force the error
+            resolve('not an object' as unknown as Record<string, string>)
+          )
+      );
+
+      // Act & Assess
+      await expect(provider.getMultiple('my-parameter')).rejects.toThrowError(
+        GetParameterError
+      );
+    });
+
     test('when called with a json transform, and all the values are a valid string representation of a JSON, it returns an object with all the values', async () => {
       // Prepare
       const mockData = { A: JSON.stringify({ foo: 'bar' }) };

@@ -1,10 +1,10 @@
 import { Context } from 'aws-lambda';
 import { SSMProvider } from '../../src/ssm';
 import {
-  SSMGetOptionsInterface,
-  SSMGetMultipleOptionsInterface,
-  SSMGetParametersByNameOptionsInterface,
-} from '../../src/types';
+  SSMGetOptions,
+  SSMGetMultipleOptions,
+  SSMGetParametersByNameOptions,
+} from '../../src/types/SSMProvider';
 import { TinyLogger } from '../helpers/tinyLogger';
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
 import { SSMClient } from '@aws-sdk/client-ssm';
@@ -37,7 +37,7 @@ const resolveProvider = (provider?: SSMProvider): SSMProvider => {
 const _call_get = async (
   paramName: string,
   testName: string,
-  options?: SSMGetOptionsInterface,
+  options?: SSMGetOptions,
   provider?: SSMProvider
 ): Promise<void> => {
   try {
@@ -60,7 +60,7 @@ const _call_get = async (
 const _call_get_multiple = async (
   paramPath: string,
   testName: string,
-  options?: SSMGetMultipleOptionsInterface,
+  options?: SSMGetMultipleOptions,
   provider?: SSMProvider
 ): Promise<void> => {
   try {
@@ -84,9 +84,9 @@ const _call_get_multiple = async (
 
 // Helper function to call getParametersByName() and log the result
 const _call_get_parameters_by_name = async (
-  params: Record<string, SSMGetParametersByNameOptionsInterface>,
+  params: Record<string, SSMGetParametersByNameOptions>,
   testName: string,
-  options?: SSMGetParametersByNameOptionsInterface,
+  options?: SSMGetParametersByNameOptions,
   provider?: SSMProvider
 ): Promise<void> => {
   try {

@@ -371,7 +371,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
       async () => {
         const logs = invocationLogs[0].getFunctionLogs();
         const testLog = InvocationLogs.parseFunctionLog(logs[6]);
-        const result = freeFormBase64PlainTextValue;
+        const result = freeFormPlainTextValue;
 
         expect(testLog).toStrictEqual({
           test: 'get-expired',

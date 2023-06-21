@@ -29,8 +29,12 @@ const transformValue = (
       (normalizedTransform === TRANSFORM_METHOD_JSON ||
         (normalizedTransform === 'auto' &&
           key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_JSON}`))) &&
-      isString(value)
+      (isString(value) || isUint8Array(value))
     ) {
+      if (value instanceof Uint8Array) {
+        value = new TextDecoder('utf-8').decode(value);
+      }
+
       return JSON.parse(value) as JSONValue;
     } else if (
       (normalizedTransform === TRANSFORM_METHOD_BINARY ||

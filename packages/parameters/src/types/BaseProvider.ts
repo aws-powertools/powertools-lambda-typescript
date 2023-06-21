@@ -1,7 +1,9 @@
+import { Transform } from '../constants';
+
 /**
  * Type for the transform option.
  */
-type TransformOptions = 'auto' | 'binary' | 'json';
+type TransformOptions = (typeof Transform)[keyof typeof Transform];
 
 /**
  * Options for the `get` method.

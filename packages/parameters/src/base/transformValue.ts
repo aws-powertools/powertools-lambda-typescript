@@ -1,7 +1,6 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons';
 import { isString } from '@aws-lambda-powertools/commons';
 import { fromBase64 } from '@aws-sdk/util-base64-node';
-import { isUint8Array } from 'node:util/types';
 import { TRANSFORM_METHOD_BINARY, TRANSFORM_METHOD_JSON } from '../constants';
 import { TransformParameterError } from '../errors';
 import type { TransformOptions } from '../types/BaseProvider';
@@ -22,33 +21,37 @@ const transformValue = (
   throwOnTransformError: boolean,
   key: string
 ): string | JSONValue | Uint8Array | undefined => {
+  const normalizedTransform = transform.toLowerCase();
+  const isAutoTransform = normalizedTransform === 'auto';
+  const isAutoJsonTransform =
+    isAutoTransform && key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_JSON}`);
+  const isAutoBinaryTransform =
+    isAutoTransform &&
+    key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_BINARY}`);
+  const isJsonTransform = normalizedTransform === TRANSFORM_METHOD_JSON;
+  const isBinaryTransform = normalizedTransform === TRANSFORM_METHOD_BINARY;
+
+  // If the value is not a string or Uint8Array, or if the transform is `auto`
+  // and the key does not end with `.json` or `.binary`, return the value as-is
+  if (
+    !(value instanceof Uint8Array || isString(value)) ||
+    (isAutoTransform && !isAutoJsonTransform && !isAutoBinaryTransform)
+  ) {
+    return value;
+  }
+
   try {
-    const normalizedTransform = transform.toLowerCase();
+    // If the value is a Uint8Array, decode it to a string first
+    if (value instanceof Uint8Array) {
+      value = new TextDecoder('utf-8').decode(value);
+    }
 
-    if (
-      (normalizedTransform === TRANSFORM_METHOD_JSON ||
-        (normalizedTransform === 'auto' &&
-          key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_JSON}`))) &&
-      (isString(value) || isUint8Array(value))
-    ) {
-      if (value instanceof Uint8Array) {
-        value = new TextDecoder('utf-8').decode(value);
-      }
-
+    // If the transform is `json` or `auto` and the key ends with `.json`, parse the value as JSON
+    if (isJsonTransform || isAutoJsonTransform) {
       return JSON.parse(value) as JSONValue;
-    } else if (
-      (normalizedTransform === TRANSFORM_METHOD_BINARY ||
-        (normalizedTransform === 'auto' &&
-          key.toLowerCase().endsWith(`.${TRANSFORM_METHOD_BINARY}`))) &&
-      (isString(value) || isUint8Array(value))
-    ) {
-      if (value instanceof Uint8Array) {
-        value = new TextDecoder('utf-8').decode(value);
-      }
-
+      // If the transform is `binary` or `auto` and the key ends with `.binary`, decode the value from base64
+    } else if (isBinaryTransform || isAutoBinaryTransform) {
       return new TextDecoder('utf-8').decode(fromBase64(value));
-    } else {
-      return value;
     }
   } catch (error) {
     if (throwOnTransformError)

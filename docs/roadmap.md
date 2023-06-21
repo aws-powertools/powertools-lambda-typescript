@@ -16,12 +16,13 @@ We want to close the gap between this version of Powertools for AWS Lambda and t
 
 In the first half of 2023 we have released the [Parameters utility](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/10), and are working on Idempotency. We are currently running a private beta for Idempotency, and plan on releasing the [public beta around July 2023](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/7) at the latest.
 
-For the second half of 2023, we are considering implementing one or more of the following utilities:
+For the second half of 2023, we are considering implementing one or more of the following utilities (in no particular order):
 - Batch Processing (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1082))
 - Validation (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/508))
 - Parser (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1334))
+- Event Handler (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/413))
 
-If any of these utilities are important to you, please let us know by upvoting or commenting on the RFCs.
+If any of these utilities are important to you, please let us know by upvoting the issue, leaving a comment under the RFCs, or by joining the discussion in our [Discord community](https://discord.gg/B8zZKbbyET){target="_blank"}.
 
 ### Version 2 release
 

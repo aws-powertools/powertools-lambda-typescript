@@ -66,6 +66,7 @@ import type { JSONValue } from '@aws-lambda-powertools/commons';
  *  // Retrieve multiple values from DynamoDB
  *  const values = await tableProvider.getMultiple('my-values-path');
  * };
+ * ```
  *
  * ## Advanced usage
  *

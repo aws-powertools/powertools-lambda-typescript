@@ -73,6 +73,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *  // Retrieve multiple parameters by path from SSM
  *  const parameters = await parametersProvider.getMultiple('/my-parameters-path');
  * };
+ * ```
  *
  * If you don't need to customize the provider, you can also use the {@link getParameters} function instead.
  *

@@ -701,6 +701,32 @@ describe('Class: Metrics', () => {
       );
     });
 
+    test('it should publish metrics when the array of values reaches the maximum size', () => {
+      // Prepare
+      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+      const consoleSpy = jest.spyOn(console, 'log');
+      const metricName = 'test-metric';
+
+      // Act
+      for (let i = 0; i <= MAX_METRICS_SIZE; i++) {
+        metrics.addMetric(`${metricName}`, MetricUnits.Count, i);
+      }
+      metrics.publishStoredMetrics();
+
+      // Assess
+      // 2 calls to console.log: 1 for the first batch of metrics, 1 for the second batch (explicit call)
+      expect(consoleSpy).toHaveBeenCalledTimes(2);
+      const firstMetricsJson = JSON.parse(
+        consoleSpy.mock.calls[0][0]
+      ) as EmfOutput;
+      const secondMetricsJson = JSON.parse(
+        consoleSpy.mock.calls[1][0]
+      ) as EmfOutput;
+
+      expect(firstMetricsJson[metricName]).toHaveLength(MAX_METRICS_SIZE);
+      expect(secondMetricsJson[metricName]).toHaveLength(1);
+    });
+
     test('it should not publish metrics if stored metrics count has not reached max metric size threshold', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });

@@ -1,5 +1,5 @@
 import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
-import middy from '@middy/core'; // (1)
+import middy from '@middy/core';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 

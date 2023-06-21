@@ -195,9 +195,9 @@ You can add default dimensions to your metrics by passing them as parameters in 
 
 === "Middy middleware"
 
-    !!! tip "Using Middy for the first time?"
-        You can install Middy by running `npm i @middy/core`.
-        Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
+    !!! tip "A note about Middy"
+        Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
+        Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="24-26"
     --8<-- "docs/snippets/metrics/defaultDimensionsMiddy.ts"
@@ -210,6 +210,9 @@ You can add default dimensions to your metrics by passing them as parameters in 
     ```
 
 === "with logMetrics decorator"
+
+    !!! info
+        Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you prefer to write your handler as a standard function rather than a Class method, use the middleware or the manual instrumentation instead. See the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
 
     ```typescript hl_lines="12"
     --8<-- "docs/snippets/metrics/defaultDimensionsDecorator.ts"

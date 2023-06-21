@@ -43,6 +43,7 @@ theme:
     - navigation.indexes
     - navigation.tracking
     - content.code.annotate
+    - content.code.copy
     - toc.follow
     - toc.integrate
     - announce.dismiss

@@ -141,7 +141,8 @@ export class IdempotencyHandler<U> {
 
     try {
       await this.persistenceStore.saveInProgress(
-        this.functionPayloadToBeHashed
+        this.functionPayloadToBeHashed,
+        this.idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
       );
     } catch (e) {
       if (e instanceof IdempotencyItemAlreadyExistsError) {

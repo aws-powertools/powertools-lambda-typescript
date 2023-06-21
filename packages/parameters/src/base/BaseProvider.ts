@@ -14,7 +14,7 @@ import type {
   BaseProviderInterface,
   GetMultipleOptionsInterface,
   GetOptionsInterface,
-} from '../types';
+} from '../types/BaseProvider';
 
 /**
  * Base class for all providers.

@@ -1,14 +1,14 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 import type {
-  SSMClient,
-  SSMClientConfig,
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
+  SSMClient,
+  SSMClientConfig,
 } from '@aws-sdk/client-ssm';
 import type {
-  GetOptionsInterface,
   GetMultipleOptionsInterface,
+  GetOptionsInterface,
   TransformOptions,
-  JSONValue,
 } from './BaseProvider';
 
 /**

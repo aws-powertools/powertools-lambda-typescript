@@ -1,8 +1,5 @@
-import {
-  BaseProvider,
-  DEFAULT_PROVIDERS,
-  transformValue,
-} from '../BaseProvider';
+import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
+import { transformValue } from '../base/transformValue';
 import { GetParameterError } from '../errors';
 import { DEFAULT_MAX_AGE_SECS } from '../constants';
 import {

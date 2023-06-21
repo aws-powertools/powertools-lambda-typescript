@@ -1,13 +1,10 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 import type {
-  GetOptionsInterface,
-  JSONValue,
-  TransformOptions,
-} from './BaseProvider';
-import type {
+  GetSecretValueCommandInput,
   SecretsManagerClient,
   SecretsManagerClientConfig,
-  GetSecretValueCommandInput,
 } from '@aws-sdk/client-secrets-manager';
+import type { GetOptionsInterface, TransformOptions } from './BaseProvider';
 
 /**
  * Base interface for SecretsProviderOptions.

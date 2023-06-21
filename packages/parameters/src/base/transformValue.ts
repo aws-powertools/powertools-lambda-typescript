@@ -1,9 +1,10 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 import { isString } from '@aws-lambda-powertools/commons';
-import { isUint8Array } from 'node:util/types';
 import { fromBase64 } from '@aws-sdk/util-base64-node';
+import { isUint8Array } from 'node:util/types';
 import { TRANSFORM_METHOD_BINARY, TRANSFORM_METHOD_JSON } from '../constants';
 import { TransformParameterError } from '../errors';
-import type { JSONValue, TransformOptions } from '../types';
+import type { TransformOptions } from '../types/BaseProvider';
 
 /**
  * Utility function to transform a value.

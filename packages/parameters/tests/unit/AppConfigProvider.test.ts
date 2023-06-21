@@ -4,7 +4,7 @@
  * @group unit/parameters/AppConfigProvider/class
  */
 import { AppConfigProvider } from '../../src/appconfig/index';
-import { ExpirableValue } from '../../src/ExpirableValue';
+import { ExpirableValue } from '../../src/base/ExpirableValue';
 import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider';
 import {
   AppConfigDataClient,

@@ -10,7 +10,9 @@ const DEFAULT_PROVIDERS: Record<string, BaseProviderInterface> = {};
  */
 const clearCaches = (): void => {
   for (const provider of Object.values(DEFAULT_PROVIDERS)) {
-    provider.clearCache();
+    if (provider.clearCache) {
+      provider.clearCache();
+    }
   }
 };
 

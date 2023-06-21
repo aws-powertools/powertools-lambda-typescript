@@ -1,4 +1,4 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../BaseProvider';
+import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,

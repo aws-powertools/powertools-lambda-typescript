@@ -1,14 +1,14 @@
-import type {
-  GetOptionsInterface,
-  GetMultipleOptionsInterface,
-  JSONValue,
-} from './BaseProvider';
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 import type {
   DynamoDBClient,
+  DynamoDBClientConfig,
   GetItemCommandInput,
   QueryCommandInput,
-  DynamoDBClientConfig,
 } from '@aws-sdk/client-dynamodb';
+import type {
+  GetMultipleOptionsInterface,
+  GetOptionsInterface,
+} from './BaseProvider';
 
 /**
  * Base interface for DynamoDBProviderOptions.

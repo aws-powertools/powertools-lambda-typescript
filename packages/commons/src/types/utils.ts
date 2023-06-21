@@ -1,8 +1,7 @@
 /**
- * TODO: write docs for isRecord() type guard
+ * Returns true if the passed value is a record (object).
  *
  * @param value
- * @returns
  */
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return (
@@ -12,9 +11,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 };
 
 /**
- * TODO: write docs for isTruthy()
+ * Returns true if the passed value is truthy.
+ *
  * @param value
- * @returns
  */
 const isTruthy = (value: unknown): boolean => {
   if (typeof value === 'string') {
@@ -28,21 +27,21 @@ const isTruthy = (value: unknown): boolean => {
   } else if (isRecord(value)) {
     return Object.keys(value).length > 0;
   } else {
-    return Object.is(value, true);
+    return false;
   }
 };
 
 /**
- * TODO: write docs for isNullOrUndefined()
+ * Returns true if the passed value is null or undefined.
+ *
  * @param value
- * @returns
  */
 const isNullOrUndefined = (value: unknown): value is null | undefined => {
   return Object.is(value, null) || Object.is(value, undefined);
 };
 
 /**
- * TODO: write docs for isString()
+ * Returns true if the passed value is a string.
  * @param value
  * @returns
  */

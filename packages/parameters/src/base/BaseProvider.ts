@@ -3,7 +3,6 @@ import {
   isRecord,
   isString,
 } from '@aws-lambda-powertools/commons';
-import { isUint8Array } from 'node:util/types';
 import { GetOptions } from './GetOptions';
 import { GetMultipleOptions } from './GetMultipleOptions';
 import { ExpirableValue } from './ExpirableValue';
@@ -86,7 +85,10 @@ abstract class BaseProvider implements BaseProviderInterface {
 
       if (isNullOrUndefined(value)) return undefined;
 
-      if (configs.transform && (isString(value) || isUint8Array(value))) {
+      if (
+        configs.transform &&
+        (isString(value) || value instanceof Uint8Array)
+      ) {
         value = transformValue(value, configs.transform, true, name);
       }
 
@@ -133,7 +135,8 @@ abstract class BaseProvider implements BaseProviderInterface {
 
     if (configs.transform) {
       for (const [entryKey, entryValue] of Object.entries(values)) {
-        if (!(isString(entryValue) || isUint8Array(entryValue))) continue;
+        if (!(isString(entryValue) || entryValue instanceof Uint8Array))
+          continue;
         try {
           values[entryKey] = transformValue(
             entryValue,

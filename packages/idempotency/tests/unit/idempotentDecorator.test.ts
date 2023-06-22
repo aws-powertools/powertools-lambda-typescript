@@ -47,7 +47,6 @@ const functionalityToDecorate = jest.fn();
 class TestinClassWithLambdaHandler {
   @idempotentLambdaHandler({
     persistenceStore: new PersistenceLayerTestClass(),
-    config: new IdempotencyConfig({ lambdaContext: mockLambaContext }),
   })
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public testing(record: Record<string, unknown>, context: Context): string {
@@ -113,10 +112,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
-        inputRecord,
-        mockLambaContext.getRemainingTimeInMillis()
-      );
+      expect(mockSaveInProgress).toBeCalledWith(inputRecord, undefined);
     });
 
     test('Then it will call the function that was decorated', () => {
@@ -149,10 +145,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
-        inputRecord,
-        mockLambaContext.getRemainingTimeInMillis()
-      );
+      expect(mockSaveInProgress).toBeCalledWith(inputRecord, undefined);
     });
 
     test('Then it will get the previous execution record', () => {
@@ -189,10 +182,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
-        inputRecord,
-        mockLambaContext.getRemainingTimeInMillis()
-      );
+      expect(mockSaveInProgress).toBeCalledWith(inputRecord, undefined);
     });
 
     test('Then it will get the previous execution record', () => {
@@ -225,10 +215,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
-        inputRecord,
-        mockLambaContext.getRemainingTimeInMillis()
-      );
+      expect(mockSaveInProgress).toBeCalledWith(inputRecord, undefined);
     });
 
     test('Then it will get the previous execution record', () => {

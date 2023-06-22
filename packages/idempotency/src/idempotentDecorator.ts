@@ -32,6 +32,7 @@ const idempotent = function (
       const functionPayloadtoBeHashed = isFunctionOption(options)
         ? record[(options as IdempotencyFunctionOptions).dataKeywordArgument]
         : record;
+
       const idempotencyConfig = options.config
         ? options.config
         : new IdempotencyConfig({});

@@ -3,7 +3,6 @@
  *
  * @group unit/tracer/all
  */
-
 import { captureLambdaHandler } from '../../src/middleware/middy';
 import middy from '@middy/core';
 import { Tracer } from './../../src';
@@ -13,6 +12,7 @@ import {
   setContextMissingStrategy,
   Subsegment,
 } from 'aws-xray-sdk-core';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
 
 jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);
@@ -305,5 +305,67 @@ describe('Middy middleware', () => {
       'Service',
       'hello-world'
     );
+  });
+
+  test('when enabled, and another middleware returns early, it still closes and restores the segments correctly', async () => {
+    // Prepare
+    const tracer = new Tracer();
+    const setSegmentSpy = jest
+      .spyOn(tracer.provider, 'setSegment')
+      .mockImplementation(() => ({}));
+    jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+    jest
+      .spyOn(tracer, 'addServiceNameAnnotation')
+      .mockImplementation(() => ({}));
+    const facadeSegment1 = new Segment('facade');
+    const handlerSubsegment1 = new Subsegment('## index.handlerA');
+    jest
+      .spyOn(facadeSegment1, 'addNewSubsegment')
+      .mockImplementation(() => handlerSubsegment1);
+    const facadeSegment2 = new Segment('facade');
+    const handlerSubsegment2 = new Subsegment('## index.handlerB');
+    jest
+      .spyOn(facadeSegment2, 'addNewSubsegment')
+      .mockImplementation(() => handlerSubsegment2);
+    jest
+      .spyOn(tracer.provider, 'getSegment')
+      .mockImplementationOnce(() => facadeSegment1)
+      .mockImplementationOnce(() => facadeSegment2);
+    const myCustomMiddleware = (): middy.MiddlewareObj => {
+      const before = async (
+        request: middy.Request
+      ): Promise<undefined | string> => {
+        // Return early on the second invocation
+        if (request.event.idx === 1) {
+          // Cleanup Powertools resources
+          await cleanupMiddlewares(request);
+
+          // Then return early
+          return 'foo';
+        }
+      };
+
+      return {
+        before,
+      };
+    };
+    const handler = middy((): void => {
+      console.log('Hello world!');
+    })
+      .use(captureLambdaHandler(tracer, { captureResponse: false }))
+      .use(myCustomMiddleware());
+
+    // Act
+    await handler({ idx: 0 }, context);
+    await handler({ idx: 1 }, context);
+
+    // Assess
+    // Check that the subsegments are closed
+    expect(handlerSubsegment1.isClosed()).toBe(true);
+    expect(handlerSubsegment2.isClosed()).toBe(true);
+    // Check that the segments are restored
+    expect(setSegmentSpy).toHaveBeenCalledTimes(4);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(2, facadeSegment1);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(4, facadeSegment2);
   });
 });

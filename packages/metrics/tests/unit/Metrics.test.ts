@@ -16,6 +16,7 @@ import {
   DEFAULT_NAMESPACE,
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,
+  MAX_METRIC_VALUES_SIZE,
 } from '../../src/constants';
 import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils';
 import {
@@ -708,7 +709,7 @@ describe('Class: Metrics', () => {
       const metricName = 'test-metric';
 
       // Act
-      for (let i = 0; i <= MAX_METRICS_SIZE; i++) {
+      for (let i = 0; i <= MAX_METRIC_VALUES_SIZE; i++) {
         metrics.addMetric(`${metricName}`, MetricUnits.Count, i);
       }
       metrics.publishStoredMetrics();
@@ -723,8 +724,10 @@ describe('Class: Metrics', () => {
         consoleSpy.mock.calls[1][0]
       ) as EmfOutput;
 
-      expect(firstMetricsJson[metricName]).toHaveLength(MAX_METRICS_SIZE);
-      expect(secondMetricsJson[metricName]).toHaveLength(1);
+      // The first batch of values should be an array of size MAX_METRIC_VALUES_SIZE
+      expect(firstMetricsJson[metricName]).toHaveLength(MAX_METRIC_VALUES_SIZE);
+      // The second should be a single value (the last value added, which is 100 given we start from 0)
+      expect(secondMetricsJson[metricName]).toEqual(100);
     });
 
     test('it should not publish metrics if stored metrics count has not reached max metric size threshold', () => {

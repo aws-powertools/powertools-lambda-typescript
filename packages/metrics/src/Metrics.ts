@@ -7,6 +7,7 @@ import {
   MAX_METRICS_SIZE,
   DEFAULT_NAMESPACE,
   COLD_START_METRIC,
+  MAX_METRIC_VALUES_SIZE,
 } from './constants';
 import {
   MetricsOptions,
@@ -662,7 +663,10 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Stores a metric in the buffer
+   * Stores a metric in the buffer.
+   *
+   * If the buffer is full, or the metric reaches the maximum number of values,
+   * the buffer is published to stdout.
    *
    * @param name The name of the metric to store
    * @param unit The unit of the metric to store
@@ -692,6 +696,9 @@ class Metrics extends Utility implements MetricsInterface {
         storedMetric.value = [storedMetric.value];
       }
       storedMetric.value.push(value);
+      if (storedMetric.value.length === MAX_METRIC_VALUES_SIZE) {
+        this.publishStoredMetrics();
+      }
     }
   }
 }

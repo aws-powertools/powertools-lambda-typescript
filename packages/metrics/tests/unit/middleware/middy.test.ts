@@ -11,6 +11,9 @@ import {
 } from '../../../../metrics/src';
 import middy from '@middy/core';
 import { ExtraOptions } from '../../../src/types';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
+import { helloworldContext as dummyContext } from '../../../../commons/src/samples/resources/contexts/hello-world';
+import { CustomEvent as dummyEvent } from '../../../../commons/src/samples/resources/events/custom/index';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -18,27 +21,6 @@ const mockDate = new Date(1466424490000);
 jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Middy middleware', () => {
-  const dummyEvent = {
-    key1: 'value1',
-    key2: 'value2',
-    key3: 'value3',
-  };
-  const dummyContext = {
-    callbackWaitsForEmptyEventLoop: true,
-    functionVersion: '$LATEST',
-    functionName: 'foo-bar-function',
-    memoryLimitInMB: '128',
-    logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
-    logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-    invokedFunctionArn:
-      'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-    getRemainingTimeInMillis: () => 1234,
-    done: () => console.log('Done!'),
-    fail: () => console.log('Failed!'),
-    succeed: () => console.log('Succeeded!'),
-  };
-
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
@@ -398,6 +380,50 @@ describe('Middy middleware', () => {
           successfulBooking: 1,
         })
       );
+    });
+
+    test('when enabled, and another middleware returns early, it still publishes the metrics at the end of the execution', async () => {
+      // Prepare
+      const metrics = new Metrics({
+        namespace: 'serverlessAirline',
+        serviceName: 'orders',
+      });
+      const publishStoredMetricsSpy = jest.spyOn(
+        metrics,
+        'publishStoredMetrics'
+      );
+      const myCustomMiddleware = (): middy.MiddlewareObj => {
+        const before = async (
+          request: middy.Request
+        ): Promise<undefined | string> => {
+          // Return early on the second invocation
+          if (request.event.idx === 1) {
+            // Cleanup Powertools resources
+            await cleanupMiddlewares(request);
+
+            // Then return early
+            return 'foo';
+          }
+        };
+
+        return {
+          before,
+        };
+      };
+      const handler = middy(
+        (_event: typeof dummyEvent & { idx: number }): void => {
+          metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        }
+      )
+        .use(logMetrics(metrics))
+        .use(myCustomMiddleware());
+
+      // Act
+      await handler({ ...dummyEvent, idx: 0 }, dummyContext);
+      await handler({ ...dummyEvent, idx: 1 }, dummyContext);
+
+      // Assess
+      expect(publishStoredMetricsSpy).toBeCalledTimes(2);
     });
   });
   describe('Metrics resolution', () => {

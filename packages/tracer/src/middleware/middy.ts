@@ -1,3 +1,4 @@
+import { TRACER_KEY } from '@aws-lambda-powertools/commons/lib/middleware';
 import type { Tracer } from '../Tracer';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 import type { CaptureLambdaHandlerOptions } from '../types';
@@ -40,6 +41,18 @@ const captureLambdaHandler = (
   let lambdaSegment: Segment;
   let handlerSegment: Subsegment;
 
+  /**
+   * Set the cleanup function to be called in case other middlewares return early.
+   *
+   * @param request - The request object
+   */
+  const setCleanupFunction = (request: MiddyLikeRequest): void => {
+    request.internal = {
+      ...request.internal,
+      [TRACER_KEY]: close,
+    };
+  };
+
   const open = (): void => {
     const segment = target.getSegment();
     if (segment === undefined) {
@@ -61,9 +74,12 @@ const captureLambdaHandler = (
     target.setSegment(lambdaSegment);
   };
 
-  const captureLambdaHandlerBefore = async (): Promise<void> => {
+  const captureLambdaHandlerBefore = async (
+    request: MiddyLikeRequest
+  ): Promise<void> => {
     if (target.isTracingEnabled()) {
       open();
+      setCleanupFunction(request);
       target.annotateColdStart();
       target.addServiceNameAnnotation();
     }

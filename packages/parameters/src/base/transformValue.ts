@@ -8,10 +8,23 @@ import type { TransformOptions } from '../types/BaseProvider';
 /**
  * Utility function to transform a value.
  *
- * It supports JSON and binary transformations, as well as an 'auto' mode that will try to transform the value based on the key.
+ * It supports JSON and binary transformations, as well as an `auto` mode that will try to transform the value based on the key.
+ *
+ * The function supports both `string` and `Uint8Array` values as input. Other types will be returned as-is.
+ *
+ * If the value is a `Uint8Array`, it will be decoded to a string first. Then, when the transform is `json` or `auto` and the key ends with `.json`,
+ * the value will be parsed as JSON using the `JSON.parse` function.
+ *
+ * When the transform is `binary` or `auto` and the key ends with `.binary`, the value will be decoded from base64 using the `fromBase64` function
+ * from the `@aws-sdk/util-base64-node` package.
+ *
+ * If the transformation fails, the function will return the value as-is unless `throwOnTransformError` is set to `true`.
+ *
+ * @note When using `auto` mode, the key must end with either `.json` or `.binary` to be transformed. Automatic transformation is supported only for
+ * `getMultiple` calls.
  *
  * @param {string | Uint8Array} value - Value to be transformed
- * @param {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'
+ * @param {TransformOptions} transform - Transform to be applied, can be `json`, `binary`, or `auto`
  * @param {boolean} throwOnTransformError - Whether to throw an error if the transformation fails, when transforming multiple values this can be set to false
  * @param {string} key - Key of the value to be transformed, used to determine the transformation method when using 'auto'
  */

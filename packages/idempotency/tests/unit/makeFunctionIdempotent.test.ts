@@ -17,6 +17,8 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
 } from '../../src/Exceptions';
+import { IdempotencyConfig } from '../../src';
+import { Context } from 'aws-lambda';
 
 const mockSaveInProgress = jest
   .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')
@@ -24,6 +26,12 @@ const mockSaveInProgress = jest
 const mockGetRecord = jest
   .spyOn(BasePersistenceLayer.prototype, 'getRecord')
   .mockImplementation();
+
+const mockLambaContext: Context = {
+  getRemainingTimeInMillis(): number {
+    return 1000; // we expect this number to be passed to saveInProgress
+  },
+} as Context;
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -37,6 +45,7 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
   describe('Given options for idempotency', (options: IdempotencyFunctionOptions = {
     persistenceStore: new PersistenceLayerTestClass(),
     dataKeywordArgument: 'testingKey',
+    config: new IdempotencyConfig({ lambdaContext: mockLambaContext }),
   }) => {
     const keyValueToBeSaved = 'thisWillBeSaved';
     const inputRecord = {
@@ -51,7 +60,10 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
 
       test('Then it will save the record to INPROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
+        expect(mockSaveInProgress).toBeCalledWith(
+          keyValueToBeSaved,
+          mockLambaContext.getRemainingTimeInMillis()
+        );
       });
 
       test('Then it will call the function that was wrapped with the whole input record', () => {
@@ -82,7 +94,10 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
 
       test('Then it will attempt to save the record to INPROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
+        expect(mockSaveInProgress).toBeCalledWith(
+          keyValueToBeSaved,
+          mockLambaContext.getRemainingTimeInMillis()
+        );
       });
 
       test('Then it will get the previous execution record', () => {
@@ -123,7 +138,10 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
 
       test('Then it will attempt to save the record to INPROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
+        expect(mockSaveInProgress).toBeCalledWith(
+          keyValueToBeSaved,
+          mockLambaContext.getRemainingTimeInMillis()
+        );
       });
 
       test('Then it will get the previous execution record', () => {
@@ -159,7 +177,10 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
 
       test('Then it will attempt to save the record to INPROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
+        expect(mockSaveInProgress).toBeCalledWith(
+          keyValueToBeSaved,
+          mockLambaContext.getRemainingTimeInMillis()
+        );
       });
 
       test('Then it will get the previous execution record', () => {
@@ -185,7 +206,10 @@ describe('Given a function to wrap', (functionToWrap = jest.fn()) => {
       });
 
       test('Then it will attempt to save the record to INPROGRESS', () => {
-        expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
+        expect(mockSaveInProgress).toBeCalledWith(
+          keyValueToBeSaved,
+          mockLambaContext.getRemainingTimeInMillis()
+        );
       });
 
       test('Then an IdempotencyPersistenceLayerError is thrown', () => {

@@ -14,6 +14,7 @@ import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
 import { IdempotencyConfig } from '../../src/';
 import { MAX_RETRIES } from '../../src/constants';
+import { Context } from 'aws-lambda';
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -246,6 +247,39 @@ describe('Class IdempotencyHandler', () => {
       expect(mockSaveInProgress).toHaveBeenCalledTimes(0);
       expect(mockGetRecord).toHaveBeenCalledTimes(0);
       expect(mockSaveSuccessfulResult).toHaveBeenCalledTimes(0);
+    });
+
+    test('when lambdaContext is registered, we pass it to saveInProgress', async () => {
+      const mockSaveInProgress = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      );
+
+      const mockLambaContext: Context = {
+        getRemainingTimeInMillis(): number {
+          return 1000; // we expect this number to be passed to saveInProgress
+        },
+      } as Context;
+      const idempotencyHandlerWithContext = new IdempotencyHandler({
+        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+        persistenceStore: mockIdempotencyOptions.persistenceStore,
+        fullFunctionPayload: mockFullFunctionPayload,
+        idempotencyConfig: new IdempotencyConfig({
+          lambdaContext: mockLambaContext,
+        }),
+      });
+
+      mockFunctionToMakeIdempotent.mockImplementation(() =>
+        Promise.resolve('result')
+      );
+
+      await expect(idempotencyHandlerWithContext.processIdempotency()).resolves;
+
+      expect(mockSaveInProgress).toBeCalledWith(
+        mockFunctionPayloadToBeHashed,
+        mockLambaContext.getRemainingTimeInMillis()
+      );
     });
   });
 

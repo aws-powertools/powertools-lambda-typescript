@@ -5,6 +5,16 @@ import {
 } from './types';
 import { IdempotencyHandler } from './IdempotencyHandler';
 import { IdempotencyConfig } from './IdempotencyConfig';
+import { Context } from 'aws-lambda';
+
+const isContext = (arg: unknown): arg is Context => {
+  return (
+    arg !== undefined &&
+    arg !== null &&
+    typeof arg === 'object' &&
+    'getRemainingTimeInMillis' in arg
+  );
+};
 
 /**
  * use this function to narrow the type of options between IdempotencyHandlerOptions and IdempotencyFunctionOptions
@@ -28,13 +38,20 @@ const idempotent = function (
     descriptor: PropertyDescriptor
   ) {
     const childFunction = descriptor.value;
-    descriptor.value = function (record: GenericTempRecord) {
+    descriptor.value = function (
+      record: GenericTempRecord,
+      ...args: unknown[]
+    ) {
       const functionPayloadtoBeHashed = isFunctionOption(options)
         ? record[(options as IdempotencyFunctionOptions).dataKeywordArgument]
         : record;
       const idempotencyConfig = options.config
         ? options.config
         : new IdempotencyConfig({});
+      const context = args[0];
+      if (isContext(context)) {
+        idempotencyConfig.registerLambdaContext(context);
+      }
       const idempotencyHandler = new IdempotencyHandler<GenericTempRecord>({
         functionToMakeIdempotent: childFunction,
         functionPayloadToBeHashed: functionPayloadtoBeHashed,

@@ -33,6 +33,8 @@ const mockLambaContext: Context = {
   },
 } as Context;
 
+const mockConfig: IdempotencyConfig = new IdempotencyConfig({});
+
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
   protected _getRecord = jest.fn();
@@ -47,7 +49,8 @@ class TestinClassWithLambdaHandler {
     persistenceStore: new PersistenceLayerTestClass(),
     config: new IdempotencyConfig({ lambdaContext: mockLambaContext }),
   })
-  public testing(record: Record<string, unknown>): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public testing(record: Record<string, unknown>, context: Context): string {
     functionalityToDecorate(record);
 
     return 'Hi';
@@ -55,14 +58,16 @@ class TestinClassWithLambdaHandler {
 }
 
 class TestingClassWithFunctionDecorator {
-  public handler(record: Record<string, unknown>): string {
+  public handler(record: Record<string, unknown>, context: Context): string {
+    mockConfig.registerLambdaContext(context);
+
     return this.proccessRecord(record);
   }
 
   @idempotentFunction({
     persistenceStore: new PersistenceLayerTestClass(),
     dataKeywordArgument: 'testingKey',
-    config: new IdempotencyConfig({ lambdaContext: mockLambaContext }),
+    config: mockConfig,
   })
   public proccessRecord(record: Record<string, unknown>): string {
     functionalityToDecorate(record);
@@ -81,7 +86,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
 
   describe('When wrapping a function with no previous executions', () => {
     beforeEach(async () => {
-      await classWithFunctionDecorator.handler(inputRecord);
+      await classWithFunctionDecorator.handler(inputRecord, mockLambaContext);
     });
 
     test('Then it will save the record to INPROGRESS', () => {
@@ -104,7 +109,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
   });
   describe('When wrapping a function with no previous executions', () => {
     beforeEach(async () => {
-      await classWithLambdaHandler.testing(inputRecord);
+      await classWithLambdaHandler.testing(inputRecord, mockLambaContext);
     });
 
     test('Then it will save the record to INPROGRESS', () => {
@@ -137,7 +142,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
         new IdempotencyRecord(idempotencyOptions)
       );
       try {
-        await classWithLambdaHandler.testing(inputRecord);
+        await classWithLambdaHandler.testing(inputRecord, mockLambaContext);
       } catch (e) {
         resultingError = e as Error;
       }
@@ -177,7 +182,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
         new IdempotencyRecord(idempotencyOptions)
       );
       try {
-        await classWithLambdaHandler.testing(inputRecord);
+        await classWithLambdaHandler.testing(inputRecord, mockLambaContext);
       } catch (e) {
         resultingError = e as Error;
       }
@@ -216,7 +221,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
       mockGetRecord.mockResolvedValue(
         new IdempotencyRecord(idempotencyOptions)
       );
-      await classWithLambdaHandler.testing(inputRecord);
+      await classWithLambdaHandler.testing(inputRecord, mockLambaContext);
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {

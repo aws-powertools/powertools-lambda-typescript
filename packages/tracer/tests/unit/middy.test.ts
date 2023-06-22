@@ -356,8 +356,8 @@ describe('Middy middleware', () => {
       .use(myCustomMiddleware());
 
     // Act
-    await handler({}, context);
-    await handler({}, context);
+    await handler({ idx: 0 }, context);
+    await handler({ idx: 1 }, context);
 
     // Assess
     // Check that the subsegments are closed

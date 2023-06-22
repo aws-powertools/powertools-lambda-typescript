@@ -7,6 +7,7 @@ import {
   ContextExamples as dummyContext,
   Events as dummyEvent,
 } from '@aws-lambda-powertools/commons';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
 import {
   ConfigServiceInterface,
   EnvironmentVariablesService,
@@ -195,6 +196,64 @@ describe('Middy middleware', () => {
       });
       expect(persistentAttribsAfterInvocation).toEqual(
         persistentAttribsBeforeInvocation
+      );
+    });
+
+    test('when enabled, and another middleware returns early, it still clears the state', async () => {
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+      });
+      const loggerSpy = jest.spyOn(logger['console'], 'debug');
+      const myCustomMiddleware = (): middy.MiddlewareObj => {
+        const before = async (
+          request: middy.Request
+        ): Promise<undefined | string> => {
+          // Return early on the second invocation
+          if (request.event.idx === 1) {
+            // Cleanup Powertools resources
+            await cleanupMiddlewares(request);
+
+            // Then return early
+            return 'foo';
+          }
+        };
+
+        return {
+          before,
+        };
+      };
+      const handler = middy(
+        (
+          event: typeof dummyEvent.Custom.CustomEvent & { idx: number }
+        ): void => {
+          // Add a key only at the first invocation, so we can check that it's cleared
+          if (event.idx === 0) {
+            logger.appendKeys({
+              details: { user_id: '1234' },
+            });
+          }
+          logger.debug('This is a DEBUG log');
+        }
+      )
+        .use(injectLambdaContext(logger, { clearState: true }))
+        .use(myCustomMiddleware());
+
+      // Act
+      await handler({ ...event, idx: 0 }, context);
+      await handler({ ...event, idx: 1 }, context);
+
+      // Assess
+      const persistentAttribsAfterInvocation = {
+        ...logger.getPersistentLogAttributes(),
+      };
+      expect(persistentAttribsAfterInvocation).toEqual({});
+      // Only one log because the second invocation returned early
+      // from the custom middleware
+      expect(loggerSpy).toBeCalledTimes(1);
+      expect(loggerSpy).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('"details":{"user_id":"1234"}')
       );
     });
   });

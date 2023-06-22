@@ -15,6 +15,7 @@ import {
   IdempotencyPersistenceLayerError,
 } from '../../src/Exceptions';
 import { IdempotencyConfig } from '../../src';
+import { Context } from 'aws-lambda';
 
 const mockSaveInProgress = jest
   .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')
@@ -25,6 +26,12 @@ const mockSaveSuccess = jest
 const mockGetRecord = jest
   .spyOn(BasePersistenceLayer.prototype, 'getRecord')
   .mockImplementation();
+
+const mockLambaContext: Context = {
+  getRemainingTimeInMillis(): number {
+    return 1000; // we expect this number to be passed to saveInProgress
+  },
+} as Context;
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -38,6 +45,7 @@ const functionalityToDecorate = jest.fn();
 class TestinClassWithLambdaHandler {
   @idempotentLambdaHandler({
     persistenceStore: new PersistenceLayerTestClass(),
+    config: new IdempotencyConfig({ lambdaContext: mockLambaContext }),
   })
   public testing(record: Record<string, unknown>): string {
     functionalityToDecorate(record);
@@ -54,6 +62,7 @@ class TestingClassWithFunctionDecorator {
   @idempotentFunction({
     persistenceStore: new PersistenceLayerTestClass(),
     dataKeywordArgument: 'testingKey',
+    config: new IdempotencyConfig({ lambdaContext: mockLambaContext }),
   })
   public proccessRecord(record: Record<string, unknown>): string {
     functionalityToDecorate(record);
@@ -76,7 +85,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(keyValueToBeSaved);
+      expect(mockSaveInProgress).toBeCalledWith(
+        keyValueToBeSaved,
+        mockLambaContext.getRemainingTimeInMillis()
+      );
     });
 
     test('Then it will call the function that was decorated', () => {
@@ -96,7 +108,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(inputRecord);
+      expect(mockSaveInProgress).toBeCalledWith(
+        inputRecord,
+        mockLambaContext.getRemainingTimeInMillis()
+      );
     });
 
     test('Then it will call the function that was decorated', () => {
@@ -129,7 +144,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(inputRecord);
+      expect(mockSaveInProgress).toBeCalledWith(
+        inputRecord,
+        mockLambaContext.getRemainingTimeInMillis()
+      );
     });
 
     test('Then it will get the previous execution record', () => {
@@ -166,7 +184,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(inputRecord);
+      expect(mockSaveInProgress).toBeCalledWith(
+        inputRecord,
+        mockLambaContext.getRemainingTimeInMillis()
+      );
     });
 
     test('Then it will get the previous execution record', () => {
@@ -199,7 +220,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(inputRecord);
+      expect(mockSaveInProgress).toBeCalledWith(
+        inputRecord,
+        mockLambaContext.getRemainingTimeInMillis()
+      );
     });
 
     test('Then it will get the previous execution record', () => {
@@ -215,7 +239,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     class TestinClassWithLambdaHandlerWithConfig {
       @idempotentLambdaHandler({
         persistenceStore: new PersistenceLayerTestClass(),
-        config: new IdempotencyConfig({}),
+        config: new IdempotencyConfig({ lambdaContext: mockLambaContext }),
       })
       public testing(record: Record<string, unknown>): string {
         functionalityToDecorate(record);
@@ -237,7 +261,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(inputRecord);
+      expect(mockSaveInProgress).toBeCalledWith(
+        inputRecord,
+        mockLambaContext.getRemainingTimeInMillis()
+      );
     });
 
     test('Then an IdempotencyPersistenceLayerError is thrown', () => {

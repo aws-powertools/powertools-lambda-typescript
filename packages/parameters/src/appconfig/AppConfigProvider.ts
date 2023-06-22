@@ -1,4 +1,4 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../BaseProvider';
+import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,
@@ -7,7 +7,8 @@ import {
 import type { StartConfigurationSessionCommandInput } from '@aws-sdk/client-appconfigdata';
 import type {
   AppConfigProviderOptions,
-  AppConfigGetOptionsInterface,
+  AppConfigGetOptions,
+  AppConfigGetOutput,
 } from '../types/AppConfigProvider';
 
 /**
@@ -31,7 +32,10 @@ import type {
  * ```typescript
  * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
  *
- * const configProvider = new AppConfigProvider();
+ * const configProvider = new AppConfigProvider({
+ *   application: 'my-app',
+ *   environment: 'prod',
+ * });
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a configuration profile
@@ -52,7 +56,10 @@ import type {
  * ```typescript
  * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
  *
- * const configProvider = new AppConfigProvider();
+ * const configProvider = new AppConfigProvider({
+ *   application: 'my-app',
+ *   environment: 'prod',
+ * });
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a configuration profile and cache it for 10 seconds
@@ -67,7 +74,10 @@ import type {
  * ```typescript
  * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
  *
- * const configProvider = new AppConfigProvider();
+ * const configProvider = new AppConfigProvider({
+ *   application: 'my-app',
+ *   environment: 'prod',
+ * });
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a config and always fetch the latest value
@@ -84,7 +94,10 @@ import type {
  * ```typescript
  * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
  *
- * const configProvider = new AppConfigProvider();
+ * const configProvider = new AppConfigProvider({
+ *   application: 'my-app',
+ *   environment: 'prod',
+ * });
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a JSON config or Feature Flag and parse it as JSON
@@ -98,7 +111,10 @@ import type {
  * ```typescript
  * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
  *
- * const configProvider = new AppConfigProvider();
+ * const configProvider = new AppConfigProvider({
+ *   application: 'my-app',
+ *   environment: 'prod',
+ * });
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a base64-encoded string and decode it
@@ -114,7 +130,10 @@ import type {
  * ```typescript
  * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
  *
- * const configProvider = new AppConfigProvider();
+ * const configProvider = new AppConfigProvider({
+ *   application: 'my-app',
+ *   environment: 'prod',
+ * });
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a config and pass extra options to the AWS SDK v3 for JavaScript client
@@ -140,6 +159,8 @@ import type {
  * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
  *
  * const configProvider = new AppConfigProvider({
+ *   application: 'my-app',
+ *   environment: 'prod',
  *   clientConfig: { region: 'eu-west-1' },
  * });
  * ```
@@ -155,6 +176,8 @@ import type {
  *
  * const client = new AppConfigDataClient({ region: 'eu-west-1' });
  * const configProvider = new AppConfigProvider({
+ *   application: 'my-app',
+ *   environment: 'prod',
  *   awsSdkV3Client: client,
  * });
  * ```
@@ -204,7 +227,10 @@ class AppConfigProvider extends BaseProvider {
    * ```typescript
    * import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
    *
-   * const configProvider = new AppConfigProvider();
+   * const configProvider = new AppConfigProvider({
+   *   application: 'my-app',
+   *   environment: 'prod',
+   * });
    *
    * export const handler = async (): Promise<void> => {
    *   // Retrieve a configuration profile
@@ -222,35 +248,43 @@ class AppConfigProvider extends BaseProvider {
    * For usage examples check {@link AppConfigProvider}.
    *
    * @param {string} name - The name of the configuration profile or its ID
-   * @param {GetAppConfigCombinedInterface} options - Options to configure the provider
+   * @param {AppConfigGetOptions} options - Options to configure the provider
    * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
-  public async get(
+  public async get<
+    ExplicitUserProvidedType = undefined,
+    InferredFromOptionsType extends
+      | AppConfigGetOptions
+      | undefined = AppConfigGetOptions
+  >(
     name: string,
-    options?: AppConfigGetOptionsInterface
-  ): Promise<undefined | string | Uint8Array | Record<string, unknown>> {
-    return super.get(name, options);
+    options?: InferredFromOptionsType & AppConfigGetOptions
+  ): Promise<
+    | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+    | undefined
+  > {
+    return super.get(name, options) as Promise<
+      | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+      | undefined
+    >;
   }
 
   /**
    * Retrieving multiple configurations is not supported by AWS AppConfig.
    */
-  public async getMultiple(
-    path: string,
-    _options?: unknown
-  ): Promise<undefined | Record<string, unknown>> {
-    return super.getMultiple(path);
+  public async getMultiple(path: string, _options?: unknown): Promise<void> {
+    await super.getMultiple(path);
   }
 
   /**
    * Retrieve a configuration from AWS AppConfig.
    *
    * @param {string} name - Name of the configuration or its ID
-   * @param {AppConfigGetOptionsInterface} options - SDK options to propagate to `StartConfigurationSession` API call
+   * @param {AppConfigGetOptions} options - SDK options to propagate to `StartConfigurationSession` API call
    */
   protected async _get(
     name: string,
-    options?: AppConfigGetOptionsInterface
+    options?: AppConfigGetOptions
   ): Promise<Uint8Array | undefined> {
     /**
      * The new AppConfig APIs require two API calls to return the configuration
@@ -321,7 +355,7 @@ class AppConfigProvider extends BaseProvider {
   protected async _getMultiple(
     _path: string,
     _sdkOptions?: unknown
-  ): Promise<Record<string, string | undefined>> {
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

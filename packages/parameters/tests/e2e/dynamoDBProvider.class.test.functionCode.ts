@@ -1,9 +1,10 @@
 import { Context } from 'aws-lambda';
+import { Transform } from '../../src';
 import { DynamoDBProvider } from '../../src/dynamodb';
 import {
-  DynamoDBGetOptionsInterface,
-  DynamoDBGetMultipleOptionsInterface,
-} from '../../src/types';
+  DynamoDBGetOptions,
+  DynamoDBGetMultipleOptions,
+} from '../../src/types/DynamoDBProvider';
 import { TinyLogger } from '../helpers/tinyLogger';
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
@@ -55,7 +56,7 @@ const _call_get = async (
   paramName: string,
   testName: string,
   provider: DynamoDBProvider,
-  options?: DynamoDBGetOptionsInterface
+  options?: DynamoDBGetOptions
 ): Promise<void> => {
   try {
     const parameterValue = await provider.get(paramName, options);
@@ -76,7 +77,7 @@ const _call_get_multiple = async (
   paramPath: string,
   testName: string,
   provider: DynamoDBProvider,
-  options?: DynamoDBGetMultipleOptionsInterface
+  options?: DynamoDBGetMultipleOptions
 ): Promise<void> => {
   try {
     const parameterValues = await provider.getMultiple(paramPath, options);
@@ -114,12 +115,12 @@ export const handler = async (
 
   // Test 5 - get a single parameter with json transform
   await _call_get('my-param-json', 'get-json-transform', providerGet, {
-    transform: 'json',
+    transform: Transform.JSON,
   });
 
   // Test 6 - get a single parameter with binary transform
   await _call_get('my-param-binary', 'get-binary-transform', providerGet, {
-    transform: 'binary',
+    transform: Transform.BINARY,
   });
 
   // Test 7 - get multiple parameters with auto transform
@@ -128,7 +129,7 @@ export const handler = async (
     'get-multiple-auto-transform',
     providerGetMultiple,
     {
-      transform: 'auto',
+      transform: Transform.AUTO,
     }
   );
 

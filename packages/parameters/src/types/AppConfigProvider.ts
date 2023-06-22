@@ -1,3 +1,4 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 import type {
   AppConfigDataClient,
   AppConfigDataClientConfig,
@@ -61,34 +62,71 @@ type AppConfigProviderOptions =
 /**
  * Options for the AppConfigProvider get method.
  *
- * @interface AppConfigGetOptionsInterface
+ * @interface AppConfigGetOptionsBase
  * @extends {GetOptionsInterface}
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
  * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
  * @property {StartConfigurationSessionCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  */
-interface AppConfigGetOptionsInterface
-  extends Omit<GetOptionsInterface, 'sdkOptions'> {
+interface AppConfigGetOptionsBase extends GetOptionsInterface {
+  /**
+   * Additional options to pass to the AWS SDK v3 client. Supports all options from `StartConfigurationSessionCommandInput` except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`.
+   */
   sdkOptions?: Omit<
     Partial<StartConfigurationSessionCommandInput>,
     | 'ApplicationIdentifier'
-    | 'EnvironmentIdentifier | ConfigurationProfileIdentifier'
+    | 'EnvironmentIdentifier'
+    | 'ConfigurationProfileIdentifier'
   >;
 }
 
+interface AppConfigGetOptionsTransformJson extends AppConfigGetOptionsBase {
+  transform: 'json';
+}
+
+interface AppConfigGetOptionsTransformBinary extends AppConfigGetOptionsBase {
+  transform: 'binary';
+}
+
+interface AppConfigGetOptionsTransformNone extends AppConfigGetOptionsBase {
+  transform?: never;
+}
+
+type AppConfigGetOptions =
+  | AppConfigGetOptionsTransformNone
+  | AppConfigGetOptionsTransformJson
+  | AppConfigGetOptionsTransformBinary
+  | undefined;
+
+/**
+ * Generic output type for the AppConfigProvider get method.
+ */
+type AppConfigGetOutput<
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType = undefined
+> = undefined extends ExplicitUserProvidedType
+  ? undefined extends InferredFromOptionsType | AppConfigGetOptionsTransformNone
+    ? Uint8Array
+    : InferredFromOptionsType extends AppConfigGetOptionsTransformBinary
+    ? string
+    : InferredFromOptionsType extends AppConfigGetOptionsTransformJson
+    ? JSONValue
+    : never
+  : ExplicitUserProvidedType;
+
 /**
  * Combined options for the getAppConfig utility function.
- *
- * @interface getAppConfigCombinedInterface
- * @extends {AppConfigProviderOptions, AppConfigGetOptionsInterface}
  */
-interface GetAppConfigCombinedInterface
-  extends Omit<AppConfigProviderOptions, 'clientConfig' | 'awsSdkV3Client'>,
-    AppConfigGetOptionsInterface {}
+type GetAppConfigOptions = Omit<
+  AppConfigProviderOptions,
+  'clientConfig' | 'awsSdkV3Client'
+> &
+  AppConfigGetOptions;
 
 export type {
   AppConfigProviderOptions,
-  AppConfigGetOptionsInterface,
-  GetAppConfigCombinedInterface,
+  AppConfigGetOptions,
+  AppConfigGetOutput,
+  GetAppConfigOptions,
 };

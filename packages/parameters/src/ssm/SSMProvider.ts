@@ -1,9 +1,6 @@
-import {
-  BaseProvider,
-  DEFAULT_PROVIDERS,
-  transformValue,
-} from '../BaseProvider';
-import { GetParameterError } from '../Exceptions';
+import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
+import { transformValue } from '../base/transformValue';
+import { GetParameterError } from '../errors';
 import { DEFAULT_MAX_AGE_SECS } from '../constants';
 import {
   SSMClient,
@@ -22,7 +19,6 @@ import type {
   SSMGetOptions,
   SSMGetOutput,
   SSMGetMultipleOptions,
-  SSMGetMultipleOptionsUnion,
   SSMGetMultipleOutput,
   SSMGetParametersByNameOutput,
   SSMGetParametersByNameOutputInterface,
@@ -77,6 +73,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *  // Retrieve multiple parameters by path from SSM
  *  const parameters = await parametersProvider.getMultiple('/my-parameters-path');
  * };
+ * ```
  *
  * If you don't need to customize the provider, you can also use the {@link getParameters} function instead.
  *
@@ -371,7 +368,7 @@ class SSMProvider extends BaseProvider {
   public async getMultiple<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
-      | SSMGetMultipleOptionsUnion
+      | SSMGetMultipleOptions
       | undefined = undefined
   >(
     path: string,

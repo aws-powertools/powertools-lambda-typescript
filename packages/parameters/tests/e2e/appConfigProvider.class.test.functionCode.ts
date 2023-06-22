@@ -1,6 +1,7 @@
 import { Context } from 'aws-lambda';
+import { Transform } from '../../src';
 import { AppConfigProvider } from '../../src/appconfig';
-import { AppConfigGetOptionsInterface } from '../../src/types';
+import { AppConfigGetOptions } from '../../src/types/AppConfigProvider';
 import { TinyLogger } from '../helpers/tinyLogger';
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
 import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
@@ -41,7 +42,7 @@ const resolveProvider = (provider?: AppConfigProvider): AppConfigProvider => {
 const _call_get = async (
   paramName: string,
   testName: string,
-  options?: AppConfigGetOptionsInterface,
+  options?: AppConfigGetOptions,
   provider?: AppConfigProvider
 ): Promise<void> => {
   try {
@@ -69,19 +70,19 @@ export const handler = async (
 
   // Test 2 - get a free-form JSON and apply json transformation (should return an object)
   await _call_get(freeFormJsonName, 'get-freeform-json-binary', {
-    transform: 'json',
+    transform: Transform.JSON,
   });
 
   // Test 3 - get a free-form base64-encoded plain text and apply binary transformation (should return a decoded string)
   await _call_get(
     freeFormBase64encodedPlainText,
     'get-freeform-base64-plaintext-binary',
-    { transform: 'binary' }
+    { transform: Transform.BINARY }
   );
 
   // Test 4 - get a feature flag and apply json transformation (should return an object)
   await _call_get(featureFlagName, 'get-feature-flag-binary', {
-    transform: 'json',
+    transform: Transform.JSON,
   });
 
   // Test 5
@@ -130,14 +131,14 @@ export const handler = async (
       freeFormBase64encodedPlainText,
       {
         maxAge: 0,
-        transform: 'base64',
+        transform: Transform.BINARY,
       }
     );
     const expiredResult2 = await providerWithMiddleware.get(
       freeFormBase64encodedPlainText,
       {
         maxAge: 0,
-        transform: 'base64',
+        transform: Transform.BINARY,
       }
     );
     logger.log({

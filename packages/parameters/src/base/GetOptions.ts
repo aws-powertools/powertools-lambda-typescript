@@ -1,6 +1,9 @@
-import { DEFAULT_MAX_AGE_SECS } from './constants';
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService';
-import type { GetOptionsInterface, TransformOptions } from './types';
+import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService';
+import { DEFAULT_MAX_AGE_SECS } from '../constants';
+import type {
+  GetOptionsInterface,
+  TransformOptions,
+} from '../types/BaseProvider';
 
 /**
  * Options for the `get` method.

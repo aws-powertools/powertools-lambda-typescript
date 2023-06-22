@@ -1,4 +1,4 @@
-import { BaseProvider } from '../BaseProvider';
+import { BaseProvider } from '../base';
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
@@ -8,7 +8,6 @@ import type {
   SecretsProviderOptions,
   SecretsGetOptions,
   SecretsGetOutput,
-  SecretsGetOptionsUnion,
 } from '../types/SecretsProvider';
 
 /**
@@ -204,8 +203,8 @@ class SecretsProvider extends BaseProvider {
   public async get<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
-      | SecretsGetOptionsUnion
-      | undefined = SecretsGetOptionsUnion
+      | SecretsGetOptions
+      | undefined = SecretsGetOptions
   >(
     name: string,
     options?: InferredFromOptionsType & SecretsGetOptions
@@ -222,15 +221,12 @@ class SecretsProvider extends BaseProvider {
   /**
    * Retrieving multiple parameter values is not supported with AWS Secrets Manager.
    */
-  public async getMultiple(
-    path: string,
-    _options?: unknown
-  ): Promise<undefined | Record<string, unknown>> {
-    return super.getMultiple(path);
+  public async getMultiple(path: string, _options?: unknown): Promise<void> {
+    await super.getMultiple(path);
   }
 
   /**
-   * Retrieve a configuration from AWS AppConfig.
+   * Retrieve a configuration from AWS Secrets Manager.
    *
    * @param {string} name - Name of the configuration or its ID
    * @param {SecretsGetOptions} options - SDK options to propagate to the AWS SDK v3 for JavaScript client
@@ -261,7 +257,7 @@ class SecretsProvider extends BaseProvider {
   protected async _getMultiple(
     _path: string,
     _options?: unknown
-  ): Promise<Record<string, string | undefined>> {
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

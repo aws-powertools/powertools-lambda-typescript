@@ -1,7 +1,9 @@
+import { Transform } from '../constants';
+
 /**
  * Type for the transform option.
  */
-type TransformOptions = 'auto' | 'binary' | 'json';
+type TransformOptions = (typeof Transform)[keyof typeof Transform];
 
 /**
  * Options for the `get` method.
@@ -57,7 +59,7 @@ interface ExpirableValueInterface {
   /**
    * Value of the parameter.
    */
-  value: string | Uint8Array | Record<string, unknown>;
+  value: unknown;
   /**
    * Expiration timestamp of the value.
    */
@@ -68,14 +70,12 @@ interface ExpirableValueInterface {
  * Interface for a parameter store provider.
  */
 interface BaseProviderInterface {
-  get(
-    name: string,
-    options?: GetOptionsInterface
-  ): Promise<undefined | string | Uint8Array | Record<string, unknown>>;
+  get(name: string, options?: GetOptionsInterface): Promise<unknown>;
   getMultiple(
     path: string,
     options?: GetMultipleOptionsInterface
-  ): Promise<void | Record<string, unknown>>;
+  ): Promise<unknown | void>;
+  clearCache?(): void;
 }
 
 export type {

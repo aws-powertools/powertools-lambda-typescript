@@ -1,9 +1,8 @@
-import { DEFAULT_PROVIDERS } from '../BaseProvider';
+import { DEFAULT_PROVIDERS } from '../base';
 import { SecretsProvider } from './SecretsProvider';
 import type {
   SecretsGetOptions,
   SecretsGetOutput,
-  SecretsGetOptionsUnion,
 } from '../types/SecretsProvider';
 
 /**
@@ -110,8 +109,8 @@ import type {
 const getSecret = async <
   ExplicitUserProvidedType = undefined,
   InferredFromOptionsType extends
-    | SecretsGetOptionsUnion
-    | undefined = SecretsGetOptionsUnion
+    | SecretsGetOptions
+    | undefined = SecretsGetOptions
 >(
   name: string,
   options?: InferredFromOptionsType & SecretsGetOptions
@@ -123,13 +122,7 @@ const getSecret = async <
     DEFAULT_PROVIDERS.secrets = new SecretsProvider();
   }
 
-  return (DEFAULT_PROVIDERS.secrets as SecretsProvider).get(
-    name,
-    options
-  ) as Promise<
-    | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-    | undefined
-  >;
+  return (DEFAULT_PROVIDERS.secrets as SecretsProvider).get(name, options);
 };
 
 export { getSecret };

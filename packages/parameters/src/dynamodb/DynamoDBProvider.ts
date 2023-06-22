@@ -1,20 +1,23 @@
-import { BaseProvider } from '../BaseProvider';
+import { BaseProvider } from '../base';
 import {
   DynamoDBClient,
   GetItemCommand,
   paginateQuery,
 } from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import type {
   DynamoDBProviderOptions,
-  DynamoDBGetOptionsInterface,
-  DynamoDBGetMultipleOptionsInterface,
+  DynamoDBGetOptions,
+  DynamoDBGetMultipleOptions,
+  DynamoDBGetOutput,
+  DynamoDBGetMultipleOutput,
 } from '../types/DynamoDBProvider';
 import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import type { PaginationConfiguration } from '@aws-sdk/types';
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -63,6 +66,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *  // Retrieve multiple values from DynamoDB
  *  const values = await tableProvider.getMultiple('my-values-path');
  * };
+ * ```
  *
  * ## Advanced usage
  *
@@ -297,12 +301,21 @@ class DynamoDBProvider extends BaseProvider {
    * @param {DynamoDBGetOptionsInterface} options - Options to configure the provider
    * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
-  public async get(
+  public async get<
+    ExplicitUserProvidedType = undefined,
+    InferredFromOptionsType extends
+      | DynamoDBGetOptions
+      | undefined = DynamoDBGetOptions
+  >(
     name: string,
-    options?: DynamoDBGetOptionsInterface
-  ): Promise<undefined | string | Record<string, unknown>> {
+    options?: InferredFromOptionsType & DynamoDBGetOptions
+  ): Promise<
+    | DynamoDBGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+    | undefined
+  > {
     return super.get(name, options) as Promise<
-      undefined | string | Record<string, unknown>
+      | DynamoDBGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+      | undefined
     >;
   }
 
@@ -333,26 +346,43 @@ class DynamoDBProvider extends BaseProvider {
    * For usage examples check {@link DynamoDBProvider}.
    *
    * @param {string} path - The path of the values to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetMultipleOptionsInterface} options - Options to configure the provider
+   * @param {DynamoDBGetMultipleOptions} options - Options to configure the provider
    * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
-  public async getMultiple(
+  public async getMultiple<
+    ExplicitUserProvidedType = undefined,
+    InferredFromOptionsType extends
+      | DynamoDBGetMultipleOptions
+      | undefined = DynamoDBGetMultipleOptions
+  >(
     path: string,
-    options?: DynamoDBGetMultipleOptionsInterface
-  ): Promise<undefined | Record<string, unknown>> {
-    return super.getMultiple(path, options);
+    options?: InferredFromOptionsType & DynamoDBGetMultipleOptions
+  ): Promise<
+    | DynamoDBGetMultipleOutput<
+        ExplicitUserProvidedType,
+        InferredFromOptionsType
+      >
+    | undefined
+  > {
+    return super.getMultiple(path, options) as Promise<
+      | DynamoDBGetMultipleOutput<
+          ExplicitUserProvidedType,
+          InferredFromOptionsType
+        >
+      | undefined
+    >;
   }
 
   /**
    * Retrieve an item from Amazon DynamoDB.
    *
    * @param {string} name - Key of the item to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetOptionsInterface} options - Options to customize the retrieval
+   * @param {DynamoDBGetOptions} options - Options to customize the retrieval
    */
   protected async _get(
     name: string,
-    options?: DynamoDBGetOptionsInterface
-  ): Promise<string | undefined> {
+    options?: DynamoDBGetOptions
+  ): Promise<JSONValue | undefined> {
     const sdkOptions: GetItemCommandInput = {
       ...(options?.sdkOptions || {}),
       TableName: this.tableName,
@@ -371,12 +401,12 @@ class DynamoDBProvider extends BaseProvider {
    * Retrieve multiple items from Amazon DynamoDB.
    *
    * @param {string} path - The path of the values to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetMultipleOptionsInterface} options - Options to customize the retrieval
+   * @param {DynamoDBGetMultipleOptions} options - Options to customize the retrieval
    */
   protected async _getMultiple(
     path: string,
-    options?: DynamoDBGetMultipleOptionsInterface
-  ): Promise<Record<string, string | undefined>> {
+    options?: DynamoDBGetMultipleOptions
+  ): Promise<Record<string, JSONValue>> {
     const sdkOptions: QueryCommandInput = {
       ...(options?.sdkOptions || {}),
       TableName: this.tableName,
@@ -394,7 +424,7 @@ class DynamoDBProvider extends BaseProvider {
       pageSize: options?.sdkOptions?.Limit,
     };
 
-    const parameters: Record<string, string | undefined> = {};
+    const parameters: Record<string, JSONValue> = {};
     for await (const page of paginateQuery(paginationOptions, sdkOptions)) {
       for (const item of page.Items || []) {
         const unmarshalledItem = unmarshall(item);

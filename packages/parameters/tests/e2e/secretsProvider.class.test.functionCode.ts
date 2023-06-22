@@ -2,8 +2,9 @@ import { Context } from 'aws-lambda';
 import { TinyLogger } from '../helpers/tinyLogger';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
+import { Transform } from '../../src';
 import { SecretsProvider } from '../../src/secrets';
-import { SecretsGetOptionsInterface } from '../../src/types';
+import { SecretsGetOptions } from '../../src/types/SecretsProvider';
 
 const logger = new TinyLogger();
 const defaultProvider = new SecretsProvider();
@@ -11,10 +12,6 @@ const defaultProvider = new SecretsProvider();
 const secretNamePlain = process.env.SECRET_NAME_PLAIN || '';
 const secretNameObject = process.env.SECRET_NAME_OBJECT || '';
 const secretNameBinary = process.env.SECRET_NAME_BINARY || '';
-const secretNameObjectWithSuffix =
-  process.env.SECRET_NAME_OBJECT_WITH_SUFFIX || '';
-const secretNameBinaryWithSuffix =
-  process.env.SECRET_NAME_BINARY_WITH_SUFFIX || '';
 const secretNamePlainChached = process.env.SECRET_NAME_PLAIN_CACHED || '';
 const secretNamePlainForceFetch =
   process.env.SECRET_NAME_PLAIN_FORCE_FETCH || '';
@@ -29,7 +26,7 @@ const providerWithMiddleware = new SecretsProvider({
 const _call_get = async (
   paramName: string,
   testName: string,
-  options?: SecretsGetOptionsInterface,
+  options?: SecretsGetOptions,
   provider?: SecretsProvider
 ): Promise<void> => {
   try {
@@ -58,25 +55,15 @@ export const handler = async (
 
   // Test 2 get single secret with transform json
   await _call_get(secretNameObject, 'get-transform-json', {
-    transform: 'json',
+    transform: Transform.JSON,
   });
 
   // Test 3 get single secret with transform binary
   await _call_get(secretNameBinary, 'get-transform-binary', {
-    transform: 'binary',
+    transform: Transform.BINARY,
   });
 
-  // Test 4 get single secret with transform auto json
-  await _call_get(secretNameObjectWithSuffix, 'get-transform-auto-json', {
-    transform: 'auto',
-  });
-
-  // Test 5 get single secret with transform auto binary
-  await _call_get(secretNameBinaryWithSuffix, 'get-transform-auto-binary', {
-    transform: 'auto',
-  });
-
-  // Test 6
+  // Test 4
   // get secret twice with middleware, which counts number of SDK requests, we check later if we only called SecretManager API once
   try {
     middleware.counter = 0;
@@ -92,7 +79,7 @@ export const handler = async (
       error: err.message,
     });
   }
-  // Test 7
+  // Test 5
   // get secret twice, but force fetch 2nd time, we count number of SDK requests and  check that we made two API calls
   try {
     middleware.counter = 0;

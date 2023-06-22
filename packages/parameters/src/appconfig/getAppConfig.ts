@@ -1,5 +1,8 @@
 import { AppConfigProvider, DEFAULT_PROVIDERS } from './AppConfigProvider';
-import type { GetAppConfigCombinedInterface } from '../types/AppConfigProvider';
+import type {
+  AppConfigGetOutput,
+  GetAppConfigOptions,
+} from '../types/AppConfigProvider';
 
 /**
  * ## Intro
@@ -24,7 +27,10 @@ import type { GetAppConfigCombinedInterface } from '../types/AppConfigProvider';
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a configuration profile
- *   const encodedConfig = await getAppConfig('my-config');
+ *   const encodedConfig = await getAppConfig('my-config', {
+ *     application: 'my-app',
+ *     environment: 'prod',
+ *   });
  *   const config = new TextDecoder('utf-8').decode(encodedConfig);
  * };
  * ```
@@ -42,7 +48,10 @@ import type { GetAppConfigCombinedInterface } from '../types/AppConfigProvider';
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a configuration profile and cache it for 10 seconds
- *   const encodedConfig = await getAppConfig('my-config');
+ *   const encodedConfig = await getAppConfig('my-config', {
+ *     application: 'my-app',
+ *     environment: 'prod',
+ *   });
  *   const config = new TextDecoder('utf-8').decode(encodedConfig);
  * };
  * ```
@@ -55,7 +64,11 @@ import type { GetAppConfigCombinedInterface } from '../types/AppConfigProvider';
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a config and always fetch the latest value
- *   const config = await getAppConfig('my-config', { forceFetch: true });
+ *   const config = await getAppConfig('my-config', {
+ *     application: 'my-app',
+ *     environment: 'prod',
+ *     forceFetch: true,
+ *   });
  *   const config = new TextDecoder('utf-8').decode(encodedConfig);
  * };
  * ```
@@ -70,7 +83,11 @@ import type { GetAppConfigCombinedInterface } from '../types/AppConfigProvider';
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a JSON config or Feature Flag and parse it as JSON
- *   const config = await getAppConfig('my-config', { transform: 'json' });
+ *   const config = await getAppConfig('my-config', {
+ *     application: 'my-app',
+ *     environment: 'prod',
+ *     transform: 'json'
+ *   });
  * };
  * ```
  *
@@ -82,7 +99,11 @@ import type { GetAppConfigCombinedInterface } from '../types/AppConfigProvider';
  *
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a base64-encoded string and decode it
- *   const config = await getAppConfig('my-config', { transform: 'binary' });
+ *   const config = await getAppConfig('my-config', {
+ *     application: 'my-app',
+ *     environment: 'prod',
+ *     transform: 'binary'
+ *   });
  * };
  * ```
  *
@@ -97,6 +118,8 @@ import type { GetAppConfigCombinedInterface } from '../types/AppConfigProvider';
  * export const handler = async (): Promise<void> => {
  *   // Retrieve a config and pass extra options to the AWS SDK v3 for JavaScript client
  *   const config = await getAppConfig('my-config', {
+ *     application: 'my-app',
+ *     environment: 'prod',
  *     sdkOptions: {
  *       RequiredMinimumPollIntervalInSeconds: 60,
  *     },
@@ -114,18 +137,37 @@ import type { GetAppConfigCombinedInterface } from '../types/AppConfigProvider';
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  *
  * @param {string} name - The name of the configuration profile or its ID
- * @param {GetAppConfigCombinedInterface} options - Options to configure the provider
+ * @param {GetAppConfigOptions} options - Options to configure the provider
  * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
  */
-const getAppConfig = (
+const getAppConfig = <
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType extends
+    | GetAppConfigOptions
+    | undefined = GetAppConfigOptions
+>(
   name: string,
-  options: GetAppConfigCombinedInterface
-): Promise<undefined | string | Uint8Array | Record<string, unknown>> => {
+  options: InferredFromOptionsType & GetAppConfigOptions
+): Promise<
+  | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+  | undefined
+> => {
   if (!DEFAULT_PROVIDERS.hasOwnProperty('appconfig')) {
-    DEFAULT_PROVIDERS.appconfig = new AppConfigProvider(options);
+    DEFAULT_PROVIDERS.appconfig = new AppConfigProvider({
+      application: options?.application,
+      environment: options.environment,
+    });
   }
 
-  return DEFAULT_PROVIDERS.appconfig.get(name, options);
+  return (DEFAULT_PROVIDERS.appconfig as AppConfigProvider).get(name, {
+    maxAge: options?.maxAge,
+    transform: options?.transform,
+    forceFetch: options?.forceFetch,
+    sdkOptions: options?.sdkOptions,
+  }) as Promise<
+    | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+    | undefined
+  >;
 };
 
 export { getAppConfig };

@@ -1,9 +1,5 @@
 import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
-import type {
-  SSMGetOptions,
-  SSMGetOutput,
-  SSMGetOptionsUnion,
-} from '../types/SSMProvider';
+import type { SSMGetOptions, SSMGetOutput } from '../types/SSMProvider';
 
 /**
  * ## Intro
@@ -142,9 +138,7 @@ import type {
  */
 const getParameter = async <
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType extends
-    | SSMGetOptionsUnion
-    | undefined = SSMGetOptionsUnion
+  InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions
 >(
   name: string,
   options?: InferredFromOptionsType & SSMGetOptions

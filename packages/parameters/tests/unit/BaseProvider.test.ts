@@ -3,14 +3,9 @@
  *
  * @group unit/parameters/baseProvider/class
  */
-import {
-  BaseProvider,
-  ExpirableValue,
-  GetParameterError,
-  TransformParameterError,
-  clearCaches,
-  DEFAULT_PROVIDERS,
-} from '../../src';
+import { BaseProvider, clearCaches, DEFAULT_PROVIDERS } from '../../src/base';
+import { ExpirableValue } from '../../src/base/ExpirableValue';
+import { GetParameterError, TransformParameterError } from '../../src/errors';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 
 const encoder = new TextEncoder();
@@ -279,6 +274,23 @@ describe('Class: BaseProvider', () => {
           () =>
             new Promise((_resolve, reject) => reject(new Error('Some error.')))
         );
+
+      // Act & Assess
+      await expect(provider.getMultiple('my-parameter')).rejects.toThrowError(
+        GetParameterError
+      );
+    });
+
+    test('when the underlying _getMultiple does not return an object, it throws a GetParameterError', async () => {
+      // Prepare
+      const provider = new TestProvider();
+      jest.spyOn(provider, '_getMultiple').mockImplementation(
+        () =>
+          new Promise((resolve, _reject) =>
+            // need to type cast to force the error
+            resolve('not an object' as unknown as Record<string, string>)
+          )
+      );
 
       // Act & Assess
       await expect(provider.getMultiple('my-parameter')).rejects.toThrowError(

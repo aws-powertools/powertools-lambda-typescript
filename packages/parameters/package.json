@@ -34,57 +34,85 @@
       "import": "./lib/index.js",
       "require": "./lib/index.js"
     },
+    "./base/types": {
+      "import": "./lib/types/BaseProvider.d.ts",
+      "require": "./lib/types/BaseProvider.d.ts"
+    },
     "./base": {
       "import": "./lib/base/index.js",
       "require": "./lib/base/index.js"
+    },
+    "./ssm/types": {
+      "import": "./lib/types/SSMProvider.d.ts",
+      "require": "./lib/types/SSMProvider.d.ts"
     },
     "./ssm": {
       "import": "./lib/ssm/index.js",
       "require": "./lib/ssm/index.js"
     },
+    "./secrets/types": {
+      "import": "./lib/types/SecretsProvider.d.ts",
+      "require": "./lib/types/SecretsProvider.d.ts"
+    },
     "./secrets": {
       "import": "./lib/secrets/index.js",
       "require": "./lib/secrets/index.js"
     },
+    "./dynamodb/types": {
+      "import": "./lib/types/AppConfigProvider.d.ts",
+      "require": "./lib/types/AppConfigProvider.d.ts"
+    },
     "./dynamodb": {
       "import": "./lib/dynamodb/index.js",
       "require": "./lib/dynamodb/index.js"
+    },
+    "./appconfig/types": {
+      "import": "./lib/appconfig/index.js",
+      "require": "./lib/appconfig/index.js"
     },
     "./appconfig": {
       "import": "./lib/appconfig/index.js",
       "require": "./lib/appconfig/index.js"
     },
     "./errors": {
-      "import": "./lib/Exceptions.js",
-      "require": "./lib/Exceptions.js"
-    },
-    "./types": {
-      "import": "./lib/types/index.d.ts",
-      "require": "./lib/types/index.d.ts"
+      "import": "./lib/errors.js",
+      "require": "./lib/errors.js"
     }
   },
   "typesVersions": {
     "*": {
+      "base/types": [
+        "lib/types/BaseProvider.d.ts"
+      ],
       "base": [
         "lib/base/index.d.ts"
+      ],
+      "ssm/types": [
+        "lib/types/SSMProvider.d.ts"
       ],
       "ssm": [
         "lib/ssm/index.d.ts"
       ],
+      "secrets/types": [
+        "lib/types/SecretsProvider.d.ts"
+      ],
       "secrets": [
         "lib/secrets/index.d.ts"
       ],
+      "dynamodb/types": [
+        "./lib/types/DynamoDBProvider.d.ts"
+      ],
       "dynamodb": [
         "lib/dynamodb/index.d.ts"
+      ],
+      "appconfig/types": [
+        "./lib/types/AppConfigProvider.d.ts"
       ],
       "appconfig": [
         "lib/appconfig/index.d.ts"
       ],
       "errors": [
-        "lib/Exceptions.d.ts"
-      ],
-      "types": [
-        "lib/types/index.d.ts"
+        "lib/errors.d.ts"
       ]
     }
   },

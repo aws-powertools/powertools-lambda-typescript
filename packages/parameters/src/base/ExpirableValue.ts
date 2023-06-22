@@ -1,4 +1,4 @@
-import type { ExpirableValueInterface } from './types';
+import type { ExpirableValueInterface } from '../types/BaseProvider';
 
 /**
  * Class to represent a value that can expire.
@@ -8,17 +8,14 @@ import type { ExpirableValueInterface } from './types';
  */
 class ExpirableValue implements ExpirableValueInterface {
   public ttl: number;
-  public value: string | Uint8Array | Record<string, unknown>;
+  public value: unknown;
 
   /**
    *
    * @param value - Value to be cached
    * @param maxAge - Maximum age in seconds for the value to be cached
    */
-  public constructor(
-    value: string | Uint8Array | Record<string, unknown>,
-    maxAge: number
-  ) {
+  public constructor(value: unknown, maxAge: number) {
     this.value = value;
     const timeNow = new Date();
     this.ttl = timeNow.setSeconds(timeNow.getSeconds() + maxAge);

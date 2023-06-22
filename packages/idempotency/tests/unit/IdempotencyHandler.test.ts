@@ -165,16 +165,20 @@ describe('Class IdempotencyHandler', () => {
     });
 
     test('when persistences store throws any error, it wraps the error to IdempotencyPersistencesLayerError', async () => {
+      const innerError = new Error('Some error');
       const mockSaveInProgress = jest
         .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-        .mockRejectedValue(new Error('Some error'));
+        .mockRejectedValue(innerError);
       const mockDetermineResultFromIdempotencyRecord = jest
         .spyOn(IdempotencyHandler, 'determineResultFromIdempotencyRecord')
         .mockImplementation(() => 'result');
-
       await expect(idempotentHandler.processIdempotency()).rejects.toThrow(
-        IdempotencyPersistenceLayerError
+        new IdempotencyPersistenceLayerError(
+          'Failed to save record in progress',
+          innerError
+        )
       );
+
       expect(mockSaveInProgress).toHaveBeenCalledTimes(1);
       expect(mockDetermineResultFromIdempotencyRecord).toHaveBeenCalledTimes(0);
     });

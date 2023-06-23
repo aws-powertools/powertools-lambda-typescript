@@ -16,6 +16,7 @@ import {
   DEFAULT_NAMESPACE,
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,
+  MAX_METRIC_VALUES_SIZE,
 } from '../../src/constants';
 import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils';
 import {
@@ -699,6 +700,34 @@ describe('Class: Metrics', () => {
           },
         })
       );
+    });
+
+    test('it should publish metrics when the array of values reaches the maximum size', () => {
+      // Prepare
+      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+      const consoleSpy = jest.spyOn(console, 'log');
+      const metricName = 'test-metric';
+
+      // Act
+      for (let i = 0; i <= MAX_METRIC_VALUES_SIZE; i++) {
+        metrics.addMetric(`${metricName}`, MetricUnits.Count, i);
+      }
+      metrics.publishStoredMetrics();
+
+      // Assess
+      // 2 calls to console.log: 1 for the first batch of metrics, 1 for the second batch (explicit call)
+      expect(consoleSpy).toHaveBeenCalledTimes(2);
+      const firstMetricsJson = JSON.parse(
+        consoleSpy.mock.calls[0][0]
+      ) as EmfOutput;
+      const secondMetricsJson = JSON.parse(
+        consoleSpy.mock.calls[1][0]
+      ) as EmfOutput;
+
+      // The first batch of values should be an array of size MAX_METRIC_VALUES_SIZE
+      expect(firstMetricsJson[metricName]).toHaveLength(MAX_METRIC_VALUES_SIZE);
+      // The second should be a single value (the last value added, which is 100 given we start from 0)
+      expect(secondMetricsJson[metricName]).toEqual(100);
     });
 
     test('it should not publish metrics if stored metrics count has not reached max metric size threshold', () => {

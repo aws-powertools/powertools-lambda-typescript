@@ -1,4 +1,13 @@
-export const COLD_START_METRIC = 'ColdStart';
-export const DEFAULT_NAMESPACE = 'default_namespace';
-export const MAX_METRICS_SIZE = 100;
-export const MAX_DIMENSION_COUNT = 29;
+const COLD_START_METRIC = 'ColdStart';
+const DEFAULT_NAMESPACE = 'default_namespace';
+const MAX_METRICS_SIZE = 100;
+const MAX_METRIC_VALUES_SIZE = 100;
+const MAX_DIMENSION_COUNT = 29;
+
+export {
+  COLD_START_METRIC,
+  DEFAULT_NAMESPACE,
+  MAX_METRICS_SIZE,
+  MAX_METRIC_VALUES_SIZE,
+  MAX_DIMENSION_COUNT,
+};

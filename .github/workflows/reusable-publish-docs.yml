@@ -140,7 +140,7 @@ jobs:
         #      - we assign the input as $o and the new version/alias as $n, 
         #      - we check if the version number exists in the file already (for republishing docs)
         #      - if it's an alias (stage/latest/*) or old version, we do nothing and output $o (original input)
-        #.     - if it's a new version number, we add it at position 0 in the array.
+        #      - if it's a new version number, we add it at position 0 in the array.
         #   4. Once done, we'll upload it back to S3.
         run: |
           aws s3 cp \

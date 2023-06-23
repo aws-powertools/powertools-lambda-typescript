@@ -107,7 +107,7 @@ For multiple parameters, you can use either:
 
 ### Fetching secrets
 
-You can fetch secrets stored in Secrets Manager using `getSecrets`.
+You can fetch secrets stored in Secrets Manager using `getSecret`.
 
 ```typescript hl_lines="1 5" title="Fetching secrets"
 --8<-- "docs/snippets/parameters/getSecret.ts"

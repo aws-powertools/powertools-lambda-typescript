@@ -77,7 +77,7 @@ jobs:
         with:
           name: ${{ inputs.artifact-name }}
       - name: Unzip artifact
-        run: unzip cdk.out.zip
+        run: unzip -o cdk.out.zip
       - name: Deploy Layer
         run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose --outputs-file cdk-outputs.json
       - name: Store latest Layer ARN

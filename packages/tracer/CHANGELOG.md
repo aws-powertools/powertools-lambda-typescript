@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.9.0...v1.10.0) (2023-06-23)
+
+### Bug Fixes
+
+- **idempotency:** skip persistence for optional idempotency key ([#1507](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1507)) ([b9fcef6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b9fcef66eb4bd9a7ad1eeac5f5db2cdbccc70c71))
+
+### Features
+
+- **tracer:** close & restore segments when other middlewares return ([#1545](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1545)) ([74ddb09](https://github.com/aws-powertools/powertools-lambda-typescript/commit/74ddb09a3107d9f45f34ccda1e691a9504578c2d))
+
 # [1.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.8.0...v1.9.0) (2023-06-09)
 
 ### Features

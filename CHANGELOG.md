@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.9.0...v1.10.0) (2023-06-23)
+
+### Bug Fixes
+
+- **ci:** change how versions and aliases are inserted into versions.json ([#1549](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1549)) ([9e1d19a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9e1d19a9bc89d31bef851a615860c3b01bd9d77f))
+- **idempotency:** pass lambda context remaining time to save inprogress ([#1540](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1540)) ([d47c3ec](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d47c3ec64d926d49f3799f361d54a11627d16cc1))
+- **idempotency:** record validation not using hash ([#1502](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1502)) ([f475bd0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f475bd097b64f009c329c023a2dd7c7e9371270a))
+- **idempotency:** skip persistence for optional idempotency key ([#1507](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1507)) ([b9fcef6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b9fcef66eb4bd9a7ad1eeac5f5db2cdbccc70c71))
+- **metrics:** flush metrics when data points array reaches max size ([#1548](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1548)) ([24c247c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/24c247c39c0ac29774ac3fcf09902916f3936e1e))
+- missing quotes ([67f5f14](https://github.com/aws-powertools/powertools-lambda-typescript/commit/67f5f14e612a56d94923aa3b33df7d2e6b46cc06))
+- missing quotes ([349e612](https://github.com/aws-powertools/powertools-lambda-typescript/commit/349e612e1a46646ef05b11e0478094bf7f74a5cd))
+- update reference in workflow ([#1518](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1518)) ([9c75f9a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9c75f9a8a0b2fc4b24bbd37fdb00620d06903283))
+
+### Features
+
+- **logger:** clear state when other middlewares return early ([#1544](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1544)) ([d5f3f13](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d5f3f13ccd7aae1bbc59431741e8aaf042dd2a73))
+- **metrics:** publish metrics when other middlewares return early ([#1546](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1546)) ([58b0877](https://github.com/aws-powertools/powertools-lambda-typescript/commit/58b087713814f1c5f56a86aa815d04372e98ebd0))
+- **parameters:** review types and exports ([#1528](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1528)) ([6f96711](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6f96711625e212898b1c227c651beba7e709c9d1))
+- **tracer:** close & restore segments when other middlewares return ([#1545](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1545)) ([74ddb09](https://github.com/aws-powertools/powertools-lambda-typescript/commit/74ddb09a3107d9f45f34ccda1e691a9504578c2d))
+
 # [1.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.8.0...v1.9.0) (2023-06-09)
 
 ### Features

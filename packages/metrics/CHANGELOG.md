@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.9.0...v1.10.0) (2023-06-23)
+
+### Bug Fixes
+
+- **metrics:** flush metrics when data points array reaches max size ([#1548](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1548)) ([24c247c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/24c247c39c0ac29774ac3fcf09902916f3936e1e))
+
+### Features
+
+- **metrics:** publish metrics when other middlewares return early ([#1546](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1546)) ([58b0877](https://github.com/aws-powertools/powertools-lambda-typescript/commit/58b087713814f1c5f56a86aa815d04372e98ebd0))
+
 # [1.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.8.0...v1.9.0) (2023-06-09)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

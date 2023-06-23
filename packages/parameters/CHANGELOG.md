@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.9.0...v1.10.0) (2023-06-23)
+
+### Features
+
+- **parameters:** review types and exports ([#1528](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1528)) ([6f96711](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6f96711625e212898b1c227c651beba7e709c9d1))
+
 # [1.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.8.0...v1.9.0) (2023-06-09)
 
 ### Features

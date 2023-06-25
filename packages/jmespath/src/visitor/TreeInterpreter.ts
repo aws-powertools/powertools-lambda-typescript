@@ -304,7 +304,8 @@ class TreeInterpreter {
     if (typeof node.value !== 'number') {
       throw new Error(`Invalid index: ${node.value}`);
     }
-    const found = value[node.value];
+    const index = node.value < 0 ? value.length + node.value : node.value;
+    const found = value[index];
     if (found === undefined) {
       return null;
     }

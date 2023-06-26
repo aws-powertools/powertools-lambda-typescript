@@ -124,7 +124,8 @@ const makeHandlerIdempotent = (
         }
       } else {
         throw new IdempotencyPersistenceLayerError(
-          'Failed to save in progress record to idempotency store'
+          'Failed to save in progress record to idempotency store',
+          error as Error
         );
       }
     }
@@ -149,7 +150,8 @@ const makeHandlerIdempotent = (
       );
     } catch (e) {
       throw new IdempotencyPersistenceLayerError(
-        'Failed to update success record to idempotency store'
+        'Failed to update success record to idempotency store',
+        e as Error
       );
     }
   };
@@ -172,7 +174,8 @@ const makeHandlerIdempotent = (
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(
-        'Failed to delete record from idempotency store'
+        'Failed to delete record from idempotency store',
+        error as Error
       );
     }
   };

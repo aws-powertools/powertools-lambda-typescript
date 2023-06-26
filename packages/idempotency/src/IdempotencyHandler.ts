@@ -5,7 +5,7 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from './Exceptions';
+} from './errors';
 import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
 import { IdempotencyConfig } from './IdempotencyConfig';
 import { MAX_RETRIES } from './constants';
@@ -80,7 +80,8 @@ export class IdempotencyHandler<U> {
         );
       } catch (e) {
         throw new IdempotencyPersistenceLayerError(
-          'Failed to delete record from idempotency store'
+          'Failed to delete record from idempotency store',
+          e as Error
         );
       }
       throw e;
@@ -92,7 +93,8 @@ export class IdempotencyHandler<U> {
       );
     } catch (e) {
       throw new IdempotencyPersistenceLayerError(
-        'Failed to update success record to idempotency store'
+        'Failed to update success record to idempotency store',
+        e as Error
       );
     }
 
@@ -153,7 +155,10 @@ export class IdempotencyHandler<U> {
           idempotencyRecord
         ) as U;
       } else {
-        throw new IdempotencyPersistenceLayerError();
+        throw new IdempotencyPersistenceLayerError(
+          'Failed to save record in progress',
+          e as Error
+        );
       }
     }
 

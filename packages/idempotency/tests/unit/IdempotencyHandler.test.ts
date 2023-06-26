@@ -8,7 +8,7 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/Exceptions';
+} from '../../src/errors';
 import { IdempotencyRecordStatus } from '../../src/types';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
@@ -165,16 +165,20 @@ describe('Class IdempotencyHandler', () => {
     });
 
     test('when persistences store throws any error, it wraps the error to IdempotencyPersistencesLayerError', async () => {
+      const innerError = new Error('Some error');
       const mockSaveInProgress = jest
         .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-        .mockRejectedValue(new Error('Some error'));
+        .mockRejectedValue(innerError);
       const mockDetermineResultFromIdempotencyRecord = jest
         .spyOn(IdempotencyHandler, 'determineResultFromIdempotencyRecord')
         .mockImplementation(() => 'result');
-
       await expect(idempotentHandler.processIdempotency()).rejects.toThrow(
-        IdempotencyPersistenceLayerError
+        new IdempotencyPersistenceLayerError(
+          'Failed to save record in progress',
+          innerError
+        )
       );
+
       expect(mockSaveInProgress).toHaveBeenCalledTimes(1);
       expect(mockDetermineResultFromIdempotencyRecord).toHaveBeenCalledTimes(0);
     });
@@ -323,7 +327,9 @@ describe('Class IdempotencyHandler', () => {
         .mockRejectedValue(new Error('Some error'));
 
       await expect(idempotentHandler.getFunctionResult()).rejects.toThrow(
-        IdempotencyPersistenceLayerError
+        new IdempotencyPersistenceLayerError(
+          'Failed to delete record from idempotency store. This error was  caused by: Some error.'
+        )
       );
       expect(mockDeleteInProgress).toHaveBeenCalledTimes(1);
     });

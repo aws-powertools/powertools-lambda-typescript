@@ -12,7 +12,7 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/Exceptions';
+} from '../../src/errors';
 import { IdempotencyConfig } from '../../src/';
 import middy from '@middy/core';
 import { MAX_RETRIES } from '../../src/constants';
@@ -115,7 +115,7 @@ describe('Middleware: makeHandlerIdempotent', () => {
     // Act && Assess
     await expect(handler(event, context)).rejects.toThrowError(
       new IdempotencyPersistenceLayerError(
-        'Failed to save in progress record to idempotency store'
+        'Failed to save in progress record to idempotency store. This error was  caused by: Something went wrong.'
       )
     );
   });
@@ -131,7 +131,7 @@ describe('Middleware: makeHandlerIdempotent', () => {
     // Act && Assess
     await expect(handler(event, context)).rejects.toThrowError(
       new IdempotencyPersistenceLayerError(
-        'Failed to update success record to idempotency store'
+        'Failed to update success record to idempotency store. This error was  caused by: Something went wrong.'
       )
     );
   });
@@ -149,7 +149,7 @@ describe('Middleware: makeHandlerIdempotent', () => {
     // Act && Assess
     await expect(handler(event, context)).rejects.toThrow(
       new IdempotencyPersistenceLayerError(
-        'Failed to delete record from idempotency store'
+        'Failed to delete record from idempotency store. This error was  caused by: Something went wrong.'
       )
     );
   });

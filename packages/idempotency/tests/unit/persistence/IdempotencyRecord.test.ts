@@ -3,7 +3,7 @@
  *
  * @group unit/idempotency/persistence/idempotencyRecord
  */
-import { IdempotencyInvalidStatusError } from '../../../src/Exceptions';
+import { IdempotencyInvalidStatusError } from '../../../src/errors';
 import { IdempotencyRecord } from '../../../src/persistence';
 import { IdempotencyRecordStatus } from '../../../src/types';
 

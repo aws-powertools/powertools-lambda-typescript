@@ -13,7 +13,7 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/Exceptions';
+} from '../../src/errors';
 import { IdempotencyConfig } from '../../src';
 import { Context } from 'aws-lambda';
 import { helloworldContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';

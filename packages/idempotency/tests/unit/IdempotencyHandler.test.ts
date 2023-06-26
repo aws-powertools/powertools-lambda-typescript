@@ -8,7 +8,7 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/Exceptions';
+} from '../../src/errors';
 import { IdempotencyRecordStatus } from '../../src/types';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
@@ -327,7 +327,9 @@ describe('Class IdempotencyHandler', () => {
         .mockRejectedValue(new Error('Some error'));
 
       await expect(idempotentHandler.getFunctionResult()).rejects.toThrow(
-        IdempotencyPersistenceLayerError
+        new IdempotencyPersistenceLayerError(
+          'Failed to delete record from idempotency store. This error was  caused by: Some error.'
+        )
       );
       expect(mockDeleteInProgress).toHaveBeenCalledTimes(1);
     });

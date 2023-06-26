@@ -1,6 +1,6 @@
 import type { IdempotencyRecordOptions } from '../types';
 import { IdempotencyRecordStatus } from '../types';
-import { IdempotencyInvalidStatusError } from '../Exceptions';
+import { IdempotencyInvalidStatusError } from '../errors';
 
 /**
  * Class representing an idempotency record.

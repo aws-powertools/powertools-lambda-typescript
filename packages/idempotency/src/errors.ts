@@ -35,7 +35,10 @@ class IdempotencyPersistenceLayerError extends Error {
   public readonly cause: Error | undefined;
 
   public constructor(message: string, cause?: Error) {
-    super(message);
+    const errorMessage = cause
+      ? `${message}. This error was  caused by: ${cause.message}.`
+      : message;
+    super(errorMessage);
     this.cause = cause;
   }
 }

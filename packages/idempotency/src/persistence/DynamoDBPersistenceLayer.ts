@@ -1,7 +1,7 @@
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
-} from '../Exceptions';
+} from '../errors';
 import { IdempotencyRecordStatus } from '../types';
 import type { DynamoPersistenceOptions } from '../types';
 import {

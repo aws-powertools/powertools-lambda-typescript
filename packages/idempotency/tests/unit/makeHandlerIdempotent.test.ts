@@ -12,7 +12,7 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/Exceptions';
+} from '../../src/errors';
 import { IdempotencyConfig } from '../../src/';
 import middy from '@middy/core';
 import { MAX_RETRIES } from '../../src/constants';

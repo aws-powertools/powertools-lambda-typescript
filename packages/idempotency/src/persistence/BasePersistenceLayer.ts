@@ -8,7 +8,7 @@ import { BasePersistenceLayerInterface } from './BasePersistenceLayerInterface';
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyValidationError,
-} from '../Exceptions';
+} from '../errors';
 import { LRUCache } from './LRUCache';
 
 /**

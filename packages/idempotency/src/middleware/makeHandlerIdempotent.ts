@@ -5,7 +5,7 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../Exceptions';
+} from '../errors';
 import { IdempotencyRecord } from '../persistence';
 import { MAX_RETRIES } from '../constants';
 import type {

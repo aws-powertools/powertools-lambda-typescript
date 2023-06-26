@@ -12,7 +12,7 @@ import {
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyValidationError,
-} from '../../../src/Exceptions';
+} from '../../../src/errors';
 import type { IdempotencyConfigOptions } from '../../../src/types';
 import { IdempotencyRecordStatus } from '../../../src/types';
 

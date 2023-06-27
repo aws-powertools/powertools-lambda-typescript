@@ -27,14 +27,14 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@aws-sdk/client-appconfigdata": "^3.245.0",
-    "@aws-sdk/client-dynamodb": "^3.245.0",
-    "@aws-sdk/client-secrets-manager": "^3.250.0",
-    "@aws-sdk/client-ssm": "^3.245.0",
-    "@aws-sdk/util-dynamodb": "^3.245.0",
-    "aws-sdk": "^2.1354.0",
-    "aws-sdk-client-mock": "^2.0.1",
-    "aws-sdk-client-mock-jest": "^2.0.1",
+    "@aws-sdk/client-appconfigdata": "^3.360.0",
+    "@aws-sdk/client-dynamodb": "^3.360.0",
+    "@aws-sdk/client-secrets-manager": "^3.360.0",
+    "@aws-sdk/client-ssm": "^3.360.0",
+    "@aws-sdk/util-dynamodb": "^3.360.0",
+    "aws-sdk": "^2.1405.0",
+    "aws-sdk-client-mock": "^2.2.0",
+    "aws-sdk-client-mock-jest": "^2.2.0",
     "axios": "^1.2.4"
   }
 }

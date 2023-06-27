@@ -56,7 +56,7 @@ export class MyFunctionBase {
         })
       );
       await axios.get(
-        'https://docs.powertools.aws.dev/lambda-typescript/latest/',
+        'https://docs.powertools.aws.dev/lambda/typescript/latest/',
         { timeout: 5000 }
       );
 
@@ -82,9 +82,8 @@ class MyFunctionWithDecorator extends MyFunctionBase {
   // @ts-ignore
   public async handler(
     event: CustomEvent,
-    _context: Context,
-    _callback: Callback<unknown>
-  ): void | Promise<unknown> {
+    _context: Context
+  ): Promise<unknown> {
     return super.handler(event, _context);
   }
 
@@ -105,9 +104,8 @@ export class MyFunctionWithDecoratorAndCustomNamedSubSegmentForMethod extends My
   // @ts-ignore
   public async handler(
     event: CustomEvent,
-    _context: Context,
-    _callback: Callback<unknown>
-  ): void | Promise<unknown> {
+    _context: Context
+  ): Promise<unknown> {
     return super.handler(event, _context);
   }
 

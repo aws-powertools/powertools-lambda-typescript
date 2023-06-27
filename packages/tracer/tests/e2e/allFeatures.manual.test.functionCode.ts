@@ -56,7 +56,7 @@ export const handler = async (
       })
       .promise();
     await axios.get(
-      'https://docs.powertools.aws.dev/lambda-typescript/latest/',
+      'https://docs.powertools.aws.dev/lambda/typescript/latest/',
       { timeout: 5000 }
     );
 

@@ -92,11 +92,7 @@
     "nodejs"
   ],
   "devDependencies": {
-    "@aws-sdk/client-appconfigdata": "^3.360.0",
     "@aws-sdk/client-dynamodb": "^3.360.0",
-    "@aws-sdk/client-secrets-manager": "^3.360.0",
-    "@aws-sdk/client-ssm": "^3.360.0",
-    "@aws-sdk/util-dynamodb": "^3.360.0",
     "@types/jmespath": "^0.15.0",
     "aws-sdk-client-mock": "^2.2.0",
     "aws-sdk-client-mock-jest": "^2.2.0"

@@ -17,6 +17,7 @@ import {
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 import { toBase64 } from '@aws-sdk/util-base64-node';
+import { Uint8ArrayBlobAdapter } from '@aws-sdk/util-stream';
 import { JSONValue } from '@aws-lambda-powertools/commons';
 
 describe('Function: getAppConfig', () => {
@@ -29,7 +30,7 @@ describe('Function: getAppConfig', () => {
 
   test('when called and a default provider does not exist, it instantiates one and returns the value', async () => {
     // Prepare
-    const mockData = encoder.encode('myAppConfiguration');
+    const mockData = Uint8ArrayBlobAdapter.fromString('myAppConfiguration');
     client
       .on(StartConfigurationSessionCommand)
       .resolves({
@@ -58,7 +59,7 @@ describe('Function: getAppConfig', () => {
       environment: 'prod',
     });
     DEFAULT_PROVIDERS.appconfig = provider;
-    const mockData = encoder.encode('myAppConfiguration');
+    const mockData = Uint8ArrayBlobAdapter.fromString('myAppConfiguration');
     client
       .on(StartConfigurationSessionCommand)
       .resolves({
@@ -83,7 +84,9 @@ describe('Function: getAppConfig', () => {
   test('when called with transform: `binary` option, it returns string value', async () => {
     // Prepare
     const expectedValue = 'my-value';
-    const mockData = encoder.encode(toBase64(encoder.encode(expectedValue)));
+    const mockData = Uint8ArrayBlobAdapter.fromString(
+      toBase64(encoder.encode(expectedValue))
+    );
     client
       .on(StartConfigurationSessionCommand)
       .resolves({
@@ -109,7 +112,9 @@ describe('Function: getAppConfig', () => {
   test('when called with transform: `json` option, it returns a JSON value', async () => {
     // Prepare
     const expectedValue = { foo: 'my-value' };
-    const mockData = encoder.encode(JSON.stringify(expectedValue));
+    const mockData = Uint8ArrayBlobAdapter.fromString(
+      JSON.stringify(expectedValue)
+    );
     client
       .on(StartConfigurationSessionCommand)
       .resolves({

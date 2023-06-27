@@ -1,0 +1,12 @@
+{
+  "extends": [
+    "../../typedoc.base.json"
+  ],
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/types/index.ts",
+    "./src/middleware/index.ts",
+    "./src/persistence/index.ts"
+  ],
+  "readme": "README.md"
+}

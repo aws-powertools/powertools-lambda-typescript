@@ -12,7 +12,8 @@
     "docs/snippets",
     "layers",
     "examples/cdk",
-    "examples/sam"
+    "examples/sam",
+    "packages/batch"
   ],
   "scripts": {
     "init-environment": "husky install",

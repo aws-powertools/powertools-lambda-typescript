@@ -272,6 +272,29 @@ DynamoDB provider can be customized at initialization to match your table struct
 --8<-- "docs/snippets/parameters/dynamoDBProviderCustomizeTable.ts"
 ```
 
+### Create your own provider
+
+You can create your own custom parameter store provider by extending the `BaseProvider` class, and implementing the `get()` and `getMultiple()` methods, as well as its respective `_get()` and `_getMultiple()` private methods to retrieve a single, or multiple parameters from your custom store.
+
+All caching logic is handled by the `BaseProvider`, and provided that the return types of your store are compatible with the ones used in the `BaseProvider`, all transformations will also work as expected.
+
+Here's an example of implementing a custom parameter store using an external service like HashiCorp Vault, a widely popular key-value secret storage.
+
+=== "Provider implementation"
+	```typescript
+	--8<-- "docs/snippets/parameters/customProviderVault.ts"
+	```
+
+=== "Provider types"
+	```typescript
+	--8<-- "docs/snippets/parameters/customProviderVaultTypes.ts"
+	```
+
+=== "Provider usage"
+	```typescript
+	--8<-- "docs/snippets/parameters/customProviderVaultUsage.ts"
+	```
+
 ### Deserializing values with transform parameter
 
 For parameters stored in JSON or Base64 format, you can use the `transform` argument for deserialization.

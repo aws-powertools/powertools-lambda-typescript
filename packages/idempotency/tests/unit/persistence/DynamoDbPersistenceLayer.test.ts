@@ -9,7 +9,7 @@ import {
   IdempotencyItemNotFoundError,
 } from '../../../src/errors';
 import { IdempotencyRecord } from '../../../src/persistence';
-import type { DynamoPersistenceOptions } from '../../../src/types';
+import type { DynamoDBPersistenceOptions } from '../../../src/types';
 import { IdempotencyRecordStatus } from '../../../src/types';
 import {
   DynamoDBClient,

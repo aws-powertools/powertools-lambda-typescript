@@ -1,21 +1,16 @@
 # Powertools for AWS Lambda (TypeScript) <!-- omit in toc -->
 
-| ⚠️ **WARNING: Do not use this utility in production just yet!** ⚠️                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**.. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/10) we might introduce significant breaking changes and improvements in response to customers feedback. | _ |
-
-Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda-typescript/latest/#features).
+Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
 You can use the package in both TypeScript and JavaScript code bases.
 
 - [Intro](#intro)
 - [Key features](#key-features)
 - [Usage](#usage)
-  - [SSMProvider](#ssmprovider)
-    - [Fetching parameters](#fetching-parameters)
-  - [SecretsProvider](#secretsprovider)
-  - [DynamoDBProvider](#dynamodbprovider)
-  - [AppConfigProvider](#appconfigprovider)
+  - [Fetching parameters from AWS SSM Parameter Store](#fetching-parameters-from-aws-ssm-parameter-store)
+  - [Getting secrets from Amazon Secrets Manager](#getting-secrets-from-amazon-secrets-manager)
+  - [Retrieving values from Amazon DynamoDB](#retrieving-values-from-amazon-dynamodb)
+  - [Fetching configs from AWS AppConfig](#fetching-configs-from-aws-appconfig)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
@@ -39,7 +34,7 @@ The Parameters utility provides high-level functions to retrieve one or multiple
 
 ## Usage
 
-### SSMProvider
+### Fetching parameters from AWS SSM Parameter Store
 
 To get started, install the library and the corresponding AWS SDK for JavaScript v3:
 
@@ -47,9 +42,7 @@ To get started, install the library and the corresponding AWS SDK for JavaScript
 npm install @aws-lambda-powertools/parameters @aws-sdk/client-ssm
 ```
 
-Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda-typescript/1.9.0/utilities/parameters/#iam-permissions) in the documentation of the utility.
-
-#### Fetching parameters
+Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#iam-permissions) in the documentation of the utility.
 
 You can retrieve a single parameter using the `getParameter` high-level function.
 
@@ -105,9 +98,9 @@ export const handler = async (): Promise<void> => {
 };
 ```
 
-Check the [docs](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#fetching-parameters) for more examples, and [the advanced section](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
+Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#fetching-parameters) for more examples, and [the advanced section](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
 
-### SecretsProvider
+### Getting secrets from Amazon Secrets Manager
 
 To get started, install the library and the corresponding AWS SDK for JavaScript v3:
 
@@ -115,7 +108,7 @@ To get started, install the library and the corresponding AWS SDK for JavaScript
 npm install @aws-lambda-powertools/parameters @aws-sdk/client-secrets-manager
 ```
 
-Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda-typescript/1.9.0/utilities/parameters/#iam-permissions) in the documentation of the utility.
+Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#iam-permissions) in the documentation of the utility.
 
 You can fetch secrets stored in Secrets Manager using the `getSecret` function:
 
@@ -129,9 +122,9 @@ export const handler = async (): Promise<void> => {
 };
 ```
 
-Check the [docs](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#fetching-secrets) for more examples, and [the advanced section](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
+Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#fetching-secrets) for more examples, and [the advanced section](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
 
-### DynamoDBProvider
+### Retrieving values from Amazon DynamoDB
 
 To get started, install the library and the corresponding AWS SDK for JavaScript v3:
 
@@ -139,7 +132,7 @@ To get started, install the library and the corresponding AWS SDK for JavaScript
 npm install @aws-lambda-powertools/parameters @aws-sdk/client-dynamodb @aws-sdk/util-dynamodb
 ```
 
-Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda-typescript/1.9.0/utilities/parameters/#iam-permissions) in the documentation of the utility.
+Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#iam-permissions) in the documentation of the utility.
 
 You can retrieve a single parameter from DynamoDB using the `DynamoDBProvider.get()` method:
 
@@ -176,10 +169,10 @@ export const handler = async (): Promise<void> => {
 };
 ```
 
-Check the [docs](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#fetching-secrets) for more examples, and [the advanced section](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
+Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#fetching-secrets) for more examples, and [the advanced section](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
 
 
-### AppConfigProvider
+### Fetching configs from AWS AppConfig
 
 To get started, install the library and the corresponding AWS SDK for JavaScript v3:
 
@@ -187,7 +180,7 @@ To get started, install the library and the corresponding AWS SDK for JavaScript
 npm install @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata
 ```
 
-Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda-typescript/1.9.0/utilities/parameters/#iam-permissions) in the documentation of the utility.
+Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#iam-permissions) in the documentation of the utility.
 
 You can fetch application configurations in AWS AppConfig using the `getAppConfig` function:
 
@@ -204,7 +197,7 @@ export const handler = async (): Promise<void> => {
 };
 ```
 
-Check the [docs](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#fetching-app-configurations) for more examples, and [the advanced section](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
+Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#fetching-app-configurations) for more examples, and [the advanced section](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
 
 ## Contribute
 
@@ -212,7 +205,7 @@ If you are interested in contributing to this project, please refer to our [Cont
 
 ## Roadmap
 
-[The roadmap](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap/) of Powertools for AWS Lambda (TypeScript) is driven by customers’ demand.  
+[The roadmap](https://docs.powertools.aws.dev/lambda/typescript/latest/roadmap/) of Powertools for AWS Lambda (TypeScript) is driven by customers’ demand.  
 Help us prioritize upcoming functionalities or utilities by [upvoting existing RFCs and feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues), or [creating new ones](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), in this GitHub repository.
 
 ## Connect
@@ -239,7 +232,7 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://docs.powertools.aws.dev/lambda-typescript/latest/we_made_this).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this).
 
 ### Using Lambda Layer
 

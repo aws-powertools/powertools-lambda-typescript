@@ -8,15 +8,33 @@
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda-typescript/latest/#features).
 
+You can use the package in both TypeScript and JavaScript code bases.
+
+- [Intro](#intro)
+- [Key features](#key-features)
+- [Usage](#usage)
+  - [Function wrapper](#function-wrapper)
+  - [Middy middleware](#middy-middleware)
+  - [DynamoDB persistence layer](#dynamodb-persistence-layer)
+- [Contribute](#contribute)
+- [Roadmap](#roadmap)
+- [Connect](#connect)
+- [How to support Powertools for AWS Lambda (TypeScript)?](#how-to-support-powertools-for-aws-lambda-typescript)
+  - [Becoming a reference customer](#becoming-a-reference-customer)
+  - [Sharing your work](#sharing-your-work)
+  - [Using Lambda Layer](#using-lambda-layer)
+- [Credits](#credits)
+- [License](#license)
+
 ## Intro
 
 This package provides a utility to implement idempotency in your Lambda functions. 
-You can either use it as a decorator on your Lambda handler or as a wrapper on any other function.
-If you use middy, we also provide a middleware to make your Lambda handler idempotent.
-The current implementation provides a persistance layer for Amazon DynamoDB, which offers a variety of configuration options. 
-You can also bring your own persistance layer by implementing the `IdempotencyPersistanceLayer` interface.
+You can either use it to wrapp a function, or as Middy middleware to make your AWS Lambda handler idempotent.
+
+The current implementation provides a persistence layer for Amazon DynamoDB, which offers a variety of configuration options. You can also bring your own persistence layer by extending the `BasePersistenceLayer` class.
 
 ## Key features
+
 * Prevent Lambda handler from executing more than once on the same event payload during a time window
 * Ensure Lambda handler returns the same result when called with the same payload
 * Select a subset of the event as the idempotency key using JMESPath expressions
@@ -25,124 +43,98 @@ You can also bring your own persistance layer by implementing the `IdempotencyPe
 
 ## Usage
 
-### Decorators
-If you use classes to define your Lambda handlers, you can use the decorators to make your handler idempotent or a specific function idempotent.
-We offer two decorators: 
-* `@idempotentLambdaHandler`: makes the handler idempotent. 
-* `@idempotentFunction`: makes any function within your class idempotent
+To get started, install the library by running:
 
-The first can only be applied to the handler function with the specific signature of a Lambda handler.
-The second can be applied to any function within your class. In this case you need to pass a `Record` object and provide the `dataKeywordArgument` parameter to specify the name of the argument that contains the data to be used as the idempotency key.
-In any of both cases yoiu need to pass the persistance layer where we will store the idempotency information.
+```sh
+npm install @aws-lambda-powertools/idempotency
+```
 
+Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/#iam-permissions) in the documentation of the utility.
 
 ### Function wrapper
 
-A more common approach is to use the function wrapper. 
-Similar to `@idempotentFunction` decorator you need to pass keyword argument to indicate which part of the payload will be hashed. 
+You can make any function idempotent, and safe to retry, by wrapping it using the `makeFunctionIdempotent` higher-order function.
 
-### Middy middleware
-// TODO: after e2e tests are implemented
-
-### DynamoDB peristance layer
-To store the idempotency information offer a DynamoDB persistance layer. 
-This enables you to store the hash key, payload, status for progress and expiration and much more. 
-You can customise most of the configuration options of the DynamoDB table, i.e the names of the attributes.
-See the [API documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/modules/.index.DynamoDBPersistenceLayer.html) for more details.
-
-## Examples
-
-### Decorator Lambda handler
+The function wrapper takes a reference to the function to be made idempotent as first argument, and an object with options as second argument.
 
 ```ts
-import { idempotentLambdaHandler } from "@aws-lambda-powertools/idempotency";
-import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
-import type { Context } from 'aws-lambda';
+import { makeFunctionIdempotent } from '@aws-lambda-powertools/idempotency';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/persistence';
+import type { Context, SQSEvent, SQSRecord } from 'aws-lambda';
 
-const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
-
-class MyLambdaHandler implements LambdaInterface {
-  @idempotentLambdaHandler({ persistenceStore: dynamoDBPersistenceLayer })
-  public async handler(_event: any, _context: Context): Promise<string> {
-    // your lambda code here
-    return "Hello World";
-  }
-}
-
-const lambdaClass = new MyLambdaHandler();
-export const handler = lambdaClass.handler.bind(lambdaClass);
-```
-
-### Decorator function
-
-```ts
-import { idempotentLambdaHandler } from "@aws-lambda-powertools/idempotency";
-import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
-import type { Context } from 'aws-lambda';
-
-
-const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
-
-class MyLambdaHandler implements LambdaInterface {
-  
-  public async handler(_event: any, _context: Context): Promise<void> {
-    for(const record of _event.Records) {
-      await this.processRecord(record);
-    }
-  }
-  
-  @idempotentFunction({ persistenceStore: dynamoDBPersistenceLayer, dataKeywordArgument: "payload" })
-  public async process(payload: Record<string, unknown>): Promise<void> {
-    // your lambda code here
-  }
-}
-```
-
-The `dataKeywordArgument` parameter is optional. If not provided, the whole event will be used as the idempotency key.
-Otherwise, you need to specify the string name of the argument that contains the data to be used as the idempotency key.
-For example if you have an input like this:
-
-
-```json
-{
-  "transactionId": 1235,
-  "product": "book",
-  "quantity": 1,
-  "price": 10
-}
-```
-
-You can use `transactionId` as the idempotency key. This will ensure that the same transaction is not processed twice.
-
-### Function wrapper
-
-In case where you don't use classes and decorators you can wrap your function to make it idempotent.
-
-```ts
-import { makeFunctionIdempotent } from "@aws-lambda-powertools/idempotency";
-import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/persistance";
-import type { Context } from 'aws-lambda';
-
-
-const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer();
-const processingFunction = async (payload: Record<string, unknown>): Promise<void> => {
-  // your lambda code here
-};
-
-const processIdempotently = makeFunctionIdempotent(proccessingFunction, {
-  persistenceStore: dynamoDBPersistenceLayer,
-  dataKeywordArgument: "transactionId"
+const persistenceStore = new DynamoDBPersistenceLayer({
+  tableName: 'idempotencyTableName',
 });
 
+const processingFunction = async (payload: SQSRecord): Promise<void> => {
+  // your code goes here here
+};
+
 export const handler = async (
-  _event: any,
+  event: SQSEvent,
   _context: Context
 ): Promise<void> => {
-  for (const record of _event.Records) {
-    await processIdempotently(record);
+  for (const record of event.Records) {
+    await makeFunctionIdempotent(proccessingFunction, {
+      dataKeywordArgument: 'transactionId',
+      persistenceStore,
+    });
   }
 };
 ```
+
+Note that we are specifying a `dataKeywordArgument` option, this tells the Idempotency utility which field(s) will be used as idempotency key.
+
+Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/) for more examples.
+
+### Middy middleware
+
+If instead you use Middy, you can use the `makeHandlerIdempotent` middleware. When using the middleware your Lambda handler becomes idempotent.
+
+By default, the Idempotency utility will use the full event payload to create an hash and determine if a request is idempotent, and therefore it should not be retried. When dealing with a more elaborate payload, where parts of the payload always change you should use the `IdempotencyConfig` object to instruct the utility to only use a portion of your payload. This is useful when dealing with payloads that contain timestamps or request ids.
+
+```ts
+import { IdempotencyConfig } from '@aws-lambda-powertools/idempotency';
+import { makeHandlerIdempotent } from '@aws-lambda-powertools/idempotency/middleware';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/persistence';
+import middy from '@middy/core';
+import type { Context, APIGatewayProxyEvent } from 'aws-lambda';
+
+const persistenceStore = new DynamoDBPersistenceLayer({
+  tableName: 'idempotencyTableName',
+});
+const config = new IdempotencyConfig({
+  hashFunction: 'md5',
+  useLocalCache: false,
+  expiresAfterSeconds: 3600,
+  throwOnNoIdempotencyKey: false,
+  eventKeyJmesPath: 'headers.idempotency-key',
+});
+
+const processingFunction = async (payload: SQSRecord): Promise<void> => {
+  // your code goes here here
+};
+
+export const handler = middy(
+  async (event: APIGatewayProxyEvent, _context: Context): Promise<void> => {
+    // your code goes here here
+  }
+).use(
+  makeHandlerIdempotent({
+    config,
+    persistenceStore,
+  })
+);
+```
+
+Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/) for more examples.
+
+### DynamoDB persistence layer
+
+You can use a DynamoDB Table to store the idempotency information. This enables you to keep track of the hash key, payload, status for progress, expiration, and much more.
+
+You can customize most of the configuration options of the table, i.e the names of the attributes.
+See the [API documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/api/types/_aws_lambda_powertools_idempotency.types.DynamoDBPersistenceOptions.html) for more details.
 
 ## Contribute
 

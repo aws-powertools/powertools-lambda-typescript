@@ -34,7 +34,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 * **[Tracer](https://docs.powertools.aws.dev/lambda-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
 * **[Logger](https://docs.powertools.aws.dev/lambda-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
 * **[Metrics](https://docs.powertools.aws.dev/lambda-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
-* **[Parameters (beta)](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
+* **[Parameters](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
 * **[Idempotency (beta)](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
 
 ## Getting started

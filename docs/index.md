@@ -325,6 +325,7 @@ The following companies, among others, use Powertools:
 * [Bailey Nelson](https://www.baileynelson.com.au){target="_blank"}
 * [Perfect Post](https://www.perfectpost.fr){target="_blank"}
 * [Sennder](https://sennder.com/){target="_blank"}
+* [Certible](https://www.certible.com/){target="_blank"}
 
 ### Sharing your work
 

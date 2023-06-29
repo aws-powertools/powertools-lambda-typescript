@@ -4,7 +4,6 @@
  * @internal
  */
 import { version as PT_VERSION } from '../version';
-import { userAgentMiddleware } from '@aws-sdk/middleware-user-agent';
 
 const EXEC_ENV = process.env.AWS_EXECUTION_ENV || 'NA';
 const middlewareOptions = {
@@ -21,9 +20,9 @@ const middlewareOptions = {
 const customUserAgentMiddleware = (feature: string) => {
   return (next, _context) => async (args) => {
     const powertoolsUserAgent = `PT/${feature}/${PT_VERSION} PTEnv/${EXEC_ENV}`;
-    args.request.headers['user-agent'] = args.request.headers['user-agent']
-      ? `${args.request.headers['user-agent']} ${powertoolsUserAgent}`
-      : `${powertoolsUserAgent}`;
+    args.request.headers[
+      'user-agent'
+    ] = `${args.request.headers['user-agent']} ${powertoolsUserAgent}`;
 
     return await next(args);
   };
@@ -36,4 +35,4 @@ const addUserAgentMiddleware = (client, feature): void => {
   );
 };
 
-export { addUserAgentMiddleware, userAgentMiddleware };
+export { addUserAgentMiddleware };

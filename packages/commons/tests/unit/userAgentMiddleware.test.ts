@@ -20,7 +20,6 @@ describe('Function: addUserAgentMiddleware', () => {
       logger: console,
       region: 'us-east-1',
       endpoint: 'http://localhost:9001',
-      maxAttempts: 1, // disable retry to have the correct number of assertions
     });
 
     // Set a spy on the console.log method, so we can check the headers

@@ -112,7 +112,7 @@ const config = new IdempotencyConfig({
 });
 
 export const handler = middy(
-  async (event: APIGatewayProxyEvent, _context: Context): Promise<void> => {
+  async (_event: APIGatewayProxyEvent, _context: Context): Promise<void> => {
     // your code goes here here
   }
 ).use(

@@ -57,7 +57,7 @@ classDiagram
 Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, `dynamodb:UpdateItem` and `dynamodb:DeleteItem` IAM permissions before using this feature.
 
 ???+ note
-    If you're using our example [AWS Serverless Application Model (SAM)](#required-resources), it already adds the required permissions.
+    If you're using one of our [examples below](#required-resources) the required permissions are already included.
 
 ### Required resources
 
@@ -78,30 +78,130 @@ If you're not [changing the default configuration for the DynamoDB persistence l
 ???+ tip "Tip: You can share a single state table for all functions"
     You can reuse the same DynamoDB table to store idempotency state. We add `module_name` and [qualified name for classes and functions](https://peps.python.org/pep-3155/) in addition to the idempotency key as a hash key.
 
-```yaml hl_lines="5-13 21-23" title="AWS Serverless Application Model (SAM) example"
-Resources:
-  IdempotencyTable:
-	Type: AWS::DynamoDB::Table
-	Properties:
-	  AttributeDefinitions:
-		-   AttributeName: id
-			AttributeType: S
-	  KeySchema:
-		-   AttributeName: id
-			KeyType: HASH
-	  TimeToLiveSpecification:
-		AttributeName: expiration
-		Enabled: true
-	  BillingMode: PAY_PER_REQUEST
+<!-- TODO: review SAM + CDK templates -->
+=== "AWS Serverless Application Model (SAM) example"
 
-  HelloWorldFunction:
-  Type: AWS::Serverless::Function
-  Properties:
-	Runtime: nodejs18.x
-	Policies:
-	  - DynamoDBCrudPolicy:
-		  TableName: !Ref IdempotencyTable
-```
+    ```yaml hl_lines="6-14 24-31"
+    Transform: AWS::Serverless-2016-10-31
+    Resources:
+    IdempotencyTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+        AttributeDefinitions:
+            - AttributeName: id
+            AttributeType: S
+        KeySchema:
+            - AttributeName: id
+            KeyType: HASH
+        TimeToLiveSpecification:
+            AttributeName: expiration
+            Enabled: true
+        BillingMode: PAY_PER_REQUEST
+
+    HelloWorldFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+        Runtime: nodejs18.x
+        Handler: index.handler
+        Policies:
+            - Statement:
+            - Sid: AllowDynamodbReadWrite
+                Effect: Allow
+                Action:
+                - dynamodb:PutItem
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                Resource: !GetAtt IdempotencyTable.Arn
+    ```
+=== "AWS Cloud Development Kit (CDK)"
+
+    ```typescript hl_lines="10 13 16 19-21"
+    import { Table, Attribute } from 'aws-cdk-lib/aws-dynamodb';
+    ```
+
+=== "Terraform"
+
+    ```terraform hl_lines="14-26 64-70"
+    terraform {
+        required_providers {
+            aws = {
+            source  = "hashicorp/aws"
+            version = "~> 4.0"
+            }
+        }
+    }
+
+    provider "aws" {
+        region = "us-east-1" # Replace with your desired AWS region
+    }
+
+    resource "aws_dynamodb_table" "IdempotencyTable" {
+        name         = "IdempotencyTable"
+        billing_mode = "PAY_PER_REQUEST"
+        hash_key     = "id"
+        attribute {
+            name = "id"
+            type = "S"
+        }
+        ttl {
+            attribute_name = "expiration"
+            enabled        = true
+        }
+    }
+
+    resource "aws_lambda_function" "IdempotencyFunction" {
+        function_name = "IdempotencyFunction"
+        role          = aws_iam_role.IdempotencyFunctionRole.arn
+        runtime       = "python3.10"
+        handler       = "app.lambda_handler"
+        filename      = "lambda.zip"
+    }
+
+    resource "aws_iam_role" "IdempotencyFunctionRole" {
+        name = "IdempotencyFunctionRole"
+
+        assume_role_policy = jsonencode({
+            Version = "2012-10-17"
+            Statement = [
+            {
+                Sid    = ""
+                Effect = "Allow"
+                Principal = {
+                Service = "lambda.amazonaws.com"
+                }
+                Action = "sts:AssumeRole"
+            },
+            ]
+        })
+    }
+
+    resource "aws_iam_policy" "LambdaDynamoDBPolicy" {
+        name        = "LambdaDynamoDBPolicy"
+        description = "IAM policy for Lambda function to access DynamoDB"
+        policy = jsonencode({
+            Version = "2012-10-17"
+            Statement = [
+            {
+                Sid    = "AllowDynamodbReadWrite"
+                Effect = "Allow"
+                Action = [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                ]
+                Resource = aws_dynamodb_table.IdempotencyTable.arn
+            },
+            ]
+        })
+    }
+
+    resource "aws_iam_role_policy_attachment" "IdempotencyFunctionRoleAttachment" {
+        role       = aws_iam_role.IdempotencyFunctionRole.name
+        policy_arn = aws_iam_policy.LambdaDynamoDBPolicy.arn
+    }
+    ```
 
 ??? warning "Warning: Large responses with DynamoDB persistence layer"
     When using this utility with DynamoDB, your function's responses must be [smaller than 400KB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html#limits-items).
@@ -113,22 +213,20 @@ Resources:
     result returned by your Lambda is less than 1kb, you can expect 2 WCUs per invocation. For retried invocations, you will see 1WCU and 1RCU. Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/) to
     estimate the cost.
 
-### IdempotentLambdaHandler decorator
+### MakeFunctionIdempotent function wrapper
 
-You can quickly start by initializing the `DynamoDBPersistenceLayer` class and using it with the `idempotent` decorator on your Lambda handler.
+You can quickly start by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeFunctionIdempotent` function wrapper on your Lambda handler.
 
 ???+ note
-    In this example, the entire Lambda handler is treated as a single idempotent operation. If your Lambda handler can cause multiple side effects, or you're only interested in making a specific logic idempotent, use the [`idempotentMethod` decorator](#idempotentMethod-decorator) or the [`makeFunctionIdempotent` high-order function](#makeFunctionIdempotent-high-order-function) instead.
+    In this example, the entire Lambda handler is treated as a single idempotent operation. If your Lambda handler can cause multiple side effects, or you're only interested in making a specific logic idempotent, use the `makeFunctionIdempotent` high-order function only on the specific logic you want to make idempotent instead.
 
 !!! tip "See [Choosing a payload subset for idempotency](#choosing-a-payload-subset-for-idempotency) for more elaborate use cases."
 
 === "index.ts"
 
     ```typescript hl_lines="1-2 6-8 12-14 23"
-    --8<-- "docs/snippets/idempotency/idempotentLambdaHandler.ts"
+    --8<-- "docs/snippets/idempotency/makeFunctionIdempotentBase.ts"
     ```
-
-    1. Binding your handler method allows your handler to access `this` within the class methods.
 
 === "Example event"
 

@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 /**
  * @internal
  */
@@ -18,6 +16,8 @@ const middlewareOptions = {
  * @param feature
  */
 const customUserAgentMiddleware = (feature: string) => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   return (next, _context) => async (args) => {
     const powertoolsUserAgent = `PT/${feature}/${PT_VERSION} PTEnv/${EXEC_ENV}`;
     args.request.headers[
@@ -28,7 +28,9 @@ const customUserAgentMiddleware = (feature: string) => {
   };
 };
 
-const addUserAgentMiddleware = (client, feature): void => {
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const addUserAgentMiddleware = (client, feature: string): void => {
   client.middlewareStack.add(
     customUserAgentMiddleware(feature),
     middlewareOptions

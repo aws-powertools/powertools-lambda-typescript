@@ -14,6 +14,7 @@
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e": "echo 'Not Applicable'",
     "watch": "jest --watch",
+    "generateVersionFile": "echo \"// this file is auto generated, do not modify\nmodule.exports = { version: '$(jq -r '.version' package.json)' };\" > src/version.ts",
     "build": "tsc",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",

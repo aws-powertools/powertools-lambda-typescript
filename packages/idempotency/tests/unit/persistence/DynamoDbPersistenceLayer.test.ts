@@ -163,20 +163,14 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       );
     });
 
-    test('when passed an invalid AWS SDK client it logs a warning', () => {
-      // Prepare
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Act
-      new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-        awsSdkV3Client: {} as DynamoDBClient,
-      });
-
-      // Assess
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'Invalid AWS SDK V3 client passed to DynamoDBPersistenceLayer. Using default client.'
-      );
+    test('when passed an invalid AWS SDK client, it throws an error', () => {
+      // Act & Assess
+      expect(() => {
+        new TestDynamoDBPersistenceLayer({
+          tableName: dummyTableName,
+          awsSdkV3Client: {} as DynamoDBClient,
+        });
+      }).toThrow();
     });
 
     test('when passed a client config it stores it for later use', () => {

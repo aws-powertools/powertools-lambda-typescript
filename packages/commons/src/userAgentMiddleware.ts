@@ -3,7 +3,7 @@
 /**
  * @internal
  */
-import { version as PT_VERSION } from '../version';
+import { PT_VERSION } from './version';
 
 const EXEC_ENV = process.env.AWS_EXECUTION_ENV || 'NA';
 const middlewareOptions = {

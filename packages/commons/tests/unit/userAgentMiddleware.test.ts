@@ -1,4 +1,4 @@
-import { addUserAgentMiddleware } from '../../src/middleware/userAgentMiddleware';
+import { addUserAgentMiddleware } from '../../src/userAgentMiddleware';
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 
 /**
@@ -17,7 +17,6 @@ const logHeadersMiddleware = (next, _context) => async (args) => {
 describe('Function: addUserAgentMiddleware', () => {
   it('adds powertools user agent to request header at the end', async () => {
     const lambdaClient = new LambdaClient({
-      logger: console,
       region: 'us-east-1',
       endpoint: 'http://localhost:9001',
     });

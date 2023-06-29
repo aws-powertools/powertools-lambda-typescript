@@ -35,6 +35,7 @@
     "aws-sdk": "^2.1405.0",
     "aws-sdk-client-mock": "^2.2.0",
     "aws-sdk-client-mock-jest": "^2.2.0",
-    "axios": "^1.2.4"
+    "axios": "^1.2.4",
+    "hashi-vault-js": "^0.4.13"
   }
 }

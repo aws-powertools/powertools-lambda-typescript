@@ -2,17 +2,17 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
 } from '../errors';
-import type { DynamoPersistenceOptions } from '../types';
 import { IdempotencyRecordStatus } from '../types';
+import type { DynamoPersistenceOptions } from '../types';
 import {
-  AttributeValue,
-  DeleteItemCommand,
   DynamoDBClient,
   DynamoDBClientConfig,
   DynamoDBServiceException,
+  DeleteItemCommand,
   GetItemCommand,
   PutItemCommand,
   UpdateItemCommand,
+  AttributeValue,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { IdempotencyRecord } from './IdempotencyRecord';
@@ -28,7 +28,7 @@ import { BasePersistenceLayer } from './BasePersistenceLayer';
  * @implements {BasePersistenceLayer}
  */
 class DynamoDBPersistenceLayer extends BasePersistenceLayer {
-  private client!: DynamoDBClient;
+  private client?: DynamoDBClient;
   private clientConfig: DynamoDBClientConfig = {};
   private dataAttr: string;
   private expiryAttr: string;
@@ -64,16 +64,18 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       if (config?.awsSdkV3Client instanceof DynamoDBClient) {
         this.client = config.awsSdkV3Client;
       } else {
-        throw Error('Not valid DynamoDBClient provided.');
+        console.warn(
+          'Invalid AWS SDK V3 client passed to DynamoDBPersistenceLayer. Using default client.'
+        );
       }
     } else {
       this.clientConfig = config?.clientConfig ?? {};
-      this.client = new DynamoDBClient(this.clientConfig);
     }
   }
 
   protected async _deleteRecord(record: IdempotencyRecord): Promise<void> {
-    await this.client.send(
+    const client = this.getClient();
+    await client.send(
       new DeleteItemCommand({
         TableName: this.tableName,
         Key: this.getKey(record.idempotencyKey),
@@ -84,7 +86,8 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   protected async _getRecord(
     idempotencyKey: string
   ): Promise<IdempotencyRecord> {
-    const result = await this.client.send(
+    const client = this.getClient();
+    const result = await client.send(
       new GetItemCommand({
         TableName: this.tableName,
         Key: this.getKey(idempotencyKey),
@@ -108,6 +111,8 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   }
 
   protected async _putRecord(record: IdempotencyRecord): Promise<void> {
+    const client = this.getClient();
+
     const item = {
       ...this.getKey(record.idempotencyKey),
       ...marshall({
@@ -158,7 +163,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       ].join(' OR ');
 
       const now = Date.now();
-      await this.client.send(
+      await client.send(
         new PutItemCommand({
           TableName: this.tableName,
           Item: item,
@@ -190,6 +195,8 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
+    const client = this.getClient();
+
     const updateExpressionFields: string[] = [
       '#response_data = :response_data',
       '#expiry = :expiry',
@@ -212,7 +219,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       expressionAttributeValues[':validation_key'] = record.payloadHash;
     }
 
-    await this.client.send(
+    await client.send(
       new UpdateItemCommand({
         TableName: this.tableName,
         Key: this.getKey(record.idempotencyKey),
@@ -221,6 +228,14 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
         ExpressionAttributeValues: marshall(expressionAttributeValues),
       })
     );
+  }
+
+  private getClient(): DynamoDBClient {
+    if (!this.client) {
+      this.client = new DynamoDBClient(this.clientConfig);
+    }
+
+    return this.client;
   }
 
   /**

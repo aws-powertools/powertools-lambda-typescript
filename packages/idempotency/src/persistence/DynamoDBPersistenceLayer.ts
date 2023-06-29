@@ -17,7 +17,6 @@ import {
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { BasePersistenceLayer } from './BasePersistenceLayer';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 /**
  * DynamoDB persistence layer for idempotency records. This class will use the AWS SDK V3 to write and read idempotency records from DynamoDB.
@@ -71,8 +70,6 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       this.clientConfig = config?.clientConfig ?? {};
       this.client = new DynamoDBClient(this.clientConfig);
     }
-
-    addUserAgentMiddleware(this.client, 'idempotency');
   }
 
   protected async _deleteRecord(record: IdempotencyRecord): Promise<void> {

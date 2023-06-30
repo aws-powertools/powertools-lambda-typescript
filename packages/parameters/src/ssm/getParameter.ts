@@ -1,9 +1,5 @@
 import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
-import type {
-  SSMGetOptions,
-  SSMGetOutput,
-  SSMGetOptionsUnion,
-} from '../types/SSMProvider';
+import type { SSMGetOptions, SSMGetOutput } from '../types/SSMProvider';
 
 /**
  * ## Intro
@@ -134,17 +130,15 @@ import type {
  * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
  * * `decrypt` - Whether to decrypt the value before returning it.
  *
- * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  *
  * @param {string} name - The name of the parameter to retrieve
  * @param {SSMGetOptions} options - Options to configure the provider
- * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
  */
 const getParameter = async <
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType extends
-    | SSMGetOptionsUnion
-    | undefined = SSMGetOptionsUnion
+  InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions
 >(
   name: string,
   options?: InferredFromOptionsType & SSMGetOptions

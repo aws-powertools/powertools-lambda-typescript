@@ -1,10 +1,10 @@
 import type { IdempotencyRecordOptions } from '../types';
 import { IdempotencyRecordStatus } from '../types';
-import { IdempotencyInvalidStatusError } from '../Exceptions';
+import { IdempotencyInvalidStatusError } from '../errors';
 
 /**
  * Class representing an idempotency record.
- * The properties of this class will be reflected in the persistance layer.
+ * The properties of this class will be reflected in the persistence layer.
  */
 class IdempotencyRecord {
   /**

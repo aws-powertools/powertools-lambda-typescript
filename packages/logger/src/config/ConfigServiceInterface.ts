@@ -3,7 +3,7 @@
  *
  * @interface
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
- * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#environment-variables
+ * @see https://docs.powertools.aws.dev/lambda-typescript/latest/#environment-variables
  */
 interface ConfigServiceInterface {
   /**

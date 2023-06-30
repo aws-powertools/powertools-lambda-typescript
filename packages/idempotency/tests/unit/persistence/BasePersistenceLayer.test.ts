@@ -6,13 +6,13 @@
 import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
 import { IdempotencyConfig } from '../../../src';
 import {
-  IdempotencyRecord,
   BasePersistenceLayer,
+  IdempotencyRecord,
 } from '../../../src/persistence';
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyValidationError,
-} from '../../../src/Exceptions';
+} from '../../../src/errors';
 import type { IdempotencyConfigOptions } from '../../../src/types';
 import { IdempotencyRecordStatus } from '../../../src/types';
 

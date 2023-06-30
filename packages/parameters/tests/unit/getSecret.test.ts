@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/SecretsProvider/getSecret/function
  */
-import { DEFAULT_PROVIDERS } from '../../src/BaseProvider';
+import { DEFAULT_PROVIDERS } from '../../src/base';
 import { SecretsProvider, getSecret } from '../../src/secrets';
 import {
   SecretsManagerClient,

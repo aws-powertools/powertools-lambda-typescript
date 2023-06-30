@@ -1,7 +1,7 @@
 import { getParametersByName } from '@aws-lambda-powertools/parameters/ssm';
-import type { SSMGetParametersByNameOptionsInterface } from '@aws-lambda-powertools/parameters/ssm';
+import type { SSMGetParametersByNameOptions } from '@aws-lambda-powertools/parameters/ssm/types';
 
-const props: Record<string, SSMGetParametersByNameOptionsInterface> = {
+const props: Record<string, SSMGetParametersByNameOptions> = {
   '/develop/service/commons/telemetry/config': {
     maxAge: 300,
     transform: 'json',

@@ -2,10 +2,10 @@ import { IdempotencyHandler } from '../IdempotencyHandler';
 import { IdempotencyConfig } from '../IdempotencyConfig';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
 import {
+  IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-  IdempotencyInconsistentStateError,
-} from '../Exceptions';
+} from '../errors';
 import { IdempotencyRecord } from '../persistence';
 import { MAX_RETRIES } from '../constants';
 import type {
@@ -50,6 +50,9 @@ const makeHandlerIdempotent = (
     config: idempotencyConfig,
   });
 
+  // keep the flag for after and onError checks
+  let shouldSkipIdempotency = false;
+
   /**
    * Function called before the handler is executed.
    *
@@ -72,6 +75,18 @@ const makeHandlerIdempotent = (
     request: MiddyLikeRequest,
     retryNo = 0
   ): Promise<unknown | void> => {
+    if (
+      IdempotencyHandler.shouldSkipIdempotency(
+        idempotencyConfig.eventKeyJmesPath,
+        idempotencyConfig.throwOnNoIdempotencyKey,
+        request.event as Record<string, unknown>
+      )
+    ) {
+      // set the flag to skip checks in after and onError
+      shouldSkipIdempotency = true;
+
+      return;
+    }
     try {
       await persistenceStore.saveInProgress(
         request.event as Record<string, unknown>,
@@ -109,12 +124,12 @@ const makeHandlerIdempotent = (
         }
       } else {
         throw new IdempotencyPersistenceLayerError(
-          'Failed to save in progress record to idempotency store'
+          'Failed to save in progress record to idempotency store',
+          error as Error
         );
       }
     }
   };
-
   /**
    * Function called after the handler has executed successfully.
    *
@@ -125,6 +140,9 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const after = async (request: MiddyLikeRequest): Promise<void> => {
+    if (shouldSkipIdempotency) {
+      return;
+    }
     try {
       await persistenceStore.saveSuccess(
         request.event as Record<string, unknown>,
@@ -132,7 +150,8 @@ const makeHandlerIdempotent = (
       );
     } catch (e) {
       throw new IdempotencyPersistenceLayerError(
-        'Failed to update success record to idempotency store'
+        'Failed to update success record to idempotency store',
+        e as Error
       );
     }
   };
@@ -146,13 +165,17 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const onError = async (request: MiddyLikeRequest): Promise<void> => {
+    if (shouldSkipIdempotency) {
+      return;
+    }
     try {
       await persistenceStore.deleteRecord(
         request.event as Record<string, unknown>
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(
-        'Failed to delete record from idempotency store'
+        'Failed to delete record from idempotency store',
+        error as Error
       );
     }
   };

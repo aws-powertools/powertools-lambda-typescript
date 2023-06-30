@@ -20,10 +20,10 @@ import {
 } from '../../../commons/tests/utils/cdk-cli';
 import {
   RESOURCE_NAME_PREFIX,
-  STACK_OUTPUT_LOG_GROUP,
   SETUP_TIMEOUT,
-  TEST_CASE_TIMEOUT,
+  STACK_OUTPUT_LOG_GROUP,
   TEARDOWN_TIMEOUT,
+  TEST_CASE_TIMEOUT,
   XRAY_TRACE_ID_REGEX,
 } from './constants';
 

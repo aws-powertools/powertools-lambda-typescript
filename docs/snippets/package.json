@@ -20,21 +20,22 @@
   "license": "MIT-0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
   "bugs": {
-    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@aws-sdk/client-appconfigdata": "^3.245.0",
-    "@aws-sdk/client-dynamodb": "^3.245.0",
-    "@aws-sdk/client-secrets-manager": "^3.250.0",
-    "@aws-sdk/client-ssm": "^3.245.0",
-    "@aws-sdk/util-dynamodb": "^3.245.0",
-    "aws-sdk": "^2.1354.0",
-    "aws-sdk-client-mock": "^2.0.1",
-    "aws-sdk-client-mock-jest": "^2.0.1",
-    "axios": "^1.2.4"
+    "@aws-sdk/client-appconfigdata": "^3.360.0",
+    "@aws-sdk/client-dynamodb": "^3.360.0",
+    "@aws-sdk/client-secrets-manager": "^3.360.0",
+    "@aws-sdk/client-ssm": "^3.360.0",
+    "@aws-sdk/util-dynamodb": "^3.360.0",
+    "aws-sdk": "^2.1405.0",
+    "aws-sdk-client-mock": "^2.2.0",
+    "aws-sdk-client-mock-jest": "^2.2.0",
+    "axios": "^1.2.4",
+    "hashi-vault-js": "^0.4.13"
   }
 }

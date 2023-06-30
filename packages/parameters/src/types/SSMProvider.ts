@@ -1,12 +1,13 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 import type {
-  SSMClient,
-  SSMClientConfig,
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
+  SSMClient,
+  SSMClientConfig,
 } from '@aws-sdk/client-ssm';
 import type {
-  GetOptionsInterface,
   GetMultipleOptionsInterface,
+  GetOptionsInterface,
   TransformOptions,
 } from './BaseProvider';
 
@@ -48,7 +49,7 @@ type SSMProviderOptions =
 /**
  * Options for the SSMProvider getMultiple method.
  *
- * @interface SSMGetOptionsInterface
+ * @interface SSMGetOptionsBase
  * @extends {GetOptionsInterface}
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
  * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
@@ -56,7 +57,7 @@ type SSMProviderOptions =
  * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
  * @property {boolean} decrypt - If true, the parameter will be decrypted. Defaults to `false`.
  */
-interface SSMGetOptions extends GetOptionsInterface {
+interface SSMGetOptionsBase extends GetOptionsInterface {
   /**
    * If true, the parameter will be decrypted. Defaults to `false`.
    */
@@ -69,19 +70,19 @@ interface SSMGetOptions extends GetOptionsInterface {
   transform?: Exclude<TransformOptions, 'auto'>;
 }
 
-interface SSMGetOptionsTransformJson extends SSMGetOptions {
+interface SSMGetOptionsTransformJson extends SSMGetOptionsBase {
   transform: 'json';
 }
 
-interface SSMGetOptionsTransformBinary extends SSMGetOptions {
+interface SSMGetOptionsTransformBinary extends SSMGetOptionsBase {
   transform: 'binary';
 }
 
-interface SSMGetOptionsTransformNone extends SSMGetOptions {
+interface SSMGetOptionsTransformNone extends SSMGetOptionsBase {
   transform?: never;
 }
 
-type SSMGetOptionsUnion =
+type SSMGetOptions =
   | SSMGetOptionsTransformJson
   | SSMGetOptionsTransformBinary
   | SSMGetOptionsTransformNone
@@ -101,14 +102,14 @@ type SSMGetOutput<
         | SSMGetOptionsTransformBinary
     ? string
     : InferredFromOptionsType extends SSMGetOptionsTransformJson
-    ? Record<string, unknown>
+    ? JSONValue
     : never
   : ExplicitUserProvidedType;
 
 /**
  * Options for the SSMProvider getMultiple method.
  *
- * @interface SSMGetMultipleOptionsInterface
+ * @interface SSMGetMultipleOptionsBase
  * @extends {GetMultipleOptionsInterface}
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
  * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
@@ -118,7 +119,7 @@ type SSMGetOutput<
  * @property {boolean} recursive - If true, the parameter will be fetched recursively.
  * @property {boolean} throwOnTransformError - If true, the method will throw an error if the transform fails.
  */
-interface SSMGetMultipleOptions extends GetMultipleOptionsInterface {
+interface SSMGetMultipleOptionsBase extends GetMultipleOptionsInterface {
   /**
    * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetParametersByPathCommandInput`.
    */
@@ -137,23 +138,24 @@ interface SSMGetMultipleOptions extends GetMultipleOptionsInterface {
   throwOnTransformError?: boolean;
 }
 
-interface SSMGetMultipleOptionsTransformJson extends SSMGetMultipleOptions {
+interface SSMGetMultipleOptionsTransformJson extends SSMGetMultipleOptionsBase {
   transform: 'json';
 }
 
-interface SSMGetMultipleOptionsTransformBinary extends SSMGetMultipleOptions {
+interface SSMGetMultipleOptionsTransformBinary
+  extends SSMGetMultipleOptionsBase {
   transform: 'binary';
 }
 
-interface SSMGetMultipleOptionsTransformAuto extends SSMGetMultipleOptions {
+interface SSMGetMultipleOptionsTransformAuto extends SSMGetMultipleOptionsBase {
   transform: 'auto';
 }
 
-interface SSMGetMultipleOptionsTransformNone extends SSMGetMultipleOptions {
+interface SSMGetMultipleOptionsTransformNone extends SSMGetMultipleOptionsBase {
   transform?: never;
 }
 
-type SSMGetMultipleOptionsUnion =
+type SSMGetMultipleOptions =
   | SSMGetMultipleOptionsTransformJson
   | SSMGetMultipleOptionsTransformBinary
   | SSMGetMultipleOptionsTransformAuto
@@ -174,9 +176,9 @@ type SSMGetMultipleOutput<
         | SSMGetMultipleOptionsTransformBinary
     ? Record<string, string>
     : InferredFromOptionsType extends SSMGetMultipleOptionsTransformAuto
-    ? Record<string, unknown>
+    ? Record<string, JSONValue>
     : InferredFromOptionsType extends SSMGetMultipleOptionsTransformJson
-    ? Record<string, Record<string, unknown>>
+    ? Record<string, JSONValue>
     : never
   : Record<string, ExplicitUserProvidedType>;
 
@@ -231,10 +233,8 @@ type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> =
 export type {
   SSMProviderOptions,
   SSMGetOptions,
-  SSMGetOptionsUnion,
   SSMGetOutput,
   SSMGetMultipleOptions,
-  SSMGetMultipleOptionsUnion,
   SSMGetMultipleOutput,
   SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,

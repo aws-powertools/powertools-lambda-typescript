@@ -1,3 +1,4 @@
+import { METRICS_KEY } from '@aws-lambda-powertools/commons/lib/middleware';
 import type { Metrics } from '../Metrics';
 import type { ExtraOptions } from '../types';
 import type {
@@ -38,6 +39,18 @@ const logMetrics = (
 ): MiddlewareLikeObj => {
   const metricsInstances = target instanceof Array ? target : [target];
 
+  /**
+   * Set the cleanup function to be called in case other middlewares return early.
+   *
+   * @param request - The request object
+   */
+  const setCleanupFunction = (request: MiddyLikeRequest): void => {
+    request.internal = {
+      ...request.internal,
+      [METRICS_KEY]: logMetricsAfterOrError,
+    };
+  };
+
   const logMetricsBefore = async (request: MiddyLikeRequest): Promise<void> => {
     metricsInstances.forEach((metrics: Metrics) => {
       metrics.setFunctionName(request.context.functionName);
@@ -53,6 +66,8 @@ const logMetrics = (
         metrics.captureColdStartMetric();
       }
     });
+
+    setCleanupFunction(request);
   };
 
   const logMetricsAfterOrError = async (): Promise<void> => {

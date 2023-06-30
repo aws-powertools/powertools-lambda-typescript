@@ -8,12 +8,13 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/Exceptions';
+} from '../../src/errors';
 import { IdempotencyRecordStatus } from '../../src/types';
 import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
 import { IdempotencyConfig } from '../../src/';
 import { MAX_RETRIES } from '../../src/constants';
+import { Context } from 'aws-lambda';
 
 class PersistenceLayerTestClass extends BasePersistenceLayer {
   protected _deleteRecord = jest.fn();
@@ -164,16 +165,20 @@ describe('Class IdempotencyHandler', () => {
     });
 
     test('when persistences store throws any error, it wraps the error to IdempotencyPersistencesLayerError', async () => {
+      const innerError = new Error('Some error');
       const mockSaveInProgress = jest
         .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-        .mockRejectedValue(new Error('Some error'));
+        .mockRejectedValue(innerError);
       const mockDetermineResultFromIdempotencyRecord = jest
         .spyOn(IdempotencyHandler, 'determineResultFromIdempotencyRecord')
         .mockImplementation(() => 'result');
-
       await expect(idempotentHandler.processIdempotency()).rejects.toThrow(
-        IdempotencyPersistenceLayerError
+        new IdempotencyPersistenceLayerError(
+          'Failed to save record in progress',
+          innerError
+        )
       );
+
       expect(mockSaveInProgress).toHaveBeenCalledTimes(1);
       expect(mockDetermineResultFromIdempotencyRecord).toHaveBeenCalledTimes(0);
     });
@@ -208,6 +213,77 @@ describe('Class IdempotencyHandler', () => {
       expect(mockSaveInProgress).toHaveBeenCalledTimes(1);
       expect(mockGetRecord).toHaveBeenCalledTimes(1);
       expect(mockDetermineResultFromIdempotencyRecord).toHaveBeenCalledTimes(1);
+    });
+
+    test('when throwOnNoIdempotencyKey is false and the key is missing, we skip idempotency', async () => {
+      const idempotentHandlerSkips = new IdempotencyHandler({
+        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+        persistenceStore: mockIdempotencyOptions.persistenceStore,
+        fullFunctionPayload: mockFullFunctionPayload,
+        idempotencyConfig: new IdempotencyConfig({
+          throwOnNoIdempotencyKey: false,
+          eventKeyJmesPath: 'idempotencyKey',
+        }),
+      });
+
+      const mockSaveInProgress = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      );
+
+      const mockSaveSuccessfulResult = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveSuccess'
+      );
+      const mockGetRecord = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'getRecord'
+      );
+
+      mockFunctionToMakeIdempotent.mockImplementation(() => {
+        return 'result';
+      });
+
+      await expect(idempotentHandlerSkips.processIdempotency()).resolves.toBe(
+        'result'
+      );
+      expect(mockSaveInProgress).toHaveBeenCalledTimes(0);
+      expect(mockGetRecord).toHaveBeenCalledTimes(0);
+      expect(mockSaveSuccessfulResult).toHaveBeenCalledTimes(0);
+    });
+
+    test('when lambdaContext is registered, we pass it to saveInProgress', async () => {
+      const mockSaveInProgress = jest.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      );
+
+      const mockLambaContext: Context = {
+        getRemainingTimeInMillis(): number {
+          return 1000; // we expect this number to be passed to saveInProgress
+        },
+      } as Context;
+      const idempotencyHandlerWithContext = new IdempotencyHandler({
+        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+        persistenceStore: mockIdempotencyOptions.persistenceStore,
+        fullFunctionPayload: mockFullFunctionPayload,
+        idempotencyConfig: new IdempotencyConfig({
+          lambdaContext: mockLambaContext,
+        }),
+      });
+
+      mockFunctionToMakeIdempotent.mockImplementation(() =>
+        Promise.resolve('result')
+      );
+
+      await expect(idempotencyHandlerWithContext.processIdempotency()).resolves;
+
+      expect(mockSaveInProgress).toBeCalledWith(
+        mockFunctionPayloadToBeHashed,
+        mockLambaContext.getRemainingTimeInMillis()
+      );
     });
   });
 
@@ -251,7 +327,9 @@ describe('Class IdempotencyHandler', () => {
         .mockRejectedValue(new Error('Some error'));
 
       await expect(idempotentHandler.getFunctionResult()).rejects.toThrow(
-        IdempotencyPersistenceLayerError
+        new IdempotencyPersistenceLayerError(
+          'Failed to delete record from idempotency store. This error was  caused by: Some error.'
+        )
       );
       expect(mockDeleteInProgress).toHaveBeenCalledTimes(1);
     });

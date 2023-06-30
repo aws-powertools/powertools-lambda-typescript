@@ -109,6 +109,7 @@ describe('Idempotency e2e test function wrapper, default settings', () => {
           { id: 3, foo: 'bar' },
         ],
       };
+      const invokeStart = Date.now();
       await invokeFunction(
         functionNameDefault,
         2,
@@ -136,6 +137,10 @@ describe('Idempotency e2e test function wrapper, default settings', () => {
         })
       );
       expect(resultFirst?.Item?.data).toEqual('Processing done: bar');
+      expect(resultFirst?.Item?.expiration).toBeGreaterThan(Date.now() / 1000);
+      expect(resultFirst?.Item?.in_progress_expiration).toBeGreaterThan(
+        invokeStart
+      );
       expect(resultFirst?.Item?.status).toEqual('COMPLETED');
 
       const resultSecond = await ddb.send(
@@ -145,6 +150,10 @@ describe('Idempotency e2e test function wrapper, default settings', () => {
         })
       );
       expect(resultSecond?.Item?.data).toEqual('Processing done: baz');
+      expect(resultSecond?.Item?.expiration).toBeGreaterThan(Date.now() / 1000);
+      expect(resultSecond?.Item?.in_progress_expiration).toBeGreaterThan(
+        invokeStart
+      );
       expect(resultSecond?.Item?.status).toEqual('COMPLETED');
     },
     TEST_CASE_TIMEOUT

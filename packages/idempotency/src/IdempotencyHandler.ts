@@ -5,10 +5,11 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from './Exceptions';
+} from './errors';
 import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
 import { IdempotencyConfig } from './IdempotencyConfig';
 import { MAX_RETRIES } from './constants';
+import { search } from 'jmespath';
 
 /**
  * @internal
@@ -79,7 +80,8 @@ export class IdempotencyHandler<U> {
         );
       } catch (e) {
         throw new IdempotencyPersistenceLayerError(
-          'Failed to delete record from idempotency store'
+          'Failed to delete record from idempotency store',
+          e as Error
         );
       }
       throw e;
@@ -91,7 +93,8 @@ export class IdempotencyHandler<U> {
       );
     } catch (e) {
       throw new IdempotencyPersistenceLayerError(
-        'Failed to update success record to idempotency store'
+        'Failed to update success record to idempotency store',
+        e as Error
       );
     }
 
@@ -127,9 +130,21 @@ export class IdempotencyHandler<U> {
   }
 
   public async processIdempotency(): Promise<U> {
+    // early return if we should skip idempotency completely
+    if (
+      IdempotencyHandler.shouldSkipIdempotency(
+        this.idempotencyConfig.eventKeyJmesPath,
+        this.idempotencyConfig.throwOnNoIdempotencyKey,
+        this.fullFunctionPayload
+      )
+    ) {
+      return await this.functionToMakeIdempotent(this.fullFunctionPayload);
+    }
+
     try {
       await this.persistenceStore.saveInProgress(
-        this.functionPayloadToBeHashed
+        this.functionPayloadToBeHashed,
+        this.idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
       );
     } catch (e) {
       if (e instanceof IdempotencyItemAlreadyExistsError) {
@@ -140,10 +155,32 @@ export class IdempotencyHandler<U> {
           idempotencyRecord
         ) as U;
       } else {
-        throw new IdempotencyPersistenceLayerError();
+        throw new IdempotencyPersistenceLayerError(
+          'Failed to save record in progress',
+          e as Error
+        );
       }
     }
 
     return this.getFunctionResult();
+  }
+
+  /**
+   * avoid idempotency if the eventKeyJmesPath is not present in the payload and throwOnNoIdempotencyKey is false
+   * static so {@link makeHandlerIdempotent} middleware can use it
+   * TOOD: refactor so middy uses IdempotencyHandler internally wihtout reimplementing the logic
+   * @param eventKeyJmesPath
+   * @param throwOnNoIdempotencyKey
+   * @param fullFunctionPayload
+   * @private
+   */
+  public static shouldSkipIdempotency(
+    eventKeyJmesPath: string,
+    throwOnNoIdempotencyKey: boolean,
+    fullFunctionPayload: Record<string, unknown>
+  ): boolean {
+    return (eventKeyJmesPath &&
+      !throwOnNoIdempotencyKey &&
+      !search(fullFunctionPayload, eventKeyJmesPath)) as boolean;
   }
 }

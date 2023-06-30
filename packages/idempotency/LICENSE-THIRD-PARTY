@@ -1,5 +1,5 @@
 @aws-lambda-powertools/commons
-0.0.2 <https://github.com/awslabs/aws-lambda-powertools-typescript>
+0.0.2 <https://github.com/aws-powertools/powertools-lambda-typescript>
 license: MIT*
 authors: Amazon Web Services <https://aws.amazon.com>
 

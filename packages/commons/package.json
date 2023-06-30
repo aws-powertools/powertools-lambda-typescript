@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "1.9.0",
+  "version": "1.11.0",
   "description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",
@@ -24,7 +24,7 @@
     "*.ts": "npm run lint-fix",
     "*.js": "npm run lint-fix"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/metrics#readme",
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/metrics#readme",
   "license": "MIT-0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -33,10 +33,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
   "bugs": {
-    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "keywords": [
     "aws",
@@ -46,7 +46,7 @@
     "nodejs"
   ],
   "devDependencies": {
-    "@aws-sdk/client-lambda": "^3.310.0",
+    "@aws-sdk/client-lambda": "^3.360.0",
     "@aws-sdk/util-utf8-node": "^3.259.0"
   }
 }

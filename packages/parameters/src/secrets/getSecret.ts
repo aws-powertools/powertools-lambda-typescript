@@ -1,9 +1,8 @@
-import { DEFAULT_PROVIDERS } from '../BaseProvider';
+import { DEFAULT_PROVIDERS } from '../base';
 import { SecretsProvider } from './SecretsProvider';
 import type {
   SecretsGetOptions,
   SecretsGetOutput,
-  SecretsGetOptionsUnion,
 } from '../types/SecretsProvider';
 
 /**
@@ -100,18 +99,18 @@ import type {
  *
  * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SecretsProvider} class.
  *
- * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  *
  *
  * @param {string} name - The name of the secret to retrieve
  * @param {SecretsGetOptions} options - Options to configure the provider
- * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
  */
 const getSecret = async <
   ExplicitUserProvidedType = undefined,
   InferredFromOptionsType extends
-    | SecretsGetOptionsUnion
-    | undefined = SecretsGetOptionsUnion
+    | SecretsGetOptions
+    | undefined = SecretsGetOptions
 >(
   name: string,
   options?: InferredFromOptionsType & SecretsGetOptions
@@ -123,13 +122,7 @@ const getSecret = async <
     DEFAULT_PROVIDERS.secrets = new SecretsProvider();
   }
 
-  return (DEFAULT_PROVIDERS.secrets as SecretsProvider).get(
-    name,
-    options
-  ) as Promise<
-    | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-    | undefined
-  >;
+  return (DEFAULT_PROVIDERS.secrets as SecretsProvider).get(name, options);
 };
 
 export { getSecret };

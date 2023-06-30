@@ -184,7 +184,7 @@ Metadata:
       EntryPoints:
 ```
 
-Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Powertools for AWS Lambda (TypeScript) layers [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/#lambda-layer).
+Learn more about Lambda Layers [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and about the Powertools for AWS Lambda (TypeScript) layers [here](https://docs.powertools.aws.dev/lambda-typescript/latest/#lambda-layer).
 
 ## Cleanup
 

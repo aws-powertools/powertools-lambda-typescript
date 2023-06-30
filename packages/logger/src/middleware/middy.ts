@@ -1,5 +1,6 @@
 import { Logger } from '../Logger';
 import { HandlerOptions, LogAttributes } from '../types';
+import { LOGGER_KEY } from '@aws-lambda-powertools/commons/lib/middleware';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
@@ -35,15 +36,30 @@ const injectLambdaContext = (
 ): MiddlewareLikeObj => {
   const loggers = target instanceof Array ? target : [target];
   const persistentAttributes: LogAttributes[] = [];
+  const isClearState = options && options.clearState === true;
+
+  /**
+   * Set the cleanup function to be called in case other middlewares return early.
+   *
+   * @param request - The request object
+   */
+  const setCleanupFunction = (request: MiddyLikeRequest): void => {
+    request.internal = {
+      ...request.internal,
+      [LOGGER_KEY]: injectLambdaContextAfterOrOnError,
+    };
+  };
 
   const injectLambdaContextBefore = async (
     request: MiddyLikeRequest
   ): Promise<void> => {
     loggers.forEach((logger: Logger, index: number) => {
-      if (options && options.clearState === true) {
+      if (isClearState) {
         persistentAttributes[index] = {
           ...logger.getPersistentLogAttributes(),
         };
+
+        setCleanupFunction(request);
       }
       Logger.injectLambdaContextBefore(
         logger,
@@ -55,7 +71,7 @@ const injectLambdaContext = (
   };
 
   const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
-    if (options && options.clearState === true) {
+    if (isClearState) {
       loggers.forEach((logger: Logger, index: number) => {
         Logger.injectLambdaContextAfterOrOnError(
           logger,

@@ -9,10 +9,10 @@ import { Custom as dummyEvent } from '../../../commons/src/samples/resources/eve
 import { IdempotencyRecordStatus } from '../../src/types';
 import { IdempotencyRecord } from '../../src/persistence';
 import {
-  IdempotencyPersistenceLayerError,
-  IdempotencyItemAlreadyExistsError,
   IdempotencyInconsistentStateError,
-} from '../../src/Exceptions';
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyPersistenceLayerError,
+} from '../../src/errors';
 import { IdempotencyConfig } from '../../src/';
 import middy from '@middy/core';
 import { MAX_RETRIES } from '../../src/constants';
@@ -115,7 +115,7 @@ describe('Middleware: makeHandlerIdempotent', () => {
     // Act && Assess
     await expect(handler(event, context)).rejects.toThrowError(
       new IdempotencyPersistenceLayerError(
-        'Failed to save in progress record to idempotency store'
+        'Failed to save in progress record to idempotency store. This error was  caused by: Something went wrong.'
       )
     );
   });
@@ -131,7 +131,7 @@ describe('Middleware: makeHandlerIdempotent', () => {
     // Act && Assess
     await expect(handler(event, context)).rejects.toThrowError(
       new IdempotencyPersistenceLayerError(
-        'Failed to update success record to idempotency store'
+        'Failed to update success record to idempotency store. This error was  caused by: Something went wrong.'
       )
     );
   });
@@ -149,7 +149,7 @@ describe('Middleware: makeHandlerIdempotent', () => {
     // Act && Assess
     await expect(handler(event, context)).rejects.toThrow(
       new IdempotencyPersistenceLayerError(
-        'Failed to delete record from idempotency store'
+        'Failed to delete record from idempotency store. This error was  caused by: Something went wrong.'
       )
     );
   });
@@ -267,5 +267,61 @@ describe('Middleware: makeHandlerIdempotent', () => {
     expect(result).toBe(true);
     expect(saveInProgressSpy).toHaveBeenCalledTimes(0);
     expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
+  });
+
+  it('skips idempotency if no idempotency key is provided and throwOnNoIdempotencyKey is false', async () => {
+    // Prepare
+    const handler = middy(
+      async (_event: unknown, _context: Context): Promise<boolean> => true
+    ).use(
+      makeHandlerIdempotent({
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({
+          eventKeyJmesPath: 'idempotencyKey',
+          throwOnNoIdempotencyKey: false,
+        }),
+      })
+    );
+    const saveInProgressSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveInProgress'
+    );
+    const saveSuccessSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveSuccess'
+    );
+
+    // Act
+    const result = await handler(event, context);
+
+    // Assess
+    expect(result).toBe(true);
+    expect(saveInProgressSpy).toHaveBeenCalledTimes(0);
+    expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
+  });
+
+  it(' skips idempotency if error is thrown in the middleware', async () => {
+    const handler = middy(
+      async (_event: unknown, _context: Context): Promise<void> => {
+        throw new Error('Something went wrong');
+      }
+    ).use(
+      makeHandlerIdempotent({
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({
+          eventKeyJmesPath: 'idempotencyKey',
+          throwOnNoIdempotencyKey: false,
+        }),
+      })
+    );
+
+    const deleteRecordSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'deleteRecord'
+    );
+
+    await expect(handler(event, context)).rejects.toThrowError();
+
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
   });
 });

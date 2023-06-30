@@ -1,9 +1,9 @@
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
-} from '../Exceptions';
+} from '../errors';
 import { IdempotencyRecordStatus } from '../types';
-import type { DynamoPersistenceOptions } from '../types';
+import type { DynamoDBPersistenceOptions } from '../types';
 import {
   DynamoDBClient,
   DynamoDBClientConfig,
@@ -40,7 +40,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   private tableName: string;
   private validationKeyAttr: string;
 
-  public constructor(config: DynamoPersistenceOptions) {
+  public constructor(config: DynamoDBPersistenceOptions) {
     super();
 
     this.tableName = config.tableName;
@@ -261,4 +261,3 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 }
 
 export { DynamoDBPersistenceLayer };
-export type { DynamoPersistenceOptions as DynamoDBPersistenceLayerOptions };

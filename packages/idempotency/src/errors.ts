@@ -31,7 +31,17 @@ class IdempotencyInconsistentStateError extends Error {}
 /**
  * Unrecoverable error from the data store
  */
-class IdempotencyPersistenceLayerError extends Error {}
+class IdempotencyPersistenceLayerError extends Error {
+  public readonly cause: Error | undefined;
+
+  public constructor(message: string, cause?: Error) {
+    const errorMessage = cause
+      ? `${message}. This error was  caused by: ${cause.message}.`
+      : message;
+    super(errorMessage);
+    this.cause = cause;
+  }
+}
 
 /**
  * Payload does not contain an idempotent key

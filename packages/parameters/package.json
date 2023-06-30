@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "1.9.0",
+  "version": "1.11.0",
   "description": "The parameters package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -27,64 +27,92 @@
     "*.ts": "npm run lint-fix",
     "*.js": "npm run lint-fix"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/main/packages/parameters#readme",
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parameters#readme",
   "license": "MIT-0",
   "exports": {
     ".": {
       "import": "./lib/index.js",
       "require": "./lib/index.js"
     },
+    "./base/types": {
+      "import": "./lib/types/BaseProvider.d.ts",
+      "require": "./lib/types/BaseProvider.d.ts"
+    },
     "./base": {
       "import": "./lib/base/index.js",
       "require": "./lib/base/index.js"
+    },
+    "./ssm/types": {
+      "import": "./lib/types/SSMProvider.d.ts",
+      "require": "./lib/types/SSMProvider.d.ts"
     },
     "./ssm": {
       "import": "./lib/ssm/index.js",
       "require": "./lib/ssm/index.js"
     },
+    "./secrets/types": {
+      "import": "./lib/types/SecretsProvider.d.ts",
+      "require": "./lib/types/SecretsProvider.d.ts"
+    },
     "./secrets": {
       "import": "./lib/secrets/index.js",
       "require": "./lib/secrets/index.js"
     },
+    "./dynamodb/types": {
+      "import": "./lib/types/AppConfigProvider.d.ts",
+      "require": "./lib/types/AppConfigProvider.d.ts"
+    },
     "./dynamodb": {
       "import": "./lib/dynamodb/index.js",
       "require": "./lib/dynamodb/index.js"
+    },
+    "./appconfig/types": {
+      "import": "./lib/appconfig/index.js",
+      "require": "./lib/appconfig/index.js"
     },
     "./appconfig": {
       "import": "./lib/appconfig/index.js",
       "require": "./lib/appconfig/index.js"
     },
     "./errors": {
-      "import": "./lib/Exceptions.js",
-      "require": "./lib/Exceptions.js"
-    },
-    "./types": {
-      "import": "./lib/types/index.d.ts",
-      "require": "./lib/types/index.d.ts"
+      "import": "./lib/errors.js",
+      "require": "./lib/errors.js"
     }
   },
   "typesVersions": {
     "*": {
+      "base/types": [
+        "lib/types/BaseProvider.d.ts"
+      ],
       "base": [
         "lib/base/index.d.ts"
+      ],
+      "ssm/types": [
+        "lib/types/SSMProvider.d.ts"
       ],
       "ssm": [
         "lib/ssm/index.d.ts"
       ],
+      "secrets/types": [
+        "lib/types/SecretsProvider.d.ts"
+      ],
       "secrets": [
         "lib/secrets/index.d.ts"
       ],
+      "dynamodb/types": [
+        "./lib/types/DynamoDBProvider.d.ts"
+      ],
       "dynamodb": [
         "lib/dynamodb/index.d.ts"
+      ],
+      "appconfig/types": [
+        "./lib/types/AppConfigProvider.d.ts"
       ],
       "appconfig": [
         "lib/appconfig/index.d.ts"
       ],
       "errors": [
-        "lib/Exceptions.d.ts"
-      ],
-      "types": [
-        "lib/types/index.d.ts"
+        "lib/errors.d.ts"
       ]
     }
   },
@@ -95,10 +123,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
   "bugs": {
-    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "keywords": [
     "aws",
@@ -110,16 +138,16 @@
     "nodejs"
   ],
   "devDependencies": {
-    "@aws-sdk/client-appconfigdata": "^3.241.0",
-    "@aws-sdk/client-dynamodb": "^3.245.0",
-    "@aws-sdk/client-secrets-manager": "^3.238.0",
-    "@aws-sdk/client-ssm": "^3.244.0",
-    "@aws-sdk/util-dynamodb": "^3.245.0",
-    "aws-sdk-client-mock": "^2.0.1",
-    "aws-sdk-client-mock-jest": "^2.0.1"
+    "@aws-sdk/client-appconfigdata": "^3.360.0",
+    "@aws-sdk/client-dynamodb": "^3.360.0",
+    "@aws-sdk/client-secrets-manager": "^3.360.0",
+    "@aws-sdk/client-ssm": "^3.360.0",
+    "@aws-sdk/util-dynamodb": "^3.360.0",
+    "aws-sdk-client-mock": "^2.2.0",
+    "aws-sdk-client-mock-jest": "^2.2.0"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^1.9.0",
+    "@aws-lambda-powertools/commons": "^1.11.0",
     "@aws-sdk/util-base64-node": "^3.209.0"
   }
 }

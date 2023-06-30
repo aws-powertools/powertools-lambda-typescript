@@ -1,4 +1,4 @@
-import { BaseProvider } from '../BaseProvider';
+import { BaseProvider } from '../base';
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
@@ -8,7 +8,6 @@ import type {
   SecretsProviderOptions,
   SecretsGetOptions,
   SecretsGetOutput,
-  SecretsGetOptionsUnion,
 } from '../types/SecretsProvider';
 
 /**
@@ -145,11 +144,11 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript Secrets Manager client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/classes/secretsmanagerclient.html).
  *
- * For more usage examples, see [our documentation](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  *
  * @class
  * @implements {BaseProvider}
- * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
  */
 class SecretsProvider extends BaseProvider {
   public client: SecretsManagerClient;
@@ -199,13 +198,13 @@ class SecretsProvider extends BaseProvider {
    *
    * @param {string} name - The name of the secret
    * @param {SecretsGetOptions} options - Options to customize the retrieval of the secret
-   * @see https://awslabs.github.io/aws-lambda-powertools-typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
-      | SecretsGetOptionsUnion
-      | undefined = SecretsGetOptionsUnion
+      | SecretsGetOptions
+      | undefined = SecretsGetOptions
   >(
     name: string,
     options?: InferredFromOptionsType & SecretsGetOptions
@@ -222,15 +221,12 @@ class SecretsProvider extends BaseProvider {
   /**
    * Retrieving multiple parameter values is not supported with AWS Secrets Manager.
    */
-  public async getMultiple(
-    path: string,
-    _options?: unknown
-  ): Promise<undefined | Record<string, unknown>> {
-    return super.getMultiple(path);
+  public async getMultiple(path: string, _options?: unknown): Promise<void> {
+    await super.getMultiple(path);
   }
 
   /**
-   * Retrieve a configuration from AWS AppConfig.
+   * Retrieve a configuration from AWS Secrets Manager.
    *
    * @param {string} name - Name of the configuration or its ID
    * @param {SecretsGetOptions} options - SDK options to propagate to the AWS SDK v3 for JavaScript client
@@ -261,7 +257,7 @@ class SecretsProvider extends BaseProvider {
   protected async _getMultiple(
     _path: string,
     _options?: unknown
-  ): Promise<Record<string, string | undefined>> {
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

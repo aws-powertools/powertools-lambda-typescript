@@ -17,8 +17,8 @@
   "scripts": {
     "init-environment": "husky install",
     "test": "npm t -ws",
+    "test:e2e": "npm run test:e2e -ws",
     "commit": "commit",
-    "package": "npm run package -ws",
     "setup-local": "npm ci && npm run build && npm run init-environment",
     "build": "npm run build -ws",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",
@@ -31,7 +31,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/awslabs/aws-lambda-powertools-typescript.git"
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
   "keywords": [],
   "author": {
@@ -40,9 +40,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
-  "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript#readme",
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
     "@aws-cdk/cloudformation-diff": "^2.73.0",
     "@aws-cdk/cx-api": "^2.73.0",
@@ -68,7 +68,7 @@
     "husky": "^8.0.2",
     "jest": "^29.3.1",
     "jest-runner-groups": "^2.2.0",
-    "lerna": "^6.6.1",
+    "lerna": "^6.6.2",
     "lint-staged": "^13.1.2",
     "prettier": "^2.8.8",
     "promptly": "^3.2.0",

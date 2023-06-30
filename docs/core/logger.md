@@ -108,15 +108,18 @@ This functionality will include the following keys in your structured logs:
 
 === "Middy Middleware"
 
-    !!! tip "Using Middy for the first time?"
-        You can install Middy by running `npm i @middy/core`.
-        Learn more about [its usage and lifecycle in the official Middy documentation](https://middy.js.org/docs/intro/getting-started){target="_blank"}.
+    !!! tip "A note about Middy"
+        Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
+        Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="1 13"
     --8<-- "docs/snippets/logger/middy.ts"
     ```
 
 === "Decorator"
+
+    !!! info
+        Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you prefer to write your handler as a standard function rather than a Class method, use the middleware or the manual instrumentation instead. See the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/logger/decorator.ts"
@@ -658,7 +661,7 @@ This is a Jest sample that provides the minimum information necessary for Logger
     ```
 
 !!! tip
-    If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/commons/src/samples/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).
+    If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/packages/commons/src/samples/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).
 
 ### Suppress logs with Jest
 

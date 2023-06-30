@@ -16,7 +16,7 @@ class PowertoolsLogFormatter extends LogFormatter {
    *
    * @param {UnformattedAttributes} attributes
    * @param {LogAttributes} additionalLogAttributes
-   * @returns {LogItem}
+   * @returns {PowertoolsLog}
    */
   public formatAttributes(
     attributes: UnformattedAttributes,

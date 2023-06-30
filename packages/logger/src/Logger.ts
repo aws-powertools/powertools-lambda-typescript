@@ -3,7 +3,7 @@ import { Console } from 'node:console';
 import { format } from 'node:util';
 import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
+import { LogFormatterInterface, PowertoolsLogFormatter } from './formatter';
 import { LogItem } from './log';
 import merge from 'lodash.merge';
 import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
@@ -653,16 +653,13 @@ class Logger extends Utility implements ClassThatLogs {
       this.getPowertoolLogData()
     );
 
-    const logItem = new LogItem({
-      baseAttributes: this.getLogFormatter().formatAttributes(
-        unformattedBaseAttributes
-      ),
-      persistentAttributes: this.getPersistentLogAttributes(),
-    });
-
-    // Add ephemeral attributes
+    let additionalLogAttributes: LogAttributes = {};
+    additionalLogAttributes = merge(
+      additionalLogAttributes,
+      this.getPersistentLogAttributes()
+    );
     if (typeof input !== 'string') {
-      logItem.addAttributes(input);
+      additionalLogAttributes = merge(additionalLogAttributes, input);
     }
     extraInput.forEach((item: Error | LogAttributes | string) => {
       const attributes: LogAttributes =
@@ -672,8 +669,13 @@ class Logger extends Utility implements ClassThatLogs {
             ? { extra: item }
             : item;
 
-      logItem.addAttributes(attributes);
+      additionalLogAttributes = merge(additionalLogAttributes, attributes);
     });
+
+    const logItem = this.getLogFormatter().formatAttributes(
+      unformattedBaseAttributes,
+      additionalLogAttributes
+    );
 
     return logItem;
   }
@@ -955,7 +957,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   private setLogFormatter(logFormatter?: LogFormatterInterface): void {
-    this.logFormatter = logFormatter || new PowertoolLogFormatter();
+    this.logFormatter = logFormatter || new PowertoolsLogFormatter();
   }
 
   /**

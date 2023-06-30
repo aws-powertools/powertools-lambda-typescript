@@ -1,6 +1,7 @@
 import { LogFormatter } from '.';
-import { UnformattedAttributes } from '../types';
-import { PowertoolLog } from '../types/formats';
+import { LogAttributes, UnformattedAttributes } from '../types';
+import { PowertoolsLog } from '../types/formats';
+import { LogItem } from '../log';
 
 /**
  * This class is used to transform a set of log key-value pairs
@@ -9,15 +10,19 @@ import { PowertoolLog } from '../types/formats';
  * @class
  * @extends {LogFormatter}
  */
-class PowertoolLogFormatter extends LogFormatter {
+class PowertoolsLogFormatter extends LogFormatter {
   /**
    * It formats key-value pairs of log attributes.
    *
    * @param {UnformattedAttributes} attributes
-   * @returns {PowertoolLog}
+   * @param {LogAttributes} additionalLogAttributes
+   * @returns {PowertoolsLog}
    */
-  public formatAttributes(attributes: UnformattedAttributes): PowertoolLog {
-    return {
+  public formatAttributes(
+    attributes: UnformattedAttributes,
+    additionalLogAttributes: LogAttributes
+  ): LogItem {
+    const baseAttributes: PowertoolsLog = {
       cold_start: attributes.lambdaContext?.coldStart,
       function_arn: attributes.lambdaContext?.invokedFunctionArn,
       function_memory_size: attributes.lambdaContext?.memoryLimitInMB,
@@ -30,7 +35,13 @@ class PowertoolLogFormatter extends LogFormatter {
       timestamp: this.formatTimestamp(attributes.timestamp),
       xray_trace_id: attributes.xRayTraceId,
     };
+
+    const powertoolLogItem = new LogItem({ attributes: baseAttributes });
+
+    powertoolLogItem.addAttributes(additionalLogAttributes);
+
+    return powertoolLogItem;
   }
 }
 
-export { PowertoolLogFormatter };
+export { PowertoolsLogFormatter };

@@ -1,6 +1,6 @@
 import type { LogAttributes, LogLevel } from '..';
 
-type PowertoolLog = LogAttributes & {
+type PowertoolsLog = LogAttributes & {
   /**
    * timestamp
    *
@@ -90,4 +90,4 @@ type PowertoolLog = LogAttributes & {
   lambda_request_id?: string;
 };
 
-export type { PowertoolLog };
+export type { PowertoolsLog };

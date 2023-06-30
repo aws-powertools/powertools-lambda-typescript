@@ -5,16 +5,12 @@ import { LogAttributes } from '../types';
 class LogItem implements LogItemInterface {
   private attributes: LogAttributes = {};
 
-  public constructor(params: {
-    baseAttributes: LogAttributes;
-    persistentAttributes: LogAttributes;
-  }) {
+  public constructor(params: { attributes: LogAttributes }) {
     // Add attributes in the log item in this order:
     // - Base attributes supported by the Powertool by default
-    // - Persistent attributes provided by developer, not formatted
+    // - Persistent attributes provided by developer, not formatted (done later)
     // - Ephemeral attributes provided as parameters for a single log item (done later)
-    this.addAttributes(params.baseAttributes);
-    this.addAttributes(params.persistentAttributes);
+    this.addAttributes(params.attributes);
   }
 
   public addAttributes(attributes: LogAttributes): LogItem {

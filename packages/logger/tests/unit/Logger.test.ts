@@ -10,7 +10,7 @@ import {
 } from '@aws-lambda-powertools/commons';
 import { createLogger, Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
-import { PowertoolLogFormatter } from '../../src/formatter';
+import { PowertoolsLogFormatter } from '../../src/formatter';
 import {
   ClassThatLogs,
   LogJsonIndent,
@@ -798,7 +798,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: 0,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1601,7 +1601,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1624,7 +1624,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1647,7 +1647,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1713,7 +1713,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1736,7 +1736,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1762,7 +1762,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1785,7 +1785,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 20,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1829,7 +1829,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1852,7 +1852,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1882,7 +1882,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1923,7 +1923,7 @@ describe('Class: Logger', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: 0,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
@@ -1950,7 +1950,7 @@ describe('Class: Logger', () => {
 
     test('child logger should have the same logFormatter as its parent', () => {
       // Prepare
-      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      class MyCustomLogFormatter extends PowertoolsLogFormatter {}
       const parentLogger = new Logger({
         logFormatter: new MyCustomLogFormatter(),
       });
@@ -1968,7 +1968,7 @@ describe('Class: Logger', () => {
 
     test('child logger with custom logFormatter in options should have provided logFormatter', () => {
       // Prepare
-      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      class MyCustomLogFormatter extends PowertoolsLogFormatter {}
       const parentLogger = new Logger();
 
       // Act
@@ -1979,7 +1979,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(parentLogger).toEqual(
         expect.objectContaining({
-          logFormatter: expect.any(PowertoolLogFormatter),
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
 
@@ -1992,7 +1992,7 @@ describe('Class: Logger', () => {
 
     test('child logger should have exact same attributes as the parent logger created with all non-default options', () => {
       // Prepare
-      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      class MyCustomLogFormatter extends PowertoolsLogFormatter {}
       class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {}
 
       const options: ConstructorOptions = {

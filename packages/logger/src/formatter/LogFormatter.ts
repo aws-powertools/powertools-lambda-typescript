@@ -1,5 +1,6 @@
 import { LogFormatterInterface } from '.';
 import { LogAttributes, UnformattedAttributes } from '../types';
+import { LogItem } from '../log';
 
 /**
  * This class defines and implements common methods for the formatting of log attributes.
@@ -13,11 +14,13 @@ abstract class LogFormatter implements LogFormatterInterface {
    * It formats key-value pairs of log attributes.
    *
    * @param {UnformattedAttributes} attributes
-   * @returns {LogAttributes}
+   * @param {LogAttributes} additionalLogAttributes
+   * @returns {LogItem}
    */
   public abstract formatAttributes(
-    attributes: UnformattedAttributes
-  ): LogAttributes;
+    attributes: UnformattedAttributes,
+    additionalLogAttributes: LogAttributes
+  ): LogItem;
 
   /**
    * It formats a given Error parameter.

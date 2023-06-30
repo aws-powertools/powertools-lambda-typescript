@@ -15,7 +15,7 @@ import {
 import { injectLambdaContext } from '../../../src/middleware/middy';
 import { Logger } from './../../../src';
 import middy from '@middy/core';
-import { PowertoolLogFormatter } from '../../../src/formatter';
+import { PowertoolsLogFormatter } from '../../../src/formatter';
 import { Console } from 'console';
 import { Context } from 'aws-lambda';
 
@@ -75,7 +75,7 @@ describe('Middy middleware', () => {
             envVarsService: expect.any(EnvironmentVariablesService),
             customConfigService: undefined,
             logLevel: 8,
-            logFormatter: expect.any(PowertoolLogFormatter),
+            logFormatter: expect.any(PowertoolsLogFormatter),
           })
         );
       });
@@ -114,7 +114,7 @@ describe('Middy middleware', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           logLevel: 8,
-          logFormatter: expect.any(PowertoolLogFormatter),
+          logFormatter: expect.any(PowertoolsLogFormatter),
           console: expect.any(Console),
         });
         expect(logger).toEqual(expectation);

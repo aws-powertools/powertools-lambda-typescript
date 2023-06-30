@@ -8,7 +8,7 @@ import {
   ConfigServiceInterface,
   EnvironmentVariablesService,
 } from '../../src/config';
-import { LogFormatter, PowertoolLogFormatter } from '../../src/formatter';
+import { LogFormatter, PowertoolsLogFormatter } from '../../src/formatter';
 import { ConstructorOptions, LogLevelThresholds } from '../../src/types';
 import { createLogger, Logger } from './../../src';
 
@@ -56,7 +56,7 @@ describe('Helper: createLogger function', () => {
           customConfigService: undefined,
           defaultServiceName: 'service_undefined',
           logLevel: 8,
-          logFormatter: expect.any(PowertoolLogFormatter),
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
     });
@@ -67,7 +67,7 @@ describe('Helper: createLogger function', () => {
         logLevel: 'WARN',
         serviceName: 'my-lambda-service',
         sampleRateValue: 1,
-        logFormatter: new PowertoolLogFormatter(),
+        logFormatter: new PowertoolsLogFormatter(),
         customConfigService: new EnvironmentVariablesService(),
         persistentLogAttributes: {
           awsAccountId: '123456789',
@@ -87,7 +87,7 @@ describe('Helper: createLogger function', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: 0,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 16,
         console: expect.any(Console),
         logLevelThresholds: {
@@ -124,7 +124,7 @@ describe('Helper: createLogger function', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: 0,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 12,
         console: expect.any(Console),
         logLevelThresholds: {
@@ -223,7 +223,7 @@ describe('Helper: createLogger function', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           logLevel: 20,
-          logFormatter: expect.any(PowertoolLogFormatter),
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
     });
@@ -252,7 +252,7 @@ describe('Helper: createLogger function', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           logLevel: 16,
-          logFormatter: expect.any(PowertoolLogFormatter),
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
     });
@@ -274,7 +274,7 @@ describe('Helper: createLogger function', () => {
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: 0,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 12,
         console: expect.any(Console),
         logLevelThresholds: {

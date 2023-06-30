@@ -1,1 +1,1 @@
-export * from './PowertoolLog';
+export * from './PowertoolsLog';

@@ -18,7 +18,7 @@ if (process.argv.length < 3) {
 const basePath = resolve(process.argv[2]);
 const packageJsonPath = join(basePath, 'package.json');
 const alphaPackages = ['@aws-lambda-powertools/idempotency'];
-const betaPackages = ['@aws-lambda-powertools/parameters'];
+const betaPackages = [];
 
 (() => {
   try {

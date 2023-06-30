@@ -11,12 +11,12 @@ import {
   StartConfigurationSessionCommand,
   GetLatestConfigurationCommand,
 } from '@aws-sdk/client-appconfigdata';
+import { Uint8ArrayBlobAdapter } from '@aws-sdk/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 
 describe('Class: AppConfigProvider', () => {
   const client = mockClient(AppConfigDataClient);
-  const encoder = new TextEncoder();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -117,7 +117,7 @@ describe('Class: AppConfigProvider', () => {
 
       const fakeInitialToken = 'aW5pdGlhbFRva2Vu';
       const fakeNextToken = 'bmV4dFRva2Vu';
-      const mockData = encoder.encode('myAppConfiguration');
+      const mockData = Uint8ArrayBlobAdapter.fromString('myAppConfiguration');
 
       client
         .on(StartConfigurationSessionCommand)
@@ -148,7 +148,7 @@ describe('Class: AppConfigProvider', () => {
 
       const fakeInitialToken = 'aW5pdGlhbFRva2Vu';
       const fakeNextToken = 'bmV4dFRva2Vu';
-      const mockData = encoder.encode('myAppConfiguration');
+      const mockData = Uint8ArrayBlobAdapter.fromString('myAppConfiguration');
 
       client
         .on(StartConfigurationSessionCommand)
@@ -199,7 +199,7 @@ describe('Class: AppConfigProvider', () => {
       const provider = new AppConfigProviderMock(options);
       const name = 'MyAppFeatureFlag';
       const fakeToken = 'ZmFrZVRva2Vu';
-      const mockData = encoder.encode('myAppConfiguration');
+      const mockData = Uint8ArrayBlobAdapter.fromString('myAppConfiguration');
 
       client.on(GetLatestConfigurationCommand).resolves({
         Configuration: mockData,
@@ -243,7 +243,7 @@ describe('Class: AppConfigProvider', () => {
       const fakeInitialToken = 'aW5pdGlhbFRva2Vu';
       const fakeNextToken1 = 'bmV4dFRva2Vu';
       const fakeNextToken2 = 'bmV4dFRva2Vq';
-      const mockData = encoder.encode('myAppConfiguration');
+      const mockData = Uint8ArrayBlobAdapter.fromString('myAppConfiguration');
 
       client
         .on(StartConfigurationSessionCommand)

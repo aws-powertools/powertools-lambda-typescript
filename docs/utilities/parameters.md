@@ -3,9 +3,6 @@ title: Parameters
 description: Utility
 ---
 
-???+ warning
-	**This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**.. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/10) we might introduce significant breaking changes and improvements in response to customers feedback.
-
 The Parameters utility provides high-level functions to retrieve one or multiple parameter values from [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html){target="_blank"}, [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html){target="_blank"}, [AWS AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html){target="_blank"}, [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html){target="_blank"}, or your own parameter store.
 
 ## Key features
@@ -274,6 +271,29 @@ DynamoDB provider can be customized at initialization to match your table struct
 ```typescript hl_lines="3-8" title="Customizing DynamoDBProvider to suit your table design"
 --8<-- "docs/snippets/parameters/dynamoDBProviderCustomizeTable.ts"
 ```
+
+### Create your own provider
+
+You can create your own custom parameter store provider by extending the `BaseProvider` class, and implementing the `get()` and `getMultiple()` methods, as well as its respective `_get()` and `_getMultiple()` private methods to retrieve a single, or multiple parameters from your custom store.
+
+All caching logic is handled by the `BaseProvider`, and provided that the return types of your store are compatible with the ones used in the `BaseProvider`, all transformations will also work as expected.
+
+Here's an example of implementing a custom parameter store using an external service like HashiCorp Vault, a widely popular key-value secret storage.
+
+=== "Provider implementation"
+	```typescript
+	--8<-- "docs/snippets/parameters/customProviderVault.ts"
+	```
+
+=== "Provider types"
+	```typescript
+	--8<-- "docs/snippets/parameters/customProviderVaultTypes.ts"
+	```
+
+=== "Provider usage"
+	```typescript
+	--8<-- "docs/snippets/parameters/customProviderVaultUsage.ts"
+	```
 
 ### Deserializing values with transform parameter
 

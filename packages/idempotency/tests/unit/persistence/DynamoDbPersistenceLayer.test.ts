@@ -9,7 +9,7 @@ import {
   IdempotencyItemNotFoundError,
 } from '../../../src/errors';
 import { IdempotencyRecord } from '../../../src/persistence';
-import type { DynamoPersistenceOptions } from '../../../src/types';
+import type { DynamoDBPersistenceOptions } from '../../../src/types';
 import { IdempotencyRecordStatus } from '../../../src/types';
 import {
   DynamoDBClient,
@@ -92,7 +92,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
 
     test('when instantiated with specific options it creates an instance with correct values', () => {
       // Prepare
-      const testDynamoDBPersistenceLayerOptions: DynamoPersistenceOptions = {
+      const testDynamoDBPersistenceLayerOptions: DynamoDBPersistenceOptions = {
         tableName: dummyTableName,
         keyAttr: dummyKey,
         statusAttr: 'someStatusAttr',
@@ -129,7 +129,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
 
     test('when instantiated with a sortKeyAttr that has same value of keyAttr, it throws', () => {
       // Prepare
-      const testDynamoDBPersistenceLayerOptions: DynamoPersistenceOptions = {
+      const testDynamoDBPersistenceLayerOptions: DynamoDBPersistenceOptions = {
         tableName: dummyTableName,
         keyAttr: dummyKey,
         sortKeyAttr: dummyKey,

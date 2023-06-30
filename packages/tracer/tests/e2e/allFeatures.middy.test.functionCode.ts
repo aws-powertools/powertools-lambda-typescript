@@ -46,7 +46,7 @@ const testHandler = async (
       })
     );
     await axios.get(
-      'https://docs.powertools.aws.dev/lambda-typescript/latest/',
+      'https://docs.powertools.aws.dev/lambda/typescript/latest/',
       { timeout: 5000 }
     );
 

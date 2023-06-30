@@ -52,7 +52,7 @@ export class MyFunctionBase {
           Item: { id: `${serviceName}-${event.invocation}-sdkv2` },
         })
         .promise(),
-      axios.get('https://docs.powertools.aws.dev/lambda-typescript/latest/', {
+      axios.get('https://docs.powertools.aws.dev/lambda/typescript/latest/', {
         timeout: 5000,
       }),
       new Promise((resolve, reject) => {

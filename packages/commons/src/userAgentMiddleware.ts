@@ -1,11 +1,12 @@
 /**
  * @internal
  */
-import { PT_VERSION } from './version';
+import { version as PT_VERSION } from '../package.json';
 
 const EXEC_ENV = process.env.AWS_EXECUTION_ENV || 'NA';
 const middlewareOptions = {
-  step: 'finalizeRequest',
+  relation: 'after',
+  toMiddleware: 'getUserAgentMiddleware',
   name: 'addPowertoolsToUserAgent',
   tags: ['POWERTOOLS', 'USER_AGENT'],
 };
@@ -31,7 +32,7 @@ const customUserAgentMiddleware = (feature: string) => {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const addUserAgentMiddleware = (client, feature: string): void => {
-  client.middlewareStack.add(
+  client.middlewareStack.addRelativeTo(
     customUserAgentMiddleware(feature),
     middlewareOptions
   );

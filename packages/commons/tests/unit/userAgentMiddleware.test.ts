@@ -1,55 +1,80 @@
 import { addUserAgentMiddleware } from '../../src/userAgentMiddleware';
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 
-/**
- * Logs request headers
- *
- * This is a middleware we use to test
- */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const logHeadersMiddleware = (next, _context) => async (args) => {
-  console.log(args.request.headers);
-
-  return await next(args);
+const options = {
+  region: 'us-east-1',
+  endpoint: 'http://localhost:9001',
+  credentials: {
+    accessKeyId: 'test',
+    secretAccessKey: 'test',
+    sessionToken: 'test',
+  },
 };
 
-describe('Function: addUserAgentMiddleware', () => {
-  it('adds powertools user agent to request header at the end', async () => {
-    const lambdaClient = new LambdaClient({
-      region: 'us-east-1',
-      endpoint: 'http://localhost:9001',
-    });
+describe('Given a client of instance: ', () => {
+  it.each([
+    {
+      name: 'LambdaClient',
+      client: new LambdaClient(options),
+      command: new InvokeCommand({ FunctionName: 'test', Payload: '' }),
+    },
+    {
+      name: 'DynamoDBClient',
+      client: new DynamoDBClient(options),
+      command: new ScanCommand({ TableName: 'test' }),
+    },
+    {
+      name: 'SSMClient',
+      client: new SSMClient(options),
+      command: new GetParameterCommand({ Name: 'test' }),
+    },
+  ])(
+    `using $name, add powertools user agent to request header at the end`,
+    async ({ client, command }) => {
+      addUserAgentMiddleware(client, 'my-feature');
 
-    // Set a spy on the console.log method, so we can check the headers
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      expect(client.middlewareStack.identify()).toContain(
+        'addPowertoolsToUserAgent: POWERTOOLS,USER_AGENT'
+      );
 
-    addUserAgentMiddleware(lambdaClient, 'my-feature');
+      client.middlewareStack.addRelativeTo(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        (next) => (args) => {
+          const userAgent = args?.request?.headers['user-agent'];
+          expect(userAgent).toContain('PT/my-feature/1.11.0 PTEnv/NA');
+          // make sure it's at the end of the user agent
+          expect(
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            userAgent
+              ?.split(' ')
+              .slice(userAgent?.split(' ').length - 2) // take the last to entries of the user-agent header
+              .join(' ')
+          ).toEqual('PT/my-feature/1.11.0 PTEnv/NA');
 
-    expect(lambdaClient.middlewareStack.identify()).toContain(
-      'addPowertoolsToUserAgent: POWERTOOLS,USER_AGENT'
-    );
+          return next(args);
+        },
+        {
+          relation: 'after',
+          toMiddleware: 'addPowertoolsToUserAgent',
+          name: 'testUserAgentHeader',
+          tags: ['TEST'],
+        }
+      );
 
-    lambdaClient.middlewareStack.addRelativeTo(logHeadersMiddleware, {
-      relation: 'after',
-      toMiddleware: 'addPowertoolsToUserAgent',
-      name: 'logHeadersMiddleware',
-      tags: ['TEST'],
-    });
-
-    await expect(() =>
-      lambdaClient.send(
-        new InvokeCommand({
-          FunctionName: 'test',
-          Payload: new TextEncoder().encode(JSON.stringify('foo')),
-        })
-      )
-    ).rejects.toThrow();
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        'user-agent': expect.stringContaining('PT/my-feature/1.10.0 PTEnv/NA'),
-      })
-    );
-  });
+      try {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        await client.send(command);
+      } catch (e) {
+        if (e instanceof Error && e.name === 'JestAssertionError') {
+          throw e;
+        }
+      }
+    }
+  );
 });

@@ -32,10 +32,14 @@ const customUserAgentMiddleware = (feature: string) => {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const addUserAgentMiddleware = (client, feature: string): void => {
-  client.middlewareStack.addRelativeTo(
-    customUserAgentMiddleware(feature),
-    middlewareOptions
-  );
+  try {
+    client.middlewareStack.addRelativeTo(
+      customUserAgentMiddleware(feature),
+      middlewareOptions
+    );
+  } catch (e) {
+    console.warn('Failed to add user agent middleware', e);
+  }
 };
 
 export { addUserAgentMiddleware };

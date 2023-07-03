@@ -8,11 +8,11 @@ import {
 } from '../errors';
 import { IdempotencyRecord } from '../persistence';
 import { MAX_RETRIES } from '../constants';
-import type {
+import type { IdempotencyLambdaHandlerOptions } from '../types';
+import {
   MiddlewareLikeObj,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons';
-import type { IdempotencyLambdaHandlerOptions } from '../types';
 
 /**
  * A middy middleware to make your Lambda Handler idempotent.

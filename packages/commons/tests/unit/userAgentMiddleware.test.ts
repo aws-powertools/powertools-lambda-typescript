@@ -3,6 +3,12 @@ import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
+import { version as PT_VERSION } from '../../package.json';
+import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
+import {
+  GetSecretValueCommand,
+  SecretsManagerClient,
+} from '@aws-sdk/client-secrets-manager';
 
 const options = {
   region: 'us-east-1',
@@ -31,6 +37,16 @@ describe('Given a client of instance: ', () => {
       client: new SSMClient(options),
       command: new GetParameterCommand({ Name: 'test' }),
     },
+    {
+      name: 'AppConfigDataClient',
+      client: new AppConfigDataClient(options),
+      command: new GetParameterCommand({ Name: 'test' }),
+    },
+    {
+      name: 'SecretsManagerClient',
+      client: new SecretsManagerClient(options),
+      command: new GetSecretValueCommand({ SecretId: 'test' }),
+    },
   ])(
     `using $name, add powertools user agent to request header at the end`,
     async ({ client, command }) => {
@@ -45,7 +61,7 @@ describe('Given a client of instance: ', () => {
         // @ts-ignore
         (next) => (args) => {
           const userAgent = args?.request?.headers['user-agent'];
-          expect(userAgent).toContain('PT/my-feature/1.11.0 PTEnv/NA');
+          expect(userAgent).toContain(`PT/my-feature/${PT_VERSION} PTEnv/NA`);
           // make sure it's at the end of the user agent
           expect(
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -54,7 +70,7 @@ describe('Given a client of instance: ', () => {
               ?.split(' ')
               .slice(userAgent?.split(' ').length - 2) // take the last to entries of the user-agent header
               .join(' ')
-          ).toEqual('PT/my-feature/1.11.0 PTEnv/NA');
+          ).toEqual(`PT/my-feature/${PT_VERSION} PTEnv/NA`);
 
           return next(args);
         },

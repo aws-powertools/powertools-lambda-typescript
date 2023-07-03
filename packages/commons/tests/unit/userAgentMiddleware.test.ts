@@ -77,4 +77,17 @@ describe('Given a client of instance: ', () => {
       }
     }
   );
+
+  it('should not throw erro, when client fails to add middleware', () => {
+    // create mock client that throws error when adding middleware
+    const client = {
+      middlewareStack: {
+        addRelativeTo: () => {
+          throw new Error('test');
+        },
+      },
+    };
+
+    expect(() => addUserAgentMiddleware(client, 'my-feature')).not.toThrow();
+  });
 });

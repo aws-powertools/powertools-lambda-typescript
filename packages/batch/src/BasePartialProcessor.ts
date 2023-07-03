@@ -15,7 +15,7 @@ abstract class BasePartialProcessor {
 
   public failureMessages: EventSourceDataClassTypes[];
 
-  public handler?: CallableFunction;
+  public handler: CallableFunction = new Function();
 
   public lambdaContext?: Context;
 
@@ -54,23 +54,13 @@ abstract class BasePartialProcessor {
 
   public abstract clean(): void;
 
-  public enter(): BasePartialProcessor {
-    this.prepare();
-
-    return this;
-  }
-
-  public exit(): void {
-    this.clean();
-  }
-
   /**
    * Keeps track of batch records that failed processing
    * @param record record that failed processing
    * @param exception exception that was thrown
    * @returns FailureResponse object with ["fail", exception, original record]
    */
-  public failure_handler(
+  public failureHandler(
     record: EventSourceDataClassTypes,
     exception: Error
   ): FailureResponse {
@@ -89,10 +79,9 @@ abstract class BasePartialProcessor {
    */
   public async process(): Promise<(SuccessResponse | FailureResponse)[]> {
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
-
-    this.records.forEach((record) => {
-      processedRecords.push(this.processRecord(record));
-    });
+    for (const record of this.records) {
+      processedRecords.push(await this.processRecord(record));
+    }
 
     return processedRecords;
   }
@@ -103,7 +92,7 @@ abstract class BasePartialProcessor {
    */
   public abstract processRecord(
     record: BaseRecord
-  ): SuccessResponse | FailureResponse;
+  ): Promise<SuccessResponse | FailureResponse>;
 
   /**
    * Keeps track of batch records that were processed successfully
@@ -111,7 +100,7 @@ abstract class BasePartialProcessor {
    * @param result result from record handler
    * @returns SuccessResponse object with ["success", result, original record]
    */
-  public success_handler(
+  public successHandler(
     record: EventSourceDataClassTypes,
     result: ResultType
   ): SuccessResponse {

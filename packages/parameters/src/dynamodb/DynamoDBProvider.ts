@@ -18,6 +18,7 @@ import type {
 } from '@aws-sdk/client-dynamodb';
 import type { PaginationConfiguration } from '@aws-sdk/types';
 import type { JSONValue } from '@aws-lambda-powertools/commons';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -265,6 +266,8 @@ class DynamoDBProvider extends BaseProvider {
       const clientConfig = config?.clientConfig || {};
       this.client = new DynamoDBClient(clientConfig);
     }
+
+    addUserAgentMiddleware(this.client, 'parameters');
 
     this.tableName = config.tableName;
     if (config.keyAttr) this.keyAttr = config.keyAttr;

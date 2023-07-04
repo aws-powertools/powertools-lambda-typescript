@@ -18,6 +18,7 @@ import {
   setLogger,
   Logger,
 } from 'aws-xray-sdk-core';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 class ProviderService implements ProviderServiceInterface {
   public captureAWS<T>(awssdk: T): T {
@@ -29,6 +30,8 @@ class ProviderService implements ProviderServiceInterface {
   }
 
   public captureAWSv3Client<T>(service: T): T {
+    addUserAgentMiddleware(service, 'tracer');
+
     // Type must be aliased as any because of this https://github.com/aws/aws-xray-sdk-node/issues/439#issuecomment-859715660
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return captureAWSv3Client(service as any);

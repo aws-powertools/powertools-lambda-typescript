@@ -1,4 +1,3 @@
-export * from './AnyFunction';
 export * from './IdempotencyRecord';
 export * from './BasePersistenceLayer';
 export * from './IdempotencyOptions';

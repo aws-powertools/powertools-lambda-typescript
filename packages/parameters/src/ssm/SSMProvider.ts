@@ -27,6 +27,7 @@ import type {
   SSMGetParametersByNameFromCacheOutputType,
 } from '../types/SSMProvider';
 import type { PaginationConfiguration } from '@aws-sdk/types';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -290,6 +291,8 @@ class SSMProvider extends BaseProvider {
       const clientConfig = config?.clientConfig || {};
       this.client = new SSMClient(clientConfig);
     }
+
+    addUserAgentMiddleware(this.client, 'parameters');
   }
 
   /**

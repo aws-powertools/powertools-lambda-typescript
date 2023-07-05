@@ -48,7 +48,7 @@ interface DynamoDBPersistenceOptionsWithClientConfig
  *
  * @interface
  * @extends DynamoDBPersistenceOptionsBase
- * @property {DynamoDBClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during AppConfigProvider class instantiation
+ * @property {DynamoDBClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during DynamoDB client instantiation
  * @property {never} [clientConfig] - This property should never be passed.
  */
 interface DynamoDBPersistenceOptionsWithClientInstance

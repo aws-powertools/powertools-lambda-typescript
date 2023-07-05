@@ -1,3 +1,3 @@
 export * from './errors';
 export * from './IdempotencyConfig';
-export * from './makeFunctionIdempotent';
+export * from './makeIdempotent';

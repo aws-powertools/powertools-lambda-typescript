@@ -1,3 +1,5 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons';
+
 const IdempotencyRecordStatus = {
   INPROGRESS: 'INPROGRESS',
   COMPLETED: 'COMPLETED',
@@ -12,7 +14,7 @@ type IdempotencyRecordOptions = {
   status: IdempotencyRecordStatus;
   expiryTimestamp?: number;
   inProgressExpiryTimestamp?: number;
-  responseData?: Record<string, unknown>;
+  responseData?: JSONValue;
   payloadHash?: string;
 };
 

@@ -1,7 +1,7 @@
 /**
- * Test makeFunctionIdempotent
+ * Test makeIdempotent function
  *
- * @group e2e/idempotency
+ * @group e2e/idempotency/makeIdempotent
  */
 import {
   generateUniqueName,
@@ -37,8 +37,7 @@ const stackName = generateUniqueName(
   runtime,
   'makeFnIdempotent'
 );
-const makeFunctionIdepmpotentFile =
-  'makeFunctionIdempotent.test.FunctionCode.ts';
+const makeFunctionIdepmpotentFile = 'makeIdempotent.test.FunctionCode.ts';
 
 const app = new App();
 

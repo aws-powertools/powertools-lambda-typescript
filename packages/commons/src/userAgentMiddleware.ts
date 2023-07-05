@@ -33,6 +33,13 @@ const customUserAgentMiddleware = (feature: string) => {
 // @ts-ignore
 const addUserAgentMiddleware = (client, feature: string): void => {
   try {
+    if (
+      client.middlewareStack
+        .identify()
+        .includes('addPowertoolsToUserAgent: POWERTOOLS,USER_AGENT')
+    ) {
+      return;
+    }
     client.middlewareStack.addRelativeTo(
       customUserAgentMiddleware(feature),
       middlewareOptions

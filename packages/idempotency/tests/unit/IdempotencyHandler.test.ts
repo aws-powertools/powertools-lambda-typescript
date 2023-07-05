@@ -10,18 +10,12 @@ import {
   IdempotencyPersistenceLayerError,
 } from '../../src/errors';
 import { IdempotencyRecordStatus } from '../../src/types';
-import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
+import { IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
 import { IdempotencyConfig } from '../../src/';
 import { MAX_RETRIES } from '../../src/constants';
+import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
 import { Context } from 'aws-lambda';
-
-class PersistenceLayerTestClass extends BasePersistenceLayer {
-  protected _deleteRecord = jest.fn();
-  protected _getRecord = jest.fn();
-  protected _putRecord = jest.fn();
-  protected _updateRecord = jest.fn();
-}
 
 const mockFunctionToMakeIdempotent = jest.fn();
 const mockFunctionPayloadToBeHashed = {};
@@ -30,18 +24,30 @@ const mockIdempotencyOptions = {
   dataKeywordArgument: 'testKeywordArgument',
   config: new IdempotencyConfig({}),
 };
-const mockFullFunctionPayload = {};
 
 const idempotentHandler = new IdempotencyHandler({
   functionToMakeIdempotent: mockFunctionToMakeIdempotent,
   functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
   persistenceStore: mockIdempotencyOptions.persistenceStore,
-  fullFunctionPayload: mockFullFunctionPayload,
+  functionArguments: [],
   idempotencyConfig: mockIdempotencyOptions.config,
 });
 
 describe('Class IdempotencyHandler', () => {
-  beforeEach(() => jest.resetAllMocks());
+  const ENVIRONMENT_VARIABLES = process.env;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+    process.env = { ...ENVIRONMENT_VARIABLES };
+    jest.spyOn(console, 'debug').mockImplementation(() => null);
+    jest.spyOn(console, 'warn').mockImplementation(() => null);
+    jest.spyOn(console, 'error').mockImplementation(() => null);
+  });
+
+  afterAll(() => {
+    process.env = ENVIRONMENT_VARIABLES;
+  });
 
   describe('Method: determineResultFromIdempotencyRecord', () => {
     test('when record is in progress and within expiry window, it rejects with IdempotencyAlreadyInProgressError', async () => {
@@ -174,7 +180,7 @@ describe('Class IdempotencyHandler', () => {
         .mockImplementation(() => 'result');
       await expect(idempotentHandler.processIdempotency()).rejects.toThrow(
         new IdempotencyPersistenceLayerError(
-          'Failed to save record in progress',
+          'Failed to save in progress record to idempotency store',
           innerError
         )
       );
@@ -220,7 +226,7 @@ describe('Class IdempotencyHandler', () => {
         functionToMakeIdempotent: mockFunctionToMakeIdempotent,
         functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
         persistenceStore: mockIdempotencyOptions.persistenceStore,
-        fullFunctionPayload: mockFullFunctionPayload,
+        functionArguments: [],
         idempotencyConfig: new IdempotencyConfig({
           throwOnNoIdempotencyKey: false,
           eventKeyJmesPath: 'idempotencyKey',
@@ -268,7 +274,7 @@ describe('Class IdempotencyHandler', () => {
         functionToMakeIdempotent: mockFunctionToMakeIdempotent,
         functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
         persistenceStore: mockIdempotencyOptions.persistenceStore,
-        fullFunctionPayload: mockFullFunctionPayload,
+        functionArguments: [],
         idempotencyConfig: new IdempotencyConfig({
           lambdaContext: mockLambaContext,
         }),
@@ -328,7 +334,8 @@ describe('Class IdempotencyHandler', () => {
 
       await expect(idempotentHandler.getFunctionResult()).rejects.toThrow(
         new IdempotencyPersistenceLayerError(
-          'Failed to delete record from idempotency store. This error was  caused by: Some error.'
+          'Failed to delete record from idempotency store',
+          new Error('Some error')
         )
       );
       expect(mockDeleteInProgress).toHaveBeenCalledTimes(1);

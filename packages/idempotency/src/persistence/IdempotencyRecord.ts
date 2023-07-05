@@ -1,3 +1,4 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 import type { IdempotencyRecordOptions } from '../types';
 import { IdempotencyRecordStatus } from '../types';
 import { IdempotencyInvalidStatusError } from '../errors';
@@ -26,7 +27,7 @@ class IdempotencyRecord {
   /**
    * The response data of the request, this will be returned if the payload hash matches.
    */
-  public responseData?: Record<string, unknown>;
+  public responseData?: JSONValue;
   /**
    * The idempotency record status can be COMPLETED, IN_PROGRESS or EXPIRED.
    * We check the status during idempotency processing to make sure we don't process an expired record and handle concurrent requests.
@@ -47,7 +48,7 @@ class IdempotencyRecord {
   /**
    * Get the response data of the record.
    */
-  public getResponse(): Record<string, unknown> | undefined {
+  public getResponse(): JSONValue {
     return this.responseData;
   }
 

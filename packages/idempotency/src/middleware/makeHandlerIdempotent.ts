@@ -12,6 +12,7 @@ import type { IdempotencyLambdaHandlerOptions } from '../types';
 import {
   MiddlewareLikeObj,
   MiddyLikeRequest,
+  JSONValue,
 } from '@aws-lambda-powertools/commons';
 
 /**
@@ -79,7 +80,7 @@ const makeHandlerIdempotent = (
       IdempotencyHandler.shouldSkipIdempotency(
         idempotencyConfig.eventKeyJmesPath,
         idempotencyConfig.throwOnNoIdempotencyKey,
-        request.event as Record<string, unknown>
+        request.event as JSONValue
       )
     ) {
       // set the flag to skip checks in after and onError
@@ -89,15 +90,13 @@ const makeHandlerIdempotent = (
     }
     try {
       await persistenceStore.saveInProgress(
-        request.event as Record<string, unknown>,
+        request.event as JSONValue,
         request.context.getRemainingTimeInMillis()
       );
     } catch (error) {
       if (error instanceof IdempotencyItemAlreadyExistsError) {
         const idempotencyRecord: IdempotencyRecord =
-          await persistenceStore.getRecord(
-            request.event as Record<string, unknown>
-          );
+          await persistenceStore.getRecord(request.event as JSONValue);
 
         try {
           const response =
@@ -145,8 +144,8 @@ const makeHandlerIdempotent = (
     }
     try {
       await persistenceStore.saveSuccess(
-        request.event as Record<string, unknown>,
-        request.response as Record<string, unknown>
+        request.event as JSONValue,
+        request.response as JSONValue
       );
     } catch (e) {
       throw new IdempotencyPersistenceLayerError(
@@ -169,9 +168,7 @@ const makeHandlerIdempotent = (
       return;
     }
     try {
-      await persistenceStore.deleteRecord(
-        request.event as Record<string, unknown>
-      );
+      await persistenceStore.deleteRecord(request.event as JSONValue);
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(
         'Failed to delete record from idempotency store',

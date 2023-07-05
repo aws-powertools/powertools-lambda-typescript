@@ -20,10 +20,27 @@ import { BasePersistenceLayer } from './BasePersistenceLayer';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 /**
- * DynamoDB persistence layer for idempotency records. This class will use the AWS SDK V3 to write and read idempotency records from DynamoDB.
+ * DynamoDB persistence layer for idempotency records.
+ *
+ * This class uses the AWS SDK for JavaScript v3 to write and read idempotency records from DynamoDB.
+ *
  * There are various options to configure the persistence layer, such as the table name, the key attribute, the status attribute, etc.
- * With default configuration you don't need to create the table beforehand, the persistence layer will create it for you.
+ *
+ * With default configuration you don't need to create the client beforehand, the persistence layer will create it for you.
  * You can also bring your own AWS SDK V3 client, or configure the client with the `clientConfig` option.
+ *
+ * See the {@link https://docs.powertools.aws.dev/lambda/python/latest/utilities/idempotency/ Idempotency documentation} for more details
+ * on the IAM permissions and DynamoDB table configuration.
+ *
+ * @example
+ * ```ts
+ * import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+ *
+ * const persistence = new DynamoDBPersistenceLayer({
+ *   tableName: 'my-idempotency-table',
+ * });
+ * ```
+ *
  * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/index.html
  * @category Persistence Layer
  * @implements {BasePersistenceLayer}

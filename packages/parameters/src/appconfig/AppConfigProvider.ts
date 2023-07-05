@@ -10,6 +10,7 @@ import type {
   AppConfigGetOptions,
   AppConfigGetOutput,
 } from '../types/AppConfigProvider';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -209,6 +210,8 @@ class AppConfigProvider extends BaseProvider {
     } else {
       this.client = new AppConfigDataClient(options.clientConfig || {});
     }
+
+    addUserAgentMiddleware(this.client, 'parameters');
 
     this.application =
       options?.application || this.envVarsService.getServiceName();

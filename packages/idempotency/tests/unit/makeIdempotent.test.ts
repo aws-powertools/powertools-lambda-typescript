@@ -1,20 +1,19 @@
 /**
- * Test Idempotency middleware
+ * Test Function Wrapper
  *
- * @group unit/idempotency/makeHandlerIdempotent
+ * @group unit/idempotency/makeIdempotent
  */
-import { makeHandlerIdempotent } from '../../src/middleware';
-import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
-import { Custom as dummyEvent } from '../../../commons/src/samples/resources/events';
-import { IdempotencyRecordStatus } from '../../src/types';
 import { IdempotencyRecord } from '../../src/persistence';
+import { makeIdempotent } from '../../src';
+import { IdempotencyRecordStatus } from '../../src/types';
 import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
 } from '../../src/errors';
-import { IdempotencyConfig } from '../../src/';
-import middy from '@middy/core';
+import { IdempotencyConfig } from '../../src';
+import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
+import { Custom as dummyEvent } from '../../../commons/src/samples/resources/events';
 import { MAX_RETRIES } from '../../src/constants';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
 import type { Context } from 'aws-lambda';
@@ -24,7 +23,7 @@ const mockIdempotencyOptions = {
 };
 const remainingTImeInMillis = 1234;
 
-describe('Middleware: makeHandlerIdempotent', () => {
+describe('Function: makeIdempotent', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const context = dummyContext;
   const event = dummyEvent.CustomEvent;
@@ -44,13 +43,12 @@ describe('Middleware: makeHandlerIdempotent', () => {
 
   it('handles a successful execution', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, context: Context) => context.awsRequestId
-    ).use(
-      makeHandlerIdempotent({
+    const handler = makeIdempotent(
+      async (_event: unknown, context: Context) => context.awsRequestId,
+      {
         ...mockIdempotencyOptions,
         config: new IdempotencyConfig({}),
-      })
+      }
     );
     const saveInProgressSpy = jest.spyOn(
       mockIdempotencyOptions.persistenceStore,
@@ -76,11 +74,15 @@ describe('Middleware: makeHandlerIdempotent', () => {
   });
   it('handles an execution that throws an error', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => {
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => {
         throw new Error('Something went wrong');
+      },
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({}),
       }
-    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    );
     const saveInProgressSpy = jest.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveInProgress'
@@ -102,9 +104,13 @@ describe('Middleware: makeHandlerIdempotent', () => {
   });
   it('thows an error if the persistence layer throws an error when saving in progress', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => true
-    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({}),
+      }
+    );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
       .mockRejectedValue(new Error('Something went wrong'));
@@ -119,9 +125,13 @@ describe('Middleware: makeHandlerIdempotent', () => {
   });
   it('thows an error if the persistence layer throws an error when saving a successful operation', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => true
-    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({}),
+      }
+    );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveSuccess')
       .mockRejectedValue(new Error('Something went wrong'));
@@ -136,11 +146,15 @@ describe('Middleware: makeHandlerIdempotent', () => {
   });
   it('thows an error if the persistence layer throws an error when deleting a record', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => {
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => {
         throw new Error('Something went wrong');
+      },
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({}),
       }
-    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'deleteRecord')
       .mockRejectedValue(new Error('Something went wrong'));
@@ -155,9 +169,13 @@ describe('Middleware: makeHandlerIdempotent', () => {
   });
   it('returns the stored response if the operation has already been executed', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => true
-    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({}),
+      }
+    );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
       .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
@@ -183,9 +201,13 @@ describe('Middleware: makeHandlerIdempotent', () => {
   });
   it('retries if the record is in an inconsistent state', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => true
-    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({}),
+      }
+    );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
       .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
@@ -219,9 +241,13 @@ describe('Middleware: makeHandlerIdempotent', () => {
   });
   it('throws after all the retries have been exhausted if the record is in an inconsistent state', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => true
-    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({}),
+      }
+    );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
       .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
@@ -248,9 +274,12 @@ describe('Middleware: makeHandlerIdempotent', () => {
   it('does not do anything if idempotency is disabled', async () => {
     // Prepare
     process.env.POWERTOOLS_IDEMPOTENCY_DISABLED = 'true';
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => true
-    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      {
+        ...mockIdempotencyOptions,
+      }
+    );
     const saveInProgressSpy = jest.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveInProgress'
@@ -271,16 +300,15 @@ describe('Middleware: makeHandlerIdempotent', () => {
 
   it('skips idempotency if no idempotency key is provided and throwOnNoIdempotencyKey is false', async () => {
     // Prepare
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<boolean> => true
-    ).use(
-      makeHandlerIdempotent({
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      {
         ...mockIdempotencyOptions,
         config: new IdempotencyConfig({
           eventKeyJmesPath: 'idempotencyKey',
           throwOnNoIdempotencyKey: false,
         }),
-      })
+      }
     );
     const saveInProgressSpy = jest.spyOn(
       mockIdempotencyOptions.persistenceStore,
@@ -299,29 +327,75 @@ describe('Middleware: makeHandlerIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledTimes(0);
     expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
   });
+  it('when wrapping an arbitrary function it uses the first argument as payload by default', async () => {
+    // Prepare
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
 
-  it('skips idempotency if error is thrown in the middleware', async () => {
-    const handler = middy(
-      async (_event: unknown, _context: Context): Promise<void> => {
-        throw new Error('Something went wrong');
-      }
-    ).use(
-      makeHandlerIdempotent({
+    const arbitraryFn = makeIdempotent(
+      async (foo: { bar: string }, baz: string) => `${foo.bar}${baz}`,
+      {
         ...mockIdempotencyOptions,
-        config: new IdempotencyConfig({
-          eventKeyJmesPath: 'idempotencyKey',
-          throwOnNoIdempotencyKey: false,
-        }),
-      })
+        config,
+      }
     );
-
-    const deleteRecordSpy = jest.spyOn(
+    const saveInProgressSpy = jest.spyOn(
       mockIdempotencyOptions.persistenceStore,
-      'deleteRecord'
+      'saveInProgress'
     );
+    const saveSuccessSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveSuccess'
+    );
+    const event = { bar: '123' };
 
-    await expect(handler(event, context)).rejects.toThrowError();
+    // Act
+    const result = await arbitraryFn(event, '456');
 
-    expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
+    // Assess
+    expect(result).toBe('123456');
+    expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
+    expect(saveInProgressSpy).toHaveBeenCalledWith(
+      event,
+      remainingTImeInMillis
+    );
+    expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
+    expect(saveSuccessSpy).toHaveBeenCalledWith(event, '123456');
+  });
+  it('when wrapping an arbitrary function it uses the argument specified as payload by default', async () => {
+    // Prepare
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+
+    const arbitraryFn = makeIdempotent(
+      async (foo: { bar: string }, baz: string) => `${foo.bar}${baz}`,
+      {
+        ...mockIdempotencyOptions,
+        config,
+        dataIndexArgument: 1,
+      }
+    );
+    const saveInProgressSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveInProgress'
+    );
+    const saveSuccessSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveSuccess'
+    );
+    const event = { bar: '123' };
+
+    // Act
+    const result = await arbitraryFn(event, '456');
+
+    // Assess
+    expect(result).toBe('123456');
+    expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
+    expect(saveInProgressSpy).toHaveBeenCalledWith(
+      '456',
+      remainingTImeInMillis
+    );
+    expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
+    expect(saveSuccessSpy).toHaveBeenCalledWith('456', '123456');
   });
 });

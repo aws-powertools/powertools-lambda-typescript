@@ -14,11 +14,7 @@ module.exports = {
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testPathIgnorePatterns: ['/node_modules/'],
   testEnvironment: 'node',
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '/types/',
-    'src/makeFunctionIdempotent.ts', // TODO: remove this once makeFunctionIdempotent is implemented
-  ],
+  coveragePathIgnorePatterns: ['/node_modules/', '/types/'],
   coverageThreshold: {
     global: {
       statements: 100,

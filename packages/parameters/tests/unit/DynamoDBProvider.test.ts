@@ -15,6 +15,7 @@ import type {
 } from '@aws-sdk/client-dynamodb';
 import type { DynamoDBProviderOptions } from '../../src/types/DynamoDBProvider';
 import { marshall } from '@aws-sdk/util-dynamodb';
+import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 
@@ -30,6 +31,11 @@ describe('Class: DynamoDBProvider', () => {
         tableName: 'test-table',
       };
 
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
+
       // Act
       const provider = new DynamoDBProvider(options);
 
@@ -39,6 +45,8 @@ describe('Class: DynamoDBProvider', () => {
           serviceId: 'DynamoDB',
         })
       );
+
+      expect(userAgentSpy).toHaveBeenCalled();
     });
 
     test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
@@ -50,6 +58,11 @@ describe('Class: DynamoDBProvider', () => {
         },
       };
 
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
+
       // Act
       const provider = new DynamoDBProvider(options);
 
@@ -59,6 +72,8 @@ describe('Class: DynamoDBProvider', () => {
           serviceId: 'with-client-config',
         })
       );
+
+      expect(userAgentSpy).toHaveBeenCalled();
     });
 
     test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
@@ -66,6 +81,11 @@ describe('Class: DynamoDBProvider', () => {
       const awsSdkV3Client = new DynamoDBClient({
         serviceId: 'with-custom-sdk-client',
       });
+
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
 
       const options: DynamoDBProviderOptions = {
         tableName: 'test-table',
@@ -81,6 +101,7 @@ describe('Class: DynamoDBProvider', () => {
           serviceId: 'with-custom-sdk-client',
         })
       );
+      expect(userAgentSpy).toHaveBeenCalledWith(awsSdkV3Client, 'parameters');
     });
 
     test('when the user provides NOT an SDK client in the options, it throws an error', async () => {

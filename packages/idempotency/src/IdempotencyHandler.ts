@@ -1,4 +1,5 @@
-import type { AnyFunctionWithRecord, IdempotencyHandlerOptions } from './types';
+import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { AnyFunction, IdempotencyHandlerOptions } from './types';
 import { IdempotencyRecordStatus } from './types';
 import {
   IdempotencyAlreadyInProgressError,
@@ -13,31 +14,57 @@ import { search } from 'jmespath';
 
 /**
  * @internal
+ *
+ * Class that handles the idempotency lifecycle.
+ *
+ * This class is used under the hood by the Idempotency utility
+ * and provides several methods that are called at different stages
+ * to orchestrate the idempotency logic.
  */
-export class IdempotencyHandler<U> {
-  private readonly fullFunctionPayload: Record<string, unknown>;
-  private readonly functionPayloadToBeHashed: Record<string, unknown>;
-  private readonly functionToMakeIdempotent: AnyFunctionWithRecord<U>;
-  private readonly idempotencyConfig: IdempotencyConfig;
-  private readonly persistenceStore: BasePersistenceLayer;
+export class IdempotencyHandler<Func extends AnyFunction> {
+  /**
+   * The arguments passed to the function.
+   *
+   * For example, if the function is `foo(a, b)`, then `functionArguments` will be `[a, b]`.
+   * We need to keep track of the arguments so that we can pass them to the function when we call it.
+   */
+  readonly #functionArguments: unknown[];
+  /**
+   * The payload to be hashed.
+   *
+   * This is the argument that is used for the idempotency.
+   */
+  readonly #functionPayloadToBeHashed: JSONValue;
+  /**
+   * Reference to the function to be made idempotent.
+   */
+  readonly #functionToMakeIdempotent: AnyFunction;
+  /**
+   * Idempotency configuration options.
+   */
+  readonly #idempotencyConfig: IdempotencyConfig;
+  /**
+   * Persistence layer used to store the idempotency records.
+   */
+  readonly #persistenceStore: BasePersistenceLayer;
 
-  public constructor(options: IdempotencyHandlerOptions<U>) {
+  public constructor(options: IdempotencyHandlerOptions) {
     const {
       functionToMakeIdempotent,
       functionPayloadToBeHashed,
       idempotencyConfig,
-      fullFunctionPayload,
+      functionArguments,
       persistenceStore,
     } = options;
-    this.functionToMakeIdempotent = functionToMakeIdempotent;
-    this.functionPayloadToBeHashed = functionPayloadToBeHashed;
-    this.idempotencyConfig = idempotencyConfig;
-    this.fullFunctionPayload = fullFunctionPayload;
+    this.#functionToMakeIdempotent = functionToMakeIdempotent;
+    this.#functionPayloadToBeHashed = functionPayloadToBeHashed;
+    this.#idempotencyConfig = idempotencyConfig;
+    this.#functionArguments = functionArguments;
 
-    this.persistenceStore = persistenceStore;
+    this.#persistenceStore = persistenceStore;
 
-    this.persistenceStore.configure({
-      config: this.idempotencyConfig,
+    this.#persistenceStore.configure({
+      config: this.#idempotencyConfig,
     });
   }
 
@@ -69,14 +96,14 @@ export class IdempotencyHandler<U> {
     return idempotencyRecord.getResponse();
   }
 
-  public async getFunctionResult(): Promise<U> {
-    let result: U;
+  public async getFunctionResult(): Promise<ReturnType<Func>> {
+    let result;
     try {
-      result = await this.functionToMakeIdempotent(this.fullFunctionPayload);
+      result = await this.#functionToMakeIdempotent(...this.#functionArguments);
     } catch (e) {
       try {
-        await this.persistenceStore.deleteRecord(
-          this.functionPayloadToBeHashed
+        await this.#persistenceStore.deleteRecord(
+          this.#functionPayloadToBeHashed
         );
       } catch (e) {
         throw new IdempotencyPersistenceLayerError(
@@ -87,9 +114,9 @@ export class IdempotencyHandler<U> {
       throw e;
     }
     try {
-      await this.persistenceStore.saveSuccess(
-        this.functionPayloadToBeHashed,
-        result as Record<string, unknown>
+      await this.#persistenceStore.saveSuccess(
+        this.#functionPayloadToBeHashed,
+        result
       );
     } catch (e) {
       throw new IdempotencyPersistenceLayerError(
@@ -108,7 +135,7 @@ export class IdempotencyHandler<U> {
    * window, we might get an `IdempotencyInconsistentStateError`. In such
    * cases we can safely retry the handling a few times.
    */
-  public async handle(): Promise<U> {
+  public async handle(): Promise<ReturnType<Func>> {
     let e;
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
@@ -129,34 +156,36 @@ export class IdempotencyHandler<U> {
     throw e;
   }
 
-  public async processIdempotency(): Promise<U> {
+  public async processIdempotency(): Promise<ReturnType<Func>> {
     // early return if we should skip idempotency completely
     if (
       IdempotencyHandler.shouldSkipIdempotency(
-        this.idempotencyConfig.eventKeyJmesPath,
-        this.idempotencyConfig.throwOnNoIdempotencyKey,
-        this.fullFunctionPayload
+        this.#idempotencyConfig.eventKeyJmesPath,
+        this.#idempotencyConfig.throwOnNoIdempotencyKey,
+        this.#functionPayloadToBeHashed
       )
     ) {
-      return await this.functionToMakeIdempotent(this.fullFunctionPayload);
+      return await this.#functionToMakeIdempotent(...this.#functionArguments);
     }
 
     try {
-      await this.persistenceStore.saveInProgress(
-        this.functionPayloadToBeHashed,
-        this.idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
+      await this.#persistenceStore.saveInProgress(
+        this.#functionPayloadToBeHashed,
+        this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
       );
     } catch (e) {
       if (e instanceof IdempotencyItemAlreadyExistsError) {
         const idempotencyRecord: IdempotencyRecord =
-          await this.persistenceStore.getRecord(this.functionPayloadToBeHashed);
+          await this.#persistenceStore.getRecord(
+            this.#functionPayloadToBeHashed
+          );
 
         return IdempotencyHandler.determineResultFromIdempotencyRecord(
           idempotencyRecord
-        ) as U;
+        ) as ReturnType<Func>;
       } else {
         throw new IdempotencyPersistenceLayerError(
-          'Failed to save record in progress',
+          'Failed to save in progress record to idempotency store',
           e as Error
         );
       }
@@ -177,7 +206,7 @@ export class IdempotencyHandler<U> {
   public static shouldSkipIdempotency(
     eventKeyJmesPath: string,
     throwOnNoIdempotencyKey: boolean,
-    fullFunctionPayload: Record<string, unknown>
+    fullFunctionPayload: JSONValue
   ): boolean {
     return (eventKeyJmesPath &&
       !throwOnNoIdempotencyKey &&

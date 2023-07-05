@@ -1,8 +1,8 @@
 # Powertools for AWS Lambda (TypeScript) - Idempotency Utility <!-- omit in toc -->
 
 
-| ⚠️ **WARNING: Do not use this utility in production just yet!** ⚠️                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ⚠️ **WARNING: Do not use this utility in production just yet!** ⚠️                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**.. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/10) we might introduce significant breaking changes and improvements in response to customers feedback. | _ |
 
 
@@ -29,7 +29,7 @@ You can use the package in both TypeScript and JavaScript code bases.
 ## Intro
 
 This package provides a utility to implement idempotency in your Lambda functions. 
-You can either use it to wrapp a function, or as Middy middleware to make your AWS Lambda handler idempotent.
+You can either use it to wrap a function, or as Middy middleware to make your AWS Lambda handler idempotent.
 
 The current implementation provides a persistence layer for Amazon DynamoDB, which offers a variety of configuration options. You can also bring your own persistence layer by extending the `BasePersistenceLayer` class.
 
@@ -59,7 +59,7 @@ The function wrapper takes a reference to the function to be made idempotent as 
 
 ```ts
 import { makeFunctionIdempotent } from '@aws-lambda-powertools/idempotency';
-import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/persistence';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { Context, SQSEvent, SQSRecord } from 'aws-lambda';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
@@ -75,7 +75,7 @@ export const handler = async (
   _context: Context
 ): Promise<void> => {
   for (const record of event.Records) {
-    await makeFunctionIdempotent(proccessingFunction, {
+    await makeFunctionIdempotent(processingFunction, {
       dataKeywordArgument: 'transactionId',
       persistenceStore,
     });
@@ -96,7 +96,7 @@ By default, the Idempotency utility will use the full event payload to create an
 ```ts
 import { IdempotencyConfig } from '@aws-lambda-powertools/idempotency';
 import { makeHandlerIdempotent } from '@aws-lambda-powertools/idempotency/middleware';
-import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/persistence';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import middy from '@middy/core';
 import type { Context, APIGatewayProxyEvent } from 'aws-lambda';
 
@@ -110,10 +110,6 @@ const config = new IdempotencyConfig({
   throwOnNoIdempotencyKey: false,
   eventKeyJmesPath: 'headers.idempotency-key',
 });
-
-const processingFunction = async (payload: SQSRecord): Promise<void> => {
-  // your code goes here here
-};
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent, _context: Context): Promise<void> => {

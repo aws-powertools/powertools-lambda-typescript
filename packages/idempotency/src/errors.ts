@@ -34,10 +34,8 @@ class IdempotencyInconsistentStateError extends Error {}
 class IdempotencyPersistenceLayerError extends Error {
   public readonly cause: Error | undefined;
 
-  public constructor(message: string, cause?: Error) {
-    const errorMessage = cause
-      ? `${message}. This error was  caused by: ${cause.message}.`
-      : message;
+  public constructor(message: string, cause: Error) {
+    const errorMessage = `${message}. This error was caused by: ${cause.message}.`;
     super(errorMessage);
     this.cause = cause;
   }

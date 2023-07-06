@@ -1,18 +1,16 @@
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
 import {
   BasePartialProcessor,
-  BaseRecord,
   BatchProcessingError,
   DEFAULT_RESPONSE,
-  DynamoDBRecordType,
   EventSourceDataClassTypes,
   EventType,
-  KinesisStreamRecordType,
-  SQSRecordType,
 } from '.';
 
 abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public COLLECTOR_MAPPING;
+
+  public DATA_CLASS_MAPPING;
 
   public batchResponse: { [key: string]: { [key: string]: string }[] };
 
@@ -25,12 +23,17 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public constructor(eventType: EventType) {
     super();
     this.eventType = eventType;
-    this.batchResponse = DEFAULT_RESPONSE; // need to find deep clone alternative here
+    this.batchResponse = DEFAULT_RESPONSE; 
     this.COLLECTOR_MAPPING = {
-      [EventType.SQS]: this.collectSqsFailures(),
-      [EventType.KinesisDataStreams]: this.collectKinesisFailures(),
-      [EventType.DynamoDBStreams]: this.collectDynamoDBFailures(),
+      [EventType.SQS]: () => this.collectSqsFailures(),
+      [EventType.KinesisDataStreams]: () => this.collectKinesisFailures(),
+      [EventType.DynamoDBStreams]: () => this.collectDynamoDBFailures(),
     };
+    this.DATA_CLASS_MAPPING = {
+      [EventType.SQS]: (record: EventSourceDataClassTypes) => record as SQSRecord,
+      [EventType.KinesisDataStreams]: (record: EventSourceDataClassTypes) => record as KinesisStreamRecord,
+      [EventType.DynamoDBStreams]: (record: EventSourceDataClassTypes) => record as DynamoDBRecord,
+    }
   }
 
   /**
@@ -57,12 +60,12 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public collectDynamoDBFailures(): { [key: string]: string }[] {
     const failures: { [key: string]: string }[] = [];
 
-    this.failureMessages.forEach((msg) => {
+    for (const msg of this.failureMessages) {
       const msgId = (msg as DynamoDBRecord).dynamodb?.SequenceNumber;
       if (msgId) {
         failures.push({ itemIdentifier: msgId });
       }
-    });
+    }
 
     return failures;
   }
@@ -70,10 +73,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public collectKinesisFailures(): { [key: string]: string }[] {
     const failures: { [key: string]: string }[] = [];
 
-    this.failureMessages.forEach((msg) => {
+    for (const msg of this.failureMessages) {
       const msgId = (msg as KinesisStreamRecord).kinesis.sequenceNumber;
       failures.push({ itemIdentifier: msgId });
-    });
+    }
 
     return failures;
   }
@@ -81,10 +84,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public collectSqsFailures(): { [key: string]: string }[] {
     const failures: { [key: string]: string }[] = [];
 
-    this.failureMessages.forEach((msg) => {
+    for (const msg of this.failureMessages) {
       const msgId = (msg as SQSRecord).messageId;
       failures.push({ itemIdentifier: msgId });
-    });
+    }
 
     return failures;
   }
@@ -97,7 +100,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * @returns formatted messages to use in batch deletion
    */
   public getMessagesToReport(): { [key: string]: string }[] {
-    return this.COLLECTOR_MAPPING[this.eventType];
+    return this.COLLECTOR_MAPPING[this.eventType]();
   }
 
   public hasMessagesToReport(): boolean {
@@ -116,10 +119,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * Remove results from previous execution
    */
   public prepare(): void {
-    this.successMessages = []; // TO-DO: see if this needs to be a reference delete
-    this.failureMessages = []; // If it does, use successMessages.length = 0 (less clarity)
-    this.exceptions = []; // But it clears the array reference, not just a new empty array
-    this.batchResponse = DEFAULT_RESPONSE; // need to find deep clone alternative here
+    this.successMessages.length = 0;
+    this.failureMessages.length = 0;
+    this.exceptions.length = 0;
+    this.batchResponse = DEFAULT_RESPONSE; 
   }
 
   /**
@@ -130,18 +133,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   }
 
   public toBatchType(
-    record: BaseRecord,
+    record: EventSourceDataClassTypes,
     eventType: EventType
-  ): EventSourceDataClassTypes {
-    if (eventType == EventType.SQS) {
-      return record as SQSRecordType;
-    } else if (eventType == EventType.KinesisDataStreams) {
-      return record as KinesisStreamRecordType;
-    } else if (eventType == EventType.DynamoDBStreams) {
-      return record as DynamoDBRecordType;
-    } else {
-      throw new Error('Invalid EventType provided');
-    }
+  ): SQSRecord | KinesisStreamRecord | DynamoDBRecord {
+    return this.DATA_CLASS_MAPPING[eventType](record);
   }
 }
 

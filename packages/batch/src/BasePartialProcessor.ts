@@ -1,4 +1,3 @@
-import { Context } from 'aws-lambda';
 import {
   BaseRecord,
   EventSourceDataClassTypes,
@@ -17,8 +16,6 @@ abstract class BasePartialProcessor {
 
   public handler: CallableFunction = new Function();
 
-  public lambdaContext?: Context;
-
   public records: BaseRecord[];
 
   public successMessages: EventSourceDataClassTypes[];
@@ -28,28 +25,6 @@ abstract class BasePartialProcessor {
     this.failureMessages = [];
     this.exceptions = [];
     this.records = [];
-  }
-
-  /**
-   * Set instance attributes before execution
-   * @param records List of records to be processed
-   * @param handler CallableFunction to process entries of "records"
-   * @param lambdaContext Optional parameter if lambda_context is to be injected
-   * @returns this object
-   */
-  public call(
-    records: BaseRecord[],
-    handler: CallableFunction,
-    lambdaContext?: Context
-  ): BasePartialProcessor {
-    this.records = records;
-    this.handler = handler;
-
-    if (lambdaContext != null) {
-      this.lambdaContext = lambdaContext;
-    }
-
-    return this;
   }
 
   public abstract clean(): void;
@@ -65,6 +40,7 @@ abstract class BasePartialProcessor {
     exception: Error
   ): FailureResponse {
     const entry: FailureResponse = ['fail', exception.message, record];
+    console.debug("Record processing exception: " + exception.message);
     this.exceptions.push(exception);
     this.failureMessages.push(record);
 
@@ -78,11 +54,14 @@ abstract class BasePartialProcessor {
    * @returns List of processed records
    */
   public async process(): Promise<(SuccessResponse | FailureResponse)[]> {
+    this.prepare();
+
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
     for (const record of this.records) {
       processedRecords.push(await this.processRecord(record));
     }
 
+    this.clean();
     return processedRecords;
   }
 
@@ -93,6 +72,22 @@ abstract class BasePartialProcessor {
   public abstract processRecord(
     record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse>;
+
+  /**
+   * Set instance attributes before execution
+   * @param records List of records to be processed
+   * @param handler CallableFunction to process entries of "records"
+   * @returns this object
+   */
+  public register(
+    records: BaseRecord[],
+    handler: CallableFunction,
+  ): BasePartialProcessor {
+    this.records = records;
+    this.handler = handler;
+
+    return this;
+  }
 
   /**
    * Keeps track of batch records that were processed successfully

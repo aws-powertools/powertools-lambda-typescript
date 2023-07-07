@@ -16,7 +16,7 @@ class PowertoolsLogFormatter extends LogFormatter {
    *
    * @param {UnformattedAttributes} attributes
    * @param {LogAttributes} additionalLogAttributes
-   * @returns {PowertoolsLog}
+   * @returns {LogItem}
    */
   public formatAttributes(
     attributes: UnformattedAttributes,
@@ -36,11 +36,11 @@ class PowertoolsLogFormatter extends LogFormatter {
       xray_trace_id: attributes.xRayTraceId,
     };
 
-    const powertoolLogItem = new LogItem({ attributes: baseAttributes });
+    const powertoolsLogItem = new LogItem({ attributes: baseAttributes });
 
-    powertoolLogItem.addAttributes(additionalLogAttributes);
+    powertoolsLogItem.addAttributes(additionalLogAttributes);
 
-    return powertoolLogItem;
+    return powertoolsLogItem;
   }
 }
 

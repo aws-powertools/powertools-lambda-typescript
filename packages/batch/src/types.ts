@@ -1,3 +1,6 @@
+/**
+ * Types for batch processing utility
+ */
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
 
 // types from base.py

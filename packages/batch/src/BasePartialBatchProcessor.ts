@@ -1,7 +1,11 @@
+/**
+ * Process batch and partially report failed items
+ */
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
 import {
   BasePartialProcessor,
   BatchProcessingError,
+  DATA_CLASS_MAPPING,
   DEFAULT_RESPONSE,
   EventSourceDataClassTypes,
   EventType,
@@ -10,30 +14,23 @@ import {
 abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public COLLECTOR_MAPPING;
 
-  public DATA_CLASS_MAPPING;
-
   public batchResponse: { [key: string]: { [key: string]: string }[] };
 
   public eventType: EventType;
 
   /**
-   * Process batch and partially report failed items
+   * Initializes base batch processing class
    * @param eventType Whether this is SQS, DynamoDB stream, or Kinesis data stream event
    */
   public constructor(eventType: EventType) {
     super();
     this.eventType = eventType;
-    this.batchResponse = DEFAULT_RESPONSE; 
+    this.batchResponse = DEFAULT_RESPONSE;
     this.COLLECTOR_MAPPING = {
       [EventType.SQS]: () => this.collectSqsFailures(),
       [EventType.KinesisDataStreams]: () => this.collectKinesisFailures(),
       [EventType.DynamoDBStreams]: () => this.collectDynamoDBFailures(),
     };
-    this.DATA_CLASS_MAPPING = {
-      [EventType.SQS]: (record: EventSourceDataClassTypes) => record as SQSRecord,
-      [EventType.KinesisDataStreams]: (record: EventSourceDataClassTypes) => record as KinesisStreamRecord,
-      [EventType.DynamoDBStreams]: (record: EventSourceDataClassTypes) => record as DynamoDBRecord,
-    }
   }
 
   /**
@@ -57,6 +54,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
     this.batchResponse = { batchItemFailures: messages };
   }
 
+  /**
+   * Collects identifiers of failed items for a DynamoDB stream
+   * @returns list of identifiers for failed items
+   */
   public collectDynamoDBFailures(): { [key: string]: string }[] {
     const failures: { [key: string]: string }[] = [];
 
@@ -70,6 +71,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
     return failures;
   }
 
+  /**
+   * Collects identifiers of failed items for a Kinesis stream
+   * @returns list of identifiers for failed items
+   */
   public collectKinesisFailures(): { [key: string]: string }[] {
     const failures: { [key: string]: string }[] = [];
 
@@ -81,6 +86,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
     return failures;
   }
 
+  /**
+   * Collects identifiers of failed items for an SQS batch
+   * @returns list of identifiers for failed items
+   */
   public collectSqsFailures(): { [key: string]: string }[] {
     const failures: { [key: string]: string }[] = [];
 
@@ -92,17 +101,26 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
     return failures;
   }
 
+  /**
+   * Determines whether all records in a batch failed to process
+   * @returns true if all records resulted in exception results
+   */
   public entireBatchFailed(): boolean {
     return this.exceptions.length == this.records.length;
   }
 
   /**
+   * Collects identifiers for failed batch items
    * @returns formatted messages to use in batch deletion
    */
   public getMessagesToReport(): { [key: string]: string }[] {
     return this.COLLECTOR_MAPPING[this.eventType]();
   }
 
+  /**
+   * Determines if any records failed to process
+   * @returns true if any records resulted in exception
+   */
   public hasMessagesToReport(): boolean {
     if (this.failureMessages.length != 0) {
       return true;
@@ -122,7 +140,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
     this.successMessages.length = 0;
     this.failureMessages.length = 0;
     this.exceptions.length = 0;
-    this.batchResponse = DEFAULT_RESPONSE; 
+    this.batchResponse = DEFAULT_RESPONSE;
   }
 
   /**
@@ -136,7 +154,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
     record: EventSourceDataClassTypes,
     eventType: EventType
   ): SQSRecord | KinesisStreamRecord | DynamoDBRecord {
-    return this.DATA_CLASS_MAPPING[eventType](record);
+    return DATA_CLASS_MAPPING[eventType](record);
   }
 }
 

@@ -1,3 +1,7 @@
+/**
+ * Batch processing exceptions
+ */
+
 class BaseBatchProcessingError extends Error {
   public childExceptions: Error[];
 
@@ -10,21 +14,24 @@ class BaseBatchProcessingError extends Error {
   }
 
   public formatExceptions(parentExceptionString: string): string {
-    let exceptionList: string[] = [parentExceptionString + "\n"];
+    const exceptionList: string[] = [parentExceptionString + '\n'];
 
     for (const exception of this.childExceptions) {
       exceptionList.push(exception.message);
     }
 
-    return "\n" + exceptionList;
+    return '\n' + exceptionList;
   }
 }
 
+/**
+ * When all batch records failed to be processed
+ */
 class BatchProcessingError extends BaseBatchProcessingError {
   public constructor(msg: string, childExceptions: Error[]) {
     super(msg, childExceptions);
-    let parentExceptionString: string = this.message;
-    this.message = this.formatExceptions(parentExceptionString)
+    const parentExceptionString: string = this.message;
+    this.message = this.formatExceptions(parentExceptionString);
   }
 }
 

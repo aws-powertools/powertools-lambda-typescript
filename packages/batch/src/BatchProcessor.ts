@@ -1,3 +1,6 @@
+/**
+ * Process native partial responses from SQS, Kinesis Data Streams, and DynamoDB
+ */
 import {
   BasePartialBatchProcessor,
   BaseRecord,
@@ -6,12 +9,17 @@ import {
 } from '.';
 
 class BatchProcessor extends BasePartialBatchProcessor {
+  /**
+   * Process a record with instance's handler
+   * @param record Batch record to be processed
+   * @returns response of success or failure
+   */
   public async processRecord(
     record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     try {
       const data = this.toBatchType(record, this.eventType);
-      let result = await this.handler(data);
+      const result = await this.handler(data);
 
       return this.successHandler(record, result);
     } catch (e) {

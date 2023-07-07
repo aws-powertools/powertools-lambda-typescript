@@ -1,3 +1,6 @@
+/**
+ * Abstract class for batch processors
+ */
 import {
   BaseRecord,
   EventSourceDataClassTypes,
@@ -6,27 +9,31 @@ import {
   SuccessResponse,
 } from '.';
 
-/**
- * Abstract class for batch processors
- */
 abstract class BasePartialProcessor {
   public exceptions: Error[];
 
   public failureMessages: EventSourceDataClassTypes[];
 
-  public handler: CallableFunction = new Function();
+  public handler: CallableFunction;
 
   public records: BaseRecord[];
 
   public successMessages: EventSourceDataClassTypes[];
 
+  /**
+   * Initializes base processor class
+   */
   public constructor() {
     this.successMessages = [];
     this.failureMessages = [];
     this.exceptions = [];
     this.records = [];
+    this.handler = new Function();
   }
 
+  /**
+   * Clean class instance after processing
+   */
   public abstract clean(): void;
 
   /**
@@ -40,13 +47,16 @@ abstract class BasePartialProcessor {
     exception: Error
   ): FailureResponse {
     const entry: FailureResponse = ['fail', exception.message, record];
-    console.debug("Record processing exception: " + exception.message);
+    console.debug('Record processing exception: ' + exception.message);
     this.exceptions.push(exception);
     this.failureMessages.push(record);
 
     return entry;
   }
 
+  /**
+   * Prepare class instance before processing
+   */
   public abstract prepare(): void;
 
   /**
@@ -62,6 +72,7 @@ abstract class BasePartialProcessor {
     }
 
     this.clean();
+
     return processedRecords;
   }
 
@@ -74,14 +85,14 @@ abstract class BasePartialProcessor {
   ): Promise<SuccessResponse | FailureResponse>;
 
   /**
-   * Set instance attributes before execution
+   * Set class instance attributes before execution
    * @param records List of records to be processed
    * @param handler CallableFunction to process entries of "records"
    * @returns this object
    */
   public register(
     records: BaseRecord[],
-    handler: CallableFunction,
+    handler: CallableFunction
   ): BasePartialProcessor {
     this.records = records;
     this.handler = handler;

@@ -9,6 +9,7 @@ import type {
   SecretsGetOptions,
   SecretsGetOutput,
 } from '../types/SecretsProvider';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -171,6 +172,8 @@ class SecretsProvider extends BaseProvider {
       const clientConfig = config?.clientConfig || {};
       this.client = new SecretsManagerClient(clientConfig);
     }
+
+    addUserAgentMiddleware(this.client, 'parameters');
   }
 
   /**

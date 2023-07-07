@@ -14,6 +14,7 @@
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e": "echo 'Not Applicable'",
     "watch": "jest --watch",
+    "generateVersionFile": "echo \"// this file is auto generated, do not modify\nexport const PT_VERSION = '$(jq -r '.version' package.json)';\" > src/version.ts",
     "build": "tsc",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
@@ -47,6 +48,10 @@
   ],
   "devDependencies": {
     "@aws-sdk/client-lambda": "^3.360.0",
+    "@aws-sdk/client-dynamodb": "^3.360.0",
+    "@aws-sdk/client-appconfigdata": "^3.360.0",
+    "@aws-sdk/client-secrets-manager": "^3.360.0",
+    "@aws-sdk/client-ssm": "^3.360.0",
     "@aws-sdk/util-utf8-node": "^3.259.0"
   }
 }

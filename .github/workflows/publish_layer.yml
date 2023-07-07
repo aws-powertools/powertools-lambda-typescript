@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
     inputs:
       latest_published_version:
-        description: "Latest npm published version to rebuild corresponding layer for, e.g. v1.0.2"
-        default: "v1.0.2"
+        description: "Latest npm published version to rebuild corresponding layer for, e.g. 1.0.2"
+        default: "1.0.2"
         required: true
 
   workflow_call:
@@ -40,20 +40,14 @@ jobs:
         uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: "18"
-      - name: Set release notes tag
-        run: |
-          RELEASE_INPUT=${{ inputs.latest_published_version }}
-          LATEST_TAG=$(git describe --tag --abbrev=0)
-          RELEASE_TAG_VERSION=${RELEASE_INPUT:-$LATEST_TAG}
-          echo "RELEASE_TAG_VERSION=${RELEASE_TAG_VERSION:1}" >> $GITHUB_ENV
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Create layer files
         run: |
-          export VERSION=$RELEASE_TAG_VERSION
+          export VERSION=${{ inputs.latest_published_version }}
           bash .github/scripts/setup_tmp_layer_files.sh
       - name: CDK build
-        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=$RELEASE_TAG_VERSION -o cdk.out
+        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=${{ inputs.latest_published_version }} -o cdk.out
       - name: Zip output
         run: zip -r cdk.out.zip layers/cdk.out
       - name: Archive CDK artifacts

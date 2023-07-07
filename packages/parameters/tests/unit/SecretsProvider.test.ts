@@ -12,6 +12,7 @@ import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager
 import type { SecretsProviderOptions } from '../../src/types/SecretsProvider';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
+import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
 
 const encoder = new TextEncoder();
 
@@ -27,6 +28,11 @@ describe('Class: SecretsProvider', () => {
       // Prepare
       const options: SecretsProviderOptions = {};
 
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
+
       // Act
       const provider = new SecretsProvider(options);
 
@@ -36,6 +42,7 @@ describe('Class: SecretsProvider', () => {
           serviceId: 'Secrets Manager',
         })
       );
+      expect(userAgentSpy).toHaveBeenCalled();
     });
 
     test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
@@ -46,6 +53,11 @@ describe('Class: SecretsProvider', () => {
         },
       };
 
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
+
       // Act
       const provider = new SecretsProvider(options);
 
@@ -55,6 +67,7 @@ describe('Class: SecretsProvider', () => {
           serviceId: 'with-client-config',
         })
       );
+      expect(userAgentSpy).toHaveBeenCalled();
     });
 
     test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
@@ -67,6 +80,11 @@ describe('Class: SecretsProvider', () => {
         awsSdkV3Client: awsSdkV3Client,
       };
 
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
+
       // Act
       const provider = new SecretsProvider(options);
 
@@ -76,6 +94,7 @@ describe('Class: SecretsProvider', () => {
           serviceId: 'with-custom-sdk-client',
         })
       );
+      expect(userAgentSpy).toHaveBeenCalledWith(awsSdkV3Client, 'parameters');
     });
 
     test('when the user provides NOT an SDK client in the options, it throws an error', async () => {

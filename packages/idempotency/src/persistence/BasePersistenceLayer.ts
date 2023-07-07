@@ -10,6 +10,7 @@ import {
   IdempotencyValidationError,
 } from '../errors';
 import { LRUCache } from './LRUCache';
+import type { JSONValue } from '@aws-lambda-powertools/commons';
 
 /**
  * Base class for all persistence layers. This class provides the basic functionality for
@@ -79,7 +80,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    */
-  public async deleteRecord(data: Record<string, unknown>): Promise<void> {
+  public async deleteRecord(data: JSONValue): Promise<void> {
     const idempotencyRecord = new IdempotencyRecord({
       idempotencyKey: this.getHashedIdempotencyKey(data),
       status: IdempotencyRecordStatus.EXPIRED,
@@ -95,9 +96,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    */
-  public async getRecord(
-    data: Record<string, unknown>
-  ): Promise<IdempotencyRecord> {
+  public async getRecord(data: JSONValue): Promise<IdempotencyRecord> {
     const idempotencyKey = this.getHashedIdempotencyKey(data);
 
     const cachedRecord = this.getFromCache(idempotencyKey);
@@ -125,7 +124,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * @param remainingTimeInMillis - the remaining time left in the lambda execution context
    */
   public async saveInProgress(
-    data: Record<string, unknown>,
+    data: JSONValue,
     remainingTimeInMillis?: number
   ): Promise<void> {
     const idempotencyRecord = new IdempotencyRecord({
@@ -158,10 +157,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    * @param result - the result of the successfully completed function
    */
-  public async saveSuccess(
-    data: Record<string, unknown>,
-    result: Record<string, unknown>
-  ): Promise<void> {
+  public async saveSuccess(data: JSONValue, result: JSONValue): Promise<void> {
     const idempotencyRecord = new IdempotencyRecord({
       idempotencyKey: this.getHashedIdempotencyKey(data),
       status: IdempotencyRecordStatus.COMPLETED,
@@ -242,7 +238,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * @param data the data payload that will be hashed to create the hash portion of the idempotency key
    * @returns the idempotency key
    */
-  private getHashedIdempotencyKey(data: Record<string, unknown>): string {
+  private getHashedIdempotencyKey(data: JSONValue): string {
     if (this.eventKeyJmesPath) {
       data = search(data, this.eventKeyJmesPath);
     }
@@ -266,7 +262,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    *
    * @param data payload
    */
-  private getHashedPayload(data: Record<string, unknown>): string {
+  private getHashedPayload(data: JSONValue): string {
     if (this.isPayloadValidationEnabled() && this.validationKeyJmesPath) {
       data = search(data, this.validationKeyJmesPath);
 
@@ -276,9 +272,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
   }
 
-  private static isMissingIdempotencyKey(
-    data: Record<string, unknown>
-  ): boolean {
+  private static isMissingIdempotencyKey(data: JSONValue): boolean {
     if (Array.isArray(data) || typeof data === 'object') {
       if (data === null) return true;
       for (const value of Object.values(data)) {
@@ -307,10 +301,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     this.cache?.add(record.idempotencyKey, record);
   }
 
-  private validatePayload(
-    data: Record<string, unknown>,
-    record: IdempotencyRecord
-  ): void {
+  private validatePayload(data: JSONValue, record: IdempotencyRecord): void {
     if (this.payloadValidationEnabled) {
       const hashedPayload: string = this.getHashedPayload(data);
       if (hashedPayload !== record.payloadHash) {

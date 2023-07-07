@@ -22,6 +22,7 @@ import type {
 } from '../../src/types/SSMProvider';
 import { ExpirableValue } from '../../src/base/ExpirableValue';
 import { toBase64 } from '@aws-sdk/util-base64';
+import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
 
 const encoder = new TextEncoder();
 
@@ -37,6 +38,10 @@ describe('Class: SSMProvider', () => {
     test('when the class instantiates without SDK client and client config it has default options', async () => {
       // Prepare
       const options: SSMProviderOptions = {};
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
 
       // Act
       const provider = new SSMProvider(options);
@@ -47,6 +52,7 @@ describe('Class: SSMProvider', () => {
           serviceId: 'SSM',
         })
       );
+      expect(userAgentSpy).toHaveBeenCalled();
     });
 
     test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
@@ -56,6 +62,10 @@ describe('Class: SSMProvider', () => {
           serviceId: 'with-client-config',
         },
       };
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
 
       // Act
       const provider = new SSMProvider(options);
@@ -66,6 +76,7 @@ describe('Class: SSMProvider', () => {
           serviceId: 'with-client-config',
         })
       );
+      expect(userAgentSpy).toHaveBeenCalled();
     });
 
     test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
@@ -77,6 +88,10 @@ describe('Class: SSMProvider', () => {
       const options: SSMProviderOptions = {
         awsSdkV3Client: awsSdkV3Client,
       };
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
 
       // Act
       const provider = new SSMProvider(options);
@@ -87,6 +102,7 @@ describe('Class: SSMProvider', () => {
           serviceId: 'with-custom-sdk-client',
         })
       );
+      expect(userAgentSpy).toHaveBeenCalledWith(awsSdkV3Client, 'parameters');
     });
 
     test('when the user provides NOT an SDK client in the options, it throws an error', async () => {

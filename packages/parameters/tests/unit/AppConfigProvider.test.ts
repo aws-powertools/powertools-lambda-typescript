@@ -8,11 +8,12 @@ import { ExpirableValue } from '../../src/base/ExpirableValue';
 import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider';
 import {
   AppConfigDataClient,
-  StartConfigurationSessionCommand,
   GetLatestConfigurationCommand,
+  StartConfigurationSessionCommand,
 } from '@aws-sdk/client-appconfigdata';
 import { Uint8ArrayBlobAdapter } from '@aws-sdk/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
+import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
 import 'aws-sdk-client-mock-jest';
 
 describe('Class: AppConfigProvider', () => {
@@ -34,6 +35,11 @@ describe('Class: AppConfigProvider', () => {
         environment: 'MyAppProdEnv',
       };
 
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
+
       // Act
       const provider = new AppConfigProvider(options);
 
@@ -43,6 +49,8 @@ describe('Class: AppConfigProvider', () => {
           serviceId: 'AppConfigData',
         })
       );
+
+      expect(userAgentSpy).toHaveBeenCalled();
     });
 
     test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
@@ -55,6 +63,11 @@ describe('Class: AppConfigProvider', () => {
         },
       };
 
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
+
       // Act
       const provider = new AppConfigProvider(options);
 
@@ -64,6 +77,8 @@ describe('Class: AppConfigProvider', () => {
           serviceId: 'with-client-config',
         })
       );
+
+      expect(userAgentSpy).toHaveBeenCalled();
     });
 
     test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
@@ -78,6 +93,11 @@ describe('Class: AppConfigProvider', () => {
         awsSdkV3Client: awsSdkV3Client,
       };
 
+      const userAgentSpy = jest.spyOn(
+        UserAgentMiddleware,
+        'addUserAgentMiddleware'
+      );
+
       // Act
       const provider = new AppConfigProvider(options);
 
@@ -87,6 +107,8 @@ describe('Class: AppConfigProvider', () => {
           serviceId: 'with-custom-sdk-client',
         })
       );
+
+      expect(userAgentSpy).toHaveBeenCalledWith(awsSdkV3Client, 'parameters');
     });
 
     test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
@@ -187,6 +209,7 @@ describe('Class: AppConfigProvider', () => {
         public _addToStore(key: string, value: string): void {
           this.configurationTokenStore.set(key, value);
         }
+
         public _storeHas(key: string): boolean {
           return this.configurationTokenStore.has(key);
         }

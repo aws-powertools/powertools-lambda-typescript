@@ -47,7 +47,7 @@ abstract class BasePartialProcessor {
     exception: Error
   ): FailureResponse {
     const entry: FailureResponse = ['fail', exception.message, record];
-    console.debug('Record processing exception: ' + exception.message);
+    // console.debug('Record processing exception: ' + exception.message);
     this.exceptions.push(exception);
     this.failureMessages.push(record);
 

@@ -17,10 +17,15 @@ type SuccessResponse = [string, ResultType, EventSourceDataClassTypes];
 
 type FailureResponse = [string, string, EventSourceDataClassTypes];
 
+type ItemIdentifier = { [key: string]: string };
+type BatchResponse = { [key: string]: ItemIdentifier[] };
+
 export type {
   BaseRecord,
   EventSourceDataClassTypes,
   ResultType,
   SuccessResponse,
   FailureResponse,
+  ItemIdentifier,
+  BatchResponse,
 };

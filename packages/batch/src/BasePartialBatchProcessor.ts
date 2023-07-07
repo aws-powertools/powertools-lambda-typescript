@@ -9,12 +9,14 @@ import {
   DEFAULT_RESPONSE,
   EventSourceDataClassTypes,
   EventType,
+  ItemIdentifier,
+  BatchResponse,
 } from '.';
 
 abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public COLLECTOR_MAPPING;
 
-  public batchResponse: { [key: string]: { [key: string]: string }[] };
+  public batchResponse: BatchResponse;
 
   public eventType: EventType;
 
@@ -50,7 +52,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
       );
     }
 
-    const messages: { [key: string]: string }[] = this.getMessagesToReport();
+    const messages: ItemIdentifier[] = this.getMessagesToReport();
     this.batchResponse = { batchItemFailures: messages };
   }
 
@@ -58,8 +60,8 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * Collects identifiers of failed items for a DynamoDB stream
    * @returns list of identifiers for failed items
    */
-  public collectDynamoDBFailures(): { [key: string]: string }[] {
-    const failures: { [key: string]: string }[] = [];
+  public collectDynamoDBFailures(): ItemIdentifier[] {
+    const failures: ItemIdentifier[] = [];
 
     for (const msg of this.failureMessages) {
       const msgId = (msg as DynamoDBRecord).dynamodb?.SequenceNumber;
@@ -75,8 +77,8 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * Collects identifiers of failed items for a Kinesis stream
    * @returns list of identifiers for failed items
    */
-  public collectKinesisFailures(): { [key: string]: string }[] {
-    const failures: { [key: string]: string }[] = [];
+  public collectKinesisFailures(): ItemIdentifier[] {
+    const failures: ItemIdentifier[] = [];
 
     for (const msg of this.failureMessages) {
       const msgId = (msg as KinesisStreamRecord).kinesis.sequenceNumber;
@@ -90,8 +92,8 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * Collects identifiers of failed items for an SQS batch
    * @returns list of identifiers for failed items
    */
-  public collectSqsFailures(): { [key: string]: string }[] {
-    const failures: { [key: string]: string }[] = [];
+  public collectSqsFailures(): ItemIdentifier[] {
+    const failures: ItemIdentifier[] = [];
 
     for (const msg of this.failureMessages) {
       const msgId = (msg as SQSRecord).messageId;
@@ -113,7 +115,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * Collects identifiers for failed batch items
    * @returns formatted messages to use in batch deletion
    */
-  public getMessagesToReport(): { [key: string]: string }[] {
+  public getMessagesToReport(): ItemIdentifier[] {
     return this.COLLECTOR_MAPPING[this.eventType]();
   }
 
@@ -126,9 +128,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
       return true;
     }
 
-    console.debug(
-      'All ' + this.successMessages.length + ' records successfully processed'
-    );
+    // console.debug('All ' + this.successMessages.length + ' records successfully processed');
 
     return false;
   }
@@ -146,7 +146,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   /**
    * @returns Batch items that failed processing, if any
    */
-  public response(): { [key: string]: { [key: string]: string }[] } {
+  public response(): BatchResponse {
     return this.batchResponse;
   }
 

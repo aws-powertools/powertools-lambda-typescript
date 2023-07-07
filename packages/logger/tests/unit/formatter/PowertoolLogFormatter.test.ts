@@ -91,6 +91,65 @@ describe('Class: PowertoolLogFormatter', () => {
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       });
     });
+
+    test('it returns an object whose properties serialize in a useful order for viewing in Cloudwatch console', () => {
+      // Prepare
+      const formatter = new PowertoolLogFormatter();
+      const unformattedAttributes: UnformattedAttributes = {
+        sampleRateValue: 0.25,
+        awsRegion: 'eu-west-1',
+        environment: 'prod',
+        serviceName: 'hello-world',
+        xRayTraceId: '1-5759e988-bd862e3fe1be46a994272793',
+        logLevel: 'WARN',
+        timestamp: new Date(),
+        message: 'This is a WARN log',
+        error: new Error('Something happened!'),
+        lambdaContext: {
+          functionName: 'my-lambda-function',
+          memoryLimitInMB: 123,
+          functionVersion: '1.23.3',
+          coldStart: true,
+          invokedFunctionArn:
+            'arn:aws:lambda:eu-west-1:123456789012:function:Example',
+          awsRequestId: 'abcdefg123456789',
+        },
+      };
+
+      // Act
+      const value = formatter.formatAttributes(unformattedAttributes);
+      const serializedValue = JSON.stringify(value);
+
+      // Assess
+      const orderOf = (key: string): number => serializedValue.indexOf(key);
+      // These are execution specific properties where order matters most
+      expect(orderOf('level')).toBeLessThan(orderOf('message'));
+      expect(orderOf('message')).toBeLessThan(orderOf('function_request_id'));
+      expect(orderOf('function_request_id')).toBeLessThan(
+        orderOf('xray_trace_id')
+      );
+      expect(orderOf('xray_trace_id')).toBeLessThan(orderOf('cold_start'));
+      expect(orderOf('cold_start')).toBeLessThan(
+        orderOf('function_memory_size')
+      );
+      // For all other properties, we just need to check that they come after
+      // the ones above. Timestamp is technicially execution specific, but log
+      // entries in Cloudwatch already have timestamps anyway, so it is less
+      // important for at-a-glance viewing.
+      expect(orderOf('function_memory_size')).toBeLessThan(orderOf('service'));
+      expect(orderOf('function_memory_size')).toBeLessThan(
+        orderOf('sampling_rate')
+      );
+      expect(orderOf('function_memory_size')).toBeLessThan(
+        orderOf('function_arn')
+      );
+      expect(orderOf('function_memory_size')).toBeLessThan(
+        orderOf('function_name')
+      );
+      expect(orderOf('function_memory_size')).toBeLessThan(
+        orderOf('timestamp')
+      );
+    });
   });
 
   describe('Method: formatError', () => {

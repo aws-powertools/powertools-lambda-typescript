@@ -34,6 +34,12 @@
       ],
       "@aws-lambda-powertools/idempotency/persistence": [
         "../../packages/idempotency/lib/persistence"
+      ],
+      "@aws-lambda-powertools/idempotency": [
+        "../../packages/idempotency/lib"
+      ],
+      "@aws-lambda-powertools/idempotency/middleware": [
+        "../../packages/idempotency/lib/middleware"
       ]
     },
   },

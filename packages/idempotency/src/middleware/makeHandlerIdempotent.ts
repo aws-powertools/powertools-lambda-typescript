@@ -32,11 +32,6 @@ const getPersistenceStoreFromRequestInternal = (
   const persistenceStore = request.internal[
     `${IDEMPOTENCY_KEY}.idempotencyPersistenceStore`
   ] as BasePersistenceLayerInterface;
-  if (!persistenceStore) {
-    throw new Error(
-      'Idempotency persistence store not found in request internal'
-    );
-  }
 
   return persistenceStore;
 };

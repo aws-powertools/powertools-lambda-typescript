@@ -53,12 +53,37 @@ Next, review the IAM permissions attached to your AWS Lambda function and make s
 
 ### Function wrapper
 
-You can make any function idempotent, and safe to retry, by wrapping it using the `makeFunctionIdempotent` higher-order function.
+You can make any function idempotent, and safe to retry, by wrapping it using the `makeIdempotent` higher-order function.
 
 The function wrapper takes a reference to the function to be made idempotent as first argument, and an object with options as second argument.
 
+When you wrap your Lambda handler function, the utility uses the content of the `event` parameter to handle the idempotency logic.
+
 ```ts
-import { makeFunctionIdempotent } from '@aws-lambda-powertools/idempotency';
+import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import type { Context, APIGatewayProxyEvent } from 'aws-lambda';
+
+const persistenceStore = new DynamoDBPersistenceLayer({
+  tableName: 'idempotencyTableName',
+});
+
+const myHandler = async (
+  event: APIGatewayProxyEvent,
+  _context: Context
+): Promise<void> => {
+  // your code goes here here
+};
+
+export const handler = makeIdempotent(myHandler, {
+  persistenceStore,
+});  
+```
+
+You can also use the `makeIdempotent` function to wrap any other arbitrary function, not just Lambda handlers.
+
+```ts
+import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { Context, SQSEvent, SQSRecord } from 'aws-lambda';
 
@@ -70,20 +95,76 @@ const processingFunction = async (payload: SQSRecord): Promise<void> => {
   // your code goes here here
 };
 
+const processIdempotently = makeIdempotent(processingFunction, {
+  persistenceStore,
+});
+
 export const handler = async (
   event: SQSEvent,
   _context: Context
 ): Promise<void> => {
   for (const record of event.Records) {
-    await makeFunctionIdempotent(processingFunction, {
-      dataKeywordArgument: 'transactionId',
-      persistenceStore,
-    });
+    await processIdempotently(record);
   }
 };
 ```
 
-Note that we are specifying a `dataKeywordArgument` option, this tells the Idempotency utility which field(s) will be used as idempotency key.
+If your function has multiple arguments, you can use the `dataIndexArgument` option to specify which argument should be used as the idempotency key.
+
+```ts
+import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import type { Context, SQSEvent, SQSRecord } from 'aws-lambda';
+
+const persistenceStore = new DynamoDBPersistenceLayer({
+  tableName: 'idempotencyTableName',
+});
+
+const processingFunction = async (payload: SQSRecord, customerId: string): Promise<void> => {
+  // your code goes here here
+};
+
+const processIdempotently = makeIdempotent(processingFunction, {
+  persistenceStore,
+  // this tells the utility to use the second argument (`customerId`) as the idempotency key
+  dataIndexArgument: 1, 
+});
+
+export const handler = async (
+  event: SQSEvent,
+  _context: Context
+): Promise<void> => {
+  for (const record of event.Records) {
+    await processIdempotently(record, 'customer-123');
+  }
+};
+```
+
+Note that you can also specify a JMESPath expression in the Idempotency config object to select a subset of the event payload as the idempotency key. This is useful when dealing with payloads that contain timestamps or request ids. 
+
+```ts
+import { makeIdempotent, IdempotencyConfig } from '@aws-lambda-powertools/idempotency';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import type { Context, APIGatewayProxyEvent } from 'aws-lambda';
+
+const persistenceStore = new DynamoDBPersistenceLayer({
+  tableName: 'idempotencyTableName',
+});
+
+const myHandler = async (
+  event: APIGatewayProxyEvent,
+  _context: Context
+): Promise<void> => {
+  // your code goes here here
+};
+
+export const handler = makeIdempotent(myHandler, {
+  persistenceStore,
+  config: new IdempotencyConfig({
+    eventKeyJmespath: 'requestContext.identity.user',
+  }),
+});  
+```
 
 Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/) for more examples.
 

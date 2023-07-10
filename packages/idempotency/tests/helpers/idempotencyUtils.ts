@@ -5,6 +5,7 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { TEST_RUNTIMES } from '../../../commons/tests/utils/e2eUtils';
 import { BasePersistenceLayer } from '../../src/persistence';
 import path from 'path';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 export const createIdempotencyResources = (
   stack: Stack,
@@ -13,7 +14,8 @@ export const createIdempotencyResources = (
   pathToFunction: string,
   functionName: string,
   handler: string,
-  ddbPkId?: string
+  ddbPkId?: string,
+  timeout?: number
 ): void => {
   const uniqueTableId = ddbTableName + v4().substring(0, 5);
   const ddbTable = new Table(stack, uniqueTableId, {
@@ -31,12 +33,13 @@ export const createIdempotencyResources = (
     runtime: TEST_RUNTIMES[runtime],
     functionName: functionName,
     entry: path.join(__dirname, `../e2e/${pathToFunction}`),
-    timeout: Duration.seconds(30),
+    timeout: Duration.seconds(timeout || 30),
     handler: handler,
     environment: {
       IDEMPOTENCY_TABLE_NAME: ddbTableName,
       POWERTOOLS_LOGGER_LOG_EVENT: 'true',
     },
+    logRetention: RetentionDays.ONE_DAY,
   });
 
   ddbTable.grantReadWriteData(nodeJsFunction);

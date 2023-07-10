@@ -18,13 +18,13 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
 
   public batchResponse: BatchResponse;
 
-  public eventType: EventType;
+  public eventType: keyof typeof EventType;
 
   /**
    * Initializes base batch processing class
    * @param eventType Whether this is SQS, DynamoDB stream, or Kinesis data stream event
    */
-  public constructor(eventType: EventType) {
+  public constructor(eventType: keyof typeof EventType) {
     super();
     this.eventType = eventType;
     this.batchResponse = DEFAULT_RESPONSE;
@@ -152,7 +152,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
 
   public toBatchType(
     record: EventSourceDataClassTypes,
-    eventType: EventType
+    eventType: keyof typeof EventType
   ): SQSRecord | KinesisStreamRecord | DynamoDBRecord {
     return DATA_CLASS_MAPPING[eventType](record);
   }

@@ -4,11 +4,11 @@
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
 import type { BatchResponse, EventSourceDataClassTypes } from '.';
 
-enum EventType {
-  SQS = 'SQS',
-  KinesisDataStreams = 'KinesisDataStreams',
-  DynamoDBStreams = 'DynamoDBStreams',
-}
+const EventType = {
+  SQS: 'SQS',
+  KinesisDataStreams: 'KinesisDataStreams',
+  DynamoDBStreams: 'DynamoDBStreams',
+} as const;
 
 const DEFAULT_RESPONSE: BatchResponse = {
   batchItemFailures: [],

@@ -47,7 +47,6 @@ class BatchProcessingError extends BaseBatchProcessingError {
     super(msg, childErrors);
     const parentErrorString: string = this.message;
     this.message = this.formatErrors(parentErrorString);
-    console.log(this.message);
   }
 }
 

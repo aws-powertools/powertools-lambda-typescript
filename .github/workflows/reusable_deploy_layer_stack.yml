@@ -94,6 +94,8 @@ jobs:
           path: ./cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.
           if-no-files-found: error
           retention-days: 1
+      - name: CDK deploy canary
+        run: npm run cdk -w layer -- deploy --app cdk.out --context region=${{ matrix.region }} 'CanaryStack' --require-approval never --verbose --outputs-file cdk-outputs.json
   update_layer_arn_docs:
     needs: deploy-cdk-stack
     permissions:

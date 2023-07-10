@@ -2,33 +2,31 @@ import { readFileSync } from 'node:fs';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
+import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
 
 const logger = new Logger({
   logLevel: 'DEBUG',
 });
 const metrics = new Metrics();
 const tracer = new Tracer();
+new SSMProvider();
 
 export const handler = (): void => {
   // Check that the packages version matches the expected one
-  try {
-    const packageJSON = JSON.parse(
-      readFileSync(
-        '/opt/nodejs/node_modules/@aws-lambda-powertools/logger/package.json',
-        {
-          encoding: 'utf8',
-          flag: 'r',
-        }
-      )
-    );
+  const packageJSON = JSON.parse(
+    readFileSync(
+      '/opt/nodejs/node_modules/@aws-lambda-powertools/logger/package.json',
+      {
+        encoding: 'utf8',
+        flag: 'r',
+      }
+    )
+  );
 
-    if (packageJSON.version != process.env.POWERTOOLS_PACKAGE_VERSION) {
-      throw new Error(
-        `Package version mismatch: ${packageJSON.version} != ${process.env.POWERTOOLS_PACKAGE_VERSION}`
-      );
-    }
-  } catch (error) {
-    console.error(error);
+  if (packageJSON.version != process.env.POWERTOOLS_PACKAGE_VERSION) {
+    throw new Error(
+      `Package version mismatch: ${packageJSON.version} != ${process.env.POWERTOOLS_PACKAGE_VERSION}`
+    );
   }
 
   // Check that the logger is working

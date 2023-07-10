@@ -1,6 +1,6 @@
 import {
   IdempotencyConfig,
-  makeFunctionIdempotent,
+  makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 
@@ -14,7 +14,7 @@ const config = new IdempotencyConfig({
   throwOnNoIdempotencyKey: true,
 });
 
-export const handler = makeFunctionIdempotent((_event: unknown) => ({}), {
+export const handler = makeIdempotent((_event: unknown) => ({}), {
   persistenceStore,
   config,
 });

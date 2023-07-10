@@ -1,18 +1,28 @@
 import { makeHandlerIdempotent } from '@aws-lambda-powertools/idempotency/middleware';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import middy from '@middy/core';
+import type { Context } from 'aws-lambda';
 import type { Request, Response } from './types';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
-  tableName: 'IdempotencyTable',
+  tableName: 'idempotencyTableName',
   sortKeyAttr: 'sort_key',
 });
 
 export const handler = middy(
-  async (event: Request, _context: unknown): Promise<Response> => ({
-    message: 'success',
-    id: event.email,
-  })
+  async (_event: Request, _context: Context): Promise<Response> => {
+    try {
+      // ... create payment
+
+      return {
+        paymentId: '12345',
+        message: 'success',
+        statusCode: 200,
+      };
+    } catch (error) {
+      throw new Error('Error creating payment');
+    }
+  }
 ).use(
   makeHandlerIdempotent({
     persistenceStore,

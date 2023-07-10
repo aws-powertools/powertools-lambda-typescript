@@ -1,6 +1,5 @@
 type Request = {
   user: string;
-  email: string;
   productId: string;
 };
 
@@ -10,6 +9,7 @@ type Response = {
 
 type SubscriptionResult = {
   id: string;
+  productId: string;
 };
 
 export { Request, Response, SubscriptionResult };

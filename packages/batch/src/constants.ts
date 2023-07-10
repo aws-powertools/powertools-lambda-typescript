@@ -2,7 +2,7 @@
  * Constants for batch processor classes
  */
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
-import { BatchResponse, EventSourceDataClassTypes } from '.';
+import type { BatchResponse, EventSourceDataClassTypes } from '.';
 
 enum EventType {
   SQS = 'SQS',

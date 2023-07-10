@@ -1,4 +1,5 @@
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
+import { randomInt } from 'crypto';
 import { v4 } from 'uuid';
 
 const sqsEventFactory = (body: string): SQSRecord => {
@@ -23,7 +24,7 @@ const sqsEventFactory = (body: string): SQSRecord => {
 const kinesisEventFactory = (body: string): KinesisStreamRecord => {
   let seq = '';
   for (let i = 0; i < 52; i++) {
-    seq = seq + Math.floor(Math.random() * 10);
+    seq = seq + randomInt(10);
   }
 
   return {
@@ -48,7 +49,7 @@ const kinesisEventFactory = (body: string): KinesisStreamRecord => {
 const dynamodbEventFactory = (body: string): DynamoDBRecord => {
   let seq = '';
   for (let i = 0; i < 10; i++) {
-    seq = seq + Math.floor(Math.random() * 10);
+    seq = seq + randomInt(10);
   }
 
   return {

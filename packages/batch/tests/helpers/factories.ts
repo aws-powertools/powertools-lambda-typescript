@@ -1,7 +1,7 @@
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
 import { v4 } from 'uuid';
 
-export const sqsEventFactory = (body: string): SQSRecord => {
+const sqsEventFactory = (body: string): SQSRecord => {
   return {
     messageId: v4(),
     receiptHandle: 'AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a',
@@ -20,7 +20,7 @@ export const sqsEventFactory = (body: string): SQSRecord => {
   };
 };
 
-export const kinesisEventFactory = (body: string): KinesisStreamRecord => {
+const kinesisEventFactory = (body: string): KinesisStreamRecord => {
   let seq = '';
   for (let i = 0; i < 52; i++) {
     seq = seq + Math.floor(Math.random() * 10);
@@ -45,7 +45,7 @@ export const kinesisEventFactory = (body: string): KinesisStreamRecord => {
   };
 };
 
-export const dynamodbEventFactory = (body: string): DynamoDBRecord => {
+const dynamodbEventFactory = (body: string): DynamoDBRecord => {
   let seq = '';
   for (let i = 0; i < 10; i++) {
     seq = seq + Math.floor(Math.random() * 10);
@@ -67,3 +67,5 @@ export const dynamodbEventFactory = (body: string): DynamoDBRecord => {
     eventSource: 'aws:dynamodb',
   };
 };
+
+export { sqsEventFactory, kinesisEventFactory, dynamodbEventFactory };

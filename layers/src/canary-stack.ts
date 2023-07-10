@@ -3,13 +3,7 @@ import { Construct } from 'constructs';
 import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { v4 } from 'uuid';
-import {
-  Effect,
-  ManagedPolicy,
-  PolicyStatement,
-  Role,
-  ServicePrincipal,
-} from 'aws-cdk-lib/aws-iam';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Provider } from 'aws-cdk-lib/custom-resources';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import path from 'path';
@@ -41,25 +35,11 @@ export class CanaryStack extends Stack {
       LayerVersion.fromLayerVersionArn(this, 'powertools-layer', layerArn),
     ];
 
-    const executionRole = new Role(this, 'LambdaExecutionRole', {
-      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-      managedPolicies: [
-        ManagedPolicy.fromAwsManagedPolicyName(
-          'service-role/AWSLambdaBasicExecutionRole'
-        ),
-      ],
-    });
-
-    executionRole.addToPolicy(
-      new PolicyStatement({
-        actions: ['lambda:GetFunction'],
-        resources: ['*'],
-        effect: Effect.ALLOW,
-      })
-    );
-
     const canaryFunction = new NodejsFunction(this, 'CanaryFunction', {
-      entry: path.join(__dirname, './canary/app.ts'),
+      entry: path.join(
+        __dirname,
+        '../tests/e2e/layerPublisher.class.test.functionCode.ts'
+      ),
       handler: 'handler',
       runtime: Runtime.NODEJS_18_X,
       functionName: `canary-${suffix}`,
@@ -75,15 +55,23 @@ export class CanaryStack extends Stack {
           '@aws-lambda-powertools/commons',
         ],
       },
-      role: executionRole,
       environment: {
         POWERTOOLS_SERVICE_NAME: 'canary',
-        POWERTOOLS_VERSION: powertoolsPackageVersion,
+        POWERTOOLS_PACKAGE_VERSION: powertoolsPackageVersion,
         POWERTOOLS_LAYER_NAME: layerName,
+        SSM_PARAMETER_LAYER_ARN: props.ssmParameterLayerArn,
       },
       layers: layer,
       logRetention: RetentionDays.ONE_DAY,
     });
+
+    canaryFunction.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['ssm:GetParameter'],
+        resources: ['*'],
+        effect: Effect.ALLOW,
+      })
+    );
 
     // use custom resource to trigger the lambda function during the CFN deployment
     const provider = new Provider(this, 'CanaryCustomResourceProvider', {

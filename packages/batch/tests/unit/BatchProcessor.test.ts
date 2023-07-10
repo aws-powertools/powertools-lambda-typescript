@@ -4,7 +4,6 @@
  * @group unit/batch/class/batchprocessor
  */
 import { BatchProcessingError, BatchProcessor, EventType } from '../../src';
-import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
 import {
   sqsEventFactory,
   kinesisEventFactory,
@@ -46,8 +45,8 @@ describe('Class: BatchProcessor', () => {
 
       // Assess
       expect(processedMessages).toStrictEqual([
-        ['success', (firstRecord as SQSRecord).body, firstRecord],
-        ['success', (secondRecord as SQSRecord).body, secondRecord],
+        ['success', firstRecord.body, firstRecord],
+        ['success', secondRecord.body, secondRecord],
       ]);
     });
 
@@ -66,14 +65,14 @@ describe('Class: BatchProcessor', () => {
       // Assess
       expect(processedMessages[1]).toStrictEqual([
         'success',
-        (secondRecord as SQSRecord).body,
+        secondRecord.body,
         secondRecord,
       ]);
       expect(processor.failureMessages.length).toBe(2);
       expect(processor.response()).toStrictEqual({
         batchItemFailures: [
-          { itemIdentifier: (firstRecord as SQSRecord).messageId },
-          { itemIdentifier: (thirdRecord as SQSRecord).messageId },
+          { itemIdentifier: firstRecord.messageId },
+          { itemIdentifier: thirdRecord.messageId },
         ],
       });
     });
@@ -109,12 +108,12 @@ describe('Class: BatchProcessor', () => {
 
       // Assess
       expect(processedMessages).toStrictEqual([
-        ['success', (firstRecord as SQSRecord).body, firstRecord],
-        ['success', (secondRecord as SQSRecord).body, secondRecord],
+        ['success', firstRecord.body, firstRecord],
+        ['success', secondRecord.body, secondRecord],
       ]);
     });
 
-    test('Batch processing SQS records with failures', async () => {
+    test('Batch processing SQS records with some failures', async () => {
       // Prepare
       const firstRecord = sqsEventFactory('failure');
       const secondRecord = sqsEventFactory('success');
@@ -129,14 +128,14 @@ describe('Class: BatchProcessor', () => {
       // Assess
       expect(processedMessages[1]).toStrictEqual([
         'success',
-        (secondRecord as SQSRecord).body,
+        secondRecord.body,
         secondRecord,
       ]);
       expect(processor.failureMessages.length).toBe(2);
       expect(processor.response()).toStrictEqual({
         batchItemFailures: [
-          { itemIdentifier: (firstRecord as SQSRecord).messageId },
-          { itemIdentifier: (thirdRecord as SQSRecord).messageId },
+          { itemIdentifier: firstRecord.messageId },
+          { itemIdentifier: thirdRecord.messageId },
         ],
       });
     });
@@ -174,20 +173,12 @@ describe('Class: BatchProcessor', () => {
 
       // Assess
       expect(processedMessages).toStrictEqual([
-        [
-          'success',
-          (firstRecord as KinesisStreamRecord).kinesis.data,
-          firstRecord,
-        ],
-        [
-          'success',
-          (secondRecord as KinesisStreamRecord).kinesis.data,
-          secondRecord,
-        ],
+        ['success', firstRecord.kinesis.data, firstRecord],
+        ['success', secondRecord.kinesis.data, secondRecord],
       ]);
     });
 
-    test('Batch processing Kinesis records with failures', async () => {
+    test('Batch processing Kinesis records with some failures', async () => {
       // Prepare
       const firstRecord = kinesisEventFactory('failure');
       const secondRecord = kinesisEventFactory('success');
@@ -202,20 +193,14 @@ describe('Class: BatchProcessor', () => {
       // Assess
       expect(processedMessages[1]).toStrictEqual([
         'success',
-        (secondRecord as KinesisStreamRecord).kinesis.data,
+        secondRecord.kinesis.data,
         secondRecord,
       ]);
       expect(processor.failureMessages.length).toBe(2);
       expect(processor.response()).toStrictEqual({
         batchItemFailures: [
-          {
-            itemIdentifier: (firstRecord as KinesisStreamRecord).kinesis
-              .sequenceNumber,
-          },
-          {
-            itemIdentifier: (thirdRecord as KinesisStreamRecord).kinesis
-              .sequenceNumber,
-          },
+          { itemIdentifier: firstRecord.kinesis.sequenceNumber },
+          { itemIdentifier: thirdRecord.kinesis.sequenceNumber },
         ],
       });
     });
@@ -252,20 +237,12 @@ describe('Class: BatchProcessor', () => {
 
       // Assess
       expect(processedMessages).toStrictEqual([
-        [
-          'success',
-          (firstRecord as KinesisStreamRecord).kinesis.data,
-          firstRecord,
-        ],
-        [
-          'success',
-          (secondRecord as KinesisStreamRecord).kinesis.data,
-          secondRecord,
-        ],
+        ['success', firstRecord.kinesis.data, firstRecord],
+        ['success', secondRecord.kinesis.data, secondRecord],
       ]);
     });
 
-    test('Batch processing Kinesis records with failures', async () => {
+    test('Batch processing Kinesis records with some failures', async () => {
       // Prepare
       const firstRecord = kinesisEventFactory('failure');
       const secondRecord = kinesisEventFactory('success');
@@ -280,20 +257,14 @@ describe('Class: BatchProcessor', () => {
       // Assess
       expect(processedMessages[1]).toStrictEqual([
         'success',
-        (secondRecord as KinesisStreamRecord).kinesis.data,
+        secondRecord.kinesis.data,
         secondRecord,
       ]);
       expect(processor.failureMessages.length).toBe(2);
       expect(processor.response()).toStrictEqual({
         batchItemFailures: [
-          {
-            itemIdentifier: (firstRecord as KinesisStreamRecord).kinesis
-              .sequenceNumber,
-          },
-          {
-            itemIdentifier: (thirdRecord as KinesisStreamRecord).kinesis
-              .sequenceNumber,
-          },
+          { itemIdentifier: firstRecord.kinesis.sequenceNumber },
+          { itemIdentifier: thirdRecord.kinesis.sequenceNumber },
         ],
       });
     });
@@ -331,16 +302,8 @@ describe('Class: BatchProcessor', () => {
 
       // Assess
       expect(processedMessages).toStrictEqual([
-        [
-          'success',
-          (firstRecord as DynamoDBRecord).dynamodb?.NewImage?.Message,
-          firstRecord,
-        ],
-        [
-          'success',
-          (secondRecord as DynamoDBRecord).dynamodb?.NewImage?.Message,
-          secondRecord,
-        ],
+        ['success', firstRecord.dynamodb?.NewImage?.Message, firstRecord],
+        ['success', secondRecord.dynamodb?.NewImage?.Message, secondRecord],
       ]);
     });
 
@@ -359,20 +322,14 @@ describe('Class: BatchProcessor', () => {
       // Assess
       expect(processedMessages[1]).toStrictEqual([
         'success',
-        (secondRecord as DynamoDBRecord).dynamodb?.NewImage?.Message,
+        secondRecord.dynamodb?.NewImage?.Message,
         secondRecord,
       ]);
       expect(processor.failureMessages.length).toBe(2);
       expect(processor.response()).toStrictEqual({
         batchItemFailures: [
-          {
-            itemIdentifier: (firstRecord as DynamoDBRecord).dynamodb
-              ?.SequenceNumber,
-          },
-          {
-            itemIdentifier: (thirdRecord as DynamoDBRecord).dynamodb
-              ?.SequenceNumber,
-          },
+          { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
+          { itemIdentifier: thirdRecord.dynamodb?.SequenceNumber },
         ],
       });
     });
@@ -410,16 +367,8 @@ describe('Class: BatchProcessor', () => {
 
       // Assess
       expect(processedMessages).toStrictEqual([
-        [
-          'success',
-          (firstRecord as DynamoDBRecord).dynamodb?.NewImage?.Message,
-          firstRecord,
-        ],
-        [
-          'success',
-          (secondRecord as DynamoDBRecord).dynamodb?.NewImage?.Message,
-          secondRecord,
-        ],
+        ['success', firstRecord.dynamodb?.NewImage?.Message, firstRecord],
+        ['success', secondRecord.dynamodb?.NewImage?.Message, secondRecord],
       ]);
     });
 
@@ -438,20 +387,14 @@ describe('Class: BatchProcessor', () => {
       // Assess
       expect(processedMessages[1]).toStrictEqual([
         'success',
-        (secondRecord as DynamoDBRecord).dynamodb?.NewImage?.Message,
+        secondRecord.dynamodb?.NewImage?.Message,
         secondRecord,
       ]);
       expect(processor.failureMessages.length).toBe(2);
       expect(processor.response()).toStrictEqual({
         batchItemFailures: [
-          {
-            itemIdentifier: (firstRecord as DynamoDBRecord).dynamodb
-              ?.SequenceNumber,
-          },
-          {
-            itemIdentifier: (thirdRecord as DynamoDBRecord).dynamodb
-              ?.SequenceNumber,
-          },
+          { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
+          { itemIdentifier: thirdRecord.dynamodb?.SequenceNumber },
         ],
       });
     });

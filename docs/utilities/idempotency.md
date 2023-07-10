@@ -265,7 +265,7 @@ If you are using [Middy](https://middy.js.org){target="_blank"} as your middlewa
 
 === "index.ts"
 
-    ```typescript hl_lines="18 29-33"
+    ```typescript hl_lines="22 36-40"
     --8<-- "docs/snippets/idempotency/makeHandlerIdempotent.ts"
     ```
 
@@ -392,7 +392,7 @@ If an error is thrown _outside_ the scope of the decorated function and after yo
 
 === "Handling exceptions"
 
-    ```typescript hl_lines="18-22 28 31"
+    ```typescript hl_lines="39-40 47-48"
     --8<-- "docs/snippets/idempotency/workingWithExceptions.ts"
     ```
 
@@ -606,7 +606,7 @@ This persistence layer is built-in, and you can either use an existing DynamoDB 
 === "Customizing DynamoDBPersistenceLayer to suit your table structure"
 
     ```typescript hl_lines="7-15"
-    --8<-- "docs/snippets/idempotency/workingWithExceptions.ts"
+    --8<-- "docs/snippets/idempotency/customizePersistenceLayer.ts"
     ```
 
 When using DynamoDB as a persistence layer, you can alter the attribute names by passing these parameters when initializing the persistence layer:
@@ -658,7 +658,7 @@ You can enable in-memory caching with the **`useLocalCache`** parameter:
 === "Caching idempotent transactions in-memory to prevent multiple calls to storage"
 
     ```typescript hl_lines="12-13"
-    --8<-- "docs/snippets/idempotency/workingWithExceptions.ts"
+    --8<-- "docs/snippets/idempotency/workingWithLocalCache.ts"
     ```
 
 When enabled, the default is to cache a maximum of 256 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
@@ -779,7 +779,7 @@ You can optionally set a static value for the partition key using the `staticPkV
 
 === "Reusing a DynamoDB table that uses a composite primary key"
 
-    ```typescript hl_lines="14-15"
+    ```typescript hl_lines="9"
     --8<-- "docs/snippets/idempotency/workingWithCompositeKey.ts"
     ```
 

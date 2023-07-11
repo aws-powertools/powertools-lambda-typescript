@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.11.0...v1.11.1) (2023-07-11)
+
+### Bug Fixes
+
+- **docs:** fix alias in versions.json ([#1576](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1576)) ([7198cbc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7198cbca28962e07486b90ecb4f265cafe28bf73))
+- **idempotency:** types, docs, and `makeIdempotent` function wrapper ([#1579](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1579)) ([bba1c01](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bba1c01a0b3f08e962568e1d0eb44d486829657b))
+
 # [1.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.10.0...v1.11.0) (2023-06-29)
 
 ### Features

@@ -95,7 +95,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
       - name: CDK deploy canary
-        run: npm run cdk -w layer -- deploy --app cdk.out --context region=${{ matrix.region }} 'CanaryStack' --require-approval never --verbose --outputs-file cdk-outputs.json
+        run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'CanaryStack' --require-approval never --verbose --outputs-file cdk-outputs.json
   update_layer_arn_docs:
     needs: deploy-cdk-stack
     permissions:

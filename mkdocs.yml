@@ -16,6 +16,7 @@ nav:
       - core/metrics.md
   - Utilities:
       - utilities/parameters.md
+      - utilities/idempotency.md
 
 theme:
   name: material

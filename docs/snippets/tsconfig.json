@@ -29,6 +29,18 @@
       "@aws-lambda-powertools/parameters/dynamodb": [
         "../../packages/parameters/lib/dynamodb"
       ],
+      "@aws-lambda-powertools/idempotency/dynamodb": [
+        "../../packages/idempotency/lib/persistence/DynamoDBPersistenceLayer"
+      ],
+      "@aws-lambda-powertools/idempotency/persistence": [
+        "../../packages/idempotency/lib/persistence"
+      ],
+      "@aws-lambda-powertools/idempotency": [
+        "../../packages/idempotency/lib"
+      ],
+      "@aws-lambda-powertools/idempotency/middleware": [
+        "../../packages/idempotency/lib/middleware"
+      ]
     },
   },
   "exclude": [

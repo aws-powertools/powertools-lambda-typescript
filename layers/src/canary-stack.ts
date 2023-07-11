@@ -41,17 +41,15 @@ export class CanaryStack extends Stack {
         '../tests/e2e/layerPublisher.class.test.functionCode.ts'
       ),
       handler: 'handler',
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_14_X,
       functionName: `canary-${suffix}`,
       timeout: Duration.seconds(30),
       bundling: {
         externalModules: [
           // don't package these modules, we want to pull them from the layer
-          'aws-sdk',
           '@aws-lambda-powertools/logger',
           '@aws-lambda-powertools/metrics',
           '@aws-lambda-powertools/tracer',
-          '@aws-lambda-powertools/parameters',
           '@aws-lambda-powertools/commons',
         ],
       },

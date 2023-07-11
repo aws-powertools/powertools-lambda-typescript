@@ -2,14 +2,12 @@ import { readFileSync } from 'node:fs';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
-import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
 
 const logger = new Logger({
   logLevel: 'DEBUG',
 });
 const metrics = new Metrics();
 const tracer = new Tracer();
-new SSMProvider();
 
 export const handler = (): void => {
   // Check that the packages version matches the expected one

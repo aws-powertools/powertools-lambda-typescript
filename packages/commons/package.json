@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",
@@ -47,9 +47,9 @@
     "nodejs"
   ],
   "devDependencies": {
-    "@aws-sdk/client-lambda": "^3.360.0",
-    "@aws-sdk/client-dynamodb": "^3.360.0",
     "@aws-sdk/client-appconfigdata": "^3.360.0",
+    "@aws-sdk/client-dynamodb": "^3.360.0",
+    "@aws-sdk/client-lambda": "^3.360.0",
     "@aws-sdk/client-secrets-manager": "^3.360.0",
     "@aws-sdk/client-ssm": "^3.360.0",
     "@aws-sdk/util-utf8-node": "^3.259.0"

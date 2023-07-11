@@ -1,6 +1,9 @@
 import { IdempotencyHandler } from '../IdempotencyHandler';
 import { IdempotencyConfig } from '../IdempotencyConfig';
-import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
+import {
+  cleanupMiddlewares,
+  IDEMPOTENCY_KEY,
+} from '@aws-lambda-powertools/commons/lib/middleware';
 import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
@@ -9,6 +12,7 @@ import {
 import { IdempotencyRecord } from '../persistence';
 import { MAX_RETRIES } from '../constants';
 import type { IdempotencyLambdaHandlerOptions } from '../types';
+import type { BasePersistenceLayerInterface } from '../persistence';
 import {
   MiddlewareLikeObj,
   MiddyLikeRequest,
@@ -16,26 +20,79 @@ import {
 } from '@aws-lambda-powertools/commons';
 
 /**
+ * @internal
+ * Utility function to get the persistence store from the request internal storage
+ *
+ * @param request The Middy request object
+ * @returns The persistence store from the request internal
+ */
+const getPersistenceStoreFromRequestInternal = (
+  request: MiddyLikeRequest
+): BasePersistenceLayerInterface => {
+  const persistenceStore = request.internal[
+    `${IDEMPOTENCY_KEY}.idempotencyPersistenceStore`
+  ] as BasePersistenceLayerInterface;
+
+  return persistenceStore;
+};
+
+/**
+ * @internal
+ * Utility function to set the persistence store in the request internal storage
+ *
+ * @param request The Middy request object
+ * @param persistenceStore The persistence store to set in the request internal
+ */
+const setPersistenceStoreInRequestInternal = (
+  request: MiddyLikeRequest,
+  persistenceStore: BasePersistenceLayerInterface
+): void => {
+  request.internal[`${IDEMPOTENCY_KEY}.idempotencyPersistenceStore`] =
+    persistenceStore;
+};
+
+/**
+ * @internal
+ * Utility function to set a flag in the request internal storage to skip the idempotency middleware
+ * This is used to skip the idempotency middleware when the idempotency key is not present in the payload
+ * or when idempotency is disabled
+ *
+ * @param request The Middy request object
+ */
+const setIdempotencySkipFlag = (request: MiddyLikeRequest): void => {
+  request.internal[`${IDEMPOTENCY_KEY}.skip`] = true;
+};
+
+/**
+ * @internal
+ * Utility function to get the idempotency key from the request internal storage
+ * and determine if the request should skip the idempotency middleware
+ *
+ * @param request The Middy request object
+ * @returns Whether the idempotency middleware should be skipped
+ */
+const shouldSkipIdempotency = (request: MiddyLikeRequest): boolean => {
+  return request.internal[`${IDEMPOTENCY_KEY}.skip`] === true;
+};
+
+/**
  * A middy middleware to make your Lambda Handler idempotent.
  *
  * @example
  * ```typescript
- * import {
- *   makeHandlerIdempotent,
- *   DynamoDBPersistenceLayer,
- * } from '@aws-lambda-powertools/idempotency';
+ * import { makeHandlerIdempotent } from '@aws-lambda-powertools/idempotency/middleware';
+ * import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
  * import middy from '@middy/core';
  *
- * const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer({
- *   tableName: 'idempotencyTable',
+ * const persistenceStore = new DynamoDBPersistenceLayer({
+ *  tableName: 'idempotencyTable',
  * });
  *
- * const lambdaHandler = async (_event: unknown, _context: unknown) => {
- *   //...
- * };
- *
- * export const handler = middy(lambdaHandler)
- *  .use(makeHandlerIdempotent({ persistenceStore: dynamoDBPersistenceLayer }));
+ * export const handler = middy(
+ *   async (_event: unknown, _context: unknown): Promise<void> => {
+ *     // your code goes here
+ *   }
+ * ).use(makeHandlerIdempotent({ persistenceStore: dynamoDBPersistenceLayer }));
  * ```
  *
  * @param options - Options for the idempotency middleware
@@ -43,17 +100,6 @@ import {
 const makeHandlerIdempotent = (
   options: IdempotencyLambdaHandlerOptions
 ): MiddlewareLikeObj => {
-  const idempotencyConfig = options.config
-    ? options.config
-    : new IdempotencyConfig({});
-  const persistenceStore = options.persistenceStore;
-  persistenceStore.configure({
-    config: idempotencyConfig,
-  });
-
-  // keep the flag for after and onError checks
-  let shouldSkipIdempotency = false;
-
   /**
    * Function called before the handler is executed.
    *
@@ -76,7 +122,16 @@ const makeHandlerIdempotent = (
     request: MiddyLikeRequest,
     retryNo = 0
   ): Promise<unknown | void> => {
+    const idempotencyConfig = options.config
+      ? options.config
+      : new IdempotencyConfig({});
+    const persistenceStore = options.persistenceStore;
+    persistenceStore.configure({
+      config: idempotencyConfig,
+    });
+
     if (
+      !idempotencyConfig.isEnabled() ||
       IdempotencyHandler.shouldSkipIdempotency(
         idempotencyConfig.eventKeyJmesPath,
         idempotencyConfig.throwOnNoIdempotencyKey,
@@ -84,10 +139,17 @@ const makeHandlerIdempotent = (
       )
     ) {
       // set the flag to skip checks in after and onError
-      shouldSkipIdempotency = true;
+      setIdempotencySkipFlag(request);
 
       return;
     }
+
+    /**
+     * Store the persistence store in the request internal so that it can be
+     * used in after and onError
+     */
+    setPersistenceStoreInRequestInternal(request, persistenceStore);
+
     try {
       await persistenceStore.saveInProgress(
         request.event as JSONValue,
@@ -129,6 +191,7 @@ const makeHandlerIdempotent = (
       }
     }
   };
+
   /**
    * Function called after the handler has executed successfully.
    *
@@ -139,9 +202,10 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const after = async (request: MiddyLikeRequest): Promise<void> => {
-    if (shouldSkipIdempotency) {
+    if (shouldSkipIdempotency(request)) {
       return;
     }
+    const persistenceStore = getPersistenceStoreFromRequestInternal(request);
     try {
       await persistenceStore.saveSuccess(
         request.event as JSONValue,
@@ -164,9 +228,10 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const onError = async (request: MiddyLikeRequest): Promise<void> => {
-    if (shouldSkipIdempotency) {
+    if (shouldSkipIdempotency(request)) {
       return;
     }
+    const persistenceStore = getPersistenceStoreFromRequestInternal(request);
     try {
       await persistenceStore.deleteRecord(request.event as JSONValue);
     } catch (error) {
@@ -177,19 +242,11 @@ const makeHandlerIdempotent = (
     }
   };
 
-  if (idempotencyConfig.isEnabled()) {
-    return {
-      before,
-      after,
-      onError,
-    };
-  } else {
-    return {
-      before: () => {
-        return undefined;
-      },
-    };
-  }
+  return {
+    before,
+    after,
+    onError,
+  };
 };
 
 export { makeHandlerIdempotent };

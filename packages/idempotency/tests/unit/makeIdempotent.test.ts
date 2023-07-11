@@ -1,5 +1,5 @@
 /**
- * Test Function Wrapper
+ * Test makeIdempotent Function Wrapper
  *
  * @group unit/idempotency/makeIdempotent
  */

@@ -19,7 +19,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        package: [logger, metrics, tracer, parameters]
+        package: [logger, metrics, tracer, parameters, idempotency]
         version: [14, 16, 18]
       fail-fast: false
     steps:

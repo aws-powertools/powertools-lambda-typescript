@@ -753,9 +753,9 @@ This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`
     }
     ```
 
-### Customizing boto configuration
+### Customizing AWS SDK configuration
 
-The **`clientConfig`** and **`awsSdkV3Client`** parameters enable you to pass in custom configurations or your own [DynamoDBClient](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/dynamodbclient.html){target="_blank"} when constructing the persistence store.
+The **`clientConfig`** and **`awsSdkV3Client`** parameters enable you to pass in custom configurations or your own [DynamoDBClient](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/){target="_blank"} when constructing the persistence store.
 
 === "Passing specific configuration"
 

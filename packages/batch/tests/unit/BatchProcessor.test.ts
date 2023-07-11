@@ -308,7 +308,7 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing DynamoDB records with failures', async () => {
+    test('Batch processing DynamoDB records with some failures', async () => {
       // Prepare
       const firstRecord = dynamodbEventFactory('failure');
       const secondRecord = dynamodbEventFactory('success');
@@ -373,7 +373,7 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing DynamoDB records with failures', async () => {
+    test('Batch processing DynamoDB records with some failures', async () => {
       // Prepare
       const firstRecord = dynamodbEventFactory('failure');
       const secondRecord = dynamodbEventFactory('success');

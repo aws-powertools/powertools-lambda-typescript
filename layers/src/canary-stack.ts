@@ -50,7 +50,6 @@ export class CanaryStack extends Stack {
           '@aws-lambda-powertools/logger',
           '@aws-lambda-powertools/metrics',
           '@aws-lambda-powertools/tracer',
-          '@aws-lambda-powertools/parameters',
           '@aws-lambda-powertools/commons',
         ],
       },

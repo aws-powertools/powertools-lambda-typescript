@@ -3,6 +3,7 @@
  *
  * @group unit/batch/class/batchprocessor
  */
+
 import { BatchProcessingError, BatchProcessor, EventType } from '../../src';
 import {
   sqsEventFactory,

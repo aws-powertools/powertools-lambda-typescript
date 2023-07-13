@@ -5,6 +5,13 @@ import {
   PartialItemFailureResponse,
 } from '.';
 
+/**
+ * Higher level function to handle batch event processing
+ * @param event Lambda's original event
+ * @param recordHandler Callable function to process each record from the batch
+ * @param processor Batch processor to handle partial failure cases
+ * @returns Lambda Partial Batch Response
+ */
 const processPartialResponse = async (
   event: { Records: BaseRecord[] },
   recordHandler: CallableFunction,

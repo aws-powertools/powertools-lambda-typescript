@@ -4,8 +4,6 @@
  * @group unit/batch/function/processpartialresponse
  */
 
-/* eslint-disable  @typescript-eslint/no-explicit-any */
-
 import {
   Context,
   DynamoDBStreamEvent,
@@ -173,14 +171,16 @@ describe('Function: processPartialResponse()', () => {
       const eventTypes: string = Object.values(EventType).toString();
 
       const handler = async (
-        event: any,
+        event: SQSEvent,
         _context: Context
       ): Promise<PartialItemFailureResponse> => {
         return await processPartialResponse(event, sqsRecordHandler, processor);
       };
 
       // Act & Assess
-      await expect(handler(event, context)).rejects.toThrowError(
+      await expect(
+        handler(event as unknown as SQSEvent, context)
+      ).rejects.toThrowError(
         new Error(
           'Failed to convert event to record batch for processing.\nPlease ensure batch event is a valid ' +
             eventTypes +

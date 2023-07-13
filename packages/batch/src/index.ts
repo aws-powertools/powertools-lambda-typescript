@@ -5,3 +5,4 @@ export * from './BasePartialProcessor';
 export * from './BasePartialBatchProcessor';
 export * from './BatchProcessor';
 export * from './processPartialResponse';
+export * from './SqsFifoPartialProcessor';

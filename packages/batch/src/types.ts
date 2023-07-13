@@ -17,8 +17,8 @@ type SuccessResponse = [string, ResultType, EventSourceDataClassTypes];
 
 type FailureResponse = [string, string, EventSourceDataClassTypes];
 
-type ItemIdentifier = { [key: string]: string };
-type BatchResponse = { [key: string]: ItemIdentifier[] };
+type PartialItemFailures = { itemIdentifier: string };
+type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
 
 export type {
   BaseRecord,
@@ -26,6 +26,6 @@ export type {
   ResultType,
   SuccessResponse,
   FailureResponse,
-  ItemIdentifier,
-  BatchResponse,
+  PartialItemFailures,
+  PartialItemFailureResponse,
 };

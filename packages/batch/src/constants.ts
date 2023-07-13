@@ -2,7 +2,7 @@
  * Constants for batch processor classes
  */
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
-import type { BatchResponse, EventSourceDataClassTypes } from '.';
+import type { PartialItemFailureResponse, EventSourceDataClassTypes } from '.';
 
 const EventType = {
   SQS: 'SQS',
@@ -10,7 +10,7 @@ const EventType = {
   DynamoDBStreams: 'DynamoDBStreams',
 } as const;
 
-const DEFAULT_RESPONSE: BatchResponse = {
+const DEFAULT_RESPONSE: PartialItemFailureResponse = {
   batchItemFailures: [],
 };
 

@@ -6,9 +6,9 @@
 
 import { BatchProcessingError, BatchProcessor, EventType } from '../../src';
 import {
-  sqsEventFactory,
-  kinesisEventFactory,
-  dynamodbEventFactory,
+  sqsRecordFactory,
+  kinesisRecordFactory,
+  dynamodbRecordFactory,
 } from '../../tests/helpers/factories';
 import {
   sqsRecordHandler,
@@ -35,8 +35,8 @@ describe('Class: BatchProcessor', () => {
   describe('Synchronously processing SQS Records', () => {
     test('Batch processing SQS records with no failures', async () => {
       // Prepare
-      const firstRecord = sqsEventFactory('success');
-      const secondRecord = sqsEventFactory('success');
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('success');
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.SQS);
 
@@ -53,9 +53,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing SQS records with some failures', async () => {
       // Prepare
-      const firstRecord = sqsEventFactory('failure');
-      const secondRecord = sqsEventFactory('success');
-      const thirdRecord = sqsEventFactory('fail');
+      const firstRecord = sqsRecordFactory('failure');
+      const secondRecord = sqsRecordFactory('success');
+      const thirdRecord = sqsRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.SQS);
 
@@ -80,9 +80,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing SQS records with all failures', async () => {
       // Prepare
-      const firstRecord = sqsEventFactory('failure');
-      const secondRecord = sqsEventFactory('failure');
-      const thirdRecord = sqsEventFactory('fail');
+      const firstRecord = sqsRecordFactory('failure');
+      const secondRecord = sqsRecordFactory('failure');
+      const thirdRecord = sqsRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.SQS);
@@ -98,8 +98,8 @@ describe('Class: BatchProcessor', () => {
   describe('Asynchronously processing SQS Records', () => {
     test('Batch processing SQS records with no failures', async () => {
       // Prepare
-      const firstRecord = sqsEventFactory('success');
-      const secondRecord = sqsEventFactory('success');
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('success');
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.SQS);
 
@@ -116,9 +116,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing SQS records with some failures', async () => {
       // Prepare
-      const firstRecord = sqsEventFactory('failure');
-      const secondRecord = sqsEventFactory('success');
-      const thirdRecord = sqsEventFactory('fail');
+      const firstRecord = sqsRecordFactory('failure');
+      const secondRecord = sqsRecordFactory('success');
+      const thirdRecord = sqsRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.SQS);
 
@@ -143,9 +143,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing SQS records with all failures', async () => {
       // Prepare
-      const firstRecord = sqsEventFactory('failure');
-      const secondRecord = sqsEventFactory('failure');
-      const thirdRecord = sqsEventFactory('fail');
+      const firstRecord = sqsRecordFactory('failure');
+      const secondRecord = sqsRecordFactory('failure');
+      const thirdRecord = sqsRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.SQS);
@@ -163,8 +163,8 @@ describe('Class: BatchProcessor', () => {
   describe('Synchronously processing Kinesis Records', () => {
     test('Batch processing Kinesis records with no failures', async () => {
       // Prepare
-      const firstRecord = kinesisEventFactory('success');
-      const secondRecord = kinesisEventFactory('success');
+      const firstRecord = kinesisRecordFactory('success');
+      const secondRecord = kinesisRecordFactory('success');
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.KinesisDataStreams);
 
@@ -181,9 +181,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing Kinesis records with some failures', async () => {
       // Prepare
-      const firstRecord = kinesisEventFactory('failure');
-      const secondRecord = kinesisEventFactory('success');
-      const thirdRecord = kinesisEventFactory('fail');
+      const firstRecord = kinesisRecordFactory('failure');
+      const secondRecord = kinesisRecordFactory('success');
+      const thirdRecord = kinesisRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.KinesisDataStreams);
 
@@ -207,9 +207,9 @@ describe('Class: BatchProcessor', () => {
     });
 
     test('Batch processing Kinesis records with all failures', async () => {
-      const firstRecord = kinesisEventFactory('failure');
-      const secondRecord = kinesisEventFactory('failure');
-      const thirdRecord = kinesisEventFactory('fail');
+      const firstRecord = kinesisRecordFactory('failure');
+      const secondRecord = kinesisRecordFactory('failure');
+      const thirdRecord = kinesisRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.KinesisDataStreams);
@@ -227,8 +227,8 @@ describe('Class: BatchProcessor', () => {
   describe('Asynchronously processing Kinesis Records', () => {
     test('Batch processing Kinesis records with no failures', async () => {
       // Prepare
-      const firstRecord = kinesisEventFactory('success');
-      const secondRecord = kinesisEventFactory('success');
+      const firstRecord = kinesisRecordFactory('success');
+      const secondRecord = kinesisRecordFactory('success');
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.KinesisDataStreams);
 
@@ -245,9 +245,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing Kinesis records with some failures', async () => {
       // Prepare
-      const firstRecord = kinesisEventFactory('failure');
-      const secondRecord = kinesisEventFactory('success');
-      const thirdRecord = kinesisEventFactory('fail');
+      const firstRecord = kinesisRecordFactory('failure');
+      const secondRecord = kinesisRecordFactory('success');
+      const thirdRecord = kinesisRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.KinesisDataStreams);
 
@@ -272,9 +272,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing Kinesis records with all failures', async () => {
       // Prepare
-      const firstRecord = kinesisEventFactory('failure');
-      const secondRecord = kinesisEventFactory('failure');
-      const thirdRecord = kinesisEventFactory('fail');
+      const firstRecord = kinesisRecordFactory('failure');
+      const secondRecord = kinesisRecordFactory('failure');
+      const thirdRecord = kinesisRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.KinesisDataStreams);
@@ -292,8 +292,8 @@ describe('Class: BatchProcessor', () => {
   describe('Synchronously processing DynamoDB Records', () => {
     test('Batch processing DynamoDB records with no failures', async () => {
       // Prepare
-      const firstRecord = dynamodbEventFactory('success');
-      const secondRecord = dynamodbEventFactory('success');
+      const firstRecord = dynamodbRecordFactory('success');
+      const secondRecord = dynamodbRecordFactory('success');
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
@@ -308,11 +308,11 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing DynamoDB records with failures', async () => {
+    test('Batch processing DynamoDB records with some failures', async () => {
       // Prepare
-      const firstRecord = dynamodbEventFactory('failure');
-      const secondRecord = dynamodbEventFactory('success');
-      const thirdRecord = dynamodbEventFactory('fail');
+      const firstRecord = dynamodbRecordFactory('failure');
+      const secondRecord = dynamodbRecordFactory('success');
+      const thirdRecord = dynamodbRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
@@ -337,9 +337,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing DynamoDB records with all failures', async () => {
       // Prepare
-      const firstRecord = dynamodbEventFactory('failure');
-      const secondRecord = dynamodbEventFactory('failure');
-      const thirdRecord = dynamodbEventFactory('fail');
+      const firstRecord = dynamodbRecordFactory('failure');
+      const secondRecord = dynamodbRecordFactory('failure');
+      const thirdRecord = dynamodbRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.DynamoDBStreams);
@@ -357,8 +357,8 @@ describe('Class: BatchProcessor', () => {
   describe('Asynchronously processing DynamoDB Records', () => {
     test('Batch processing DynamoDB records with no failures', async () => {
       // Prepare
-      const firstRecord = dynamodbEventFactory('success');
-      const secondRecord = dynamodbEventFactory('success');
+      const firstRecord = dynamodbRecordFactory('success');
+      const secondRecord = dynamodbRecordFactory('success');
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
@@ -373,11 +373,11 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing DynamoDB records with failures', async () => {
+    test('Batch processing DynamoDB records with some failures', async () => {
       // Prepare
-      const firstRecord = dynamodbEventFactory('failure');
-      const secondRecord = dynamodbEventFactory('success');
-      const thirdRecord = dynamodbEventFactory('fail');
+      const firstRecord = dynamodbRecordFactory('failure');
+      const secondRecord = dynamodbRecordFactory('success');
+      const thirdRecord = dynamodbRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
@@ -402,9 +402,9 @@ describe('Class: BatchProcessor', () => {
 
     test('Batch processing DynamoDB records with all failures', async () => {
       // Prepare
-      const firstRecord = dynamodbEventFactory('failure');
-      const secondRecord = dynamodbEventFactory('failure');
-      const thirdRecord = dynamodbEventFactory('fail');
+      const firstRecord = dynamodbRecordFactory('failure');
+      const secondRecord = dynamodbRecordFactory('failure');
+      const thirdRecord = dynamodbRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
       const processor = new BatchProcessor(EventType.DynamoDBStreams);

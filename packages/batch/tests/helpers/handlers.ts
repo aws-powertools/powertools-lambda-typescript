@@ -1,4 +1,5 @@
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
+import { BatchProcessingOptions } from '../../src';
 
 const sqsRecordHandler = (record: SQSRecord): string => {
   const body = record.body;
@@ -58,6 +59,18 @@ const asyncDynamodbRecordHandler = async (
   return body;
 };
 
+const handlerWithContext = (
+  record: SQSRecord,
+  options: BatchProcessingOptions
+): string => {
+  const context = options.context;
+  if (context.getRemainingTimeInMillis() == 0) {
+    throw Error('No time remaining.');
+  }
+
+  return record.body;
+};
+
 export {
   sqsRecordHandler,
   asyncSqsRecordHandler,
@@ -65,4 +78,5 @@ export {
   asyncKinesisRecordHandler,
   dynamodbRecordHandler,
   asyncDynamodbRecordHandler,
+  handlerWithContext,
 };

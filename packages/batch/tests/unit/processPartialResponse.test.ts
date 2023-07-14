@@ -11,6 +11,7 @@ import {
   SQSEvent,
 } from 'aws-lambda';
 import {
+  BatchProcessingOptions,
   BatchProcessor,
   EventType,
   PartialItemFailureResponse,
@@ -24,6 +25,7 @@ import {
 import {
   asyncSqsRecordHandler,
   dynamodbRecordHandler,
+  handlerWithContext,
   kinesisRecordHandler,
   sqsRecordHandler,
 } from '../../tests/helpers/handlers';
@@ -33,6 +35,7 @@ import { Custom as dummyEvent } from '../../../commons/src/samples/resources/eve
 describe('Function: processPartialResponse()', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const context = dummyContext;
+  const options: BatchProcessingOptions = { context: dummyContext };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -79,6 +82,27 @@ describe('Function: processPartialResponse()', () => {
         batch,
         asyncSqsRecordHandler,
         processor
+      );
+
+      // Assess
+      expect(ret).toStrictEqual({ batchItemFailures: [] });
+    });
+
+    test('Process partial response function call with context provided', async () => {
+      // Prepare
+      const records = [
+        sqsRecordFactory('success'),
+        sqsRecordFactory('success'),
+      ];
+      const batch = { Records: records };
+      const processor = new BatchProcessor(EventType.SQS);
+
+      // Act
+      const ret = await processPartialResponse(
+        batch,
+        handlerWithContext,
+        processor,
+        options
       );
 
       // Assess
@@ -187,6 +211,36 @@ describe('Function: processPartialResponse()', () => {
             ' event.'
         )
       );
+    });
+
+    test('Process partial response through handler with context provided', async () => {
+      // Prepare
+      const records = [
+        sqsRecordFactory('success'),
+        sqsRecordFactory('success'),
+      ];
+      const processor = new BatchProcessor(EventType.SQS);
+      const event: SQSEvent = { Records: records };
+
+      const handler = async (
+        event: SQSEvent,
+        _context: Context
+      ): Promise<PartialItemFailureResponse> => {
+        const options: BatchProcessingOptions = { context: _context };
+
+        return await processPartialResponse(
+          event,
+          handlerWithContext,
+          processor,
+          options
+        );
+      };
+
+      // Act
+      const result = await handler(event, context);
+
+      // Assess
+      expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
 });

@@ -4,7 +4,12 @@
  * @group unit/batch/class/batchprocessor
  */
 
-import { BatchProcessingError, BatchProcessor, EventType } from '../../src';
+import {
+  BatchProcessingError,
+  BatchProcessingOptions,
+  BatchProcessor,
+  EventType,
+} from '../../src';
 import {
   sqsRecordFactory,
   kinesisRecordFactory,
@@ -17,10 +22,13 @@ import {
   asyncKinesisRecordHandler,
   dynamodbRecordHandler,
   asyncDynamodbRecordHandler,
+  handlerWithContext,
 } from '../../tests/helpers/handlers';
+import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
 
 describe('Class: BatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
+  const options: BatchProcessingOptions = { context: dummyContext };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -416,6 +424,44 @@ describe('Class: BatchProcessor', () => {
       await expect(processor.process()).rejects.toThrowError(
         BatchProcessingError
       );
+    });
+  });
+
+  describe('Batch processing with Lambda context', () => {
+    test('Batch processing when context is provided and handler accepts', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('success');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS);
+
+      // Act
+      processor.register(records, handlerWithContext, options);
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['success', firstRecord.body, firstRecord],
+        ['success', secondRecord.body, secondRecord],
+      ]);
+    });
+
+    test('Batch processing when context is provided and handler does not accept', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('success');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS);
+
+      // Act
+      processor.register(records, sqsRecordHandler, options);
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['success', firstRecord.body, firstRecord],
+        ['success', secondRecord.body, secondRecord],
+      ]);
     });
   });
 });

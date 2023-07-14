@@ -1,9 +1,17 @@
 /**
  * Types for batch processing utility
  */
-import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
+import {
+  Context,
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+} from 'aws-lambda';
 
-// types from base.py
+type BatchProcessingOptions = {
+  context: Context;
+};
+
 type EventSourceDataClassTypes =
   | SQSRecord
   | KinesisStreamRecord
@@ -21,6 +29,7 @@ type PartialItemFailures = { itemIdentifier: string };
 type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
 
 export type {
+  BatchProcessingOptions,
   BaseRecord,
   EventSourceDataClassTypes,
   ResultType,

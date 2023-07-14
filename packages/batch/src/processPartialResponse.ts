@@ -1,6 +1,7 @@
 import {
   BasePartialBatchProcessor,
   BaseRecord,
+  BatchProcessingOptions,
   EventType,
   PartialItemFailureResponse,
 } from '.';
@@ -15,7 +16,8 @@ import {
 const processPartialResponse = async (
   event: { Records: BaseRecord[] },
   recordHandler: CallableFunction,
-  processor: BasePartialBatchProcessor
+  processor: BasePartialBatchProcessor,
+  options?: BatchProcessingOptions
 ): Promise<PartialItemFailureResponse> => {
   if (!event.Records) {
     const eventTypes: string = Object.values(EventType).toString();
@@ -26,9 +28,8 @@ const processPartialResponse = async (
     );
   }
 
-  const records = event['Records'];
+  processor.register(event.Records, recordHandler, options);
 
-  processor.register(records, recordHandler);
   await processor.process();
 
   return processor.response();

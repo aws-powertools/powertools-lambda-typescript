@@ -3,6 +3,7 @@
  */
 import {
   BaseRecord,
+  BatchProcessingOptions,
   EventSourceDataClassTypes,
   FailureResponse,
   ResultType,
@@ -15,6 +16,8 @@ abstract class BasePartialProcessor {
   public failureMessages: EventSourceDataClassTypes[];
 
   public handler: CallableFunction;
+
+  public options?: BatchProcessingOptions;
 
   public records: BaseRecord[];
 
@@ -92,10 +95,15 @@ abstract class BasePartialProcessor {
    */
   public register(
     records: BaseRecord[],
-    handler: CallableFunction
+    handler: CallableFunction,
+    options?: BatchProcessingOptions
   ): BasePartialProcessor {
     this.records = records;
     this.handler = handler;
+
+    if (options) {
+      this.options = options;
+    }
 
     return this;
   }

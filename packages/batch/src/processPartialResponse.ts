@@ -28,13 +28,7 @@ const processPartialResponse = async (
     );
   }
 
-  const records = event['Records'];
-
-  if (options) {
-    processor.register(records, recordHandler, options);
-  } else {
-    processor.register(records, recordHandler);
-  }
+  processor.register(event.Records, recordHandler, options);
 
   await processor.process();
 

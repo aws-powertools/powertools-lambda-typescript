@@ -64,8 +64,13 @@ const handlerWithContext = (
   options: BatchProcessingOptions
 ): string => {
   const context = options.context;
-  if (context.getRemainingTimeInMillis() == 0) {
-    throw Error('No time remaining.');
+
+  try {
+    if (context.getRemainingTimeInMillis() == 0) {
+      throw Error('No time remaining.');
+    }
+  } catch (e) {
+    throw Error('Context possibly malformed. Displaying context:\n' + context);
   }
 
   return record.body;

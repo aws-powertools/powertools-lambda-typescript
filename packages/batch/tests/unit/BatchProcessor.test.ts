@@ -25,6 +25,7 @@ import {
   handlerWithContext,
 } from '../../tests/helpers/handlers';
 import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
+import { Context } from 'aws-lambda';
 
 describe('Class: BatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -462,6 +463,22 @@ describe('Class: BatchProcessor', () => {
         ['success', firstRecord.body, firstRecord],
         ['success', secondRecord.body, secondRecord],
       ]);
+    });
+
+    test('Batch processing when malformed context is provided and handler attempts to use', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('success');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS);
+      const badContext = { foo: 'bar' };
+      const badOptions = { context: badContext as unknown as Context };
+
+      // Act
+      processor.register(records, handlerWithContext, badOptions);
+      await expect(processor.process()).rejects.toThrowError(
+        BatchProcessingError
+      );
     });
   });
 });

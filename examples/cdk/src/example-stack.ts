@@ -8,6 +8,7 @@ import {
 import { Runtime, Tracing, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 const commonProps: Partial<NodejsFunctionProps> = {
   runtime: Runtime.NODEJS_18_X,
@@ -51,9 +52,14 @@ export class CdkAppStack extends Stack {
         'powertools-layer',
         `arn:aws:lambda:${
           Stack.of(this).region
-        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:6`
+        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:16`
       )
     );
+
+    new StringParameter(this, 'enrichment', {
+      parameterName: '/app/enrichment',
+      stringValue: 'This value is fetched from SSM Parameter Store',
+    });
 
     const putItemFn = new NodejsFunction(this, 'put-item-fn', {
       ...commonProps,

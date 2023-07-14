@@ -26,7 +26,7 @@ import { default as request } from 'phin';
  */
 
 class Lambda implements LambdaInterface {
-  @tracer.captureMethod()
+  @tracer.captureMethod(null, { captureReturn: false })
   public async getUuid(): Promise<string> {
     // Request a sample random uuid from a webservice
     const res = await request<{ uuid: string }>({

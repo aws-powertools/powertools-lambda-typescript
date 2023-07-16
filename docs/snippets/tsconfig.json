@@ -35,26 +35,19 @@
       "@aws-lambda-powertools/idempotency/persistence": [
         "../../packages/idempotency/lib/persistence"
       ],
-      "@aws-lambda-powertools/idempotency": [
-        "../../packages/idempotency/lib"
-      ],
+      "@aws-lambda-powertools/idempotency": ["../../packages/idempotency/lib"],
       "@aws-lambda-powertools/idempotency/middleware": [
         "../../packages/idempotency/lib/middleware"
-      ]
-    },
+      ],
+      "@aws-lambda-powertools/batch": ["../../packages/batch/lib"]
+    }
   },
-  "exclude": [
-    "./node_modules"
-  ],
+  "exclude": ["./node_modules"],
   "watchOptions": {
     "watchFile": "useFsEvents",
     "watchDirectory": "useFsEvents",
     "fallbackPolling": "dynamicPriority"
   },
-  "lib": [
-    "ES2020"
-  ],
-  "types": [
-    "node"
-  ]
+  "lib": ["ES2020"],
+  "types": ["node"]
 }

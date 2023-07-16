@@ -1,18 +1,20 @@
+import type {
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+} from 'aws-lambda';
+import { BasePartialProcessor } from './BasePartialProcessor';
+import { DATA_CLASS_MAPPING, DEFAULT_RESPONSE, EventType } from './constants';
+import { BatchProcessingError } from './errors';
+import type {
+  EventSourceDataClassTypes,
+  PartialItemFailureResponse,
+  PartialItemFailures,
+} from './types';
+
 /**
  * Process batch and partially report failed items
  */
-import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
-import {
-  BasePartialProcessor,
-  BatchProcessingError,
-  DATA_CLASS_MAPPING,
-  DEFAULT_RESPONSE,
-  EventSourceDataClassTypes,
-  EventType,
-  PartialItemFailures,
-  PartialItemFailureResponse,
-} from '.';
-
 abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public COLLECTOR_MAPPING;
 
@@ -124,13 +126,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * @returns true if any records resulted in exception
    */
   public hasMessagesToReport(): boolean {
-    if (this.failureMessages.length != 0) {
-      return true;
-    }
-
-    // console.debug('All ' + this.successMessages.length + ' records successfully processed');
-
-    return false;
+    return this.failureMessages.length != 0;
   }
 
   /**

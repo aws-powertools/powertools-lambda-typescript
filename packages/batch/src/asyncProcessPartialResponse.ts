@@ -13,12 +13,12 @@ import type {
  * @param processor Batch processor to handle partial failure cases
  * @returns Lambda Partial Batch Response
  */
-const processPartialResponse = (
+const asyncProcessPartialResponse = async (
   event: { Records: BaseRecord[] },
   recordHandler: CallableFunction,
   processor: BasePartialBatchProcessor,
   options?: BatchProcessingOptions
-): PartialItemFailureResponse => {
+): Promise<PartialItemFailureResponse> => {
   if (!event.Records) {
     const eventTypes: string = Object.values(EventType).toString();
     throw new Error(
@@ -30,9 +30,9 @@ const processPartialResponse = (
 
   processor.register(event.Records, recordHandler, options);
 
-  processor.process();
+  await processor.processAsync();
 
   return processor.response();
 };
 
-export { processPartialResponse };
+export { asyncProcessPartialResponse };

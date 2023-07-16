@@ -3,13 +3,9 @@
  *
  * @group unit/batch/class/sqsfifobatchprocessor
  */
-
 import { SqsFifoPartialProcessor, processPartialResponse } from '../../src';
-import { sqsRecordFactory } from '../../tests/helpers/factories';
-import {
-  asyncSqsRecordHandler,
-  sqsRecordHandler,
-} from '../../tests/helpers/handlers';
+import { sqsRecordFactory } from '../helpers/factories';
+import { sqsRecordHandler } from '../helpers/handlers';
 
 describe('Class: SqsFifoBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -25,7 +21,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
   });
 
   describe('Synchronous SQS FIFO batch processing', () => {
-    test('SQS FIFO Batch processor with no failures', async () => {
+    test('SQS FIFO Batch processor with no failures', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
@@ -33,17 +29,13 @@ describe('Class: SqsFifoBatchProcessor', () => {
       const processor = new SqsFifoPartialProcessor();
 
       // Act
-      const result = await processPartialResponse(
-        event,
-        sqsRecordHandler,
-        processor
-      );
+      const result = processPartialResponse(event, sqsRecordHandler, processor);
 
       // Assess
       expect(result['batchItemFailures']).toStrictEqual([]);
     });
 
-    test('SQS FIFO Batch processor with failures', async () => {
+    test('SQS FIFO Batch processor with failures', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('fail');
@@ -52,11 +44,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
       const processor = new SqsFifoPartialProcessor();
 
       // Act
-      const result = await processPartialResponse(
-        event,
-        sqsRecordHandler,
-        processor
-      );
+      const result = processPartialResponse(event, sqsRecordHandler, processor);
 
       // Assess
       expect(result['batchItemFailures'].length).toBe(2);
@@ -69,8 +57,8 @@ describe('Class: SqsFifoBatchProcessor', () => {
     });
   });
 
-  describe('Asynchronous SQS FIFO batch processing', () => {
-    test('SQS FIFO Batch processor with no failures', async () => {
+  describe('hronous SQS FIFO batch processing', () => {
+    test('SQS FIFO Batch processor with no failures', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
@@ -78,17 +66,13 @@ describe('Class: SqsFifoBatchProcessor', () => {
       const processor = new SqsFifoPartialProcessor();
 
       // Act
-      const result = await processPartialResponse(
-        event,
-        asyncSqsRecordHandler,
-        processor
-      );
+      const result = processPartialResponse(event, sqsRecordHandler, processor);
 
       // Assess
       expect(result['batchItemFailures']).toStrictEqual([]);
     });
 
-    test('SQS FIFO Batch processor with failures', async () => {
+    test('SQS FIFO Batch processor with failures', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('fail');
@@ -97,11 +81,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
       const processor = new SqsFifoPartialProcessor();
 
       // Act
-      const result = await processPartialResponse(
-        event,
-        asyncSqsRecordHandler,
-        processor
-      );
+      const result = processPartialResponse(event, sqsRecordHandler, processor);
 
       // Assess
       expect(result['batchItemFailures'].length).toBe(2);

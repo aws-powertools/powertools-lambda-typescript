@@ -1,15 +1,15 @@
-/**
- * Abstract class for batch processors
- */
-import {
+import type {
   BaseRecord,
   BatchProcessingOptions,
   EventSourceDataClassTypes,
   FailureResponse,
   ResultType,
   SuccessResponse,
-} from '.';
+} from './types';
 
+/**
+ * Abstract class for batch processors.
+ */
 abstract class BasePartialProcessor {
   public exceptions: Error[];
 
@@ -35,6 +35,15 @@ abstract class BasePartialProcessor {
   }
 
   /**
+   * Process a record with an asyncronous handler
+   *
+   * @param record Record to be processed
+   */
+  public abstract asyncProcessRecord(
+    record: BaseRecord
+  ): Promise<SuccessResponse | FailureResponse>;
+
+  /**
    * Clean class instance after processing
    */
   public abstract clean(): void;
@@ -50,7 +59,6 @@ abstract class BasePartialProcessor {
     exception: Error
   ): FailureResponse {
     const entry: FailureResponse = ['fail', exception.message, record];
-    // console.debug('Record processing exception: ' + exception.message);
     this.exceptions.push(exception);
     this.failureMessages.push(record);
 
@@ -66,13 +74,45 @@ abstract class BasePartialProcessor {
    * Call instance's handler for each record
    * @returns List of processed records
    */
-  public async process(): Promise<(SuccessResponse | FailureResponse)[]> {
+  public process(): (SuccessResponse | FailureResponse)[] {
+    /**
+     * If this is an async processor, user should have called processAsync instead,
+     * so we call the method early to throw the error early thus failing fast.
+     */
+    if (this.constructor.name === 'AsyncBatchProcessor') {
+      this.processRecord(this.records[0]);
+    }
     this.prepare();
 
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
     for (const record of this.records) {
-      processedRecords.push(await this.processRecord(record));
+      processedRecords.push(this.processRecord(record));
     }
+
+    this.clean();
+
+    return processedRecords;
+  }
+
+  /**
+   * Call instance's handler for each record
+   * @returns List of processed records
+   */
+  public async processAsync(): Promise<(SuccessResponse | FailureResponse)[]> {
+    /**
+     * If this is an sync processor, user should have called process instead,
+     * so we call the method early to throw the error early thus failing fast.
+     */
+    if (this.constructor.name === 'BatchProcessor') {
+      await this.asyncProcessRecord(this.records[0]);
+    }
+    this.prepare();
+
+    const processingPromises: Promise<SuccessResponse | FailureResponse>[] =
+      this.records.map((record) => this.asyncProcessRecord(record));
+
+    const processedRecords: (SuccessResponse | FailureResponse)[] =
+      await Promise.all(processingPromises);
 
     this.clean();
 
@@ -85,7 +125,7 @@ abstract class BasePartialProcessor {
    */
   public abstract processRecord(
     record: BaseRecord
-  ): Promise<SuccessResponse | FailureResponse>;
+  ): SuccessResponse | FailureResponse;
 
   /**
    * Set class instance attributes before execution

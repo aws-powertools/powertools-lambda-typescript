@@ -1,5 +1,9 @@
-import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
-import { BatchProcessingOptions } from '../../src';
+import type {
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+} from 'aws-lambda';
+import type { BatchProcessingOptions } from '../../src/types';
 
 const sqsRecordHandler = (record: SQSRecord): string => {
   const body = record.body;

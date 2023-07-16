@@ -21,9 +21,9 @@ type RecordValue = unknown;
 type BaseRecord = { [key: string]: RecordValue } | EventSourceDataClassTypes;
 
 type ResultType = unknown;
-type SuccessResponse = [string, ResultType, EventSourceDataClassTypes];
+type SuccessResponse = ['success', ResultType, EventSourceDataClassTypes];
 
-type FailureResponse = [string, string, EventSourceDataClassTypes];
+type FailureResponse = ['fail', string, EventSourceDataClassTypes];
 
 type PartialItemFailures = { itemIdentifier: string };
 type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };

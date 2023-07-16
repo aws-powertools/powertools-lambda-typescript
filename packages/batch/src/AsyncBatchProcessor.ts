@@ -4,11 +4,18 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types';
 /**
  * Process native partial responses from SQS, Kinesis Data Streams, and DynamoDB
  */
-class BatchProcessor extends BasePartialBatchProcessor {
+class AsyncBatchProcessor extends BasePartialBatchProcessor {
   public async asyncProcessRecord(
-    _record: BaseRecord
+    record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
-    throw new Error('Not implemented. Use process() instead.');
+    try {
+      const data = this.toBatchType(record, this.eventType);
+      const result = await this.handler(data, this.options);
+
+      return this.successHandler(record, result);
+    } catch (error) {
+      return this.failureHandler(record, error as Error);
+    }
   }
 
   /**
@@ -16,16 +23,9 @@ class BatchProcessor extends BasePartialBatchProcessor {
    * @param record Batch record to be processed
    * @returns response of success or failure
    */
-  public processRecord(record: BaseRecord): SuccessResponse | FailureResponse {
-    try {
-      const data = this.toBatchType(record, this.eventType);
-      const result = this.handler(data, this.options);
-
-      return this.successHandler(record, result);
-    } catch (error) {
-      return this.failureHandler(record, error as Error);
-    }
+  public processRecord(_record: BaseRecord): SuccessResponse | FailureResponse {
+    throw new Error('Not implemented. Use processAsync() instead.');
   }
 }
 
-export { BatchProcessor };
+export { AsyncBatchProcessor };

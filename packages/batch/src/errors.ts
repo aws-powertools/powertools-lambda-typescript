@@ -1,8 +1,4 @@
 /**
- * Batch processing exceptions
- */
-
-/**
  * Base error type for batch processing
  * All errors thrown by major failures extend this base class
  */

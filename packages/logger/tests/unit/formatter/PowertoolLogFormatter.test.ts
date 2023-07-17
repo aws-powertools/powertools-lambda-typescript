@@ -307,6 +307,71 @@ describe('Class: PowertoolLogFormatter', () => {
 
       expect(shouldThrow).toThrowError(expect.any(URIError));
     });
+
+    test('when an error with cause of type Error is formatted, the cause key is included and formatted', () => {
+      // Prepare
+      const formatter = new PowertoolLogFormatter();
+      class ErrorWithCause extends Error {
+        public cause?: Error;
+        public constructor(message: string, options?: { cause: Error }) {
+          super(message);
+          this.cause = options?.cause;
+        }
+      }
+
+      // Act
+      const formattedURIError = formatter.formatError(
+        new ErrorWithCause('foo', { cause: new Error('bar') })
+      );
+
+      // Assess
+      expect(formattedURIError).toEqual({
+        location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
+        message: 'foo',
+        name: 'Error',
+        stack: expect.stringMatching(
+          /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+        cause: {
+          location: expect.stringMatching(
+            /PowertoolLogFormatter.test.ts:[0-9]+/
+          ),
+          message: 'bar',
+          name: 'Error',
+          stack: expect.stringMatching(
+            /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
+          ),
+        },
+      });
+    });
+
+    test('when an error with cause of type other than Error is formatted, the cause key is included as-is', () => {
+      // Prepare
+      const formatter = new PowertoolLogFormatter();
+      class ErrorWithCause extends Error {
+        public cause?: unknown;
+        public constructor(message: string, options?: { cause: unknown }) {
+          super(message);
+          this.cause = options?.cause;
+        }
+      }
+
+      // Act
+      const formattedURIError = formatter.formatError(
+        new ErrorWithCause('foo', { cause: 'bar' })
+      );
+
+      // Assess
+      expect(formattedURIError).toEqual({
+        location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
+        message: 'foo',
+        name: 'Error',
+        stack: expect.stringMatching(
+          /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+        cause: 'bar',
+      });
+    });
   });
 
   describe('Method: formatTimestamp', () => {

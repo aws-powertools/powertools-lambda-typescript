@@ -1,15 +1,15 @@
+import { getParameter } from '@aws-lambda-powertools/parameters/ssm';
+import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
-import { tableName } from './common/constants';
-import { logger, tracer, metrics } from './common/powertools';
-import { docClient } from './common/dynamodb-client';
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
-import { default as request } from 'phin';
 import type { Subsegment } from 'aws-xray-sdk-core';
-import { getParameter } from '@aws-lambda-powertools/parameters';
+import { tableName } from './common/constants';
+import { docClient } from './common/dynamodb-client';
+import { getUuid } from './common/getUuid';
+import { logger, metrics, tracer } from './common/powertools';
 
 /**
  *
@@ -60,12 +60,7 @@ export const handler = async (
     awsRequestId: context.awsRequestId,
   });
 
-  // Request a sample random uuid from a webservice
-  const res = await request<{ uuid: string }>({
-    url: 'https://httpbin.org/uuid',
-    parse: 'json',
-  });
-  const { uuid } = res.body;
+  const uuid = await getUuid();
 
   // Logger: Append uuid to each log statement
   logger.appendKeys({ uuid });

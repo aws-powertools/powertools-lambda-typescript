@@ -1,14 +1,14 @@
-import { Stack, StackProps, Duration } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import { Table, BillingMode, AttributeType } from 'aws-cdk-lib/aws-dynamodb';
+import { Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import {
   NodejsFunction,
   NodejsFunctionProps,
 } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime, Tracing, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { Construct } from 'constructs';
 
 const commonProps: Partial<NodejsFunctionProps> = {
   runtime: Runtime.NODEJS_18_X,
@@ -37,6 +37,8 @@ const commonProps: Partial<NodejsFunctionProps> = {
 export class CdkAppStack extends Stack {
   public constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    const uuidApi = new UuidApi(this, 'uuid-api');
 
     const table = new Table(this, 'Table', {
       billingMode: BillingMode.PAY_PER_REQUEST,
@@ -82,12 +84,20 @@ export class CdkAppStack extends Stack {
       entry: './functions/get-by-id.ts',
       handler: 'handler',
     });
+
+    uuidApi.apiUrlParam.grantRead(getByIdFn);
+    uuidApi.apiUrlParam.grantRead(putItemFn);
+    uuidApi.apiUrlParam.grantRead(getAllItemsFn);
+
     getByIdFn.addEnvironment('SAMPLE_TABLE', table.tableName);
     table.grantReadData(getByIdFn);
 
     const api = new RestApi(this, 'items-api', {
       restApiName: 'Items Service',
       description: 'This service serves items.',
+      deployOptions: {
+        tracingEnabled: true,
+      },
     });
 
     const itemPutIntegration = new LambdaIntegration(putItemFn);
@@ -99,5 +109,34 @@ export class CdkAppStack extends Stack {
     const item = api.root.addResource('{id}');
     const itemIntegration = new LambdaIntegration(getByIdFn);
     item.addMethod('GET', itemIntegration);
+  }
+}
+
+class UuidApi extends Construct {
+  public readonly apiUrlParam: StringParameter;
+  public constructor(scope: Construct, id: string) {
+    super(scope, id);
+
+    const uuidFn = new NodejsFunction(this, 'UuidFn', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './functions/uuid.ts',
+    });
+
+    const api = new RestApi(this, 'uuid-api', {
+      restApiName: 'UUID Service',
+      description: 'This service serves UUIDs.',
+      deployOptions: {
+        tracingEnabled: true,
+      },
+    });
+
+    const uuidIntegration = new LambdaIntegration(uuidFn);
+    const uuid = api.root.addResource('uuid');
+    uuid.addMethod('GET', uuidIntegration);
+
+    this.apiUrlParam = new StringParameter(this, 'uuid-api-url', {
+      parameterName: '/app/uuid-api-url',
+      stringValue: `${api.url}/uuid`,
+    });
   }
 }

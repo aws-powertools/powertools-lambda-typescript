@@ -26,7 +26,7 @@ import { logger, metrics, tracer } from './common/powertools';
  */
 
 class Lambda implements LambdaInterface {
-  @tracer.captureMethod(null, { captureReturn: false })
+  @tracer.captureMethod()
   public async getUuid(): Promise<string> {
     return getUuid();
   }

@@ -30,7 +30,7 @@ const asyncProcessPartialResponse = async (
 
   processor.register(event.Records, recordHandler, options);
 
-  await processor.processAsync();
+  await processor.asyncProcess();
 
   return processor.response();
 };

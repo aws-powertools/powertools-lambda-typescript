@@ -35,6 +35,31 @@ abstract class BasePartialProcessor {
   }
 
   /**
+   * Call instance's handler for each record
+   * @returns List of processed records
+   */
+  public async asyncProcess(): Promise<(SuccessResponse | FailureResponse)[]> {
+    /**
+     * If this is an sync processor, user should have called process instead,
+     * so we call the method early to throw the error early thus failing fast.
+     */
+    if (this.constructor.name === 'BatchProcessor') {
+      await this.asyncProcessRecord(this.records[0]);
+    }
+    this.prepare();
+
+    const processingPromises: Promise<SuccessResponse | FailureResponse>[] =
+      this.records.map((record) => this.asyncProcessRecord(record));
+
+    const processedRecords: (SuccessResponse | FailureResponse)[] =
+      await Promise.all(processingPromises);
+
+    this.clean();
+
+    return processedRecords;
+  }
+
+  /**
    * Process a record with an asyncronous handler
    *
    * @param record Record to be processed
@@ -88,31 +113,6 @@ abstract class BasePartialProcessor {
     for (const record of this.records) {
       processedRecords.push(this.processRecord(record));
     }
-
-    this.clean();
-
-    return processedRecords;
-  }
-
-  /**
-   * Call instance's handler for each record
-   * @returns List of processed records
-   */
-  public async processAsync(): Promise<(SuccessResponse | FailureResponse)[]> {
-    /**
-     * If this is an sync processor, user should have called process instead,
-     * so we call the method early to throw the error early thus failing fast.
-     */
-    if (this.constructor.name === 'BatchProcessor') {
-      await this.asyncProcessRecord(this.records[0]);
-    }
-    this.prepare();
-
-    const processingPromises: Promise<SuccessResponse | FailureResponse>[] =
-      this.records.map((record) => this.asyncProcessRecord(record));
-
-    const processedRecords: (SuccessResponse | FailureResponse)[] =
-      await Promise.all(processingPromises);
 
     this.clean();
 

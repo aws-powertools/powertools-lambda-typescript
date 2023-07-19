@@ -80,6 +80,23 @@ const handlerWithContext = (
   return record.body;
 };
 
+const asyncHandlerWithContext = async (
+  record: SQSRecord,
+  options: BatchProcessingOptions
+): Promise<string> => {
+  const context = options.context;
+
+  try {
+    if (context.getRemainingTimeInMillis() == 0) {
+      throw Error('No time remaining.');
+    }
+  } catch (e) {
+    throw Error('Context possibly malformed. Displaying context:\n' + context);
+  }
+
+  return record.body;
+};
+
 export {
   sqsRecordHandler,
   asyncSqsRecordHandler,
@@ -88,4 +105,5 @@ export {
   dynamodbRecordHandler,
   asyncDynamodbRecordHandler,
   handlerWithContext,
+  asyncHandlerWithContext,
 };

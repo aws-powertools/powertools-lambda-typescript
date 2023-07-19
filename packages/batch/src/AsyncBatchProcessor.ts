@@ -24,7 +24,7 @@ class AsyncBatchProcessor extends BasePartialBatchProcessor {
    * @returns response of success or failure
    */
   public processRecord(_record: BaseRecord): SuccessResponse | FailureResponse {
-    throw new Error('Not implemented. Use processAsync() instead.');
+    throw new Error('Not implemented. Use asyncProcess() instead.');
   }
 }
 

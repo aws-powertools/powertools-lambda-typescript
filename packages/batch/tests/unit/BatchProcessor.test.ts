@@ -278,7 +278,7 @@ describe('Class: BatchProcessor', () => {
     const processor = new BatchProcessor(EventType.SQS);
 
     // Act & Assess
-    await expect(() => processor.processAsync()).rejects.toThrow(
+    await expect(() => processor.asyncProcess()).rejects.toThrow(
       'Not implemented. Use process() instead.'
     );
   });

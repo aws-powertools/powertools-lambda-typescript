@@ -1,11 +1,14 @@
 /**
- * Test AsyncAsyncBatchProcessor class
+ * Test AsyncBatchProcessor class
  *
- * @group unit/batch/class/asyncAsyncBatchProcessor
+ * @group unit/batch/class/asyncBatchProcessor
  */
+import type { Context } from 'aws-lambda';
+import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
 import { AsyncBatchProcessor } from '../../src/AsyncBatchProcessor';
 import { EventType } from '../../src/constants';
 import { BatchProcessingError } from '../../src/errors';
+import type { BatchProcessingOptions } from '../../src/types';
 import {
   dynamodbRecordFactory,
   kinesisRecordFactory,
@@ -15,10 +18,12 @@ import {
   asyncDynamodbRecordHandler,
   asyncKinesisRecordHandler,
   asyncSqsRecordHandler,
+  asyncHandlerWithContext,
 } from '../helpers/handlers';
 
-describe('Class: AsyncAsyncBatchProcessor', () => {
+describe('Class: AsyncBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
+  const options: BatchProcessingOptions = { context: dummyContext };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -40,7 +45,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
 
       // Act
       processor.register(records, asyncSqsRecordHandler);
-      const processedMessages = await processor.processAsync();
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages).toStrictEqual([
@@ -59,7 +64,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
 
       // Act
       processor.register(records, asyncSqsRecordHandler);
-      const processedMessages = await processor.processAsync();
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages[1]).toStrictEqual([
@@ -89,7 +94,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
       processor.register(records, asyncSqsRecordHandler);
 
       // Assess
-      await expect(processor.processAsync()).rejects.toThrowError(
+      await expect(processor.asyncProcess()).rejects.toThrowError(
         BatchProcessingError
       );
     });
@@ -105,7 +110,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
 
       // Act
       processor.register(records, asyncKinesisRecordHandler);
-      const processedMessages = await processor.processAsync();
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages).toStrictEqual([
@@ -124,7 +129,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
 
       // Act
       processor.register(records, asyncKinesisRecordHandler);
-      const processedMessages = await processor.processAsync();
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages[1]).toStrictEqual([
@@ -154,7 +159,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
       processor.register(records, asyncKinesisRecordHandler);
 
       // Assess
-      await expect(processor.processAsync()).rejects.toThrowError(
+      await expect(processor.asyncProcess()).rejects.toThrowError(
         BatchProcessingError
       );
     });
@@ -170,7 +175,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
 
       // Act
       processor.register(records, asyncDynamodbRecordHandler);
-      const processedMessages = await processor.processAsync();
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages).toStrictEqual([
@@ -189,7 +194,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
 
       // Act
       processor.register(records, asyncDynamodbRecordHandler);
-      const processedMessages = await processor.processAsync();
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages[1]).toStrictEqual([
@@ -219,7 +224,61 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
       processor.register(records, asyncDynamodbRecordHandler);
 
       // Assess
-      await expect(processor.processAsync()).rejects.toThrowError(
+      await expect(processor.asyncProcess()).rejects.toThrowError(
+        BatchProcessingError
+      );
+    });
+  });
+
+  describe('Batch processing with Lambda context', () => {
+    test('Batch processing when context is provided and handler accepts', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('success');
+      const records = [firstRecord, secondRecord];
+      const processor = new AsyncBatchProcessor(EventType.SQS);
+
+      // Act
+      processor.register(records, asyncHandlerWithContext, options);
+      const processedMessages = await processor.asyncProcess();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['success', firstRecord.body, firstRecord],
+        ['success', secondRecord.body, secondRecord],
+      ]);
+    });
+
+    test('Batch processing when context is provided and handler does not accept', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('success');
+      const records = [firstRecord, secondRecord];
+      const processor = new AsyncBatchProcessor(EventType.SQS);
+
+      // Act
+      processor.register(records, asyncSqsRecordHandler, options);
+      const processedMessages = await processor.asyncProcess();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['success', firstRecord.body, firstRecord],
+        ['success', secondRecord.body, secondRecord],
+      ]);
+    });
+
+    test('Batch processing when malformed context is provided and handler attempts to use', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('success');
+      const records = [firstRecord, secondRecord];
+      const processor = new AsyncBatchProcessor(EventType.SQS);
+      const badContext = { foo: 'bar' };
+      const badOptions = { context: badContext as unknown as Context };
+
+      // Act
+      processor.register(records, asyncHandlerWithContext, badOptions);
+      await expect(() => processor.asyncProcess()).rejects.toThrowError(
         BatchProcessingError
       );
     });
@@ -231,7 +290,7 @@ describe('Class: AsyncAsyncBatchProcessor', () => {
 
     // Act & Assess
     expect(() => processor.process()).toThrowError(
-      'Not implemented. Use processAsync() instead.'
+      'Not implemented. Use asyncProcess() instead.'
     );
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/batch",
-  "version": "1.10.0",
+  "version": "1.11.1",
   "description": "The batch processing package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -22,8 +22,7 @@
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix",
-    "*.js": "npm run lint-fix"
+    "*.{js,ts}": "npm run lint-fix"
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/batch#readme",
   "license": "MIT-0",

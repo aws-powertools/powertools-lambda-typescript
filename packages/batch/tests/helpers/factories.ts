@@ -1,10 +1,13 @@
-import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
-import { randomInt } from 'crypto';
-import { v4 } from 'uuid';
+import type {
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+} from 'aws-lambda';
+import { randomInt, randomUUID } from 'node:crypto';
 
 const sqsRecordFactory = (body: string): SQSRecord => {
   return {
-    messageId: v4(),
+    messageId: randomUUID(),
     receiptHandle: 'AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a',
     body: body,
     attributes: {

@@ -1,11 +1,11 @@
 /**
- * Test BatchProcessor class
+ * Test AsyncBatchProcessor class
  *
- * @group unit/batch/class/batchprocessor
+ * @group unit/batch/class/asyncBatchProcessor
  */
 import type { Context } from 'aws-lambda';
 import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
-import { BatchProcessor } from '../../src/BatchProcessor';
+import { AsyncBatchProcessor } from '../../src/AsyncBatchProcessor';
 import { EventType } from '../../src/constants';
 import { BatchProcessingError } from '../../src/errors';
 import type { BatchProcessingOptions } from '../../src/types';
@@ -15,13 +15,13 @@ import {
   sqsRecordFactory,
 } from '../helpers/factories';
 import {
-  dynamodbRecordHandler,
-  handlerWithContext,
-  kinesisRecordHandler,
-  sqsRecordHandler,
+  asyncDynamodbRecordHandler,
+  asyncKinesisRecordHandler,
+  asyncSqsRecordHandler,
+  asyncHandlerWithContext,
 } from '../helpers/handlers';
 
-describe('Class: BatchProcessor', () => {
+describe('Class: AsyncBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const options: BatchProcessingOptions = { context: dummyContext };
 
@@ -35,17 +35,17 @@ describe('Class: BatchProcessor', () => {
     process.env = ENVIRONMENT_VARIABLES;
   });
 
-  describe('Synchronously processing SQS Records', () => {
-    test('Batch processing SQS records with no failures', () => {
+  describe('Asynchronously processing SQS Records', () => {
+    test('Batch processing SQS records with no failures', async () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS);
+      const processor = new AsyncBatchProcessor(EventType.SQS);
 
       // Act
-      processor.register(records, sqsRecordHandler);
-      const processedMessages = processor.process();
+      processor.register(records, asyncSqsRecordHandler);
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages).toStrictEqual([
@@ -54,17 +54,17 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing SQS records with some failures', () => {
+    test('Batch processing SQS records with some failures', async () => {
       // Prepare
       const firstRecord = sqsRecordFactory('failure');
       const secondRecord = sqsRecordFactory('success');
       const thirdRecord = sqsRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
-      const processor = new BatchProcessor(EventType.SQS);
+      const processor = new AsyncBatchProcessor(EventType.SQS);
 
       // Act
-      processor.register(records, sqsRecordHandler);
-      const processedMessages = processor.process();
+      processor.register(records, asyncSqsRecordHandler);
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages[1]).toStrictEqual([
@@ -81,32 +81,36 @@ describe('Class: BatchProcessor', () => {
       });
     });
 
-    test('Batch processing SQS records with all failures', () => {
+    test('Batch processing SQS records with all failures', async () => {
       // Prepare
       const firstRecord = sqsRecordFactory('failure');
       const secondRecord = sqsRecordFactory('failure');
       const thirdRecord = sqsRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
-      const processor = new BatchProcessor(EventType.SQS);
+      const processor = new AsyncBatchProcessor(EventType.SQS);
 
-      // Act & Assess
-      processor.register(records, sqsRecordHandler);
-      expect(() => processor.process()).toThrowError(BatchProcessingError);
+      // Act
+      processor.register(records, asyncSqsRecordHandler);
+
+      // Assess
+      await expect(processor.asyncProcess()).rejects.toThrowError(
+        BatchProcessingError
+      );
     });
   });
 
-  describe('Synchronously processing Kinesis Records', () => {
-    test('Batch processing Kinesis records with no failures', () => {
+  describe('Asynchronously processing Kinesis Records', () => {
+    test('Batch processing Kinesis records with no failures', async () => {
       // Prepare
       const firstRecord = kinesisRecordFactory('success');
       const secondRecord = kinesisRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams);
+      const processor = new AsyncBatchProcessor(EventType.KinesisDataStreams);
 
       // Act
-      processor.register(records, kinesisRecordHandler);
-      const processedMessages = processor.process();
+      processor.register(records, asyncKinesisRecordHandler);
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages).toStrictEqual([
@@ -115,17 +119,17 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing Kinesis records with some failures', () => {
+    test('Batch processing Kinesis records with some failures', async () => {
       // Prepare
       const firstRecord = kinesisRecordFactory('failure');
       const secondRecord = kinesisRecordFactory('success');
       const thirdRecord = kinesisRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams);
+      const processor = new AsyncBatchProcessor(EventType.KinesisDataStreams);
 
       // Act
-      processor.register(records, kinesisRecordHandler);
-      const processedMessages = processor.process();
+      processor.register(records, asyncKinesisRecordHandler);
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages[1]).toStrictEqual([
@@ -142,33 +146,36 @@ describe('Class: BatchProcessor', () => {
       });
     });
 
-    test('Batch processing Kinesis records with all failures', () => {
+    test('Batch processing Kinesis records with all failures', async () => {
+      // Prepare
       const firstRecord = kinesisRecordFactory('failure');
       const secondRecord = kinesisRecordFactory('failure');
       const thirdRecord = kinesisRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams);
+      const processor = new AsyncBatchProcessor(EventType.KinesisDataStreams);
 
       // Act
-      processor.register(records, kinesisRecordHandler);
+      processor.register(records, asyncKinesisRecordHandler);
 
       // Assess
-      expect(() => processor.process()).toThrowError(BatchProcessingError);
+      await expect(processor.asyncProcess()).rejects.toThrowError(
+        BatchProcessingError
+      );
     });
   });
 
-  describe('Synchronously processing DynamoDB Records', () => {
-    test('Batch processing DynamoDB records with no failures', () => {
+  describe('Asynchronously processing DynamoDB Records', () => {
+    test('Batch processing DynamoDB records with no failures', async () => {
       // Prepare
       const firstRecord = dynamodbRecordFactory('success');
       const secondRecord = dynamodbRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams);
+      const processor = new AsyncBatchProcessor(EventType.DynamoDBStreams);
 
       // Act
-      processor.register(records, dynamodbRecordHandler);
-      const processedMessages = processor.process();
+      processor.register(records, asyncDynamodbRecordHandler);
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages).toStrictEqual([
@@ -177,17 +184,17 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing DynamoDB records with some failures', () => {
+    test('Batch processing DynamoDB records with some failures', async () => {
       // Prepare
       const firstRecord = dynamodbRecordFactory('failure');
       const secondRecord = dynamodbRecordFactory('success');
       const thirdRecord = dynamodbRecordFactory('fail');
       const records = [firstRecord, secondRecord, thirdRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams);
+      const processor = new AsyncBatchProcessor(EventType.DynamoDBStreams);
 
       // Act
-      processor.register(records, dynamodbRecordHandler);
-      const processedMessages = processor.process();
+      processor.register(records, asyncDynamodbRecordHandler);
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages[1]).toStrictEqual([
@@ -204,34 +211,36 @@ describe('Class: BatchProcessor', () => {
       });
     });
 
-    test('Batch processing DynamoDB records with all failures', () => {
+    test('Batch processing DynamoDB records with all failures', async () => {
       // Prepare
       const firstRecord = dynamodbRecordFactory('failure');
       const secondRecord = dynamodbRecordFactory('failure');
       const thirdRecord = dynamodbRecordFactory('fail');
 
       const records = [firstRecord, secondRecord, thirdRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams);
+      const processor = new AsyncBatchProcessor(EventType.DynamoDBStreams);
 
       // Act
-      processor.register(records, dynamodbRecordHandler);
+      processor.register(records, asyncDynamodbRecordHandler);
 
       // Assess
-      expect(() => processor.process()).toThrowError(BatchProcessingError);
+      await expect(processor.asyncProcess()).rejects.toThrowError(
+        BatchProcessingError
+      );
     });
   });
 
   describe('Batch processing with Lambda context', () => {
-    test('Batch processing when context is provided and handler accepts', () => {
+    test('Batch processing when context is provided and handler accepts', async () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS);
+      const processor = new AsyncBatchProcessor(EventType.SQS);
 
       // Act
-      processor.register(records, handlerWithContext, options);
-      const processedMessages = processor.process();
+      processor.register(records, asyncHandlerWithContext, options);
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages).toStrictEqual([
@@ -240,16 +249,16 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing when context is provided and handler does not accept', () => {
+    test('Batch processing when context is provided and handler does not accept', async () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS);
+      const processor = new AsyncBatchProcessor(EventType.SQS);
 
       // Act
-      processor.register(records, sqsRecordHandler, options);
-      const processedMessages = processor.process();
+      processor.register(records, asyncSqsRecordHandler, options);
+      const processedMessages = await processor.asyncProcess();
 
       // Assess
       expect(processedMessages).toStrictEqual([
@@ -258,28 +267,30 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing when malformed context is provided and handler attempts to use', () => {
+    test('Batch processing when malformed context is provided and handler attempts to use', async () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS);
+      const processor = new AsyncBatchProcessor(EventType.SQS);
       const badContext = { foo: 'bar' };
       const badOptions = { context: badContext as unknown as Context };
 
       // Act
-      processor.register(records, handlerWithContext, badOptions);
-      expect(() => processor.process()).toThrowError(BatchProcessingError);
+      processor.register(records, asyncHandlerWithContext, badOptions);
+      await expect(() => processor.asyncProcess()).rejects.toThrowError(
+        BatchProcessingError
+      );
     });
   });
 
-  test('When calling the async process method, it should throw an error', async () => {
+  test('When calling the sync process method, it should throw an error', () => {
     // Prepare
-    const processor = new BatchProcessor(EventType.SQS);
+    const processor = new AsyncBatchProcessor(EventType.SQS);
 
     // Act & Assess
-    await expect(() => processor.asyncProcess()).rejects.toThrow(
-      'Not implemented. Use process() instead.'
+    expect(() => processor.process()).toThrowError(
+      'Not implemented. Use asyncProcess() instead.'
     );
   });
 });

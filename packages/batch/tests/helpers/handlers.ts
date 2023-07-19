@@ -1,5 +1,9 @@
-import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
-import { BatchProcessingOptions } from '../../src';
+import type {
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+} from 'aws-lambda';
+import type { BatchProcessingOptions } from '../../src/types';
 
 const sqsRecordHandler = (record: SQSRecord): string => {
   const body = record.body;
@@ -76,6 +80,23 @@ const handlerWithContext = (
   return record.body;
 };
 
+const asyncHandlerWithContext = async (
+  record: SQSRecord,
+  options: BatchProcessingOptions
+): Promise<string> => {
+  const context = options.context;
+
+  try {
+    if (context.getRemainingTimeInMillis() == 0) {
+      throw Error('No time remaining.');
+    }
+  } catch (e) {
+    throw Error('Context possibly malformed. Displaying context:\n' + context);
+  }
+
+  return Promise.resolve(record.body);
+};
+
 export {
   sqsRecordHandler,
   asyncSqsRecordHandler,
@@ -84,4 +105,5 @@ export {
   dynamodbRecordHandler,
   asyncDynamodbRecordHandler,
   handlerWithContext,
+  asyncHandlerWithContext,
 };

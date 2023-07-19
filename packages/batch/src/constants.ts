@@ -1,8 +1,8 @@
-/**
- * Constants for batch processor classes
- */
 import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
-import type { PartialItemFailureResponse, EventSourceDataClassTypes } from '.';
+import type {
+  PartialItemFailureResponse,
+  EventSourceDataClassTypes,
+} from './types';
 
 const EventType = {
   SQS: 'SQS',

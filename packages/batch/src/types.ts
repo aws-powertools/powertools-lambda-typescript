@@ -1,6 +1,3 @@
-/**
- * Types for batch processing utility
- */
 import {
   Context,
   DynamoDBRecord,

@@ -94,7 +94,7 @@ const asyncHandlerWithContext = async (
     throw Error('Context possibly malformed. Displaying context:\n' + context);
   }
 
-  return record.body;
+  return Promise.resolve(record.body);
 };
 
 export {

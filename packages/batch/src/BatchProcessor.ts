@@ -38,7 +38,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
   /**
    * Process a record synchronously using the provided handler.
    *
-   * @param record Record in the batch to be processed
+   * @param record Record to process within the batch
    */
   public processRecord(
     record: EventSourceType

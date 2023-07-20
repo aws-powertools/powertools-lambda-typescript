@@ -1,16 +1,39 @@
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor';
-import type { BaseRecord, FailureResponse, SuccessResponse } from './types';
+import type {
+  EventSourceType,
+  FailureResponse,
+  SuccessResponse,
+} from './types';
 
 /**
- * Process native partial responses from SQS, Kinesis Data Streams, and DynamoDB
+ * Asynchronously process a batch of records from SQS, Kinesis Data Streams, and DynamoDB and report partial failures
+ * using native responses.
+ *
+ * When processing a batch of records, this processor will handle partial failures and
+ * return a response object that can be used to report partial failures and avoid reprocessing
+ * the same records.
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   AsyncBatchProcessor,
+ *   EventType,
+ * } from '@aws-lambda-powertools/batch';
+ *
+ * const processor = new AsyncBatchProcessor(EventType.SQS);
+ * ```
  */
 class AsyncBatchProcessor extends BasePartialBatchProcessor {
+  /**
+   * Process a record asynchronously using the provided handler.
+   *
+   * @param record Record in the batch to be processed
+   */
   public async asyncProcessRecord(
-    record: BaseRecord
+    record: EventSourceType
   ): Promise<SuccessResponse | FailureResponse> {
     try {
-      const data = this.toBatchType(record, this.eventType);
-      const result = await this.handler(data, this.options);
+      const result = await this.handler(record, this.options?.context);
 
       return this.successHandler(record, result);
     } catch (error) {
@@ -19,11 +42,13 @@ class AsyncBatchProcessor extends BasePartialBatchProcessor {
   }
 
   /**
-   * Process a record with instance's handler
-   * @param record Batch record to be processed
-   * @returns response of success or failure
+   * Process a record synchronously using the provided handler.
+   *
+   * Throws an error if called on an async processor. Please use `asyncProcessRecord()` instead.
    */
-  public processRecord(_record: BaseRecord): SuccessResponse | FailureResponse {
+  public processRecord(
+    _record: EventSourceType
+  ): SuccessResponse | FailureResponse {
     throw new Error('Not implemented. Use asyncProcess() instead.');
   }
 }

@@ -5,6 +5,13 @@ import type {
 } from 'aws-lambda';
 import { randomInt, randomUUID } from 'node:crypto';
 
+/**
+ * Factory function for creating SQS records.
+ *
+ * Used for testing purposes.
+ *
+ * @param body The body of the record.
+ */
 const sqsRecordFactory = (body: string): SQSRecord => {
   return {
     messageId: randomUUID(),
@@ -24,23 +31,30 @@ const sqsRecordFactory = (body: string): SQSRecord => {
   };
 };
 
+/**
+ * Factory function for creating Kinesis records.
+ *
+ * Used for testing purposes.
+ *
+ * @param body The body of the record.
+ */
 const kinesisRecordFactory = (body: string): KinesisStreamRecord => {
-  let seq = '';
+  let sequenceNumber = '';
   for (let i = 0; i < 52; i++) {
-    seq = seq + randomInt(10);
+    sequenceNumber = sequenceNumber + randomInt(10);
   }
 
   return {
     kinesis: {
       kinesisSchemaVersion: '1.0',
       partitionKey: '1',
-      sequenceNumber: seq,
+      sequenceNumber,
       data: body,
       approximateArrivalTimestamp: 1545084650.987,
     },
     eventSource: 'aws:kinesis',
     eventVersion: '1.0',
-    eventID: 'shardId-000000000006:' + seq,
+    eventID: 'shardId-000000000006:' + sequenceNumber,
     eventName: 'aws:kinesis:record',
     invokeIdentityArn: 'arn:aws:iam::123456789012:role/lambda-role',
     awsRegion: 'us-east-2',
@@ -49,10 +63,17 @@ const kinesisRecordFactory = (body: string): KinesisStreamRecord => {
   };
 };
 
+/**
+ * Factory function for creating DynamoDB Stream records.
+ *
+ * Used for testing purposes.
+ *
+ * @param body The body of the record.
+ */
 const dynamodbRecordFactory = (body: string): DynamoDBRecord => {
-  let seq = '';
+  let sequenceNumber = '';
   for (let i = 0; i < 10; i++) {
-    seq = seq + randomInt(10);
+    sequenceNumber = sequenceNumber + randomInt(10);
   }
 
   return {
@@ -62,7 +83,7 @@ const dynamodbRecordFactory = (body: string): DynamoDBRecord => {
       Keys: { Id: { N: '101' } },
       NewImage: { Message: { S: body } },
       StreamViewType: 'NEW_AND_OLD_IMAGES',
-      SequenceNumber: seq,
+      SequenceNumber: sequenceNumber,
       SizeBytes: 26,
     },
     awsRegion: 'us-west-2',

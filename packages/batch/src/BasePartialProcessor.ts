@@ -1,42 +1,57 @@
 import type {
-  BaseRecord,
   BatchProcessingOptions,
-  EventSourceDataClassTypes,
+  EventSourceType,
   FailureResponse,
-  ResultType,
   SuccessResponse,
 } from './types';
+import { EventType } from './constants';
 
 /**
  * Abstract class for batch processors.
+ *
+ * The class provides a common interface for processing batches of records.
  */
 abstract class BasePartialProcessor {
-  public exceptions: Error[];
-
-  public failureMessages: EventSourceDataClassTypes[];
-
-  public handler: CallableFunction;
-
-  public options?: BatchProcessingOptions;
-
-  public records: BaseRecord[];
-
-  public successMessages: EventSourceDataClassTypes[];
-
   /**
-   * Initializes base processor class
+   * List of records that failed processing with their corresponding error
    */
+  public failureMessages: EventSourceType[];
+  /**
+   * List of records that succeeded processing with their corresponding result
+   */
+  public successMessages: EventSourceType[];
+  /**
+   * List of errors that were thrown during processing
+   */
+  protected errors: Error[];
+  /**
+   * Handler used to process records
+   */
+  protected handler: CallableFunction;
+  /**
+   * Options passed to the handler
+   */
+  protected options?: BatchProcessingOptions;
+  /**
+   * List of records to be processed
+   */
+  protected records: EventSourceType[];
+
   public constructor() {
     this.successMessages = [];
     this.failureMessages = [];
-    this.exceptions = [];
+    this.errors = [];
     this.records = [];
     this.handler = new Function();
   }
 
   /**
-   * Call instance's handler for each record
-   * @returns List of processed records
+   * Process a batch of records asynchronously.
+   *
+   * When processing a batch of records, this processor will call the
+   * handler on each record and then store the promise returned by each call.
+   *
+   * It then waits for all promises to resolve and returns a list of results.
    */
   public async asyncProcess(): Promise<(SuccessResponse | FailureResponse)[]> {
     /**
@@ -60,44 +75,19 @@ abstract class BasePartialProcessor {
   }
 
   /**
-   * Process a record with an asyncronous handler
+   * Abstract method to process a record asynchronously.
    *
    * @param record Record to be processed
    */
   public abstract asyncProcessRecord(
-    record: BaseRecord
+    record: EventSourceType
   ): Promise<SuccessResponse | FailureResponse>;
 
   /**
-   * Clean class instance after processing
-   */
-  public abstract clean(): void;
-
-  /**
-   * Keeps track of batch records that failed processing
-   * @param record record that failed processing
-   * @param exception exception that was thrown
-   * @returns FailureResponse object with ["fail", exception, original record]
-   */
-  public failureHandler(
-    record: EventSourceDataClassTypes,
-    exception: Error
-  ): FailureResponse {
-    const entry: FailureResponse = ['fail', exception.message, record];
-    this.exceptions.push(exception);
-    this.failureMessages.push(record);
-
-    return entry;
-  }
-
-  /**
-   * Prepare class instance before processing
-   */
-  public abstract prepare(): void;
-
-  /**
-   * Call instance's handler for each record
-   * @returns List of processed records
+   * Process a batch of records synchronously.
+   *
+   * When processing a batch of records, this processor will call the
+   * handler on each record sequentially and then return a list of results.
    */
   public process(): (SuccessResponse | FailureResponse)[] {
     /**
@@ -120,43 +110,82 @@ abstract class BasePartialProcessor {
   }
 
   /**
-   * Process a record with the handler
+   * Abstract method to process a record synchronously.
+   *
    * @param record Record to be processed
    */
   public abstract processRecord(
-    record: BaseRecord
+    record: EventSourceType
   ): SuccessResponse | FailureResponse;
 
   /**
-   * Set class instance attributes before execution
-   * @param records List of records to be processed
-   * @param handler CallableFunction to process entries of "records"
-   * @returns this object
+   * Register a batch of records to be processed and the handler to process them.
+   *
+   * @param records Batch of records to be processed
+   * @param handler Function to process each record
+   * @param options Options to be passed to the handler, such as the AWS Lambda context
    */
   public register(
-    records: BaseRecord[],
+    records: EventSourceType[],
     handler: CallableFunction,
     options?: BatchProcessingOptions
-  ): BasePartialProcessor {
-    this.records = records;
-    this.handler = handler;
-
-    if (options) {
-      this.options = options;
+  ): void {
+    if (!records) {
+      const eventTypes: string = Object.values(EventType).toString();
+      throw new Error(
+        'Failed to convert event to record batch for processing.\nPlease ensure batch event is a valid ' +
+          eventTypes +
+          ' event.'
+      );
     }
 
-    return this;
+    this.records = records;
+    this.handler = handler;
+    this.options = options;
   }
 
   /**
-   * Keeps track of batch records that were processed successfully
-   * @param record record that succeeded processing
-   * @param result result from record handler
-   * @returns SuccessResponse object with ["success", result, original record]
+   * Abstract method to clean up class instance after processing.
+   *
+   * This method is called once, after processing the batch.
+   * It can be used to clean up state or perform any side effects.
    */
-  public successHandler(
-    record: EventSourceDataClassTypes,
-    result: ResultType
+  protected abstract clean(): void;
+
+  /**
+   * Store the result of a failed record processing
+   *
+   * @param record Record that was processed
+   * @param error Error thrown by record handler
+   */
+  protected failureHandler(
+    record: EventSourceType,
+    error: Error
+  ): FailureResponse {
+    const entry: FailureResponse = ['fail', error.message, record];
+    this.errors.push(error);
+    this.failureMessages.push(record);
+
+    return entry;
+  }
+
+  /**
+   * Abstract method to prepare class instance before processing.
+   *
+   * This method is called once, before processing the batch.
+   * It can be used to initialize state or perform any side effects.
+   */
+  protected abstract prepare(): void;
+
+  /**
+   * Store the result of a successful record processing
+   *
+   * @param record Record that was processed
+   * @param result Result returned by record handler
+   */
+  protected successHandler(
+    record: EventSourceType,
+    result: unknown
   ): SuccessResponse {
     const entry: SuccessResponse = ['success', result, record];
     this.successMessages.push(record);

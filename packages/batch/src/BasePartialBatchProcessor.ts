@@ -4,23 +4,22 @@ import type {
   SQSRecord,
 } from 'aws-lambda';
 import { BasePartialProcessor } from './BasePartialProcessor';
-import { DATA_CLASS_MAPPING, DEFAULT_RESPONSE, EventType } from './constants';
+import { DEFAULT_RESPONSE, EventType } from './constants';
 import { BatchProcessingError } from './errors';
-import type {
-  EventSourceDataClassTypes,
-  PartialItemFailureResponse,
-  PartialItemFailures,
-} from './types';
+import type { PartialItemFailureResponse, PartialItemFailures } from './types';
 
 /**
- * Process batch and partially report failed items
+ * Abstract class to process a batch of records and report partial failures
  */
 abstract class BasePartialBatchProcessor extends BasePartialProcessor {
-  public COLLECTOR_MAPPING;
-
-  public batchResponse: PartialItemFailureResponse;
-
-  public eventType: keyof typeof EventType;
+  /**
+   * Response object to be used in reporting partial failures
+   */
+  protected batchResponse: PartialItemFailureResponse;
+  /**
+   * The type of event that triggered the Lambda function
+   */
+  private eventType: keyof typeof EventType;
 
   /**
    * Initializes base batch processing class
@@ -29,18 +28,23 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public constructor(eventType: keyof typeof EventType) {
     super();
     this.eventType = eventType;
-    this.batchResponse = DEFAULT_RESPONSE;
-    this.COLLECTOR_MAPPING = {
-      [EventType.SQS]: () => this.collectSqsFailures(),
-      [EventType.KinesisDataStreams]: () => this.collectKinesisFailures(),
-      [EventType.DynamoDBStreams]: () => this.collectDynamoDBFailures(),
-    };
+    this.batchResponse = { ...DEFAULT_RESPONSE };
   }
 
   /**
-   * Report messages to be deleted in case of partial failures
+   * Return response object to be used in reporting partial failures
    */
-  public clean(): void {
+  public response(): PartialItemFailureResponse {
+    return this.batchResponse;
+  }
+
+  /**
+   * Perfom cleanup after processing a batch of records.
+   *
+   * If the entire batch failed, throw an error. Otherwise,
+   * prepare the response object to be used in reporting partial failures.
+   */
+  protected clean(): void {
     if (!this.hasMessagesToReport()) {
       return;
     }
@@ -48,27 +52,25 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
     if (this.entireBatchFailed()) {
       throw new BatchProcessingError(
         'All records failed processing. ' +
-          this.exceptions.length +
+          this.errors.length +
           ' individual errors logged separately below.',
-        this.exceptions
+        this.errors
       );
     }
 
-    const messages: PartialItemFailures[] = this.getMessagesToReport();
-    this.batchResponse = { batchItemFailures: messages };
+    this.batchResponse = { batchItemFailures: this.getMessagesToReport() };
   }
 
   /**
-   * Collects identifiers of failed items for a DynamoDB stream
-   * @returns list of identifiers for failed items
+   * Collect the identifiers of failed items for a DynamoDB stream.
    */
-  public collectDynamoDBFailures(): PartialItemFailures[] {
+  protected collectDynamoDBFailures(): PartialItemFailures[] {
     const failures: PartialItemFailures[] = [];
 
-    for (const msg of this.failureMessages) {
-      const msgId = (msg as DynamoDBRecord).dynamodb?.SequenceNumber;
-      if (msgId) {
-        failures.push({ itemIdentifier: msgId });
+    for (const message of this.failureMessages) {
+      const messageId = (message as DynamoDBRecord).dynamodb?.SequenceNumber;
+      if (messageId) {
+        failures.push({ itemIdentifier: messageId });
       }
     }
 
@@ -76,81 +78,66 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   }
 
   /**
-   * Collects identifiers of failed items for a Kinesis stream
-   * @returns list of identifiers for failed items
+   * Collect the identifiers of failed items for a Kinesis data stream.
    */
-  public collectKinesisFailures(): PartialItemFailures[] {
-    const failures: PartialItemFailures[] = [];
+  protected collectKinesisFailures(): PartialItemFailures[] {
+    return this.failureMessages.map((message) => {
+      const {
+        kinesis: { sequenceNumber },
+      } = message as KinesisStreamRecord;
 
-    for (const msg of this.failureMessages) {
-      const msgId = (msg as KinesisStreamRecord).kinesis.sequenceNumber;
-      failures.push({ itemIdentifier: msgId });
+      return { itemIdentifier: sequenceNumber };
+    });
+  }
+
+  /**
+   * Collect the identifiers of failed items for a SQS queue.
+   */
+  protected collectSqsFailures(): PartialItemFailures[] {
+    return this.failureMessages.map((message) => {
+      const { messageId } = message as SQSRecord;
+
+      return { itemIdentifier: messageId };
+    });
+  }
+
+  /**
+   * Determine whether the entire batch failed to be processed.
+   */
+  protected entireBatchFailed(): boolean {
+    return this.errors.length === this.records.length;
+  }
+
+  /**
+   * Collect all failed messages and returns them as a list of partial failures
+   * according to the event type.
+   */
+  protected getMessagesToReport(): PartialItemFailures[] {
+    switch (this.eventType) {
+      case EventType.SQS:
+        return this.collectSqsFailures();
+      case EventType.KinesisDataStreams:
+        return this.collectKinesisFailures();
+      case EventType.DynamoDBStreams:
+        return this.collectDynamoDBFailures();
     }
-
-    return failures;
   }
 
   /**
-   * Collects identifiers of failed items for an SQS batch
-   * @returns list of identifiers for failed items
+   * Determine whether there are any failed messages to report as partial failures.
    */
-  public collectSqsFailures(): PartialItemFailures[] {
-    const failures: PartialItemFailures[] = [];
-
-    for (const msg of this.failureMessages) {
-      const msgId = (msg as SQSRecord).messageId;
-      failures.push({ itemIdentifier: msgId });
-    }
-
-    return failures;
-  }
-
-  /**
-   * Determines whether all records in a batch failed to process
-   * @returns true if all records resulted in exception results
-   */
-  public entireBatchFailed(): boolean {
-    return this.exceptions.length == this.records.length;
-  }
-
-  /**
-   * Collects identifiers for failed batch items
-   * @returns formatted messages to use in batch deletion
-   */
-  public getMessagesToReport(): PartialItemFailures[] {
-    return this.COLLECTOR_MAPPING[this.eventType]();
-  }
-
-  /**
-   * Determines if any records failed to process
-   * @returns true if any records resulted in exception
-   */
-  public hasMessagesToReport(): boolean {
+  protected hasMessagesToReport(): boolean {
     return this.failureMessages.length != 0;
   }
 
   /**
-   * Remove results from previous execution
+   * Prepare class instance for processing a new batch of records.
    */
-  public prepare(): void {
+  protected prepare(): void {
     this.successMessages.length = 0;
     this.failureMessages.length = 0;
-    this.exceptions.length = 0;
-    this.batchResponse = DEFAULT_RESPONSE;
-  }
-
-  /**
-   * @returns Batch items that failed processing, if any
-   */
-  public response(): PartialItemFailureResponse {
-    return this.batchResponse;
-  }
-
-  public toBatchType(
-    record: EventSourceDataClassTypes,
-    eventType: keyof typeof EventType
-  ): SQSRecord | KinesisStreamRecord | DynamoDBRecord {
-    return DATA_CLASS_MAPPING[eventType](record);
+    this.errors.length = 0;
+    this.batchResponse = { ...DEFAULT_RESPONSE };
   }
 }
 

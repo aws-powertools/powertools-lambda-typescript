@@ -1,4 +1,3 @@
-import { getParameter } from '@aws-lambda-powertools/parameters/ssm';
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import {
   APIGatewayProxyEvent,
@@ -81,9 +80,6 @@ export const handler = async (
       throw new Error('Event does not contain body');
     }
 
-    // static value we fetch from SSM Parameter Store and add to the item
-    const enrichment = await getParameter('/app/enrichment');
-
     // Get id and name from the body of the request
     const body = JSON.parse(event.body);
     const { id, name } = body;
@@ -94,7 +90,6 @@ export const handler = async (
         Item: {
           id,
           name,
-          enrichement: enrichment,
         },
       })
     );

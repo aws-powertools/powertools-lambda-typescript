@@ -215,10 +215,10 @@ We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lam
 
 You might want to bring custom logic to the existing `BatchProcessor` to slightly override how we handle successes and failures.
 
-For these scenarios, you can subclass `BatchProcessor` and quickly override `success_handler` and `failure_handler` methods:
+For these scenarios, you can subclass `BatchProcessor` and quickly override `successHandler` and `failureHandler` methods:
 
-* **`success_handler()`** – Keeps track of successful batch records
-* **`failure_handler()`** – Keeps track of failed batch records
+* **`successHandler()`** – Keeps track of successful batch records
+* **`failureHandler()`** – Keeps track of failed batch records
 
 ???+ example
 	Let's suppose you'd like to add a metric named `BatchRecordFailures` for each batch record that failed processing
@@ -236,7 +236,7 @@ You can create your own partial batch processor from scratch by inheriting the `
 * **`clean()`** – teardown logic called once after `processRecord` completes
 * **`asyncProcessRecord()`** – If you need to implement asynchronous logic, use this method, otherwise define it in your class with empty logic
 
-You can then use this class as a context manager, or pass it to `batch_processor` to use as a decorator on your Lambda handler function.
+You can then use this class as a context manager, or pass it to `processPartialResponse` to process the records in your Lambda handler function.
 
 ```typescript hl_lines="7 11-13 19 28 39 60 71 82 92-94" title="Creating a custom batch processor"
 --8<-- "docs/snippets/batch/customPartialProcessor.ts"

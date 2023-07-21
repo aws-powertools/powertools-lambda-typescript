@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import {
   DynamoDBClient,
   BatchWriteItemCommand,
@@ -10,7 +11,7 @@ import {
 import type {
   SuccessResponse,
   FailureResponse,
-  BaseRecord,
+  EventSourceType,
 } from '@aws-lambda-powertools/batch';
 import type { SQSEvent, Context, SQSBatchResponse } from 'aws-lambda';
 
@@ -26,7 +27,7 @@ class MyPartialProcessor extends BasePartialProcessor {
   }
 
   public async asyncProcessRecord(
-    _record: BaseRecord
+    _record: EventSourceType
   ): Promise<SuccessResponse | FailureResponse> {
     throw new Error('Not implemented');
   }
@@ -68,7 +69,9 @@ class MyPartialProcessor extends BasePartialProcessor {
    * Here we are keeping the status of each run, `this.handler` is
    * the function that is passed when calling `processor.register()`.
    */
-  public processRecord(record: BaseRecord): SuccessResponse | FailureResponse {
+  public processRecord(
+    record: EventSourceType
+  ): SuccessResponse | FailureResponse {
     try {
       const result = this.handler(record);
 
@@ -82,7 +85,7 @@ class MyPartialProcessor extends BasePartialProcessor {
 const processor = new MyPartialProcessor(tableName);
 
 const recordHandler = (): number => {
-  return Math.floor(Math.random() * 10);
+  return Math.floor(randomInt(1, 10));
 };
 
 export const handler = async (

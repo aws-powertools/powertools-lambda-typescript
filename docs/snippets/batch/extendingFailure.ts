@@ -3,7 +3,7 @@ import {
   BatchProcessor,
   EventType,
   FailureResponse,
-  EventSourceDataClassTypes,
+  EventSourceType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
@@ -23,7 +23,7 @@ class MyProcessor extends BatchProcessor {
   }
 
   public failureHandler(
-    record: EventSourceDataClassTypes,
+    record: EventSourceType,
     error: Error
   ): FailureResponse {
     this.#metrics.addMetric('BatchRecordFailures', MetricUnits.Count, 1);

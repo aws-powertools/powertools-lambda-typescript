@@ -25,7 +25,7 @@ export const handler = async (
   const batch = event.Records;
 
   processor.register(batch, recordHandler, { context });
-  const processedMessages = await processor.process();
+  const processedMessages = processor.process();
 
   for (const message of processedMessages) {
     const status: 'success' | 'fail' = message[0];

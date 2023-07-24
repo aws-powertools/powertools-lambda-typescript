@@ -71,7 +71,7 @@ Resources:
           Properties:
             Path: /
             Method: GET
-    Metadata: 
+    Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -113,7 +113,7 @@ Resources:
           Properties:
             Path: /{id}
             Method: GET
-    Metadata: 
+    Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -151,7 +151,7 @@ Resources:
             Path: /
             Method: GET
             RestApiId: !Ref apiGateway
-    Metadata: 
+    Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -201,7 +201,7 @@ Resources:
           Properties:
             Path: /
             Method: POST
-    Metadata: 
+    Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -211,7 +211,7 @@ Resources:
         External:
           - "@aws-sdk/lib-dynamodb"
           - "@aws-sdk/client-dynamodb"
-        EntryPoints: 
+        EntryPoints:
           - src/put-item.ts
 
   # DynamoDB table to store item: {id: <ID>, name: <NAME>}
@@ -221,13 +221,13 @@ Resources:
       PrimaryKey:
         Name: id
         Type: String
-  
+
   apiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: !Sub ${AWS::StackName}-uuid-api
       Description: "Example API for UUID generation"
-      
+
   apiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
@@ -239,7 +239,7 @@ Resources:
   apiGatewayRootMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      AuthorizationType: NONE
+      AuthorizationType: NONE # NOSONAR
       HttpMethod: !Ref apiGatewayHTTPMethod
       Integration:
         IntegrationHttpMethod: POST
@@ -257,7 +257,7 @@ Resources:
       FunctionName: !GetAtt getUuidFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${apiGateway}/${apiGatewayStageName}/*/
-    
+
   lambdaIAMRole:
     Type: AWS::IAM::Role
     Properties:

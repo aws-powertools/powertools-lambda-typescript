@@ -58,11 +58,6 @@ export class CdkAppStack extends Stack {
       )
     );
 
-    new StringParameter(this, 'enrichment', {
-      parameterName: '/app/enrichment',
-      stringValue: 'This value is fetched from SSM Parameter Store',
-    });
-
     const putItemFn = new NodejsFunction(this, 'put-item-fn', {
       ...commonProps,
       entry: './functions/put-item.ts',

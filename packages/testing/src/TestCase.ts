@@ -25,47 +25,51 @@ class DynamoDBTable {
   }
 
   public get envVariableName(): string {
-    return this.#envVariableName || 'TABLE_NAME';
+    return this.#envVariableName ?? 'TABLE_NAME';
   }
 }
 
-class SsmSecureString {
+abstract class SSMResource {
   public parameterName: string;
-  public ref: IStringParameter;
-  readonly #envVariableName?: string;
+  public ref: StringParameter | IStringParameter;
+  protected readonly envVarName?: string;
 
+  public constructor(
+    name: string,
+    ref: StringParameter | IStringParameter,
+    envVariableName?: string
+  ) {
+    this.parameterName = name;
+    this.ref = ref;
+    this.envVarName = envVariableName;
+  }
+}
+
+class SsmSecureString extends SSMResource {
   public constructor(
     name: string,
     ref: IStringParameter,
     envVariableName?: string
   ) {
-    this.parameterName = name;
-    this.ref = ref;
-    this.#envVariableName = envVariableName;
+    super(name, ref, envVariableName);
   }
 
   public get envVariableName(): string {
-    return this.#envVariableName || 'SECURE_STRING_NAME';
+    return this.envVarName ?? 'SECURE_STRING_NAME';
   }
 }
 
-class SsmString {
-  public parameterName: string;
-  public ref: StringParameter;
-  readonly #envVariableName?: string;
-
+class SsmString extends SSMResource {
   public constructor(
     name: string,
     ref: StringParameter,
     envVariableName?: string
   ) {
-    this.parameterName = name;
-    this.ref = ref;
-    this.#envVariableName = envVariableName;
+    super(name, ref, envVariableName);
   }
 
   public get envVariableName(): string {
-    return this.#envVariableName || 'SSM_STRING_NAME';
+    return this.envVarName ?? 'SSM_STRING_NAME';
   }
 }
 

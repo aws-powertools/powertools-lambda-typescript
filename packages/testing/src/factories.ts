@@ -2,8 +2,8 @@ import { CfnOutput, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Tracing, Architecture } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
 import {
+  PhysicalResourceId,
   AwsCustomResource,
   AwsCustomResourcePolicy,
 } from 'aws-cdk-lib/custom-resources';
@@ -29,15 +29,15 @@ const nodejsFunction = (options: NodejsFunctionOptions): NodejsFunction => {
   const nodeJsFunction = new NodejsFunction(options.stack, options.resourceId, {
     runtime: TEST_RUNTIMES[options.runtime],
     functionName: options.functionConfigs?.name,
-    timeout: Duration.seconds(options.functionConfigs?.timeout || 30),
+    timeout: Duration.seconds(options.functionConfigs?.timeout ?? 30),
     entry: options?.functionCode?.path,
-    handler: options?.functionCode?.handler || 'handler',
+    handler: options?.functionCode?.handler ?? 'handler',
     environment: {
-      ...(options.functionConfigs?.environment || {}),
+      ...(options.functionConfigs?.environment ?? {}),
     },
-    tracing: options.functionConfigs?.tracing || Tracing.ACTIVE,
-    memorySize: options.functionConfigs?.memorySize || 256,
-    architecture: options.functionConfigs?.architecture || Architecture.X86_64,
+    tracing: options.functionConfigs?.tracing ?? Tracing.ACTIVE,
+    memorySize: options.functionConfigs?.memorySize ?? 256,
+    architecture: options.functionConfigs?.architecture ?? Architecture.X86_64,
     logRetention: RetentionDays.ONE_DAY,
     bundling: options?.functionCode?.bundling,
   });
@@ -60,11 +60,11 @@ const dynamoDBTable = (options: DynamoDBTableOptions): Table => {
   const table = new Table(options.stack, options.resourceId, {
     tableName: options.name,
     partitionKey: {
-      name: options?.partitionKey?.name || 'id',
-      type: options?.partitionKey?.type || AttributeType.STRING,
+      name: options?.partitionKey?.name ?? 'id',
+      type: options?.partitionKey?.type ?? AttributeType.STRING,
     },
-    ...(options?.sortKey || {}),
-    billingMode: options.billingMode || BillingMode.PAY_PER_REQUEST,
+    ...(options?.sortKey ?? {}),
+    billingMode: options.billingMode ?? BillingMode.PAY_PER_REQUEST,
     removalPolicy: RemovalPolicy.DESTROY,
   });
 
@@ -76,8 +76,8 @@ const dynamoDBTable = (options: DynamoDBTableOptions): Table => {
  *
  * @param options - The options for creating a DynamoDB item.
  */
-const dynamoDBItem = (options: DynamoDBItemOptions): void => {
-  new AwsCustomResource(options.stack, options.resourceId, {
+const dynamoDBItem = (options: DynamoDBItemOptions): AwsCustomResource => {
+  const item = new AwsCustomResource(options.stack, options.resourceId, {
     onCreate: {
       service: 'DynamoDB',
       action: 'putItem',
@@ -91,6 +91,8 @@ const dynamoDBItem = (options: DynamoDBItemOptions): void => {
       resources: [options.tableArn],
     }),
   });
+
+  return item;
 };
 
 /**
@@ -121,7 +123,7 @@ const ssmSecureString = (options: SsmSecureStringOptions): IStringParameter => {
         service: 'SSM',
         action: 'putParameter',
         parameters: {
-          Name: options.name || options.resourceId,
+          Name: options.name ?? options.resourceId,
           Value: options.value,
           Type: 'SecureString',
         },
@@ -131,7 +133,7 @@ const ssmSecureString = (options: SsmSecureStringOptions): IStringParameter => {
         service: 'SSM',
         action: 'deleteParameter',
         parameters: {
-          Name: options.name || options.resourceId,
+          Name: options.name ?? options.resourceId,
         },
       },
       policy: AwsCustomResourcePolicy.fromSdkCalls({
@@ -144,7 +146,7 @@ const ssmSecureString = (options: SsmSecureStringOptions): IStringParameter => {
     options.stack,
     options.resourceId,
     {
-      parameterName: options.name || options.resourceId,
+      parameterName: options.name ?? options.resourceId,
     }
   );
   secureString.node.addDependency(resourceCreator);

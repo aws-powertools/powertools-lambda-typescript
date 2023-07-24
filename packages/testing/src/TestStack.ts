@@ -59,7 +59,7 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
     options: AddDynamoDBTableOptions
   ): DynamoDBTable => {
     const resourceId = this.#generateUniqueName(`${testCaseName}-table`);
-    const name = options.name || resourceId;
+    const name = options.name ?? resourceId;
     const table = dynamoDBTable({
       ...options,
       stack: this.stack,
@@ -80,7 +80,7 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
     options: AddFunctionOptions
   ): NodeJsFunction => {
     const resourceId = this.#generateUniqueName(`${testCaseName}-fn`);
-    const name = options.functionConfigs?.name || resourceId;
+    const name = options.functionConfigs?.name ?? resourceId;
     const fn = nodejsFunction({
       stack: this.stack,
       resourceId,
@@ -103,7 +103,7 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
     options: AddSsmSecureStringOptions
   ): SsmSecureString => {
     const resourceId = this.#generateUniqueName(`${testCaseName}-ssmSecure`);
-    const name = options.name || resourceId;
+    const name = options.name ?? resourceId;
     const ssmSecure = ssmSecureString({
       stack: this.stack,
       resourceId,

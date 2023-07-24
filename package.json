@@ -9,11 +9,12 @@
     "packages/tracer",
     "packages/parameters",
     "packages/idempotency",
+    "packages/batch",
+    "packages/testing",
     "docs/snippets",
     "layers",
     "examples/cdk",
-    "examples/sam",
-    "packages/batch"
+    "examples/sam"
   ],
   "scripts": {
     "init-environment": "husky install",

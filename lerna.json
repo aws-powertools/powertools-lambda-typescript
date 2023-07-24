@@ -6,6 +6,7 @@
     "packages/metrics",
     "packages/parameters",
     "packages/idempotency",
+    "packages/batch",
     "examples/cdk",
     "examples/sam",
     "layers"

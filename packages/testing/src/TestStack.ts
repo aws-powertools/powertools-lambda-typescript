@@ -122,7 +122,7 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
     options: AddSsmStringOptions
   ): SsmString => {
     const resourceId = this.#generateUniqueName(`${testCaseName}-ssmString`);
-    const name = options.name || resourceId;
+    const name = options.name ?? resourceId;
     const ssm = ssmString({
       stack: this.stack,
       resourceId,

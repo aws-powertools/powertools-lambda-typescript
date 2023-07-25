@@ -1,17 +1,17 @@
+import { injectLambdaContext } from '@aws-lambda-powertools/logger';
+import { logMetrics } from '@aws-lambda-powertools/metrics';
+import { captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import middy from '@middy/core';
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
-import middy from '@middy/core';
 import { tableName } from './common/constants';
-import { logger, tracer, metrics } from './common/powertools';
-import { logMetrics } from '@aws-lambda-powertools/metrics';
-import { injectLambdaContext } from '@aws-lambda-powertools/logger';
-import { captureLambdaHandler } from '@aws-lambda-powertools/tracer';
 import { docClient } from './common/dynamodb-client';
-import { ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { default as request } from 'phin';
+import { getUuid } from './common/getUuid';
+import { logger, metrics, tracer } from './common/powertools';
 
 /*
  *
@@ -45,12 +45,7 @@ const getAllItemsHandler = async (
     awsRequestId: context.awsRequestId,
   });
 
-  // Request a sample random uuid from a webservice
-  const res = await request<{ uuid: string }>({
-    url: 'https://httpbin.org/uuid',
-    parse: 'json',
-  });
-  const { uuid } = res.body;
+  const uuid = await getUuid();
 
   // Logger: Append uuid to each log statement
   logger.appendKeys({ uuid });

@@ -1,8 +1,7 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
-
-const awsLambdaPowertoolsVersion = '1.5.0';
+import { PT_VERSION } from '@aws-lambda-powertools/commons/lib/version';
 
 const defaultValues = {
   region: process.env.AWS_REGION || 'N/A',
@@ -14,7 +13,7 @@ const logger = new Logger({
     ...defaultValues,
     logger: {
       name: '@aws-lambda-powertools/logger',
-      version: awsLambdaPowertoolsVersion,
+      version: PT_VERSION,
     },
   },
 });

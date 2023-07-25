@@ -1,14 +1,14 @@
+import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import { GetCommand } from '@aws-sdk/lib-dynamodb';
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
 import { tableName } from './common/constants';
-import { logger, tracer, metrics } from './common/powertools';
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
 import { docClient } from './common/dynamodb-client';
-import { GetCommand } from '@aws-sdk/lib-dynamodb';
-import { default as request } from 'phin';
+import { getUuid } from './common/getUuid';
+import { logger, metrics, tracer } from './common/powertools';
 
 /*
  *
@@ -28,14 +28,7 @@ import { default as request } from 'phin';
 class Lambda implements LambdaInterface {
   @tracer.captureMethod()
   public async getUuid(): Promise<string> {
-    // Request a sample random uuid from a webservice
-    const res = await request<{ uuid: string }>({
-      url: 'https://httpbin.org/uuid',
-      parse: 'json',
-    });
-    const { uuid } = res.body;
-
-    return uuid;
+    return getUuid();
   }
 
   @tracer.captureLambdaHandler({ captureResponse: false }) // by default the tracer would add the response as metadata on the segment, but there is a chance to hit the 64kb segment size limit. Therefore set captureResponse: false

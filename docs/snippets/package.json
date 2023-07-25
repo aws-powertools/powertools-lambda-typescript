@@ -14,8 +14,9 @@
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern ."
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix",
-    "*.js": "npm run lint-fix"
+    "*.{js,ts}": "npm run lint-fix",
+    "*.json": "prettier --write \"**/samples/*.json\" --single-quote false",
+    "*.yaml": "prettier --write \"**/templates/sam/*.yaml\""
   },
   "license": "MIT-0",
   "repository": {

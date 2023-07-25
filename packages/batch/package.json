@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/batch",
-  "version": "1.11.1",
+  "version": "1.12.0",
   "description": "The batch processing package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -40,7 +40,6 @@
   "bugs": {
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
-  "dependencies": {},
   "keywords": [
     "aws",
     "lambda",
@@ -49,6 +48,5 @@
     "batch-processing",
     "serverless",
     "nodejs"
-  ],
-  "devDependencies": {}
+  ]
 }

@@ -69,6 +69,10 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | area/idempotency                       | Items related to the Idempotency Utility                                                       | PR automation                                      |
 | area/parameters                        | Items related to the Parameters Utility                                                        | PR automation                                      |
 | area/commons                           | Items related to the Commons Utility                                                           | PR automation                                      |
+| area/jmespath                          | Items related to the JMESPath Utility                                                          | PR automation                                      |
+| area/validation                        | Items related to the Validation Utility                                                        | PR automation                                      |
+| area/batch                             | Items related to the Batch Processing Utility                                                  | PR automation                                      |
+| area/parser                            | Items related to the Parser Utility                                                            | PR automation                                      |
 | area/automation                        | Items related to automation like GitHub workflows or CI/CD                                     | PR automation                                      |
 | area/layers                            | Items related to the Lambda Layers pipeline                                                    | PR automation                                      |
 | size/XS                                | PRs between 0-9 LOC                                                                            | PR automation                                      |

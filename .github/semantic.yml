@@ -21,7 +21,8 @@ scopes:
   - idempotency
   - commons
   - parser
-  - validator
+  - jmespath
+  - validation
   - batch
   - layers
   - ci

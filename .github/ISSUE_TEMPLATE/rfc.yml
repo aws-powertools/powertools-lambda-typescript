@@ -22,6 +22,10 @@ body:
         - Metrics
         - Parameters
         - Idempotency
+        - JMESPath
+        - Batch Processing
+        - Validation
+        - Parser
         - Other
     validations:
       required: true

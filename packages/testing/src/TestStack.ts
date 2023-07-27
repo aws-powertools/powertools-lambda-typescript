@@ -25,9 +25,9 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    */
   #cli: AwsCdkCli;
 
-  public constructor(stackName: string) {
-    this.appRef = new App();
-    this.stackRef = new Stack(this.appRef, stackName);
+  public constructor(stackName: string, app?: App, stack?: Stack) {
+    this.appRef = app ?? new App();
+    this.stackRef = stack ?? new Stack(this.appRef, stackName);
     this.#cli = AwsCdkCli.fromCloudAssemblyDirectoryProducer(this);
   }
 

@@ -7,10 +7,6 @@
     "url": "https://aws.amazon.com"
   },
   "private": true,
-  "devDependencies": {
-    "@aws-cdk/cli-lib-alpha": "^2.88.0-alpha.0",
-    "aws-cdk-lib": "^2.88.0"
-  },
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
@@ -45,5 +41,10 @@
   "bugs": {
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
-  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme"
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
+  "dependencies": {
+    "@aws-cdk/cli-lib-alpha": "^2.88.0-alpha.0",
+    "aws-cdk-lib": "^2.88.0",
+    "esbuild": "^0.18.17"
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/testing-utils",
-  "version": "1.11.1",
+  "version": "1.12.1",
   "description": "A package containing utilities to test your serverless workloads",
   "author": {
     "name": "Amazon Web Services",
@@ -8,8 +8,8 @@
   },
   "private": true,
   "devDependencies": {
-    "@aws-cdk/cli-lib-alpha": "^2.87.0-alpha.0",
-    "aws-cdk-lib": "^2.73.0"
+    "@aws-cdk/cli-lib-alpha": "^2.88.0-alpha.0",
+    "aws-cdk-lib": "^2.88.0"
   },
   "scripts": {
     "test": "npm run test:unit",

@@ -14,13 +14,13 @@ Themes are key activities maintainers are focusing on, besides bug reports. Thes
 
 We want to close the gap between this version of Powertools for AWS Lambda and the [Python version](https://github.com/aws-powertools/powertools-lambda-python). This means that in the fullness of time, we want to have the same or equivalent features in both versions.
 
-In the first half of 2023 we have released the [Parameters utility](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/10), and are working on Idempotency. We are currently running a private beta for Idempotency, and plan on releasing the [public beta around July 2023](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/7) at the latest.
+In the first half of 2023 we have released the [Parameters utility](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/10), then in July we have released public betas for [Idempotency](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/7) and [Batch Processing](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/13). We are eager to hear your feedback on these new features, so please try them out and let us know what you think!
 
-For the second half of 2023, we are considering implementing one or more of the following utilities (in no particular order):
-- Batch Processing (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1082))
-- Validation (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/508))
-- Parser (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1334))
-- Event Handler (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/413))
+For the remaining of 2023, we are considering implementing one or more of the following utilities (in no particular order):
+
+* Validation (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/508))
+* Parser (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1334))
+* Event Handler (Status: [RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/413))
 
 If any of these utilities are important to you, please let us know by upvoting the issue, leaving a comment under the RFCs, or by joining the discussion in our [Discord community](https://discord.gg/B8zZKbbyET){target="_blank"}.
 
@@ -29,9 +29,10 @@ If any of these utilities are important to you, please let us know by upvoting t
 Over the past year, we have gathered a number of feature requests and improvements that we want to implement but that are not backwards compatible with the current API surface. We are planning to release a new major version of the library by the end of 2023, which will include some of these changes.
 
 The following are some of the changes we are considering:
-- **ES Modules support ([#521](https://github.com/aws-powertools/powertools-lambda-typescript/issues/521))** - Thanks to the work of the community we have been able to validate the feasibility of dual support for CommonJS and ES Modules. We are currently working on a plan to implement this.
-- **TypeScript 5.x support ([#1375](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1375))** - This new version of TypeScript brings breaking changes to the experimental decorators API, which we use in our core utilities. We need to investigate the impact of this change and how to best support it.
-- **Support for 3rd party observability providers ([#1500](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1500))** - Many of our customers would like to use Powertools for AWS to send logs, traces, and metrics to providers other than Amazon CloudWatch. At the moment we are investigating the feasibility of this for the Logger utility, while the Python version of Powertools for AWS Lambda is considering this also for Tracer and Metrics.
+
+* **ES Modules support ([#521](https://github.com/aws-powertools/powertools-lambda-typescript/issues/521))** - Thanks to the work of the community we have been able to validate the feasibility of dual support for CommonJS and ES Modules. We are currently working on a plan to implement this.
+* **TypeScript 5.x support ([#1375](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1375))** - This new version of TypeScript brings breaking changes to the experimental decorators API, which we use in our core utilities. We need to investigate the impact of this change and how to best support it.
+* **Support for 3rd party observability providers ([#1500](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1500))** - Many of our customers would like to use Powertools for AWS to send logs, traces, and metrics to providers other than Amazon CloudWatch. At the moment we are investigating the feasibility of this for the Logger utility, while the Python version of Powertools for AWS Lambda is considering this also for Tracer and Metrics.
 
 We have not yet decided on the final list of features that will be included in this release, if you have any suggestions please let us know by commenting on [this discussion](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/1269) or upvoting existing suggestions.
 
@@ -39,7 +40,7 @@ We have not yet decided on the final list of features that will be included in t
 
 We continue to work on increasing operational excellence to remove as much undifferentiated heavylifting for maintainers, so that we can focus on delivering features that help you.
 
-This means improving our automation workflows, and project management, and test coverage.
+This means improving our automation workflows, project management, and test coverage.
 
 ## Roadmap status definition
 

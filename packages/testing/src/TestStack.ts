@@ -1,3 +1,6 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { App, Stack } from 'aws-cdk-lib';
 import { AwsCdkCli, RequireApproval } from '@aws-cdk/cli-lib-alpha';
 import type { ICloudAssemblyDirectoryProducer } from '@aws-cdk/cli-lib-alpha';
@@ -15,12 +18,24 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
 
   /**
    * Deploy the test stack to the selected environment.
+   *
+   * It returns the outputs of the deployed stack.
    */
-  public async deploy(): Promise<void> {
+  public async deploy(): Promise<Record<string, string>> {
+    const outputFilePath = join(
+      tmpdir(),
+      'powertools-e2e-testing',
+      `${this.stackRef.stackName}.outputs.json`
+    );
     await this.cli.deploy({
       stacks: [this.stackRef.stackName],
       requireApproval: RequireApproval.NEVER,
+      outputsFile: outputFilePath,
     });
+
+    return JSON.parse(await readFile(outputFilePath, 'utf-8'))[
+      this.stackRef.stackName
+    ];
   }
 
   /**

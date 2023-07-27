@@ -5,15 +5,30 @@ import { App, Stack } from 'aws-cdk-lib';
 import { AwsCdkCli, RequireApproval } from '@aws-cdk/cli-lib-alpha';
 import type { ICloudAssemblyDirectoryProducer } from '@aws-cdk/cli-lib-alpha';
 
+/**
+ * Test stack that can be deployed to the selected environment.
+ */
 class TestStack implements ICloudAssemblyDirectoryProducer {
-  public app: App;
-  public cli: AwsCdkCli;
+  /**
+   * Reference to the AWS CDK App object.
+   * @default new App()
+   */
+  public appRef: App;
+  /**
+   * Reference to the AWS CDK Stack object.
+   * @default new Stack(this.appRef, stackName)
+   */
   public stackRef: Stack;
+  /**
+   * @internal
+   * Reference to the AWS CDK CLI object.
+   */
+  #cli: AwsCdkCli;
 
   public constructor(stackName: string) {
-    this.app = new App();
-    this.stackRef = new Stack(this.app, stackName);
-    this.cli = AwsCdkCli.fromCloudAssemblyDirectoryProducer(this);
+    this.appRef = new App();
+    this.stackRef = new Stack(this.appRef, stackName);
+    this.#cli = AwsCdkCli.fromCloudAssemblyDirectoryProducer(this);
   }
 
   /**
@@ -27,7 +42,7 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
       'powertools-e2e-testing',
       `${this.stackRef.stackName}.outputs.json`
     );
-    await this.cli.deploy({
+    await this.#cli.deploy({
       stacks: [this.stackRef.stackName],
       requireApproval: RequireApproval.NEVER,
       outputsFile: outputFilePath,
@@ -42,18 +57,24 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    * Destroy the test stack.
    */
   public async destroy(): Promise<void> {
-    await this.cli.destroy({
+    await this.#cli.destroy({
       stacks: [this.stackRef.stackName],
       requireApproval: false,
     });
   }
 
+  /**
+   * Produce the Cloud Assembly directory.
+   */
   public async produce(_context: Record<string, unknown>): Promise<string> {
-    return this.app.synth().directory;
+    return this.appRef.synth().directory;
   }
 
+  /**
+   * Synthesize the test stack.
+   */
   public async synth(): Promise<void> {
-    await this.cli.synth({
+    await this.#cli.synth({
       stacks: [this.stackRef.stackName],
     });
   }

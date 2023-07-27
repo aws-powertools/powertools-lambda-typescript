@@ -51,7 +51,7 @@ const invocationCount = 3;
 const testStack = new TestStack(stackName);
 let logGroupName: string; // We do not know it until deployment
 
-describe(`logger E2E tests log event via env var setting (middy) for runtime:`, () => {
+describe(`logger E2E tests log event via env var setting (middy) for runtime: ${runtime}`, () => {
   let invocationLogs: InvocationLogs[];
 
   beforeAll(async () => {

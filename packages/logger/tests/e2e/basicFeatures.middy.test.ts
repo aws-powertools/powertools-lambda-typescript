@@ -4,7 +4,6 @@
  * @group e2e/logger/basicFeatures
  */
 import path from 'path';
-import { App, Stack } from 'aws-cdk-lib';
 import { APIGatewayAuthorizerResult } from 'aws-lambda';
 import { v4 } from 'uuid';
 import {
@@ -15,9 +14,9 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -27,7 +26,7 @@ import {
   XRAY_TRACE_ID_REGEX,
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -64,18 +63,16 @@ const ERROR_MSG = 'error';
 const ARBITRARY_OBJECT_KEY = 'arbitraryObjectKey';
 const ARBITRARY_OBJECT_DATA = 'arbitraryObjectData';
 
-const integTestApp = new App();
+const testStack = new TestStack(stackName);
 let logGroupName: string; // We do not know it until deployment
-let stack: Stack;
 
 describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}`, () => {
   let invocationLogs: InvocationLogs[];
 
   beforeAll(async () => {
     // Create and deploy a stack with AWS CDK
-    stack = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName: stackName,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -99,8 +96,8 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
       runtime: runtime,
     });
 
-    const result = await deployStack(integTestApp, stack);
-    logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
+    const result = await testStack.deploy();
+    logGroupName = result[STACK_OUTPUT_LOG_GROUP];
 
     // Invoke the function three time (one for cold start, then two for warm start)
     invocationLogs = await invokeFunction(
@@ -378,7 +375,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

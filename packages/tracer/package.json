@@ -32,6 +32,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@aws-sdk/client-dynamodb": "^3.360.0",
     "@aws-sdk/client-sts": "^3.360.0",
     "@aws-sdk/client-xray": "^3.360.0",

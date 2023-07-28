@@ -4,7 +4,7 @@
  * @group e2e/parameters/appconfig/class
  */
 import path from 'path';
-import { App, Stack, Aspects } from 'aws-cdk-lib';
+import { Aspects } from 'aws-cdk-lib';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 import { v4 } from 'uuid';
 import {
@@ -15,9 +15,9 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
 import {
   RESOURCE_NAME_PREFIX,
@@ -30,7 +30,7 @@ import {
   createAppConfigConfigurationProfile,
 } from '../helpers/parametersUtils';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -119,8 +119,7 @@ const featureFlagValue = {
   },
 };
 
-const integTestApp = new App();
-let stack: Stack;
+const testStack = new TestStack(stackName);
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of AppConfig parameters.
@@ -180,9 +179,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
   beforeAll(async () => {
     // Create a stack with a Lambda function
-    stack = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -202,7 +200,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     // Create the base resources for an AppConfig application.
     const { application, environment, deploymentStrategy } =
       createBaseAppConfigResources({
-        stack,
+        stack: testStack.stack,
         applicationName,
         environmentName,
         deploymentStrategyName,
@@ -210,7 +208,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
     // Create configuration profiles for tests.
     const freeFormJson = createAppConfigConfigurationProfile({
-      stack,
+      stack: testStack.stack,
       application,
       environment,
       deploymentStrategy,
@@ -223,7 +221,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     });
 
     const freeFormYaml = createAppConfigConfigurationProfile({
-      stack,
+      stack: testStack.stack,
       application,
       environment,
       deploymentStrategy,
@@ -237,7 +235,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     freeFormYaml.node.addDependency(freeFormJson);
 
     const freeFormBase64PlainText = createAppConfigConfigurationProfile({
-      stack,
+      stack: testStack.stack,
       application,
       environment,
       deploymentStrategy,
@@ -251,7 +249,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     freeFormBase64PlainText.node.addDependency(freeFormYaml);
 
     const featureFlag = createAppConfigConfigurationProfile({
-      stack,
+      stack: testStack.stack,
       application,
       environment,
       deploymentStrategy,
@@ -265,7 +263,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     featureFlag.node.addDependency(freeFormBase64PlainText);
 
     // Grant access to the Lambda function to the AppConfig resources.
-    Aspects.of(stack).add(
+    Aspects.of(testStack.stack).add(
       new ResourceAccessGranter([
         freeFormJson,
         freeFormYaml,
@@ -275,7 +273,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     );
 
     // Deploy the stack
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     // and invoke the Lambda function
     invocationLogs = await invokeFunction(
@@ -388,7 +386,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

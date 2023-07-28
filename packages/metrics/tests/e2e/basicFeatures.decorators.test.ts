@@ -5,7 +5,6 @@
  */
 import path from 'path';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
-import { App, Stack } from 'aws-cdk-lib';
 import {
   CloudWatchClient,
   GetMetricStatisticsCommand,
@@ -18,9 +17,9 @@ import {
   invokeFunction,
 } from '../../../commons/tests/utils/e2eUtils';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import { MetricUnits } from '../../src';
 import {
   ONE_MINUTE,
@@ -31,7 +30,7 @@ import {
 } from './constants';
 import { getMetrics } from '../helpers/metricsUtils';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -70,15 +69,13 @@ const expectedSingleMetricName = 'MySingleMetric';
 const expectedSingleMetricUnit = MetricUnits.Percent;
 const expectedSingleMetricValue = '2';
 
-const integTestApp = new App();
-let stack: Stack;
+const testStack = new TestStack(stackName);
 
 describe(`metrics E2E tests (decorator) for runtime: ${runtime}`, () => {
   beforeAll(async () => {
     // GIVEN a stack
-    stack = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName: stackName,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       tracing: Tracing.ACTIVE,
@@ -104,7 +101,7 @@ describe(`metrics E2E tests (decorator) for runtime: ${runtime}`, () => {
       runtime: runtime,
     });
 
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     // and invoked
     await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
@@ -233,7 +230,7 @@ describe(`metrics E2E tests (decorator) for runtime: ${runtime}`, () => {
   });
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

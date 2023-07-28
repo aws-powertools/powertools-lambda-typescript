@@ -2,7 +2,7 @@
  * E2E utils is used by e2e tests. They are helper function that calls either CDK or SDK
  * to interact with services.
  */
-import { App, CfnOutput, Duration, Stack } from 'aws-cdk-lib';
+import { CfnOutput, Duration, Stack } from 'aws-cdk-lib';
 import {
   NodejsFunction,
   NodejsFunctionProps,
@@ -25,8 +25,7 @@ export const TEST_RUNTIMES: Record<TestRuntimesKey, Runtime> = {
 };
 
 export type StackWithLambdaFunctionOptions = {
-  app: App;
-  stackName: string;
+  stack: Stack;
   functionName: string;
   functionEntry: string;
   tracing?: Tracing;
@@ -48,9 +47,8 @@ export const isValidRuntimeKey = (
 
 export const createStackWithLambdaFunction = (
   params: StackWithLambdaFunctionOptions
-): Stack => {
-  const stack = new Stack(params.app, params.stackName);
-  const testFunction = new NodejsFunction(stack, `testFunction`, {
+): void => {
+  const testFunction = new NodejsFunction(params.stack, `testFunction`, {
     functionName: params.functionName,
     entry: params.functionEntry,
     tracing: params.tracing,
@@ -63,12 +61,10 @@ export const createStackWithLambdaFunction = (
   });
 
   if (params.logGroupOutputKey) {
-    new CfnOutput(stack, params.logGroupOutputKey, {
+    new CfnOutput(params.stack, params.logGroupOutputKey, {
       value: testFunction.logGroup.logGroupName,
     });
   }
-
-  return stack;
 };
 
 export const generateUniqueName = (

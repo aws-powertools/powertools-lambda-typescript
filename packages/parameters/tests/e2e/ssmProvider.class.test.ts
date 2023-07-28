@@ -4,7 +4,7 @@
  * @group e2e/parameters/ssm/class
  */
 import path from 'path';
-import { App, Stack, Aspects } from 'aws-cdk-lib';
+import { Aspects } from 'aws-cdk-lib';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { v4 } from 'uuid';
 import {
@@ -15,9 +15,9 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
 import {
   RESOURCE_NAME_PREFIX,
@@ -27,7 +27,7 @@ import {
 } from './constants';
 import { createSSMSecureString } from '../helpers/parametersUtils';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -82,8 +82,7 @@ const paramBValue = 'bar';
 const paramEncryptedAValue = 'foo-encrypted';
 const paramEncryptedBValue = 'bar-encrypted';
 
-const integTestApp = new App();
-let stack: Stack;
+const testStack = new TestStack(stackName);
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of SSM parameters.
@@ -139,9 +138,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
 
   beforeAll(async () => {
     // Create a stack with a Lambda function
-    stack = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -157,31 +155,31 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     });
 
     // Create SSM parameters
-    const parameterGetA = new StringParameter(stack, 'Param-a', {
+    const parameterGetA = new StringParameter(testStack.stack, 'Param-a', {
       parameterName: paramA,
       stringValue: paramAValue,
     });
-    const parameterGetB = new StringParameter(stack, 'Param-b', {
+    const parameterGetB = new StringParameter(testStack.stack, 'Param-b', {
       parameterName: paramB,
       stringValue: paramBValue,
     });
 
     const parameterEncryptedA = createSSMSecureString({
-      stack,
+      stack: testStack.stack,
       id: 'Param-encrypted-a',
       name: paramEncryptedA,
       value: paramEncryptedAValue,
     });
 
     const parameterEncryptedB = createSSMSecureString({
-      stack,
+      stack: testStack.stack,
       id: 'Param-encrypted-b',
       name: paramEncryptedB,
       value: paramEncryptedBValue,
     });
 
     // Give the Lambda function access to the SSM parameters
-    Aspects.of(stack).add(
+    Aspects.of(testStack.stack).add(
       new ResourceAccessGranter([
         parameterGetA,
         parameterGetB,
@@ -191,7 +189,7 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     );
 
     // Deploy the stack
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     // and invoke the Lambda function
     invocationLogs = await invokeFunction(
@@ -377,7 +375,7 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

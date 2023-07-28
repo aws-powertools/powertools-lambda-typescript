@@ -4,7 +4,6 @@
  * @group e2e/logger/childLogger
  */
 import path from 'path';
-import { App, Stack } from 'aws-cdk-lib';
 import { v4 } from 'uuid';
 import {
   createStackWithLambdaFunction,
@@ -14,9 +13,9 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import {
   RESOURCE_NAME_PREFIX,
   STACK_OUTPUT_LOG_GROUP,
@@ -25,7 +24,7 @@ import {
   TEARDOWN_TIMEOUT,
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -57,18 +56,16 @@ const PARENT_LOG_MSG = 'parent-only-log-msg';
 const CHILD_LOG_MSG = 'child-only-log-msg';
 const CHILD_LOG_LEVEL = LEVEL.ERROR;
 
-const integTestApp = new App();
+const testStack = new TestStack(stackName);
 let logGroupName: string; // We do not know it until deployment
-let stack: Stack;
 
 describe(`logger E2E tests child logger functionalities (manual) for runtime: ${runtime}`, () => {
   let invocationLogs: InvocationLogs[];
 
   beforeAll(async () => {
     // Create and deploy a stack with AWS CDK
-    stack = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName: stackName,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -86,8 +83,9 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
       logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
       runtime: runtime,
     });
-    const result = await deployStack(integTestApp, stack);
-    logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
+
+    const result = await testStack.deploy();
+    logGroupName = result[STACK_OUTPUT_LOG_GROUP];
 
     // Invoke the function three time (one for cold start, then two for warm start)
     invocationLogs = await invokeFunction(functionName, invocationCount);
@@ -184,7 +182,7 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

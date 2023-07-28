@@ -6,14 +6,14 @@
 
 import path from 'path';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
 import { XRayClient } from '@aws-sdk/client-xray';
 import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import {
   createTracerTestFunction,
   getFirstSubsegment,
@@ -44,7 +44,7 @@ import {
   assertErrorAndFault,
 } from '../helpers/traceAssertions';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -120,17 +120,15 @@ const xrayClient = new XRayClient({});
 const stsClient = new STSClient({});
 const invocations = 3;
 
-const integTestApp = new App();
-let stack: Stack;
+const testStack = new TestStack(stackName);
 
 describe(`Tracer E2E tests, all features with middy instantiation for runtime: ${runtime}`, () => {
   beforeAll(async () => {
     // Prepare
     startTime = new Date();
     const ddbTableName = stackName + '-table';
-    stack = new Stack(integTestApp, stackName);
 
-    const ddbTable = new Table(stack, 'Table', {
+    const ddbTable = new Table(testStack.stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
         name: 'id',
@@ -142,7 +140,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
 
     const entry = path.join(__dirname, lambdaFunctionCodeFile);
     const functionWithAllFlagsEnabled = createTracerTestFunction({
-      stack,
+      stack: testStack.stack,
       functionName: functionNameWithAllFlagsEnabled,
       entry,
       expectedServiceName: serviceNameWithAllFlagsEnabled,
@@ -158,7 +156,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
 
     const functionThatDoesNotCapturesErrorAndResponse =
       createTracerTestFunction({
-        stack,
+        stack: testStack.stack,
         functionName: functionNameWithNoCaptureErrorOrResponse,
         entry,
         expectedServiceName: serviceNameWithNoCaptureErrorOrResponse,
@@ -173,7 +171,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
     ddbTable.grantWriteData(functionThatDoesNotCapturesErrorAndResponse);
 
     const functionWithTracerDisabled = createTracerTestFunction({
-      stack,
+      stack: testStack.stack,
       functionName: functionNameWithTracerDisabled,
       entry,
       expectedServiceName: serviceNameWithTracerDisabled,
@@ -189,7 +187,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
 
     const functionThatDoesNotCaptureResponseViaMiddlewareOption =
       createTracerTestFunction({
-        stack,
+        stack: testStack.stack,
         functionName: functionNameWithNoCaptureResponseViaMiddlewareOption,
         entry,
         handler: 'handlerWithNoCaptureResponseViaMiddlewareOption',
@@ -207,7 +205,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       functionThatDoesNotCaptureResponseViaMiddlewareOption
     );
 
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     // Act
     await Promise.all([
@@ -220,7 +218,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 

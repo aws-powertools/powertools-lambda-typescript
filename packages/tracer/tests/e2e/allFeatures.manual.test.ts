@@ -3,17 +3,16 @@
  *
  * @group e2e/tracer/manual
  */
-
 import path from 'path';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
 import { XRayClient } from '@aws-sdk/client-xray';
 import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import {
   createTracerTestFunction,
   getFirstSubsegment,
@@ -45,7 +44,7 @@ import {
   assertErrorAndFault,
 } from '../helpers/traceAssertions';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -72,15 +71,13 @@ const stsClient = new STSClient({});
 const invocations = 3;
 let sortedTraces: ParsedTrace[];
 
-const integTestApp = new App();
-let stack: Stack;
+const testStack = new TestStack(stackName);
 
 describe(`Tracer E2E tests, all features with manual instantiation for runtime: ${runtime}`, () => {
   beforeAll(async () => {
     // Prepare
     const startTime = new Date();
     const ddbTableName = stackName + '-table';
-    stack = new Stack(integTestApp, stackName);
 
     const entry = path.join(__dirname, lambdaFunctionCodeFile);
     const environmentParams = {
@@ -90,7 +87,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       POWERTOOLS_TRACE_ENABLED: 'true',
     };
     const testFunction = createTracerTestFunction({
-      stack,
+      stack: testStack.stack,
       functionName,
       entry,
       expectedServiceName,
@@ -98,7 +95,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       runtime,
     });
 
-    const ddbTable = new Table(stack, 'Table', {
+    const ddbTable = new Table(testStack.stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
         name: 'id',
@@ -110,7 +107,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
 
     ddbTable.grantWriteData(testFunction);
 
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     // Act
     await invokeAllTestCases(functionName);
@@ -128,7 +125,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 

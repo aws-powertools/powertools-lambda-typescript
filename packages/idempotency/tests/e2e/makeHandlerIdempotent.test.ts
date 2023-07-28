@@ -16,17 +16,16 @@ import {
   TEST_CASE_TIMEOUT,
 } from './constants';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import { v4 } from 'uuid';
-import { App, Stack } from 'aws-cdk-lib';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { createHash } from 'node:crypto';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { createIdempotencyResources } from '../helpers/idempotencyUtils';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -41,10 +40,8 @@ const stackName = generateUniqueName(
 );
 const makeHandlerIdempotentFile = 'makeHandlerIdempotent.test.FunctionCode.ts';
 
-const app = new App();
-
 const ddb = new DynamoDBClient({});
-const stack = new Stack(app, stackName);
+const testStack = new TestStack(stackName);
 
 const testDefault = 'default-sequential';
 const functionNameDefault = generateUniqueName(
@@ -60,7 +57,7 @@ const ddbTableNameDefault = generateUniqueName(
   `${testDefault}-table`
 );
 createIdempotencyResources(
-  stack,
+  testStack.stack,
   runtime,
   ddbTableNameDefault,
   makeHandlerIdempotentFile,
@@ -82,7 +79,7 @@ const ddbTableNameDefaultParallel = generateUniqueName(
   `${testDefaultParallel}-table`
 );
 createIdempotencyResources(
-  stack,
+  testStack.stack,
   runtime,
   ddbTableNameDefaultParallel,
   makeHandlerIdempotentFile,
@@ -104,7 +101,7 @@ const ddbTableNameTimeout = generateUniqueName(
   `${testTimeout}-table`
 );
 createIdempotencyResources(
-  stack,
+  testStack.stack,
   runtime,
   ddbTableNameTimeout,
   makeHandlerIdempotentFile,
@@ -128,7 +125,7 @@ const ddbTableNameExpired = generateUniqueName(
   `${testExpired}-table`
 );
 createIdempotencyResources(
-  stack,
+  testStack.stack,
   runtime,
   ddbTableNameExpired,
   makeHandlerIdempotentFile,
@@ -140,7 +137,7 @@ createIdempotencyResources(
 
 describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`, () => {
   beforeAll(async () => {
-    await deployStack(app, stack);
+    await testStack.deploy();
   }, SETUP_TIMEOUT);
 
   test(
@@ -385,6 +382,6 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
   );
 
   afterAll(async () => {
-    await destroyStack(app, stack);
+    await testStack.destroy();
   }, TEARDOWN_TIMEOUT);
 });

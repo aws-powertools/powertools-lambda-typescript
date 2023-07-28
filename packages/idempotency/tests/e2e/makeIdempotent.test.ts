@@ -15,18 +15,17 @@ import {
   TEST_CASE_TIMEOUT,
 } from './constants';
 import { v4 } from 'uuid';
-import { App, Stack } from 'aws-cdk-lib';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { createHash } from 'node:crypto';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { createIdempotencyResources } from '../helpers/idempotencyUtils';
 import { InvocationLogs } from '@aws-lambda-powertools/commons/tests/utils/InvocationLogs';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -40,10 +39,8 @@ const stackName = generateUniqueName(
 );
 const makeFunctionIdempotentFile = 'makeIdempotent.test.FunctionCode.ts';
 
-const app = new App();
-
 const ddb = new DynamoDBClient({ region: 'eu-west-1' });
-const stack = new Stack(app, stackName);
+const testStack = new TestStack(stackName);
 
 const testDefault = 'default';
 const functionNameDefault = generateUniqueName(
@@ -59,7 +56,7 @@ const ddbTableNameDefault = generateUniqueName(
   `${testDefault}-table`
 );
 createIdempotencyResources(
-  stack,
+  testStack.stack,
   runtime,
   ddbTableNameDefault,
   makeFunctionIdempotentFile,
@@ -81,7 +78,7 @@ const ddbTableNameCustomConfig = generateUniqueName(
   `${testCustomConfig}-fn`
 );
 createIdempotencyResources(
-  stack,
+  testStack.stack,
   runtime,
   ddbTableNameCustomConfig,
   makeFunctionIdempotentFile,
@@ -104,7 +101,7 @@ const ddbTableNameLambdaHandler = generateUniqueName(
   `${testLambdaHandler}-table`
 );
 createIdempotencyResources(
-  stack,
+  testStack.stack,
   runtime,
   ddbTableNameLambdaHandler,
   makeFunctionIdempotentFile,
@@ -114,7 +111,7 @@ createIdempotencyResources(
 
 describe(`Idempotency E2E tests, wrapper function usage for runtime`, () => {
   beforeAll(async () => {
-    await deployStack(app, stack);
+    await testStack.deploy();
   }, SETUP_TIMEOUT);
 
   it(
@@ -330,7 +327,7 @@ describe(`Idempotency E2E tests, wrapper function usage for runtime`, () => {
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(app, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

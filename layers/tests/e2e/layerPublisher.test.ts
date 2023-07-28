@@ -3,13 +3,13 @@
  *
  * @group e2e/layers/all
  */
-import { App, Stack } from 'aws-cdk-lib';
-import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import { App } from 'aws-cdk-lib';
+import { LayerVersion, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../packages/commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import {
   generateUniqueName,
   invokeFunction,
@@ -30,7 +30,7 @@ import { v4 } from 'uuid';
 import path from 'path';
 import packageJson from '../../package.json';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key: ${runtime}`);
@@ -66,30 +66,33 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
   const lambdaFunctionCodeFile = 'layerPublisher.class.test.functionCode.ts';
 
   const invocationCount = 1;
-
-  const integTestApp = new App();
-  let stackLayer: LayerPublisherStack;
-  let stackFunction: Stack;
-
   const powerToolsPackageVersion = packageJson.version;
+  const layerName = generateUniqueName(
+    RESOURCE_NAME_PREFIX,
+    uuid,
+    runtime,
+    'layer'
+  );
+
+  const testStack = new TestStack(stackNameFunction);
+  const layerApp = new App();
+  const layerStack = new LayerPublisherStack(layerApp, stackNameLayers, {
+    layerName,
+    powertoolsPackageVersion: powerToolsPackageVersion,
+    ssmParameterLayerArn: ssmParameterLayerName,
+  });
+  const testLayerStack = new TestStack(stackNameLayers, layerApp, layerStack);
 
   beforeAll(async () => {
-    const layerName = generateUniqueName(
-      RESOURCE_NAME_PREFIX,
-      uuid,
-      runtime,
-      'layer'
+    const outputs = await testLayerStack.deploy();
+
+    const layerVersion = LayerVersion.fromLayerVersionArn(
+      testStack.stack,
+      'LayerVersionArnReference',
+      outputs['LatestLayerArn']
     );
-
-    stackLayer = new LayerPublisherStack(integTestApp, stackNameLayers, {
-      layerName: layerName,
-      powertoolsPackageVersion: powerToolsPackageVersion,
-      ssmParameterLayerArn: ssmParameterLayerName,
-    });
-
-    stackFunction = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName: stackNameFunction,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       tracing: Tracing.ACTIVE,
@@ -107,11 +110,10 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
           '@aws-lambda-powertools/tracer',
         ],
       },
-      layers: [stackLayer.lambdaLayerVersion],
+      layers: [layerVersion],
     });
 
-    await deployStack(integTestApp, stackLayer);
-    await deployStack(integTestApp, stackFunction);
+    await testStack.deploy();
 
     invocationLogs = await invokeFunction(
       functionName,
@@ -167,8 +169,8 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stackFunction);
-      await destroyStack(integTestApp, stackLayer);
+      await testLayerStack.destroy();
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

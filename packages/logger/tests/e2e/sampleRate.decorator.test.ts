@@ -4,7 +4,6 @@
  * @group e2e/logger/sampleRate
  */
 import path from 'path';
-import { App, Stack } from 'aws-cdk-lib';
 import { v4 } from 'uuid';
 import {
   createStackWithLambdaFunction,
@@ -14,9 +13,9 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import {
   RESOURCE_NAME_PREFIX,
   STACK_OUTPUT_LOG_GROUP,
@@ -25,7 +24,7 @@ import {
   TEARDOWN_TIMEOUT,
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -55,8 +54,7 @@ const LOG_MSG = `Log message ${uuid}`;
 const SAMPLE_RATE = '0.5';
 const LOG_LEVEL = LEVEL.ERROR;
 
-const integTestApp = new App();
-let stack: Stack;
+const testStack = new TestStack(stackName);
 let logGroupName: string; // We do not know the exact name until deployment
 
 describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: nodejs18x`, () => {
@@ -64,9 +62,8 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: no
 
   beforeAll(async () => {
     // Create and deploy a stack with AWS CDK
-    stack = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName: stackName,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -81,8 +78,9 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: no
       logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
       runtime: runtime,
     });
-    const result = await deployStack(integTestApp, stack);
-    logGroupName = result.outputs[STACK_OUTPUT_LOG_GROUP];
+
+    const result = await testStack.deploy();
+    logGroupName = result[STACK_OUTPUT_LOG_GROUP];
 
     invocationLogs = await invokeFunction(functionName, invocationCount);
 
@@ -150,7 +148,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: no
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

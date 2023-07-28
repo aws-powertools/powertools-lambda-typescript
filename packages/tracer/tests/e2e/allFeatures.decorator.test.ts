@@ -3,17 +3,16 @@
  *
  * @group e2e/tracer/decorator
  */
-
 import path from 'path';
+import {
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
 import { XRayClient } from '@aws-sdk/client-xray';
 import { STSClient } from '@aws-sdk/client-sts';
 import { v4 } from 'uuid';
-import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
 import {
   createTracerTestFunction,
   getFirstSubsegment,
@@ -44,7 +43,7 @@ import {
   assertErrorAndFault,
 } from '../helpers/traceAssertions';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -120,17 +119,15 @@ const xrayClient = new XRayClient({});
 const stsClient = new STSClient({});
 const invocations = 3;
 
-const integTestApp = new App();
-let stack: Stack;
+const testStack = new TestStack(stackName);
 
 describe(`Tracer E2E tests, all features with decorator instantiation for runtime: ${runtime}`, () => {
   beforeAll(async () => {
     // Prepare
     startTime = new Date();
     const ddbTableName = stackName + '-table';
-    stack = new Stack(integTestApp, stackName);
 
-    const ddbTable = new Table(stack, 'Table', {
+    const ddbTable = new Table(testStack.stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
         name: 'id',
@@ -142,7 +139,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
     const entry = path.join(__dirname, lambdaFunctionCodeFile);
     const functionWithAllFlagsEnabled = createTracerTestFunction({
-      stack,
+      stack: testStack.stack,
       functionName: functionNameWithAllFlagsEnabled,
       entry,
       expectedServiceName: serviceNameWithAllFlagsEnabled,
@@ -158,7 +155,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
     const functionThatDoesNotCapturesErrorAndResponse =
       createTracerTestFunction({
-        stack,
+        stack: testStack.stack,
         functionName: functionNameWithNoCaptureErrorOrResponse,
         entry,
         expectedServiceName: serviceNameWithNoCaptureErrorOrResponse,
@@ -173,7 +170,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     ddbTable.grantWriteData(functionThatDoesNotCapturesErrorAndResponse);
 
     const functionWithTracerDisabled = createTracerTestFunction({
-      stack,
+      stack: testStack.stack,
       functionName: functionNameWithTracerDisabled,
       entry,
       expectedServiceName: serviceNameWithTracerDisabled,
@@ -188,7 +185,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     ddbTable.grantWriteData(functionWithTracerDisabled);
 
     const functionWithCaptureResponseFalse = createTracerTestFunction({
-      stack,
+      stack: testStack.stack,
       functionName: functionNameWithCaptureResponseFalse,
       handler: 'handlerWithCaptureResponseFalse',
       entry,
@@ -203,7 +200,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     });
     ddbTable.grantWriteData(functionWithCaptureResponseFalse);
 
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     // Act
     await Promise.all([
@@ -216,7 +213,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 

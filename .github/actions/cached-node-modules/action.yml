@@ -41,5 +41,6 @@ runs:
         npm run build -w packages/metrics & \
         npm run build -w packages/parameters & \
         npm run build -w packages/idempotency & \
-        npm run build -w packages/batch
+        npm run build -w packages/batch & \
+        npm run build -w packages/testing
       shell: bash

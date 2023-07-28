@@ -18,16 +18,16 @@ import {
 import { v4 } from 'uuid';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
-import { App, Aspects, SecretValue, Stack } from 'aws-cdk-lib';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
+import { Aspects, SecretValue } from 'aws-cdk-lib';
 import path from 'path';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key: ${runtime}`);
@@ -68,8 +68,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
 
   const invocationCount = 1;
 
-  const integTestApp = new App();
-  let stack: Stack;
+  const testStack = new TestStack(stackName);
 
   beforeAll(async () => {
     // use unique names for each test to keep a clean state
@@ -106,9 +105,8 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
 
     // creates the test fuction that uses Powertools for AWS Lambda (TypeScript) secret provider we want to test
     // pass env vars with secret names we want to fetch
-    stack = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName: stackName,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       tracing: Tracing.ACTIVE,
@@ -123,30 +121,34 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
       runtime: runtime,
     });
 
-    const secretString = new Secret(stack, 'testSecretPlain', {
+    const secretString = new Secret(testStack.stack, 'testSecretPlain', {
       secretName: secretNamePlain,
       secretStringValue: SecretValue.unsafePlainText('foo'),
     });
 
-    const secretObject = new Secret(stack, 'testSecretObject', {
+    const secretObject = new Secret(testStack.stack, 'testSecretObject', {
       secretName: secretNameObject,
       secretObjectValue: {
         foo: SecretValue.unsafePlainText('bar'),
       },
     });
 
-    const secretBinary = new Secret(stack, 'testSecretBinary', {
+    const secretBinary = new Secret(testStack.stack, 'testSecretBinary', {
       secretName: secretNameBinary,
       secretStringValue: SecretValue.unsafePlainText('Zm9v'), // 'foo' encoded in base64
     });
 
-    const secretStringCached = new Secret(stack, 'testSecretStringCached', {
-      secretName: secretNamePlainCached,
-      secretStringValue: SecretValue.unsafePlainText('foo'),
-    });
+    const secretStringCached = new Secret(
+      testStack.stack,
+      'testSecretStringCached',
+      {
+        secretName: secretNamePlainCached,
+        secretStringValue: SecretValue.unsafePlainText('foo'),
+      }
+    );
 
     const secretStringForceFetch = new Secret(
-      stack,
+      testStack.stack,
       'testSecretStringForceFetch',
       {
         secretName: secretNamePlainForceFetch,
@@ -155,7 +157,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
     );
 
     // add secrets here to grant lambda permisisons to access secrets
-    Aspects.of(stack).add(
+    Aspects.of(testStack.stack).add(
       new ResourceAccessGranter([
         secretString,
         secretObject,
@@ -165,7 +167,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
       ])
     );
 
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     invocationLogs = await invokeFunction(
       functionName,
@@ -242,7 +244,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

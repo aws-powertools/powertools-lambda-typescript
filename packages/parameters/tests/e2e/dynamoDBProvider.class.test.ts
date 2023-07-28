@@ -5,7 +5,7 @@
  */
 import path from 'path';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-import { App, Stack, Aspects } from 'aws-cdk-lib';
+import { Aspects } from 'aws-cdk-lib';
 import { v4 } from 'uuid';
 import {
   generateUniqueName,
@@ -15,9 +15,9 @@ import {
 } from '../../../commons/tests/utils/e2eUtils';
 import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
 import {
-  deployStack,
-  destroyStack,
-} from '../../../commons/tests/utils/cdk-cli';
+  TestStack,
+  defaultRuntime,
+} from '@aws-lambda-powertools/testing-utils';
 import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
 import {
   RESOURCE_NAME_PREFIX,
@@ -30,7 +30,7 @@ import {
   putDynamoDBItem,
 } from '../helpers/parametersUtils';
 
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
+const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
@@ -82,8 +82,7 @@ const keyAttr = 'key';
 const sortAttr = 'sort';
 const valueAttr = 'val';
 
-const integTestApp = new App();
-let stack: Stack;
+const testStack = new TestStack(stackName);
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of DynamoDB tables.
@@ -166,9 +165,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
   beforeAll(async () => {
     // Create a stack with a Lambda function
-    stack = createStackWithLambdaFunction({
-      app: integTestApp,
-      stackName,
+    createStackWithLambdaFunction({
+      stack: testStack.stack,
       functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -188,7 +186,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Create the DynamoDB tables
     const ddbTableGet = createDynamoDBTable({
-      stack,
+      stack: testStack.stack,
       id: 'Table-get',
       tableName: tableGet,
       partitionKey: {
@@ -197,7 +195,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     const ddbTableGetMultiple = createDynamoDBTable({
-      stack,
+      stack: testStack.stack,
       id: 'Table-getMultiple',
       tableName: tableGetMultiple,
       partitionKey: {
@@ -210,7 +208,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     const ddbTableGetCustomKeys = createDynamoDBTable({
-      stack,
+      stack: testStack.stack,
       id: 'Table-getCustomKeys',
       tableName: tableGetCustomkeys,
       partitionKey: {
@@ -219,7 +217,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     const ddbTabelGetMultipleCustomKeys = createDynamoDBTable({
-      stack,
+      stack: testStack.stack,
       id: 'Table-getMultipleCustomKeys',
       tableName: tableGetMultipleCustomkeys,
       partitionKey: {
@@ -233,7 +231,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     });
 
     // Give the Lambda access to the DynamoDB tables
-    Aspects.of(stack).add(
+    Aspects.of(testStack.stack).add(
       new ResourceAccessGranter([
         ddbTableGet,
         ddbTableGetMultiple,
@@ -245,7 +243,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     // Seed tables with test data
     // Test 1
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test1',
       table: ddbTableGet,
       item: {
@@ -256,7 +254,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 2
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test2-a',
       table: ddbTableGetMultiple,
       item: {
@@ -266,7 +264,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test2-b',
       table: ddbTableGetMultiple,
       item: {
@@ -278,7 +276,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 3
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test3',
       table: ddbTableGetCustomKeys,
       item: {
@@ -289,7 +287,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 4
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test4-a',
       table: ddbTabelGetMultipleCustomKeys,
       item: {
@@ -299,7 +297,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test4-b',
       table: ddbTabelGetMultipleCustomKeys,
       item: {
@@ -311,7 +309,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 5
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test5',
       table: ddbTableGet,
       item: {
@@ -322,7 +320,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 6
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test6',
       table: ddbTableGet,
       item: {
@@ -333,7 +331,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 7
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test7-a',
       table: ddbTableGetMultiple,
       item: {
@@ -343,7 +341,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     putDynamoDBItem({
-      stack,
+      stack: testStack.stack,
       id: 'my-param-test7-b',
       table: ddbTableGetMultiple,
       item: {
@@ -356,7 +354,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     // Test 8 & 9 use the same items as Test 1
 
     // Deploy the stack
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     // and invoke the Lambda function
     invocationLogs = await invokeFunction(
@@ -488,7 +486,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
-      await destroyStack(integTestApp, stack);
+      await testStack.destroy();
     }
   }, TEARDOWN_TIMEOUT);
 });

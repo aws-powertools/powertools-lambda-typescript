@@ -87,7 +87,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       POWERTOOLS_TRACE_ENABLED: 'true',
     };
     const testFunction = createTracerTestFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName,
       entry,
       expectedServiceName,
@@ -95,7 +95,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       runtime,
     });
 
-    const ddbTable = new Table(testStack.stackRef, 'Table', {
+    const ddbTable = new Table(testStack.stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
         name: 'id',

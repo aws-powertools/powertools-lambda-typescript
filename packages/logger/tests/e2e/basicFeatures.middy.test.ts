@@ -72,7 +72,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
   beforeAll(async () => {
     // Create and deploy a stack with AWS CDK
     createStackWithLambdaFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {

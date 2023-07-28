@@ -87,12 +87,12 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
     const outputs = await testLayerStack.deploy();
 
     const layerVersion = LayerVersion.fromLayerVersionArn(
-      testStack.stackRef,
+      testStack.stack,
       'LayerVersionArnReference',
       outputs['LatestLayerArn']
     );
     createStackWithLambdaFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       tracing: Tracing.ACTIVE,

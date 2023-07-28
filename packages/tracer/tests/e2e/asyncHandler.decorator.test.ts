@@ -97,7 +97,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
     startTime = new Date();
     const ddbTableName = stackName + '-table';
 
-    const ddbTable = new Table(testStack.stackRef, 'Table', {
+    const ddbTable = new Table(testStack.stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
         name: 'id',
@@ -109,7 +109,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
 
     const entry = path.join(__dirname, lambdaFunctionCodeFile);
     const functionWithAllFlagsEnabled = createTracerTestFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionNameWithAllFlagsEnabled,
       entry,
       expectedServiceName: serviceNameWithAllFlagsEnabled,
@@ -124,7 +124,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
     ddbTable.grantWriteData(functionWithAllFlagsEnabled);
 
     const functionWithCustomSubsegmentNameInMethod = createTracerTestFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionNameWithCustomSubsegmentNameInMethod,
       handler: 'handlerWithCustomSubsegmentNameInMethod',
       entry,

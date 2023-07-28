@@ -166,7 +166,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
   beforeAll(async () => {
     // Create a stack with a Lambda function
     createStackWithLambdaFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -186,7 +186,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Create the DynamoDB tables
     const ddbTableGet = createDynamoDBTable({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'Table-get',
       tableName: tableGet,
       partitionKey: {
@@ -195,7 +195,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     const ddbTableGetMultiple = createDynamoDBTable({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'Table-getMultiple',
       tableName: tableGetMultiple,
       partitionKey: {
@@ -208,7 +208,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     const ddbTableGetCustomKeys = createDynamoDBTable({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'Table-getCustomKeys',
       tableName: tableGetCustomkeys,
       partitionKey: {
@@ -217,7 +217,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     const ddbTabelGetMultipleCustomKeys = createDynamoDBTable({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'Table-getMultipleCustomKeys',
       tableName: tableGetMultipleCustomkeys,
       partitionKey: {
@@ -231,7 +231,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     });
 
     // Give the Lambda access to the DynamoDB tables
-    Aspects.of(testStack.stackRef).add(
+    Aspects.of(testStack.stack).add(
       new ResourceAccessGranter([
         ddbTableGet,
         ddbTableGetMultiple,
@@ -243,7 +243,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     // Seed tables with test data
     // Test 1
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test1',
       table: ddbTableGet,
       item: {
@@ -254,7 +254,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 2
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test2-a',
       table: ddbTableGetMultiple,
       item: {
@@ -264,7 +264,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test2-b',
       table: ddbTableGetMultiple,
       item: {
@@ -276,7 +276,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 3
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test3',
       table: ddbTableGetCustomKeys,
       item: {
@@ -287,7 +287,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 4
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test4-a',
       table: ddbTabelGetMultipleCustomKeys,
       item: {
@@ -297,7 +297,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test4-b',
       table: ddbTabelGetMultipleCustomKeys,
       item: {
@@ -309,7 +309,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 5
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test5',
       table: ddbTableGet,
       item: {
@@ -320,7 +320,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 6
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test6',
       table: ddbTableGet,
       item: {
@@ -331,7 +331,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 7
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test7-a',
       table: ddbTableGetMultiple,
       item: {
@@ -341,7 +341,7 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
       },
     });
     putDynamoDBItem({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'my-param-test7-b',
       table: ddbTableGetMultiple,
       item: {

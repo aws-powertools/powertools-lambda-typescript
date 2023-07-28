@@ -13,12 +13,12 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    * Reference to the AWS CDK App object.
    * @default new App()
    */
-  public appRef: App;
+  public app: App;
   /**
    * Reference to the AWS CDK Stack object.
-   * @default new Stack(this.appRef, stackName)
+   * @default new Stack(this.app, stackName)
    */
-  public stackRef: Stack;
+  public stack: Stack;
   /**
    * @internal
    * Reference to the AWS CDK CLI object.
@@ -26,8 +26,8 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
   #cli: AwsCdkCli;
 
   public constructor(stackName: string, app?: App, stack?: Stack) {
-    this.appRef = app ?? new App();
-    this.stackRef = stack ?? new Stack(this.appRef, stackName);
+    this.app = app ?? new App();
+    this.stack = stack ?? new Stack(this.app, stackName);
     this.#cli = AwsCdkCli.fromCloudAssemblyDirectoryProducer(this);
   }
 
@@ -40,16 +40,16 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
     const outputFilePath = join(
       tmpdir(),
       'powertools-e2e-testing',
-      `${this.stackRef.stackName}.outputs.json`
+      `${this.stack.stackName}.outputs.json`
     );
     await this.#cli.deploy({
-      stacks: [this.stackRef.stackName],
+      stacks: [this.stack.stackName],
       requireApproval: RequireApproval.NEVER,
       outputsFile: outputFilePath,
     });
 
     return JSON.parse(await readFile(outputFilePath, 'utf-8'))[
-      this.stackRef.stackName
+      this.stack.stackName
     ];
   }
 
@@ -58,7 +58,7 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    */
   public async destroy(): Promise<void> {
     await this.#cli.destroy({
-      stacks: [this.stackRef.stackName],
+      stacks: [this.stack.stackName],
       requireApproval: false,
     });
   }
@@ -67,7 +67,7 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    * Produce the Cloud Assembly directory.
    */
   public async produce(_context: Record<string, unknown>): Promise<string> {
-    return this.appRef.synth().directory;
+    return this.app.synth().directory;
   }
 
   /**
@@ -75,7 +75,7 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    */
   public async synth(): Promise<void> {
     await this.#cli.synth({
-      stacks: [this.stackRef.stackName],
+      stacks: [this.stack.stackName],
     });
   }
 }

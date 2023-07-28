@@ -127,7 +127,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     startTime = new Date();
     const ddbTableName = stackName + '-table';
 
-    const ddbTable = new Table(testStack.stackRef, 'Table', {
+    const ddbTable = new Table(testStack.stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
         name: 'id',
@@ -139,7 +139,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
     const entry = path.join(__dirname, lambdaFunctionCodeFile);
     const functionWithAllFlagsEnabled = createTracerTestFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionNameWithAllFlagsEnabled,
       entry,
       expectedServiceName: serviceNameWithAllFlagsEnabled,
@@ -155,7 +155,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
 
     const functionThatDoesNotCapturesErrorAndResponse =
       createTracerTestFunction({
-        stack: testStack.stackRef,
+        stack: testStack.stack,
         functionName: functionNameWithNoCaptureErrorOrResponse,
         entry,
         expectedServiceName: serviceNameWithNoCaptureErrorOrResponse,
@@ -170,7 +170,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     ddbTable.grantWriteData(functionThatDoesNotCapturesErrorAndResponse);
 
     const functionWithTracerDisabled = createTracerTestFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionNameWithTracerDisabled,
       entry,
       expectedServiceName: serviceNameWithTracerDisabled,
@@ -185,7 +185,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation for runtim
     ddbTable.grantWriteData(functionWithTracerDisabled);
 
     const functionWithCaptureResponseFalse = createTracerTestFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionNameWithCaptureResponseFalse,
       handler: 'handlerWithCaptureResponseFalse',
       entry,

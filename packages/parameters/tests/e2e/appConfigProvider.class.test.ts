@@ -180,7 +180,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
   beforeAll(async () => {
     // Create a stack with a Lambda function
     createStackWithLambdaFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -200,7 +200,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     // Create the base resources for an AppConfig application.
     const { application, environment, deploymentStrategy } =
       createBaseAppConfigResources({
-        stack: testStack.stackRef,
+        stack: testStack.stack,
         applicationName,
         environmentName,
         deploymentStrategyName,
@@ -208,7 +208,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
     // Create configuration profiles for tests.
     const freeFormJson = createAppConfigConfigurationProfile({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       application,
       environment,
       deploymentStrategy,
@@ -221,7 +221,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     });
 
     const freeFormYaml = createAppConfigConfigurationProfile({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       application,
       environment,
       deploymentStrategy,
@@ -235,7 +235,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     freeFormYaml.node.addDependency(freeFormJson);
 
     const freeFormBase64PlainText = createAppConfigConfigurationProfile({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       application,
       environment,
       deploymentStrategy,
@@ -249,7 +249,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     freeFormBase64PlainText.node.addDependency(freeFormYaml);
 
     const featureFlag = createAppConfigConfigurationProfile({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       application,
       environment,
       deploymentStrategy,
@@ -263,7 +263,7 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     featureFlag.node.addDependency(freeFormBase64PlainText);
 
     // Grant access to the Lambda function to the AppConfig resources.
-    Aspects.of(testStack.stackRef).add(
+    Aspects.of(testStack.stack).add(
       new ResourceAccessGranter([
         freeFormJson,
         freeFormYaml,

@@ -57,7 +57,7 @@ const ddbTableNameDefault = generateUniqueName(
   `${testDefault}-table`
 );
 createIdempotencyResources(
-  testStack.stackRef,
+  testStack.stack,
   runtime,
   ddbTableNameDefault,
   makeHandlerIdempotentFile,
@@ -79,7 +79,7 @@ const ddbTableNameDefaultParallel = generateUniqueName(
   `${testDefaultParallel}-table`
 );
 createIdempotencyResources(
-  testStack.stackRef,
+  testStack.stack,
   runtime,
   ddbTableNameDefaultParallel,
   makeHandlerIdempotentFile,
@@ -101,7 +101,7 @@ const ddbTableNameTimeout = generateUniqueName(
   `${testTimeout}-table`
 );
 createIdempotencyResources(
-  testStack.stackRef,
+  testStack.stack,
   runtime,
   ddbTableNameTimeout,
   makeHandlerIdempotentFile,
@@ -125,7 +125,7 @@ const ddbTableNameExpired = generateUniqueName(
   `${testExpired}-table`
 );
 createIdempotencyResources(
-  testStack.stackRef,
+  testStack.stack,
   runtime,
   ddbTableNameExpired,
   makeHandlerIdempotentFile,

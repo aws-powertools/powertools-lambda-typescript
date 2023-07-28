@@ -56,7 +56,7 @@ const ddbTableNameDefault = generateUniqueName(
   `${testDefault}-table`
 );
 createIdempotencyResources(
-  testStack.stackRef,
+  testStack.stack,
   runtime,
   ddbTableNameDefault,
   makeFunctionIdempotentFile,
@@ -78,7 +78,7 @@ const ddbTableNameCustomConfig = generateUniqueName(
   `${testCustomConfig}-fn`
 );
 createIdempotencyResources(
-  testStack.stackRef,
+  testStack.stack,
   runtime,
   ddbTableNameCustomConfig,
   makeFunctionIdempotentFile,
@@ -101,7 +101,7 @@ const ddbTableNameLambdaHandler = generateUniqueName(
   `${testLambdaHandler}-table`
 );
 createIdempotencyResources(
-  testStack.stackRef,
+  testStack.stack,
   runtime,
   ddbTableNameLambdaHandler,
   makeFunctionIdempotentFile,

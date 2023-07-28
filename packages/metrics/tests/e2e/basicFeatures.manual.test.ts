@@ -76,7 +76,7 @@ describe(`metrics E2E tests (manual) for runtime: ${runtime}`, () => {
   beforeAll(async () => {
     // GIVEN a stack
     createStackWithLambdaFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       tracing: Tracing.ACTIVE,

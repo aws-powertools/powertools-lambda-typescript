@@ -57,7 +57,7 @@ describe(`logger E2E tests log event via env var setting (middy) for runtime: ${
   beforeAll(async () => {
     // Create and deploy a stack with AWS CDK
     createStackWithLambdaFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {

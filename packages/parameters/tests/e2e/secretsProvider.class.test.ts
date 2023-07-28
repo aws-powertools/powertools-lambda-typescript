@@ -106,7 +106,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
     // creates the test fuction that uses Powertools for AWS Lambda (TypeScript) secret provider we want to test
     // pass env vars with secret names we want to fetch
     createStackWithLambdaFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName: functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       tracing: Tracing.ACTIVE,
@@ -121,25 +121,25 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
       runtime: runtime,
     });
 
-    const secretString = new Secret(testStack.stackRef, 'testSecretPlain', {
+    const secretString = new Secret(testStack.stack, 'testSecretPlain', {
       secretName: secretNamePlain,
       secretStringValue: SecretValue.unsafePlainText('foo'),
     });
 
-    const secretObject = new Secret(testStack.stackRef, 'testSecretObject', {
+    const secretObject = new Secret(testStack.stack, 'testSecretObject', {
       secretName: secretNameObject,
       secretObjectValue: {
         foo: SecretValue.unsafePlainText('bar'),
       },
     });
 
-    const secretBinary = new Secret(testStack.stackRef, 'testSecretBinary', {
+    const secretBinary = new Secret(testStack.stack, 'testSecretBinary', {
       secretName: secretNameBinary,
       secretStringValue: SecretValue.unsafePlainText('Zm9v'), // 'foo' encoded in base64
     });
 
     const secretStringCached = new Secret(
-      testStack.stackRef,
+      testStack.stack,
       'testSecretStringCached',
       {
         secretName: secretNamePlainCached,
@@ -148,7 +148,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
     );
 
     const secretStringForceFetch = new Secret(
-      testStack.stackRef,
+      testStack.stack,
       'testSecretStringForceFetch',
       {
         secretName: secretNamePlainForceFetch,
@@ -157,7 +157,7 @@ describe(`parameters E2E tests (SecretsProvider) for runtime: ${runtime}`, () =>
     );
 
     // add secrets here to grant lambda permisisons to access secrets
-    Aspects.of(testStack.stackRef).add(
+    Aspects.of(testStack.stack).add(
       new ResourceAccessGranter([
         secretString,
         secretObject,

@@ -139,7 +139,7 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
   beforeAll(async () => {
     // Create a stack with a Lambda function
     createStackWithLambdaFunction({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       functionName,
       functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
       environment: {
@@ -155,31 +155,31 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     });
 
     // Create SSM parameters
-    const parameterGetA = new StringParameter(testStack.stackRef, 'Param-a', {
+    const parameterGetA = new StringParameter(testStack.stack, 'Param-a', {
       parameterName: paramA,
       stringValue: paramAValue,
     });
-    const parameterGetB = new StringParameter(testStack.stackRef, 'Param-b', {
+    const parameterGetB = new StringParameter(testStack.stack, 'Param-b', {
       parameterName: paramB,
       stringValue: paramBValue,
     });
 
     const parameterEncryptedA = createSSMSecureString({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'Param-encrypted-a',
       name: paramEncryptedA,
       value: paramEncryptedAValue,
     });
 
     const parameterEncryptedB = createSSMSecureString({
-      stack: testStack.stackRef,
+      stack: testStack.stack,
       id: 'Param-encrypted-b',
       name: paramEncryptedB,
       value: paramEncryptedBValue,
     });
 
     // Give the Lambda function access to the SSM parameters
-    Aspects.of(testStack.stackRef).add(
+    Aspects.of(testStack.stack).add(
       new ResourceAccessGranter([
         parameterGetA,
         parameterGetB,

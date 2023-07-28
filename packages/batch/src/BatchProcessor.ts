@@ -19,7 +19,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
   public processRecord(record: BaseRecord): SuccessResponse | FailureResponse {
     try {
       const data = this.toBatchType(record, this.eventType);
-      const result = this.handler(data, this.options);
+      const result = this.handler(data, this.options?.context);
 
       return this.successHandler(record, result);
     } catch (error) {

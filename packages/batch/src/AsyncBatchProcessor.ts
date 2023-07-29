@@ -10,7 +10,7 @@ class AsyncBatchProcessor extends BasePartialBatchProcessor {
   ): Promise<SuccessResponse | FailureResponse> {
     try {
       const data = this.toBatchType(record, this.eventType);
-      const result = await this.handler(data, this.options);
+      const result = await this.handler(data, this.options?.context);
 
       return this.successHandler(record, result);
     } catch (error) {

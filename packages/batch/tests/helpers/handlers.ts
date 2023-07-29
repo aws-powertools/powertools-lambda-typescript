@@ -3,7 +3,7 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
-import type { BatchProcessingOptions } from '../../src/types';
+import type { Context } from 'aws-lambda';
 
 const sqsRecordHandler = (record: SQSRecord): string => {
   const body = record.body;
@@ -63,12 +63,7 @@ const asyncDynamodbRecordHandler = async (
   return body;
 };
 
-const handlerWithContext = (
-  record: SQSRecord,
-  options: BatchProcessingOptions
-): string => {
-  const context = options.context;
-
+const handlerWithContext = (record: SQSRecord, context: Context): string => {
   try {
     if (context.getRemainingTimeInMillis() == 0) {
       throw Error('No time remaining.');
@@ -82,10 +77,8 @@ const handlerWithContext = (
 
 const asyncHandlerWithContext = async (
   record: SQSRecord,
-  options: BatchProcessingOptions
+  context: Context
 ): Promise<string> => {
-  const context = options.context;
-
   try {
     if (context.getRemainingTimeInMillis() == 0) {
       throw Error('No time remaining.');

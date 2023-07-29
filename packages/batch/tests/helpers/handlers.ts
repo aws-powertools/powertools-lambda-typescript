@@ -3,7 +3,7 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 
 const sqsRecordHandler = (record: SQSRecord): string => {
   const body = record.body;

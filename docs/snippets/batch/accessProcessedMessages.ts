@@ -22,16 +22,17 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
-  const batch = event.Records;
+  const batch = event.Records; // (1)!
 
-  processor.register(batch, recordHandler, { context });
+  processor.register(batch, recordHandler, { context }); // (2)!
   const processedMessages = processor.process();
 
   for (const message of processedMessages) {
     const status: 'success' | 'fail' = message[0];
+    const error = message[1];
     const record = message[2];
 
-    logger.info('Processed record', { status, record });
+    logger.info('Processed record', { status, record, error });
   }
 
   return processor.response();

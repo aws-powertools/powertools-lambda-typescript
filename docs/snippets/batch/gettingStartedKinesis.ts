@@ -11,7 +11,7 @@ import type {
   KinesisStreamBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessor(EventType.KinesisDataStreams);
+const processor = new BatchProcessor(EventType.KinesisDataStreams); // (1)!
 const logger = new Logger();
 
 const recordHandler = (record: KinesisStreamRecord): void => {

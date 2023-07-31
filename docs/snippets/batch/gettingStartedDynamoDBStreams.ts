@@ -11,7 +11,7 @@ import type {
   DynamoDBBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessor(EventType.DynamoDBStreams);
+const processor = new BatchProcessor(EventType.DynamoDBStreams); // (1)!
 const logger = new Logger();
 
 const recordHandler = (record: DynamoDBRecord): void => {

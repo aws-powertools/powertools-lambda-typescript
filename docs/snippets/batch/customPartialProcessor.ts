@@ -11,7 +11,7 @@ import {
 import type {
   SuccessResponse,
   FailureResponse,
-  EventSourceType,
+  BaseRecord,
 } from '@aws-lambda-powertools/batch';
 import type { SQSEvent, Context, SQSBatchResponse } from 'aws-lambda';
 
@@ -27,7 +27,7 @@ class MyPartialProcessor extends BasePartialProcessor {
   }
 
   public async asyncProcessRecord(
-    _record: EventSourceType
+    _record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     throw new Error('Not implemented');
   }
@@ -69,9 +69,7 @@ class MyPartialProcessor extends BasePartialProcessor {
    * Here we are keeping the status of each run, `this.handler` is
    * the function that is passed when calling `processor.register()`.
    */
-  public processRecord(
-    record: EventSourceType
-  ): SuccessResponse | FailureResponse {
+  public processRecord(record: BaseRecord): SuccessResponse | FailureResponse {
     try {
       const result = this.handler(record);
 

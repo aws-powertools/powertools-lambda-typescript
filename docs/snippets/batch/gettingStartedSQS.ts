@@ -11,10 +11,11 @@ import type {
   SQSBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessor(EventType.SQS);
+const processor = new BatchProcessor(EventType.SQS); // (1)!
 const logger = new Logger();
 
-const recordHandler = (record: SQSRecord): void => {
+// prettier-ignore
+const recordHandler = (record: SQSRecord): void => { // (2)!
   const payload = record.body;
   if (payload) {
     const item = JSON.parse(payload);
@@ -26,7 +27,8 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
-  return processPartialResponse(event, recordHandler, processor, {
+  // prettier-ignore
+  return processPartialResponse(event, recordHandler, processor, { // (3)!
     context,
   });
 };

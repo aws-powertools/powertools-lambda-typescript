@@ -104,7 +104,7 @@ const makeHandlerIdempotent = (
    *
    * @param request - The Middy request object
    */
-  const before = async (request: MiddyLikeRequest): Promise<unknown | void> => {
+  const before = async (request: MiddyLikeRequest): Promise<unknown> => {
     const idempotencyConfig = options.config
       ? options.config
       : new IdempotencyConfig({});

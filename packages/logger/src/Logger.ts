@@ -237,7 +237,7 @@ class Logger extends Utility implements ClassThatLogs {
       logFormatter: this.getLogFormatter(),
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
-    const childLogger = new Logger(
+    const childLogger = this.createLogger(
       merge(parentsOptions, parentsPowertoolsLogData, options)
     );
 
@@ -552,6 +552,16 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     this.processLogItem(16, input, extraInput);
+  }
+
+  /**
+   * Creates a new Logger instance.
+   *
+   * @param {ConstructorOptions} [options]
+   * @returns {Logger}
+   */
+  protected createLogger(options?: ConstructorOptions): Logger {
+    return new Logger(options);
   }
 
   /**

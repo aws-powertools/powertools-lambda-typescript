@@ -116,7 +116,7 @@ describe('Slices tests', () => {
       expected: [9, 8, 7, 6],
     },
   ])(
-    'should support slicing an object with arrays in it',
+    'should support slicing arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -141,26 +141,31 @@ describe('Slices tests', () => {
     },
     {
       expression: 'foo[8:2:0:1]',
-      error: 'Expected Rbracket, got: Number',
+      error:
+        'Invalid jmespath expression: parse error at column 9, found unexpected token ":" (colon) in expression: foo[8:2:0:1]',
     },
     {
       expression: 'foo[8:2&]',
-      error: 'Syntax error, unexpected token: &(Expref)',
+      error:
+        'Invalid jmespath expression: parse error at column 8, found unexpected token "]" (rbracket) in expression: foo[8:2&]',
     },
     {
       expression: 'foo[2:a:3]',
-      error: 'Syntax error, unexpected token: a(UnquotedIdentifier)',
+      error:
+        'Invalid jmespath expression: parse error at column 6, found unexpected token "a" (unquoted_identifier) in expression: foo[2:a:3]',
     },
-  ])('slicing objects with arrays errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in slicing objects with arrays errors tests
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'slicing objects with arrays errors: $expression',
+    ({ expression, error }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act & Assess
-    expect(() => search(expression, data)).toThrow(error);
-  });
+      // Act & Assess
+      expect(() => search(expression, data)).toThrow(error);
+    }
+  );
 
   it.each([
     {
@@ -188,7 +193,7 @@ describe('Slices tests', () => {
       expected: null,
     },
   ])(
-    'should support slicing an object with nested arrays with objects in them',
+    'should support slicing an object with nested arrays with objects in them: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -223,7 +228,7 @@ describe('Slices tests', () => {
       expected: [],
     },
   ])(
-    'should support slicing an array with objects in it',
+    'should support slicing an array with objects in it: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = [{ a: 1 }, { a: 2 }, { a: 3 }];

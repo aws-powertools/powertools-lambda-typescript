@@ -1,6 +1,13 @@
 import type { JSONValue, Node, TreeInterpreterOptions } from '../types';
 import { Functions } from '../functions';
-import { Expression, isRecord, isStrictEqual, isTruthy } from './utils';
+import {
+  Expression,
+  isIntegerNumber,
+  isRecord,
+  isStrictEqual,
+  isTruthy,
+  sliceArray,
+} from './utils';
 import {
   ArityError,
   JMESPathTypeError,
@@ -57,8 +64,8 @@ class TreeInterpreter {
       return this.#visitIndex(node, value);
     } else if (nodeType === 'index_expression') {
       return this.#visitIndexExpression(node, value);
-      /* } else if (nodeType === 'slice') {
-      return this.#visitSlice(node, value); */
+    } else if (nodeType === 'slice') {
+      return this.#visitSlice(node, value);
     } else if (nodeType === 'key_val_pair') {
       return this.#visitKeyValPair(node, value);
     } else if (nodeType === 'literal') {
@@ -334,10 +341,25 @@ class TreeInterpreter {
    * @param value
    * @returns
    */
-  /* #visitSlice(node: Node, value: JSONValue): JSONValue {
-    
-    return true;
-  } */
+  #visitSlice(node: Node, value: JSONValue): JSONValue {
+    const step = isIntegerNumber(node.children[2]) ? node.children[2] : 1;
+    if (step === 0) {
+      throw new Error('Invalid slice, step cannot be 0');
+    }
+    if (!Array.isArray(value)) {
+      return null;
+    }
+    if (value.length === 0) {
+      return [];
+    }
+
+    return sliceArray(
+      value,
+      node.children[0] as unknown as number,
+      node.children[1] as unknown as number,
+      step
+    );
+  }
 
   /**
    * TODO: write docs for TreeInterpreter.visitKeyValPair()

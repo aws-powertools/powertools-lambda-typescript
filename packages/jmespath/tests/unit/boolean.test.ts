@@ -47,22 +47,25 @@ describe('Boolean tests', () => {
       expression: 'outer.bad||outer.alsobad',
       expected: null,
     },
-  ])('should support boolean OR comparison', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      outer: {
-        foo: 'foo',
-        bar: 'bar',
-        baz: 'baz',
-      },
-    };
+  ])(
+    'should support boolean OR comparison: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        outer: {
+          foo: 'foo',
+          bar: 'bar',
+          baz: 'baz',
+        },
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -75,7 +78,7 @@ describe('Boolean tests', () => {
       expected: 'foo',
     },
   ])(
-    'should support multiple boolean OR comparisons',
+    'should support multiple boolean OR comparisons: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -216,22 +219,25 @@ describe('Boolean tests', () => {
       expression: '!!Zero',
       expected: true,
     },
-  ])('should support boolean AND comparison', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      True: true,
-      False: false,
-      Number: 5,
-      EmptyList: [],
-      Zero: 0,
-    };
+  ])(
+    'should support boolean AND comparison: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        True: true,
+        False: false,
+        Number: 5,
+        EmptyList: [],
+        Zero: 0,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -279,7 +285,7 @@ describe('Boolean tests', () => {
       expected: false,
     },
   ])(
-    'should support lesser and equal comparison',
+    'should support lesser and equal comparison: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {

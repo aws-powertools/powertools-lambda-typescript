@@ -31,7 +31,7 @@ describe('Wildcard tests', () => {
       expected: ['c', 'c'],
     },
   ])(
-    'should parse the wildcard operator with an object containing multiple keys at different levels',
+    'should parse the wildcard operator with an object containing multiple keys at different levels: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -91,7 +91,7 @@ describe('Wildcard tests', () => {
       expected: [[], [], []],
     },
   ])(
-    'should parse the wildcard operator with an object containing keys with hyphens',
+    'should parse the wildcard operator with an object containing keys with hyphens: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -122,7 +122,7 @@ describe('Wildcard tests', () => {
       expected: ['one', 'one'],
     },
   ])(
-    'should parse the wildcard operator with an object containing multiple keys',
+    'should parse the wildcard operator with an object containing multiple keys: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -167,7 +167,7 @@ describe('Wildcard tests', () => {
       expected: ['one', 'one'],
     },
   ])(
-    'should parse the wildcard operator with an object containing nested objects',
+    'should parse the wildcard operator with an object containing nested objects: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -197,7 +197,7 @@ describe('Wildcard tests', () => {
       expected: ['four'],
     },
   ])(
-    'should parse the wildcard operator with an object containing an array of objects',
+    'should parse the wildcard operator with an object containing an array of objects: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -236,7 +236,7 @@ describe('Wildcard tests', () => {
       expected: ['four'],
     },
   ])(
-    'should parse the wildcard operator with an array of objects',
+    'should parse the wildcard operator with an array of objects: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = [
@@ -280,7 +280,7 @@ describe('Wildcard tests', () => {
       expected: [],
     },
   ])(
-    'should parse the wildcard operator with an object with nested objects containing arrays',
+    'should parse the wildcard operator with an object with nested objects containing arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -330,7 +330,7 @@ describe('Wildcard tests', () => {
       expected: null,
     },
   ])(
-    'should parse the wildcard operator with an object with nested arrays',
+    'should parse the wildcard operator with an object with nested arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -363,7 +363,7 @@ describe('Wildcard tests', () => {
       expected: ['basic', 'advanced'],
     },
   ])(
-    'should parse the wildcard operator with an array of objects with nested arrays or strings',
+    'should parse the wildcard operator with an array of objects with nested arrays or strings: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -388,7 +388,7 @@ describe('Wildcard tests', () => {
       expected: ['basic', 'intermediate', 'advanced', 'expert'],
     },
   ])(
-    'should parse the wildcard operator with an array of objects',
+    'should parse the wildcard operator with an array of objects: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -423,7 +423,7 @@ describe('Wildcard tests', () => {
       expected: [],
     },
   ])(
-    'should parse the wildcard operator with an array of objects with arrays',
+    'should parse the wildcard operator with an array of objects with arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -448,7 +448,7 @@ describe('Wildcard tests', () => {
       expected: [],
     },
   ])(
-    'should parse the wildcard operator with an array of objects with empty arrays',
+    'should parse the wildcard operator with an array of objects with empty arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -473,7 +473,7 @@ describe('Wildcard tests', () => {
       expected: ['two', 'four'],
     },
   ])(
-    'should parse the wildcard operator with an array of arrays',
+    'should parse the wildcard operator with an array of arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -529,28 +529,31 @@ describe('Wildcard tests', () => {
       expression: 'bar[*].baz[*]',
       expected: null,
     },
-  ])('should parse a nested array of arrays', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: [
-        [
-          ['one', 'two'],
-          ['three', 'four'],
+  ])(
+    'should parse a nested array of arrays: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: [
+          [
+            ['one', 'two'],
+            ['three', 'four'],
+          ],
+          [
+            ['five', 'six'],
+            ['seven', 'eight'],
+          ],
+          [['nine'], ['ten']],
         ],
-        [
-          ['five', 'six'],
-          ['seven', 'eight'],
-        ],
-        [['nine'], ['ten']],
-      ],
-    };
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -590,7 +593,7 @@ describe('Wildcard tests', () => {
       expected: null,
     },
   ])(
-    'should parse an object with different value types',
+    'should parse an object with different value types: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -630,7 +633,7 @@ describe('Wildcard tests', () => {
       expected: null,
     },
   ])(
-    'should parse an object with different value types',
+    'should parse an object with different value types: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -649,7 +652,7 @@ describe('Wildcard tests', () => {
     }
   );
   it.each([{ expression: '*[0]', expected: [0, 0] }])(
-    'should get the first element of each array',
+    'should get the first element of each array: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {

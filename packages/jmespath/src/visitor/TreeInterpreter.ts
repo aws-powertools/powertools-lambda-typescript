@@ -1,6 +1,6 @@
 import type { JSONValue, Node, TreeInterpreterOptions } from '../types';
 import { Functions } from '../functions';
-import { Expression, isRecord, isTruthy } from './utils';
+import { Expression, isRecord, isStrictEqual, isTruthy } from './utils';
 import {
   ArityError,
   JMESPathTypeError,
@@ -135,9 +135,9 @@ class TreeInterpreter {
     ) {
       // Common cases: comparator is == or !=
       if (comparator === 'eq') {
-        return left === right;
+        return isStrictEqual(left, right);
       } else if (comparator === 'ne') {
-        return left !== right;
+        return !isStrictEqual(left, right);
       } else if (typeof left === 'number' && typeof right === 'number') {
         // Ordering operators only work on numbers. Evaluating them on other
         // types will return null.
@@ -356,7 +356,7 @@ class TreeInterpreter {
    * @returns
    */
   #visitLiteral(node: Node, _value: JSONValue): JSONValue {
-    return node.value || null;
+    return node.value;
   }
 
   /**

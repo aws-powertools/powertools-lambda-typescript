@@ -12,7 +12,7 @@ describe('Unicode tests', () => {
       expected: ['✓', '✗'],
     },
   ])(
-    'should parse an object with unicode chars as keys and values',
+    'should parse an object with unicode chars as keys and values: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = { foo: [{ '✓': '✓' }, { '✓': '✗' }] };
@@ -35,7 +35,7 @@ describe('Unicode tests', () => {
       expected: null,
     },
   ])(
-    'should parse an object with unicode chars as keys',
+    'should parse an object with unicode chars as keys: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = { '☯': true };
@@ -54,7 +54,7 @@ describe('Unicode tests', () => {
       expected: true,
     },
   ])(
-    'should parse an object with mulitple unicode chars as keys',
+    'should parse an object with mulitple unicode chars as keys: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = { '♪♫•*¨*•.¸¸❤¸¸.•*¨*•♫♪': true };

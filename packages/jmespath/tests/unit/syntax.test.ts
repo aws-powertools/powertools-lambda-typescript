@@ -15,7 +15,7 @@ describe('Syntax tests', () => {
       expression: 'foo',
       expected: null,
     },
-  ])('should support dot syntax', ({ expression, expected }) => {
+  ])('should support dot syntax: $expression', ({ expression, expected }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -64,7 +64,7 @@ describe('Syntax tests', () => {
       error:
         'Invalid jmespath expression: parse error at column 4, found unexpected token "." (dot) in expression: foo[.]',
     },
-  ])('dot syntax errors', ({ expression, error }) => {
+  ])('dot syntax errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -145,7 +145,7 @@ describe('Syntax tests', () => {
       error:
         'Invalid jmespath expression: parse error at column 1, found unexpected end of expression (EOF) in expression: !',
     },
-  ])('simple token errors', ({ expression, error }) => {
+  ])('simple token errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -161,7 +161,7 @@ describe('Syntax tests', () => {
       error:
         'Invalid jmespath expression: parse error at column 5, found unexpected end of expression (EOF) in expression: ![!(!',
     },
-  ])('boolean token errors', ({ expression, error }) => {
+  ])('boolean token errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -188,18 +188,21 @@ describe('Syntax tests', () => {
       expression: '*[0]',
       expected: [],
     },
-  ])('should support wildcard syntax', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support wildcard syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -227,7 +230,7 @@ describe('Syntax tests', () => {
       error:
         'Invalid jmespath expression: parse error at column 6, found unexpected token "*" (star) in expression: foo[*]*',
     },
-  ])('wildcard token errors', ({ expression, error }) => {
+  ])('wildcard token errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -242,18 +245,21 @@ describe('Syntax tests', () => {
       expression: '[]',
       expected: null,
     },
-  ])('should support flatten syntax', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support flatten syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -276,7 +282,7 @@ describe('Syntax tests', () => {
       expression: '[*][0]',
       expected: null,
     },
-  ])('simple bracket syntax', ({ expression, expected }) => {
+  ])('simple bracket syntax: $expression', ({ expression, expected }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -300,7 +306,7 @@ describe('Syntax tests', () => {
       error:
         'Bad jmespath expression: unknown token "#" at column 4 in expression: foo[#]',
     },
-  ])('simple breacket errors', ({ expression, error }) => {
+  ])('simple breacket errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -329,18 +335,21 @@ describe('Syntax tests', () => {
       expression: 'foo.[abc, def]',
       expected: null,
     },
-  ])('should support multi-select list syntax', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support multi-select list syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -427,7 +436,7 @@ describe('Syntax tests', () => {
       error:
         'Invalid jmespath expression: parse error at column 5, found unexpected token "0" (number) in expression: foo.[0, 1]',
     },
-  ])('multi-select list errors', ({ expression, error }) => {
+  ])('multi-select list errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -457,16 +466,19 @@ describe('Syntax tests', () => {
         },
       },
     },
-  ])('should support multy-select hash syntax', ({ expression, expected }) => {
-    // Prepare
-    const data = { type: 'object' };
+  ])(
+    'should support multy-select hash syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = { type: 'object' };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -576,7 +588,7 @@ describe('Syntax tests', () => {
       error:
         'Invalid jmespath expression: parse error at column 23, found unexpected token "}" (rbrace) in expression: a.{foo: bar, baz: bam, }',
     },
-  ])('multi-select hash errors', ({ expression, error }) => {
+  ])('multi-select hash errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -595,18 +607,21 @@ describe('Syntax tests', () => {
       expression: 'foo.[a || b]',
       expected: null,
     },
-  ])('should support boolean OR syntax', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support boolean OR syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -639,7 +654,7 @@ describe('Syntax tests', () => {
       error:
         'Bad jmespath expression: unknown token ""foo" at column 0 in expression: "foo',
     },
-  ])('boolean OR errors', ({ expression, error }) => {
+  ])('boolean OR errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -685,18 +700,21 @@ describe('Syntax tests', () => {
       expression: '[?"\\\\" > `"foo"`]',
       expected: null,
     },
-  ])('should support filter syntax', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support filter syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -806,7 +824,7 @@ describe('Syntax tests', () => {
       error:
         'Invalid jmespath expression: parse error at column 20, found unexpected token "bar" (literal) in expression: twolen[].threelen[].`"bar"`',
     },
-  ])('filter errors', ({ expression, error }) => {
+  ])('filter errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -829,7 +847,7 @@ describe('Syntax tests', () => {
       expression: '"\\\\"',
       expected: null,
     },
-  ])('should support identifiers', ({ expression, expected }) => {
+  ])('should support identifiers: $expression', ({ expression, expected }) => {
     // Prepare
     const data = { type: 'object' };
 
@@ -853,14 +871,17 @@ describe('Syntax tests', () => {
       expression: '[*.*]',
       expected: [null],
     },
-  ])('should support combined syntax', ({ expression, expected }) => {
-    // Prepare
-    const data: string[] = [];
+  ])(
+    'should support combined syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data: string[] = [];
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

@@ -17,7 +17,7 @@ class Lexer {
 
   public *tokenize(expression: string): Generator<Token> {
     this.#initializeForExpression(expression);
-    while (this.#current !== '') {
+    while (this.#current !== '' && this.#current !== undefined) {
       if (SIMPLE_TOKENS.has(this.#current)) {
         yield {
           // We know that SIMPLE_TOKENS has this.#current as a key because
@@ -265,7 +265,7 @@ class Lexer {
    */
   #consumeRawStringLiteral(): Token {
     const start = this.#position;
-    const lexeme = this.#consumeUntil('"').replace(`\\'`, `'`);
+    const lexeme = this.#consumeUntil(`'`).replace(`\\'`, `'`);
     const tokenLen = this.#position - start;
 
     return {

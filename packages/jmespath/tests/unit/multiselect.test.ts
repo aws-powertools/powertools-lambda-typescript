@@ -108,7 +108,7 @@ describe('Multiselect expressions tests', () => {
       expected: [null, null],
     },
   ])(
-    'should support expression on large nested objects',
+    'should support expression on large nested objects: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -173,7 +173,7 @@ describe('Multiselect expressions tests', () => {
       expected: [null, null],
     },
   ])(
-    'should support the expression on objects containing arrays',
+    'should support the expression on objects containing arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -198,7 +198,7 @@ describe('Multiselect expressions tests', () => {
       expected: [1, 2],
     },
   ])(
-    'should support the expression using both array and object syntax',
+    'should support the expression using both array and object syntax: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -235,7 +235,7 @@ describe('Multiselect expressions tests', () => {
       expected: [true, ['first', 'second']],
     },
   ])(
-    'should support the expression using mixed array and object syntax',
+    'should support the expression using mixed array and object syntax: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -292,7 +292,7 @@ describe('Multiselect expressions tests', () => {
       ],
     },
   ])(
-    'should support the expression with wildcards',
+    'should support the expression with wildcards: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -395,7 +395,7 @@ describe('Multiselect expressions tests', () => {
       expected: [1, 2, 3, 4, 5, 6, 7, 8],
     },
   ])(
-    'should support expression with the flatten operator',
+    'should support expression with the flatten operator: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -441,7 +441,7 @@ describe('Multiselect expressions tests', () => {
       expected: [['abc', 'def'], 'zero'],
     },
   ])(
-    'should support the expression with slicing',
+    'should support the expression with slicing: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -478,7 +478,7 @@ describe('Multiselect expressions tests', () => {
       ],
     },
   ])(
-    'should support the expression with wildcard slicing',
+    'should support the expression with wildcard slicing: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -513,7 +513,7 @@ describe('Multiselect expressions tests', () => {
       expected: [['a', 'd'], 'zero'],
     },
   ])(
-    'should support multiselect with inexistent values',
+    'should support multiselect with inexistent values: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -548,16 +548,19 @@ describe('Multiselect expressions tests', () => {
       expression: '[[*],*]',
       expected: [null, ['object']],
     },
-  ])('should support nested multiselect', ({ expression, expected }) => {
-    // Prepare
-    const data = { type: 'object' };
+  ])(
+    'should support nested multiselect: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = { type: 'object' };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -565,7 +568,7 @@ describe('Multiselect expressions tests', () => {
       expected: [[]],
     },
   ])(
-    'should handle nested multiselect with empty arrays',
+    'should handle nested multiselect with empty arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data: string[] = [];

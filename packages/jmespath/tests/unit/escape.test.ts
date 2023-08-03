@@ -39,23 +39,26 @@ describe('Escape characters tests', () => {
       expression: '"bar"."baz"',
       expected: 'qux',
     },
-  ])('should support escaping characters', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      'foo.bar': 'dot',
-      'foo bar': 'space',
-      'foo\nbar': 'newline',
-      'foo"bar': 'doublequote',
-      'c:\\\\windows\\path': 'windows',
-      '/unix/path': 'unix',
-      '"""': 'threequotes',
-      bar: { baz: 'qux' },
-    };
+  ])(
+    'should support escaping characters: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        'foo.bar': 'dot',
+        'foo bar': 'space',
+        'foo\nbar': 'newline',
+        'foo"bar': 'doublequote',
+        'c:\\\\windows\\path': 'windows',
+        '/unix/path': 'unix',
+        '"""': 'threequotes',
+        bar: { baz: 'qux' },
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

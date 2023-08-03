@@ -41,7 +41,7 @@ const isTruthy = (value: unknown): boolean => {
   if (typeof value === 'string') {
     return value !== '';
   } else if (typeof value === 'number') {
-    return value !== 0;
+    return true;
   } else if (typeof value === 'boolean') {
     return value;
   } else if (Array.isArray(value)) {
@@ -53,4 +53,53 @@ const isTruthy = (value: unknown): boolean => {
   }
 };
 
-export { Expression, isRecord, isTruthy };
+/**
+ * Check if two unknown values are strictly equal.
+ *
+ * If the values are arrays, then each element is compared, regardless of
+ * order. If the values are objects, then each key and value from left
+ * is compared to the corresponding key and value from right. If the
+ * values are primitives, then they are compared using strict equality.
+ *
+ * @param left Left side of strict equality comparison
+ * @param right Right side of strict equality comparison
+ * @returns True if the values are strictly equal, false otherwise
+ */
+const isStrictEqual = (left: unknown, right: unknown): boolean => {
+  if (left === right) {
+    return true;
+  } else if (typeof left !== typeof right) {
+    return false;
+  } else if (Array.isArray(left) && Array.isArray(right)) {
+    if (left.length !== right.length) {
+      return false;
+    }
+    for (const [i, value] of left.entries()) {
+      if (!isStrictEqual(value, right[i])) {
+        return false;
+      }
+    }
+
+    return true;
+  } else if (isRecord(left) && isRecord(right)) {
+    const leftKeys = Object.keys(left);
+    const leftValues = Object.values(left);
+    const rightKeys = Object.keys(right);
+    const rightValues = Object.values(right);
+    if (
+      leftKeys.length !== rightKeys.length ||
+      leftValues.length !== rightValues.length
+    ) {
+      return false;
+    }
+
+    return (
+      isStrictEqual(leftKeys, rightKeys) &&
+      isStrictEqual(leftValues, rightValues)
+    );
+  } else {
+    return false;
+  }
+};
+
+export { Expression, isRecord, isTruthy, isStrictEqual };

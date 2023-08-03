@@ -883,7 +883,7 @@ describe('Identifiers tests', () => {
       expected: true,
     },
   ])(
-    'should handle different identifiers',
+    'should handle different identifiers: $expression',
     ({ data, expression, expected }) => {
       // Act
       const result = search(expression, data);

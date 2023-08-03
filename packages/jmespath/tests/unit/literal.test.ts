@@ -118,28 +118,31 @@ describe('Literal expressions tests', () => {
       expression: '`[0, 1, 2]`[1]',
       expected: 1,
     },
-  ])('should support literal expressions', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: [
-        {
-          name: 'a',
+  ])(
+    'should support literal expressions: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: [
+          {
+            name: 'a',
+          },
+          {
+            name: 'b',
+          },
+        ],
+        bar: {
+          baz: 'qux',
         },
-        {
-          name: 'b',
-        },
-      ],
-      bar: {
-        baz: 'qux',
-      },
-    };
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -157,7 +160,7 @@ describe('Literal expressions tests', () => {
       },
     },
   ])(
-    'should support literals with other special characters',
+    'should support literals with other special characters: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -176,10 +179,10 @@ describe('Literal expressions tests', () => {
     {
       comment: 'Literal on RHS of subexpr not allowed',
       expression: 'foo.`"bar"`',
-      error: 'Syntax error, unexpected token: bar(Literal)',
+      error:
+        'Invalid jmespath expression: parse error at column 4, found unexpected token "bar" (literal) in expression: foo.`"bar"`',
     },
-  ])('literals errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in literal errors errors tests
+  ])('literals errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       type: 'object',
@@ -236,14 +239,17 @@ describe('Literal expressions tests', () => {
       expression: `'foo\\'bar'`,
       expected: `foo'bar`,
     },
-  ])('should support raw string literals', ({ expression, expected }) => {
-    // Prepare
-    const data = {};
+  ])(
+    'should support raw string literals: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {};
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

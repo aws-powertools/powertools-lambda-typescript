@@ -22,17 +22,20 @@ describe('Current operator tests', () => {
       expression: '@.foo[0]',
       expected: { name: 'a' },
     },
-  ])('should support the current operator', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: [{ name: 'a' }, { name: 'b' }],
-      bar: { baz: 'qux' },
-    };
+  ])(
+    'should support the current operator: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: [{ name: 'a' }, { name: 'b' }],
+        bar: { baz: 'qux' },
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

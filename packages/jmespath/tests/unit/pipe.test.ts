@@ -35,7 +35,7 @@ describe('Pipe expressions tests', () => {
       expected: ['subkey', 'subkey'],
     },
   ])(
-    'should support piping a multi-level nested object with arrays',
+    'should support piping a multi-level nested object with arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -108,7 +108,7 @@ describe('Pipe expressions tests', () => {
       expected: { baz: 'one' },
     },
   ])(
-    'should support piping with boolean conditions',
+    'should support piping with boolean conditions: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -149,7 +149,7 @@ describe('Pipe expressions tests', () => {
       expected: null,
     },
   ])(
-    'should support piping with wildcard and current operators',
+    'should support piping with wildcard and current operators: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {

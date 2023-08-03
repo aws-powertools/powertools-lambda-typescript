@@ -40,7 +40,7 @@ describe('Indices tests', () => {
       expected: null,
     },
   ])(
-    'should support indices on arrays in a nested object',
+    'should support indices on arrays in a nested object: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = { foo: { bar: ['zero', 'one', 'two'] } };
@@ -99,7 +99,7 @@ describe('Indices tests', () => {
       expected: null,
     },
   ])(
-    'should support indices in an array with objects inside',
+    'should support indices in an array with objects inside: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -144,16 +144,19 @@ describe('Indices tests', () => {
       expression: '[-3]',
       expected: 'one',
     },
-  ])('should support indices in an array', ({ expression, expected }) => {
-    // Prepare
-    const data = ['one', 'two', 'three'];
+  ])(
+    'should support indices in an array: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = ['one', 'two', 'three'];
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -173,7 +176,7 @@ describe('Indices tests', () => {
       expected: [],
     },
   ])(
-    'should support indices in multi-level nested arrays & objects',
+    'should support indices in multi-level nested arrays & objects: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = { reservations: [{ instances: [{ foo: 1 }, { foo: 2 }] }] };
@@ -228,7 +231,7 @@ describe('Indices tests', () => {
       expected: [1, 2, 3, 4, 1, 2, 3, 4],
     },
   ])(
-    'should support indices in large mixed objects and arrays',
+    'should support indices in large mixed objects and arrays: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -338,7 +341,7 @@ describe('Indices tests', () => {
       expected: [],
     },
   ])(
-    'should support indices in objects containing an array of matrixes',
+    'should support indices in objects containing an array of matrixes: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -425,7 +428,7 @@ describe('Indices tests', () => {
       expected: [1, 3, 5, 7],
     },
   ])(
-    'should support indices with nested arrays and objects at different levels',
+    'should support indices with nested arrays and objects at different levels: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {
@@ -503,7 +506,7 @@ describe('Indices tests', () => {
       expected: null,
     },
   ])(
-    'should support indices in objects having special names as keys',
+    'should support indices in objects having special names as keys: $expression',
     ({ expression, expected }) => {
       // Prepare
       const data = {

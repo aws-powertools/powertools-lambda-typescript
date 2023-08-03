@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/jmespath",
-  "version": "1.10.0",
+  "version": "1.12.1",
   "description": "The JMESPath package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -19,8 +19,7 @@
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix",
-    "*.js": "npm run lint-fix"
+    "*.{ts,js}": "npm run lint-fix"
   },
   "exports": {
     ".": {

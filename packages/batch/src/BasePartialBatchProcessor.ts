@@ -5,7 +5,7 @@ import type {
 } from 'aws-lambda';
 import { BasePartialProcessor } from './BasePartialProcessor';
 import { DATA_CLASS_MAPPING, DEFAULT_RESPONSE, EventType } from './constants';
-import { BatchProcessingError } from './errors';
+import { FullBatchFailureError } from './errors';
 import type {
   EventSourceDataClassTypes,
   PartialItemFailureResponse,
@@ -46,12 +46,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
     }
 
     if (this.entireBatchFailed()) {
-      throw new BatchProcessingError(
-        'All records failed processing. ' +
-          this.exceptions.length +
-          ' individual errors logged separately below.',
-        this.exceptions
-      );
+      throw new FullBatchFailureError(this.errors);
     }
 
     const messages: PartialItemFailures[] = this.getMessagesToReport();
@@ -110,7 +105,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * @returns true if all records resulted in exception results
    */
   public entireBatchFailed(): boolean {
-    return this.exceptions.length == this.records.length;
+    return this.errors.length == this.records.length;
   }
 
   /**
@@ -135,7 +130,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public prepare(): void {
     this.successMessages.length = 0;
     this.failureMessages.length = 0;
-    this.exceptions.length = 0;
+    this.errors.length = 0;
     this.batchResponse = DEFAULT_RESPONSE;
   }
 

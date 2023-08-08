@@ -173,7 +173,6 @@ describe('Function: processPartialResponse()', () => {
       // Prepare
       const processor = new AsyncBatchProcessor(EventType.SQS);
       const event = dummyEvent;
-      const eventTypes: string = Object.values(EventType).toString();
 
       const handler = async (
         event: SQSEvent,
@@ -190,11 +189,9 @@ describe('Function: processPartialResponse()', () => {
       await expect(() =>
         handler(event as unknown as SQSEvent, context)
       ).rejects.toThrowError(
-        new Error(
-          'Failed to convert event to record batch for processing.\nPlease ensure batch event is a valid ' +
-            eventTypes +
-            ' event.'
-        )
+        `Unexpected batch type. Possible values are: ${Object.keys(
+          EventType
+        ).join(', ')}`
       );
     });
 

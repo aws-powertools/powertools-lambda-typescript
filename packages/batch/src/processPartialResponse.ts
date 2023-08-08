@@ -1,5 +1,5 @@
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor';
-import { EventType } from './constants';
+import { UnexpectedBatchTypeError } from './errors';
 import type {
   BaseRecord,
   BatchProcessingOptions,
@@ -19,13 +19,8 @@ const processPartialResponse = (
   processor: BasePartialBatchProcessor,
   options?: BatchProcessingOptions
 ): PartialItemFailureResponse => {
-  if (!event.Records) {
-    const eventTypes: string = Object.values(EventType).toString();
-    throw new Error(
-      'Failed to convert event to record batch for processing.\nPlease ensure batch event is a valid ' +
-        eventTypes +
-        ' event.'
-    );
+  if (!event.Records || !Array.isArray(event.Records)) {
+    throw new UnexpectedBatchTypeError();
   }
 
   processor.register(event.Records, recordHandler, options);

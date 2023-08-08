@@ -11,7 +11,7 @@ import type {
  * Abstract class for batch processors.
  */
 abstract class BasePartialProcessor {
-  public exceptions: Error[];
+  public errors: Error[];
 
   public failureMessages: EventSourceDataClassTypes[];
 
@@ -29,7 +29,7 @@ abstract class BasePartialProcessor {
   public constructor() {
     this.successMessages = [];
     this.failureMessages = [];
-    this.exceptions = [];
+    this.errors = [];
     this.records = [];
     this.handler = new Function();
   }
@@ -84,7 +84,7 @@ abstract class BasePartialProcessor {
     exception: Error
   ): FailureResponse {
     const entry: FailureResponse = ['fail', exception.message, record];
-    this.exceptions.push(exception);
+    this.errors.push(exception);
     this.failureMessages.push(record);
 
     return entry;

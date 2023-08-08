@@ -1,5 +1,6 @@
 import { BatchProcessor } from './BatchProcessor';
 import { EventType } from './constants';
+import { SqsFifoShortCircuitError } from './errors';
 import type { FailureResponse, SuccessResponse } from './types';
 
 /**
@@ -52,10 +53,7 @@ class SqsFifoPartialProcessor extends BatchProcessor {
     for (const record of remainingRecords) {
       const data = this.toBatchType(record, this.eventType);
       processedRecords.push(
-        this.failureHandler(
-          data,
-          new Error('A previous record failed processing')
-        )
+        this.failureHandler(data, new SqsFifoShortCircuitError())
       );
     }
 

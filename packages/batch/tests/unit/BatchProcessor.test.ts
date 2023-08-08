@@ -7,7 +7,7 @@ import type { Context } from 'aws-lambda';
 import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
 import { BatchProcessor } from '../../src/BatchProcessor';
 import { EventType } from '../../src/constants';
-import { BatchProcessingError } from '../../src/errors';
+import { BatchProcessingError, FullBatchFailureError } from '../../src/errors';
 import type { BatchProcessingOptions } from '../../src/types';
 import {
   dynamodbRecordFactory,
@@ -92,7 +92,7 @@ describe('Class: BatchProcessor', () => {
 
       // Act & Assess
       processor.register(records, sqsRecordHandler);
-      expect(() => processor.process()).toThrowError(BatchProcessingError);
+      expect(() => processor.process()).toThrowError(FullBatchFailureError);
     });
   });
 
@@ -154,7 +154,7 @@ describe('Class: BatchProcessor', () => {
       processor.register(records, kinesisRecordHandler);
 
       // Assess
-      expect(() => processor.process()).toThrowError(BatchProcessingError);
+      expect(() => processor.process()).toThrowError(FullBatchFailureError);
     });
   });
 
@@ -217,7 +217,7 @@ describe('Class: BatchProcessor', () => {
       processor.register(records, dynamodbRecordHandler);
 
       // Assess
-      expect(() => processor.process()).toThrowError(BatchProcessingError);
+      expect(() => processor.process()).toThrowError(FullBatchFailureError);
     });
   });
 
@@ -269,7 +269,7 @@ describe('Class: BatchProcessor', () => {
 
       // Act
       processor.register(records, handlerWithContext, badOptions);
-      expect(() => processor.process()).toThrowError(BatchProcessingError);
+      expect(() => processor.process()).toThrowError(FullBatchFailureError);
     });
   });
 
@@ -278,8 +278,8 @@ describe('Class: BatchProcessor', () => {
     const processor = new BatchProcessor(EventType.SQS);
 
     // Act & Assess
-    await expect(() => processor.asyncProcess()).rejects.toThrow(
-      'Not implemented. Use process() instead.'
+    await expect(() => processor.asyncProcess()).rejects.toThrowError(
+      BatchProcessingError
     );
   });
 });

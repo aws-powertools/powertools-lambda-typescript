@@ -52,6 +52,7 @@ class UnexpectedBatchTypeError extends BatchProcessingError {
   }
 }
 export {
+  BatchProcessingError,
   FullBatchFailureError,
   SqsFifoShortCircuitError,
   UnexpectedBatchTypeError,

@@ -7,7 +7,7 @@ import type { Context } from 'aws-lambda';
 import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
 import { BatchProcessor } from '../../src/BatchProcessor';
 import { EventType } from '../../src/constants';
-import { FullBatchFailureError } from '../../src/errors';
+import { BatchProcessingError, FullBatchFailureError } from '../../src/errors';
 import type { BatchProcessingOptions } from '../../src/types';
 import {
   dynamodbRecordFactory,
@@ -278,8 +278,8 @@ describe('Class: BatchProcessor', () => {
     const processor = new BatchProcessor(EventType.SQS);
 
     // Act & Assess
-    await expect(() => processor.asyncProcess()).rejects.toThrow(
-      'Not implemented. Use process() instead.'
+    await expect(() => processor.asyncProcess()).rejects.toThrowError(
+      BatchProcessingError
     );
   });
 });

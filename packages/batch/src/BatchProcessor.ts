@@ -1,4 +1,5 @@
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor';
+import { BatchProcessingError } from './errors';
 import type { BaseRecord, FailureResponse, SuccessResponse } from './types';
 
 /**
@@ -8,7 +9,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
   public async asyncProcessRecord(
     _record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
-    throw new Error('Not implemented. Use process() instead.');
+    throw new BatchProcessingError('Not implemented. Use process() instead.');
   }
 
   /**

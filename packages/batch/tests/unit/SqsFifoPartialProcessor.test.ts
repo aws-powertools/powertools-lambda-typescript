@@ -3,7 +3,11 @@
  *
  * @group unit/batch/class/sqsfifobatchprocessor
  */
-import { SqsFifoPartialProcessor, processPartialResponse } from '../../src';
+import {
+  SqsFifoPartialProcessor,
+  processPartialResponse,
+  SqsFifoShortCircuitError,
+} from '../../src';
 import { sqsRecordFactory } from '../helpers/factories';
 import { sqsRecordHandler } from '../helpers/handlers';
 
@@ -54,6 +58,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
       expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
         thirdRecord.messageId
       );
+      expect(processor.errors[1]).toBeInstanceOf(SqsFifoShortCircuitError);
     });
   });
 });

@@ -2,6 +2,7 @@ name: I Made This (showcase your work)
 description: Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps, etc.
 title: "[I Made This]: <TITLE>"
 labels: ["community-content"]
+projects: ["aws-powertools/7"]
 body:
   - type: markdown
     attributes:

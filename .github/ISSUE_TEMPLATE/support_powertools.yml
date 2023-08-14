@@ -2,6 +2,7 @@ name: Support Powertools for AWS Lambda (TypeScript) (become a reference)
 description: Add your organization's name or logo to the Powertools for AWS Lambda (TypeScript) documentation
 title: "[Support Powertools for AWS Lambda (TypeScript)]: <your organization name>"
 labels: ["customer-reference"]
+projects: ["aws-powertools/7"]
 body:
   - type: markdown
     attributes:

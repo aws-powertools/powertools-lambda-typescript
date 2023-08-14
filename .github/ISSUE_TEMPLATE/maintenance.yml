@@ -2,6 +2,7 @@ name: Maintenance
 description: Suggest an activity to help address tech debt, governance, and anything internal
 title: "Maintenance: TITLE"
 labels: ["type/internal", "triage"]
+projects: ["aws-powertools/7"]
 body:
   - type: markdown
     attributes:

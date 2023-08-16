@@ -326,6 +326,7 @@ The following companies, among others, use Powertools:
 * [Perfect Post](https://www.perfectpost.fr){target="_blank"}
 * [Sennder](https://sennder.com/){target="_blank"}
 * [Certible](https://www.certible.com/){target="_blank"}
+* [tecRacer GmbH & Co. KG](https://www.tecracer.com/){target="_blank"}
 
 ### Sharing your work
 

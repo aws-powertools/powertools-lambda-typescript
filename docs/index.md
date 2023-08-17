@@ -66,6 +66,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
     | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:18](#){: .copyMe}:clipboard:      |
     | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:18](#){: .copyMe}:clipboard:     |
     | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:18](#){: .copyMe}:clipboard:     |
+    | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:18](#){: .copyMe}:clipboard:   |
 
 ??? note "Click to expand and copy code snippets for popular frameworks"
     

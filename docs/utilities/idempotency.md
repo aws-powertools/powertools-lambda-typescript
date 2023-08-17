@@ -52,12 +52,22 @@ classDiagram
 
 ## Getting started
 
-### IAM Permissions
+### Installation
+Install the library in your project
+```shell
+npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb
+```
 
-Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, `dynamodb:UpdateItem` and `dynamodb:DeleteItem` IAM permissions before using this feature.
+While we support Amazon DynamoDB as a persistance layer out of the box, you need to bring your own AWS SDK for JavaScript v3 DynamoDB client.
+
 
 ???+ note
-    If you're using one of our examples: [AWS Serverless Application Model (SAM)](#required-resources) or [Terraform](#required-resources) the required permissions are already included.
+    This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="_blank"} only**. If you are using the `nodejs18.x` runtime, the AWS SDK for JavaScript v3 is already installed and you can install only the utility.
+
+
+### IAM Permissions
+
+Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, `dynamodb:UpdateItem` and `dynamodb:DeleteItem` IAM permissions before using this feature. If you're using one of our examples: [AWS Serverless Application Model (SAM)](#required-resources) or [Terraform](#required-resources) the required permissions are already included.
 
 ### Required resources
 
@@ -69,10 +79,10 @@ As of now, Amazon DynamoDB is the only supported persistent storage layer, so yo
 
 If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
 
-| Configuration      | Value        | Notes                                                                               |
-| ------------------ | ------------ | ----------------------------------------------------------------------------------- |
-| Partition key      | `id`         |
-| TTL attribute name | `expiration` | This can only be configured after your table is created if you're using AWS Console |
+| Configuration      | Default value | Notes                                                                                   |
+| ------------------ |:--------------|-----------------------------------------------------------------------------------------|
+| Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`.  |
+| TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.    |
 
 ???+ tip "Tip: You can share a single state table for all functions"
     You can reuse the same DynamoDB table to store idempotency state. We add the Lambda function name in addition to the idempotency key as a hash key.
@@ -212,18 +222,13 @@ If you're not [changing the default configuration for the DynamoDB persistence l
 
 You can quickly start by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeIdempotent` function wrapper on your Lambda handler.
 
-???+ note
-    In this example, the entire Lambda handler is treated as a single idempotent operation. If your Lambda handler can cause multiple side effects, or you're only interested in making a specific logic idempotent, use the `makeIdempotent` high-order function only on the function that needs to be idempotent.
-
-!!! tip "See [Choosing a payload subset for idempotency](#choosing-a-payload-subset-for-idempotency) for more elaborate use cases."
-
 === "index.ts"
 
     ```typescript hl_lines="2-3 21 35-38"
     --8<-- "docs/snippets/idempotency/makeIdempotentBase.ts"
     ```
 
-=== "Types"
+=== "types.ts"
 
     ```typescript
     --8<-- "docs/snippets/idempotency/types.ts::13"
@@ -231,7 +236,12 @@ You can quickly start by initializing the `DynamoDBPersistenceLayer` class and u
 
 After processing this request successfully, a second request containing the exact same payload above will now return the same response, ensuring our customer isn't charged twice.
 
-!!! question "New to idempotency concept? Please review our [Terminology](#terminology) section if you haven't yet."
+
+???+ note
+    In this example, the entire Lambda handler is treated as a single idempotent operation. If your Lambda handler can cause multiple side effects, or you're only interested in making a specific logic idempotent, use the `makeIdempotent` high-order function only on the function that needs to be idempotent.
+    
+    See [Choosing a payload subset for idempotency](#choosing-a-payload-subset-for-idempotency) for more elaborate use cases.
+
 
 You can also use the `makeIdempotent` function wrapper on any function that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
 
@@ -240,20 +250,20 @@ You can also use the `makeIdempotent` function wrapper on any function that retu
 
 When using `makeIdempotent` on arbitrary functions, you can tell us which argument in your function signature has the data we should use via **`dataIndexArgument`**. If you don't specify this argument, we'll use the first argument in the function signature.
 
-???+ note
-    The function in the example below has two arguments, note that while wrapping it with the `makeIdempotent` high-order function, we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one that contains the data we should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the second is `1`, and so on.
-
 === "index.ts"
 
     ```typescript hl_lines="22 34-38"
     --8<-- "docs/snippets/idempotency/makeIdempotentAnyFunction.ts"
     ```
 
-=== "Types"
+=== "types.ts"
 
     ```typescript
     --8<-- "docs/snippets/idempotency/types.ts::13"
     ```
+
+The function this example has two arguments, note that while wrapping it with the `makeIdempotent` high-order function, we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one that contains the data we should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the second is `1`, and so on.
+
 
 ### MakeHandlerIdempotent Middy middleware
 
@@ -269,7 +279,7 @@ If you are using [Middy](https://middy.js.org){target="_blank"} as your middlewa
     --8<-- "docs/snippets/idempotency/makeHandlerIdempotent.ts"
     ```
 
-=== "Types"
+=== "types.ts"
 
     ```typescript
     --8<-- "docs/snippets/idempotency/types.ts::13"
@@ -277,12 +287,9 @@ If you are using [Middy](https://middy.js.org){target="_blank"} as your middlewa
 
 ### Choosing a payload subset for idempotency
 
-???+ tip "Tip: Dealing with always changing payloads"
-    When dealing with a more elaborate payload, where parts of the payload always change, you should use the **`eventKeyJmesPath`** parameter.
+Use [`IdempotencyConfig`](#customizing-the-default-behavior) to instruct the idempotent decorator to only use a portion of your payload to verify whether a request is idempotent, and therefore it should not be retried. When dealing with a more elaborate payload, where parts of the payload always change, you should use the **`eventKeyJmesPath`** parameter.
 
-Use [`IdempotencyConfig`](#customizing-the-default-behavior) to instruct the idempotent decorator to only use a portion of your payload to verify whether a request is idempotent, and therefore it should not be retried.
-
-> **Payment scenario**
+**Payment scenario**
 
 In this example, we have a Lambda handler that creates a payment for a user subscribing to a product. We want to ensure that we don't accidentally charge our customer by subscribing them more than once.
 
@@ -290,7 +297,7 @@ Imagine the function executes successfully, but the client never receives the re
 
 **What we want here** is to instruct Idempotency to use the `user` and `productId` fields from our incoming payload as our idempotency key. If we were to treat the entire request as our idempotency key, a simple HTTP header or timestamp change would cause our customer to be charged twice.
 
-???+ tip "Deserializing JSON strings in payloads for increased accuracy."
+???+ warning "Deserializing JSON strings in payloads for increased accuracy."
     The payload extracted by the `eventKeyJmesPath` is treated as a string by default. This means there could be differences in whitespace even when the JSON payload itself is identical.
 
 === "index.ts"
@@ -334,7 +341,7 @@ Imagine the function executes successfully, but the client never receives the re
     }
     ```
 
-=== "Types"
+=== "types.ts"
 
     ```typescript
     --8<-- "docs/snippets/idempotency/types.ts::13"
@@ -342,10 +349,10 @@ Imagine the function executes successfully, but the client never receives the re
 
 ### Lambda timeouts
 
-???+ note
-    This is automatically done when you wrap your Lambda handler with the [makeIdempotent](#makeIdempotent-function-wrapper) function wrapper, or use the [`makeHandlerIdempotent`](#makeHandlerIdempotent-middy-middleware) Middy middleware.
 
-To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools for AWS calculates and includes the remaining invocation available time as part of the idempotency record.
+
+To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools for AWS Lambda calculates and includes the remaining invocation available time as part of the idempotency record.
+This is automatically done when you wrap your Lambda handler with the [makeIdempotent](#makeIdempotent-function-wrapper) function wrapper, or use the [`makeHandlerIdempotent`](#makeHandlerIdempotent-middy-middleware) Middy middleware.
 
 ???+ example
     If a second invocation happens **after** this timestamp, and the record is marked as `INPROGRESS`, we will execute the invocation again as if it was in the `EXPIRED` state (e.g, `expire_seconds` field elapsed).
@@ -353,7 +360,7 @@ To prevent against extended failed retries when a [Lambda function times out](ht
     This means that if an invocation expired during execution, it will be quickly executed again on the next retry.
 
 ???+ important
-    If you are only using the [makeIdempotent function wrapper](#makeIdempotent-function-wrapper) to guard isolated parts of your code, you must use `registerLambdaContext` available in the [idempotency config object](#customizing-the-default-behavior) to benefit from this protection.
+    If you are only using the [makeIdempotent function wrapper](#makeIdempotent-function-wrapper) to guard isolated parts of your code outside of your handler, you must use `registerLambdaContext` available in the [idempotency config object](#customizing-the-default-behavior) to benefit from this protection.
 
 Here is an example on how you register the Lambda context in your handler:
 
@@ -371,6 +378,7 @@ This means that new invocations will execute your code again despite having the 
 <center>
 ```mermaid
 sequenceDiagram
+    autonumber
     participant Client
     participant Lambda
     participant Persistence Layer
@@ -410,6 +418,7 @@ The following sequence diagrams explain how the Idempotency feature behaves unde
 <center>
 ```mermaid
 sequenceDiagram
+    autonumber
     participant Client
     participant Lambda
     participant Persistence Layer
@@ -444,6 +453,7 @@ sequenceDiagram
 <center>
 ```mermaid
 sequenceDiagram
+    autonumber
     participant Client
     participant Lambda
     participant Persistence Layer
@@ -474,6 +484,7 @@ sequenceDiagram
 <center>
 ```mermaid
 sequenceDiagram
+    autonumber
     participant Client
     participant Lambda
     participant Persistence Layer
@@ -509,6 +520,7 @@ sequenceDiagram
 <center>
 ```mermaid
 sequenceDiagram
+    autonumber
     participant Client
     participant Lambda
     participant Persistence Layer
@@ -537,6 +549,7 @@ sequenceDiagram
 <center>
 ```mermaid
 sequenceDiagram
+    autonumber
     participant Client
     participant Lambda
     participant Persistence Layer
@@ -570,6 +583,7 @@ sequenceDiagram
 <center>
 ```mermaid
 sequenceDiagram
+    autonumber
     participant Client
     participant Lambda
     participant Persistence Layer

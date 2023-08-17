@@ -24,7 +24,7 @@ const createSubscriptionPayment = async (
 
 // Extract the idempotency key from the request headers
 const config = new IdempotencyConfig({
-  eventKeyJmesPath: 'headers."X-Idempotency-Key"',
+  eventKeyJmesPath: 'body',
 });
 
 export const handler = makeIdempotent(

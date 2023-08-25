@@ -1,4 +1,4 @@
-import { ConfigService } from '.';
+import { ConfigService } from './ConfigService';
 
 /**
  * Class EnvironmentVariablesService

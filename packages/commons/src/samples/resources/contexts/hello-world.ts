@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 
 const helloworldContext: Context = {
   callbackWaitsForEmptyEventLoop: true,

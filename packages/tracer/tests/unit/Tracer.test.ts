@@ -3,14 +3,13 @@
  *
  * @group unit/tracer/all
  */
-
 import {
   ContextExamples as dummyContext,
   Events as dummyEvent,
   LambdaInterface,
 } from '@aws-lambda-powertools/commons';
-import { Tracer } from '../../src';
-import { Callback, Context } from 'aws-lambda/handler';
+import { Tracer } from './../../src';
+import type { Callback, Context } from 'aws-lambda/handler';
 import {
   Segment,
   setContextMissingStrategy,

@@ -15,7 +15,7 @@
     "test:e2e": "echo 'Not Applicable'",
     "watch": "jest --watch",
     "generateVersionFile": "echo \"// this file is auto generated, do not modify\nexport const PT_VERSION = '$(jq -r '.version' package.json)';\" > src/version.ts",
-    "build": "tsc",
+    "build": "tsc --build --force",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prebuild": "rimraf ./lib",

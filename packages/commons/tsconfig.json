@@ -1,31 +1,10 @@
 {
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "noImplicitAny": true,
-        "target": "ES2020",
-        "module": "commonjs",
-        "declaration": true,
-        "declarationMap": true,
-        "outDir": "lib",
-        "removeComments": false,
-        "strict": true,
-        "inlineSourceMap": true,
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "pretty": true,
-        "baseUrl": "src/",
-        "rootDirs": [ "src/" ]
+        "outDir": "./lib",                                  /* Specify an output folder for all emitted files. */
+        "rootDir": "./src",                                 /* Specify the root folder within your source files. */
+        // "baseUrl": "./src",                                /* Specify the base directory to resolve non-relative module names. */
+        // "tsBuildInfoFile": "./.tsbuildinfo",              /* Specify the path to .tsbuildinfo incremental compilation file. */
     },
     "include": [ "src/**/*" ],
-    "exclude": [ "./node_modules"],
-    "watchOptions": {
-        "watchFile": "useFsEvents",
-        "watchDirectory": "useFsEvents",
-        "fallbackPolling": "dynamicPriority"
-    },
-    "lib": [ "es2020" ],
-    "types": [
-        "jest",
-        "node"
-    ]
 }

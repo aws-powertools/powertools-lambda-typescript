@@ -63,10 +63,11 @@ jobs:
       - name: checkout
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
       - name: aws credentials
-        uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef # v2.0.0
+        uses: aws-actions/configure-aws-credentials@04b98b3f9e85f563fb061be8751a0352327246b0 # v3.0.1
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.target-account-role }}
+          mask-aws-account-id: true
       - name: Setup Node.js
         uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:

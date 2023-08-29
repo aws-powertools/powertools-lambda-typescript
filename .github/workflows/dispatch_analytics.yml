@@ -30,10 +30,11 @@ jobs:
     environment: analytics
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef # v2.0.0
+        uses: aws-actions/configure-aws-credentials@04b98b3f9e85f563fb061be8751a0352327246b0 # v3.0.1
         with:
           aws-region: eu-central-1
           role-to-assume: ${{ secrets.AWS_ANALYTICS_ROLE_ARN }}
+          mask-aws-account-id: true
 
       - name: Invoke Lambda function
         run: |

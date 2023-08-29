@@ -34,6 +34,7 @@ jobs:
         with:
           aws-region: eu-central-1
           role-to-assume: ${{ secrets.AWS_ANALYTICS_ROLE_ARN }}
+          mask-aws-account-id: true
 
       - name: Invoke Lambda function
         run: |

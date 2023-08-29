@@ -90,6 +90,7 @@ jobs:
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
+          mask-aws-account-id: true
       - name: Copy API Docs
         run: |
           cp -r api site/

@@ -1,11 +1,11 @@
+import {
+  TestNodejsFunction,
+  TEST_RUNTIMES,
+} from '@aws-lambda-powertools/testing-utils';
 import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
-import { v4 } from 'uuid';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { TEST_RUNTIMES } from '../../../commons/tests/utils/e2eUtils';
+import { randomUUID } from 'node:crypto';
 import { BasePersistenceLayer } from '../../src/persistence';
-import path from 'path';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 export const createIdempotencyResources = (
   stack: Stack,
@@ -17,7 +17,7 @@ export const createIdempotencyResources = (
   ddbPkId?: string,
   timeout?: number
 ): void => {
-  const uniqueTableId = ddbTableName + v4().substring(0, 5);
+  const uniqueTableId = ddbTableName + randomUUID().substring(0, 5);
   const ddbTable = new Table(stack, uniqueTableId, {
     tableName: ddbTableName,
     partitionKey: {
@@ -28,18 +28,17 @@ export const createIdempotencyResources = (
     removalPolicy: RemovalPolicy.DESTROY,
   });
 
-  const uniqueFunctionId = functionName + v4().substring(0, 5);
-  const nodeJsFunction = new NodejsFunction(stack, uniqueFunctionId, {
-    runtime: TEST_RUNTIMES[runtime],
+  const uniqueFunctionId = functionName + randomUUID().substring(0, 5);
+  const nodeJsFunction = new TestNodejsFunction(stack, uniqueFunctionId, {
     functionName: functionName,
-    entry: path.join(__dirname, `../e2e/${pathToFunction}`),
+    entry: pathToFunction,
+    runtime: TEST_RUNTIMES[runtime as keyof typeof TEST_RUNTIMES],
     timeout: Duration.seconds(timeout || 30),
     handler: handler,
     environment: {
       IDEMPOTENCY_TABLE_NAME: ddbTableName,
       POWERTOOLS_LOGGER_LOG_EVENT: 'true',
     },
-    logRetention: RetentionDays.ONE_DAY,
   });
 
   ddbTable.grantReadWriteData(nodeJsFunction);

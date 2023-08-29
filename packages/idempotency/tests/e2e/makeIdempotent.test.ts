@@ -4,112 +4,103 @@
  * @group e2e/idempotency/makeIdempotent
  */
 import {
-  generateUniqueName,
-  invokeFunction,
-  isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
-import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import { v4 } from 'uuid';
+import { join } from 'node:path';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { createHash } from 'node:crypto';
 import {
-  TestStack,
+  concatenateResourceName,
   defaultRuntime,
+  generateTestUniqueName,
+  invokeFunction,
+  isValidRuntimeKey,
+  TestInvocationLogs,
+  TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { createIdempotencyResources } from '../helpers/idempotencyUtils';
-import { InvocationLogs } from '@aws-lambda-powertools/commons/tests/utils/InvocationLogs';
 
 const runtime: string = process.env.RUNTIME || defaultRuntime;
 
 if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'makeFnIdempotent'
-);
-const makeFunctionIdempotentFile = 'makeIdempotent.test.FunctionCode.ts';
 
-const ddb = new DynamoDBClient({ region: 'eu-west-1' });
-const testStack = new TestStack(stackName);
+const testName = generateTestUniqueName({
+  testPrefix: RESOURCE_NAME_PREFIX,
+  runtime,
+  testName: 'makeFnIdempotent',
+});
+const testStack = new TestStack(testName);
+
+// Location of the lambda function code
+const lambdaFunctionCodeFile = join(
+  __dirname,
+  'makeIdempotent.test.FunctionCode.ts'
+);
 
 const testDefault = 'default';
-const functionNameDefault = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testDefault}-fn`
-);
-const ddbTableNameDefault = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testDefault}-table`
-);
+const functionNameDefault = concatenateResourceName({
+  testName,
+  resourceName: `${testDefault}-fn`,
+});
+const ddbTableNameDefault = concatenateResourceName({
+  testName,
+  resourceName: `${testDefault}-table`,
+});
 createIdempotencyResources(
   testStack.stack,
   runtime,
   ddbTableNameDefault,
-  makeFunctionIdempotentFile,
+  lambdaFunctionCodeFile,
   functionNameDefault,
   'handlerDefault'
 );
 
 const testCustomConfig = 'customConfig';
-const functionNameCustomConfig = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testCustomConfig}-fn`
-);
-const ddbTableNameCustomConfig = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testCustomConfig}-fn`
-);
+const functionNameCustomConfig = concatenateResourceName({
+  testName,
+  resourceName: `${testCustomConfig}-fn`,
+});
+const ddbTableNameCustomConfig = concatenateResourceName({
+  testName,
+  resourceName: `${testCustomConfig}-table`,
+});
 createIdempotencyResources(
   testStack.stack,
   runtime,
   ddbTableNameCustomConfig,
-  makeFunctionIdempotentFile,
+  lambdaFunctionCodeFile,
   functionNameCustomConfig,
   'handlerCustomized',
   'customId'
 );
 
 const testLambdaHandler = 'handler';
-const functionNameLambdaHandler = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testLambdaHandler}-fn`
-);
-const ddbTableNameLambdaHandler = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testLambdaHandler}-table`
-);
+const functionNameLambdaHandler = concatenateResourceName({
+  testName,
+  resourceName: `${testLambdaHandler}-fn`,
+});
+const ddbTableNameLambdaHandler = concatenateResourceName({
+  testName,
+  resourceName: `${testLambdaHandler}-table`,
+});
 createIdempotencyResources(
   testStack.stack,
   runtime,
   ddbTableNameLambdaHandler,
-  makeFunctionIdempotentFile,
+  lambdaFunctionCodeFile,
   functionNameLambdaHandler,
   'handlerLambda'
 );
 
-describe(`Idempotency E2E tests, wrapper function usage for runtime`, () => {
+const ddb = new DynamoDBClient({});
+
+describe(`Idempotency E2E tests, wrapper function usage`, () => {
   beforeAll(async () => {
     await testStack.deploy();
   }, SETUP_TIMEOUT);
@@ -130,13 +121,12 @@ describe(`Idempotency E2E tests, wrapper function usage for runtime`, () => {
       );
 
       // Act
-      const logs = await invokeFunction(
-        functionNameDefault,
-        2,
-        'SEQUENTIAL',
+      const logs = await invokeFunction({
+        functionName: functionNameDefault,
+        times: 2,
+        invocationMode: 'SEQUENTIAL',
         payload,
-        false
-      );
+      });
       const functionLogs = logs.map((log) => log.getFunctionLogs());
 
       // Assess
@@ -191,13 +181,12 @@ describe(`Idempotency E2E tests, wrapper function usage for runtime`, () => {
       );
 
       // Act
-      const logs = await invokeFunction(
-        functionNameCustomConfig,
-        2,
-        'SEQUENTIAL',
+      const logs = await invokeFunction({
+        functionName: functionNameCustomConfig,
+        times: 2,
+        invocationMode: 'SEQUENTIAL',
         payload,
-        false
-      );
+      });
       const functionLogs = logs.map((log) => log.getFunctionLogs());
 
       // Assess
@@ -246,21 +235,21 @@ describe(`Idempotency E2E tests, wrapper function usage for runtime`, () => {
 
       // During the first invocation, the processing function should have been called 3 times (once for each record)
       expect(functionLogs[0]).toHaveLength(3);
-      expect(InvocationLogs.parseFunctionLog(functionLogs[0][0])).toEqual(
+      expect(TestInvocationLogs.parseFunctionLog(functionLogs[0][0])).toEqual(
         expect.objectContaining({
           baz: 0, // index of recursion in handler, assess that all function arguments are preserved
           record: payload.records[0],
           message: 'Got test event',
         })
       );
-      expect(InvocationLogs.parseFunctionLog(functionLogs[0][1])).toEqual(
+      expect(TestInvocationLogs.parseFunctionLog(functionLogs[0][1])).toEqual(
         expect.objectContaining({
           baz: 1,
           record: payload.records[1],
           message: 'Got test event',
         })
       );
-      expect(InvocationLogs.parseFunctionLog(functionLogs[0][2])).toEqual(
+      expect(TestInvocationLogs.parseFunctionLog(functionLogs[0][2])).toEqual(
         expect.objectContaining({
           baz: 2,
           record: payload.records[2],
@@ -286,13 +275,12 @@ describe(`Idempotency E2E tests, wrapper function usage for runtime`, () => {
         .digest('base64');
 
       // Act
-      const logs = await invokeFunction(
-        functionNameLambdaHandler,
-        2,
-        'SEQUENTIAL',
+      const logs = await invokeFunction({
+        functionName: functionNameLambdaHandler,
+        times: 2,
+        invocationMode: 'SEQUENTIAL',
         payload,
-        true
-      );
+      });
       const functionLogs = logs.map((log) => log.getFunctionLogs());
 
       // Assess
@@ -312,7 +300,7 @@ describe(`Idempotency E2E tests, wrapper function usage for runtime`, () => {
       expect(functionLogs[0]).toHaveLength(1);
       // We test the content of the log as well as the presence of fields from the context, this
       // ensures that the all the arguments are passed to the handler when made idempotent
-      expect(InvocationLogs.parseFunctionLog(functionLogs[0][0])).toEqual(
+      expect(TestInvocationLogs.parseFunctionLog(functionLogs[0][0])).toEqual(
         expect.objectContaining({
           message: 'foo',
           details: 'bar',

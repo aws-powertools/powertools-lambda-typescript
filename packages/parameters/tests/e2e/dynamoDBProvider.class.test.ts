@@ -3,86 +3,31 @@
  *
  * @group e2e/parameters/dynamodb/class
  */
-import path from 'path';
-import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-import { Aspects } from 'aws-cdk-lib';
-import { v4 } from 'uuid';
 import {
-  generateUniqueName,
-  isValidRuntimeKey,
-  createStackWithLambdaFunction,
-  invokeFunction,
-} from '../../../commons/tests/utils/e2eUtils';
-import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
-import {
-  TestStack,
+  concatenateResourceName,
   defaultRuntime,
+  generateTestUniqueName,
+  invokeFunctionOnce,
+  isValidRuntimeKey,
+  TestInvocationLogs,
+  TestNodejsFunction,
+  TestStack,
+  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
+import { Aspects } from 'aws-cdk-lib';
+import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
+import { join } from 'node:path';
 import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
+import {
+  createDynamoDBTable,
+  putDynamoDBItem,
+} from '../helpers/parametersUtils';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import {
-  createDynamoDBTable,
-  putDynamoDBItem,
-} from '../helpers/parametersUtils';
-
-const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
-
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'dynamoDBProvider'
-);
-const functionName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'dynamoDBProvider'
-);
-const lambdaFunctionCodeFile = 'dynamoDBProvider.class.test.functionCode.ts';
-
-const invocationCount = 1;
-
-// Parameters to be used by Parameters in the Lambda function
-const tableGet = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'Table-Get'
-);
-const tableGetMultiple = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'Table-GetMultiple'
-);
-const tableGetCustomkeys = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'Table-GetCustomKeys'
-);
-const tableGetMultipleCustomkeys = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'Table-GetMultipleCustomKeys'
-);
-const keyAttr = 'key';
-const sortAttr = 'sort';
-const valueAttr = 'val';
-
-const testStack = new TestStack(stackName);
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of DynamoDB tables.
@@ -160,19 +105,65 @@ const testStack = new TestStack(stackName);
  * Test 9
  * Get a cached parameter and force retrieval. This also uses the same custom SDK client that counts the number of calls to DynamoDB.
  */
-describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () => {
-  let invocationLogs: InvocationLogs[];
+describe(`Parameters E2E tests, dynamoDB provider`, () => {
+  const runtime: string = process.env.RUNTIME || defaultRuntime;
+
+  if (!isValidRuntimeKey(runtime)) {
+    throw new Error(`Invalid runtime key value: ${runtime}`);
+  }
+
+  const testName = generateTestUniqueName({
+    testPrefix: RESOURCE_NAME_PREFIX,
+    runtime,
+    testName: 'AllFeatures-Decorator',
+  });
+  const testStack = new TestStack(testName);
+
+  // Location of the lambda function code
+  const lambdaFunctionCodeFile = join(
+    __dirname,
+    'dynamoDBProvider.class.test.functionCode.ts'
+  );
+
+  const functionName = concatenateResourceName({
+    testName,
+    resourceName: 'dynamoDBProvider',
+  });
+
+  // Parameters to be used by Parameters in the Lambda function
+  const tableGet = concatenateResourceName({
+    testName,
+    resourceName: 'Table-Get',
+  });
+
+  const tableGetMultiple = concatenateResourceName({
+    testName,
+    resourceName: 'Table-GetMultiple',
+  });
+
+  const tableGetCustomkeys = concatenateResourceName({
+    testName,
+    resourceName: 'Table-GetCustomKeys',
+  });
+
+  const tableGetMultipleCustomkeys = concatenateResourceName({
+    testName,
+    resourceName: 'Table-GetMultipleCustomKeys',
+  });
+
+  const keyAttr = 'key';
+  const sortAttr = 'sort';
+  const valueAttr = 'val';
+
+  let invocationLogs: TestInvocationLogs;
 
   beforeAll(async () => {
-    // Create a stack with a Lambda function
-    createStackWithLambdaFunction({
-      stack: testStack.stack,
+    // Prepare
+    new TestNodejsFunction(testStack.stack, functionName, {
       functionName,
-      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
+      entry: lambdaFunctionCodeFile,
+      runtime: TEST_RUNTIMES[runtime],
       environment: {
-        UUID: uuid,
-
-        // Values(s) to be used by Parameters in the Lambda function
         TABLE_GET: tableGet,
         TABLE_GET_MULTIPLE: tableGetMultiple,
         TABLE_GET_CUSTOM_KEYS: tableGetCustomkeys,
@@ -181,7 +172,6 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
         SORT_ATTR: sortAttr,
         VALUE_ATTR: valueAttr,
       },
-      runtime,
     });
 
     // Create the DynamoDB tables
@@ -357,11 +347,9 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     await testStack.deploy();
 
     // and invoke the Lambda function
-    invocationLogs = await invokeFunction(
+    invocationLogs = await invokeFunctionOnce({
       functionName,
-      invocationCount,
-      'SEQUENTIAL'
-    );
+    });
   }, SETUP_TIMEOUT);
 
   describe('DynamoDBProvider usage', () => {
@@ -369,8 +357,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     it(
       'should retrieve a single parameter',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[0]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
         expect(testLog).toStrictEqual({
           test: 'get',
@@ -384,8 +372,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     it(
       'should retrieve multiple parameters',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[1]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
         expect(testLog).toStrictEqual({
           test: 'get-multiple',
@@ -399,8 +387,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     it(
       'should retrieve a single parameter',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[2]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
 
         expect(testLog).toStrictEqual({
           test: 'get-custom',
@@ -414,8 +402,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
     it(
       'should retrieve multiple parameters',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[3]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
 
         expect(testLog).toStrictEqual({
           test: 'get-multiple-custom',
@@ -427,8 +415,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 5 - get a single parameter with json transform
     it('should retrieve a single parameter with json transform', async () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[4]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
 
       expect(testLog).toStrictEqual({
         test: 'get-json-transform',
@@ -438,8 +426,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 6 - get a single parameter with binary transform
     it('should retrieve a single parameter with binary transform', async () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[5]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
 
       expect(testLog).toStrictEqual({
         test: 'get-binary-transform',
@@ -449,8 +437,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 7 - get multiple parameters with auto transforms (json and binary)
     it('should retrieve multiple parameters with auto transforms', async () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[6]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
 
       expect(testLog).toStrictEqual({
         test: 'get-multiple-auto-transform',
@@ -463,8 +451,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 8 - Get a parameter twice and check that the value is cached.
     it('should retrieve multiple parameters with auto transforms', async () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[7]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[7]);
 
       expect(testLog).toStrictEqual({
         test: 'get-cached',
@@ -474,8 +462,8 @@ describe(`parameters E2E tests (dynamoDBProvider) for runtime: ${runtime}`, () =
 
     // Test 9 - Get a cached parameter and force retrieval.
     it('should retrieve multiple parameters with auto transforms', async () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[8]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[8]);
 
       expect(testLog).toStrictEqual({
         test: 'get-forced',

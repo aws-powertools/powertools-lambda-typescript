@@ -4,26 +4,25 @@
  * @group e2e/idempotency/makeHandlerIdempotent
  */
 import {
-  generateUniqueName,
+  concatenateResourceName,
+  defaultRuntime,
+  generateTestUniqueName,
   invokeFunction,
   isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
-import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
+  TestInvocationLogs,
+  TestStack,
+} from '@aws-lambda-powertools/testing-utils';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
+import { createIdempotencyResources } from '../helpers/idempotencyUtils';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import {
-  TestStack,
-  defaultRuntime,
-} from '@aws-lambda-powertools/testing-utils';
-import { v4 } from 'uuid';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { createHash } from 'node:crypto';
-import { ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { createIdempotencyResources } from '../helpers/idempotencyUtils';
 
 const runtime: string = process.env.RUNTIME || defaultRuntime;
 
@@ -31,80 +30,69 @@ if (!isValidRuntimeKey(runtime)) {
   throw new Error(`Invalid runtime key value: ${runtime}`);
 }
 
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
+const testName = generateTestUniqueName({
+  testPrefix: RESOURCE_NAME_PREFIX,
   runtime,
-  'makeFnIdempotent'
-);
-const makeHandlerIdempotentFile = 'makeHandlerIdempotent.test.FunctionCode.ts';
+  testName: 'makeHandlerIdempotent',
+});
+const testStack = new TestStack(testName);
 
-const ddb = new DynamoDBClient({});
-const testStack = new TestStack(stackName);
+// Location of the lambda function code
+const lambdaFunctionCodeFile = join(
+  __dirname,
+  'makeHandlerIdempotent.test.FunctionCode.ts'
+);
 
 const testDefault = 'default-sequential';
-const functionNameDefault = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testDefault}-fn`
-);
-const ddbTableNameDefault = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testDefault}-table`
-);
+const functionNameDefault = concatenateResourceName({
+  testName,
+  resourceName: `${testDefault}-fn`,
+});
+const ddbTableNameDefault = concatenateResourceName({
+  testName,
+  resourceName: `${testDefault}-table`,
+});
 createIdempotencyResources(
   testStack.stack,
   runtime,
   ddbTableNameDefault,
-  makeHandlerIdempotentFile,
+  lambdaFunctionCodeFile,
   functionNameDefault,
   'handler'
 );
 
 const testDefaultParallel = 'default-parallel';
-const functionNameDefaultParallel = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testDefaultParallel}-fn`
-);
-const ddbTableNameDefaultParallel = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testDefaultParallel}-table`
-);
+const functionNameDefaultParallel = concatenateResourceName({
+  testName,
+  resourceName: `${testDefaultParallel}-fn`,
+});
+const ddbTableNameDefaultParallel = concatenateResourceName({
+  testName,
+  resourceName: `${testDefaultParallel}-table`,
+});
 createIdempotencyResources(
   testStack.stack,
   runtime,
   ddbTableNameDefaultParallel,
-  makeHandlerIdempotentFile,
+  lambdaFunctionCodeFile,
   functionNameDefaultParallel,
   'handlerParallel'
 );
 
 const testTimeout = 'timeout';
-const functionNameTimeout = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testTimeout}-fn`
-);
-const ddbTableNameTimeout = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testTimeout}-table`
-);
+const functionNameTimeout = concatenateResourceName({
+  testName,
+  resourceName: `${testTimeout}-fn`,
+});
+const ddbTableNameTimeout = concatenateResourceName({
+  testName,
+  resourceName: `${testTimeout}-table`,
+});
 createIdempotencyResources(
   testStack.stack,
   runtime,
   ddbTableNameTimeout,
-  makeHandlerIdempotentFile,
+  lambdaFunctionCodeFile,
   functionNameTimeout,
   'handlerTimeout',
   undefined,
@@ -112,30 +100,28 @@ createIdempotencyResources(
 );
 
 const testExpired = 'expired';
-const functionNameExpired = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testExpired}-fn`
-);
-const ddbTableNameExpired = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  `${testExpired}-table`
-);
+const functionNameExpired = concatenateResourceName({
+  testName,
+  resourceName: `${testExpired}-fn`,
+});
+const ddbTableNameExpired = concatenateResourceName({
+  testName,
+  resourceName: `${testExpired}-table`,
+});
 createIdempotencyResources(
   testStack.stack,
   runtime,
   ddbTableNameExpired,
-  makeHandlerIdempotentFile,
+  lambdaFunctionCodeFile,
   functionNameExpired,
   'handlerExpired',
   undefined,
   2
 );
 
-describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`, () => {
+const ddb = new DynamoDBClient({});
+
+describe(`Idempotency E2E tests, middy middleware usage`, () => {
   beforeAll(async () => {
     await testStack.deploy();
   }, SETUP_TIMEOUT);
@@ -152,13 +138,12 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
         .digest('base64');
 
       // Act
-      const logs = await invokeFunction(
-        functionNameDefault,
-        2,
-        'SEQUENTIAL',
+      const logs = await invokeFunction({
+        functionName: functionNameDefault,
+        times: 2,
+        invocationMode: 'SEQUENTIAL',
         payload,
-        false
-      );
+      });
       const functionLogs = logs.map((log) => log.getFunctionLogs());
 
       // Assess
@@ -178,7 +163,7 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
       expect(functionLogs[0]).toHaveLength(1);
       // We test the content of the log as well as the presence of fields from the context, this
       // ensures that the all the arguments are passed to the handler when made idempotent
-      expect(InvocationLogs.parseFunctionLog(functionLogs[0][0])).toEqual(
+      expect(TestInvocationLogs.parseFunctionLog(functionLogs[0][0])).toEqual(
         expect.objectContaining({
           message: 'foo',
           details: 'bar',
@@ -203,13 +188,12 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
         .digest('base64');
 
       // Act
-      const logs = await invokeFunction(
-        functionNameDefaultParallel,
-        2,
-        'PARALLEL',
+      const logs = await invokeFunction({
+        functionName: functionNameDefaultParallel,
+        times: 2,
+        invocationMode: 'PARALLEL',
         payload,
-        false
-      );
+      });
       const functionLogs = logs.map((log) => log.getFunctionLogs());
 
       // Assess
@@ -262,13 +246,15 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
         .digest('base64');
 
       // Act
-      const logs = await invokeFunction(
-        functionNameTimeout,
-        2,
-        'SEQUENTIAL',
-        payload,
-        true
-      );
+      const logs = await invokeFunction({
+        functionName: functionNameTimeout,
+        times: 2,
+        invocationMode: 'SEQUENTIAL',
+        payload: Array.from({ length: 2 }, (_, index) => ({
+          ...payload,
+          invocation: index,
+        })),
+      });
       const functionLogs = logs.map((log) => log.getFunctionLogs());
 
       // Assess
@@ -293,7 +279,7 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
       // During the second invocation the handler should be called and complete, so the logs should
       // contain 1 log
       expect(functionLogs[1]).toHaveLength(1);
-      expect(InvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
+      expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
         expect.objectContaining({
           message: 'Processed event',
           details: 'bar',
@@ -318,26 +304,24 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
       // Act
       const logs = [
         (
-          await invokeFunction(
-            functionNameExpired,
-            1,
-            'SEQUENTIAL',
-            { ...payload, invocation: 0 },
-            false
-          )
+          await invokeFunction({
+            functionName: functionNameExpired,
+            times: 1,
+            invocationMode: 'SEQUENTIAL',
+            payload: { ...payload, invocation: 0 },
+          })
         )[0],
       ];
       // Wait for the idempotency record to expire
       await new Promise((resolve) => setTimeout(resolve, 2000));
       logs.push(
         (
-          await invokeFunction(
-            functionNameExpired,
-            1,
-            'SEQUENTIAL',
-            { ...payload, invocation: 1 },
-            false
-          )
+          await invokeFunction({
+            functionName: functionNameExpired,
+            times: 1,
+            invocationMode: 'SEQUENTIAL',
+            payload: { ...payload, invocation: 1 },
+          })
         )[0]
       );
       const functionLogs = logs.map((log) => log.getFunctionLogs());
@@ -360,7 +344,7 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
 
       // Both invocations should be successful and the logs should contain 1 log each
       expect(functionLogs[0]).toHaveLength(1);
-      expect(InvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
+      expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
         expect.objectContaining({
           message: 'Processed event',
           details: 'bar',
@@ -370,7 +354,7 @@ describe(`Idempotency E2E tests, middy middleware usage for runtime ${runtime}`,
       // During the second invocation the handler should be called and complete, so the logs should
       // contain 1 log
       expect(functionLogs[1]).toHaveLength(1);
-      expect(InvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
+      expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
         expect.objectContaining({
           message: 'Processed event',
           details: 'bar',

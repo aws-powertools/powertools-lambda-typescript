@@ -56,16 +56,16 @@ export const handlerParallel = middy(
  * Test handler with timeout and JMESPath expression to extract the
  * idempotency key.
  *
- * We put a 0.5s delay in the handler to ensure that it will timeout
- * (timeout is set to 1s). By the time the second call is made, the
- * second call is made, the first idempotency record has expired.
+ * We put a 2s delay in the handler to ensure that it will timeout
+ * (timeout is set to 2s). By the time the second call is made, the
+ * first idempotency record has expired.
  */
 export const handlerTimeout = middy(
   async (event: { foo: string; invocation: number }, context: Context) => {
     logger.addContext(context);
 
     if (event.invocation === 0) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 4000));
     }
 
     logger.info('Processed event', {

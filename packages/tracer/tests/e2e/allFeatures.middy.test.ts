@@ -3,19 +3,21 @@
  *
  * @group e2e/tracer/middy
  */
-
-import path from 'path';
+import { join } from 'node:path';
+import {
+  concatenateResourceName,
+  defaultRuntime,
+  generateTestUniqueName,
+  isValidRuntimeKey,
+  TestNodejsFunction,
+  TestStack,
+  TEST_RUNTIMES,
+} from '@aws-lambda-powertools/testing-utils';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import { XRayClient } from '@aws-sdk/client-xray';
 import { STSClient } from '@aws-sdk/client-sts';
-import { v4 } from 'uuid';
 import {
-  TestStack,
-  defaultRuntime,
-} from '@aws-lambda-powertools/testing-utils';
-import {
-  createTracerTestFunction,
   getFirstSubsegment,
   getFunctionArn,
   getInvocationSubsegment,
@@ -24,10 +26,7 @@ import {
   splitSegmentsByName,
 } from '../helpers/tracesUtils';
 import {
-  generateUniqueName,
-  isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
-import {
+  commonEnvironmentVariables,
   expectedCustomAnnotationKey,
   expectedCustomAnnotationValue,
   expectedCustomErrorMessage,
@@ -44,90 +43,82 @@ import {
   assertErrorAndFault,
 } from '../helpers/traceAssertions';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
-
 /**
- * We will create a stack with 3 Lambda functions:
+ * The test includes one stack with 4 Lambda functions that correspond to the following test cases:
  * 1. With all flags enabled (capture both response and error)
  * 2. Do not capture error or response
  * 3. Do not enable tracer
+ * 4. Disable response capture via middleware option
  * Each stack must use a unique `serviceName` as it's used to for retrieving the trace.
  * Using the same one will result in traces from different test cases mixing up.
  */
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  v4(),
-  runtime,
-  'AllFeatures-Middy'
-);
-const lambdaFunctionCodeFile = 'allFeatures.middy.test.functionCode.ts';
-let startTime: Date;
+describe(`Tracer E2E tests, all features with middy instantiation`, () => {
+  const runtime: string = process.env.RUNTIME || defaultRuntime;
 
-/**
- * Function #1 is with all flags enabled.
- */
-const uuidFunction1 = v4();
-const functionNameWithAllFlagsEnabled = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuidFunction1,
-  runtime,
-  'AllFeatures-Middy-AllFlagsEnabled'
-);
-const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled;
+  if (!isValidRuntimeKey(runtime)) {
+    throw new Error(`Invalid runtime key value: ${runtime}`);
+  }
 
-/**
- * Function #2 doesn't capture error or response
- */
-const uuidFunction2 = v4();
-const functionNameWithNoCaptureErrorOrResponse = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuidFunction2,
-  runtime,
-  'AllFeatures-Middy-NoCaptureErrorOrResponse'
-);
-const serviceNameWithNoCaptureErrorOrResponse =
-  functionNameWithNoCaptureErrorOrResponse;
-/**
- * Function #3 disables tracer
- */
-const uuidFunction3 = v4();
-const functionNameWithTracerDisabled = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuidFunction3,
-  runtime,
-  'AllFeatures-Middy-TracerDisabled'
-);
-const serviceNameWithTracerDisabled = functionNameWithNoCaptureErrorOrResponse;
+  const testName = generateTestUniqueName({
+    testPrefix: RESOURCE_NAME_PREFIX,
+    runtime,
+    testName: 'AllFeatures-Middy',
+  });
+  const testStack = new TestStack(testName);
 
-/**
- * Function #4 doesn't capture response
- */
-const uuidFunction4 = v4();
-const functionNameWithNoCaptureResponseViaMiddlewareOption = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuidFunction4,
-  runtime,
-  'AllFeatures-Middy-NoCaptureResponse2'
-);
-const serviceNameWithNoCaptureResponseViaMiddlewareOption =
-  functionNameWithNoCaptureResponseViaMiddlewareOption;
+  // Location of the lambda function code
+  const lambdaFunctionCodeFile = join(
+    __dirname,
+    'allFeatures.middy.test.functionCode.ts'
+  );
+  const startTime = new Date();
 
-const xrayClient = new XRayClient({});
-const stsClient = new STSClient({});
-const invocations = 3;
+  /**
+   * Function #1 is with all flags enabled.
+   */
+  const fnNameAllFlagsEnabled = concatenateResourceName({
+    testName,
+    resourceName: 'AllFlagsOn',
+  });
 
-const testStack = new TestStack(stackName);
+  /**
+   * Function #2 doesn't capture error or response
+   */
+  const fnNameNoCaptureErrorOrResponse = concatenateResourceName({
+    testName,
+    resourceName: 'NoCaptureErrOrResp',
+  });
 
-describe(`Tracer E2E tests, all features with middy instantiation for runtime: ${runtime}`, () => {
+  /**
+   * Function #3 disables tracer
+   */
+  const fnNameTracerDisabled = concatenateResourceName({
+    testName,
+    resourceName: 'TracerDisabled',
+  });
+
+  /**
+   * Function #4 disables response capture via middleware option
+   */
+  const fnNameCaptureResponseOff = concatenateResourceName({
+    testName,
+    resourceName: 'CaptureResponseOff',
+  });
+
+  /**
+   * Table used by all functions to make an SDK call
+   */
+  const ddbTableName = concatenateResourceName({
+    testName,
+    resourceName: 'TestTable',
+  });
+
+  const xrayClient = new XRayClient({});
+  const stsClient = new STSClient({});
+  const invocations = 3;
+
   beforeAll(async () => {
     // Prepare
-    startTime = new Date();
-    const ddbTableName = stackName + '-table';
-
     const ddbTable = new Table(testStack.stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
@@ -138,81 +129,91 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    const entry = path.join(__dirname, lambdaFunctionCodeFile);
-    const functionWithAllFlagsEnabled = createTracerTestFunction({
-      stack: testStack.stack,
-      functionName: functionNameWithAllFlagsEnabled,
-      entry,
-      expectedServiceName: serviceNameWithAllFlagsEnabled,
-      environmentParams: {
-        TEST_TABLE_NAME: ddbTableName,
-        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-        POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-        POWERTOOLS_TRACE_ENABLED: 'true',
-      },
-      runtime,
-    });
-    ddbTable.grantWriteData(functionWithAllFlagsEnabled);
-
-    const functionThatDoesNotCapturesErrorAndResponse =
-      createTracerTestFunction({
-        stack: testStack.stack,
-        functionName: functionNameWithNoCaptureErrorOrResponse,
-        entry,
-        expectedServiceName: serviceNameWithNoCaptureErrorOrResponse,
-        environmentParams: {
-          TEST_TABLE_NAME: ddbTableName,
-          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'false',
-          POWERTOOLS_TRACER_CAPTURE_ERROR: 'false',
-          POWERTOOLS_TRACE_ENABLED: 'true',
-        },
-        runtime,
-      });
-    ddbTable.grantWriteData(functionThatDoesNotCapturesErrorAndResponse);
-
-    const functionWithTracerDisabled = createTracerTestFunction({
-      stack: testStack.stack,
-      functionName: functionNameWithTracerDisabled,
-      entry,
-      expectedServiceName: serviceNameWithTracerDisabled,
-      environmentParams: {
-        TEST_TABLE_NAME: ddbTableName,
-        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-        POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-        POWERTOOLS_TRACE_ENABLED: 'false',
-      },
-      runtime,
-    });
-    ddbTable.grantWriteData(functionWithTracerDisabled);
-
-    const functionThatDoesNotCaptureResponseViaMiddlewareOption =
-      createTracerTestFunction({
-        stack: testStack.stack,
-        functionName: functionNameWithNoCaptureResponseViaMiddlewareOption,
-        entry,
-        handler: 'handlerWithNoCaptureResponseViaMiddlewareOption',
-        expectedServiceName:
-          serviceNameWithNoCaptureResponseViaMiddlewareOption,
-        environmentParams: {
+    const fnWithAllFlagsEnabled = new TestNodejsFunction(
+      testStack.stack,
+      fnNameAllFlagsEnabled,
+      {
+        functionName: fnNameAllFlagsEnabled,
+        entry: lambdaFunctionCodeFile,
+        runtime: TEST_RUNTIMES[runtime],
+        environment: {
           TEST_TABLE_NAME: ddbTableName,
           POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
           POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
           POWERTOOLS_TRACE_ENABLED: 'true',
+          EXPECTED_SERVICE_NAME: fnNameAllFlagsEnabled,
+          ...commonEnvironmentVariables,
         },
-        runtime,
-      });
-    ddbTable.grantWriteData(
-      functionThatDoesNotCaptureResponseViaMiddlewareOption
+      }
     );
+    ddbTable.grantWriteData(fnWithAllFlagsEnabled);
+
+    const fnThatDoesNotCapturesErrorAndResponse = new TestNodejsFunction(
+      testStack.stack,
+      fnNameNoCaptureErrorOrResponse,
+      {
+        functionName: fnNameNoCaptureErrorOrResponse,
+        entry: lambdaFunctionCodeFile,
+        runtime: TEST_RUNTIMES[runtime],
+        environment: {
+          TEST_TABLE_NAME: ddbTableName,
+          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'false',
+          POWERTOOLS_TRACER_CAPTURE_ERROR: 'false',
+          POWERTOOLS_TRACE_ENABLED: 'true',
+          EXPECTED_SERVICE_NAME: fnNameNoCaptureErrorOrResponse,
+          ...commonEnvironmentVariables,
+        },
+      }
+    );
+    ddbTable.grantWriteData(fnThatDoesNotCapturesErrorAndResponse);
+
+    const fnWithTracerDisabled = new TestNodejsFunction(
+      testStack.stack,
+      fnNameTracerDisabled,
+      {
+        functionName: fnNameTracerDisabled,
+        entry: lambdaFunctionCodeFile,
+        runtime: TEST_RUNTIMES[runtime],
+        environment: {
+          TEST_TABLE_NAME: ddbTableName,
+          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
+          POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
+          POWERTOOLS_TRACE_ENABLED: 'false',
+          EXPECTED_SERVICE_NAME: fnNameTracerDisabled,
+          ...commonEnvironmentVariables,
+        },
+      }
+    );
+    ddbTable.grantWriteData(fnWithTracerDisabled);
+
+    const fnWithCaptureResponseFalse = new TestNodejsFunction(
+      testStack.stack,
+      fnNameCaptureResponseOff,
+      {
+        functionName: fnNameCaptureResponseOff,
+        handler: 'handlerWithNoCaptureResponseViaMiddlewareOption',
+        entry: lambdaFunctionCodeFile,
+        runtime: TEST_RUNTIMES[runtime],
+        environment: {
+          TEST_TABLE_NAME: ddbTableName,
+          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
+          POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
+          POWERTOOLS_TRACE_ENABLED: 'true',
+          EXPECTED_SERVICE_NAME: fnNameCaptureResponseOff,
+          ...commonEnvironmentVariables,
+        },
+      }
+    );
+    ddbTable.grantWriteData(fnWithCaptureResponseFalse);
 
     await testStack.deploy();
 
     // Act
     await Promise.all([
-      invokeAllTestCases(functionNameWithAllFlagsEnabled),
-      invokeAllTestCases(functionNameWithNoCaptureErrorOrResponse),
-      invokeAllTestCases(functionNameWithTracerDisabled),
-      invokeAllTestCases(functionNameWithNoCaptureResponseViaMiddlewareOption),
+      invokeAllTestCases(fnNameAllFlagsEnabled),
+      invokeAllTestCases(fnNameNoCaptureErrorOrResponse),
+      invokeAllTestCases(fnNameTracerDisabled),
+      invokeAllTestCases(fnNameCaptureResponseOff),
     ]);
   }, SETUP_TIMEOUT);
 
@@ -228,7 +229,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       const tracesWhenAllFlagsEnabled = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled),
+        await getFunctionArn(stsClient, fnNameAllFlagsEnabled),
         invocations,
         4
       );
@@ -285,7 +286,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       const tracesWhenAllFlagsEnabled = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled),
+        await getFunctionArn(stsClient, fnNameAllFlagsEnabled),
         invocations,
         4
       );
@@ -300,7 +301,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
         assertAnnotation({
           annotations,
           isColdStart,
-          expectedServiceName: serviceNameWithAllFlagsEnabled,
+          expectedServiceName: fnNameAllFlagsEnabled,
           expectedCustomAnnotationKey,
           expectedCustomAnnotationValue,
         });
@@ -309,14 +310,14 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
           fail('metadata is missing');
         }
         expect(
-          metadata[serviceNameWithAllFlagsEnabled][expectedCustomMetadataKey]
+          metadata[fnNameAllFlagsEnabled][expectedCustomMetadataKey]
         ).toEqual(expectedCustomMetadataValue);
 
         const shouldThrowAnError = i === invocations - 1;
         if (!shouldThrowAnError) {
           // Assert that the metadata object contains the response
           expect(
-            metadata[serviceNameWithAllFlagsEnabled]['index.handler response']
+            metadata[fnNameAllFlagsEnabled]['index.handler response']
           ).toEqual(expectedCustomResponseValue);
         }
       }
@@ -330,10 +331,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       const tracesWithNoCaptureErrorOrResponse = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(
-          stsClient,
-          functionNameWithNoCaptureErrorOrResponse
-        ),
+        await getFunctionArn(stsClient, fnNameNoCaptureErrorOrResponse),
         invocations,
         4
       );
@@ -394,10 +392,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       const tracesWithNoCaptureResponse = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(
-          stsClient,
-          functionNameWithNoCaptureResponseViaMiddlewareOption
-        ),
+        await getFunctionArn(stsClient, fnNameCaptureResponseOff),
         invocations,
         4
       );
@@ -459,7 +454,7 @@ describe(`Tracer E2E tests, all features with middy instantiation for runtime: $
       const tracesWithTracerDisabled = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, functionNameWithTracerDisabled),
+        await getFunctionArn(stsClient, fnNameTracerDisabled),
         invocations,
         expectedNoOfTraces
       );

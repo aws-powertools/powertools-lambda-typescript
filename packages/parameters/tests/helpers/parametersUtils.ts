@@ -175,6 +175,7 @@ const createSSMSecureString = (
     policy: AwsCustomResourcePolicy.fromSdkCalls({
       resources: AwsCustomResourcePolicy.ANY_RESOURCE,
     }),
+    installLatestAwsSdk: false,
   });
 
   const param = StringParameter.fromSecureStringParameterAttributes(stack, id, {

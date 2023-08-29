@@ -3,18 +3,25 @@
  *
  * @group e2e/tracer/manual
  */
-import path from 'path';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { RemovalPolicy } from 'aws-cdk-lib';
-import { XRayClient } from '@aws-sdk/client-xray';
-import { STSClient } from '@aws-sdk/client-sts';
-import { v4 } from 'uuid';
 import {
-  TestStack,
+  concatenateResourceName,
   defaultRuntime,
+  generateTestUniqueName,
+  isValidRuntimeKey,
+  TestNodejsFunction,
+  TestStack,
+  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
+import { STSClient } from '@aws-sdk/client-sts';
+import { XRayClient } from '@aws-sdk/client-xray';
+import { RemovalPolicy } from 'aws-cdk-lib';
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { join } from 'path';
 import {
-  createTracerTestFunction,
+  assertAnnotation,
+  assertErrorAndFault,
+} from '../helpers/traceAssertions';
+import {
   getFirstSubsegment,
   getFunctionArn,
   getInvocationSubsegment,
@@ -24,10 +31,7 @@ import {
 } from '../helpers/tracesUtils';
 import type { ParsedTrace } from '../helpers/traceUtils.types';
 import {
-  generateUniqueName,
-  isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
-import {
+  commonEnvironmentVariables,
   expectedCustomAnnotationKey,
   expectedCustomAnnotationValue,
   expectedCustomErrorMessage,
@@ -39,62 +43,48 @@ import {
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import {
-  assertAnnotation,
-  assertErrorAndFault,
-} from '../helpers/traceAssertions';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
+describe(`Tracer E2E tests, all features with manual instantiation`, () => {
+  const runtime: string = process.env.RUNTIME || defaultRuntime;
 
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
+  if (!isValidRuntimeKey(runtime)) {
+    throw new Error(`Invalid runtime key value: ${runtime}`);
+  }
 
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'AllFeatures-Manual'
-);
-const functionName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'AllFeatures-Manual'
-);
-const lambdaFunctionCodeFile = 'allFeatures.manual.test.functionCode.ts';
-const expectedServiceName = functionName;
+  const testName = generateTestUniqueName({
+    testPrefix: RESOURCE_NAME_PREFIX,
+    runtime,
+    testName: 'AllFeatures-Decorator',
+  });
+  const testStack = new TestStack(testName);
 
-const xrayClient = new XRayClient({});
-const stsClient = new STSClient({});
-const invocations = 3;
-let sortedTraces: ParsedTrace[];
+  // Location of the lambda function code
+  const lambdaFunctionCodeFile = join(
+    __dirname,
+    'allFeatures.manual.test.functionCode.ts'
+  );
+  const startTime = new Date();
 
-const testStack = new TestStack(stackName);
+  const fnNameAllFlagsEnabled = concatenateResourceName({
+    testName,
+    resourceName: 'AllFlagsOn',
+  });
 
-describe(`Tracer E2E tests, all features with manual instantiation for runtime: ${runtime}`, () => {
+  /**
+   * Table used by all functions to make an SDK call
+   */
+  const ddbTableName = concatenateResourceName({
+    testName,
+    resourceName: 'TestTable',
+  });
+
+  const xrayClient = new XRayClient({});
+  const stsClient = new STSClient({});
+  const invocations = 3;
+  let sortedTraces: ParsedTrace[];
+
   beforeAll(async () => {
     // Prepare
-    const startTime = new Date();
-    const ddbTableName = stackName + '-table';
-
-    const entry = path.join(__dirname, lambdaFunctionCodeFile);
-    const environmentParams = {
-      TEST_TABLE_NAME: ddbTableName,
-      POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-      POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-      POWERTOOLS_TRACE_ENABLED: 'true',
-    };
-    const testFunction = createTracerTestFunction({
-      stack: testStack.stack,
-      functionName,
-      entry,
-      expectedServiceName,
-      environmentParams,
-      runtime,
-    });
-
     const ddbTable = new Table(testStack.stack, 'Table', {
       tableName: ddbTableName,
       partitionKey: {
@@ -105,15 +95,35 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    ddbTable.grantWriteData(testFunction);
+    const fnWithAllFlagsEnabled = new TestNodejsFunction(
+      testStack.stack,
+      fnNameAllFlagsEnabled,
+      {
+        functionName: fnNameAllFlagsEnabled,
+        entry: lambdaFunctionCodeFile,
+        runtime: TEST_RUNTIMES[runtime],
+        environment: {
+          TEST_TABLE_NAME: ddbTableName,
+          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
+          POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
+          POWERTOOLS_TRACE_ENABLED: 'true',
+          EXPECTED_SERVICE_NAME: fnNameAllFlagsEnabled,
+          ...commonEnvironmentVariables,
+        },
+      }
+    );
+    ddbTable.grantWriteData(fnWithAllFlagsEnabled);
 
     await testStack.deploy();
 
     // Act
-    await invokeAllTestCases(functionName);
+    await invokeAllTestCases(fnNameAllFlagsEnabled);
 
     // Retrieve traces from X-Ray for assertion
-    const lambdaFunctionArn = await getFunctionArn(stsClient, functionName);
+    const lambdaFunctionArn = await getFunctionArn(
+      stsClient,
+      fnNameAllFlagsEnabled
+    );
     sortedTraces = await getTraces(
       xrayClient,
       startTime,
@@ -191,7 +201,7 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
         assertAnnotation({
           annotations,
           isColdStart,
-          expectedServiceName,
+          expectedServiceName: fnNameAllFlagsEnabled,
           expectedCustomAnnotationKey,
           expectedCustomAnnotationValue,
         });
@@ -200,14 +210,14 @@ describe(`Tracer E2E tests, all features with manual instantiation for runtime: 
           fail('metadata is missing');
         }
         expect(
-          metadata[expectedServiceName][expectedCustomMetadataKey]
+          metadata[fnNameAllFlagsEnabled][expectedCustomMetadataKey]
         ).toEqual(expectedCustomMetadataValue);
 
         const shouldThrowAnError = i === invocations - 1;
         if (!shouldThrowAnError) {
           // Assert that the metadata object contains the response
           expect(
-            metadata[expectedServiceName]['index.handler response']
+            metadata[fnNameAllFlagsEnabled]['index.handler response']
           ).toEqual(expectedCustomResponseValue);
         }
       }

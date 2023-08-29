@@ -35,7 +35,7 @@ const testFunction = async (event: TestEvent, context: Context): TestOutput => {
   logger.removeKeys([REMOVABLE_KEY]); // This key should not appear in any log (except the event log)
   logger.appendKeys({
     // This key-value pair should appear in every log (except the event log)
-    [RUNTIME_ADDED_KEY]: event.invocation,
+    [RUNTIME_ADDED_KEY]: 'bar',
   });
 
   // Test feature 5: One-time additional log keys and values

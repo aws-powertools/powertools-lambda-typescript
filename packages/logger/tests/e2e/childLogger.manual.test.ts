@@ -3,18 +3,17 @@
  *
  * @group e2e/logger/childLogger
  */
-import path from 'path';
-import { v4 } from 'uuid';
+import { join } from 'node:path';
 import {
-  createStackWithLambdaFunction,
-  generateUniqueName,
-  invokeFunction,
-  isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
-import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
-import {
-  TestStack,
+  concatenateResourceName,
   defaultRuntime,
+  generateTestUniqueName,
+  isValidRuntimeKey,
+  TestNodejsFunction,
+  TestStack,
+  TEST_RUNTIMES,
+  TestInvocationLogs,
+  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import {
   RESOURCE_NAME_PREFIX,
@@ -24,71 +23,75 @@ import {
   TEARDOWN_TIMEOUT,
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
+describe(`Logger E2E tests, child logger`, () => {
+  const runtime: string = process.env.RUNTIME || defaultRuntime;
 
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
+  if (!isValidRuntimeKey(runtime)) {
+    throw new Error(`Invalid runtime key value: ${runtime}`);
+  }
 
-const LEVEL = InvocationLogs.LEVEL;
+  const testName = generateTestUniqueName({
+    testPrefix: RESOURCE_NAME_PREFIX,
+    runtime,
+    testName: 'ChildLogger-Manual',
+  });
+  const testStack = new TestStack(testName);
 
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'ChildLogger-Manual'
-);
-const functionName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'ChildLogger-Manual'
-);
-const lambdaFunctionCodeFile = 'childLogger.manual.test.FunctionCode.ts';
+  // Location of the lambda function code
+  const lambdaFunctionCodeFile = join(
+    __dirname,
+    'childLogger.manual.test.FunctionCode.ts'
+  );
 
-const invocationCount = 3;
+  const fnNameChildLogger = concatenateResourceName({
+    testName,
+    resourceName: 'ChildLogger',
+  });
 
-// Parameters to be used by Logger in the Lambda function
-const PERSISTENT_KEY = 'persistentKey';
-const PERSISTENT_VALUE = 'persistentValue';
-const PARENT_LOG_MSG = 'parent-only-log-msg';
-const CHILD_LOG_MSG = 'child-only-log-msg';
-const CHILD_LOG_LEVEL = LEVEL.ERROR;
-
-const testStack = new TestStack(stackName);
-let logGroupName: string; // We do not know it until deployment
-
-describe(`logger E2E tests child logger functionalities (manual) for runtime: ${runtime}`, () => {
-  let invocationLogs: InvocationLogs[];
+  // Parameters to be used by Logger in the Lambda function
+  const PERSISTENT_KEY = 'persistentKey';
+  const PERSISTENT_VALUE = 'persistentValue';
+  const PARENT_LOG_MSG = 'parent-only-log-msg';
+  const CHILD_LOG_MSG = 'child-only-log-msg';
+  const LEVEL = TestInvocationLogs.LEVEL;
+  const CHILD_LOG_LEVEL = LEVEL.ERROR;
+  let logGroupName: string; // We do not know it until deployment
+  let invocationLogs: TestInvocationLogs[];
+  const invocations = 3;
 
   beforeAll(async () => {
-    // Create and deploy a stack with AWS CDK
-    createStackWithLambdaFunction({
-      stack: testStack.stack,
-      functionName: functionName,
-      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
-      environment: {
-        LOG_LEVEL: 'INFO',
-        POWERTOOLS_SERVICE_NAME: 'logger-e2e-testing',
-        UUID: uuid,
-
-        // Text to be used by Logger in the Lambda function
-        PERSISTENT_KEY,
-        PERSISTENT_VALUE,
-        PARENT_LOG_MSG,
-        CHILD_LOG_MSG,
-        CHILD_LOG_LEVEL,
+    // Prepare
+    new TestNodejsFunction(
+      testStack.stack,
+      fnNameChildLogger,
+      {
+        functionName: fnNameChildLogger,
+        entry: lambdaFunctionCodeFile,
+        runtime: TEST_RUNTIMES[runtime],
+        environment: {
+          LOG_LEVEL: 'INFO',
+          POWERTOOLS_SERVICE_NAME: 'logger-e2e-testing',
+          PERSISTENT_KEY,
+          PERSISTENT_VALUE,
+          PARENT_LOG_MSG,
+          CHILD_LOG_MSG,
+          CHILD_LOG_LEVEL,
+        },
       },
-      logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
-      runtime: runtime,
-    });
+      {
+        logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
+      }
+    );
 
     const result = await testStack.deploy();
     logGroupName = result[STACK_OUTPUT_LOG_GROUP];
 
     // Invoke the function three time (one for cold start, then two for warm start)
-    invocationLogs = await invokeFunction(functionName, invocationCount);
+    invocationLogs = await invokeFunction({
+      functionName: fnNameChildLogger,
+      invocationMode: 'SEQUENTIAL',
+      times: invocations,
+    });
 
     console.log('logGroupName', logGroupName);
   }, SETUP_TIMEOUT);
@@ -97,7 +100,7 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
     it(
       'should not log at same level of parent because of its own logLevel',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation and filter by level
           const infoLogs = invocationLogs[i].getFunctionLogs(LEVEL.INFO);
 
@@ -118,7 +121,7 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
     it(
       'should log only level passed to a child',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
@@ -140,7 +143,7 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
     it(
       'should NOT inject context into the child logger',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
@@ -151,7 +154,7 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
 
           // Check that the context is not present in any of the child logs
           for (const message of childLogMessages) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             expect(log).not.toHaveProperty('function_arn');
             expect(log).not.toHaveProperty('function_memory_size');
             expect(log).not.toHaveProperty('function_name');
@@ -165,13 +168,13 @@ describe(`logger E2E tests child logger functionalities (manual) for runtime: ${
     it(
       'both logger instances should have the same persistent key/value',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
           // Check that all logs have the persistent key/value
           for (const message of logMessages) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             expect(log).toHaveProperty(PERSISTENT_KEY);
           }
         }

@@ -10,6 +10,7 @@ if (
   process.env.AWS_REGION = 'eu-west-1';
 }
 process.env._HANDLER = 'index.handler';
+process.env.AWS_NODEJS_CONNECTION_REUSE_ENABLED = '1';
 
 // Powertools for AWS Lambda (TypeScript) variables
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';

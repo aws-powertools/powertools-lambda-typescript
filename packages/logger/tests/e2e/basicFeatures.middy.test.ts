@@ -3,20 +3,20 @@
  *
  * @group e2e/logger/basicFeatures
  */
-import path from 'path';
-import { APIGatewayAuthorizerResult } from 'aws-lambda';
-import { v4 } from 'uuid';
 import {
-  createStackWithLambdaFunction,
-  generateUniqueName,
+  concatenateResourceName,
+  defaultRuntime,
+  generateTestUniqueName,
   invokeFunction,
   isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
-import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
-import {
+  TestInvocationLogs,
+  TestNodejsFunction,
   TestStack,
-  defaultRuntime,
+  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
+import type { APIGatewayAuthorizerResult } from 'aws-lambda';
+import { randomUUID } from 'node:crypto';
+import { join } from 'node:path';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -26,85 +26,90 @@ import {
   XRAY_TRACE_ID_REGEX,
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
+describe(`Logger E2E tests, basic functionalities middy usage`, () => {
+  const runtime: string = process.env.RUNTIME || defaultRuntime;
 
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
+  if (!isValidRuntimeKey(runtime)) {
+    throw new Error(`Invalid runtime key value: ${runtime}`);
+  }
 
-const LEVEL = InvocationLogs.LEVEL;
+  const testName = generateTestUniqueName({
+    testPrefix: RESOURCE_NAME_PREFIX,
+    runtime,
+    testName: 'AllFeatures-Decorator',
+  });
+  const testStack = new TestStack(testName);
 
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'BasicFeatures-Middy'
-);
-const functionName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'BasicFeatures-Middy'
-);
-const lambdaFunctionCodeFile = 'basicFeatures.middy.test.FunctionCode.ts';
+  // Location of the lambda function code
+  const lambdaFunctionCodeFile = join(
+    __dirname,
+    'basicFeatures.middy.test.FunctionCode.ts'
+  );
 
-const invocationCount = 3;
+  const fnNameBasicFeatures = concatenateResourceName({
+    testName,
+    resourceName: 'BasicFeatures',
+  });
 
-// Text to be used by Logger in the Lambda function
-const PERSISTENT_KEY = 'persistentKey';
-const RUNTIME_ADDED_KEY = 'invocation';
-const PERSISTENT_VALUE = uuid;
-const REMOVABLE_KEY = 'removableKey';
-const REMOVABLE_VALUE = 'removedValue';
-const SINGLE_LOG_ITEM_KEY = 'singleKey';
-const SINGLE_LOG_ITEM_VALUE = 'singleValue';
-const ERROR_MSG = 'error';
-const ARBITRARY_OBJECT_KEY = 'arbitraryObjectKey';
-const ARBITRARY_OBJECT_DATA = 'arbitraryObjectData';
+  // Text to be used by Logger in the Lambda function
+  const PERSISTENT_KEY = 'persistentKey';
+  const RUNTIME_ADDED_KEY = 'foo';
+  const PERSISTENT_VALUE = randomUUID();
+  const REMOVABLE_KEY = 'removableKey';
+  const REMOVABLE_VALUE = 'removedValue';
+  const SINGLE_LOG_ITEM_KEY = 'singleKey';
+  const SINGLE_LOG_ITEM_VALUE = 'singleValue';
+  const ERROR_MSG = 'error';
+  const ARBITRARY_OBJECT_KEY = 'arbitraryObjectKey';
+  const ARBITRARY_OBJECT_DATA = 'arbitraryObjectData';
+  const LEVEL = TestInvocationLogs.LEVEL;
+  const invocations = 3;
 
-const testStack = new TestStack(stackName);
-let logGroupName: string; // We do not know it until deployment
+  let logGroupName: string; // We do not know it until deployment
 
-describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}`, () => {
-  let invocationLogs: InvocationLogs[];
+  let invocationLogs: TestInvocationLogs[];
 
   beforeAll(async () => {
-    // Create and deploy a stack with AWS CDK
-    createStackWithLambdaFunction({
-      stack: testStack.stack,
-      functionName: functionName,
-      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
-      environment: {
-        LOG_LEVEL: 'INFO',
-        POWERTOOLS_SERVICE_NAME: 'logger-e2e-testing',
-        UUID: uuid,
-
-        // Text to be used by Logger in the Lambda function
-        PERSISTENT_KEY,
-        PERSISTENT_VALUE,
-        RUNTIME_ADDED_KEY,
-        REMOVABLE_KEY,
-        REMOVABLE_VALUE,
-        SINGLE_LOG_ITEM_KEY,
-        SINGLE_LOG_ITEM_VALUE,
-        ERROR_MSG,
-        ARBITRARY_OBJECT_KEY,
-        ARBITRARY_OBJECT_DATA,
+    // Prepare
+    new TestNodejsFunction(
+      testStack.stack,
+      fnNameBasicFeatures,
+      {
+        functionName: fnNameBasicFeatures,
+        entry: lambdaFunctionCodeFile,
+        runtime: TEST_RUNTIMES[runtime],
+        environment: {
+          LOG_LEVEL: 'INFO',
+          POWERTOOLS_SERVICE_NAME: 'logger-e2e-testing',
+          PERSISTENT_KEY,
+          PERSISTENT_VALUE,
+          RUNTIME_ADDED_KEY,
+          REMOVABLE_KEY,
+          REMOVABLE_VALUE,
+          SINGLE_LOG_ITEM_KEY,
+          SINGLE_LOG_ITEM_VALUE,
+          ERROR_MSG,
+          ARBITRARY_OBJECT_KEY,
+          ARBITRARY_OBJECT_DATA,
+        },
       },
-      logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
-      runtime: runtime,
-    });
+      {
+        logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
+      }
+    );
 
     const result = await testStack.deploy();
     logGroupName = result[STACK_OUTPUT_LOG_GROUP];
 
     // Invoke the function three time (one for cold start, then two for warm start)
-    invocationLogs = await invokeFunction(
-      functionName,
-      invocationCount,
-      'SEQUENTIAL'
-    );
+    invocationLogs = await invokeFunction({
+      functionName: fnNameBasicFeatures,
+      times: invocations,
+      invocationMode: 'SEQUENTIAL',
+      payload: {
+        foo: 'bar',
+      },
+    });
 
     console.log('logGroupName', logGroupName);
   }, SETUP_TIMEOUT);
@@ -113,7 +118,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should filter log based on LOG_LEVEL (INFO) environment variable in Lambda',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation and filter by level
           const debugLogs = invocationLogs[i].getFunctionLogs(LEVEL.DEBUG);
           // Check that no log message below INFO level is logged
@@ -128,12 +133,12 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should inject context info in each log',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
           // Check that the context is logged on every log
           for (const message of logMessages) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             expect(log).toHaveProperty('function_arn');
             expect(log).toHaveProperty('function_memory_size');
             expect(log).toHaveProperty('function_name');
@@ -148,12 +153,12 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should include coldStart equal to TRUE only on the first invocation, FALSE otherwise',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
           // Check that cold start is logged correctly on every log
           for (const message of logMessages) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             if (i === 0) {
               expect(log.cold_start).toBe(true);
             } else {
@@ -170,17 +175,17 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should log the event as the first log of each invocation only',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
           for (const [index, message] of logMessages.entries()) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             // Check that the event is logged on the first log
             if (index === 0) {
               expect(log).toHaveProperty('event');
               expect(log.event).toStrictEqual(
-                expect.objectContaining({ invocation: i })
+                expect.objectContaining({ foo: 'bar' })
               );
               // Check that the event is not logged again on the rest of the logs
             } else {
@@ -197,12 +202,12 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should contain persistent value in every log',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
           for (const message of logMessages) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             // Check that the persistent key is present in every log
             expect(log).toHaveProperty(PERSISTENT_KEY);
             expect(log[PERSISTENT_KEY]).toBe(PERSISTENT_VALUE);
@@ -215,12 +220,12 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should not contain persistent keys that were removed on runtime',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
           for (const [index, message] of logMessages.entries()) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             // Check that at the time of logging the event, which happens before the handler,
             // the key was still present
             if (index === 0) {
@@ -239,12 +244,12 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should not leak any persistent keys added runtime since clearState is enabled',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
           for (const [index, message] of logMessages.entries()) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             // Check that at the time of logging the event, which happens before the handler,
             // the key is NOT present
             if (index === 0) {
@@ -252,8 +257,8 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
             } else {
               // Check that all other logs that happen at runtime do contain the key
               expect(log).toHaveProperty(RUNTIME_ADDED_KEY);
-              // Check that the value is the same for all logs (it should be the index of the invocation)
-              expect(log[RUNTIME_ADDED_KEY]).toEqual(i);
+              // Check that the value is the same for all logs
+              expect(log[RUNTIME_ADDED_KEY]).toEqual('bar');
             }
           }
         }
@@ -266,7 +271,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should log additional keys and value only once',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
           // Check that the additional log is logged only once
@@ -275,7 +280,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
           );
           expect(logMessagesWithAdditionalLog).toHaveLength(1);
           // Check that the additional log is logged correctly
-          const parsedLog = InvocationLogs.parseFunctionLog(
+          const parsedLog = TestInvocationLogs.parseFunctionLog(
             logMessagesWithAdditionalLog[0]
           );
           expect(parsedLog[SINGLE_LOG_ITEM_KEY]).toBe(SINGLE_LOG_ITEM_VALUE);
@@ -289,7 +294,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should log error only once',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation filtered by error level
           const logMessages = invocationLogs[i].getFunctionLogs(LEVEL.ERROR);
 
@@ -297,7 +302,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
           expect(logMessages).toHaveLength(1);
 
           // Check that the error is logged correctly
-          const errorLog = InvocationLogs.parseFunctionLog(logMessages[0]);
+          const errorLog = TestInvocationLogs.parseFunctionLog(logMessages[0]);
           expect(errorLog).toHaveProperty('error');
           expect(errorLog.error).toStrictEqual(
             expect.objectContaining({
@@ -317,7 +322,7 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should log additional arbitrary object only once',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
           // Get the log messages that contains the arbitrary object
@@ -326,7 +331,9 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
           );
           // Check that the arbitrary object is logged only once
           expect(filteredLogs).toHaveLength(1);
-          const logObject = InvocationLogs.parseFunctionLog(filteredLogs[0]);
+          const logObject = TestInvocationLogs.parseFunctionLog(
+            filteredLogs[0]
+          );
           // Check that the arbitrary object is logged correctly
           expect(logObject).toHaveProperty(ARBITRARY_OBJECT_KEY);
           const arbitrary = logObject[
@@ -355,14 +362,14 @@ describe(`logger E2E tests basic functionalities (middy) for runtime: ${runtime}
     it(
       'should inject & parse the X-Ray Trace ID of the current invocation into every log',
       async () => {
-        for (let i = 0; i < invocationCount; i++) {
+        for (let i = 0; i < invocations; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
           // Check that the X-Ray Trace ID is logged on every log
           const traceIds: string[] = [];
           for (const message of logMessages) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             expect(log).toHaveProperty('xray_trace_id');
             expect(log.xray_trace_id).toMatch(XRAY_TRACE_ID_REGEX);
             traceIds.push(log.xray_trace_id as string);

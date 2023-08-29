@@ -4,19 +4,15 @@
  * @group e2e/tracer/decorator
  */
 import {
-  concatenateResourceName,
   defaultRuntime,
+  findAndGetStackOutputValue,
   generateTestUniqueName,
   isValidRuntimeKey,
-  TestNodejsFunction,
   TestStack,
-  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
-import { STSClient } from '@aws-sdk/client-sts';
 import { XRayClient } from '@aws-sdk/client-xray';
-import { RemovalPolicy } from 'aws-cdk-lib';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { join } from 'node:path';
+import { functionFactory, tableFactory } from '../helpers/factories';
 import {
   assertAnnotation,
   assertErrorAndFault,
@@ -30,7 +26,6 @@ import {
   splitSegmentsByName,
 } from '../helpers/tracesUtils';
 import {
-  commonEnvironmentVariables,
   expectedCustomAnnotationKey,
   expectedCustomAnnotationValue,
   expectedCustomErrorMessage,
@@ -67,153 +62,113 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
   const testStack = new TestStack(testName);
 
   // Location of the lambda function code
-  const lambdaFunctionCodeFile = join(
+  const lambdaFunctionCodeFilePath = join(
     __dirname,
     'allFeatures.decorator.test.functionCode.ts'
   );
   const startTime = new Date();
 
   /**
+   * Table used by all functions to make an SDK call
+   */
+  const testTable = tableFactory({
+    testStack,
+    testName,
+    tableSuffix: 'TestTable',
+  });
+
+  /**
    * Function #1 is with all flags enabled.
    */
-  const fnNameAllFlagsEnabled = concatenateResourceName({
+  let fnNameAllFlagsEnabled: string;
+  const fnAllFlagsEnabled = functionFactory({
+    testStack,
     testName,
-    resourceName: 'AllFlagsOn',
+    functionSuffix: 'AllFlagsOn',
+    lambdaFunctionCodeFilePath,
+    environment: {
+      TEST_TABLE_NAME: testTable.tableName,
+    },
   });
+  testTable.grantWriteData(fnAllFlagsEnabled);
 
   /**
    * Function #2 doesn't capture error or response
    */
-  const fnNameNoCaptureErrorOrResponse = concatenateResourceName({
+  let fnNameNoCaptureErrorOrResponse: string;
+  const fnNoCaptureErrorOrResponse = functionFactory({
+    testStack,
     testName,
-    resourceName: 'NoCaptureErrOrResp',
+    functionSuffix: 'NoCaptureErrOrResp',
+    lambdaFunctionCodeFilePath,
+    environment: {
+      TEST_TABLE_NAME: testTable.tableName,
+      POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'false',
+      POWERTOOLS_TRACER_CAPTURE_ERROR: 'false',
+    },
   });
+  testTable.grantWriteData(fnNoCaptureErrorOrResponse);
 
   /**
    * Function #3 disables tracer
    */
-  const fnNameTracerDisabled = concatenateResourceName({
+  let fnNameTracerDisabled: string;
+  const fnTracerDisabled = functionFactory({
+    testStack,
     testName,
-    resourceName: 'TracerDisabled',
+    functionSuffix: 'TracerDisabled',
+    lambdaFunctionCodeFilePath,
+    environment: {
+      TEST_TABLE_NAME: testTable.tableName,
+      POWERTOOLS_TRACE_ENABLED: 'false',
+    },
   });
+  testTable.grantWriteData(fnTracerDisabled);
 
   /**
    * Function #4 disables capture response via decorator options
    */
-  const fnNameCaptureResponseOff = concatenateResourceName({
+  let fnNameCaptureResponseOff: string;
+  const fnCaptureResponseOff = functionFactory({
+    testStack,
     testName,
-    resourceName: 'CaptureRespOff',
+    functionSuffix: 'CaptureResponseOff',
+    lambdaFunctionCodeFilePath,
+    handler: 'handlerWithCaptureResponseFalse',
+    environment: {
+      TEST_TABLE_NAME: testTable.tableName,
+    },
   });
-
-  /**
-   * Table used by all functions to make an SDK call
-   */
-  const ddbTableName = concatenateResourceName({
-    testName,
-    resourceName: 'TestTable',
-  });
+  testTable.grantWriteData(fnCaptureResponseOff);
 
   const xrayClient = new XRayClient({});
-  const stsClient = new STSClient({});
-  const invocations = 3;
+  const invocationCount = 3;
 
   beforeAll(async () => {
-    // Prepare
-    const ddbTable = new Table(testStack.stack, 'Table', {
-      tableName: ddbTableName,
-      partitionKey: {
-        name: 'id',
-        type: AttributeType.STRING,
-      },
-      billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
-    });
+    // Deploy the stack
+    const outputs = await testStack.deploy();
 
-    const fnWithAllFlagsEnabled = new TestNodejsFunction(
-      testStack.stack,
-      fnNameAllFlagsEnabled,
-      {
-        functionName: fnNameAllFlagsEnabled,
-        entry: lambdaFunctionCodeFile,
-        runtime: TEST_RUNTIMES[runtime],
-        environment: {
-          TEST_TABLE_NAME: ddbTableName,
-          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-          POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-          POWERTOOLS_TRACE_ENABLED: 'true',
-          EXPECTED_SERVICE_NAME: fnNameAllFlagsEnabled,
-          ...commonEnvironmentVariables,
-        },
-      }
+    // Get the actual function names from the stack outputs
+    fnNameAllFlagsEnabled = findAndGetStackOutputValue(outputs, 'AllFlagsOn');
+    fnNameNoCaptureErrorOrResponse = findAndGetStackOutputValue(
+      outputs,
+      'NoCaptureErrOrResp'
     );
-    ddbTable.grantWriteData(fnWithAllFlagsEnabled);
-
-    const fnThatDoesNotCapturesErrorAndResponse = new TestNodejsFunction(
-      testStack.stack,
-      fnNameNoCaptureErrorOrResponse,
-      {
-        functionName: fnNameNoCaptureErrorOrResponse,
-        entry: lambdaFunctionCodeFile,
-        runtime: TEST_RUNTIMES[runtime],
-        environment: {
-          TEST_TABLE_NAME: ddbTableName,
-          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'false',
-          POWERTOOLS_TRACER_CAPTURE_ERROR: 'false',
-          POWERTOOLS_TRACE_ENABLED: 'true',
-          EXPECTED_SERVICE_NAME: fnNameNoCaptureErrorOrResponse,
-          ...commonEnvironmentVariables,
-        },
-      }
+    fnNameTracerDisabled = findAndGetStackOutputValue(
+      outputs,
+      'TracerDisabled'
     );
-    ddbTable.grantWriteData(fnThatDoesNotCapturesErrorAndResponse);
-
-    const fnWithTracerDisabled = new TestNodejsFunction(
-      testStack.stack,
-      fnNameTracerDisabled,
-      {
-        functionName: fnNameTracerDisabled,
-        entry: lambdaFunctionCodeFile,
-        runtime: TEST_RUNTIMES[runtime],
-        environment: {
-          TEST_TABLE_NAME: ddbTableName,
-          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-          POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-          POWERTOOLS_TRACE_ENABLED: 'false',
-          EXPECTED_SERVICE_NAME: fnNameTracerDisabled,
-          ...commonEnvironmentVariables,
-        },
-      }
+    fnNameCaptureResponseOff = findAndGetStackOutputValue(
+      outputs,
+      'CaptureResponseOff'
     );
-    ddbTable.grantWriteData(fnWithTracerDisabled);
 
-    const fnWithCaptureResponseFalse = new TestNodejsFunction(
-      testStack.stack,
-      fnNameCaptureResponseOff,
-      {
-        functionName: fnNameCaptureResponseOff,
-        handler: 'handlerWithCaptureResponseFalse',
-        entry: lambdaFunctionCodeFile,
-        runtime: TEST_RUNTIMES[runtime],
-        environment: {
-          TEST_TABLE_NAME: ddbTableName,
-          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-          POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-          POWERTOOLS_TRACE_ENABLED: 'true',
-          EXPECTED_SERVICE_NAME: fnNameCaptureResponseOff,
-          ...commonEnvironmentVariables,
-        },
-      }
-    );
-    ddbTable.grantWriteData(fnWithCaptureResponseFalse);
-
-    await testStack.deploy();
-
-    // Act
+    // Invoke all functions
     await Promise.all([
-      invokeAllTestCases(fnNameAllFlagsEnabled),
-      invokeAllTestCases(fnNameNoCaptureErrorOrResponse),
-      invokeAllTestCases(fnNameTracerDisabled),
-      invokeAllTestCases(fnNameCaptureResponseOff),
+      invokeAllTestCases(fnNameAllFlagsEnabled, invocationCount),
+      invokeAllTestCases(fnNameNoCaptureErrorOrResponse, invocationCount),
+      invokeAllTestCases(fnNameTracerDisabled, invocationCount),
+      invokeAllTestCases(fnNameCaptureResponseOff, invocationCount),
     ]);
   }, SETUP_TIMEOUT);
 
@@ -229,15 +184,15 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
       const tracesWhenAllFlagsEnabled = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, fnNameAllFlagsEnabled),
-        invocations,
+        await getFunctionArn(fnNameAllFlagsEnabled),
+        invocationCount,
         4
       );
 
-      expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
+      expect(tracesWhenAllFlagsEnabled.length).toBe(invocationCount);
 
       // Assess
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWhenAllFlagsEnabled[i];
 
         /**
@@ -274,7 +229,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
         expect(subsegments.get('### myMethod')?.length).toBe(1);
         expect(subsegments.get('other')?.length).toBe(0);
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationCount - 1;
         if (shouldThrowAnError) {
           assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
         }
@@ -289,12 +244,12 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
       const tracesWhenAllFlagsEnabled = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, fnNameAllFlagsEnabled),
-        invocations,
+        await getFunctionArn(fnNameAllFlagsEnabled),
+        invocationCount,
         4
       );
 
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWhenAllFlagsEnabled[i];
         const invocationSubsegment = getInvocationSubsegment(trace);
         const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
@@ -316,7 +271,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
           metadata[fnNameAllFlagsEnabled][expectedCustomMetadataKey]
         ).toEqual(expectedCustomMetadataValue);
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationCount - 1;
         if (!shouldThrowAnError) {
           // Assert that the metadata object contains the response
           expect(
@@ -334,15 +289,15 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
       const tracesWithNoCaptureErrorOrResponse = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, fnNameNoCaptureErrorOrResponse),
-        invocations,
+        await getFunctionArn(fnNameNoCaptureErrorOrResponse),
+        invocationCount,
         4
       );
 
-      expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocations);
+      expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocationCount);
 
       // Assess
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWithNoCaptureErrorOrResponse[i];
 
         /**
@@ -379,7 +334,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
         expect(subsegments.get('### myMethod')?.length).toBe(1);
         expect(subsegments.get('other')?.length).toBe(0);
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationCount - 1;
         if (shouldThrowAnError) {
           // Assert that the subsegment has the expected fault
           expect(invocationSubsegment.error).toBe(true);
@@ -398,15 +353,15 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
       const tracesWithCaptureResponseFalse = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, fnNameCaptureResponseOff),
-        invocations,
+        await getFunctionArn(fnNameCaptureResponseOff),
+        invocationCount,
         4
       );
 
-      expect(tracesWithCaptureResponseFalse.length).toBe(invocations);
+      expect(tracesWithCaptureResponseFalse.length).toBe(invocationCount);
 
       // Assess
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWithCaptureResponseFalse[i];
 
         /**
@@ -453,7 +408,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
         expect(myMethodSegment).toBeDefined();
         expect(myMethodSegment).not.toHaveProperty('metadata');
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationCount - 1;
         if (shouldThrowAnError) {
           assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
         }
@@ -469,15 +424,15 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
       const tracesWithTracerDisabled = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, fnNameTracerDisabled),
-        invocations,
+        await getFunctionArn(fnNameTracerDisabled),
+        invocationCount,
         expectedNoOfTraces
       );
 
-      expect(tracesWithTracerDisabled.length).toBe(invocations);
+      expect(tracesWithTracerDisabled.length).toBe(invocationCount);
 
       // Assess
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWithTracerDisabled[i];
         expect(trace.Segments.length).toBe(2);
 
@@ -487,7 +442,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
         const invocationSubsegment = getInvocationSubsegment(trace);
         expect(invocationSubsegment?.subsegments).toBeUndefined();
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationCount - 1;
         if (shouldThrowAnError) {
           expect(invocationSubsegment.error).toBe(true);
         }

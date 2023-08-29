@@ -4,9 +4,9 @@ import {
   BatchGetTracesCommand,
   GetTraceSummariesCommand,
 } from '@aws-sdk/client-xray';
-import type { STSClient } from '@aws-sdk/client-sts';
+import { STSClient } from '@aws-sdk/client-sts';
 import { GetCallerIdentityCommand } from '@aws-sdk/client-sts';
-import { invokeFunctionOnce } from '@aws-lambda-powertools/testing-utils';
+import { invokeFunction } from '@aws-lambda-powertools/testing-utils';
 import { FunctionSegmentNotDefinedError } from './FunctionSegmentNotDefinedError';
 import type {
   ParsedDocument,
@@ -212,37 +212,36 @@ const splitSegmentsByName = (
  *
  * @param functionName
  */
-const invokeAllTestCases = async (functionName: string): Promise<void> => {
-  await invokeFunctionOnce({
+const invokeAllTestCases = async (
+  functionName: string,
+  times: number
+): Promise<void> => {
+  await invokeFunction({
     functionName,
-    payload: {
-      invocation: 1,
-      throw: false,
-    },
-  });
-  await invokeFunctionOnce({
-    functionName,
-    payload: {
-      invocation: 2,
-      throw: false,
-    },
-  });
-  await invokeFunctionOnce({
-    functionName,
-    payload: {
-      invocation: 3,
-      throw: true, // only last invocation should throw
-    },
+    times,
+    invocationMode: 'SEQUENTIAL',
+    payload: [
+      {
+        invocation: 1,
+        throw: false,
+      },
+      {
+        invocation: 2,
+        throw: false,
+      },
+      {
+        invocation: 3,
+        throw: true, // only last invocation should throw
+      },
+    ],
   });
 };
 
 let account: string | undefined;
-const getFunctionArn = async (
-  stsClient: STSClient,
-  functionName: string
-): Promise<string> => {
+const getFunctionArn = async (functionName: string): Promise<string> => {
   const region = process.env.AWS_REGION;
   if (!account) {
+    const stsClient = new STSClient({});
     const identity = await stsClient.send(new GetCallerIdentityCommand({}));
     account = identity.Account;
   }

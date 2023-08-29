@@ -7,6 +7,7 @@ import type { Construct } from 'constructs';
 
 interface ExtraTestProps {
   logGroupOutputKey?: string;
+  fnOutputKey?: string;
 }
 
 /**
@@ -32,6 +33,12 @@ class TestNodejsFunction extends NodejsFunction {
     if (extraProps.logGroupOutputKey) {
       new CfnOutput(this, extraProps.logGroupOutputKey, {
         value: this.logGroup.logGroupName,
+      });
+    }
+
+    if (extraProps.fnOutputKey) {
+      new CfnOutput(this, extraProps.fnOutputKey, {
+        value: this.functionName,
       });
     }
   }

@@ -4,19 +4,15 @@
  * @group e2e/tracer/manual
  */
 import {
-  concatenateResourceName,
   defaultRuntime,
+  findAndGetStackOutputValue,
   generateTestUniqueName,
   isValidRuntimeKey,
-  TestNodejsFunction,
   TestStack,
-  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
-import { STSClient } from '@aws-sdk/client-sts';
 import { XRayClient } from '@aws-sdk/client-xray';
-import { RemovalPolicy } from 'aws-cdk-lib';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { join } from 'path';
+import { functionFactory, tableFactory } from '../helpers/factories';
 import {
   assertAnnotation,
   assertErrorAndFault,
@@ -31,7 +27,6 @@ import {
 } from '../helpers/tracesUtils';
 import type { ParsedTrace } from '../helpers/traceUtils.types';
 import {
-  commonEnvironmentVariables,
   expectedCustomAnnotationKey,
   expectedCustomAnnotationValue,
   expectedCustomErrorMessage,
@@ -54,81 +49,58 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
   const testName = generateTestUniqueName({
     testPrefix: RESOURCE_NAME_PREFIX,
     runtime,
-    testName: 'AllFeatures-Decorator',
+    testName: 'AllFeatures-Manual',
   });
   const testStack = new TestStack(testName);
 
   // Location of the lambda function code
-  const lambdaFunctionCodeFile = join(
+  const lambdaFunctionCodeFilePath = join(
     __dirname,
     'allFeatures.manual.test.functionCode.ts'
   );
   const startTime = new Date();
 
-  const fnNameAllFlagsEnabled = concatenateResourceName({
-    testName,
-    resourceName: 'AllFlagsOn',
-  });
-
   /**
    * Table used by all functions to make an SDK call
    */
-  const ddbTableName = concatenateResourceName({
+  const testTable = tableFactory({
+    testStack,
     testName,
-    resourceName: 'TestTable',
+    tableSuffix: 'TestTable',
   });
 
+  let fnNameAllFlagsEnabled: string;
+  const fnAllFlagsEnabled = functionFactory({
+    testStack,
+    testName,
+    functionSuffix: 'AllFlagsOn',
+    lambdaFunctionCodeFilePath,
+    environment: {
+      TEST_TABLE_NAME: testTable.tableName,
+    },
+  });
+  testTable.grantWriteData(fnAllFlagsEnabled);
+
   const xrayClient = new XRayClient({});
-  const stsClient = new STSClient({});
-  const invocations = 3;
+  const invocationCount = 3;
   let sortedTraces: ParsedTrace[];
 
   beforeAll(async () => {
-    // Prepare
-    const ddbTable = new Table(testStack.stack, 'Table', {
-      tableName: ddbTableName,
-      partitionKey: {
-        name: 'id',
-        type: AttributeType.STRING,
-      },
-      billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
-    });
+    // Deploy the stack
+    const outputs = await testStack.deploy();
 
-    const fnWithAllFlagsEnabled = new TestNodejsFunction(
-      testStack.stack,
-      fnNameAllFlagsEnabled,
-      {
-        functionName: fnNameAllFlagsEnabled,
-        entry: lambdaFunctionCodeFile,
-        runtime: TEST_RUNTIMES[runtime],
-        environment: {
-          TEST_TABLE_NAME: ddbTableName,
-          POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-          POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-          POWERTOOLS_TRACE_ENABLED: 'true',
-          EXPECTED_SERVICE_NAME: fnNameAllFlagsEnabled,
-          ...commonEnvironmentVariables,
-        },
-      }
-    );
-    ddbTable.grantWriteData(fnWithAllFlagsEnabled);
+    // Get the actual function names from the stack outputs
+    fnNameAllFlagsEnabled = findAndGetStackOutputValue(outputs, 'AllFlagsOn');
 
-    await testStack.deploy();
-
-    // Act
-    await invokeAllTestCases(fnNameAllFlagsEnabled);
+    // Invoke all test cases
+    await invokeAllTestCases(fnNameAllFlagsEnabled, invocationCount);
 
     // Retrieve traces from X-Ray for assertion
-    const lambdaFunctionArn = await getFunctionArn(
-      stsClient,
-      fnNameAllFlagsEnabled
-    );
     sortedTraces = await getTraces(
       xrayClient,
       startTime,
-      lambdaFunctionArn,
-      invocations,
+      await getFunctionArn(fnNameAllFlagsEnabled),
+      invocationCount,
       4
     );
   }, SETUP_TIMEOUT);
@@ -142,10 +114,10 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
   it(
     'should generate all custom traces',
     async () => {
-      expect(sortedTraces.length).toBe(invocations);
+      expect(sortedTraces.length).toBe(invocationCount);
 
       // Assess
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationCount; i++) {
         const trace = sortedTraces[i];
 
         /**
@@ -179,7 +151,7 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
         expect(subsegments.get('docs.powertools.aws.dev')?.length).toBe(1);
         expect(subsegments.get('other')?.length).toBe(0);
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationCount - 1;
         if (shouldThrowAnError) {
           assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
         }
@@ -191,7 +163,7 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
   it(
     'should have correct annotations and metadata',
     async () => {
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationCount; i++) {
         const trace = sortedTraces[i];
         const invocationSubsegment = getInvocationSubsegment(trace);
         const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
@@ -213,7 +185,7 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
           metadata[fnNameAllFlagsEnabled][expectedCustomMetadataKey]
         ).toEqual(expectedCustomMetadataValue);
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationCount - 1;
         if (!shouldThrowAnError) {
           // Assert that the metadata object contains the response
           expect(

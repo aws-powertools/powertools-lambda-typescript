@@ -50,4 +50,26 @@ const concatenateResourceName = ({
   resourceName: string;
 }): string => `${testName}-${resourceName}`.substring(0, 64);
 
-export { isValidRuntimeKey, generateTestUniqueName, concatenateResourceName };
+/**
+ * Find and get the value of a StackOutput by its key.
+ */
+const findAndGetStackOutputValue = (
+  outputs: Record<string, string>,
+  key: string
+): string => {
+  const value = Object.keys(outputs).find((outputKey) =>
+    outputKey.includes(key)
+  );
+  if (!value) {
+    throw new Error(`Cannot find output for ${key}`);
+  }
+
+  return outputs[value];
+};
+
+export {
+  isValidRuntimeKey,
+  generateTestUniqueName,
+  concatenateResourceName,
+  findAndGetStackOutputValue,
+};

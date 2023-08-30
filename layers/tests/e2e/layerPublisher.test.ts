@@ -8,12 +8,8 @@ import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {
   concatenateResourceName,
-  defaultRuntime,
-  generateTestUniqueName,
-  isValidRuntimeKey,
   TestNodejsFunction,
   TestStack,
-  TEST_RUNTIMES,
   TestInvocationLogs,
   invokeFunctionOnce,
 } from '@aws-lambda-powertools/testing-utils';
@@ -26,86 +22,85 @@ import {
 import { join } from 'node:path';
 import packageJson from '../../package.json';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
+describe(`Layers E2E tests, publisher stack`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'functionStack',
+    },
+  });
 
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key: ${runtime}`);
-}
-
-describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () => {
   let invocationLogs: TestInvocationLogs;
 
-  const stackNameLayers = generateTestUniqueName({
-    testPrefix: RESOURCE_NAME_PREFIX,
-    runtime,
-    testName: 'layerStack',
-  });
-
-  const stackNameFunction = generateTestUniqueName({
-    testPrefix: RESOURCE_NAME_PREFIX,
-    runtime,
-    testName: 'functionStack',
-  });
-
-  const functionName = concatenateResourceName({
-    testName: stackNameFunction,
-    resourceName: 'function',
-  });
-
   const ssmParameterLayerName = concatenateResourceName({
-    testName: stackNameFunction,
+    testName: `${RESOURCE_NAME_PREFIX}-layer`,
     resourceName: 'parameter',
   });
 
   // Location of the lambda function code
-  const lambdaFunctionCodeFile = join(
+  const lambdaFunctionCodeFilePath = join(
     __dirname,
     'layerPublisher.class.test.functionCode.ts'
   );
 
   const powerToolsPackageVersion = packageJson.version;
-  const layerName = concatenateResourceName({
-    testName: stackNameLayers,
-    resourceName: 'layer',
-  });
 
-  const testStack = new TestStack(stackNameFunction);
   const layerApp = new App();
-  const layerStack = new LayerPublisherStack(layerApp, stackNameLayers, {
-    layerName,
-    powertoolsPackageVersion: powerToolsPackageVersion,
-    ssmParameterLayerArn: ssmParameterLayerName,
+  const layerStack = new LayerPublisherStack(
+    layerApp,
+    `${RESOURCE_NAME_PREFIX}-layer`,
+    {
+      layerName: concatenateResourceName({
+        testName: RESOURCE_NAME_PREFIX,
+        resourceName: 'layer',
+      }),
+      powertoolsPackageVersion: powerToolsPackageVersion,
+      ssmParameterLayerName,
+    }
+  );
+  const testLayerStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'layerStack',
+    },
+    app: layerApp,
+    stack: layerStack,
   });
-  const testLayerStack = new TestStack(stackNameLayers, layerApp, layerStack);
 
   beforeAll(async () => {
-    const outputs = await testLayerStack.deploy();
+    await testLayerStack.deploy();
 
     const layerVersion = LayerVersion.fromLayerVersionArn(
       testStack.stack,
       'LayerVersionArnReference',
-      outputs['LatestLayerArn']
+      testLayerStack.findAndGetStackOutputValue('LayerVersionArn')
     );
-    new TestNodejsFunction(testStack.stack, functionName, {
-      functionName: functionName,
-      entry: lambdaFunctionCodeFile,
-      runtime: TEST_RUNTIMES[runtime],
-      environment: {
-        POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
-        POWERTOOLS_SERVICE_NAME: 'LayerPublisherStack',
+    new TestNodejsFunction(
+      testStack,
+      {
+        entry: lambdaFunctionCodeFilePath,
+        environment: {
+          POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
+          POWERTOOLS_SERVICE_NAME: 'LayerPublisherStack',
+        },
+        bundling: {
+          externalModules: [
+            '@aws-lambda-powertools/commons',
+            '@aws-lambda-powertools/logger',
+            '@aws-lambda-powertools/metrics',
+            '@aws-lambda-powertools/tracer',
+          ],
+        },
+        layers: [layerVersion],
       },
-      bundling: {
-        externalModules: [
-          '@aws-lambda-powertools/commons',
-          '@aws-lambda-powertools/logger',
-          '@aws-lambda-powertools/metrics',
-          '@aws-lambda-powertools/tracer',
-        ],
-      },
-      layers: [layerVersion],
-    });
+      {
+        nameSuffix: 'testFn',
+      }
+    );
 
     await testStack.deploy();
+
+    const functionName = testStack.findAndGetStackOutputValue('testFn');
 
     invocationLogs = await invokeFunctionOnce({
       functionName,

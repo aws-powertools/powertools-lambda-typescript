@@ -11,7 +11,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string;
   readonly powertoolsPackageVersion?: string;
-  readonly ssmParameterLayerArn: string;
+  readonly ssmParameterLayerName: string;
 }
 
 export class LayerPublisherStack extends Stack {
@@ -57,7 +57,7 @@ export class LayerPublisherStack extends Stack {
     this.lambdaLayerVersion.applyRemovalPolicy(RemovalPolicy.RETAIN);
 
     new StringParameter(this, 'VersionArn', {
-      parameterName: props.ssmParameterLayerArn,
+      parameterName: props.ssmParameterLayerName,
       stringValue: this.lambdaLayerVersion.layerVersionArn,
     });
     new CfnOutput(this, 'LatestLayerArn', {

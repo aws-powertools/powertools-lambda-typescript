@@ -1,9 +1,19 @@
 import { randomUUID } from 'node:crypto';
-import { TEST_RUNTIMES } from './constants';
+import { TEST_RUNTIMES, defaultRuntime } from './constants';
 
 const isValidRuntimeKey = (
   runtime: string
 ): runtime is keyof typeof TEST_RUNTIMES => runtime in TEST_RUNTIMES;
+
+const getRuntimeKey = (): keyof typeof TEST_RUNTIMES => {
+  const runtime: string = process.env.RUNTIME || defaultRuntime;
+
+  if (!isValidRuntimeKey(runtime)) {
+    throw new Error(`Invalid runtime key value: ${runtime}`);
+  }
+
+  return runtime;
+};
 
 /**
  * Generate a unique name for a test.
@@ -69,6 +79,7 @@ const findAndGetStackOutputValue = (
 
 export {
   isValidRuntimeKey,
+  getRuntimeKey,
   generateTestUniqueName,
   concatenateResourceName,
   findAndGetStackOutputValue,

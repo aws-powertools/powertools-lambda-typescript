@@ -7,20 +7,17 @@ const SETUP_TIMEOUT = 5 * ONE_MINUTE;
 const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;
 
 // Expected values for custom annotations, metadata, and response
-const expectedCustomAnnotationKey = 'myAnnotation';
-const expectedCustomAnnotationValue = 'myValue';
-const expectedCustomMetadataKey = 'myMetadata';
-const expectedCustomMetadataValue = { bar: 'baz' };
-const expectedCustomResponseValue = { foo: 'bar' };
-const expectedCustomErrorMessage = 'An error has occurred';
-const expectedCustomSubSegmentName = 'mySubsegment';
-const commonEnvironmentVariables = {
-  EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
-  EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
-  EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
-  EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(expectedCustomMetadataValue),
-  EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(expectedCustomResponseValue),
-  EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
+const commonEnvironmentVars = {
+  EXPECTED_CUSTOM_ANNOTATION_KEY: 'myAnnotation',
+  EXPECTED_CUSTOM_ANNOTATION_VALUE: 'myValue',
+  EXPECTED_CUSTOM_METADATA_KEY: 'myMetadata',
+  EXPECTED_CUSTOM_METADATA_VALUE: { bar: 'baz' },
+  EXPECTED_CUSTOM_RESPONSE_VALUE: { foo: 'bar' },
+  EXPECTED_CUSTOM_ERROR_MESSAGE: 'An error has occurred',
+  POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
+  POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
+  POWERTOOLS_TRACE_ENABLED: 'true',
+  EXPECTED_CUSTOM_SUBSEGMENT_NAME: 'mySubsegment',
 };
 
 export {
@@ -29,12 +26,5 @@ export {
   TEST_CASE_TIMEOUT,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
-  expectedCustomAnnotationKey,
-  expectedCustomAnnotationValue,
-  expectedCustomMetadataKey,
-  expectedCustomMetadataValue,
-  expectedCustomResponseValue,
-  expectedCustomErrorMessage,
-  expectedCustomSubSegmentName,
-  commonEnvironmentVariables,
+  commonEnvironmentVars,
 };

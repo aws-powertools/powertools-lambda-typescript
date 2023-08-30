@@ -1,47 +1,41 @@
 import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
-import type { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import type { Construct } from 'constructs';
-
-interface ExtraTestProps {
-  logGroupOutputKey?: string;
-  fnOutputKey?: string;
-}
+import { randomUUID } from 'node:crypto';
+import { TEST_RUNTIMES } from '../constants';
+import { concatenateResourceName, getRuntimeKey } from '../helpers';
+import type { TestStack } from '../TestStack';
+import type { ExtraTestProps, TestNodejsFunctionProps } from './types';
 
 /**
  * A NodejsFunction that can be used in tests.
  *
- * It includes some default props and can optionally output the log group name.
+ * It includes some default props and outputs the function name.
  */
 class TestNodejsFunction extends NodejsFunction {
   public constructor(
-    scope: Construct,
-    id: string,
-    props: NodejsFunctionProps,
-    extraProps: ExtraTestProps = {}
+    stack: TestStack,
+    props: TestNodejsFunctionProps,
+    extraProps: ExtraTestProps
   ) {
-    super(scope, id, {
+    super(stack.stack, `fn-${randomUUID().substring(0, 5)}`, {
       timeout: Duration.seconds(30),
       memorySize: 256,
       tracing: Tracing.ACTIVE,
       ...props,
+      functionName: concatenateResourceName({
+        testName: stack.testName,
+        resourceName: extraProps.nameSuffix,
+      }),
+      runtime: TEST_RUNTIMES[getRuntimeKey()],
       logRetention: RetentionDays.ONE_DAY,
     });
 
-    if (extraProps.logGroupOutputKey) {
-      new CfnOutput(this, extraProps.logGroupOutputKey, {
-        value: this.logGroup.logGroupName,
-      });
-    }
-
-    if (extraProps.fnOutputKey) {
-      new CfnOutput(this, extraProps.fnOutputKey, {
-        value: this.functionName,
-      });
-    }
+    new CfnOutput(this, extraProps.nameSuffix, {
+      value: this.functionName,
+    });
   }
 }
 
-export { TestNodejsFunction };
+export { ExtraTestProps, TestNodejsFunction, TestNodejsFunctionProps };

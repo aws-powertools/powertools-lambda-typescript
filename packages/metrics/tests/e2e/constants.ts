@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { MetricUnits } from '../../src';
 
 const RESOURCE_NAME_PREFIX = 'Metrics-E2E';
@@ -6,27 +7,18 @@ const TEST_CASE_TIMEOUT = 3 * ONE_MINUTE;
 const SETUP_TIMEOUT = 5 * ONE_MINUTE;
 const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;
 
-const expectedMetricName = 'MyMetric';
-const expectedMetricUnit = MetricUnits.Count;
-const expectedMetricValue = '1';
-const expectedDefaultDimensions = { MyDimension: 'MyValue' };
-const expectedExtraDimension = { MyExtraDimension: 'MyExtraValue' };
-const expectedSingleMetricDimension = { MySingleMetricDim: 'MySingleValue' };
-const expectedSingleMetricName = 'MySingleMetric';
-const expectedSingleMetricUnit = MetricUnits.Percent;
-const expectedSingleMetricValue = '2';
-const commonEnvironmentVariables = {
-  EXPECTED_METRIC_NAME: expectedMetricName,
-  EXPECTED_METRIC_UNIT: expectedMetricUnit,
-  EXPECTED_METRIC_VALUE: expectedMetricValue,
-  EXPECTED_DEFAULT_DIMENSIONS: JSON.stringify(expectedDefaultDimensions),
-  EXPECTED_EXTRA_DIMENSION: JSON.stringify(expectedExtraDimension),
-  EXPECTED_SINGLE_METRIC_DIMENSION: JSON.stringify(
-    expectedSingleMetricDimension
-  ),
-  EXPECTED_SINGLE_METRIC_NAME: expectedSingleMetricName,
-  EXPECTED_SINGLE_METRIC_UNIT: expectedSingleMetricUnit,
-  EXPECTED_SINGLE_METRIC_VALUE: expectedSingleMetricValue,
+const commonEnvironmentVars = {
+  EXPECTED_METRIC_NAME: 'MyMetric',
+  EXPECTED_METRIC_UNIT: MetricUnits.Count,
+  EXPECTED_METRIC_VALUE: '1',
+  EXPECTED_NAMESPACE: randomUUID(),
+  EXPECTED_DEFAULT_DIMENSIONS: { MyDimension: 'MyValue' },
+  EXPECTED_EXTRA_DIMENSION: { MyExtraDimension: 'MyExtraValue' },
+  EXPECTED_SINGLE_METRIC_DIMENSION: { MySingleMetricDim: 'MySingleValue' },
+  EXPECTED_SINGLE_METRIC_NAME: 'MySingleMetric',
+  EXPECTED_SINGLE_METRIC_UNIT: MetricUnits.Percent,
+  EXPECTED_SINGLE_METRIC_VALUE: '2',
+  POWERTOOLS_SERVICE_NAME: 'metrics-e2e-testing',
 };
 
 export {
@@ -35,14 +27,5 @@ export {
   TEST_CASE_TIMEOUT,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
-  expectedMetricName,
-  expectedMetricUnit,
-  expectedMetricValue,
-  expectedDefaultDimensions,
-  expectedExtraDimension,
-  expectedSingleMetricDimension,
-  expectedSingleMetricName,
-  expectedSingleMetricUnit,
-  expectedSingleMetricValue,
-  commonEnvironmentVariables,
+  commonEnvironmentVars,
 };

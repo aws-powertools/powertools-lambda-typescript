@@ -4,17 +4,12 @@
  * @group e2e/logger/logEventEnvVarSetting
  */
 import {
-  concatenateResourceName,
-  defaultRuntime,
-  generateTestUniqueName,
   invokeFunction,
-  isValidRuntimeKey,
   TestInvocationLogs,
-  TestNodejsFunction,
   TestStack,
-  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
 import { join } from 'node:path';
+import { LoggerTestNodejsFunction } from '../helpers/resources';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -24,63 +19,48 @@ import {
 } from './constants';
 
 describe(`Logger E2E tests, log event via env var setting with middy`, () => {
-  const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-  if (!isValidRuntimeKey(runtime)) {
-    throw new Error(`Invalid runtime key value: ${runtime}`);
-  }
-
-  const testName = generateTestUniqueName({
-    testPrefix: RESOURCE_NAME_PREFIX,
-    runtime,
-    testName: 'LogEventEnvVarSetting-Middy',
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'LogEventFromEnv-Middy',
+    },
   });
-  const testStack = new TestStack(testName);
 
   // Location of the lambda function code
-  const lambdaFunctionCodeFile = join(
+  const lambdaFunctionCodeFilePath = join(
     __dirname,
     'logEventEnvVarSetting.middy.test.FunctionCode.ts'
   );
 
-  const fnNameLogEventEnvVar = concatenateResourceName({
-    testName,
-    resourceName: 'LogEvent',
-  });
-
-  let logGroupName: string; // We do not know it until deployment
-
+  const invocationCount = 3;
   let invocationLogs: TestInvocationLogs[];
-  const invocations = 3;
+  let logGroupName: string;
 
   beforeAll(async () => {
     // Prepare
-    new TestNodejsFunction(
-      testStack.stack,
-      fnNameLogEventEnvVar,
+    new LoggerTestNodejsFunction(
+      testStack,
       {
-        functionName: fnNameLogEventEnvVar,
-        entry: lambdaFunctionCodeFile,
-        runtime: TEST_RUNTIMES[runtime],
+        entry: lambdaFunctionCodeFilePath,
         environment: {
-          LOG_LEVEL: 'INFO',
-          POWERTOOLS_SERVICE_NAME: 'logger-e2e-testing',
           POWERTOOLS_LOGGER_LOG_EVENT: 'true',
         },
       },
       {
         logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
+        nameSuffix: 'LogEventFromEnv',
       }
     );
 
-    const result = await testStack.deploy();
-    logGroupName = result[STACK_OUTPUT_LOG_GROUP];
+    await testStack.deploy();
+    logGroupName = testStack.findAndGetStackOutputValue(STACK_OUTPUT_LOG_GROUP);
+    const functionName =
+      testStack.findAndGetStackOutputValue('LogEventFromEnv');
 
-    // Invoke the function three time (one for cold start, then two for warm start)
     invocationLogs = await invokeFunction({
-      functionName: fnNameLogEventEnvVar,
+      functionName,
       invocationMode: 'SEQUENTIAL',
-      times: invocations,
+      times: invocationCount,
       payload: {
         foo: 'bar',
       },
@@ -93,7 +73,7 @@ describe(`Logger E2E tests, log event via env var setting with middy`, () => {
     it(
       'should log the event as the first log of each invocation only',
       async () => {
-        for (let i = 0; i < invocations; i++) {
+        for (let i = 0; i < invocationCount; i++) {
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 

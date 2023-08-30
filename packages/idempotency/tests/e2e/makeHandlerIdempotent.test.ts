@@ -4,19 +4,16 @@
  * @group e2e/idempotency/makeHandlerIdempotent
  */
 import {
-  concatenateResourceName,
-  defaultRuntime,
-  generateTestUniqueName,
   invokeFunction,
-  isValidRuntimeKey,
   TestInvocationLogs,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { Duration } from 'aws-cdk-lib';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { createIdempotencyResources } from '../helpers/idempotencyUtils';
+import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -24,106 +21,99 @@ import {
   TEST_CASE_TIMEOUT,
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
-
-const testName = generateTestUniqueName({
-  testPrefix: RESOURCE_NAME_PREFIX,
-  runtime,
-  testName: 'makeHandlerIdempotent',
-});
-const testStack = new TestStack(testName);
-
-// Location of the lambda function code
-const lambdaFunctionCodeFile = join(
-  __dirname,
-  'makeHandlerIdempotent.test.FunctionCode.ts'
-);
-
-const testDefault = 'default-sequential';
-const functionNameDefault = concatenateResourceName({
-  testName,
-  resourceName: `${testDefault}-fn`,
-});
-const ddbTableNameDefault = concatenateResourceName({
-  testName,
-  resourceName: `${testDefault}-table`,
-});
-createIdempotencyResources(
-  testStack.stack,
-  runtime,
-  ddbTableNameDefault,
-  lambdaFunctionCodeFile,
-  functionNameDefault,
-  'handler'
-);
-
-const testDefaultParallel = 'default-parallel';
-const functionNameDefaultParallel = concatenateResourceName({
-  testName,
-  resourceName: `${testDefaultParallel}-fn`,
-});
-const ddbTableNameDefaultParallel = concatenateResourceName({
-  testName,
-  resourceName: `${testDefaultParallel}-table`,
-});
-createIdempotencyResources(
-  testStack.stack,
-  runtime,
-  ddbTableNameDefaultParallel,
-  lambdaFunctionCodeFile,
-  functionNameDefaultParallel,
-  'handlerParallel'
-);
-
-const testTimeout = 'timeout';
-const functionNameTimeout = concatenateResourceName({
-  testName,
-  resourceName: `${testTimeout}-fn`,
-});
-const ddbTableNameTimeout = concatenateResourceName({
-  testName,
-  resourceName: `${testTimeout}-table`,
-});
-createIdempotencyResources(
-  testStack.stack,
-  runtime,
-  ddbTableNameTimeout,
-  lambdaFunctionCodeFile,
-  functionNameTimeout,
-  'handlerTimeout',
-  undefined,
-  2
-);
-
-const testExpired = 'expired';
-const functionNameExpired = concatenateResourceName({
-  testName,
-  resourceName: `${testExpired}-fn`,
-});
-const ddbTableNameExpired = concatenateResourceName({
-  testName,
-  resourceName: `${testExpired}-table`,
-});
-createIdempotencyResources(
-  testStack.stack,
-  runtime,
-  ddbTableNameExpired,
-  lambdaFunctionCodeFile,
-  functionNameExpired,
-  'handlerExpired',
-  undefined,
-  2
-);
-
 const ddb = new DynamoDBClient({});
 
 describe(`Idempotency E2E tests, middy middleware usage`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'makeHandlerIdempotent',
+    },
+  });
+
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'makeHandlerIdempotent.test.FunctionCode.ts'
+  );
+
+  let functionNameDefault: string;
+  let tableNameDefault: string;
+  new IdempotencyTestNodejsFunctionAndDynamoTable(
+    testStack,
+    {
+      function: {
+        entry: lambdaFunctionCodeFilePath,
+      },
+    },
+    {
+      nameSuffix: 'default',
+    }
+  );
+
+  let functionNameDefaultParallel: string;
+  let tableNameDefaultParallel: string;
+  new IdempotencyTestNodejsFunctionAndDynamoTable(
+    testStack,
+    {
+      function: {
+        entry: lambdaFunctionCodeFilePath,
+        handler: 'handlerParallel',
+      },
+    },
+    {
+      nameSuffix: 'defaultParallel',
+    }
+  );
+
+  let functionNameTimeout: string;
+  let tableNameTimeout: string;
+  new IdempotencyTestNodejsFunctionAndDynamoTable(
+    testStack,
+    {
+      function: {
+        entry: lambdaFunctionCodeFilePath,
+        handler: 'handlerTimeout',
+        timeout: Duration.seconds(2),
+      },
+    },
+    {
+      nameSuffix: 'timeout',
+    }
+  );
+
+  let functionNameExpired: string;
+  let tableNameExpired: string;
+  new IdempotencyTestNodejsFunctionAndDynamoTable(
+    testStack,
+    {
+      function: {
+        entry: lambdaFunctionCodeFilePath,
+        handler: 'handlerExpired',
+        timeout: Duration.seconds(2),
+      },
+    },
+    {
+      nameSuffix: 'expired',
+    }
+  );
+
   beforeAll(async () => {
+    // Deploy the stack
     await testStack.deploy();
+
+    // Get the actual function names from the stack outputs
+    functionNameDefault = testStack.findAndGetStackOutputValue('defaultFn');
+    tableNameDefault = testStack.findAndGetStackOutputValue('defaultTable');
+    functionNameDefaultParallel =
+      testStack.findAndGetStackOutputValue('defaultParallelFn');
+    tableNameDefaultParallel = testStack.findAndGetStackOutputValue(
+      'defaultParallelTable'
+    );
+    functionNameTimeout = testStack.findAndGetStackOutputValue('timeoutFn');
+    tableNameTimeout = testStack.findAndGetStackOutputValue('timeoutTable');
+    functionNameExpired = testStack.findAndGetStackOutputValue('expiredFn');
+    tableNameExpired = testStack.findAndGetStackOutputValue('expiredTable');
   }, SETUP_TIMEOUT);
 
   test(
@@ -149,7 +139,7 @@ describe(`Idempotency E2E tests, middy middleware usage`, () => {
       // Assess
       const idempotencyRecords = await ddb.send(
         new ScanCommand({
-          TableName: ddbTableNameDefault,
+          TableName: tableNameDefault,
         })
       );
       expect(idempotencyRecords.Items?.length).toEqual(1);
@@ -199,7 +189,7 @@ describe(`Idempotency E2E tests, middy middleware usage`, () => {
       // Assess
       const idempotencyRecords = await ddb.send(
         new ScanCommand({
-          TableName: ddbTableNameDefaultParallel,
+          TableName: tableNameDefaultParallel,
         })
       );
       expect(idempotencyRecords.Items?.length).toEqual(1);
@@ -260,7 +250,7 @@ describe(`Idempotency E2E tests, middy middleware usage`, () => {
       // Assess
       const idempotencyRecords = await ddb.send(
         new ScanCommand({
-          TableName: ddbTableNameTimeout,
+          TableName: tableNameTimeout,
         })
       );
       expect(idempotencyRecords.Items?.length).toEqual(1);
@@ -329,7 +319,7 @@ describe(`Idempotency E2E tests, middy middleware usage`, () => {
       // Assess
       const idempotencyRecords = await ddb.send(
         new ScanCommand({
-          TableName: ddbTableNameExpired,
+          TableName: tableNameExpired,
         })
       );
       expect(idempotencyRecords.Items?.length).toEqual(1);

@@ -4,105 +4,105 @@
  * @group e2e/idempotency/makeIdempotent
  */
 import {
+  invokeFunction,
+  TestInvocationLogs,
+  TestStack,
+} from '@aws-lambda-powertools/testing-utils';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
+import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources';
+import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import { join } from 'node:path';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { createHash } from 'node:crypto';
-import {
-  concatenateResourceName,
-  defaultRuntime,
-  generateTestUniqueName,
-  invokeFunction,
-  isValidRuntimeKey,
-  TestInvocationLogs,
-  TestStack,
-} from '@aws-lambda-powertools/testing-utils';
-import { ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { createIdempotencyResources } from '../helpers/idempotencyUtils';
-
-const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
-
-const testName = generateTestUniqueName({
-  testPrefix: RESOURCE_NAME_PREFIX,
-  runtime,
-  testName: 'makeFnIdempotent',
-});
-const testStack = new TestStack(testName);
-
-// Location of the lambda function code
-const lambdaFunctionCodeFile = join(
-  __dirname,
-  'makeIdempotent.test.FunctionCode.ts'
-);
-
-const testDefault = 'default';
-const functionNameDefault = concatenateResourceName({
-  testName,
-  resourceName: `${testDefault}-fn`,
-});
-const ddbTableNameDefault = concatenateResourceName({
-  testName,
-  resourceName: `${testDefault}-table`,
-});
-createIdempotencyResources(
-  testStack.stack,
-  runtime,
-  ddbTableNameDefault,
-  lambdaFunctionCodeFile,
-  functionNameDefault,
-  'handlerDefault'
-);
-
-const testCustomConfig = 'customConfig';
-const functionNameCustomConfig = concatenateResourceName({
-  testName,
-  resourceName: `${testCustomConfig}-fn`,
-});
-const ddbTableNameCustomConfig = concatenateResourceName({
-  testName,
-  resourceName: `${testCustomConfig}-table`,
-});
-createIdempotencyResources(
-  testStack.stack,
-  runtime,
-  ddbTableNameCustomConfig,
-  lambdaFunctionCodeFile,
-  functionNameCustomConfig,
-  'handlerCustomized',
-  'customId'
-);
-
-const testLambdaHandler = 'handler';
-const functionNameLambdaHandler = concatenateResourceName({
-  testName,
-  resourceName: `${testLambdaHandler}-fn`,
-});
-const ddbTableNameLambdaHandler = concatenateResourceName({
-  testName,
-  resourceName: `${testLambdaHandler}-table`,
-});
-createIdempotencyResources(
-  testStack.stack,
-  runtime,
-  ddbTableNameLambdaHandler,
-  lambdaFunctionCodeFile,
-  functionNameLambdaHandler,
-  'handlerLambda'
-);
-
-const ddb = new DynamoDBClient({});
 
 describe(`Idempotency E2E tests, wrapper function usage`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'makeFnIdempotent',
+    },
+  });
+
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'makeIdempotent.test.FunctionCode.ts'
+  );
+
+  let functionNameDefault: string;
+  let tableNameDefault: string;
+  new IdempotencyTestNodejsFunctionAndDynamoTable(
+    testStack,
+    {
+      function: {
+        entry: lambdaFunctionCodeFilePath,
+        handler: 'handlerDefault',
+      },
+    },
+    {
+      nameSuffix: 'default',
+    }
+  );
+
+  let functionNameCustomConfig: string;
+  let tableNameCustomConfig: string;
+  new IdempotencyTestNodejsFunctionAndDynamoTable(
+    testStack,
+    {
+      function: {
+        entry: lambdaFunctionCodeFilePath,
+        handler: 'handlerCustomized',
+      },
+      table: {
+        partitionKey: {
+          name: 'customId',
+          type: AttributeType.STRING,
+        },
+      },
+    },
+    {
+      nameSuffix: 'customConfig',
+    }
+  );
+
+  let functionNameLambdaHandler: string;
+  let tableNameLambdaHandler: string;
+  new IdempotencyTestNodejsFunctionAndDynamoTable(
+    testStack,
+    {
+      function: {
+        entry: lambdaFunctionCodeFilePath,
+        handler: 'handlerLambda',
+      },
+    },
+    {
+      nameSuffix: 'handler',
+    }
+  );
+
+  const ddb = new DynamoDBClient({});
+
   beforeAll(async () => {
+    // Deploy the stack
     await testStack.deploy();
+
+    // Get the actual function names from the stack outputs
+    functionNameDefault = testStack.findAndGetStackOutputValue('defaultFn');
+    tableNameDefault = testStack.findAndGetStackOutputValue('defaultTable');
+    functionNameCustomConfig =
+      testStack.findAndGetStackOutputValue('customConfigFn');
+    tableNameCustomConfig =
+      testStack.findAndGetStackOutputValue('customConfigTable');
+    functionNameLambdaHandler =
+      testStack.findAndGetStackOutputValue('handlerFn');
+    tableNameLambdaHandler =
+      testStack.findAndGetStackOutputValue('handlerTable');
   }, SETUP_TIMEOUT);
 
   it(
@@ -132,7 +132,7 @@ describe(`Idempotency E2E tests, wrapper function usage`, () => {
       // Assess
       const idempotencyRecords = await ddb.send(
         new ScanCommand({
-          TableName: ddbTableNameDefault,
+          TableName: tableNameDefault,
         })
       );
       // Since records 1 and 3 have the same payload, only 2 records should be created
@@ -192,7 +192,7 @@ describe(`Idempotency E2E tests, wrapper function usage`, () => {
       // Assess
       const idempotencyRecords = await ddb.send(
         new ScanCommand({
-          TableName: ddbTableNameCustomConfig,
+          TableName: tableNameCustomConfig,
         })
       );
       /**
@@ -286,7 +286,7 @@ describe(`Idempotency E2E tests, wrapper function usage`, () => {
       // Assess
       const idempotencyRecords = await ddb.send(
         new ScanCommand({
-          TableName: ddbTableNameLambdaHandler,
+          TableName: tableNameLambdaHandler,
         })
       );
       expect(idempotencyRecords.Items?.length).toEqual(1);

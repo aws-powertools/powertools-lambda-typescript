@@ -4,28 +4,18 @@
  * @group e2e/metrics/decorator
  */
 import {
-  concatenateResourceName,
-  defaultRuntime,
-  generateTestUniqueName,
   invokeFunction,
-  isValidRuntimeKey,
-  TestNodejsFunction,
   TestStack,
-  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
 import {
   CloudWatchClient,
   GetMetricStatisticsCommand,
 } from '@aws-sdk/client-cloudwatch';
-import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { getMetrics } from '../helpers/metricsUtils';
+import { MetricsTestNodejsFunction } from '../helpers/resources';
 import {
-  commonEnvironmentVariables,
-  expectedDefaultDimensions,
-  expectedExtraDimension,
-  expectedMetricName,
-  expectedMetricValue,
+  commonEnvironmentVars,
   ONE_MINUTE,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -34,54 +24,44 @@ import {
 } from './constants';
 
 describe(`Metrics E2E tests, basic features decorator usage`, () => {
-  const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-  if (!isValidRuntimeKey(runtime)) {
-    throw new Error(`Invalid runtime key value: ${runtime}`);
-  }
-
-  const testName = generateTestUniqueName({
-    testPrefix: RESOURCE_NAME_PREFIX,
-    runtime,
-    testName: 'BasicFeatures-Decorator',
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'BasicFeatures-Decorators',
+    },
   });
-  const testStack = new TestStack(testName);
-  const startTime = new Date();
 
   // Location of the lambda function code
-  const lambdaFunctionCodeFile = join(
+  const lambdaFunctionCodeFilePath = join(
     __dirname,
     'basicFeatures.decorator.test.functionCode.ts'
   );
+  const startTime = new Date();
 
-  const fnNameBasicFeatures = concatenateResourceName({
-    testName,
-    resourceName: 'BasicFeatures',
-  });
+  const expectedServiceName = 'e2eBasicFeatures';
+  let fnNameBasicFeatures: string;
+  new MetricsTestNodejsFunction(
+    testStack,
+    {
+      entry: lambdaFunctionCodeFilePath,
+      environment: {
+        EXPECTED_SERVICE_NAME: expectedServiceName,
+      },
+    },
+    {
+      nameSuffix: 'BasicFeatures',
+    }
+  );
 
   const cloudwatchClient = new CloudWatchClient({});
-
   const invocations = 2;
 
-  // Parameters to be used by Metrics in the Lambda function
-  const expectedNamespace = randomUUID(); // to easily find metrics back at assert phase
-  const expectedServiceName = fnNameBasicFeatures;
-
   beforeAll(async () => {
-    // Prepare
-    new TestNodejsFunction(testStack.stack, fnNameBasicFeatures, {
-      functionName: fnNameBasicFeatures,
-      entry: lambdaFunctionCodeFile,
-      runtime: TEST_RUNTIMES[runtime],
-      environment: {
-        POWERTOOLS_SERVICE_NAME: 'metrics-e2e-testing',
-        EXPECTED_NAMESPACE: expectedNamespace,
-        EXPECTED_SERVICE_NAME: expectedServiceName,
-        ...commonEnvironmentVariables,
-      },
-    });
-
+    // Deploy the stack
     await testStack.deploy();
+
+    // Get the actual function names from the stack outputs
+    fnNameBasicFeatures = testStack.findAndGetStackOutputValue('BasicFeatures');
 
     // Act
     await invokeFunction({
@@ -95,6 +75,11 @@ describe(`Metrics E2E tests, basic features decorator usage`, () => {
     it(
       'should capture ColdStart Metric',
       async () => {
+        const {
+          EXPECTED_NAMESPACE: expectedNamespace,
+          EXPECTED_DEFAULT_DIMENSIONS: expectedDefaultDimensions,
+        } = commonEnvironmentVars;
+
         const expectedDimensions = [
           { Name: 'service', Value: expectedServiceName },
           { Name: 'function_name', Value: fnNameBasicFeatures },
@@ -153,6 +138,14 @@ describe(`Metrics E2E tests, basic features decorator usage`, () => {
     it(
       'should produce a Metric with the default and extra one dimensions',
       async () => {
+        const {
+          EXPECTED_NAMESPACE: expectedNamespace,
+          EXPECTED_METRIC_NAME: expectedMetricName,
+          EXPECTED_METRIC_VALUE: expectedMetricValue,
+          EXPECTED_DEFAULT_DIMENSIONS: expectedDefaultDimensions,
+          EXPECTED_EXTRA_DIMENSION: expectedExtraDimension,
+        } = commonEnvironmentVars;
+
         // Check metric dimensions
         const metrics = await getMetrics(
           cloudwatchClient,

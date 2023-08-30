@@ -41,6 +41,9 @@ class TestNodejsFunction extends NodejsFunction {
         value: this.functionName,
       });
     }
+    new CfnOutput(this, 'fnName', {
+      value: this.functionName,
+    });
   }
 }
 

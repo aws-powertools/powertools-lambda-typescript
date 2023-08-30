@@ -4,24 +4,14 @@
  * @group e2e/parameters/appconfig/class
  */
 import {
-  concatenateResourceName,
-  defaultRuntime,
-  generateTestUniqueName,
   invokeFunctionOnce,
-  isValidRuntimeKey,
   TestInvocationLogs,
   TestNodejsFunction,
   TestStack,
-  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
 import { toBase64 } from '@aws-sdk/util-base64-node';
-import { Aspects } from 'aws-cdk-lib';
 import { join } from 'node:path';
-import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
-import {
-  createAppConfigConfigurationProfile,
-  createBaseAppConfigResources,
-} from '../helpers/parametersUtils';
+import { TestAppConfigWithProfiles } from '../helpers/resources';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -82,64 +72,18 @@ import {
  * application and environment for all tests.
  */
 describe(`Parameters E2E tests, AppConfig provider`, () => {
-  const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-  if (!isValidRuntimeKey(runtime)) {
-    throw new Error(`Invalid runtime key value: ${runtime}`);
-  }
-
-  const testName = generateTestUniqueName({
-    testPrefix: RESOURCE_NAME_PREFIX,
-    runtime,
-    testName: 'AppConfig',
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'AppConfig',
+    },
   });
-  const testStack = new TestStack(testName);
 
   // Location of the lambda function code
-  const lambdaFunctionCodeFile = join(
+  const lambdaFunctionCodeFilePath = join(
     __dirname,
     'appConfigProvider.class.test.functionCode.ts'
   );
-
-  const functionName = concatenateResourceName({
-    testName,
-    resourceName: 'appConfigProvider',
-  });
-
-  const applicationName = concatenateResourceName({
-    testName,
-    resourceName: 'app',
-  });
-
-  const environmentName = concatenateResourceName({
-    testName,
-    resourceName: 'env',
-  });
-
-  const deploymentStrategyName = concatenateResourceName({
-    testName,
-    resourceName: 'immediate',
-  });
-
-  const freeFormJsonName = concatenateResourceName({
-    testName,
-    resourceName: 'freeFormJson',
-  });
-
-  const freeFormYamlName = concatenateResourceName({
-    testName,
-    resourceName: 'freeFormYaml',
-  });
-
-  const freeFormBase64PlainTextName = concatenateResourceName({
-    testName,
-    resourceName: 'freeFormBase64PlainText',
-  });
-
-  const featureFlagName = concatenateResourceName({
-    testName,
-    resourceName: 'featureFlag',
-  });
 
   const freeFormJsonValue = {
     foo: 'bar',
@@ -169,97 +113,63 @@ describe(`Parameters E2E tests, AppConfig provider`, () => {
 
   beforeAll(async () => {
     // Prepare
-    new TestNodejsFunction(testStack.stack, functionName, {
-      functionName: functionName,
-      entry: lambdaFunctionCodeFile,
-      runtime: TEST_RUNTIMES[runtime],
-      environment: {
-        APPLICATION_NAME: applicationName,
-        ENVIRONMENT_NAME: environmentName,
-        FREEFORM_JSON_NAME: freeFormJsonName,
-        FREEFORM_YAML_NAME: freeFormYamlName,
-        FREEFORM_BASE64_ENCODED_PLAIN_TEXT_NAME: freeFormBase64PlainTextName,
-        FEATURE_FLAG_NAME: featureFlagName,
+    const testFunction = new TestNodejsFunction(
+      testStack,
+      {
+        entry: lambdaFunctionCodeFilePath,
       },
-    });
-
-    // Create the base resources for an AppConfig application.
-    const { application, environment, deploymentStrategy } =
-      createBaseAppConfigResources({
-        stack: testStack.stack,
-        applicationName,
-        environmentName,
-        deploymentStrategyName,
-      });
-
-    // Create configuration profiles for tests.
-    const freeFormJson = createAppConfigConfigurationProfile({
-      stack: testStack.stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: freeFormJsonName,
-      type: 'AWS.Freeform',
-      content: {
-        content: JSON.stringify(freeFormJsonValue),
-        contentType: 'application/json',
-      },
-    });
-
-    const freeFormYaml = createAppConfigConfigurationProfile({
-      stack: testStack.stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: freeFormYamlName,
-      type: 'AWS.Freeform',
-      content: {
-        content: freeFormYamlValue,
-        contentType: 'application/x-yaml',
-      },
-    });
-    freeFormYaml.node.addDependency(freeFormJson);
-
-    const freeFormBase64PlainText = createAppConfigConfigurationProfile({
-      stack: testStack.stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: freeFormBase64PlainTextName,
-      type: 'AWS.Freeform',
-      content: {
-        content: freeFormBase64PlainTextValue,
-        contentType: 'text/plain',
-      },
-    });
-    freeFormBase64PlainText.node.addDependency(freeFormYaml);
-
-    const featureFlag = createAppConfigConfigurationProfile({
-      stack: testStack.stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: featureFlagName,
-      type: 'AWS.AppConfig.FeatureFlags',
-      content: {
-        content: JSON.stringify(featureFlagValue),
-        contentType: 'application/json',
-      },
-    });
-    featureFlag.node.addDependency(freeFormBase64PlainText);
-
-    // Grant access to the Lambda function to the AppConfig resources.
-    Aspects.of(testStack.stack).add(
-      new ResourceAccessGranter([
-        freeFormJson,
-        freeFormYaml,
-        freeFormBase64PlainText,
-        featureFlag,
-      ])
+      {
+        nameSuffix: 'appConfigProvider',
+      }
     );
+
+    const appConfigResource = new TestAppConfigWithProfiles(testStack, {
+      profiles: [
+        {
+          nameSuffix: 'freeFormJson',
+          type: 'AWS.Freeform',
+          content: {
+            content: JSON.stringify(freeFormJsonValue),
+            contentType: 'application/json',
+          },
+        },
+        {
+          nameSuffix: 'freeFormYaml',
+          type: 'AWS.Freeform',
+          content: {
+            content: freeFormYamlValue,
+            contentType: 'application/x-yaml',
+          },
+        },
+        {
+          nameSuffix: 'freeFormB64Plain',
+          type: 'AWS.Freeform',
+          content: {
+            content: freeFormBase64PlainTextValue,
+            contentType: 'text/plain',
+          },
+        },
+        {
+          nameSuffix: 'featureFlag',
+          type: 'AWS.AppConfig.FeatureFlags',
+          content: {
+            content: JSON.stringify(featureFlagValue),
+            contentType: 'application/json',
+          },
+        },
+      ],
+    });
+    // Grant read permissions to the function
+    appConfigResource.grantReadData(testFunction);
+    // Add environment variables containing the resource names to the function
+    appConfigResource.addEnvVariablesToFunction(testFunction);
 
     // Deploy the stack
     await testStack.deploy();
+
+    // Get the actual function names from the stack outputs
+    const functionName =
+      testStack.findAndGetStackOutputValue('appConfigProvider');
 
     // and invoke the Lambda function
     invocationLogs = await invokeFunctionOnce({

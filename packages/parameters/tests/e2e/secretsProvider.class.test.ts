@@ -4,20 +4,14 @@
  * @group e2e/parameters/secrets/class
  */
 import {
-  concatenateResourceName,
-  defaultRuntime,
-  generateTestUniqueName,
   invokeFunctionOnce,
-  isValidRuntimeKey,
   TestInvocationLogs,
   TestNodejsFunction,
   TestStack,
-  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
-import { Aspects, SecretValue } from 'aws-cdk-lib';
-import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { SecretValue } from 'aws-cdk-lib';
 import { join } from 'node:path';
-import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
+import { TestSecret } from '../helpers/resources';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -43,119 +37,106 @@ import {
  *
  */
 describe(`Parameters E2E tests, Secrets Manager provider`, () => {
-  const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-  if (!isValidRuntimeKey(runtime)) {
-    throw new Error(`Invalid runtime key: ${runtime}`);
-  }
-
-  const testName = generateTestUniqueName({
-    testPrefix: RESOURCE_NAME_PREFIX,
-    runtime,
-    testName: 'SecretsProvider',
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'SecretsProvider',
+    },
   });
-  const testStack = new TestStack(testName);
 
   // Location of the lambda function code
-  const lambdaFunctionCodeFile = join(
+  const lambdaFunctionCodeFilePath = join(
     __dirname,
     'secretsProvider.class.test.functionCode.ts'
   );
 
-  const functionName = concatenateResourceName({
-    testName,
-    resourceName: 'secretsProvider',
-  });
-
   let invocationLogs: TestInvocationLogs;
 
   beforeAll(async () => {
-    // use unique names for each test to keep a clean state
-    const secretNamePlain = concatenateResourceName({
-      testName,
-      resourceName: 'testSecretPlain',
-    });
-
-    const secretNameObject = concatenateResourceName({
-      testName,
-      resourceName: 'testSecretObject',
-    });
-
-    const secretNameBinary = concatenateResourceName({
-      testName,
-      resourceName: 'testSecretBinary',
-    });
-
-    const secretNamePlainCached = concatenateResourceName({
-      testName,
-      resourceName: 'testSecretPlainCached',
-    });
-
-    const secretNamePlainForceFetch = concatenateResourceName({
-      testName,
-      resourceName: 'testSecretPlainForceFetch',
-    });
-
-    new TestNodejsFunction(testStack.stack, functionName, {
-      functionName: functionName,
-      entry: lambdaFunctionCodeFile,
-      runtime: TEST_RUNTIMES[runtime],
-      environment: {
-        SECRET_NAME_PLAIN: secretNamePlain,
-        SECRET_NAME_OBJECT: secretNameObject,
-        SECRET_NAME_BINARY: secretNameBinary,
-        SECRET_NAME_PLAIN_CACHED: secretNamePlainCached,
-        SECRET_NAME_PLAIN_FORCE_FETCH: secretNamePlainForceFetch,
-      },
-    });
-
-    const secretString = new Secret(testStack.stack, 'testSecretPlain', {
-      secretName: secretNamePlain,
-      secretStringValue: SecretValue.unsafePlainText('foo'),
-    });
-
-    const secretObject = new Secret(testStack.stack, 'testSecretObject', {
-      secretName: secretNameObject,
-      secretObjectValue: {
-        foo: SecretValue.unsafePlainText('bar'),
-      },
-    });
-
-    const secretBinary = new Secret(testStack.stack, 'testSecretBinary', {
-      secretName: secretNameBinary,
-      secretStringValue: SecretValue.unsafePlainText('Zm9v'), // 'foo' encoded in base64
-    });
-
-    const secretStringCached = new Secret(
-      testStack.stack,
-      'testSecretStringCached',
+    const testFunction = new TestNodejsFunction(
+      testStack,
       {
-        secretName: secretNamePlainCached,
-        secretStringValue: SecretValue.unsafePlainText('foo'),
+        entry: lambdaFunctionCodeFilePath,
+      },
+      {
+        nameSuffix: 'secretsProvider',
       }
     );
 
-    const secretStringForceFetch = new Secret(
-      testStack.stack,
-      'testSecretStringForceFetch',
+    const secretString = new TestSecret(
+      testStack,
       {
-        secretName: secretNamePlainForceFetch,
         secretStringValue: SecretValue.unsafePlainText('foo'),
+      },
+      {
+        nameSuffix: 'testSecretPlain',
       }
     );
+    secretString.grantRead(testFunction);
+    testFunction.addEnvironment('SECRET_NAME_PLAIN', secretString.secretName);
 
-    // add secrets here to grant lambda permisisons to access secrets
-    Aspects.of(testStack.stack).add(
-      new ResourceAccessGranter([
-        secretString,
-        secretObject,
-        secretBinary,
-        secretStringCached,
-        secretStringForceFetch,
-      ])
+    const secretObject = new TestSecret(
+      testStack,
+      {
+        secretObjectValue: {
+          foo: SecretValue.unsafePlainText('bar'),
+        },
+      },
+      {
+        nameSuffix: 'testSecretObject',
+      }
+    );
+    secretObject.grantRead(testFunction);
+    testFunction.addEnvironment('SECRET_NAME_OBJECT', secretObject.secretName);
+
+    const secretBinary = new TestSecret(
+      testStack,
+      {
+        secretStringValue: SecretValue.unsafePlainText('Zm9v'), // 'foo' encoded in base64
+      },
+      {
+        nameSuffix: 'testSecretBinary',
+      }
+    );
+    secretBinary.grantRead(testFunction);
+    testFunction.addEnvironment('SECRET_NAME_BINARY', secretBinary.secretName);
+
+    const secretStringCached = new TestSecret(
+      testStack,
+      {
+        secretStringValue: SecretValue.unsafePlainText('foo'),
+      },
+      {
+        nameSuffix: 'testSecretPlainCached',
+      }
+    );
+    secretStringCached.grantRead(testFunction);
+    testFunction.addEnvironment(
+      'SECRET_NAME_PLAIN_CACHED',
+      secretStringCached.secretName
     );
 
+    const secretStringForceFetch = new TestSecret(
+      testStack,
+      {
+        secretStringValue: SecretValue.unsafePlainText('foo'),
+      },
+      {
+        nameSuffix: 'testSecretPlainForceFetch',
+      }
+    );
+    secretStringForceFetch.grantRead(testFunction);
+    testFunction.addEnvironment(
+      'SECRET_NAME_PLAIN_FORCE_FETCH',
+      secretStringForceFetch.secretName
+    );
+
+    // Deploy the stack
     await testStack.deploy();
+
+    // Get the actual function names from the stack outputs
+    const functionName =
+      testStack.findAndGetStackOutputValue('secretsProvider');
 
     invocationLogs = await invokeFunctionOnce({
       functionName,

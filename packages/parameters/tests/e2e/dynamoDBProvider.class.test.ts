@@ -4,24 +4,14 @@
  * @group e2e/parameters/dynamodb/class
  */
 import {
-  concatenateResourceName,
-  defaultRuntime,
-  generateTestUniqueName,
   invokeFunctionOnce,
-  isValidRuntimeKey,
   TestInvocationLogs,
   TestNodejsFunction,
   TestStack,
-  TEST_RUNTIMES,
 } from '@aws-lambda-powertools/testing-utils';
-import { Aspects } from 'aws-cdk-lib';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { join } from 'node:path';
-import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
-import {
-  createDynamoDBTable,
-  putDynamoDBItem,
-} from '../helpers/parametersUtils';
+import { TestDynamodbTableWithItems } from '../helpers/resources';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -106,50 +96,18 @@ import {
  * Get a cached parameter and force retrieval. This also uses the same custom SDK client that counts the number of calls to DynamoDB.
  */
 describe(`Parameters E2E tests, dynamoDB provider`, () => {
-  const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-  if (!isValidRuntimeKey(runtime)) {
-    throw new Error(`Invalid runtime key value: ${runtime}`);
-  }
-
-  const testName = generateTestUniqueName({
-    testPrefix: RESOURCE_NAME_PREFIX,
-    runtime,
-    testName: 'AllFeatures-Decorator',
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'DynamoDBProvider',
+    },
   });
-  const testStack = new TestStack(testName);
 
   // Location of the lambda function code
-  const lambdaFunctionCodeFile = join(
+  const lambdaFunctionCodeFilePath = join(
     __dirname,
     'dynamoDBProvider.class.test.functionCode.ts'
   );
-
-  const functionName = concatenateResourceName({
-    testName,
-    resourceName: 'dynamoDBProvider',
-  });
-
-  // Parameters to be used by Parameters in the Lambda function
-  const tableGet = concatenateResourceName({
-    testName,
-    resourceName: 'Table-Get',
-  });
-
-  const tableGetMultiple = concatenateResourceName({
-    testName,
-    resourceName: 'Table-GetMultiple',
-  });
-
-  const tableGetCustomkeys = concatenateResourceName({
-    testName,
-    resourceName: 'Table-GetCustomKeys',
-  });
-
-  const tableGetMultipleCustomkeys = concatenateResourceName({
-    testName,
-    resourceName: 'Table-GetMultipleCustomKeys',
-  });
 
   const keyAttr = 'key';
   const sortAttr = 'sort';
@@ -159,192 +117,152 @@ describe(`Parameters E2E tests, dynamoDB provider`, () => {
 
   beforeAll(async () => {
     // Prepare
-    new TestNodejsFunction(testStack.stack, functionName, {
-      functionName,
-      entry: lambdaFunctionCodeFile,
-      runtime: TEST_RUNTIMES[runtime],
-      environment: {
-        TABLE_GET: tableGet,
-        TABLE_GET_MULTIPLE: tableGetMultiple,
-        TABLE_GET_CUSTOM_KEYS: tableGetCustomkeys,
-        TABLE_GET_MULTIPLE_CUSTOM_KEYS: tableGetMultipleCustomkeys,
-        KEY_ATTR: keyAttr,
-        SORT_ATTR: sortAttr,
-        VALUE_ATTR: valueAttr,
+    const testFunction = new TestNodejsFunction(
+      testStack,
+      {
+        entry: lambdaFunctionCodeFilePath,
+        environment: {
+          KEY_ATTR: keyAttr,
+          SORT_ATTR: sortAttr,
+          VALUE_ATTR: valueAttr,
+        },
       },
-    });
-
-    // Create the DynamoDB tables
-    const ddbTableGet = createDynamoDBTable({
-      stack: testStack.stack,
-      id: 'Table-get',
-      tableName: tableGet,
-      partitionKey: {
-        name: 'id',
-        type: AttributeType.STRING,
-      },
-    });
-    const ddbTableGetMultiple = createDynamoDBTable({
-      stack: testStack.stack,
-      id: 'Table-getMultiple',
-      tableName: tableGetMultiple,
-      partitionKey: {
-        name: 'id',
-        type: AttributeType.STRING,
-      },
-      sortKey: {
-        name: 'sk',
-        type: AttributeType.STRING,
-      },
-    });
-    const ddbTableGetCustomKeys = createDynamoDBTable({
-      stack: testStack.stack,
-      id: 'Table-getCustomKeys',
-      tableName: tableGetCustomkeys,
-      partitionKey: {
-        name: keyAttr,
-        type: AttributeType.STRING,
-      },
-    });
-    const ddbTabelGetMultipleCustomKeys = createDynamoDBTable({
-      stack: testStack.stack,
-      id: 'Table-getMultipleCustomKeys',
-      tableName: tableGetMultipleCustomkeys,
-      partitionKey: {
-        name: keyAttr,
-        type: AttributeType.STRING,
-      },
-      sortKey: {
-        name: sortAttr,
-        type: AttributeType.STRING,
-      },
-    });
-
-    // Give the Lambda access to the DynamoDB tables
-    Aspects.of(testStack.stack).add(
-      new ResourceAccessGranter([
-        ddbTableGet,
-        ddbTableGetMultiple,
-        ddbTableGetCustomKeys,
-        ddbTabelGetMultipleCustomKeys,
-      ])
+      {
+        nameSuffix: 'dynamoDBProvider',
+      }
     );
 
-    // Seed tables with test data
-    // Test 1
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test1',
-      table: ddbTableGet,
-      item: {
-        id: 'my-param',
-        value: 'foo',
+    // Table for Test 1, 5, 6
+    const tableGet = new TestDynamodbTableWithItems(
+      testStack,
+      {},
+      {
+        nameSuffix: 'Table-Get',
+        items: [
+          {
+            id: 'my-param',
+            value: 'foo',
+          },
+          {
+            id: 'my-param-json',
+            value: JSON.stringify({ foo: 'bar' }),
+          },
+          {
+            id: 'my-param-binary',
+            value: 'YmF6', // base64 encoded 'baz'
+          },
+        ],
+      }
+    );
+    tableGet.grantReadData(testFunction);
+    testFunction.addEnvironment('TABLE_GET', tableGet.tableName);
+    // Table for Test 2, 7
+    const tableGetMultiple = new TestDynamodbTableWithItems(
+      testStack,
+      {
+        sortKey: {
+          name: 'sk',
+          type: AttributeType.STRING,
+        },
       },
-    });
-
-    // Test 2
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test2-a',
-      table: ddbTableGetMultiple,
-      item: {
-        id: 'my-params',
-        sk: 'config',
-        value: 'bar',
+      {
+        nameSuffix: 'Table-GetMultiple',
+        items: [
+          {
+            id: 'my-params',
+            sk: 'config',
+            value: 'bar',
+          },
+          {
+            id: 'my-params',
+            sk: 'key',
+            value: 'baz',
+          },
+          {
+            id: 'my-encoded-params',
+            sk: 'config.json',
+            value: JSON.stringify({ foo: 'bar' }),
+          },
+          {
+            id: 'my-encoded-params',
+            sk: 'key.binary',
+            value: 'YmF6', // base64 encoded 'baz'
+          },
+        ],
+      }
+    );
+    tableGetMultiple.grantReadData(testFunction);
+    testFunction.addEnvironment(
+      'TABLE_GET_MULTIPLE',
+      tableGetMultiple.tableName
+    );
+    // Table for Test 3
+    const tableGetCustomkeys = new TestDynamodbTableWithItems(
+      testStack,
+      {
+        partitionKey: {
+          name: keyAttr,
+          type: AttributeType.STRING,
+        },
       },
-    });
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test2-b',
-      table: ddbTableGetMultiple,
-      item: {
-        id: 'my-params',
-        sk: 'key',
-        value: 'baz',
+      {
+        nameSuffix: 'Table-GetCustomKeys',
+        items: [
+          {
+            [keyAttr]: 'my-param',
+            [valueAttr]: 'foo',
+          },
+        ],
+      }
+    );
+    tableGetCustomkeys.grantReadData(testFunction);
+    testFunction.addEnvironment(
+      'TABLE_GET_CUSTOM_KEYS',
+      tableGetCustomkeys.tableName
+    );
+    // Table for Test 4
+    const tableGetMultipleCustomkeys = new TestDynamodbTableWithItems(
+      testStack,
+      {
+        partitionKey: {
+          name: keyAttr,
+          type: AttributeType.STRING,
+        },
+        sortKey: {
+          name: sortAttr,
+          type: AttributeType.STRING,
+        },
       },
-    });
-
-    // Test 3
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test3',
-      table: ddbTableGetCustomKeys,
-      item: {
-        [keyAttr]: 'my-param',
-        [valueAttr]: 'foo',
-      },
-    });
-
-    // Test 4
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test4-a',
-      table: ddbTabelGetMultipleCustomKeys,
-      item: {
-        [keyAttr]: 'my-params',
-        [sortAttr]: 'config',
-        [valueAttr]: 'bar',
-      },
-    });
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test4-b',
-      table: ddbTabelGetMultipleCustomKeys,
-      item: {
-        [keyAttr]: 'my-params',
-        [sortAttr]: 'key',
-        [valueAttr]: 'baz',
-      },
-    });
-
-    // Test 5
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test5',
-      table: ddbTableGet,
-      item: {
-        id: 'my-param-json',
-        value: JSON.stringify({ foo: 'bar' }),
-      },
-    });
-
-    // Test 6
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test6',
-      table: ddbTableGet,
-      item: {
-        id: 'my-param-binary',
-        value: 'YmF6', // base64 encoded 'baz'
-      },
-    });
-
-    // Test 7
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test7-a',
-      table: ddbTableGetMultiple,
-      item: {
-        id: 'my-encoded-params',
-        sk: 'config.json',
-        value: JSON.stringify({ foo: 'bar' }),
-      },
-    });
-    putDynamoDBItem({
-      stack: testStack.stack,
-      id: 'my-param-test7-b',
-      table: ddbTableGetMultiple,
-      item: {
-        id: 'my-encoded-params',
-        sk: 'key.binary',
-        value: 'YmF6', // base64 encoded 'baz'
-      },
-    });
+      {
+        nameSuffix: 'Table-GetMultipleCustomKeys',
+        items: [
+          {
+            [keyAttr]: 'my-params',
+            [sortAttr]: 'config',
+            [valueAttr]: 'bar',
+          },
+          {
+            [keyAttr]: 'my-params',
+            [sortAttr]: 'key',
+            [valueAttr]: 'baz',
+          },
+        ],
+      }
+    );
+    tableGetMultipleCustomkeys.grantReadData(testFunction);
+    testFunction.addEnvironment(
+      'TABLE_GET_MULTIPLE_CUSTOM_KEYS',
+      tableGetMultipleCustomkeys.tableName
+    );
 
     // Test 8 & 9 use the same items as Test 1
 
     // Deploy the stack
     await testStack.deploy();
+
+    // Get the actual function names from the stack outputs
+    const functionName =
+      testStack.findAndGetStackOutputValue('dynamoDBProvider');
 
     // and invoke the Lambda function
     invocationLogs = await invokeFunctionOnce({

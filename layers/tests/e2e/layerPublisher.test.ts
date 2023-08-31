@@ -55,7 +55,7 @@ describe(`Layers E2E tests, publisher stack`, () => {
         resourceName: 'layer',
       }),
       powertoolsPackageVersion: powerToolsPackageVersion,
-      ssmParameterLayerName,
+      ssmParameterLayerArn: ssmParameterLayerName,
     }
   );
   const testLayerStack = new TestStack({

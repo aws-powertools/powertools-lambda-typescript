@@ -11,7 +11,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string;
   readonly powertoolsPackageVersion?: string;
-  readonly ssmParameterLayerName: string;
+  readonly ssmParameterLayerArn: string;
 }
 
 export class LayerPublisherStack extends Stack {

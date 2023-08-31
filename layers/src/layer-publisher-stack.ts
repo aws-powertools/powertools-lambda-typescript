@@ -57,7 +57,7 @@ export class LayerPublisherStack extends Stack {
     this.lambdaLayerVersion.applyRemovalPolicy(RemovalPolicy.RETAIN);
 
     new StringParameter(this, 'VersionArn', {
-      parameterName: props.ssmParameterLayerName,
+      parameterName: props.ssmParameterLayerArn,
       stringValue: this.lambdaLayerVersion.layerVersionArn,
     });
     new CfnOutput(this, 'LatestLayerArn', {

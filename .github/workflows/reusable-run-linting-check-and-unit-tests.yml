@@ -20,8 +20,6 @@ jobs:
         with:
           node-version: ${{ matrix.version }}
           cache: "npm"
-      - name: Setup npm
-        run: npm i -g npm@latest
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
         with:

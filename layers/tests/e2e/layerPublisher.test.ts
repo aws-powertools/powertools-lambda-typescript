@@ -7,7 +7,6 @@ import { App } from 'aws-cdk-lib';
 import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {
-  concatenateResourceName,
   TestNodejsFunction,
   TestStack,
   TestInvocationLogs,
@@ -40,9 +39,9 @@ describe(`Layers E2E tests, publisher stack`, () => {
 
   let invocationLogs: TestInvocationLogs;
 
-  const ssmParameterLayerName = concatenateResourceName({
-    testName: `${RESOURCE_NAME_PREFIX}-layer`,
-    resourceName: 'parameter',
+  const ssmParameterLayerName = generateTestUniqueName({
+    testPrefix: `${RESOURCE_NAME_PREFIX}`,
+    testName: 'parameter',
   });
 
   // Location of the lambda function code
@@ -62,6 +61,7 @@ describe(`Layers E2E tests, publisher stack`, () => {
     layerName: layerId,
     powertoolsPackageVersion: powerToolsPackageVersion,
     ssmParameterLayerArn: ssmParameterLayerName,
+    removeLayerVersion: true,
   });
   const testLayerStack = new TestStack({
     stackNameProps: {

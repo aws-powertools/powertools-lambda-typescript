@@ -3,86 +3,23 @@
  *
  * @group e2e/parameters/ssm/class
  */
-import path from 'path';
-import { Aspects } from 'aws-cdk-lib';
-import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { v4 } from 'uuid';
 import {
-  generateUniqueName,
-  isValidRuntimeKey,
-  createStackWithLambdaFunction,
-  invokeFunction,
-} from '../../../commons/tests/utils/e2eUtils';
-import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
-import {
+  invokeFunctionOnce,
+  TestInvocationLogs,
+  TestNodejsFunction,
   TestStack,
-  defaultRuntime,
 } from '@aws-lambda-powertools/testing-utils';
-import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
+import { join } from 'node:path';
+import {
+  TestSecureStringParameter,
+  TestStringParameter,
+} from '../helpers/resources';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import { createSSMSecureString } from '../helpers/parametersUtils';
-
-const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
-
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'ssmProvider'
-);
-const functionName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'ssmProvider'
-);
-const lambdaFunctionCodeFile = 'ssmProvider.class.test.functionCode.ts';
-
-const invocationCount = 1;
-
-// Parameter names to be used by Parameters in the Lambda function
-const paramA = generateUniqueName(
-  `/${RESOURCE_NAME_PREFIX}`,
-  uuid,
-  runtime,
-  'param/a'
-);
-const paramB = generateUniqueName(
-  `/${RESOURCE_NAME_PREFIX}`,
-  uuid,
-  runtime,
-  'param/b'
-);
-const paramEncryptedA = generateUniqueName(
-  `/${RESOURCE_NAME_PREFIX}`,
-  uuid,
-  runtime,
-  'param-encrypted/a'
-);
-const paramEncryptedB = generateUniqueName(
-  `/${RESOURCE_NAME_PREFIX}`,
-  uuid,
-  runtime,
-  'param-encrypted/b'
-);
-
-// Parameters values
-const paramAValue = 'foo';
-const paramBValue = 'bar';
-const paramEncryptedAValue = 'foo-encrypted';
-const paramEncryptedBValue = 'bar-encrypted';
-
-const testStack = new TestStack(stackName);
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of SSM parameters.
@@ -133,70 +70,112 @@ const testStack = new TestStack(stackName);
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
  */
-describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
-  let invocationLogs: InvocationLogs[];
+describe(`Parameters E2E tests, SSM provider`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'AppConfig',
+    },
+  });
+
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'ssmProvider.class.test.functionCode.ts'
+  );
+
+  // Parameters values
+  let paramA: string;
+  let paramB: string;
+  const paramAValue = 'foo';
+  const paramBValue = 'bar';
+  let paramEncryptedA: string;
+  let paramEncryptedB: string;
+  const paramEncryptedAValue = 'foo-encrypted';
+  const paramEncryptedBValue = 'bar-encrypted';
+
+  let invocationLogs: TestInvocationLogs;
 
   beforeAll(async () => {
-    // Create a stack with a Lambda function
-    createStackWithLambdaFunction({
-      stack: testStack.stack,
-      functionName,
-      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
-      environment: {
-        UUID: uuid,
-
-        // Values(s) to be used by Parameters in the Lambda function
-        PARAM_A: paramA,
-        PARAM_B: paramB,
-        PARAM_ENCRYPTED_A: paramEncryptedA,
-        PARAM_ENCRYPTED_B: paramEncryptedB,
+    // Prepare
+    const testFunction = new TestNodejsFunction(
+      testStack,
+      {
+        entry: lambdaFunctionCodeFilePath,
       },
-      runtime,
-    });
+      {
+        nameSuffix: 'SsmProvider',
+      }
+    );
 
     // Create SSM parameters
-    const parameterGetA = new StringParameter(testStack.stack, 'Param-a', {
-      parameterName: paramA,
-      stringValue: paramAValue,
-    });
-    const parameterGetB = new StringParameter(testStack.stack, 'Param-b', {
-      parameterName: paramB,
-      stringValue: paramBValue,
-    });
+    const parameterGetA = new TestStringParameter(
+      testStack,
+      {
+        stringValue: paramAValue,
+      },
+      {
+        nameSuffix: 'get/a',
+      }
+    );
+    parameterGetA.grantRead(testFunction);
+    testFunction.addEnvironment('PARAM_A', parameterGetA.parameterName);
+    const parameterGetB = new TestStringParameter(
+      testStack,
+      {
+        stringValue: paramBValue,
+      },
+      {
+        nameSuffix: 'get/b',
+      }
+    );
+    parameterGetB.grantRead(testFunction);
+    testFunction.addEnvironment('PARAM_B', parameterGetB.parameterName);
 
-    const parameterEncryptedA = createSSMSecureString({
-      stack: testStack.stack,
-      id: 'Param-encrypted-a',
-      name: paramEncryptedA,
-      value: paramEncryptedAValue,
-    });
+    const parameterEncryptedA = new TestSecureStringParameter(
+      testStack,
+      {
+        value: paramEncryptedAValue,
+      },
+      {
+        nameSuffix: 'secure/a',
+      }
+    );
+    parameterEncryptedA.grantReadData(testFunction);
+    testFunction.addEnvironment(
+      'PARAM_ENCRYPTED_A',
+      parameterEncryptedA.parameterName
+    );
 
-    const parameterEncryptedB = createSSMSecureString({
-      stack: testStack.stack,
-      id: 'Param-encrypted-b',
-      name: paramEncryptedB,
-      value: paramEncryptedBValue,
-    });
-
-    // Give the Lambda function access to the SSM parameters
-    Aspects.of(testStack.stack).add(
-      new ResourceAccessGranter([
-        parameterGetA,
-        parameterGetB,
-        parameterEncryptedA,
-        parameterEncryptedB,
-      ])
+    const parameterEncryptedB = new TestSecureStringParameter(
+      testStack,
+      {
+        value: paramEncryptedBValue,
+      },
+      {
+        nameSuffix: 'secure/b',
+      }
+    );
+    parameterEncryptedB.grantReadData(testFunction);
+    testFunction.addEnvironment(
+      'PARAM_ENCRYPTED_B',
+      parameterEncryptedB.parameterName
     );
 
     // Deploy the stack
     await testStack.deploy();
 
+    // Get the actual function names from the stack outputs
+    const functionName = testStack.findAndGetStackOutputValue('SsmProvider');
+    paramA = testStack.findAndGetStackOutputValue('getaStr');
+    paramB = testStack.findAndGetStackOutputValue('getbStr');
+    paramEncryptedA = testStack.findAndGetStackOutputValue('secureaSecStr');
+    paramEncryptedB = testStack.findAndGetStackOutputValue('securebSecStr');
+
     // and invoke the Lambda function
-    invocationLogs = await invokeFunction(
+    invocationLogs = await invokeFunctionOnce({
       functionName,
-      invocationCount,
-      'SEQUENTIAL'
-    );
+    });
   }, SETUP_TIMEOUT);
 
   describe('SSMProvider usage', () => {
@@ -204,8 +183,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve a single parameter',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[0]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
         expect(testLog).toStrictEqual({
           test: 'get',
@@ -219,8 +198,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve a single parameter with decryption',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[1]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
         expect(testLog).toStrictEqual({
           test: 'get-decrypt',
@@ -234,8 +213,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve multiple parameters',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[2]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
         const expectedParameterNameA = paramA.substring(
           paramA.lastIndexOf('/') + 1
         );
@@ -260,8 +239,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve multiple parameters recursively',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[3]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
         const expectedParameterNameA = paramA.substring(
           paramA.lastIndexOf('/') + 1
         );
@@ -283,8 +262,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve multiple parameters with decryption',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[4]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
         const expectedParameterNameA = paramEncryptedA.substring(
           paramEncryptedA.lastIndexOf('/') + 1
         );
@@ -307,8 +286,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve multiple parameters by name',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[5]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
 
         expect(testLog).toStrictEqual({
           test: 'get-multiple-by-name',
@@ -325,8 +304,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve multiple parameters by name with mixed decryption',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[6]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
 
         expect(testLog).toStrictEqual({
           test: 'get-multiple-by-name-mixed-decrypt',
@@ -345,8 +324,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve single parameter cached',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[7]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[7]);
 
         expect(testLog).toStrictEqual({
           test: 'get-cached',
@@ -361,8 +340,8 @@ describe(`parameters E2E tests (ssmProvider) for runtime: ${runtime}`, () => {
     it(
       'should retrieve single parameter twice without caching',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[8]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[8]);
 
         expect(testLog).toStrictEqual({
           test: 'get-forced',

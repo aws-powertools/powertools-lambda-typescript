@@ -35,6 +35,7 @@ export const handler = (): void => {
 
   // Check that the tracer is working
   const segment = tracer.getSegment();
+  if (!segment) throw new Error('Segment not found');
   const handlerSegment = segment.addNewSubsegment('### index.handler');
   tracer.setSegment(handlerSegment);
   tracer.annotateColdStart();

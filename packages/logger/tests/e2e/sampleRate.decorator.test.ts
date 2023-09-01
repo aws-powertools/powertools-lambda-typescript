@@ -3,86 +3,66 @@
  *
  * @group e2e/logger/sampleRate
  */
-import path from 'path';
-import { v4 } from 'uuid';
 import {
-  createStackWithLambdaFunction,
-  generateUniqueName,
   invokeFunction,
-  isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
-import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
-import {
+  TestInvocationLogs,
   TestStack,
-  defaultRuntime,
 } from '@aws-lambda-powertools/testing-utils';
+import { randomUUID } from 'node:crypto';
+import { join } from 'node:path';
+import { LoggerTestNodejsFunction } from '../helpers/resources';
 import {
   RESOURCE_NAME_PREFIX,
-  STACK_OUTPUT_LOG_GROUP,
   SETUP_TIMEOUT,
-  TEST_CASE_TIMEOUT,
+  STACK_OUTPUT_LOG_GROUP,
   TEARDOWN_TIMEOUT,
+  TEST_CASE_TIMEOUT,
 } from './constants';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
+describe(`Logger E2E tests, sample rate and injectLambdaContext()`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'SampleRate-Decorator',
+    },
+  });
 
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'sampleRate.decorator.test.FunctionCode.ts'
+  );
 
-const LEVEL = InvocationLogs.LEVEL;
-
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'SampleRate-Decorator'
-);
-const functionName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'SampleRate-Decorator'
-);
-const lambdaFunctionCodeFile = 'sampleRate.decorator.test.FunctionCode.ts';
-
-const invocationCount = 20;
-
-// Parameters to be used by Logger in the Lambda function
-const LOG_MSG = `Log message ${uuid}`;
-const SAMPLE_RATE = '0.5';
-const LOG_LEVEL = LEVEL.ERROR;
-
-const testStack = new TestStack(stackName);
-let logGroupName: string; // We do not know the exact name until deployment
-
-describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: nodejs18x`, () => {
-  let invocationLogs: InvocationLogs[];
+  const invocationCount = 20;
+  let invocationLogs: TestInvocationLogs[];
+  let logGroupName: string;
 
   beforeAll(async () => {
-    // Create and deploy a stack with AWS CDK
-    createStackWithLambdaFunction({
-      stack: testStack.stack,
-      functionName: functionName,
-      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
-      environment: {
-        LOG_LEVEL: LOG_LEVEL,
-        POWERTOOLS_SERVICE_NAME: 'logger-e2e-testing',
-        UUID: uuid,
-
-        // Parameter(s) to be used by Logger in the Lambda function
-        LOG_MSG,
-        SAMPLE_RATE,
+    // Prepare
+    new LoggerTestNodejsFunction(
+      testStack,
+      {
+        entry: lambdaFunctionCodeFilePath,
+        environment: {
+          LOG_LEVEL: 'ERROR',
+          SAMPLE_RATE: '0.5',
+          LOG_MSG: `Log message ${randomUUID()}`,
+        },
       },
-      logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
-      runtime: runtime,
+      {
+        logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
+        nameSuffix: 'BasicFeatures',
+      }
+    );
+
+    await testStack.deploy();
+    logGroupName = testStack.findAndGetStackOutputValue(STACK_OUTPUT_LOG_GROUP);
+    const functionName = testStack.findAndGetStackOutputValue('BasicFeatures');
+
+    invocationLogs = await invokeFunction({
+      functionName,
+      times: invocationCount,
     });
-
-    const result = await testStack.deploy();
-    logGroupName = result[STACK_OUTPUT_LOG_GROUP];
-
-    invocationLogs = await invokeFunction(functionName, invocationCount);
 
     console.log('logGroupName', logGroupName);
   }, SETUP_TIMEOUT);
@@ -99,10 +79,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: no
           // Get log messages of the invocation
           const logMessages = invocationLogs[i].getFunctionLogs();
 
-          if (
-            logMessages.length === 1 &&
-            logMessages[0].includes(LEVEL.ERROR)
-          ) {
+          if (logMessages.length === 1 && logMessages[0].includes('ERROR')) {
             countNotSampled++;
           } else if (logMessages.length === 4) {
             countSampled++;
@@ -114,7 +91,7 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: no
           }
         }
 
-        // Given that we set rate to 0.5. The chance that we get all invocations sampled
+        // Given that we set rate to 0.5. The chance that we get all invocationCount sampled
         // (or not sampled) is less than 0.5^20
         expect(countSampled).toBeGreaterThan(0);
         expect(countNotSampled).toBeGreaterThan(0);
@@ -129,11 +106,11 @@ describe(`logger E2E tests sample rate and injectLambdaContext() for runtime: no
       async () => {
         for (let i = 0; i < invocationCount; i++) {
           // Get log messages of the invocation
-          const logMessages = invocationLogs[i].getFunctionLogs(LEVEL.ERROR);
+          const logMessages = invocationLogs[i].getFunctionLogs('ERROR');
 
           // Check that the context is logged on every log
           for (const message of logMessages) {
-            const log = InvocationLogs.parseFunctionLog(message);
+            const log = TestInvocationLogs.parseFunctionLog(message);
             expect(log).toHaveProperty('function_arn');
             expect(log).toHaveProperty('function_memory_size');
             expect(log).toHaveProperty('function_name');

@@ -3,19 +3,18 @@
  *
  * @group e2e/tracer/decorator-async-handler
  */
-
-import path from 'path';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { RemovalPolicy } from 'aws-cdk-lib';
-import { XRayClient } from '@aws-sdk/client-xray';
-import { STSClient } from '@aws-sdk/client-sts';
-import { v4 } from 'uuid';
 import {
   TestStack,
-  defaultRuntime,
+  TestDynamodbTable,
 } from '@aws-lambda-powertools/testing-utils';
+import { XRayClient } from '@aws-sdk/client-xray';
+import { join } from 'node:path';
+import { TracerTestNodejsFunction } from '../helpers/resources';
 import {
-  createTracerTestFunction,
+  assertAnnotation,
+  assertErrorAndFault,
+} from '../helpers/traceAssertions';
+import {
   getFirstSubsegment,
   getFunctionArn,
   getInvocationSubsegment,
@@ -24,128 +23,93 @@ import {
   splitSegmentsByName,
 } from '../helpers/tracesUtils';
 import {
-  generateUniqueName,
-  isValidRuntimeKey,
-} from '../../../commons/tests/utils/e2eUtils';
-import {
-  expectedCustomAnnotationKey,
-  expectedCustomAnnotationValue,
-  expectedCustomErrorMessage,
-  expectedCustomMetadataKey,
-  expectedCustomMetadataValue,
-  expectedCustomResponseValue,
-  expectedCustomSubSegmentName,
+  commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import {
-  assertAnnotation,
-  assertErrorAndFault,
-} from '../helpers/traceAssertions';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
+describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'AllFeatures-Decorator',
+    },
+  });
 
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'asyncHandler.decorator.test.functionCode.ts'
+  );
+  const startTime = new Date();
 
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  v4(),
-  runtime,
-  'AllFeatures-Decorator'
-);
-const lambdaFunctionCodeFile = 'asyncHandler.decorator.test.functionCode.ts';
-let startTime: Date;
+  /**
+   * Table used by all functions to make an SDK call
+   */
+  const testTable = new TestDynamodbTable(
+    testStack,
+    {},
+    {
+      nameSuffix: 'TestTable',
+    }
+  );
 
-/**
- * Function #1 is with all flags enabled.
- */
-const uuidFunction1 = v4();
-const functionNameWithAllFlagsEnabled = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuidFunction1,
-  runtime,
-  'AllFeatures-Decorator-Async-AllFlagsEnabled'
-);
-const serviceNameWithAllFlagsEnabled = functionNameWithAllFlagsEnabled;
-
-/**
- * Function #2 sets a custom subsegment name in the decorated method
- */
-const uuidFunction2 = v4();
-const functionNameWithCustomSubsegmentNameInMethod = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuidFunction2,
-  runtime,
-  'AllFeatures-Decorator-Async-CustomSubsegmentNameInMethod'
-);
-const serviceNameWithCustomSubsegmentNameInMethod =
-  functionNameWithCustomSubsegmentNameInMethod;
-
-const xrayClient = new XRayClient({});
-const stsClient = new STSClient({});
-const invocations = 3;
-
-const testStack = new TestStack(stackName);
-
-describe(`Tracer E2E tests, asynchronous handler with decorator instantiation for runtime: ${runtime}`, () => {
-  beforeAll(async () => {
-    // Prepare
-    startTime = new Date();
-    const ddbTableName = stackName + '-table';
-
-    const ddbTable = new Table(testStack.stack, 'Table', {
-      tableName: ddbTableName,
-      partitionKey: {
-        name: 'id',
-        type: AttributeType.STRING,
+  /**
+   * Function #1 is with all flags enabled.
+   */
+  let fnNameAllFlagsEnabled: string;
+  const fnAllFlagsEnabled = new TracerTestNodejsFunction(
+    testStack,
+    {
+      entry: lambdaFunctionCodeFilePath,
+      environment: {
+        TEST_TABLE_NAME: testTable.tableName,
       },
-      billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
-    });
+    },
+    {
+      nameSuffix: 'AllFlagsOn',
+    }
+  );
+  testTable.grantWriteData(fnAllFlagsEnabled);
 
-    const entry = path.join(__dirname, lambdaFunctionCodeFile);
-    const functionWithAllFlagsEnabled = createTracerTestFunction({
-      stack: testStack.stack,
-      functionName: functionNameWithAllFlagsEnabled,
-      entry,
-      expectedServiceName: serviceNameWithAllFlagsEnabled,
-      environmentParams: {
-        TEST_TABLE_NAME: ddbTableName,
-        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-        POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-        POWERTOOLS_TRACE_ENABLED: 'true',
-      },
-      runtime,
-    });
-    ddbTable.grantWriteData(functionWithAllFlagsEnabled);
-
-    const functionWithCustomSubsegmentNameInMethod = createTracerTestFunction({
-      stack: testStack.stack,
-      functionName: functionNameWithCustomSubsegmentNameInMethod,
+  /**
+   * Function #2 sets a custom subsegment name in the decorated method
+   */
+  let fnNameCustomSubsegment: string;
+  const fnCustomSubsegmentName = new TracerTestNodejsFunction(
+    testStack,
+    {
+      entry: lambdaFunctionCodeFilePath,
       handler: 'handlerWithCustomSubsegmentNameInMethod',
-      entry,
-      expectedServiceName: serviceNameWithCustomSubsegmentNameInMethod,
-      environmentParams: {
-        TEST_TABLE_NAME: ddbTableName,
-        EXPECTED_CUSTOM_SUBSEGMENT_NAME: expectedCustomSubSegmentName,
-        POWERTOOLS_TRACER_CAPTURE_RESPONSE: 'true',
-        POWERTOOLS_TRACER_CAPTURE_ERROR: 'true',
-        POWERTOOLS_TRACE_ENABLED: 'true',
+      environment: {
+        TEST_TABLE_NAME: testTable.tableName,
       },
-      runtime,
-    });
-    ddbTable.grantWriteData(functionWithCustomSubsegmentNameInMethod);
+    },
+    {
+      nameSuffix: 'CustomSubsegmentName',
+    }
+  );
+  testTable.grantWriteData(fnCustomSubsegmentName);
 
+  const xrayClient = new XRayClient({});
+  const invocationsCount = 3;
+
+  beforeAll(async () => {
+    // Deploy the stack
     await testStack.deploy();
+
+    // Get the actual function names from the stack outputs
+    fnNameAllFlagsEnabled = testStack.findAndGetStackOutputValue('AllFlagsOn');
+    fnNameCustomSubsegment = testStack.findAndGetStackOutputValue(
+      'CustomSubsegmentName'
+    );
 
     // Act
     await Promise.all([
-      invokeAllTestCases(functionNameWithAllFlagsEnabled),
-      invokeAllTestCases(functionNameWithCustomSubsegmentNameInMethod),
+      invokeAllTestCases(fnNameAllFlagsEnabled, invocationsCount),
+      invokeAllTestCases(fnNameCustomSubsegment, invocationsCount),
     ]);
   }, SETUP_TIMEOUT);
 
@@ -158,18 +122,21 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
   it(
     'should generate all custom traces',
     async () => {
+      const { EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage } =
+        commonEnvironmentVars;
+
       const tracesWhenAllFlagsEnabled = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled),
-        invocations,
+        await getFunctionArn(fnNameAllFlagsEnabled),
+        invocationsCount,
         4
       );
 
-      expect(tracesWhenAllFlagsEnabled.length).toBe(invocations);
+      expect(tracesWhenAllFlagsEnabled.length).toBe(invocationsCount);
 
       // Assess
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationsCount; i++) {
         const trace = tracesWhenAllFlagsEnabled[i];
 
         /**
@@ -206,7 +173,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
         expect(subsegments.get('### myMethod')?.length).toBe(1);
         expect(subsegments.get('other')?.length).toBe(0);
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationsCount - 1;
         if (shouldThrowAnError) {
           assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
         }
@@ -218,15 +185,23 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
   it(
     'should have correct annotations and metadata',
     async () => {
+      const {
+        EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
+        EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
+        EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
+        EXPECTED_CUSTOM_METADATA_VALUE: expectedCustomMetadataValue,
+        EXPECTED_CUSTOM_RESPONSE_VALUE: expectedCustomResponseValue,
+      } = commonEnvironmentVars;
+
       const traces = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(stsClient, functionNameWithAllFlagsEnabled),
-        invocations,
+        await getFunctionArn(fnNameAllFlagsEnabled),
+        invocationsCount,
         4
       );
 
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationsCount; i++) {
         const trace = traces[i];
         const invocationSubsegment = getInvocationSubsegment(trace);
         const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
@@ -236,7 +211,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
         assertAnnotation({
           annotations,
           isColdStart,
-          expectedServiceName: serviceNameWithAllFlagsEnabled,
+          expectedServiceName: 'AllFlagsOn',
           expectedCustomAnnotationKey,
           expectedCustomAnnotationValue,
         });
@@ -244,16 +219,16 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
         if (!metadata) {
           fail('metadata is missing');
         }
-        expect(
-          metadata[serviceNameWithAllFlagsEnabled][expectedCustomMetadataKey]
-        ).toEqual(expectedCustomMetadataValue);
+        expect(metadata['AllFlagsOn'][expectedCustomMetadataKey]).toEqual(
+          expectedCustomMetadataValue
+        );
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationsCount - 1;
         if (!shouldThrowAnError) {
           // Assert that the metadata object contains the response
-          expect(
-            metadata[serviceNameWithAllFlagsEnabled]['index.handler response']
-          ).toEqual(expectedCustomResponseValue);
+          expect(metadata['AllFlagsOn']['index.handler response']).toEqual(
+            expectedCustomResponseValue
+          );
         }
       }
     },
@@ -263,21 +238,25 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
   it(
     'should have a custom name as the subsegment name for the decorated method',
     async () => {
+      const {
+        EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
+        EXPECTED_CUSTOM_SUBSEGMENT_NAME: expectedCustomSubSegmentName,
+      } = commonEnvironmentVars;
+
       const tracesWhenCustomSubsegmentNameInMethod = await getTraces(
         xrayClient,
         startTime,
-        await getFunctionArn(
-          stsClient,
-          functionNameWithCustomSubsegmentNameInMethod
-        ),
-        invocations,
+        await getFunctionArn(fnNameCustomSubsegment),
+        invocationsCount,
         4
       );
 
-      expect(tracesWhenCustomSubsegmentNameInMethod.length).toBe(invocations);
+      expect(tracesWhenCustomSubsegmentNameInMethod.length).toBe(
+        invocationsCount
+      );
 
       // Assess
-      for (let i = 0; i < invocations; i++) {
+      for (let i = 0; i < invocationsCount; i++) {
         const trace = tracesWhenCustomSubsegmentNameInMethod[i];
 
         /**
@@ -316,7 +295,7 @@ describe(`Tracer E2E tests, asynchronous handler with decorator instantiation fo
         expect(subsegments.get(expectedCustomSubSegmentName)?.length).toBe(1);
         expect(subsegments.get('other')?.length).toBe(0);
 
-        const shouldThrowAnError = i === invocations - 1;
+        const shouldThrowAnError = i === invocationsCount - 1;
         if (shouldThrowAnError) {
           assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
         }

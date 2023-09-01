@@ -2,7 +2,7 @@ import { CustomResource, Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { v4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Provider } from 'aws-cdk-lib/custom-resources';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
@@ -20,7 +20,7 @@ export class CanaryStack extends Stack {
     super(scope, id, props);
     const { layerName, powertoolsPackageVersion } = props;
 
-    const suffix = v4().substring(0, 5);
+    const suffix = randomUUID().substring(0, 5);
 
     const layerArn = StringParameter.fromStringParameterAttributes(
       this,

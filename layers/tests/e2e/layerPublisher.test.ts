@@ -4,129 +4,119 @@
  * @group e2e/layers/all
  */
 import { App } from 'aws-cdk-lib';
-import { LayerVersion, Tracing } from 'aws-cdk-lib/aws-lambda';
+import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {
+  TestNodejsFunction,
   TestStack,
-  defaultRuntime,
+  TestInvocationLogs,
+  invokeFunctionOnce,
+  generateTestUniqueName,
 } from '@aws-lambda-powertools/testing-utils';
-import {
-  generateUniqueName,
-  invokeFunction,
-  isValidRuntimeKey,
-  createStackWithLambdaFunction,
-} from '../../../packages/commons/tests/utils/e2eUtils';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import {
-  LEVEL,
-  InvocationLogs,
-} from '../../../packages/commons/tests/utils/InvocationLogs';
-import { v4 } from 'uuid';
-import path from 'path';
+import { join } from 'node:path';
 import packageJson from '../../package.json';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
+/**
+ * This test has two stacks:
+ * 1. LayerPublisherStack - publishes a layer version using the LayerPublisher construct and containing the Powertools utilities from the repo
+ * 2. TestStack - uses the layer published in the first stack and contains a lambda function that uses the Powertools utilities from the layer
+ *
+ * The lambda function is invoked once and the logs are collected. The goal of the test is to verify that the layer creation and usage works as expected.
+ */
+describe(`Layers E2E tests, publisher stack`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'functionStack',
+    },
+  });
 
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key: ${runtime}`);
-}
+  let invocationLogs: TestInvocationLogs;
 
-describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () => {
-  const uuid = v4();
-  let invocationLogs: InvocationLogs[];
-  const stackNameLayers = generateUniqueName(
-    RESOURCE_NAME_PREFIX,
-    uuid,
-    runtime,
-    'layerStack'
-  );
-  const stackNameFunction = generateUniqueName(
-    RESOURCE_NAME_PREFIX,
-    uuid,
-    runtime,
-    'functionStack'
-  );
-  const functionName = generateUniqueName(
-    RESOURCE_NAME_PREFIX,
-    uuid,
-    runtime,
-    'function'
-  );
-  const ssmParameterLayerName = generateUniqueName(
-    RESOURCE_NAME_PREFIX,
-    uuid,
-    runtime,
-    'parameter'
-  );
-  const lambdaFunctionCodeFile = 'layerPublisher.class.test.functionCode.ts';
+  const ssmParameterLayerName = generateTestUniqueName({
+    testPrefix: `${RESOURCE_NAME_PREFIX}`,
+    testName: 'parameter',
+  });
 
-  const invocationCount = 1;
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'layerPublisher.class.test.functionCode.ts'
+  );
+
   const powerToolsPackageVersion = packageJson.version;
-  const layerName = generateUniqueName(
-    RESOURCE_NAME_PREFIX,
-    uuid,
-    runtime,
-    'layer'
-  );
 
-  const testStack = new TestStack(stackNameFunction);
   const layerApp = new App();
-  const layerStack = new LayerPublisherStack(layerApp, stackNameLayers, {
-    layerName,
+  const layerId = generateTestUniqueName({
+    testPrefix: RESOURCE_NAME_PREFIX,
+    testName: 'layerStack',
+  });
+  const layerStack = new LayerPublisherStack(layerApp, layerId, {
+    layerName: layerId,
     powertoolsPackageVersion: powerToolsPackageVersion,
     ssmParameterLayerArn: ssmParameterLayerName,
+    removeLayerVersion: true,
   });
-  const testLayerStack = new TestStack(stackNameLayers, layerApp, layerStack);
+  const testLayerStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'layerStack',
+    },
+    app: layerApp,
+    stack: layerStack,
+  });
 
   beforeAll(async () => {
-    const outputs = await testLayerStack.deploy();
+    await testLayerStack.deploy();
 
     const layerVersion = LayerVersion.fromLayerVersionArn(
       testStack.stack,
       'LayerVersionArnReference',
-      outputs['LatestLayerArn']
+      testLayerStack.findAndGetStackOutputValue('LatestLayerArn')
     );
-    createStackWithLambdaFunction({
-      stack: testStack.stack,
-      functionName: functionName,
-      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
-      tracing: Tracing.ACTIVE,
-      environment: {
-        UUID: uuid,
-        POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
-        POWERTOOLS_SERVICE_NAME: 'LayerPublisherStack',
+    new TestNodejsFunction(
+      testStack,
+      {
+        entry: lambdaFunctionCodeFilePath,
+        environment: {
+          POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
+          POWERTOOLS_SERVICE_NAME: 'LayerPublisherStack',
+        },
+        bundling: {
+          externalModules: [
+            '@aws-lambda-powertools/commons',
+            '@aws-lambda-powertools/logger',
+            '@aws-lambda-powertools/metrics',
+            '@aws-lambda-powertools/tracer',
+          ],
+        },
+        layers: [layerVersion],
       },
-      runtime: runtime,
-      bundling: {
-        externalModules: [
-          '@aws-lambda-powertools/commons',
-          '@aws-lambda-powertools/logger',
-          '@aws-lambda-powertools/metrics',
-          '@aws-lambda-powertools/tracer',
-        ],
-      },
-      layers: [layerVersion],
-    });
+      {
+        nameSuffix: 'testFn',
+      }
+    );
 
     await testStack.deploy();
 
-    invocationLogs = await invokeFunction(
+    const functionName = testStack.findAndGetStackOutputValue('testFn');
+
+    invocationLogs = await invokeFunctionOnce({
       functionName,
-      invocationCount,
-      'SEQUENTIAL'
-    );
+    });
   }, SETUP_TIMEOUT);
 
   describe('LayerPublisherStack usage', () => {
     it(
       'should have no errors in the logs, which indicates the pacakges version matches the expected one',
       () => {
-        const logs = invocationLogs[0].getFunctionLogs(LEVEL.ERROR);
+        const logs = invocationLogs.getFunctionLogs('ERROR');
 
         expect(logs.length).toBe(0);
       },
@@ -136,7 +126,7 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
     it(
       'should have one warning related to missing Metrics namespace',
       () => {
-        const logs = invocationLogs[0].getFunctionLogs(LEVEL.WARN);
+        const logs = invocationLogs.getFunctionLogs('WARN');
 
         expect(logs.length).toBe(1);
         expect(logs[0]).toContain('Namespace should be defined, default used');
@@ -147,7 +137,7 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
     it(
       'should have one info log related to coldstart metric',
       () => {
-        const logs = invocationLogs[0].getFunctionLogs(LEVEL.INFO);
+        const logs = invocationLogs.getFunctionLogs('INFO');
 
         expect(logs.length).toBe(1);
         expect(logs[0]).toContain('ColdStart');
@@ -158,7 +148,7 @@ describe(`layers E2E tests (LayerPublisherStack) for runtime: ${runtime}`, () =>
     it(
       'should have one debug log that says Hello World!',
       () => {
-        const logs = invocationLogs[0].getFunctionLogs(LEVEL.DEBUG);
+        const logs = invocationLogs.getFunctionLogs('DEBUG');
 
         expect(logs.length).toBe(1);
         expect(logs[0]).toContain('Hello World!');

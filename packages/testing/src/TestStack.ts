@@ -4,6 +4,35 @@ import { readFile } from 'node:fs/promises';
 import { App, Stack } from 'aws-cdk-lib';
 import { AwsCdkCli, RequireApproval } from '@aws-cdk/cli-lib-alpha';
 import type { ICloudAssemblyDirectoryProducer } from '@aws-cdk/cli-lib-alpha';
+import { generateTestUniqueName } from './helpers';
+
+type StackNameProps = {
+  /**
+   * Prefix for the stack name.
+   */
+  stackNamePrefix: string;
+  /**
+   * Name of the test.
+   */
+  testName: string;
+};
+
+interface TestStackProps {
+  /**
+   * Name of the test stack.
+   */
+  stackNameProps: StackNameProps;
+  /**
+   * Reference to the AWS CDK App object.
+   * @default new App()
+   */
+  app?: App;
+  /**
+   * Reference to the AWS CDK Stack object.
+   * @default new Stack(this.app, stackName)
+   */
+  stack?: Stack;
+}
 
 /**
  * Test stack that can be deployed to the selected environment.
@@ -15,19 +44,34 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    */
   public app: App;
   /**
+   * Outputs of the deployed stack.
+   */
+  public outputs: Record<string, string> = {};
+  /**
    * Reference to the AWS CDK Stack object.
    * @default new Stack(this.app, stackName)
    */
   public stack: Stack;
+  /**
+   * Name of the test stack.
+   * @example
+   * Logger-E2E-node18-12345-someFeature
+   */
+  public testName: string;
+
   /**
    * @internal
    * Reference to the AWS CDK CLI object.
    */
   #cli: AwsCdkCli;
 
-  public constructor(stackName: string, app?: App, stack?: Stack) {
+  public constructor({ stackNameProps, app, stack }: TestStackProps) {
+    this.testName = generateTestUniqueName({
+      testName: stackNameProps.testName,
+      testPrefix: stackNameProps.stackNamePrefix,
+    });
     this.app = app ?? new App();
-    this.stack = stack ?? new Stack(this.app, stackName);
+    this.stack = stack ?? new Stack(this.app, this.testName);
     this.#cli = AwsCdkCli.fromCloudAssemblyDirectoryProducer(this);
   }
 
@@ -48,9 +92,11 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
       outputsFile: outputFilePath,
     });
 
-    return JSON.parse(await readFile(outputFilePath, 'utf-8'))[
+    this.outputs = JSON.parse(await readFile(outputFilePath, 'utf-8'))[
       this.stack.stackName
     ];
+
+    return this.outputs;
   }
 
   /**
@@ -62,6 +108,20 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
       requireApproval: false,
     });
   }
+
+  /**
+   * Find and get the value of a StackOutput by its key.
+   */
+  public findAndGetStackOutputValue = (key: string): string => {
+    const value = Object.keys(this.outputs).find((outputKey) =>
+      outputKey.includes(key)
+    );
+    if (!value) {
+      throw new Error(`Cannot find output for ${key}`);
+    }
+
+    return this.outputs[value];
+  };
 
   /**
    * Produce the Cloud Assembly directory.

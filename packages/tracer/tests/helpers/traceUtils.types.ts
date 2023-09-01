@@ -1,5 +1,3 @@
-import type { Stack } from 'aws-cdk-lib';
-
 interface ParsedDocument {
   name: string;
   id: string;
@@ -61,16 +59,6 @@ interface ParsedTrace {
   Segments: ParsedSegment[];
 }
 
-interface TracerTestFunctionParams {
-  stack: Stack;
-  functionName: string;
-  handler?: string;
-  entry: string;
-  expectedServiceName: string;
-  environmentParams: { [key: string]: string };
-  runtime: string;
-}
-
 interface AssertAnnotationParams {
   annotations: ParsedDocument['annotations'];
   isColdStart: boolean;
@@ -79,10 +67,4 @@ interface AssertAnnotationParams {
   expectedCustomAnnotationValue: string | number | boolean;
 }
 
-export {
-  ParsedDocument,
-  ParsedSegment,
-  ParsedTrace,
-  TracerTestFunctionParams,
-  AssertAnnotationParams,
-};
+export { ParsedDocument, ParsedSegment, ParsedTrace, AssertAnnotationParams };

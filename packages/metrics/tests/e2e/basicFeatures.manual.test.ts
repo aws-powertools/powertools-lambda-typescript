@@ -3,114 +3,79 @@
  *
  * @group e2e/metrics/standardFunctions
  */
-
-import path from 'path';
-import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import {
+  invokeFunction,
+  TestStack,
+} from '@aws-lambda-powertools/testing-utils';
 import {
   CloudWatchClient,
   GetMetricStatisticsCommand,
 } from '@aws-sdk/client-cloudwatch';
-import { v4 } from 'uuid';
+import { join } from 'node:path';
+import { getMetrics } from '../helpers/metricsUtils';
+import { MetricsTestNodejsFunction } from '../helpers/resources';
 import {
-  generateUniqueName,
-  isValidRuntimeKey,
-  createStackWithLambdaFunction,
-  invokeFunction,
-} from '../../../commons/tests/utils/e2eUtils';
-import {
-  TestStack,
-  defaultRuntime,
-} from '@aws-lambda-powertools/testing-utils';
-import { MetricUnits } from '../../src';
-import {
+  commonEnvironmentVars,
   ONE_MINUTE,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import { getMetrics } from '../helpers/metricsUtils';
 
-const runtime: string = process.env.RUNTIME || defaultRuntime;
+describe(`Metrics E2E tests, manual usage`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'BasicFeatures-Manual',
+    },
+  });
 
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'basicFeatures.manual.test.functionCode.ts'
+  );
+  const startTime = new Date();
 
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'manual'
-);
-const functionName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'manual'
-);
-const lambdaFunctionCodeFile = 'basicFeatures.manual.test.functionCode.ts';
-
-const cloudwatchClient = new CloudWatchClient({});
-
-const invocationCount = 2;
-const startTime = new Date();
-
-// Parameters to be used by Metrics in the Lambda function
-const expectedNamespace = uuid; // to easily find metrics back at assert phase
-const expectedServiceName = 'e2eManual';
-const expectedMetricName = 'MyMetric';
-const expectedMetricUnit = MetricUnits.Count;
-const expectedMetricValue = '1';
-const expectedDefaultDimensions = { MyDimension: 'MyValue' };
-const expectedExtraDimension = { MyExtraDimension: 'MyExtraValue' };
-const expectedSingleMetricDimension = { MySingleMetricDim: 'MySingleValue' };
-const expectedSingleMetricName = 'MySingleMetric';
-const expectedSingleMetricUnit = MetricUnits.Percent;
-const expectedSingleMetricValue = '2';
-
-const testStack = new TestStack(stackName);
-
-describe(`metrics E2E tests (manual) for runtime: ${runtime}`, () => {
-  beforeAll(async () => {
-    // GIVEN a stack
-    createStackWithLambdaFunction({
-      stack: testStack.stack,
-      functionName: functionName,
-      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
-      tracing: Tracing.ACTIVE,
+  const expectedServiceName = 'e2eManual';
+  new MetricsTestNodejsFunction(
+    testStack,
+    {
+      entry: lambdaFunctionCodeFilePath,
       environment: {
-        POWERTOOLS_SERVICE_NAME: 'metrics-e2e-testing',
-        UUID: uuid,
-
-        // Parameter(s) to be used by Metrics in the Lambda function
-        EXPECTED_NAMESPACE: expectedNamespace,
         EXPECTED_SERVICE_NAME: expectedServiceName,
-        EXPECTED_METRIC_NAME: expectedMetricName,
-        EXPECTED_METRIC_UNIT: expectedMetricUnit,
-        EXPECTED_METRIC_VALUE: expectedMetricValue,
-        EXPECTED_DEFAULT_DIMENSIONS: JSON.stringify(expectedDefaultDimensions),
-        EXPECTED_EXTRA_DIMENSION: JSON.stringify(expectedExtraDimension),
-        EXPECTED_SINGLE_METRIC_DIMENSION: JSON.stringify(
-          expectedSingleMetricDimension
-        ),
-        EXPECTED_SINGLE_METRIC_NAME: expectedSingleMetricName,
-        EXPECTED_SINGLE_METRIC_UNIT: expectedSingleMetricUnit,
-        EXPECTED_SINGLE_METRIC_VALUE: expectedSingleMetricValue,
       },
-      runtime: runtime,
-    });
+    },
+    {
+      nameSuffix: 'Manual',
+    }
+  );
+
+  const cloudwatchClient = new CloudWatchClient({});
+  const invocations = 2;
+
+  beforeAll(async () => {
+    // Deploy the stack
     await testStack.deploy();
 
-    // and invoked
-    await invokeFunction(functionName, invocationCount, 'SEQUENTIAL');
+    // Get the actual function names from the stack outputs
+    const functionName = testStack.findAndGetStackOutputValue('Manual');
+
+    // Act
+    await invokeFunction({
+      functionName,
+      times: invocations,
+      invocationMode: 'SEQUENTIAL',
+    });
   }, SETUP_TIMEOUT);
 
   describe('ColdStart metrics', () => {
     it(
       'should capture ColdStart Metric',
       async () => {
+        const { EXPECTED_NAMESPACE: expectedNamespace } = commonEnvironmentVars;
+
         // Check coldstart metric dimensions
         const coldStartMetrics = await getMetrics(
           cloudwatchClient,
@@ -162,6 +127,14 @@ describe(`metrics E2E tests (manual) for runtime: ${runtime}`, () => {
     it(
       'should produce a Metric with the default and extra one dimensions',
       async () => {
+        const {
+          EXPECTED_NAMESPACE: expectedNamespace,
+          EXPECTED_METRIC_NAME: expectedMetricName,
+          EXPECTED_METRIC_VALUE: expectedMetricValue,
+          EXPECTED_DEFAULT_DIMENSIONS: expectedDefaultDimensions,
+          EXPECTED_EXTRA_DIMENSION: expectedExtraDimension,
+        } = commonEnvironmentVars;
+
         // Check metric dimensions
         const metrics = await getMetrics(
           cloudwatchClient,
@@ -216,7 +189,7 @@ describe(`metrics E2E tests (manual) for runtime: ${runtime}`, () => {
           ? metricStat.Datapoints[0]
           : {};
         expect(singleDataPoint.Sum).toBeGreaterThanOrEqual(
-          parseInt(expectedMetricValue) * invocationCount
+          parseInt(expectedMetricValue) * invocations
         );
       },
       TEST_CASE_TIMEOUT

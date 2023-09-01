@@ -3,123 +3,21 @@
  *
  * @group e2e/parameters/appconfig/class
  */
-import path from 'path';
-import { Aspects } from 'aws-cdk-lib';
-import { toBase64 } from '@aws-sdk/util-base64-node';
-import { v4 } from 'uuid';
 import {
-  generateUniqueName,
-  isValidRuntimeKey,
-  createStackWithLambdaFunction,
-  invokeFunction,
-} from '../../../commons/tests/utils/e2eUtils';
-import { InvocationLogs } from '../../../commons/tests/utils/InvocationLogs';
-import {
+  invokeFunctionOnce,
+  TestInvocationLogs,
+  TestNodejsFunction,
   TestStack,
-  defaultRuntime,
 } from '@aws-lambda-powertools/testing-utils';
-import { ResourceAccessGranter } from '../helpers/cdkAspectGrantAccess';
+import { toBase64 } from '@aws-sdk/util-base64-node';
+import { join } from 'node:path';
+import { TestAppConfigWithProfiles } from '../helpers/resources';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants';
-import {
-  createBaseAppConfigResources,
-  createAppConfigConfigurationProfile,
-} from '../helpers/parametersUtils';
-
-const runtime: string = process.env.RUNTIME || defaultRuntime;
-
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
-
-const uuid = v4();
-const stackName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'appConfigProvider'
-);
-const functionName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'appConfigProvider'
-);
-const lambdaFunctionCodeFile = 'appConfigProvider.class.test.functionCode.ts';
-
-const invocationCount = 1;
-
-const applicationName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'app'
-);
-const environmentName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'env'
-);
-const deploymentStrategyName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'immediate'
-);
-const freeFormJsonName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'freeFormJson'
-);
-const freeFormYamlName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'freeFormYaml'
-);
-const freeFormBase64PlainTextName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'freeFormBase64PlainText'
-);
-const featureFlagName = generateUniqueName(
-  RESOURCE_NAME_PREFIX,
-  uuid,
-  runtime,
-  'featureFlag'
-);
-
-const freeFormJsonValue = {
-  foo: 'bar',
-};
-const freeFormYamlValue = `foo: bar
-`;
-const freeFormPlainTextValue = 'foo';
-const freeFormBase64PlainTextValue = toBase64(
-  new TextEncoder().encode(freeFormPlainTextValue)
-);
-const featureFlagValue = {
-  version: '1',
-  flags: {
-    myFeatureFlag: {
-      name: 'myFeatureFlag',
-    },
-  },
-  values: {
-    myFeatureFlag: {
-      enabled: true,
-    },
-  },
-};
-
-const testStack = new TestStack(stackName);
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of AppConfig parameters.
@@ -173,121 +71,117 @@ const testStack = new TestStack(stackName);
  * is created after the previous one. This is necessary because we share the same AppConfig
  * application and environment for all tests.
  */
-describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () => {
-  let invocationLogs: InvocationLogs[];
+describe(`Parameters E2E tests, AppConfig provider`, () => {
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: 'AppConfig',
+    },
+  });
+
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'appConfigProvider.class.test.functionCode.ts'
+  );
+
+  const freeFormJsonValue = {
+    foo: 'bar',
+  };
+  const freeFormYamlValue = `foo: bar
+`;
+  const freeFormPlainTextValue = 'foo';
+  const freeFormBase64PlainTextValue = toBase64(
+    new TextEncoder().encode(freeFormPlainTextValue)
+  );
+  const featureFlagValue = {
+    version: '1',
+    flags: {
+      myFeatureFlag: {
+        name: 'myFeatureFlag',
+      },
+    },
+    values: {
+      myFeatureFlag: {
+        enabled: true,
+      },
+    },
+  };
+
+  let invocationLogs: TestInvocationLogs;
   const encoder = new TextEncoder();
 
   beforeAll(async () => {
-    // Create a stack with a Lambda function
-    createStackWithLambdaFunction({
-      stack: testStack.stack,
-      functionName,
-      functionEntry: path.join(__dirname, lambdaFunctionCodeFile),
-      environment: {
-        UUID: uuid,
-
-        // Values(s) to be used by Parameters in the Lambda function
-        APPLICATION_NAME: applicationName,
-        ENVIRONMENT_NAME: environmentName,
-        FREEFORM_JSON_NAME: freeFormJsonName,
-        FREEFORM_YAML_NAME: freeFormYamlName,
-        FREEFORM_BASE64_ENCODED_PLAIN_TEXT_NAME: freeFormBase64PlainTextName,
-        FEATURE_FLAG_NAME: featureFlagName,
+    // Prepare
+    const testFunction = new TestNodejsFunction(
+      testStack,
+      {
+        entry: lambdaFunctionCodeFilePath,
       },
-      runtime,
-    });
-
-    // Create the base resources for an AppConfig application.
-    const { application, environment, deploymentStrategy } =
-      createBaseAppConfigResources({
-        stack: testStack.stack,
-        applicationName,
-        environmentName,
-        deploymentStrategyName,
-      });
-
-    // Create configuration profiles for tests.
-    const freeFormJson = createAppConfigConfigurationProfile({
-      stack: testStack.stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: freeFormJsonName,
-      type: 'AWS.Freeform',
-      content: {
-        content: JSON.stringify(freeFormJsonValue),
-        contentType: 'application/json',
-      },
-    });
-
-    const freeFormYaml = createAppConfigConfigurationProfile({
-      stack: testStack.stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: freeFormYamlName,
-      type: 'AWS.Freeform',
-      content: {
-        content: freeFormYamlValue,
-        contentType: 'application/x-yaml',
-      },
-    });
-    freeFormYaml.node.addDependency(freeFormJson);
-
-    const freeFormBase64PlainText = createAppConfigConfigurationProfile({
-      stack: testStack.stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: freeFormBase64PlainTextName,
-      type: 'AWS.Freeform',
-      content: {
-        content: freeFormBase64PlainTextValue,
-        contentType: 'text/plain',
-      },
-    });
-    freeFormBase64PlainText.node.addDependency(freeFormYaml);
-
-    const featureFlag = createAppConfigConfigurationProfile({
-      stack: testStack.stack,
-      application,
-      environment,
-      deploymentStrategy,
-      name: featureFlagName,
-      type: 'AWS.AppConfig.FeatureFlags',
-      content: {
-        content: JSON.stringify(featureFlagValue),
-        contentType: 'application/json',
-      },
-    });
-    featureFlag.node.addDependency(freeFormBase64PlainText);
-
-    // Grant access to the Lambda function to the AppConfig resources.
-    Aspects.of(testStack.stack).add(
-      new ResourceAccessGranter([
-        freeFormJson,
-        freeFormYaml,
-        freeFormBase64PlainText,
-        featureFlag,
-      ])
+      {
+        nameSuffix: 'appConfigProvider',
+      }
     );
+
+    const appConfigResource = new TestAppConfigWithProfiles(testStack, {
+      profiles: [
+        {
+          nameSuffix: 'freeFormJson',
+          type: 'AWS.Freeform',
+          content: {
+            content: JSON.stringify(freeFormJsonValue),
+            contentType: 'application/json',
+          },
+        },
+        {
+          nameSuffix: 'freeFormYaml',
+          type: 'AWS.Freeform',
+          content: {
+            content: freeFormYamlValue,
+            contentType: 'application/x-yaml',
+          },
+        },
+        {
+          nameSuffix: 'freeFormB64Plain',
+          type: 'AWS.Freeform',
+          content: {
+            content: freeFormBase64PlainTextValue,
+            contentType: 'text/plain',
+          },
+        },
+        {
+          nameSuffix: 'featureFlag',
+          type: 'AWS.AppConfig.FeatureFlags',
+          content: {
+            content: JSON.stringify(featureFlagValue),
+            contentType: 'application/json',
+          },
+        },
+      ],
+    });
+    // Grant read permissions to the function
+    appConfigResource.grantReadData(testFunction);
+    // Add environment variables containing the resource names to the function
+    appConfigResource.addEnvVariablesToFunction(testFunction);
 
     // Deploy the stack
     await testStack.deploy();
 
+    // Get the actual function names from the stack outputs
+    const functionName =
+      testStack.findAndGetStackOutputValue('appConfigProvider');
+
     // and invoke the Lambda function
-    invocationLogs = await invokeFunction(
+    invocationLogs = await invokeFunctionOnce({
       functionName,
-      invocationCount,
-      'SEQUENTIAL'
-    );
+    });
   }, SETUP_TIMEOUT);
 
   describe('AppConfigProvider usage', () => {
     // Test 1 - get a single parameter as-is (no transformation - should return an Uint8Array)
     it('should retrieve single parameter as-is', () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[0]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
       expect(testLog).toStrictEqual({
         test: 'get',
@@ -297,8 +191,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
     // Test 2 - get a free-form JSON and apply json transformation (should return an object)
     it('should retrieve a free-form JSON parameter with JSON transformation', () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[1]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
       expect(testLog).toStrictEqual({
         test: 'get-freeform-json-binary',
@@ -309,8 +203,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     // Test 3 - get a free-form base64-encoded plain text and apply binary transformation
     // (should return a decoded string)
     it('should retrieve a base64-encoded plain text parameter with binary transformation', () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[2]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
 
       expect(testLog).toStrictEqual({
         test: 'get-freeform-base64-plaintext-binary',
@@ -320,8 +214,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
 
     // Test 4 - get a feature flag and apply json transformation (should return an object)
     it('should retrieve a feature flag parameter with JSON transformation', () => {
-      const logs = invocationLogs[0].getFunctionLogs();
-      const testLog = InvocationLogs.parseFunctionLog(logs[3]);
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
 
       expect(testLog).toStrictEqual({
         test: 'get-feature-flag-binary',
@@ -334,8 +228,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     it(
       'should retrieve single parameter cached',
       () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[4]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
 
         expect(testLog).toStrictEqual({
           test: 'get-cached',
@@ -350,8 +244,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     it(
       'should retrieve single parameter twice without caching',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[5]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
 
         expect(testLog).toStrictEqual({
           test: 'get-forced',
@@ -367,8 +261,8 @@ describe(`parameters E2E tests (appConfigProvider) for runtime ${runtime}`, () =
     it(
       'should retrieve single parameter twice, with expiration between and matching values',
       async () => {
-        const logs = invocationLogs[0].getFunctionLogs();
-        const testLog = InvocationLogs.parseFunctionLog(logs[6]);
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
         const result = freeFormPlainTextValue;
 
         expect(testLog).toStrictEqual({

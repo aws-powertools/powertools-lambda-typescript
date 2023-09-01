@@ -1,33 +1,17 @@
 import promiseRetry from 'promise-retry';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Duration } from 'aws-cdk-lib';
-import { Architecture, Tracing } from 'aws-cdk-lib/aws-lambda';
 import type { XRayClient } from '@aws-sdk/client-xray';
 import {
   BatchGetTracesCommand,
   GetTraceSummariesCommand,
 } from '@aws-sdk/client-xray';
-import type { STSClient } from '@aws-sdk/client-sts';
+import { STSClient } from '@aws-sdk/client-sts';
 import { GetCallerIdentityCommand } from '@aws-sdk/client-sts';
-import {
-  expectedCustomAnnotationKey,
-  expectedCustomAnnotationValue,
-  expectedCustomErrorMessage,
-  expectedCustomMetadataKey,
-  expectedCustomMetadataValue,
-  expectedCustomResponseValue,
-} from '../e2e/constants';
-import {
-  invokeFunction,
-  TEST_RUNTIMES,
-  TestRuntimesKey,
-} from '../../../commons/tests/utils/e2eUtils';
+import { invokeFunction } from '@aws-lambda-powertools/testing-utils';
 import { FunctionSegmentNotDefinedError } from './FunctionSegmentNotDefinedError';
 import type {
   ParsedDocument,
   ParsedSegment,
   ParsedTrace,
-  TracerTestFunctionParams,
 } from './traceUtils.types';
 
 const getTraces = async (
@@ -43,9 +27,9 @@ const getTraces = async (
     maxTimeout: 10_000,
     factor: 1.25,
   };
+  const endTime = new Date();
 
   return promiseRetry(async (retry: (err?: Error) => never, _: number) => {
-    const endTime = new Date();
     console.log(
       `Manual query: aws xray get-trace-summaries --start-time ${Math.floor(
         startTime.getTime() / 1000
@@ -228,67 +212,36 @@ const splitSegmentsByName = (
  *
  * @param functionName
  */
-const invokeAllTestCases = async (functionName: string): Promise<void> => {
-  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
-    invocation: 1,
-    throw: false,
-  });
-  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
-    invocation: 2,
-    throw: false,
-  });
-  await invokeFunction(functionName, 1, 'SEQUENTIAL', {
-    invocation: 3,
-    throw: true, // only last invocation should throw
-  });
-};
-
-const createTracerTestFunction = (
-  params: TracerTestFunctionParams
-): NodejsFunction => {
-  const {
-    stack,
+const invokeAllTestCases = async (
+  functionName: string,
+  times: number
+): Promise<void> => {
+  await invokeFunction({
     functionName,
-    entry,
-    expectedServiceName,
-    environmentParams,
-    runtime,
-  } = params;
-  const func = new NodejsFunction(stack, functionName, {
-    entry: entry,
-    functionName: functionName,
-    handler: params.handler ?? 'handler',
-    tracing: Tracing.ACTIVE,
-    architecture: Architecture.X86_64,
-    memorySize: 256, // Default value (128) will take too long to process
-    environment: {
-      EXPECTED_SERVICE_NAME: expectedServiceName,
-      EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
-      EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
-      EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
-      EXPECTED_CUSTOM_METADATA_VALUE: JSON.stringify(
-        expectedCustomMetadataValue
-      ),
-      EXPECTED_CUSTOM_RESPONSE_VALUE: JSON.stringify(
-        expectedCustomResponseValue
-      ),
-      EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
-      ...environmentParams,
-    },
-    timeout: Duration.seconds(30), // Default value (3 seconds) will time out
-    runtime: TEST_RUNTIMES[runtime as TestRuntimesKey],
+    times,
+    invocationMode: 'SEQUENTIAL',
+    payload: [
+      {
+        invocation: 1,
+        throw: false,
+      },
+      {
+        invocation: 2,
+        throw: false,
+      },
+      {
+        invocation: 3,
+        throw: true, // only last invocation should throw
+      },
+    ],
   });
-
-  return func;
 };
 
 let account: string | undefined;
-const getFunctionArn = async (
-  stsClient: STSClient,
-  functionName: string
-): Promise<string> => {
+const getFunctionArn = async (functionName: string): Promise<string> => {
   const region = process.env.AWS_REGION;
   if (!account) {
+    const stsClient = new STSClient({});
     const identity = await stsClient.send(new GetCallerIdentityCommand({}));
     account = identity.Account;
   }
@@ -303,6 +256,5 @@ export {
   getInvocationSubsegment,
   splitSegmentsByName,
   invokeAllTestCases,
-  createTracerTestFunction,
   getFunctionArn,
 };

@@ -73,7 +73,7 @@ describe(`Layers E2E tests, publisher stack`, () => {
     const layerVersion = LayerVersion.fromLayerVersionArn(
       testStack.stack,
       'LayerVersionArnReference',
-      testLayerStack.findAndGetStackOutputValue('LayerVersionArn')
+      testLayerStack.findAndGetStackOutputValue('LatestLayerArn')
     );
     new TestNodejsFunction(
       testStack,

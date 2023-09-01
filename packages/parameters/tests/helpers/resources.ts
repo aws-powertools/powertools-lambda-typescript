@@ -133,17 +133,15 @@ class TestStringParameter extends StringParameter {
     props: Omit<StringParameterProps, 'parameterName'>,
     extraProps: ExtraTestProps
   ) {
-    super(
-      testStack.stack,
-      concatenateResourceName({
-        testName: testStack.testName,
-        resourceName: extraProps.nameSuffix,
-      }),
-      {
-        ...props,
-        parameterName: `/${extraProps.nameSuffix}`,
-      }
-    );
+    const parameterId = concatenateResourceName({
+      testName: testStack.testName,
+      resourceName: extraProps.nameSuffix,
+    });
+
+    super(testStack.stack, parameterId, {
+      ...props,
+      parameterName: `/${parameterId}`,
+    });
 
     new CfnOutput(this, `${extraProps.nameSuffix.replace('/', '')}Str`, {
       value: this.parameterName,

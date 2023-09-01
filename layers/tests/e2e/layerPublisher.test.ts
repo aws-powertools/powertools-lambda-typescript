@@ -22,6 +22,13 @@ import {
 import { join } from 'node:path';
 import packageJson from '../../package.json';
 
+/**
+ * This test has two stacks:
+ * 1. LayerPublisherStack - publishes a layer version using the LayerPublisher construct and containing the Powertools utilities from the repo
+ * 2. TestStack - uses the layer published in the first stack and contains a lambda function that uses the Powertools utilities from the layer
+ *
+ * The lambda function is invoked once and the logs are collected. The goal of the test is to verify that the layer creation and usage works as expected.
+ */
 describe(`Layers E2E tests, publisher stack`, () => {
   const testStack = new TestStack({
     stackNameProps: {

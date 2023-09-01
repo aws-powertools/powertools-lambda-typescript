@@ -22,25 +22,23 @@ const getRuntimeKey = (): keyof typeof TEST_RUNTIMES => {
  *
  * @example
  * ```ts
+ * process.env.RUNTIME = 'nodejs18x';
  * const testPrefix = 'E2E-TRACER';
- * const runtime = 'nodejs18x';
  * const testName = 'someFeature';
- * const uniqueName = generateTestUniqueName({ testPrefix, runtime, testName });
+ * const uniqueName = generateTestUniqueName({ testPrefix, testName });
  * // uniqueName = 'E2E-TRACER-node18-12345-someFeature'
  * ```
  */
 const generateTestUniqueName = ({
   testPrefix,
-  runtime,
   testName,
 }: {
   testPrefix: string;
-  runtime: string;
   testName: string;
 }): string =>
   [
     testPrefix,
-    runtime.replace(/[jsx]/g, ''),
+    getRuntimeKey().replace(/[jsx]/g, ''),
     randomUUID().toString().substring(0, 5),
     testName,
   ]

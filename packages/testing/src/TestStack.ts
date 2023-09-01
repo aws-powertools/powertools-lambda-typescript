@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { App, Stack } from 'aws-cdk-lib';
 import { AwsCdkCli, RequireApproval } from '@aws-cdk/cli-lib-alpha';
 import type { ICloudAssemblyDirectoryProducer } from '@aws-cdk/cli-lib-alpha';
-import { generateTestUniqueName, getRuntimeKey } from './helpers';
+import { generateTestUniqueName } from './helpers';
 
 type StackNameProps = {
   /**
@@ -68,7 +68,6 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
   public constructor({ stackNameProps, app, stack }: TestStackProps) {
     this.testName = generateTestUniqueName({
       testName: stackNameProps.testName,
-      runtime: getRuntimeKey(),
       testPrefix: stackNameProps.stackNamePrefix,
     });
     this.app = app ?? new App();

@@ -12,6 +12,7 @@ import {
   TestStack,
   TestInvocationLogs,
   invokeFunctionOnce,
+  generateTestUniqueName,
 } from '@aws-lambda-powertools/testing-utils';
 import {
   RESOURCE_NAME_PREFIX,
@@ -53,18 +54,15 @@ describe(`Layers E2E tests, publisher stack`, () => {
   const powerToolsPackageVersion = packageJson.version;
 
   const layerApp = new App();
-  const layerStack = new LayerPublisherStack(
-    layerApp,
-    `${RESOURCE_NAME_PREFIX}-layer`,
-    {
-      layerName: concatenateResourceName({
-        testName: RESOURCE_NAME_PREFIX,
-        resourceName: 'layer',
-      }),
-      powertoolsPackageVersion: powerToolsPackageVersion,
-      ssmParameterLayerArn: ssmParameterLayerName,
-    }
-  );
+  const layerId = generateTestUniqueName({
+    testPrefix: RESOURCE_NAME_PREFIX,
+    testName: 'layerStack',
+  });
+  const layerStack = new LayerPublisherStack(layerApp, layerId, {
+    layerName: layerId,
+    powertoolsPackageVersion: powerToolsPackageVersion,
+    ssmParameterLayerArn: ssmParameterLayerName,
+  });
   const testLayerStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

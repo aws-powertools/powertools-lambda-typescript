@@ -160,17 +160,15 @@ class TestSecret extends Secret {
     props: Omit<SecretProps, 'secretName'>,
     extraProps: ExtraTestProps
   ) {
-    super(
-      testStack.stack,
-      concatenateResourceName({
-        testName: testStack.testName,
-        resourceName: extraProps.nameSuffix,
-      }),
-      {
-        ...props,
-        secretName: `/${extraProps.nameSuffix}`,
-      }
-    );
+    const secretId = concatenateResourceName({
+      testName: testStack.testName,
+      resourceName: extraProps.nameSuffix,
+    });
+
+    super(testStack.stack, secretId, {
+      ...props,
+      secretName: `/${secretId}`,
+    });
   }
 }
 

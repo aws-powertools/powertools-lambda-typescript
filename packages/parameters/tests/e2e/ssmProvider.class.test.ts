@@ -166,7 +166,7 @@ describe(`Parameters E2E tests, SSM provider`, () => {
     await testStack.deploy();
 
     // Get the actual function names from the stack outputs
-    const functionName = testStack.findAndGetStackOutputValue('ssmProvider');
+    const functionName = testStack.findAndGetStackOutputValue('SsmProvider');
     paramA = testStack.findAndGetStackOutputValue('getaStr');
     paramB = testStack.findAndGetStackOutputValue('getbStr');
     paramEncryptedA = testStack.findAndGetStackOutputValue('secureaSecStr');

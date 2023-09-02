@@ -18,7 +18,7 @@ import {
   LogLevelThresholds,
   LogLevel,
 } from '../../src/types';
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { Console } from 'console';
 
 const mockDate = new Date(1466424490000);
@@ -1050,8 +1050,6 @@ describe('Class: Logger', () => {
         .mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
@@ -1097,8 +1095,6 @@ describe('Class: Logger', () => {
         .mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
@@ -1153,8 +1149,6 @@ describe('Class: Logger', () => {
         .mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
@@ -1215,8 +1209,6 @@ describe('Class: Logger', () => {
       jest.spyOn(logger['console'], 'debug').mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
@@ -1263,8 +1255,6 @@ describe('Class: Logger', () => {
       jest.spyOn(logger['console'], 'debug').mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
@@ -1309,8 +1299,6 @@ describe('Class: Logger', () => {
         .mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ logEvent: true })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
@@ -1361,8 +1349,6 @@ describe('Class: Logger', () => {
 
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
@@ -1418,8 +1404,6 @@ describe('Class: Logger', () => {
         }
 
         @logger.injectLambdaContext()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
@@ -1473,8 +1457,6 @@ describe('Class: Logger', () => {
         .mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler(
           _event: unknown,
           _context: unknown
@@ -1517,8 +1499,6 @@ describe('Class: Logger', () => {
         .mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true, logEvent: true })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler(
           event: { foo: string },
           _context: unknown

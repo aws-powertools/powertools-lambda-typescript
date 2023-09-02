@@ -51,7 +51,7 @@ const _call_get = async (
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 };
@@ -77,7 +77,7 @@ const _call_get_multiple = async (
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 };
@@ -103,7 +103,7 @@ const _call_get_parameters_by_name = async (
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 };
@@ -176,7 +176,7 @@ export const handler = async (
   } catch (err) {
     logger.log({
       test: 'get-cached',
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 
@@ -194,7 +194,7 @@ export const handler = async (
   } catch (err) {
     logger.log({
       test: 'get-forced',
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 };

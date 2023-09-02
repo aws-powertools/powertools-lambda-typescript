@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { Transform } from '../../src';
 import { AppConfigProvider } from '../../src/appconfig';
 import { AppConfigGetOptions } from '../../src/types/AppConfigProvider';
@@ -56,7 +56,7 @@ const _call_get = async (
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 };
@@ -99,7 +99,7 @@ export const handler = async (
   } catch (err) {
     logger.log({
       test: 'get-cached',
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 
@@ -119,7 +119,7 @@ export const handler = async (
   } catch (err) {
     logger.log({
       test: 'get-forced',
-      error: err.message,
+      error: (err as Error).message,
     });
   }
   // Test 7
@@ -152,7 +152,7 @@ export const handler = async (
   } catch (err) {
     logger.log({
       test: 'get-expired',
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 };

@@ -41,7 +41,7 @@ const _call_get = async (
   } catch (err) {
     logger.log({
       test: testName,
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 };
@@ -76,7 +76,7 @@ export const handler = async (
   } catch (err) {
     logger.log({
       test: secretNamePlainChached,
-      error: err.message,
+      error: (err as Error).message,
     });
   }
   // Test 5
@@ -95,7 +95,7 @@ export const handler = async (
   } catch (err) {
     logger.log({
       test: secretNamePlainChached,
-      error: err.message,
+      error: (err as Error).message,
     });
   }
 };

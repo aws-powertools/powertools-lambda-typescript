@@ -1,5 +1,5 @@
 import { Tracer } from '../../src';
-import { Callback, Context } from 'aws-lambda';
+import type { Callback, Context } from 'aws-lambda';
 import AWS from 'aws-sdk';
 import axios from 'axios';
 

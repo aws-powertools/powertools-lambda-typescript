@@ -10,18 +10,18 @@
     // "traceResolution": true, // Enable this to debug module resolution issues
     "declaration": true,
     "removeComments": true,
-    // TODO: experiment with this & move to tslib instead
+    // TODO: experiment with this & move to tslib in v2
     // "importHelpers": true,                            /* Allow importing helper functions from tslib once per project, instead of including them per-file. */
     // "downlevelIteration": true,                       /* Emit more compliant, but verbose and less performant JavaScript for iteration. */
     // "noEmitHelpers": true,                            /* Disable generating custom helper functions like '__extends' in compiled output. */
-    // TODO: check if this is needed
-    // "isolatedModules": true,                          /* Ensure that each file can be safely transpiled without relying on other imports. */
+    // TODO: see if this can introduced in v2 (requires breaking changes in exports)
+    // "isolatedModules": true, /* Ensure that each file can be safely transpiled without relying on other imports. */
     "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "pretty": true, /* Enable pretty formatting for output messages. */
+    "pretty": true, // Enable pretty formatting for output messages.
   },
   "files": [],
   "references": [

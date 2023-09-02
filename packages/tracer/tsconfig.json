@@ -1,11 +1,10 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "./lib",                                  /* Specify an output folder for all emitted files. */
-        "rootDir": "./src",                                 /* Specify the root folder within your source files. */
-        "paths": {
-            "@aws-lambda-powertools/commons": ["../../commons"],
-        }
+        "outDir": "./lib",
+        "rootDir": "./src",
     },
-    "include": [ "src/**/*" ],
+    "include": [
+        "./src/**/*"
+    ],
 }

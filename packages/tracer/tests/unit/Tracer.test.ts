@@ -534,8 +534,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public handler<TEvent, TResult>(
           _event: TEvent,
           _context: Context,
@@ -574,8 +572,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler({ captureResponse: false })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public handler<TEvent, TResult>(
           _event: TEvent,
           _context: Context,
@@ -613,8 +609,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler({ captureResponse: true })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public handler<TEvent, TResult>(
           _event: TEvent,
           _context: Context,
@@ -660,8 +654,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public handler<TEvent, TResult>(
           _event: TEvent,
           _context: Context,

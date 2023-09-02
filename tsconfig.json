@@ -8,11 +8,6 @@
     "moduleResolution": "node", // TODO: experiment with bundler & esnext
     "baseUrl": ".",
     // "traceResolution": true, // Enable this to debug module resolution issues
-    // "paths": {
-    //  "@aws-lambda-powertools/*": [
-    //    "packages/*/"
-    //  ],
-    // },
     "declaration": true,
     "removeComments": true,
     // TODO: experiment with this & move to tslib instead

@@ -1,4 +1,4 @@
-import { ConfigServiceInterface } from './ConfigServiceInterface';
+import type { ConfigServiceInterface } from './ConfigServiceInterface';
 import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
 class EnvironmentVariablesService

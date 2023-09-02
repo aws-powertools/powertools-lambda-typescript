@@ -1,5 +1,5 @@
 import { Metrics, MetricUnits } from '../../src';
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 
 const namespace = process.env.EXPECTED_NAMESPACE ?? 'CdkExample';
 const serviceName =

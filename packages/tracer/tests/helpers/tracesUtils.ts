@@ -20,10 +20,10 @@ type GetTracesOptions = {
 };
 
 const retryOptions = {
-  retries: 10,
+  retries: 20,
   minTimeout: 5_000,
   maxTimeout: 10_000,
-  factor: 1.75,
+  factor: 1.25,
 };
 const xrayClient = new XRayClient({});
 

@@ -13,7 +13,6 @@ export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string;
   readonly powertoolsPackageVersion?: string;
   readonly ssmParameterLayerArn: string;
-  readonly removeLayerVersion?: boolean;
 }
 
 export class LayerPublisherStack extends Stack {

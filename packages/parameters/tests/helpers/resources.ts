@@ -48,12 +48,13 @@ class TestSecureStringParameter extends Construct {
     },
     extraProps: ExtraTestProps
   ) {
-    const parameterId = concatenateResourceName({
-      testName: testStack.testName,
-      resourceName: randomUUID(),
-    });
-
-    super(testStack.stack, parameterId);
+    super(
+      testStack.stack,
+      concatenateResourceName({
+        testName: testStack.testName,
+        resourceName: randomUUID(),
+      })
+    );
 
     const { value } = props;
 

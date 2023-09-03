@@ -58,7 +58,7 @@ class TestSecureStringParameter extends Construct {
 
     const { value } = props;
 
-    const name = `/secure/${getRuntimeKey}-${randomUUID()}`;
+    const name = `/secure/${getRuntimeKey()}/${randomUUID()}`;
 
     const secureStringCreator = new AwsCustomResource(
       testStack.stack,
@@ -203,6 +203,7 @@ class TestDynamodbTableWithItems extends TestDynamodbTable {
       policy: AwsCustomResourcePolicy.fromSdkCalls({
         resources: [this.tableArn],
       }),
+      installLatestAwsSdk: false,
     });
   }
 }

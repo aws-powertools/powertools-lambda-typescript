@@ -41,7 +41,7 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'AllFeatures-Decorator',
+      testName: 'AllFeatures-Middy',
     },
   });
 

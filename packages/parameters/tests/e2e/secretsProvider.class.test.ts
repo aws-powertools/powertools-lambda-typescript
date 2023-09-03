@@ -40,7 +40,7 @@ describe(`Parameters E2E tests, Secrets Manager provider`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'SecretsProvider',
+      testName: 'Secrets',
     },
   });
 

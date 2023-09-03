@@ -32,7 +32,7 @@ describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'AllFeatures-Decorator',
+      testName: 'AllFeatures-AsyncDecorator',
     },
   });
 

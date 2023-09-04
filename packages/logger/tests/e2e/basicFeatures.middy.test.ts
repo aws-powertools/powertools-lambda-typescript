@@ -25,7 +25,7 @@ describe(`Logger E2E tests, basic functionalities middy usage`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'AllFeatures-Decorator',
+      testName: 'Basic-Middy',
     },
   });
 

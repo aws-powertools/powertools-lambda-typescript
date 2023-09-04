@@ -1,11 +1,9 @@
 import promiseRetry from 'promise-retry';
-import type { XRayClient } from '@aws-sdk/client-xray';
 import {
+  XRayClient,
   BatchGetTracesCommand,
   GetTraceSummariesCommand,
 } from '@aws-sdk/client-xray';
-import { STSClient } from '@aws-sdk/client-sts';
-import { GetCallerIdentityCommand } from '@aws-sdk/client-sts';
 import { invokeFunction } from '@aws-lambda-powertools/testing-utils';
 import { FunctionSegmentNotDefinedError } from './FunctionSegmentNotDefinedError';
 import type {
@@ -14,41 +12,49 @@ import type {
   ParsedTrace,
 } from './traceUtils.types';
 
-const getTraces = async (
-  xrayClient: XRayClient,
-  startTime: Date,
-  resourceArn: string,
-  expectedTraces: number,
-  expectedSegments: number
-): Promise<ParsedTrace[]> => {
-  const retryOptions = {
-    retries: 20,
-    minTimeout: 5_000,
-    maxTimeout: 10_000,
-    factor: 1.25,
-  };
+type GetTracesOptions = {
+  startTime: Date;
+  resourceName: string;
+  expectedTracesCount: number;
+  expectedSegmentsCount: number;
+};
+
+const retryOptions = {
+  retries: 20,
+  minTimeout: 5_000,
+  maxTimeout: 10_000,
+  factor: 1.25,
+};
+const xrayClient = new XRayClient({});
+
+const getTraces = async ({
+  startTime,
+  resourceName,
+  expectedTracesCount,
+  expectedSegmentsCount,
+}: GetTracesOptions): Promise<ParsedTrace[]> => {
   const endTime = new Date();
+  console.log(
+    `Manual query: aws xray get-trace-summaries --start-time ${Math.floor(
+      startTime.getTime() / 1000
+    )} --end-time ${Math.floor(
+      endTime.getTime() / 1000
+    )} --filter-expression 'resource.arn ENDSWITH ":function:${resourceName}"'`
+  );
 
   return promiseRetry(async (retry: (err?: Error) => never, _: number) => {
-    console.log(
-      `Manual query: aws xray get-trace-summaries --start-time ${Math.floor(
-        startTime.getTime() / 1000
-      )} --end-time ${Math.floor(
-        endTime.getTime() / 1000
-      )} --filter-expression 'resource.arn = "${resourceArn}"'`
-    );
     const traces = await xrayClient.send(
       new GetTraceSummariesCommand({
         StartTime: startTime,
         EndTime: endTime,
-        FilterExpression: `resource.arn = "${resourceArn}"`,
+        FilterExpression: `resource.arn ENDSWITH ":function:${resourceName}"`,
       })
     );
 
-    if (traces.TraceSummaries?.length !== expectedTraces) {
+    if (traces.TraceSummaries?.length !== expectedTracesCount) {
       retry(
         new Error(
-          `Expected ${expectedTraces} traces, got ${traces.TraceSummaries?.length} for ${resourceArn}`
+          `Expected ${expectedTracesCount} traces, got ${traces.TraceSummaries?.length} for ${resourceName}`
         )
       );
     }
@@ -59,7 +65,7 @@ const getTraces = async (
     if (!traceIds.every((traceId) => traceId !== undefined)) {
       retry(
         new Error(
-          `Expected all trace summaries to have an ID, got ${traceIds} for ${resourceArn}`
+          `Expected all trace summaries to have an ID, got ${traceIds} for ${resourceName}`
         )
       );
     }
@@ -70,10 +76,10 @@ const getTraces = async (
       })
     );
 
-    if (traceDetails.Traces?.length !== expectedTraces) {
+    if (traceDetails.Traces?.length !== expectedTracesCount) {
       retry(
         new Error(
-          `Expected ${expectedTraces} trace summaries, got ${traceDetails.Traces?.length} for ${resourceArn}`
+          `Expected ${expectedTracesCount} trace summaries, got ${traceDetails.Traces?.length} for ${resourceName}`
         )
       );
     }
@@ -126,20 +132,20 @@ const getTraces = async (
     }
 
     if (sortedTraces === undefined) {
-      throw new Error(`Traces are undefined for ${resourceArn}`);
+      throw new Error(`Traces are undefined for ${resourceName}`);
     }
 
-    if (sortedTraces.length !== expectedTraces) {
+    if (sortedTraces.length !== expectedTracesCount) {
       throw new Error(
-        `Expected ${expectedTraces} sorted traces, but got ${sortedTraces.length} for ${resourceArn}`
+        `Expected ${expectedTracesCount} sorted traces, but got ${sortedTraces.length} for ${resourceName}`
       );
     }
 
     sortedTraces.forEach((trace) => {
-      if (trace.Segments?.length != expectedSegments) {
+      if (trace.Segments?.length != expectedSegmentsCount) {
         retry(
           new Error(
-            `Expected ${expectedSegments} segments, got ${trace.Segments?.length} for trace id ${trace.Id}`
+            `Expected ${expectedSegmentsCount} segments, got ${trace.Segments?.length} for trace id ${trace.Id}`
           )
         );
       }
@@ -237,18 +243,6 @@ const invokeAllTestCases = async (
   });
 };
 
-let account: string | undefined;
-const getFunctionArn = async (functionName: string): Promise<string> => {
-  const region = process.env.AWS_REGION;
-  if (!account) {
-    const stsClient = new STSClient({});
-    const identity = await stsClient.send(new GetCallerIdentityCommand({}));
-    account = identity.Account;
-  }
-
-  return `arn:aws:lambda:${region}:${account}:function:${functionName}`;
-};
-
 export {
   getTraces,
   getFunctionSegment,
@@ -256,5 +250,4 @@ export {
   getInvocationSubsegment,
   splitSegmentsByName,
   invokeAllTestCases,
-  getFunctionArn,
 };

@@ -99,7 +99,7 @@ describe(`Parameters E2E tests, dynamoDB provider`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'DynamoDBProvider',
+      testName: 'DynamoDB',
     },
   });
 

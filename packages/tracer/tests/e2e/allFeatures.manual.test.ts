@@ -7,7 +7,6 @@ import {
   TestDynamodbTable,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
-import { XRayClient } from '@aws-sdk/client-xray';
 import { join } from 'path';
 import { TracerTestNodejsFunction } from '../helpers/resources';
 import {
@@ -16,7 +15,6 @@ import {
 } from '../helpers/traceAssertions';
 import {
   getFirstSubsegment,
-  getFunctionArn,
   getInvocationSubsegment,
   getTraces,
   invokeAllTestCases,
@@ -72,7 +70,6 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
   );
   testTable.grantWriteData(fnAllFlagsEnabled);
 
-  const xrayClient = new XRayClient({});
   const invocationCount = 3;
   let sortedTraces: ParsedTrace[];
 
@@ -86,14 +83,19 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
     // Invoke all test cases
     await invokeAllTestCases(fnNameAllFlagsEnabled, invocationCount);
 
-    // Retrieve traces from X-Ray for assertion
-    sortedTraces = await getTraces(
-      xrayClient,
+    /**
+     * Expect the trace to have 4 segments:
+     * 1. Lambda Context (AWS::Lambda)
+     * 2. Lambda Function (AWS::Lambda::Function)
+     * 3. DynamoDB (AWS::DynamoDB)
+     * 4. Remote call (docs.powertools.aws.dev)
+     */
+    sortedTraces = await getTraces({
       startTime,
-      await getFunctionArn(fnNameAllFlagsEnabled),
-      invocationCount,
-      4
-    );
+      resourceName: fnNameAllFlagsEnabled,
+      expectedTracesCount: invocationCount,
+      expectedSegmentsCount: 4,
+    });
   }, SETUP_TIMEOUT);
 
   afterAll(async () => {
@@ -108,22 +110,10 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
       const { EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage } =
         commonEnvironmentVars;
 
-      expect(sortedTraces.length).toBe(invocationCount);
-
       // Assess
       for (let i = 0; i < invocationCount; i++) {
         const trace = sortedTraces[i];
-
-        /**
-         * Expect the trace to have 4 segments:
-         * 1. Lambda Context (AWS::Lambda)
-         * 2. Lambda Function (AWS::Lambda::Function)
-         * 3. DynamoDB (AWS::DynamoDB)
-         * 4. Remote call (docs.powertools.aws.dev)
-         */
-        expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
-
         /**
          * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Tracer)
          * '## index.handler' subsegment should have 2 subsegments

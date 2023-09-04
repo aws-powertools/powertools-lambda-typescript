@@ -7,7 +7,6 @@ import {
   TestStack,
   TestDynamodbTable,
 } from '@aws-lambda-powertools/testing-utils';
-import { XRayClient } from '@aws-sdk/client-xray';
 import { join } from 'node:path';
 import { TracerTestNodejsFunction } from '../helpers/resources';
 import {
@@ -16,7 +15,6 @@ import {
 } from '../helpers/traceAssertions';
 import {
   getFirstSubsegment,
-  getFunctionArn,
   getInvocationSubsegment,
   getTraces,
   invokeAllTestCases,
@@ -43,7 +41,7 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'AllFeatures-Decorator',
+      testName: 'AllFeatures-Middy',
     },
   });
 
@@ -141,7 +139,6 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
   );
   testTable.grantWriteData(fnCaptureResponseOff);
 
-  const xrayClient = new XRayClient({});
   const invocationCount = 3;
 
   beforeAll(async () => {
@@ -178,28 +175,23 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
       const { EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage } =
         commonEnvironmentVars;
 
-      const tracesWhenAllFlagsEnabled = await getTraces(
-        xrayClient,
+      /**
+       * Expect the trace to have 4 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       * 3. DynamoDB Table (AWS::DynamoDB::Table)
+       * 4. Remote call (docs.powertools.aws.dev)
+       */
+      const tracesWhenAllFlagsEnabled = await getTraces({
         startTime,
-        await getFunctionArn(fnNameAllFlagsEnabled),
-        invocationCount,
-        4
-      );
-
-      expect(tracesWhenAllFlagsEnabled.length).toBe(invocationCount);
+        resourceName: fnNameAllFlagsEnabled,
+        expectedTracesCount: invocationCount,
+        expectedSegmentsCount: 4,
+      });
 
       // Assess
       for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWhenAllFlagsEnabled[i];
-
-        /**
-         * Expect the trace to have 4 segments:
-         * 1. Lambda Context (AWS::Lambda)
-         * 2. Lambda Function (AWS::Lambda::Function)
-         * 3. DynamoDB Table (AWS::DynamoDB::Table)
-         * 4. Remote call (docs.powertools.aws.dev)
-         */
-        expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
 
         /**
@@ -243,13 +235,12 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
         EXPECTED_CUSTOM_RESPONSE_VALUE: expectedCustomResponseValue,
       } = commonEnvironmentVars;
 
-      const tracesWhenAllFlagsEnabled = await getTraces(
-        xrayClient,
+      const tracesWhenAllFlagsEnabled = await getTraces({
         startTime,
-        await getFunctionArn(fnNameAllFlagsEnabled),
-        invocationCount,
-        4
-      );
+        resourceName: fnNameAllFlagsEnabled,
+        expectedTracesCount: invocationCount,
+        expectedSegmentsCount: 4,
+      });
 
       for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWhenAllFlagsEnabled[i];
@@ -288,30 +279,23 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
   it(
     'should not capture error nor response when the flags are false',
     async () => {
-      const tracesWithNoCaptureErrorOrResponse = await getTraces(
-        xrayClient,
+      /**
+       * Expect the trace to have 4 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       * 3. DynamoDB Table (AWS::DynamoDB::Table)
+       * 4. Remote call (docs.powertools.aws.dev)
+       */
+      const tracesWithNoCaptureErrorOrResponse = await getTraces({
         startTime,
-        await getFunctionArn(fnNameNoCaptureErrorOrResponse),
-        invocationCount,
-        4
-      );
-
-      expect(tracesWithNoCaptureErrorOrResponse.length).toBe(invocationCount);
-
+        resourceName: fnNameNoCaptureErrorOrResponse,
+        expectedTracesCount: invocationCount,
+        expectedSegmentsCount: 4,
+      });
       // Assess
       for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWithNoCaptureErrorOrResponse[i];
-
-        /**
-         * Expect the trace to have 4 segments:
-         * 1. Lambda Context (AWS::Lambda)
-         * 2. Lambda Function (AWS::Lambda::Function)
-         * 3. DynamoDB Table (AWS::DynamoDB::Table)
-         * 4. Remote call (docs.powertools.aws.dev)
-         */
-        expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
-
         /**
          * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Tracer)
          * '## index.handler' subsegment should have 2 subsegments
@@ -352,30 +336,24 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
       const { EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage } =
         commonEnvironmentVars;
 
-      const tracesWithNoCaptureResponse = await getTraces(
-        xrayClient,
+      /**
+       * Expect the trace to have 4 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       * 3. DynamoDB Table (AWS::DynamoDB::Table)
+       * 4. Remote call (docs.powertools.aws.dev)
+       */
+      const tracesWithNoCaptureResponse = await getTraces({
         startTime,
-        await getFunctionArn(fnNameCaptureResponseOff),
-        invocationCount,
-        4
-      );
-
-      expect(tracesWithNoCaptureResponse.length).toBe(invocationCount);
+        resourceName: fnNameCaptureResponseOff,
+        expectedTracesCount: invocationCount,
+        expectedSegmentsCount: 4,
+      });
 
       // Assess
       for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWithNoCaptureResponse[i];
-
-        /**
-         * Expect the trace to have 4 segments:
-         * 1. Lambda Context (AWS::Lambda)
-         * 2. Lambda Function (AWS::Lambda::Function)
-         * 3. DynamoDB Table (AWS::DynamoDB::Table)
-         * 4. Remote call (docs.powertools.aws.dev)
-         */
-        expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
-
         /**
          * Invocation subsegment should have a subsegment '## index.handlerWithNoCaptureResponseViaMiddlewareOption' (default behavior for Tracer)
          * '## index.handlerWithNoCaptureResponseViaMiddlewareOption' subsegment should have 2 subsegments
@@ -413,22 +391,15 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
   it(
     'should not capture any custom traces when disabled',
     async () => {
-      const expectedNoOfTraces = 2;
-      const tracesWithTracerDisabled = await getTraces(
-        xrayClient,
+      const tracesWithTracerDisabled = await getTraces({
         startTime,
-        await getFunctionArn(fnNameTracerDisabled),
-        invocationCount,
-        expectedNoOfTraces
-      );
-
-      expect(tracesWithTracerDisabled.length).toBe(invocationCount);
-
+        resourceName: fnNameTracerDisabled,
+        expectedTracesCount: invocationCount,
+        expectedSegmentsCount: 2,
+      });
       // Assess
       for (let i = 0; i < invocationCount; i++) {
         const trace = tracesWithTracerDisabled[i];
-        expect(trace.Segments.length).toBe(2);
-
         /**
          * Expect no subsegment in the invocation
          */

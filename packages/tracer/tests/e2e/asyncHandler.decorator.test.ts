@@ -7,7 +7,6 @@ import {
   TestStack,
   TestDynamodbTable,
 } from '@aws-lambda-powertools/testing-utils';
-import { XRayClient } from '@aws-sdk/client-xray';
 import { join } from 'node:path';
 import { TracerTestNodejsFunction } from '../helpers/resources';
 import {
@@ -16,7 +15,6 @@ import {
 } from '../helpers/traceAssertions';
 import {
   getFirstSubsegment,
-  getFunctionArn,
   getInvocationSubsegment,
   getTraces,
   invokeAllTestCases,
@@ -34,7 +32,7 @@ describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'AllFeatures-Decorator',
+      testName: 'AllFeatures-AsyncDecorator',
     },
   });
 
@@ -93,7 +91,6 @@ describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
   );
   testTable.grantWriteData(fnCustomSubsegmentName);
 
-  const xrayClient = new XRayClient({});
   const invocationsCount = 3;
 
   beforeAll(async () => {
@@ -125,28 +122,23 @@ describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
       const { EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage } =
         commonEnvironmentVars;
 
-      const tracesWhenAllFlagsEnabled = await getTraces(
-        xrayClient,
+      /**
+       * Expect the trace to have 4 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       * 3. DynamoDB Table (AWS::DynamoDB::Table)
+       * 4. Remote call (docs.powertools.aws.dev)
+       */
+      const tracesWhenAllFlagsEnabled = await getTraces({
         startTime,
-        await getFunctionArn(fnNameAllFlagsEnabled),
-        invocationsCount,
-        4
-      );
-
-      expect(tracesWhenAllFlagsEnabled.length).toBe(invocationsCount);
+        resourceName: fnNameAllFlagsEnabled,
+        expectedTracesCount: invocationsCount,
+        expectedSegmentsCount: 4,
+      });
 
       // Assess
       for (let i = 0; i < invocationsCount; i++) {
         const trace = tracesWhenAllFlagsEnabled[i];
-
-        /**
-         * Expect the trace to have 4 segments:
-         * 1. Lambda Context (AWS::Lambda)
-         * 2. Lambda Function (AWS::Lambda::Function)
-         * 3. DynamoDB Table (AWS::DynamoDB::Table)
-         * 4. Remote call (docs.powertools.aws.dev)
-         */
-        expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
 
         /**
@@ -193,13 +185,12 @@ describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
         EXPECTED_CUSTOM_RESPONSE_VALUE: expectedCustomResponseValue,
       } = commonEnvironmentVars;
 
-      const traces = await getTraces(
-        xrayClient,
+      const traces = await getTraces({
         startTime,
-        await getFunctionArn(fnNameAllFlagsEnabled),
-        invocationsCount,
-        4
-      );
+        resourceName: fnNameAllFlagsEnabled,
+        expectedTracesCount: invocationsCount,
+        expectedSegmentsCount: 4,
+      });
 
       for (let i = 0; i < invocationsCount; i++) {
         const trace = traces[i];
@@ -243,30 +234,23 @@ describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
         EXPECTED_CUSTOM_SUBSEGMENT_NAME: expectedCustomSubSegmentName,
       } = commonEnvironmentVars;
 
-      const tracesWhenCustomSubsegmentNameInMethod = await getTraces(
-        xrayClient,
+      /**
+       * Expect the trace to have 4 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       * 3. DynamoDB Table (AWS::DynamoDB::Table)
+       * 4. Remote call (docs.powertools.aws.dev)
+       */
+      const tracesWhenCustomSubsegmentNameInMethod = await getTraces({
         startTime,
-        await getFunctionArn(fnNameCustomSubsegment),
-        invocationsCount,
-        4
-      );
-
-      expect(tracesWhenCustomSubsegmentNameInMethod.length).toBe(
-        invocationsCount
-      );
+        resourceName: fnNameCustomSubsegment,
+        expectedTracesCount: invocationsCount,
+        expectedSegmentsCount: 4,
+      });
 
       // Assess
       for (let i = 0; i < invocationsCount; i++) {
         const trace = tracesWhenCustomSubsegmentNameInMethod[i];
-
-        /**
-         * Expect the trace to have 4 segments:
-         * 1. Lambda Context (AWS::Lambda)
-         * 2. Lambda Function (AWS::Lambda::Function)
-         * 3. DynamoDB Table (AWS::DynamoDB::Table)
-         * 4. Remote call (docs.powertools.aws.dev)
-         */
-        expect(trace.Segments.length).toBe(4);
         const invocationSubsegment = getInvocationSubsegment(trace);
 
         /**

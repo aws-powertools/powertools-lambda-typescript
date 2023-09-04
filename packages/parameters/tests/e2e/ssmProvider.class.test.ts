@@ -74,7 +74,7 @@ describe(`Parameters E2E tests, SSM provider`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'AppConfig',
+      testName: 'SSM',
     },
   });
 

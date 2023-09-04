@@ -13,7 +13,6 @@ export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string;
   readonly powertoolsPackageVersion?: string;
   readonly ssmParameterLayerArn: string;
-  readonly removeLayerVersion?: boolean;
 }
 
 export class LayerPublisherStack extends Stack {
@@ -25,7 +24,7 @@ export class LayerPublisherStack extends Stack {
   ) {
     super(scope, id, props);
 
-    const { layerName, powertoolsPackageVersion, removeLayerVersion } = props;
+    const { layerName, powertoolsPackageVersion } = props;
 
     console.log(
       `publishing layer ${layerName} version : ${powertoolsPackageVersion}`
@@ -43,10 +42,6 @@ export class LayerPublisherStack extends Stack {
       // This is needed because the following regions do not support the compatibleArchitectures property #1400
       // ...(![ 'eu-south-2', 'eu-central-2', 'ap-southeast-4' ].includes(Stack.of(this).region) ? { compatibleArchitectures: [Architecture.X86_64] } : {}),
       code: Code.fromAsset(resolve(__dirname, '..', '..', 'tmp')),
-      removalPolicy:
-        removeLayerVersion === true
-          ? RemovalPolicy.DESTROY
-          : RemovalPolicy.RETAIN,
     });
 
     const layerPermission = new CfnLayerVersionPermission(

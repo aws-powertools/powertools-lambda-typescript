@@ -59,7 +59,6 @@ class TestSecureStringParameter extends Construct {
     const { value } = props;
 
     const name = `/secure/${getRuntimeKey()}/${randomUUID()}`;
-
     const secureStringCreator = new AwsCustomResource(
       testStack.stack,
       `create-${randomUUID()}`,

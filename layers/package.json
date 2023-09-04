@@ -17,8 +17,7 @@
     "test:e2e": "jest --group=e2e"
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix",
-    "*.js": "npm run lint-fix"
+    "*.{js,ts}": "npm run lint-fix"
   },
   "repository": {
     "type": "git",

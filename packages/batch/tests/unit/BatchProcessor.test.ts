@@ -4,7 +4,7 @@
  * @group unit/batch/class/batchprocessor
  */
 import type { Context } from 'aws-lambda';
-import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
+import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
 import { BatchProcessor } from '../../src/BatchProcessor';
 import { EventType } from '../../src/constants';
 import { BatchProcessingError, FullBatchFailureError } from '../../src/errors';

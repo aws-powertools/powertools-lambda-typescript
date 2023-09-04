@@ -19,3 +19,4 @@ jest.config.js
 .huskyrc.js
 .eslintrc.json
 examples
+tsconfig.tsbuildinfo

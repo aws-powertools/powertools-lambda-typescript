@@ -1,5 +1,5 @@
 import { Tracer } from '../../src';
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import axios from 'axios';
 import AWS from 'aws-sdk';
 import type { Subsegment } from 'aws-xray-sdk-core';

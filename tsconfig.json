@@ -1,29 +1,53 @@
 {
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "noImplicitAny": true,
-        "target": "ES2020",
-        "module": "commonjs",
-        "declaration": true,
-        "outDir": "lib",
-        "strict": true,
-        "inlineSourceMap": true,
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "pretty": true,
-        "baseUrl": "src/",
-        "rootDirs": [ "src/" ],
-        "esModuleInterop": true
+  "compilerOptions": {
+    "incremental": true,
+    "composite": true,
+    "target": "ES2020", // Node.js 14
+    "experimentalDecorators": true, // TODO: remove this once we move to TypeScript 5.x
+    "module": "commonjs",
+    "moduleResolution": "node", // TODO: experiment with bundler & esnext
+    "baseUrl": ".",
+    // "traceResolution": true, // Enable this to debug module resolution issues
+    "declaration": true,
+    "removeComments": true,
+    // TODO: experiment with this & move to tslib in v2
+    // "importHelpers": true,                            /* Allow importing helper functions from tslib once per project, instead of including them per-file. */
+    // "downlevelIteration": true,                       /* Emit more compliant, but verbose and less performant JavaScript for iteration. */
+    // "noEmitHelpers": true,                            /* Disable generating custom helper functions like '__extends' in compiled output. */
+    // TODO: see if this can introduced in v2 (requires breaking changes in exports)
+    // "isolatedModules": true, /* Ensure that each file can be safely transpiled without relying on other imports. */
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "pretty": true, // Enable pretty formatting for output messages.
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/commons"
     },
-    "include": [ "packages" ],
-    "exclude": [ "./node_modules"],
-    "watchOptions": {
-        "watchFile": "useFsEvents",
-        "watchDirectory": "useFsEvents",
-        "fallbackPolling": "dynamicPriority"
+    {
+      "path": "./packages/tracer"
     },
-    "lib": [ "es2020" ],
-    "types": [
-        "node"
-    ]
+    {
+      "path": "./packages/metrics"
+    },
+    {
+      "path": "./packages/logger"
+    },
+    {
+      "path": "./packages/parameters"
+    },
+    {
+      "path": "./packages/idempotency"
+    },
+    {
+      "path": "./packages/batch"
+    },
+    {
+      "path": "./packages/testing"
+    },
+  ]
 }

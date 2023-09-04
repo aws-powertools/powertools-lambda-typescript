@@ -17,15 +17,14 @@
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
-    "build": "tsc",
+    "build": "tsc --build --force",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prebuild": "rimraf ./lib",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
-    "*.ts": "npm run lint-fix",
-    "*.js": "npm run lint-fix"
+    "*.{js,ts}": "npm run lint-fix"
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parameters#readme",
   "license": "MIT-0",

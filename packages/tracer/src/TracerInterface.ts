@@ -1,10 +1,10 @@
-import {
+import type {
   CaptureLambdaHandlerOptions,
   CaptureMethodOptions,
   HandlerMethodDecorator,
   MethodDecorator,
 } from './types';
-import { Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 
 interface TracerInterface {
   addErrorAsMetadata(error: Error, remote?: boolean): void;

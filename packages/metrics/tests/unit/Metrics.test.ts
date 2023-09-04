@@ -1213,8 +1213,6 @@ describe('Class: Metrics', () => {
       const errorMessage = 'Unexpected error occurred!';
       class LambdaFunction implements LambdaInterface {
         @metrics.logMetrics()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context

@@ -1,4 +1,8 @@
-import { DynamoDBRecord, KinesisStreamRecord, SQSRecord } from 'aws-lambda';
+import type {
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+} from 'aws-lambda';
 import type {
   PartialItemFailureResponse,
   EventSourceDataClassTypes,

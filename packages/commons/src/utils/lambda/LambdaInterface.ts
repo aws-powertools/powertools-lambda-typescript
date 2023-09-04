@@ -1,4 +1,4 @@
-import { Handler } from 'aws-lambda';
+import type { Handler } from 'aws-lambda';
 
 export type SyncHandler<T extends Handler> = (
   event: Parameters<T>[0],

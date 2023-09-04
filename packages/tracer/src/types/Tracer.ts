@@ -1,6 +1,6 @@
-import { ConfigServiceInterface } from '../config';
-import { Handler } from 'aws-lambda';
-import {
+import type { ConfigServiceInterface } from '../config';
+import type { Handler } from 'aws-lambda';
+import type {
   AsyncHandler,
   LambdaInterface,
   SyncHandler,

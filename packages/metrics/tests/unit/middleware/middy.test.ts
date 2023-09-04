@@ -12,8 +12,8 @@ import {
 import middy from '@middy/core';
 import { ExtraOptions } from '../../../src/types';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
-import { helloworldContext as dummyContext } from '../../../../commons/src/samples/resources/contexts/hello-world';
-import { CustomEvent as dummyEvent } from '../../../../commons/src/samples/resources/events/custom/index';
+import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts/hello-world';
+import { CustomEvent as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events/custom/index';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();

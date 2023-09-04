@@ -1,7 +1,10 @@
-import { Callback, Context, Handler } from 'aws-lambda';
+import type { Callback, Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import type { MetricsInterface } from './MetricsInterface';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
+import {
+  type ConfigServiceInterface,
+  EnvironmentVariablesService,
+} from './config';
 import {
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,

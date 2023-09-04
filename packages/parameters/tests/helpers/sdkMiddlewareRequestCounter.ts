@@ -1,3 +1,10 @@
+import type {
+  InitializeHandler,
+  HandlerExecutionContext,
+  InitializeHandlerArguments,
+  MiddlewareStack,
+} from '@aws-sdk/types';
+
 /**
  * Middleware to count the number of API calls made by the SDK.
  *
@@ -14,23 +21,29 @@
 export const middleware = {
   //
   counter: 0,
-  applyToStack: (stack) => {
+  applyToStack: <Input extends object, Output extends object>(
+    stack: MiddlewareStack<Input, Output>
+  ) => {
     // Middleware added to mark start and end of an complete API call.
     stack.add(
-      (next, context) => async (args) => {
-        // We only want to count API calls to retrieve data,
-        // not the StartConfigurationSessionCommand
-        if (
-          context.clientName !== 'AppConfigDataClient' ||
-          context.commandName !== 'StartConfigurationSessionCommand'
-        ) {
-          // Increment counter
-          middleware.counter++;
-        }
+      <ServiceInputTypes extends object, ServiceOutputTypes extends object>(
+          next: InitializeHandler<ServiceInputTypes, ServiceOutputTypes>,
+          context: HandlerExecutionContext
+        ) =>
+        async (args: InitializeHandlerArguments<ServiceInputTypes>) => {
+          // We only want to count API calls to retrieve data,
+          // not the StartConfigurationSessionCommand
+          if (
+            context.clientName !== 'AppConfigDataClient' ||
+            context.commandName !== 'StartConfigurationSessionCommand'
+          ) {
+            // Increment counter
+            middleware.counter++;
+          }
 
-        // Call next middleware
-        return await next(args);
-      },
+          // Call next middleware
+          return await next(args);
+        },
       { tags: ['ROUND_TRIP'] }
     );
   },

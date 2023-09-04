@@ -47,3 +47,6 @@ site
 
 # Layer temp files
 tmp
+
+# TS build files
+tsconfig.tsbuildinfo

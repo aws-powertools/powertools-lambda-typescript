@@ -3,14 +3,13 @@
  *
  * @group unit/tracer/all
  */
-
 import {
   ContextExamples as dummyContext,
   Events as dummyEvent,
   LambdaInterface,
 } from '@aws-lambda-powertools/commons';
-import { Tracer } from '../../src';
-import { Callback, Context } from 'aws-lambda/handler';
+import { Tracer } from './../../src';
+import type { Callback, Context } from 'aws-lambda/handler';
 import {
   Segment,
   setContextMissingStrategy,
@@ -535,8 +534,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public handler<TEvent, TResult>(
           _event: TEvent,
           _context: Context,
@@ -575,8 +572,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler({ captureResponse: false })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public handler<TEvent, TResult>(
           _event: TEvent,
           _context: Context,
@@ -614,8 +609,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler({ captureResponse: true })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public handler<TEvent, TResult>(
           _event: TEvent,
           _context: Context,
@@ -661,8 +654,6 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         public handler<TEvent, TResult>(
           _event: TEvent,
           _context: Context,

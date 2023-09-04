@@ -9,8 +9,8 @@ import type {
   KinesisStreamEvent,
   SQSEvent,
 } from 'aws-lambda';
-import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
-import { Custom as dummyEvent } from '../../../commons/src/samples/resources/events';
+import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
+import { Custom as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events';
 import { AsyncBatchProcessor, asyncProcessPartialResponse } from '../../src';
 import { EventType } from '../../src/constants';
 import type {

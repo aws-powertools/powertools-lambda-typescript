@@ -1,5 +1,5 @@
-import { Handler } from 'aws-lambda';
-import {
+import type { Handler } from 'aws-lambda';
+import type {
   LambdaInterface,
   AsyncHandler,
   SyncHandler,

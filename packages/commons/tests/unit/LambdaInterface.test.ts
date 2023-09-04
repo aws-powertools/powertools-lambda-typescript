@@ -128,8 +128,6 @@ describe('LambdaInterface with decorator', () => {
     // WHEN
     class LambdaFunction implements LambdaInterface {
       @dummyModule.dummyDecorator()
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       public async handler(
         _event: unknown,
         context: Context
@@ -147,8 +145,6 @@ describe('LambdaInterface with decorator', () => {
     // WHEN
     class LambdaFunction implements LambdaInterface {
       @dummyModule.dummyDecorator()
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       public handler(
         _event: unknown,
         context: Context,

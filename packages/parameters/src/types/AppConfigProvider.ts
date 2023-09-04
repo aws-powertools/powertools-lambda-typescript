@@ -108,6 +108,8 @@ type AppConfigGetOutput<
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType | AppConfigGetOptionsTransformNone
     ? Uint8Array
+    : InferredFromOptionsType extends AppConfigGetOptionsTransformNone
+    ? Uint8Array
     : InferredFromOptionsType extends AppConfigGetOptionsTransformBinary
     ? string
     : InferredFromOptionsType extends AppConfigGetOptionsTransformJson

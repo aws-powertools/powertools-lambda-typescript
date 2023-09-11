@@ -409,7 +409,7 @@ For these scenarios, you can subclass `BatchProcessor` and quickly override `suc
 ???+ example
 	Let's suppose you'd like to add a metric named `BatchRecordFailures` for each batch record that failed processing
 
-```typescript hl_lines="5-6 17 21 25 31 35 50-52" title="Extending failure handling mechanism in BatchProcessor"
+```typescript hl_lines="17 21 25 31 35" title="Extending failure handling mechanism in BatchProcessor"
 --8<-- "docs/snippets/batch/extendingFailure.ts"
 ```
 
@@ -448,8 +448,16 @@ classDiagram
 
 You can then use this class as a context manager, or pass it to `processPartialResponse` to process the records in your Lambda handler function.
 
-```typescript hl_lines="8 12-14 20 29 40 61 72 83 93-95" title="Creating a custom batch processor"
+```typescript hl_lines="21 30 41 62 73 84" title="Creating a custom batch processor"
 --8<-- "docs/snippets/batch/customPartialProcessor.ts"
+```
+
+## Tracing with AWS X-Ray
+
+You can use Tracer to create subsegments for each batch record processed. When doing so however you need to make 
+
+```ts
+--8<-- "docs/snippets/batch/advancedTracingRecordHandler.ts"
 ```
 
 ## Testing your code

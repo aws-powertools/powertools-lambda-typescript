@@ -5,7 +5,8 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import {
-  BasePartialProcessor,
+  EventType,
+  BasePartialBatchProcessor,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import type {
@@ -17,12 +18,12 @@ import type { SQSEvent, Context, SQSBatchResponse } from 'aws-lambda';
 
 const tableName = process.env.TABLE_NAME || 'table-not-found';
 
-class MyPartialProcessor extends BasePartialProcessor {
+class MyPartialProcessor extends BasePartialBatchProcessor {
   #tableName: string;
   #client?: DynamoDBClient;
 
   public constructor(tableName: string) {
-    super();
+    super(EventType.SQS);
     this.#tableName = tableName;
   }
 

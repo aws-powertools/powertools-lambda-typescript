@@ -88,6 +88,17 @@
     "@aws-sdk/lib-dynamodb": ">=3.410.0",
     "@middy/core": ">=3.x <4.x"
   },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "@aws-sdk/lib-dynamodb": {
+      "optional": true
+    },
+    "@middy/core": {
+      "optional": true
+    }
+  },
   "keywords": [
     "aws",
     "lambda",

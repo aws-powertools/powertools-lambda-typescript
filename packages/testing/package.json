@@ -45,6 +45,6 @@
   "dependencies": {
     "@aws-cdk/cli-lib-alpha": "^2.88.0-alpha.0",
     "aws-cdk-lib": "^2.88.0",
-    "esbuild": "^0.18.17"
+    "esbuild": "^0.19.2"
   }
 }

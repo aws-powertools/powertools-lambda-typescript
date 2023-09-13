@@ -11,6 +11,7 @@ import type {
  * @param event Lambda's original event
  * @param recordHandler Callable function to process each record from the batch
  * @param processor Batch processor to handle partial failure cases
+ * @param options Batch processing options
  * @returns Lambda Partial Batch Response
  */
 const processPartialResponse = (

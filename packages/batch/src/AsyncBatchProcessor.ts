@@ -21,7 +21,7 @@ class AsyncBatchProcessor extends BasePartialBatchProcessor {
 
   /**
    * Process a record with instance's handler
-   * @param record Batch record to be processed
+   * @param _record Batch record to be processed
    * @returns response of success or failure
    */
   public processRecord(_record: BaseRecord): SuccessResponse | FailureResponse {

@@ -26,7 +26,7 @@ abstract class BasePartialProcessor {
   /**
    * Initializes base processor class
    */
-  public constructor() {
+  protected constructor() {
     this.successMessages = [];
     this.failureMessages = [];
     this.errors = [];
@@ -40,7 +40,7 @@ abstract class BasePartialProcessor {
    */
   public async asyncProcess(): Promise<(SuccessResponse | FailureResponse)[]> {
     /**
-     * If this is an sync processor, user should have called process instead,
+     * If this is a sync processor, user should have called process instead,
      * so we call the method early to throw the error early thus failing fast.
      */
     if (this.constructor.name === 'BatchProcessor') {
@@ -131,6 +131,7 @@ abstract class BasePartialProcessor {
    * Set class instance attributes before execution
    * @param records List of records to be processed
    * @param handler CallableFunction to process entries of "records"
+   * @param options Options to be used during processing
    * @returns this object
    */
   public register(

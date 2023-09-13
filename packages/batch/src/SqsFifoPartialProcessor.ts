@@ -42,7 +42,7 @@ class SqsFifoPartialProcessor extends BatchProcessor {
   /**
    * Starting from the first failure index, fail all remaining messages and append them to the result list
    * @param firstFailureIndex Index of first message that failed
-   * @param result List of success and failure responses with remaining messages failed
+   * @param processedRecords List of success and failure responses with remaining messages failed
    */
   public shortCircuitProcessing(
     firstFailureIndex: number,

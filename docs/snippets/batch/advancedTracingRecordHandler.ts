@@ -31,7 +31,7 @@ const recordHandler = (record: SQSRecord): void => {
     }
   }
 
-  subsegment?.close();
+  subsegment?.close(); // (3)!
 };
 
 export const handler = middy(

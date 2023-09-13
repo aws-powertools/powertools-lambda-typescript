@@ -454,11 +454,15 @@ You can then use this class as a context manager, or pass it to `processPartialR
 
 ## Tracing with AWS X-Ray
 
-You can use Tracer to create subsegments for each batch record processed. When doing so however you need to make 
+You can use Tracer to create subsegments for each batch record processed. To do so, you can open a new subsegment for each record, and close it when you're done processing it. When adding annotations and metadata to the subsegment, you can do so directly without calling `tracer.setSegment(subsegment)`. This allows you to work with the subsegment directly and avoid having to either pass the parent subsegment around or have to restore the parent subsegment at the end of the record processing. 
 
 ```ts
 --8<-- "docs/snippets/batch/advancedTracingRecordHandler.ts"
 ```
+
+1. Retrieve the current segment, then create a subsegment for the record being processed
+2. You can add annotations and metadata to the subsegment directly without calling `tracer.setSegment(subsegment)`
+3. Close the subsegment when you're done processing the record
 
 ## Testing your code
 

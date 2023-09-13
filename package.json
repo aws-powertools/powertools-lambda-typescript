@@ -11,6 +11,7 @@
     "packages/idempotency",
     "packages/batch",
     "packages/testing",
+    "packages/parser",
     "docs/snippets",
     "layers",
     "examples/cdk",

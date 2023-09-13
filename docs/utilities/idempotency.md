@@ -79,10 +79,10 @@ As of now, Amazon DynamoDB is the only supported persistent storage layer, so yo
 
 If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
 
-| Configuration      | Default value | Notes                                                                                   |
-| ------------------ |:--------------|-----------------------------------------------------------------------------------------|
-| Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`.  |
-| TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.    |
+| Configuration      | Default value | Notes                                                                                  |
+| ------------------ | :------------ | -------------------------------------------------------------------------------------- |
+| Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`. |
+| TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.   |
 
 ???+ tip "Tip: You can share a single state table for all functions"
     You can reuse the same DynamoDB table to store idempotency state. We add the Lambda function name in addition to the idempotency key as a hash key.
@@ -773,14 +773,14 @@ You can easily integrate with [Batch](batch.md) utility by using idempotency wra
 This ensures that you process each record in an idempotent manner, and guard against a [Lambda timeout](#lambda-timeouts) idempotent situation.
 
 ???+ "Choosing a unique batch record attribute" 
-    In this example, we choose messageId as our idempotency key since we know it'll be unique.
+    In this example, we choose `messageId` as our idempotency key since we know it'll be unique.
     Depending on your use case, it might be more accurate [to choose another field](#choosing-a-payload-subset-for-idempotency) your producer intentionally set to define uniqueness.
 
 
 
 === "Integration with batch processor"
 
-    ```typescript hl_lines="26-35"
+    ```typescript hl_lines="27 31-34 41"
     --8<-- "docs/snippets/idempotency/workingWithBatch.ts"
     ```
 

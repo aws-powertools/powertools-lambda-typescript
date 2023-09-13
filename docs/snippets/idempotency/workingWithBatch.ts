@@ -3,16 +3,17 @@ import {
   EventType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
-
-import { Logger } from '@aws-lambda-powertools/logger';
-import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
-import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/lib/persistence/DynamoDBPersistenceLayer';
+import type {
+  Context,
+  SQSBatchResponse,
+  SQSEvent,
+  SQSRecord,
+} from 'aws-lambda';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import {
   IdempotencyConfig,
   makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
-
-const logger = new Logger();
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -24,8 +25,7 @@ const idempotencyConfig = new IdempotencyConfig({
 });
 
 const processIdempotently = makeIdempotent(
-  async (record: SQSRecord) => {
-    logger.info('Processing event', { record });
+  async (_record: SQSRecord) => {
     // process your event
   },
   {
@@ -38,6 +38,8 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
+  idempotencyConfig.registerLambdaContext(context);
+
   return processPartialResponse(event, processIdempotently, processor, {
     context,
   });

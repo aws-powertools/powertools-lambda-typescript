@@ -79,10 +79,10 @@ As of now, Amazon DynamoDB is the only supported persistent storage layer, so yo
 
 If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
 
-| Configuration      | Default value | Notes                                                                                   |
-| ------------------ |:--------------|-----------------------------------------------------------------------------------------|
-| Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`.  |
-| TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.    |
+| Configuration      | Default value | Notes                                                                                  |
+| ------------------ | :------------ | -------------------------------------------------------------------------------------- |
+| Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`. |
+| TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.   |
 
 ???+ tip "Tip: You can share a single state table for all functions"
     You can reuse the same DynamoDB table to store idempotency state. We add the Lambda function name in addition to the idempotency key as a hash key.
@@ -764,6 +764,54 @@ This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`
             "name": "foo",
             "productId": 10000
         }
+    }
+    ```
+
+### Batch integration
+
+You can easily integrate with [Batch](batch.md) utility by using idempotency wrapper around your processing function.
+This ensures that you process each record in an idempotent manner, and guard against a [Lambda timeout](#lambda-timeouts) idempotent situation.
+
+???+ "Choosing a unique batch record attribute" 
+    In this example, we choose `messageId` as our idempotency key since we know it'll be unique.
+    Depending on your use case, it might be more accurate [to choose another field](#choosing-a-payload-subset-for-idempotency) your producer intentionally set to define uniqueness.
+
+
+
+=== "Integration with batch processor"
+
+    ```typescript hl_lines="27 31-34 41"
+    --8<-- "docs/snippets/idempotency/workingWithBatch.ts"
+    ```
+
+=== "Sample event"
+
+    ```json hl_lines="4"
+    {
+      "Records": [
+        {
+          "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
+          "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+          "body": "Test message.",
+          "attributes": {
+            "ApproximateReceiveCount": "1",
+            "SentTimestamp": "1545082649183",
+            "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+            "ApproximateFirstReceiveTimestamp": "1545082649185"
+          },
+          "messageAttributes": {
+            "testAttr": {
+              "stringValue": "100",
+              "binaryValue": "base64Str",
+              "dataType": "Number"
+            }
+          },
+          "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
+          "eventSource": "aws:sqs",
+          "eventSourceARN": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+          "awsRegion": "us-east-2"
+        }
+      ]
     }
     ```
 

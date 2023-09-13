@@ -53,9 +53,10 @@ classDiagram
 ## Getting started
 
 ### Installation
+
 Install the library in your project
 ```shell
-npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb
+npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
 ```
 
 While we support Amazon DynamoDB as a persistance layer out of the box, you need to bring your own AWS SDK for JavaScript v3 DynamoDB client.

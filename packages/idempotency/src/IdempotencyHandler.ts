@@ -3,7 +3,7 @@ import type {
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons';
 import type { AnyFunction, IdempotencyHandlerOptions } from './types';
-import { IdempotencyRecordStatus } from './types';
+import { IdempotencyRecordStatus } from './constants';
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,

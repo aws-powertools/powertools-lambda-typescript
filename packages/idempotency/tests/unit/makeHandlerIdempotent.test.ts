@@ -4,9 +4,8 @@
  * @group unit/idempotency/makeHandlerIdempotent
  */
 import { makeHandlerIdempotent } from '../../src/middleware';
-import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
-import { Custom as dummyEvent } from '../../../commons/src/samples/resources/events';
-import { IdempotencyRecordStatus } from '../../src/types';
+import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
+import { Custom as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events';
 import { IdempotencyRecord } from '../../src/persistence';
 import {
   IdempotencyInconsistentStateError,
@@ -15,7 +14,7 @@ import {
 } from '../../src/errors';
 import { IdempotencyConfig } from '../../src/';
 import middy from '@middy/core';
-import { MAX_RETRIES } from '../../src/constants';
+import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
 import type { Context } from 'aws-lambda';
 

@@ -1,6 +1,9 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons';
-import type { IdempotencyRecordOptions } from '../types';
-import { IdempotencyRecordStatus } from '../types';
+import type {
+  IdempotencyRecordOptions,
+  IdempotencyRecordStatusValue,
+} from '../types';
+import { IdempotencyRecordStatus } from '../constants';
 import { IdempotencyInvalidStatusError } from '../errors';
 
 /**
@@ -31,10 +34,10 @@ class IdempotencyRecord {
   /**
    * The idempotency record status can be COMPLETED, IN_PROGRESS or EXPIRED.
    * We check the status during idempotency processing to make sure we don't process an expired record and handle concurrent requests.
-   * @link {IdempotencyRecordStatus}
+   * @link {IdempotencyRecordStatusValue}
    * @private
    */
-  private status: IdempotencyRecordStatus;
+  private status: IdempotencyRecordStatusValue;
 
   public constructor(config: IdempotencyRecordOptions) {
     this.idempotencyKey = config.idempotencyKey;
@@ -56,7 +59,7 @@ class IdempotencyRecord {
    * Get the status of the record.
    * @throws {IdempotencyInvalidStatusError} If the status is not a valid status.
    */
-  public getStatus(): IdempotencyRecordStatus {
+  public getStatus(): IdempotencyRecordStatusValue {
     if (this.isExpired()) {
       return IdempotencyRecordStatus.EXPIRED;
     } else if (Object.values(IdempotencyRecordStatus).includes(this.status)) {

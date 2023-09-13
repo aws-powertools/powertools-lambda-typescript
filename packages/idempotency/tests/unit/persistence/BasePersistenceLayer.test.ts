@@ -14,7 +14,7 @@ import {
   IdempotencyValidationError,
 } from '../../../src/errors';
 import type { IdempotencyConfigOptions } from '../../../src/types';
-import { IdempotencyRecordStatus } from '../../../src/types';
+import { IdempotencyRecordStatus } from '../../../src';
 
 jest.mock('node:crypto', () => ({
   createHash: jest.fn().mockReturnValue({
@@ -460,6 +460,19 @@ describe('Class: BasePersistenceLayer', () => {
           responseData: result,
         })
       );
+    });
+  });
+
+  describe('Method: getExpiresAfterSeconds', () => {
+    it('returns the configured value', () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      const result = persistenceLayer.getExpiresAfterSeconds();
+
+      // Assess
+      expect(result).toBe(3600);
     });
   });
 });

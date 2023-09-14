@@ -17,7 +17,7 @@ import {
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 import { toBase64 } from '@aws-sdk/util-base64-node';
-import { Uint8ArrayBlobAdapter } from '@aws-sdk/util-stream';
+import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { JSONValue } from '@aws-lambda-powertools/commons';
 
 describe('Function: getAppConfig', () => {

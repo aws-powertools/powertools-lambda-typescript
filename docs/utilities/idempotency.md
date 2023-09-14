@@ -88,124 +88,22 @@ If you're not [changing the default configuration for the DynamoDB persistence l
 ???+ tip "Tip: You can share a single state table for all functions"
     You can reuse the same DynamoDB table to store idempotency state. We add the Lambda function name in addition to the idempotency key as a hash key.
 
-<!-- TODO: review CDK template -->
-=== "AWS Serverless Application Model (SAM) example"
+=== "AWS Cloud Development Kit (CDK) example"
 
-    ```yaml hl_lines="6-14 24-31"
-    Transform: AWS::Serverless-2016-10-31
-    Resources:
-    IdempotencyTable:
-        Type: AWS::DynamoDB::Table
-        Properties:
-        AttributeDefinitions:
-            - AttributeName: id
-            AttributeType: S
-        KeySchema:
-            - AttributeName: id
-            KeyType: HASH
-        TimeToLiveSpecification:
-            AttributeName: expiration
-            Enabled: true
-        BillingMode: PAY_PER_REQUEST
-
-    HelloWorldFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-        Runtime: nodejs18.x
-        Handler: index.handler
-        Policies:
-            - Statement:
-            - Sid: AllowDynamodbReadWrite
-                Effect: Allow
-                Action:
-                - dynamodb:PutItem
-                - dynamodb:GetItem
-                - dynamodb:UpdateItem
-                - dynamodb:DeleteItem
-                Resource: !GetAtt IdempotencyTable.Arn
+    ```typescript title="template.tf" hl_lines="11-18 26"
+    --8<-- "docs/snippets/idempotency/templates/tableCdk.ts"
     ```
 
-=== "Terraform"
+=== "AWS Serverless Application Model (SAM) example"
 
-    ```terraform hl_lines="14-26 64-70"
-    terraform {
-        required_providers {
-            aws = {
-            source  = "hashicorp/aws"
-            version = "~> 4.0"
-            }
-        }
-    }
+    ```yaml title="template.yaml" hl_lines="6-14 24-31"
+    --8<-- "docs/snippets/idempotency/templates/tableSam.yaml"
+    ```
 
-    provider "aws" {
-        region = "us-east-1" # Replace with your desired AWS region
-    }
+=== "Terraform example"
 
-    resource "aws_dynamodb_table" "IdempotencyTable" {
-        name         = "IdempotencyTable"
-        billing_mode = "PAY_PER_REQUEST"
-        hash_key     = "id"
-        attribute {
-            name = "id"
-            type = "S"
-        }
-        ttl {
-            attribute_name = "expiration"
-            enabled        = true
-        }
-    }
-
-    resource "aws_lambda_function" "IdempotencyFunction" {
-        function_name = "IdempotencyFunction"
-        role          = aws_iam_role.IdempotencyFunctionRole.arn
-        runtime       = "nodejs18.x"
-        handler       = "index.handler"
-        filename      = "lambda.zip"
-    }
-
-    resource "aws_iam_role" "IdempotencyFunctionRole" {
-        name = "IdempotencyFunctionRole"
-
-        assume_role_policy = jsonencode({
-            Version = "2012-10-17"
-            Statement = [
-            {
-                Sid    = ""
-                Effect = "Allow"
-                Principal = {
-                Service = "lambda.amazonaws.com"
-                }
-                Action = "sts:AssumeRole"
-            },
-            ]
-        })
-    }
-
-    resource "aws_iam_policy" "LambdaDynamoDBPolicy" {
-        name        = "LambdaDynamoDBPolicy"
-        description = "IAM policy for Lambda function to access DynamoDB"
-        policy = jsonencode({
-            Version = "2012-10-17"
-            Statement = [
-            {
-                Sid    = "AllowDynamodbReadWrite"
-                Effect = "Allow"
-                Action = [
-                "dynamodb:PutItem",
-                "dynamodb:GetItem",
-                "dynamodb:UpdateItem",
-                "dynamodb:DeleteItem",
-                ]
-                Resource = aws_dynamodb_table.IdempotencyTable.arn
-            },
-            ]
-        })
-    }
-
-    resource "aws_iam_role_policy_attachment" "IdempotencyFunctionRoleAttachment" {
-        role       = aws_iam_role.IdempotencyFunctionRole.name
-        policy_arn = aws_iam_policy.LambdaDynamoDBPolicy.arn
-    }
+    ```terraform title="template.tf" hl_lines="14-26 64-70"
+    --8<-- "docs/snippets/idempotency/templates/tableTerraform.tf"
     ```
 
 ???+ warning "Warning: Large responses with DynamoDB persistence layer"
@@ -853,6 +751,27 @@ The example function above would cause data to be stored in DynamoDB like this:
 | idempotency#MyLambdaFunction | 1e956ef7da78d0cb890be999aecc0c9e | 1636549553 | COMPLETED   | {"paymentId": "12345, "message": "success", "statusCode": 200}   |
 | idempotency#MyLambdaFunction | 2b2cdb5f86361e97b4383087c1ffdf27 | 1636549571 | COMPLETED   | {"paymentId": "527212", "message": "success", "statusCode": 200} |
 | idempotency#MyLambdaFunction | f091d2527ad1c78f05d54cc3f363be80 | 1636549585 | IN_PROGRESS |                                                                  |
+
+### Bring your own persistent store
+
+This utility provides an abstract base class (ABC), so that you can implement your choice of persistent storage layer.
+
+You can create your own persistent store from scratch by inheriting the `BasePersistenceLayer` class, and implementing `_getRecord()`, `_putRecord()`, `_updateRecord()` and `_deleteRecord()`.
+- `_getRecord()` – Retrieves an item from the persistence store using an idempotency key and returns it as a DataRecord instance.
+- `_putRecord()` – Adds a DataRecord to the persistence store if it doesn't already exist with that key. Throws an ItemAlreadyExists error if a non-expired entry already exists.
+- `_updateRecord()` – Updates an item in the persistence store.
+- `_deleteRecord()` – Removes an item from the persistence store.
+
+Below an example of an alternative persistence layer backed by Momento Cache:
+
+```typescript title="Bring your own persistence store" hl_lines="9"
+--8<-- "docs/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
+```
+
+???+ danger
+    Pay attention to the documentation for each - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
+    
+    For example, the `_put_Record()` method needs to throw an error if a non-expired record already exists in the data store with a matching key.
 
 ## Extra resources
 

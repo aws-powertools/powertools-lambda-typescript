@@ -5,7 +5,8 @@
  */
 import { IdempotencyInvalidStatusError } from '../../../src/errors';
 import { IdempotencyRecord } from '../../../src/persistence';
-import { IdempotencyRecordStatus } from '../../../src/types';
+import { IdempotencyRecordStatus } from '../../../src';
+import type { IdempotencyRecordStatusValue } from '../../../src/types';
 
 const mockIdempotencyKey = '123';
 const mockData = undefined;
@@ -28,7 +29,7 @@ describe('Given an INPROGRESS record that has already expired', () => {
     });
   });
   describe('When checking the status of the idempotency record', () => {
-    let resultingStatus: IdempotencyRecordStatus;
+    let resultingStatus: IdempotencyRecordStatusValue;
     beforeEach(() => {
       resultingStatus = idempotencyRecord.getStatus();
     });
@@ -75,7 +76,7 @@ describe('Given an idempotency record that has a status not in the IdempotencyRe
     Date.now = jest.fn(() => mockNowBeforeExiryTime);
     idempotencyRecord = new IdempotencyRecord({
       idempotencyKey: mockIdempotencyKey,
-      status: 'NOT_A_STATUS' as IdempotencyRecordStatus,
+      status: 'NOT_A_STATUS' as IdempotencyRecordStatusValue,
       expiryTimestamp: expiryTimeAfterNow,
       inProgressExpiryTimestamp: mockInProgressExpiry,
       responseData: mockData,

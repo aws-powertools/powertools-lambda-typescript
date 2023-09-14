@@ -1,21 +1,16 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons';
+import { IdempotencyRecordStatus } from '../constants';
 
-const IdempotencyRecordStatus = {
-  INPROGRESS: 'INPROGRESS',
-  COMPLETED: 'COMPLETED',
-  EXPIRED: 'EXPIRED',
-} as const;
-
-type IdempotencyRecordStatus =
+type IdempotencyRecordStatusValue =
   (typeof IdempotencyRecordStatus)[keyof typeof IdempotencyRecordStatus];
 
 type IdempotencyRecordOptions = {
   idempotencyKey: string;
-  status: IdempotencyRecordStatus;
+  status: IdempotencyRecordStatusValue;
   expiryTimestamp?: number;
   inProgressExpiryTimestamp?: number;
   responseData?: JSONValue;
   payloadHash?: string;
 };
 
-export { IdempotencyRecordStatus, IdempotencyRecordOptions };
+export { IdempotencyRecordStatusValue, IdempotencyRecordOptions };

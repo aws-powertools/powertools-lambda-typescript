@@ -1,7 +1,7 @@
 import { createHash, Hash } from 'node:crypto';
 import { search } from 'jmespath';
 import type { BasePersistenceLayerOptions } from '../types';
-import { IdempotencyRecordStatus } from '../types';
+import { IdempotencyRecordStatus } from '../constants';
 import { EnvironmentVariablesService } from '../config';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { BasePersistenceLayerInterface } from './BasePersistenceLayerInterface';
@@ -92,6 +92,13 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   }
 
   /**
+   * Retrieve the number of seconds that records will be kept in the persistence store
+   */
+  public getExpiresAfterSeconds(): number {
+    return this.expiresAfterSeconds;
+  }
+
+  /**
    * Retrieves idempotency key for the provided data and fetches data for that key from the persistence store
    *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
@@ -113,6 +120,9 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     return record;
   }
 
+  /**
+   * Check whether payload validation is enabled or not
+   */
   public isPayloadValidationEnabled(): boolean {
     return this.payloadValidationEnabled;
   }

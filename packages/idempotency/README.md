@@ -46,7 +46,7 @@ The current implementation provides a persistence layer for Amazon DynamoDB, whi
 To get started, install the library by running:
 
 ```sh
-npm install @aws-lambda-powertools/idempotency
+npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
 ```
 
 Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow the [actions detailed](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/#iam-permissions) in the documentation of the utility.

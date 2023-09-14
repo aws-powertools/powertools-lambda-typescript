@@ -9,11 +9,10 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
 } from '../../src/errors';
-import { IdempotencyRecordStatus } from '../../src/types';
 import { IdempotencyRecord } from '../../src/persistence';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler';
 import { IdempotencyConfig } from '../../src/';
-import { MAX_RETRIES } from '../../src/constants';
+import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
 
 const mockFunctionToMakeIdempotent = jest.fn();

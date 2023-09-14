@@ -10,7 +10,7 @@ import {
 } from '../../../src/errors';
 import { IdempotencyRecord } from '../../../src/persistence';
 import type { DynamoDBPersistenceOptions } from '../../../src/types';
-import { IdempotencyRecordStatus } from '../../../src/types';
+import { IdempotencyRecordStatus } from '../../../src';
 import {
   DynamoDBClient,
   DynamoDBServiceException,

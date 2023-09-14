@@ -5,16 +5,15 @@
  */
 import { IdempotencyRecord } from '../../src/persistence';
 import { makeIdempotent } from '../../src';
-import { IdempotencyRecordStatus } from '../../src/types';
 import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
 } from '../../src/errors';
 import { IdempotencyConfig } from '../../src';
-import { helloworldContext as dummyContext } from '../../../commons/src/samples/resources/contexts';
-import { Custom as dummyEvent } from '../../../commons/src/samples/resources/events';
-import { MAX_RETRIES } from '../../src/constants';
+import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
+import { Custom as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events';
+import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
 import type { Context } from 'aws-lambda';
 

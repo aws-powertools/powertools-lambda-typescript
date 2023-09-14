@@ -11,7 +11,7 @@ import {
   GetLatestConfigurationCommand,
   StartConfigurationSessionCommand,
 } from '@aws-sdk/client-appconfigdata';
-import { Uint8ArrayBlobAdapter } from '@aws-sdk/util-stream';
+import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
 import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
 import 'aws-sdk-client-mock-jest';

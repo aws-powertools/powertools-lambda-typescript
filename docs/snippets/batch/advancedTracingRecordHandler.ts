@@ -1,7 +1,7 @@
 import {
   BatchProcessor,
   EventType,
-  processPartialResponse,
+  processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
 import middy from '@middy/core';
@@ -36,7 +36,7 @@ const recordHandler = (record: SQSRecord): void => {
 
 export const handler = middy(
   async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
-    return processPartialResponse(event, recordHandler, processor, {
+    return processPartialResponseSync(event, recordHandler, processor, {
       context,
     });
   }

@@ -1,7 +1,7 @@
 import {
   BatchProcessor,
   EventType,
-  processPartialResponse,
+  processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -24,7 +24,7 @@ export const handler = async (
   event: KinesisStreamEvent,
   context: Context
 ): Promise<KinesisStreamBatchResponse> => {
-  return processPartialResponse(event, recordHandler, processor, {
+  return processPartialResponseSync(event, recordHandler, processor, {
     context,
   });
 };

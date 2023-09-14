@@ -94,23 +94,19 @@ class MomentoCachePersistenceLayer extends BasePersistenceLayer {
       }
     }
 
-    try {
-      const ttl = record.expiryTimestamp
-        ? Math.floor(new Date(record.expiryTimestamp * 1000).getTime() / 1000) -
-          Math.floor(new Date().getTime() / 1000)
-        : this.getExpiresAfterSeconds();
+    const ttl = record.expiryTimestamp
+      ? Math.floor(new Date(record.expiryTimestamp * 1000).getTime() / 1000) -
+        Math.floor(new Date().getTime() / 1000)
+      : this.getExpiresAfterSeconds();
 
-      const response = await (
-        await this.#getClient()
-      ).dictionarySetFields(this.#cacheName, record.idempotencyKey, item, {
-        ttl: CollectionTtl.of(ttl).withNoRefreshTtlOnUpdates(),
-      });
+    const response = await (
+      await this.#getClient()
+    ).dictionarySetFields(this.#cacheName, record.idempotencyKey, item, {
+      ttl: CollectionTtl.of(ttl).withNoRefreshTtlOnUpdates(),
+    });
 
-      if (response instanceof CacheDictionarySetFields.Error) {
-        throw new Error(`Unable to put item: ${response.errorCode()}`);
-      }
-    } catch (error) {
-      throw error;
+    if (response instanceof CacheDictionarySetFields.Error) {
+      throw new Error(`Unable to put item: ${response.errorCode()}`);
     }
   }
 

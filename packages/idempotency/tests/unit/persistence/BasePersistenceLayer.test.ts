@@ -4,7 +4,7 @@
  * @group unit/idempotency/persistence/base
  */
 import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
-import { IdempotencyConfig } from '../../../src';
+import { IdempotencyConfig, IdempotencyRecordStatus } from '../../../src';
 import {
   BasePersistenceLayer,
   IdempotencyRecord,
@@ -14,7 +14,6 @@ import {
   IdempotencyValidationError,
 } from '../../../src/errors';
 import type { IdempotencyConfigOptions } from '../../../src/types';
-import { IdempotencyRecordStatus } from '../../../src';
 
 jest.mock('node:crypto', () => ({
   createHash: jest.fn().mockReturnValue({

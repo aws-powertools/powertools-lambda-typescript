@@ -1,7 +1,6 @@
 import { addUserAgentMiddleware } from '../../src/userAgentMiddleware';
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { PT_VERSION } from '../../src/version';
 import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';

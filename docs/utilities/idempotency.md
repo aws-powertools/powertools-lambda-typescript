@@ -697,11 +697,11 @@ You can create your own persistent store from scratch by inheriting the `BasePer
 * `_updateRecord()` – Updates an item in the persistence store.
 * `_deleteRecord()` – Removes an item from the persistence store.
 
-Below an example of an alternative persistence layer backed by [Momento Cache](https://www.gomomento.com):
+Below an example implementation of a custom persistence layer backed by a generic key-value store.
 
-=== "MomentoCachePersistenceLayer"
+=== "CustomPersistenceLayer"
 
-    ```typescript hl_lines="12 28 37 43 67 113"
+    ```typescript hl_lines="9 19 28 34 50 90"
     --8<-- "docs/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
     ```
 

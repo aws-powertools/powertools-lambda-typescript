@@ -4,7 +4,7 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 
-export class IdempotencyMomentoStack extends Stack {
+export class IdempotencyStack extends Stack {
   public constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 

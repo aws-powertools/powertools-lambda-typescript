@@ -3,10 +3,7 @@ import {
   IdempotencyItemNotFoundError,
   IdempotencyRecordStatus,
 } from '@aws-lambda-powertools/idempotency';
-import {
-  IdempotencyRecordOptions,
-  IdempotencyRecordStatusValue,
-} from '@aws-lambda-powertools/idempotency/types';
+import { IdempotencyRecordOptions } from '@aws-lambda-powertools/idempotency/types';
 import {
   IdempotencyRecord,
   BasePersistenceLayer,
@@ -14,84 +11,53 @@ import {
 import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
 import { Transform } from '@aws-lambda-powertools/parameters';
 import {
-  CacheClient,
-  CredentialProvider,
-  Configurations,
-  CacheGet,
-  CacheKeyExists,
-  CollectionTtl,
-  CacheDictionarySetFields,
-  CacheDictionaryGetFields,
-} from '@gomomento/sdk';
-import type { MomentoApiSecret, Item } from './types';
+  ProviderClient,
+  ProviderItemAlreadyExists,
+} from './advancedBringYourOwnPersistenceLayerProvider';
+import type { ApiSecret, ProviderItem } from './types';
 
-class MomentoCachePersistenceLayer extends BasePersistenceLayer {
-  #cacheName: string;
-  #client?: CacheClient;
+class CustomPersistenceLayer extends BasePersistenceLayer {
+  #collectionName: string;
+  #client?: ProviderClient;
 
-  public constructor(config: { cacheName: string }) {
+  public constructor(config: { collectionName: string }) {
     super();
-    this.#cacheName = config.cacheName;
+    this.#collectionName = config.collectionName;
   }
 
   protected async _deleteRecord(record: IdempotencyRecord): Promise<void> {
     await (
       await this.#getClient()
-    ).delete(this.#cacheName, record.idempotencyKey);
+    ).delete(this.#collectionName, record.idempotencyKey);
   }
 
   protected async _getRecord(
     idempotencyKey: string
   ): Promise<IdempotencyRecord> {
-    const response = await (
-      await this.#getClient()
-    ).dictionaryFetch(this.#cacheName, idempotencyKey);
+    try {
+      const item = await (
+        await this.#getClient()
+      ).get(this.#collectionName, idempotencyKey);
 
-    if (
-      response instanceof CacheGet.Error ||
-      response instanceof CacheGet.Miss
-    ) {
+      return new IdempotencyRecord({
+        ...(item as unknown as IdempotencyRecordOptions),
+      });
+    } catch (error) {
       throw new IdempotencyItemNotFoundError();
     }
-    const { data, ...rest } =
-      response.value() as unknown as IdempotencyRecordOptions & {
-        data: string;
-      };
-
-    return new IdempotencyRecord({
-      responseData: JSON.parse(data),
-      ...rest,
-    });
   }
 
   protected async _putRecord(record: IdempotencyRecord): Promise<void> {
-    const item: Partial<Item> = {
+    const item: Partial<ProviderItem> = {
       status: record.getStatus(),
     };
 
     if (record.inProgressExpiryTimestamp !== undefined) {
-      item.in_progress_expiration = record.inProgressExpiryTimestamp.toString();
+      item.in_progress_expiration = record.inProgressExpiryTimestamp;
     }
 
     if (this.isPayloadValidationEnabled() && record.payloadHash !== undefined) {
       item.validation = record.payloadHash;
-    }
-
-    try {
-      const lock = await this.#lookupItem(record.idempotencyKey);
-
-      if (
-        lock.getStatus() !== IdempotencyRecordStatus.INPROGRESS &&
-        (lock.inProgressExpiryTimestamp || 0) < Date.now()
-      ) {
-        throw new IdempotencyItemAlreadyExistsError(
-          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`
-        );
-      }
-    } catch (error) {
-      if (error instanceof IdempotencyItemAlreadyExistsError) {
-        throw error;
-      }
     }
 
     const ttl = record.expiryTimestamp
@@ -99,19 +65,30 @@ class MomentoCachePersistenceLayer extends BasePersistenceLayer {
         Math.floor(new Date().getTime() / 1000)
       : this.getExpiresAfterSeconds();
 
-    const response = await (
-      await this.#getClient()
-    ).dictionarySetFields(this.#cacheName, record.idempotencyKey, item, {
-      ttl: CollectionTtl.of(ttl).withNoRefreshTtlOnUpdates(),
-    });
-
-    if (response instanceof CacheDictionarySetFields.Error) {
-      throw new Error(`Unable to put item: ${response.errorCode()}`);
+    let existingItem: ProviderItem | undefined;
+    try {
+      existingItem = await (
+        await this.#getClient()
+      ).put(this.#collectionName, record.idempotencyKey, item, {
+        ttl,
+      });
+    } catch (error) {
+      if (error instanceof ProviderItemAlreadyExists) {
+        if (
+          existingItem &&
+          existingItem.status !== IdempotencyRecordStatus.INPROGRESS &&
+          (existingItem.in_progress_expiration || 0) < Date.now()
+        ) {
+          throw new IdempotencyItemAlreadyExistsError(
+            `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`
+          );
+        }
+      }
     }
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
-    const value: Partial<Item> = {
+    const value: Partial<ProviderItem> = {
       data: JSON.stringify(record.responseData),
       status: record.getStatus(),
     };
@@ -120,22 +97,20 @@ class MomentoCachePersistenceLayer extends BasePersistenceLayer {
       value.validation = record.payloadHash;
     }
 
-    await this.#checkItemExists(record.idempotencyKey);
-
     await (
       await this.#getClient()
-    ).dictionarySetFields(this.#cacheName, record.idempotencyKey, value, {
-      ttl: CollectionTtl.refreshTtlIfProvided().withNoRefreshTtlOnUpdates(),
-    });
+    ).update(this.#collectionName, record.idempotencyKey, value);
   }
 
-  async #getMomentoApiSecret(): Promise<MomentoApiSecret> {
-    const secretName = process.env.MOMENTO_API_SECRET;
+  async #getClient(): Promise<ProviderClient> {
+    if (this.#client) return this.#client;
+
+    const secretName = process.env.API_SECRET;
     if (!secretName) {
-      throw new Error('MOMENTO_API_SECRET environment variable is not set');
+      throw new Error('API_SECRET environment variable is not set');
     }
 
-    const apiSecret = await getSecret<MomentoApiSecret>(secretName, {
+    const apiSecret = await getSecret<ApiSecret>(secretName, {
       transform: Transform.JSON,
     });
 
@@ -143,59 +118,13 @@ class MomentoCachePersistenceLayer extends BasePersistenceLayer {
       throw new Error(`Could not retrieve secret ${secretName}`);
     }
 
-    return apiSecret;
-  }
-
-  async #getClient(): Promise<CacheClient> {
-    if (this.#client) return this.#client;
-
-    const apiSecret = await this.#getMomentoApiSecret();
-    this.#client = await CacheClient.create({
-      configuration: Configurations.InRegion.LowLatency.latest(),
-      credentialProvider: CredentialProvider.fromString({
-        apiKey: apiSecret.apiKey,
-      }),
+    this.#client = new ProviderClient({
+      apiKey: apiSecret.apiKey,
       defaultTtlSeconds: this.getExpiresAfterSeconds(),
     });
 
     return this.#client;
   }
-
-  async #checkItemExists(idempotencyKey: string): Promise<boolean> {
-    const response = await (
-      await this.#getClient()
-    ).keysExist(this.#cacheName, [idempotencyKey]);
-
-    return response instanceof CacheKeyExists.Success;
-  }
-
-  async #lookupItem(idempotencyKey: string): Promise<IdempotencyRecord> {
-    const response = await (
-      await this.#getClient()
-    ).dictionaryGetFields(this.#cacheName, idempotencyKey, [
-      'in_progress_expiration',
-      'status',
-    ]);
-
-    if (response instanceof CacheDictionaryGetFields.Miss) {
-      throw new IdempotencyItemNotFoundError();
-    } else if (response instanceof CacheDictionaryGetFields.Error) {
-      throw new Error('Unable to get item');
-    } else {
-      const { status, in_progress_expiration: inProgressExpiryTimestamp } =
-        response.value() || {};
-
-      if (status !== undefined || inProgressExpiryTimestamp !== undefined) {
-        throw new Error('Unable');
-      }
-
-      return new IdempotencyRecord({
-        idempotencyKey,
-        status: status as IdempotencyRecordStatusValue,
-        inProgressExpiryTimestamp: parseFloat(inProgressExpiryTimestamp),
-      });
-    }
-  }
 }
 
-export { MomentoCachePersistenceLayer };
+export { CustomPersistenceLayer };

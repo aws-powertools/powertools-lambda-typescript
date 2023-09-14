@@ -14,16 +14,16 @@ export type SubscriptionResult = {
   productId: string;
 };
 
-export type MomentoApiSecret = {
+export type ApiSecret = {
   apiKey: string;
   refreshToken: string;
   validUntil: number;
   restEndpoint: string;
 };
 
-export type Item = {
+export type ProviderItem = {
   validation?: string;
-  in_progress_expiration?: string;
+  in_progress_expiration?: number;
   status: IdempotencyRecordStatusValue;
   data: string;
 };

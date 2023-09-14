@@ -1,14 +1,14 @@
 import type { Context } from 'aws-lambda';
 import { randomUUID } from 'node:crypto';
-import { MomentoCachePersistenceLayer } from './advancedBringYourOwnPersistenceLayer';
+import { CustomPersistenceLayer } from './advancedBringYourOwnPersistenceLayer';
 import {
   IdempotencyConfig,
   makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
 import type { Request, Response, SubscriptionResult } from './types';
 
-const persistenceStore = new MomentoCachePersistenceLayer({
-  cacheName: 'powertools',
+const persistenceStore = new CustomPersistenceLayer({
+  collectionName: 'powertools',
 });
 const config = new IdempotencyConfig({
   expiresAfterSeconds: 60,

@@ -1,7 +1,7 @@
 import {
-  BatchProcessor,
+  BatchProcessorSync,
   EventType,
-  processPartialResponse,
+  processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import type {
   Context,
@@ -15,7 +15,7 @@ import {
   makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
 
-const processor = new BatchProcessor(EventType.SQS);
+const processor = new BatchProcessorSync(EventType.SQS);
 
 const dynamoDBPersistence = new DynamoDBPersistenceLayer({
   tableName: 'idempotencyTable',
@@ -40,7 +40,7 @@ export const handler = async (
 ): Promise<SQSBatchResponse> => {
   idempotencyConfig.registerLambdaContext(context);
 
-  return processPartialResponse(event, processIdempotently, processor, {
+  return processPartialResponseSync(event, processIdempotently, processor, {
     context,
   });
 };

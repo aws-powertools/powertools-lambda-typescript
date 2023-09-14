@@ -13,21 +13,21 @@ import type {
  * @param processor Batch processor to handle partial failure cases
  * @returns Lambda Partial Batch Response
  */
-const asyncProcessPartialResponse = async (
+const processPartialResponseSync = (
   event: { Records: BaseRecord[] },
   recordHandler: CallableFunction,
   processor: BasePartialBatchProcessor,
   options?: BatchProcessingOptions
-): Promise<PartialItemFailureResponse> => {
+): PartialItemFailureResponse => {
   if (!event.Records || !Array.isArray(event.Records)) {
     throw new UnexpectedBatchTypeError();
   }
 
   processor.register(event.Records, recordHandler, options);
 
-  await processor.asyncProcess();
+  processor.processSync();
 
   return processor.response();
 };
 
-export { asyncProcessPartialResponse };
+export { processPartialResponseSync };

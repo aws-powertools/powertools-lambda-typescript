@@ -60,9 +60,9 @@ When using SQS as a Lambda event source, you can specify the `EventType.SQS` to 
 
 ```ts
 import {
-  BatchProcessor,
+  BatchProcessorSync,
   EventType,
-  processPartialResponse,
+  processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -72,7 +72,7 @@ import type {
   SQSBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessor(EventType.SQS);
+const processor = new BatchProcessorSync(EventType.SQS);
 const logger = new Logger();
 
 const recordHandler = (record: SQSRecord): void => {
@@ -87,7 +87,7 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
-  return processPartialResponse(event, recordHandler, processor, {
+  return processPartialResponseSync(event, recordHandler, processor, {
     context,
   });
 };
@@ -100,9 +100,9 @@ When using Kinesis Data Streams as a Lambda event source, you can specify the `E
 
 ```ts
 import {
-  BatchProcessor,
+  BatchProcessorSync,
   EventType,
-  processPartialResponse,
+  processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -112,7 +112,7 @@ import type {
   KinesisStreamBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessor(EventType.KinesisDataStreams);
+const processor = new BatchProcessorSync(EventType.KinesisDataStreams);
 const logger = new Logger();
 
 const recordHandler = (record: KinesisStreamRecord): void => {
@@ -125,7 +125,7 @@ export const handler = async (
   event: KinesisStreamEvent,
   context: Context
 ): Promise<KinesisStreamBatchResponse> => {
-  return processPartialResponse(event, recordHandler, processor, {
+  return processPartialResponseSync(event, recordHandler, processor, {
     context,
   });
 };
@@ -133,13 +133,13 @@ export const handler = async (
 
 ### DynamoDB Streams Processor
 
-When using DynamoDB Streams as a Lambda event source, you can use the `BatchProcessor` with the `EventType.DynamoDBStreams` to process the records. The response will be a `DynamoDBBatchResponse` which contains a list of items that failed to be processed.
+When using DynamoDB Streams as a Lambda event source, you can use the `BatchProcessorSync` with the `EventType.DynamoDBStreams` to process the records. The response will be a `DynamoDBBatchResponse` which contains a list of items that failed to be processed.
 
 ```ts
 import {
-  BatchProcessor,
+  BatchProcessorSync,
   EventType,
-  processPartialResponse,
+  processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -149,7 +149,7 @@ import type {
   DynamoDBBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessor(EventType.DynamoDBStreams);
+const processor = new BatchProcessorSync(EventType.DynamoDBStreams);
 const logger = new Logger();
 
 const recordHandler = (record: DynamoDBRecord): void => {
@@ -167,7 +167,7 @@ export const handler = async (
   event: DynamoDBStreamEvent,
   context: Context
 ): Promise<DynamoDBBatchResponse> => {
-  return processPartialResponse(event, recordHandler, processor, {
+  return processPartialResponseSync(event, recordHandler, processor, {
     context,
   });
 };
@@ -175,13 +175,13 @@ export const handler = async (
 
 ### Async processing
 
-If your use case allows you to process multiple records at the same time without conflicting with each other, you can use the `AsyncBatchProcessor` to process records asynchronously. This will create an array of promises that will be resolved once all records have been processed.
+If your use case allows you to process multiple records at the same time without conflicting with each other, you can use the `BatchProcessor` to process records asynchronously. This will create an array of promises that will be resolved once all records have been processed.
 
 ```ts
 import {
-  AsyncBatchProcessor,
+  BatchProcessor,
   EventType,
-  asyncProcessPartialResponse,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import axios from 'axios'; // axios is an external dependency
 import type {
@@ -191,7 +191,7 @@ import type {
   SQSBatchResponse,
 } from 'aws-lambda';
 
-const processor = new AsyncBatchProcessor(EventType.SQS);
+const processor = new BatchProcessor(EventType.SQS);
 
 const recordHandler = async (record: SQSRecord): Promise<number> => {
   const res = await axios.post('https://httpbin.org/anything', {
@@ -205,7 +205,7 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
-  return await asyncProcessPartialResponse(event, recordHandler, processor, {
+  return await processPartialResponse(event, recordHandler, processor, {
     context,
   });
 };

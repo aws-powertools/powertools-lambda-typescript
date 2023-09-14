@@ -1,7 +1,7 @@
 import {
-  AsyncBatchProcessor,
+  BatchProcessor,
   EventType,
-  asyncProcessPartialResponse,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import axios from 'axios'; // axios is an external dependency
 import type {
@@ -11,7 +11,7 @@ import type {
   SQSBatchResponse,
 } from 'aws-lambda';
 
-const processor = new AsyncBatchProcessor(EventType.SQS);
+const processor = new BatchProcessor(EventType.SQS);
 
 const recordHandler = async (record: SQSRecord): Promise<number> => {
   const res = await axios.post('https://httpbin.org/anything', {
@@ -25,7 +25,7 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
-  return await asyncProcessPartialResponse(event, recordHandler, processor, {
+  return await processPartialResponse(event, recordHandler, processor, {
     context,
   });
 };

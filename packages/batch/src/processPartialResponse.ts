@@ -11,21 +11,22 @@ import type {
  * @param event Lambda's original event
  * @param recordHandler Callable function to process each record from the batch
  * @param processor Batch processor to handle partial failure cases
+ * @param options Batch processing options
  * @returns Lambda Partial Batch Response
  */
-const processPartialResponse = (
+const processPartialResponse = async (
   event: { Records: BaseRecord[] },
   recordHandler: CallableFunction,
   processor: BasePartialBatchProcessor,
   options?: BatchProcessingOptions
-): PartialItemFailureResponse => {
+): Promise<PartialItemFailureResponse> => {
   if (!event.Records || !Array.isArray(event.Records)) {
     throw new UnexpectedBatchTypeError();
   }
 
   processor.register(event.Records, recordHandler, options);
 
-  processor.process();
+  await processor.process();
 
   return processor.response();
 };

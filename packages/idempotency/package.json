@@ -84,8 +84,8 @@
     "jmespath": "^0.16.0"
   },
   "peerDependencies": {
-    "@aws-sdk/client-dynamodb": ">=3.360.0",
-    "@aws-sdk/lib-dynamodb": ">=3.410.0",
+    "@aws-sdk/client-dynamodb": ">=3.x",
+    "@aws-sdk/lib-dynamodb": ">=3.x",
     "@middy/core": ">=3.x <4.x"
   },
   "peerDependenciesMeta": {
@@ -110,7 +110,7 @@
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@aws-sdk/client-dynamodb": "^3.360.0",
-    "@aws-sdk/lib-dynamodb": "^3.410.0",
+    "@aws-sdk/lib-dynamodb": "^3.360.0",
     "@types/jmespath": "^0.15.0",
     "aws-sdk-client-mock": "^2.2.0",
     "aws-sdk-client-mock-jest": "^2.2.0"

@@ -95,9 +95,10 @@ class MomentoCachePersistenceLayer extends BasePersistenceLayer {
     }
 
     try {
-      const ttl =
-        Math.floor(new Date(record.expiryTimestamp! * 1000).getTime() / 1000) -
-        Math.floor(new Date().getTime() / 1000);
+      const ttl = record.expiryTimestamp
+        ? Math.floor(new Date(record.expiryTimestamp * 1000).getTime() / 1000) -
+          Math.floor(new Date().getTime() / 1000)
+        : this.getExpiresAfterSeconds();
 
       const response = await (
         await this.#getClient()

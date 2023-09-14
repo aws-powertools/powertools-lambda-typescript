@@ -701,7 +701,7 @@ Below an example of an alternative persistence layer backed by [Momento Cache](h
 
 === "MomentoCachePersistenceLayer"
 
-    ```typescript hl_lines="12 28 37 43 67 116"
+    ```typescript hl_lines="12 28 37 43 67 117"
     --8<-- "docs/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
     ```
 

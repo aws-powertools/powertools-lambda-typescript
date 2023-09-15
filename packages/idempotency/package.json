@@ -109,10 +109,10 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.360.0",
-    "@aws-sdk/lib-dynamodb": "^3.360.0",
+    "@aws-sdk/client-dynamodb": "^3.413.0",
+    "@aws-sdk/lib-dynamodb": "^3.413.0",
     "@types/jmespath": "^0.15.0",
-    "aws-sdk-client-mock": "^2.2.0",
-    "aws-sdk-client-mock-jest": "^2.2.0"
+    "aws-sdk-client-mock": "^3.0.0",
+    "aws-sdk-client-mock-jest": "^3.0.0"
   }
 }

@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "test:unit": "jest --group=unit --detectOpenHandles --verbose",
     "test:e2e": "echo 'Not implemented'",
     "watch": "jest --watch",
     "build": "tsc --build --force",
@@ -43,8 +43,8 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
-    "@aws-cdk/cli-lib-alpha": "^2.88.0-alpha.0",
-    "aws-cdk-lib": "^2.88.0",
-    "esbuild": "^0.19.2"
+    "@aws-cdk/cli-lib-alpha": "^2.96.1-alpha.0",
+    "aws-cdk-lib": "^2.96.1",
+    "esbuild": "^0.19.3"
   }
 }

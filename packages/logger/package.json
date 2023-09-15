@@ -34,6 +34,14 @@
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@types/lodash.merge": "^4.6.7"
   },
+  "peerDependencies": {
+    "@middy/core": ">=3.x <4.x"
+  },
+  "peerDependenciesMeta": {
+    "@middy/core": {
+      "optional": true
+    }
+  },
   "files": [
     "lib"
   ],

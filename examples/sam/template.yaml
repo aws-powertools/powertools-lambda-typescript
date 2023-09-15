@@ -31,11 +31,11 @@ Parameters:
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
 Globals:
   Function:
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
+    Runtime: nodejs18.x
+    Architectures:
+      - x86_64
+    MemorySize: 128
+    Timeout: 100
 
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
@@ -76,11 +76,8 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "ES2020"
+        Target: 'ES2020'
         Sourcemap: true
-        External:
-          - "@aws-sdk/lib-dynamodb"
-          - "@aws-sdk/client-dynamodb"
         EntryPoints:
           - src/get-all-items.ts
 
@@ -93,7 +90,8 @@ Resources:
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBReadPolicy:
-            TableName: !Ref SampleTable
+            TableName:
+              !Ref SampleTable
               # add ssm:getParameter permission to the function
         - SSMParameterWithSlashPrefixReadPolicy:
             ParameterName: !Ref uuidApiUrlParameter
@@ -118,11 +116,8 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "ES2020"
+        Target: 'ES2020'
         Sourcemap: true
-        External:
-          - "@aws-sdk/lib-dynamodb"
-          - "@aws-sdk/client-dynamodb"
         EntryPoints:
           - src/get-by-id.ts
 
@@ -156,10 +151,8 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "ES2020"
+        Target: 'ES2020'
         Sourcemap: true
-        External:
-          - "uuid"
         EntryPoints:
           - src/get-uuid.ts
 
@@ -169,9 +162,8 @@ Resources:
     Properties:
       Name: /app/uuid-api-url
       Type: String
-      Description: "Example parameter for UUID API URL"
-      Value: !Sub "https://${apiGateway}.execute-api.${AWS::Region}.amazonaws.com/${apiGatewayStageName}/"
-
+      Description: 'Example parameter for UUID API URL'
+      Value: !Sub 'https://${apiGateway}.execute-api.${AWS::Region}.amazonaws.com/${apiGatewayStageName}/'
 
   # This is a Lambda function config associated with the source code: put-item.js
   putItemFunction:
@@ -206,11 +198,8 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "ES2020"
+        Target: 'ES2020'
         Sourcemap: true
-        External:
-          - "@aws-sdk/lib-dynamodb"
-          - "@aws-sdk/client-dynamodb"
         EntryPoints:
           - src/put-item.ts
 
@@ -226,7 +215,7 @@ Resources:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: !Sub ${AWS::StackName}-uuid-api
-      Description: "Example API for UUID generation"
+      Description: 'Example API for UUID generation'
 
   apiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -290,7 +279,6 @@ Resources:
       RetentionInDays: 1
 
 Outputs:
-
   UuidWebEndpoint:
-    Description: "API Gateway endpoint URL for UUID endpoint"
-    Value: !Sub "https://${apiGateway}.execute-api.${AWS::Region}.amazonaws.com/dev/"
+    Description: 'API Gateway endpoint URL for UUID endpoint'
+    Value: !Sub 'https://${apiGateway}.execute-api.${AWS::Region}.amazonaws.com/dev/'

@@ -109,7 +109,7 @@ type DynamoDBGetOptions =
  */
 type DynamoDBGetOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? JSONValue
@@ -168,7 +168,7 @@ type DynamoDBGetMultipleOptions =
  */
 type DynamoDBGetMultipleOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? JSONValue

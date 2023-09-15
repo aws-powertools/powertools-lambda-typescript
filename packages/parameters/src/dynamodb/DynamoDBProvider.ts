@@ -308,7 +308,7 @@ class DynamoDBProvider extends BaseProvider {
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | DynamoDBGetOptions
-      | undefined = DynamoDBGetOptions
+      | undefined = DynamoDBGetOptions,
   >(
     name: string,
     options?: InferredFromOptionsType & DynamoDBGetOptions
@@ -356,7 +356,7 @@ class DynamoDBProvider extends BaseProvider {
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | DynamoDBGetMultipleOptions
-      | undefined = DynamoDBGetMultipleOptions
+      | undefined = DynamoDBGetMultipleOptions,
   >(
     path: string,
     options?: InferredFromOptionsType & DynamoDBGetMultipleOptions

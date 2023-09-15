@@ -325,7 +325,7 @@ class SSMProvider extends BaseProvider {
    */
   public async get<
     ExplicitUserProvidedType = undefined,
-    InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions
+    InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions,
   >(
     name: string,
     options?: InferredFromOptionsType & SSMGetOptions
@@ -372,7 +372,7 @@ class SSMProvider extends BaseProvider {
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | SSMGetMultipleOptions
-      | undefined = undefined
+      | undefined = undefined,
   >(
     path: string,
     options?: InferredFromOptionsType & SSMGetMultipleOptions
@@ -634,9 +634,8 @@ class SSMProvider extends BaseProvider {
     let errors: string[] = [];
 
     // Fetch each possible batch param from cache and return if entire batch is cached
-    const { cached, toFetch } = await this.getParametersByNameFromCache(
-      parameters
-    );
+    const { cached, toFetch } =
+      await this.getParametersByNameFromCache(parameters);
     if (Object.keys(cached).length >= Object.keys(parameters).length) {
       response = cached;
 

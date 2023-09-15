@@ -27,9 +27,9 @@ export const middleware = {
     // Middleware added to mark start and end of an complete API call.
     stack.add(
       <ServiceInputTypes extends object, ServiceOutputTypes extends object>(
-          next: InitializeHandler<ServiceInputTypes, ServiceOutputTypes>,
-          context: HandlerExecutionContext
-        ) =>
+        next: InitializeHandler<ServiceInputTypes, ServiceOutputTypes>,
+        context: HandlerExecutionContext
+      ) =>
         async (args: InitializeHandlerArguments<ServiceInputTypes>) => {
           // We only want to count API calls to retrieve data,
           // not the StartConfigurationSessionCommand

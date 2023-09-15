@@ -85,6 +85,8 @@ const runCommand = async (
 };
 
 describe('Given a client of instance: ', () => {
+  jest.spyOn(console, 'warn').mockImplementation(() => null);
+
   it.each([
     {
       name: 'LambdaClient',

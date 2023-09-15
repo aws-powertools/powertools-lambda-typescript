@@ -829,9 +829,8 @@ describe('Class: SSMProvider', () => {
       );
 
       // Act
-      const { cached, toFetch } = await provider.getParametersByNameFromCache(
-        parameters
-      );
+      const { cached, toFetch } =
+        await provider.getParametersByNameFromCache(parameters);
 
       // Assess
       expect(cached).toEqual({

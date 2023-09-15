@@ -207,7 +207,7 @@ class SecretsProvider extends BaseProvider {
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | SecretsGetOptions
-      | undefined = SecretsGetOptions
+      | undefined = SecretsGetOptions,
   >(
     name: string,
     options?: InferredFromOptionsType & SecretsGetOptions

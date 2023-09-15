@@ -23,12 +23,11 @@ const commonProps: Partial<NodejsFunctionProps> = {
   },
   bundling: {
     externalModules: [
-      '@aws-sdk/lib-dynamodb',
-      '@aws-sdk/client-dynamodb',
       '@aws-lambda-powertools/commons',
       '@aws-lambda-powertools/logger',
       '@aws-lambda-powertools/tracer',
       '@aws-lambda-powertools/metrics',
+      '@aws-lambda-powertools/parameters',
     ],
   },
   layers: [],
@@ -54,7 +53,7 @@ export class CdkAppStack extends Stack {
         'powertools-layer',
         `arn:aws:lambda:${
           Stack.of(this).region
-        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:16`
+        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:18`
       )
     );
 

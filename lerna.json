@@ -10,9 +10,10 @@
     "packages/testing",
     "examples/cdk",
     "examples/sam",
-    "layers"
+    "layers",
+    "docs/snippets"
   ],
-  "version": "1.12.1",
+  "version": "2.0.0",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

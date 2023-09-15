@@ -41,7 +41,7 @@ export class CanaryStack extends Stack {
         '../tests/e2e/layerPublisher.class.test.functionCode.ts'
       ),
       handler: 'handler',
-      runtime: Runtime.NODEJS_14_X,
+      runtime: Runtime.NODEJS_16_X,
       functionName: `canary-${suffix}`,
       timeout: Duration.seconds(30),
       bundling: {

@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       prNumber:
-        description: "(Optional) PR Number. If you specify a value the value of the branch field will be ignored."
+        description: '(Optional) PR Number. If you specify a value the value of the branch field will be ignored.'
         required: false
-        default: ""
+        default: ''
 
 jobs:
   run-e2e-tests-on-utils:
@@ -19,12 +19,20 @@ jobs:
       contents: read
     strategy:
       matrix:
-        package: [layers, packages/logger, packages/metrics, packages/tracer, packages/parameters, packages/idempotency]
-        version: [14, 16, 18]
+        package:
+          [
+            layers,
+            packages/logger,
+            packages/metrics,
+            packages/tracer,
+            packages/parameters,
+            packages/idempotency,
+          ]
+        version: [16, 18]
       fail-fast: false
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       # If we pass a PR Number when triggering the workflow we will retrieve the PR info and get its headSHA
       - name: Extract PR details
         id: extract_PR_details
@@ -38,7 +46,7 @@ jobs:
       # we checkout the PR at that point in time
       - name: Checkout PR code
         if: ${{ inputs.prNumber != '' }}
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           ref: ${{ steps.extract_PR_details.outputs.headSHA }}
       - name: Setup NodeJS

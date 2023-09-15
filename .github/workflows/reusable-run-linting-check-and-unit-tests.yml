@@ -10,16 +10,16 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [14, 16, 18]
+        version: [16, 18]
       fail-fast: false
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - name: Setup NodeJS
         uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.version }}
-          cache: "npm"
+          cache: 'npm'
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
         with:
@@ -34,19 +34,19 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        example: ["sam", "cdk"]
+        example: ['sam', 'cdk']
       fail-fast: false
     defaults:
       run:
         working-directory: examples/${{ matrix.example }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - name: Setup NodeJS
         uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 18
-          cache: "npm"
+          cache: 'npm'
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Run linting
@@ -59,12 +59,12 @@ jobs:
       NODE_ENV: dev
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - name: Setup NodeJS
         uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 18
-          cache: "npm"
+          cache: 'npm'
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Run linting
@@ -81,12 +81,12 @@ jobs:
       NODE_ENV: dev
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - name: Setup NodeJS
         uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 18
-          cache: "npm"
+          cache: 'npm'
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Run linting

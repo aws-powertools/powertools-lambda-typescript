@@ -28,3 +28,4 @@ rm -rf node_modules/@types \
   aws-lambda-powertools-metrics-*.tgz \
   aws-lambda-powertools-tracer-*.tgz
 cd ../..
+git restore .

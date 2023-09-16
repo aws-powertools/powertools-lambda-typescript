@@ -110,7 +110,7 @@ type AppConfigGetOptions =
  */
 type AppConfigGetOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType | AppConfigGetOptionsTransformNone
     ? Uint8Array

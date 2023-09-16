@@ -89,7 +89,7 @@ type SecretsGetOptions =
  */
 type SecretsGetOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? string | Uint8Array

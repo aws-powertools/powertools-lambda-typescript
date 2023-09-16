@@ -28,8 +28,12 @@ jobs:
             packages/parameters,
             packages/idempotency,
           ]
+<<<<<<< HEAD
         version: [14, 16, 18]
         arch: [x86_64, arm64]
+=======
+        version: [16, 18]
+>>>>>>> 878dccda (chore(maintenance): bump dependencies & drop nodejs14x (#1687))
       fail-fast: false
     steps:
       - name: Checkout Repo

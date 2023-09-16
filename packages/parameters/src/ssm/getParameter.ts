@@ -138,7 +138,7 @@ import type { SSMGetOptions, SSMGetOutput } from '../types/SSMProvider';
  */
 const getParameter = async <
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions
+  InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions,
 >(
   name: string,
   options?: InferredFromOptionsType & SSMGetOptions

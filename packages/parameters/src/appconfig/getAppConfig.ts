@@ -144,7 +144,7 @@ const getAppConfig = <
   ExplicitUserProvidedType = undefined,
   InferredFromOptionsType extends
     | GetAppConfigOptions
-    | undefined = GetAppConfigOptions
+    | undefined = GetAppConfigOptions,
 >(
   name: string,
   options: InferredFromOptionsType & GetAppConfigOptions

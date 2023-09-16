@@ -318,7 +318,7 @@ describe('Class: PowertoolsLogFormatter', () => {
 
     test('when an error with cause of type Error is formatted, the cause key is included and formatted', () => {
       // Prepare
-      const formatter = new PowertoolLogFormatter();
+      const formatter = new PowertoolsLogFormatter();
       class ErrorWithCause extends Error {
         public cause?: Error;
         public constructor(message: string, options?: { cause: Error }) {
@@ -334,20 +334,22 @@ describe('Class: PowertoolsLogFormatter', () => {
 
       // Assess
       expect(formattedURIError).toEqual({
-        location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+/
+        ),
         message: 'foo',
         name: 'Error',
         stack: expect.stringMatching(
-          /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
         ),
         cause: {
           location: expect.stringMatching(
-            /PowertoolLogFormatter.test.ts:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:[0-9]+/
           ),
           message: 'bar',
           name: 'Error',
           stack: expect.stringMatching(
-            /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
           ),
         },
       });
@@ -355,7 +357,7 @@ describe('Class: PowertoolsLogFormatter', () => {
 
     test('when an error with cause of type other than Error is formatted, the cause key is included as-is', () => {
       // Prepare
-      const formatter = new PowertoolLogFormatter();
+      const formatter = new PowertoolsLogFormatter();
       class ErrorWithCause extends Error {
         public cause?: unknown;
         public constructor(message: string, options?: { cause: unknown }) {
@@ -371,11 +373,13 @@ describe('Class: PowertoolsLogFormatter', () => {
 
       // Assess
       expect(formattedURIError).toEqual({
-        location: expect.stringMatching(/PowertoolLogFormatter.test.ts:[0-9]+/),
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+/
+        ),
         message: 'foo',
         name: 'Error',
         stack: expect.stringMatching(
-          /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
         ),
         cause: 'bar',
       });

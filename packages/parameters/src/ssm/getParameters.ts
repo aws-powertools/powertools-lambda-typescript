@@ -144,7 +144,7 @@ const getParameters = async <
   ExplicitUserProvidedType = undefined,
   InferredFromOptionsType extends
     | SSMGetMultipleOptions
-    | undefined = SSMGetMultipleOptions
+    | undefined = SSMGetMultipleOptions,
 >(
   path: string,
   options?: InferredFromOptionsType & SSMGetMultipleOptions

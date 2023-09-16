@@ -99,7 +99,7 @@ type SSMGetOptions =
  */
 type SSMGetOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? string
@@ -173,7 +173,7 @@ type SSMGetMultipleOptions =
  */
 type SSMGetMultipleOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? Record<string, string>

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "incremental": true,
     "composite": true,
-    "target": "ES2020", // Node.js 14
+    "target": "ES2021", // Node.js 16
     "experimentalDecorators": true,
     "module": "commonjs",
     "moduleResolution": "node", // TODO: experiment with bundler & esnext

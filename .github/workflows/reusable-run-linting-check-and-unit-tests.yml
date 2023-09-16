@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: ${{ matrix.version }}
-          cache: "npm"
+          cache: 'npm'
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
         with:
@@ -37,7 +37,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        example: ["sam", "cdk"]
+        example: ['sam', 'cdk']
       fail-fast: false
     defaults:
       run:

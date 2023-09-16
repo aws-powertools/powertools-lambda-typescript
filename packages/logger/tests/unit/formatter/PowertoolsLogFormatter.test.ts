@@ -1,11 +1,13 @@
 /**
  * Test Logger formatter
  *
- * @group unit/logger/all
+ * @group unit/logger/logFormatter
  */
-import { AssertionError, strictEqual } from 'assert';
-import { PowertoolsLogFormatter } from '../../../src/formatter';
-import { LogAttributes, UnformattedAttributes } from '../../../src/types';
+import { AssertionError } from 'node:assert';
+import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
+import { LogItem } from '../../../src/index.js';
+import type { UnformattedAttributes } from '../../../src/types/Logger.js';
+import type { LogAttributes } from '../../../src/types/Log.js';
 
 describe('Class: PowertoolsLogFormatter', () => {
   const mockDate = new Date(1466424490000);
@@ -20,7 +22,7 @@ describe('Class: PowertoolsLogFormatter', () => {
       // Prepare
       const formatter = new PowertoolsLogFormatter();
       const unformattedAttributes: UnformattedAttributes = {
-        sampleRateValue: undefined,
+        sampleRateValue: 0,
         awsRegion: 'eu-west-1',
         environment: '',
         serviceName: 'hello-world',
@@ -46,11 +48,12 @@ describe('Class: PowertoolsLogFormatter', () => {
         function_request_id: undefined,
         level: 'WARN',
         message: 'This is a WARN log',
-        sampling_rate: undefined,
+        sampling_rate: 0,
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       });
+      expect(value).toBeInstanceOf(LogItem);
     });
 
     test('when optional parameters DO have a value set, it returns an object with expected structure and values', () => {
@@ -68,7 +71,7 @@ describe('Class: PowertoolsLogFormatter', () => {
         error: new Error('Something happened!'),
         lambdaContext: {
           functionName: 'my-lambda-function',
-          memoryLimitInMB: 123,
+          memoryLimitInMB: '123',
           functionVersion: '1.23.3',
           coldStart: true,
           invokedFunctionArn:
@@ -88,7 +91,7 @@ describe('Class: PowertoolsLogFormatter', () => {
       expect(value.getAttributes()).toEqual({
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-        function_memory_size: 123,
+        function_memory_size: '123',
         function_name: 'my-lambda-function',
         function_request_id: 'abcdefg123456789',
         level: 'WARN',
@@ -105,358 +108,277 @@ describe('Class: PowertoolsLogFormatter', () => {
     test('when an error of type Error is passed, it returns an object with expected structure and values', () => {
       // Prepare
       const formatter = new PowertoolsLogFormatter();
-      const shouldThrow = (): void => {
-        throw new Error('Ouch!');
-      };
 
-      // Act
-      try {
-        shouldThrow();
-      } catch (error) {
-        // Assess
-        expect(error).toBeInstanceOf(Error);
-        const formattedError = formatter.formatError(<Error>error);
-        expect(formattedError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+$/
-          ),
-          message: 'Ouch!',
-          name: 'Error',
-          stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-          ),
-        });
-      }
-
-      expect(shouldThrow).toThrowError(expect.any(Error));
+      // Act & Assess
+      const formattedError = formatter.formatError(new Error('Ouch!'));
+      expect(formattedError).toEqual({
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+$/
+        ),
+        message: 'Ouch!',
+        name: 'Error',
+        stack: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+      });
     });
 
     test('when an error of type ReferenceError is passed, it returns an object with expected structure and values', () => {
       // Prepare
       const formatter = new PowertoolsLogFormatter();
-      const shouldThrow = (): void => {
-        // This is a reference error purposely to test the formatter
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        doesNotExist;
-      };
 
-      // Act
-      try {
-        shouldThrow();
-      } catch (error) {
-        // Assess
-        expect(error).toBeInstanceOf(Error);
-        const formattedReferenceError = formatter.formatError(<Error>error);
-        expect(formattedReferenceError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+$/
-          ),
-          message: 'doesNotExist is not defined',
-          name: 'ReferenceError',
-          stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-          ),
-        });
-      }
-
-      expect(shouldThrow).toThrowError(expect.any(ReferenceError));
+      // Act & Assess
+      const formattedReferenceError = formatter.formatError(
+        new ReferenceError('doesNotExist is not defined')
+      );
+      expect(formattedReferenceError).toEqual({
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+$/
+        ),
+        message: 'doesNotExist is not defined',
+        name: 'ReferenceError',
+        stack: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+      });
     });
 
     test('when an error of type AssertionError is passed, it returns an object with expected structure and values', () => {
       // Prepare
       const formatter = new PowertoolsLogFormatter();
-      const shouldThrow = (): void => {
-        strictEqual(1, 2);
-      };
 
-      // Act
-      try {
-        shouldThrow();
-      } catch (error) {
-        // Assess
-        expect(error).toBeInstanceOf(AssertionError);
-        const formattedAssertionError = formatter.formatError(
-          <AssertionError>error
-        );
-        expect(formattedAssertionError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+/
-          ),
-          message: expect.stringMatching(
-            /Expected values to be strictly equal/
-          ),
-          name: 'AssertionError',
-          stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-          ),
-        });
-      }
-
-      expect(shouldThrow).toThrowError(expect.any(AssertionError));
+      // Act & Assess
+      const formattedAssertionError = formatter.formatError(
+        new AssertionError({
+          message: 'Expected values to be strictly equal',
+          actual: 1,
+          expected: 2,
+          operator: 'strictEqual',
+        })
+      );
+      expect(formattedAssertionError).toEqual({
+        location: expect.stringMatching(
+          /(node:)*internal\/assert\/assertion_error(.js)*:[0-9]+$/
+        ),
+        message: expect.stringMatching(/Expected values to be strictly equal/),
+        name: 'AssertionError',
+        stack: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+      });
     });
 
     test('when an error of type RangeError is passed, it returns an object with expected structure and values', () => {
       // Prepare
       const formatter = new PowertoolsLogFormatter();
-      const shouldThrow = (): void => {
-        throw new RangeError('The argument must be between 10 and 20');
-      };
 
-      // Act
-      try {
-        shouldThrow();
-      } catch (error) {
-        // Assess
-        expect(error).toBeInstanceOf(RangeError);
-        const formattedRangeError = formatter.formatError(<RangeError>error);
-        expect(formattedRangeError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+/
-          ),
-          message: 'The argument must be between 10 and 20',
-          name: 'RangeError',
-          stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-          ),
-        });
+      // Act & Assess
+      const formattedRangeError = formatter.formatError(
+        new RangeError('The argument must be between 10 and 20')
+      );
+      expect(formattedRangeError).toEqual({
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+/
+        ),
+        message: 'The argument must be between 10 and 20',
+        name: 'RangeError',
+        stack: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+      });
+    });
+
+    test('when an error of type ReferenceError is passed, it returns an object with expected structure and values', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+
+      // Act & Assess
+      const formattedError = formatter.formatError(
+        new ReferenceError('foo is not defined')
+      );
+      expect(formattedError).toEqual({
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+/
+        ),
+        message: 'foo is not defined',
+        name: 'ReferenceError',
+        stack: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+      });
+    });
+
+    test('when an error of type SyntaxError is passed, it returns an object with expected structure and values', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+
+      // Act & Assess
+      const formattedSyntaxError = formatter.formatError(
+        new SyntaxError(`Unexpected identifier 'bar'`)
+      );
+      expect(formattedSyntaxError).toEqual({
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+/
+        ),
+        message: `Unexpected identifier 'bar'`,
+        name: 'SyntaxError',
+        stack: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+      });
+    });
+
+    test('when an error of type TypeError is passed, it returns an object with expected structure and values', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+
+      // Act & Assess
+      const formattedTypeError = formatter.formatError(
+        new TypeError(`Cannot read property 'foo' of null`)
+      );
+      expect(formattedTypeError).toEqual({
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+/
+        ),
+        message: expect.stringMatching(/Cannot read propert/),
+        name: 'TypeError',
+        stack: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+      });
+    });
+
+    test('when an error of type URIError is passed, it returns an object with expected structure and values', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+
+      // Act & Assess
+      const formattedURIError = formatter.formatError(
+        new URIError('URI malformed')
+      );
+      expect(formattedURIError).toEqual({
+        location: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+/
+        ),
+        message: 'URI malformed',
+        name: 'URIError',
+        stack: expect.stringMatching(
+          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+        ),
+      });
+    });
+
+    test('when an error with cause of type Error is formatted, the cause key is included and formatted', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+      class ErrorWithCause extends Error {
+        public cause?: Error;
+        public constructor(message: string, options?: { cause: Error }) {
+          super(message);
+          this.cause = options?.cause;
+        }
       }
 
-      test('when an error of type ReferenceError is passed, it returns an object with expected structure and values', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
+      // Act
+      const formattedURIError = formatter.formatError(
+        new ErrorWithCause('foo', { cause: new Error('bar') })
+      );
 
-        // Act & Assess
-        const formattedError = formatter.formatError(
-          new ReferenceError('foo is not defined')
-        );
-        expect(formattedError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolLogFormatter.test.ts:[0-9]+/
-          ),
-          message: 'foo is not defined',
-          name: 'ReferenceError',
-          stack: expect.stringMatching(
-            /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
-          ),
-        });
-      });
-
-      test('when an error of type SyntaxError is passed, it returns an object with expected structure and values', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
-        const shouldThrow = (): void => {
-          eval('foo bar');
-        };
-
-        // Act
-        try {
-          shouldThrow();
-        } catch (error) {
-          // Assess
-          expect(error).toBeInstanceOf(SyntaxError);
-          const formattedSyntaxError = formatter.formatError(
-            <SyntaxError>error
-          );
-          expect(formattedSyntaxError).toEqual({
-            location: expect.stringMatching(
-              /PowertoolsLogFormatter.test.ts:[0-9]+/
-            ),
-            message: 'Unexpected identifier',
-            name: 'SyntaxError',
-            stack: expect.stringMatching(
-              /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-            ),
-          });
-        }
-
-        expect(shouldThrow).toThrowError(expect.any(SyntaxError));
-      });
-
-      test('when an error of type TypeError is passed, it returns an object with expected structure and values', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
-        const shouldThrow = (): void => {
-          // This is a reference error purposely to test the formatter
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          null.foo();
-        };
-
-        // Act
-        try {
-          shouldThrow();
-        } catch (error) {
-          // TODO: review message content assertion (see Issue #304)
-          // Assess
-          expect(error).toBeInstanceOf(Error);
-          const formattedTypeError = formatter.formatError(<Error>error);
-          expect(formattedTypeError).toEqual({
-            location: expect.stringMatching(
-              /PowertoolsLogFormatter.test.ts:[0-9]+/
-            ),
-            message: expect.stringMatching(/Cannot read propert/),
-            name: 'TypeError',
-            stack: expect.stringMatching(
-              /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-            ),
-          });
-        }
-
-        expect(shouldThrow).toThrowError(expect.any(TypeError));
-      });
-
-      test('when an error of type URIError is passed, it returns an object with expected structure and values', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
-        const shouldThrow = (): void => {
-          decodeURIComponent('%');
-        };
-
-        // Act
-        try {
-          shouldThrow();
-        } catch (error) {
-          // Assess
-          expect(error).toBeInstanceOf(URIError);
-          const formattedURIError = formatter.formatError(<URIError>error);
-          expect(formattedURIError).toEqual({
-            location: expect.stringMatching(
-              /PowertoolsLogFormatter.test.ts:[0-9]+/
-            ),
-            message: 'URI malformed',
-            name: 'URIError',
-            stack: expect.stringMatching(
-              /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-            ),
-          });
-        }
-
-        expect(shouldThrow).toThrowError(expect.any(URIError));
-      });
-
-      test('when an error with cause of type Error is formatted, the cause key is included and formatted', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
-        class ErrorWithCause extends Error {
-          public cause?: Error;
-          public constructor(message: string, options?: { cause: Error }) {
-            super(message);
-            this.cause = options?.cause;
-          }
-        }
-
-        // Act
-        const formattedURIError = formatter.formatError(
-          new ErrorWithCause('foo', { cause: new Error('bar') })
-        );
-
-        // Assess
-        expect(formattedURIError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolLogFormatter.test.ts:[0-9]+/
-          ),
-          message: 'foo',
+      // Assess
+      expect(formattedURIError).toEqual({
+        location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
+        message: 'foo',
+        name: 'Error',
+        stack: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+:\d+/),
+        cause: {
+          location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
+          message: 'bar',
           name: 'Error',
           stack: expect.stringMatching(
-            /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
-          cause: {
-            location: expect.stringMatching(
-              /PowertoolLogFormatter.test.ts:[0-9]+/
-            ),
-            message: 'bar',
-            name: 'Error',
-            stack: expect.stringMatching(
-              /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
-            ),
-          },
-        });
-      });
-
-      test('when an error with cause of type other than Error is formatted, the cause key is included as-is', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
-        class ErrorWithCause extends Error {
-          public cause?: unknown;
-          public constructor(message: string, options?: { cause: unknown }) {
-            super(message);
-            this.cause = options?.cause;
-          }
-        }
-
-        // Act
-        const formattedURIError = formatter.formatError(
-          new ErrorWithCause('foo', { cause: 'bar' })
-        );
-
-        // Assess
-        expect(formattedURIError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolLogFormatter.test.ts:[0-9]+/
-          ),
-          message: 'foo',
-          name: 'Error',
-          stack: expect.stringMatching(
-            /PowertoolLogFormatter.test.ts:[0-9]+:[0-9]+/
-          ),
-          cause: 'bar',
-        });
+        },
       });
     });
 
-    describe('Method: formatTimestamp', () => {
-      test('it returns a datetime value ISO 8601 compliant', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
+    test('when an error with cause of type other than Error is formatted, the cause key is included as-is', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+      class ErrorWithCause extends Error {
+        public cause?: unknown;
+        public constructor(message: string, options?: { cause: unknown }) {
+          super(message);
+          this.cause = options?.cause;
+        }
+      }
 
-        // Act
-        const timestamp = formatter.formatTimestamp(new Date());
+      // Act
+      const formattedURIError = formatter.formatError(
+        new ErrorWithCause('foo', { cause: 'bar' })
+      );
 
-        // Assess
-        expect(timestamp).toEqual('2016-06-20T12:08:10.000Z');
+      // Assess
+      expect(formattedURIError).toEqual({
+        location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
+        message: 'foo',
+        name: 'Error',
+        stack: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+:\d+/),
+        cause: 'bar',
       });
     });
+  });
 
-    describe('Method: getCodeLocation', () => {
-      test('when the stack IS present, it returns a datetime value ISO 8601 compliant', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
-        const stack =
-          'Error: Things keep happening!\n' +
-          '   at /home/foo/bar/file-that-threw-the-error.ts:22:5\n' +
-          '   at SomeOther.function (/home/foo/bar/some-file.ts:154:19)';
+  describe('Method: formatTimestamp', () => {
+    test('it returns a datetime value ISO 8601 compliant', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
 
-        // Act
-        const errorLocation = formatter.getCodeLocation(stack);
+      // Act
+      const timestamp = formatter.formatTimestamp(new Date());
 
-        // Assess
-        expect(errorLocation).toEqual('/home/foo/bar/some-file.ts:154');
-      });
+      // Assess
+      expect(timestamp).toEqual('2016-06-20T12:08:10.000Z');
+    });
+  });
 
-      test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
-        const stack = undefined;
+  describe('Method: getCodeLocation', () => {
+    test('when the stack IS present, it returns a datetime value ISO 8601 compliant', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+      const stack =
+        'Error: Things keep happening!\n' +
+        '   at /home/foo/bar/file-that-threw-the-error.ts:22:5\n' +
+        '   at SomeOther.function (/home/foo/bar/some-file.ts:154:19)';
 
-        // Act
-        const errorLocation = formatter.getCodeLocation(stack);
+      // Act
+      const errorLocation = formatter.getCodeLocation(stack);
 
-        // Assess
-        expect(errorLocation).toEqual('');
-      });
+      // Assess
+      expect(errorLocation).toEqual('/home/foo/bar/some-file.ts:154');
+    });
 
-      test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
-        // Prepare
-        const formatter = new PowertoolsLogFormatter();
-        const stack = 'A weird stack trace...';
+    test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+      const stack = undefined;
 
-        // Act
-        const errorLocation = formatter.getCodeLocation(stack);
+      // Act
+      const errorLocation = formatter.getCodeLocation(stack);
 
-        // Assess
-        expect(errorLocation).toEqual('');
-      });
+      // Assess
+      expect(errorLocation).toEqual('');
+    });
+
+    test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
+      // Prepare
+      const formatter = new PowertoolsLogFormatter();
+      const stack = 'A weird stack trace...';
+
+      // Act
+      const errorLocation = formatter.getCodeLocation(stack);
+
+      // Assess
+      expect(errorLocation).toEqual('');
     });
   });
 });

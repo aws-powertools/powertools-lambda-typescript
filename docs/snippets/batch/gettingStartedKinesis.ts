@@ -1,7 +1,7 @@
 import {
-  BatchProcessorSync,
+  BatchProcessor,
   EventType,
-  processPartialResponseSync,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -11,10 +11,10 @@ import type {
   KinesisStreamBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessorSync(EventType.KinesisDataStreams); // (1)!
+const processor = new BatchProcessor(EventType.KinesisDataStreams); // (1)!
 const logger = new Logger();
 
-const recordHandler = (record: KinesisStreamRecord): void => {
+const recordHandler = async (record: KinesisStreamRecord): Promise<void> => {
   logger.info('Processing record', { record: record.kinesis.data });
   const payload = JSON.parse(record.kinesis.data);
   logger.info('Processed item', { item: payload });
@@ -24,7 +24,7 @@ export const handler = async (
   event: KinesisStreamEvent,
   context: Context
 ): Promise<KinesisStreamBatchResponse> => {
-  return processPartialResponseSync(event, recordHandler, processor, {
+  return processPartialResponse(event, recordHandler, processor, {
     context,
   });
 };

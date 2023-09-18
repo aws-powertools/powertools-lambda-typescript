@@ -1,7 +1,7 @@
 import {
-  BatchProcessorSync,
+  BatchProcessor,
   EventType,
-  processPartialResponseSync,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -11,11 +11,11 @@ import type {
   SQSBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessorSync(EventType.SQS); // (1)!
+const processor = new BatchProcessor(EventType.SQS); // (1)!
 const logger = new Logger();
 
 // prettier-ignore
-const recordHandler = (record: SQSRecord): void => { // (2)!
+const recordHandler = async (record: SQSRecord): Promise<void> => { // (2)!
   const payload = record.body;
   if (payload) {
     const item = JSON.parse(payload);
@@ -28,7 +28,7 @@ export const handler = async (
   context: Context
 ): Promise<SQSBatchResponse> => {
   // prettier-ignore
-  return processPartialResponseSync(event, recordHandler, processor, { // (3)!
+  return processPartialResponse(event, recordHandler, processor, { // (3)!
     context,
   });
 };

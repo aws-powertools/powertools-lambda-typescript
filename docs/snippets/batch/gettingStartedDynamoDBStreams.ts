@@ -1,7 +1,7 @@
 import {
-  BatchProcessorSync,
+  BatchProcessor,
   EventType,
-  processPartialResponseSync,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -11,10 +11,10 @@ import type {
   DynamoDBBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessorSync(EventType.DynamoDBStreams); // (1)!
+const processor = new BatchProcessor(EventType.DynamoDBStreams); // (1)!
 const logger = new Logger();
 
-const recordHandler = (record: DynamoDBRecord): void => {
+const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
   if (record.dynamodb && record.dynamodb.NewImage) {
     logger.info('Processing record', { record: record.dynamodb.NewImage });
     const message = record.dynamodb.NewImage.Message.S;
@@ -29,7 +29,7 @@ export const handler = async (
   event: DynamoDBStreamEvent,
   context: Context
 ): Promise<DynamoDBBatchResponse> => {
-  return processPartialResponseSync(event, recordHandler, processor, {
+  return processPartialResponse(event, recordHandler, processor, {
     context,
   });
 };

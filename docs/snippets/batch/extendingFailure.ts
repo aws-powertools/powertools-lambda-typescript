@@ -1,10 +1,10 @@
 import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 import {
-  BatchProcessorSync,
+  BatchProcessor,
   EventType,
   FailureResponse,
   EventSourceType,
-  processPartialResponseSync,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -14,7 +14,7 @@ import type {
   SQSBatchResponse,
 } from 'aws-lambda';
 
-class MyProcessor extends BatchProcessorSync {
+class MyProcessor extends BatchProcessor {
   #metrics: Metrics;
 
   public constructor(eventType: keyof typeof EventType) {
@@ -47,7 +47,7 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
-  return processPartialResponseSync(event, recordHandler, processor, {
+  return processPartialResponse(event, recordHandler, processor, {
     context,
   });
 };

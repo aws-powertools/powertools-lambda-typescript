@@ -1,7 +1,7 @@
 import {
-  BatchProcessorSync,
+  BatchProcessor,
   EventType,
-  processPartialResponseSync,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
 import middy from '@middy/core';
@@ -12,10 +12,10 @@ import type {
   SQSBatchResponse,
 } from 'aws-lambda';
 
-const processor = new BatchProcessorSync(EventType.SQS);
+const processor = new BatchProcessor(EventType.SQS);
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-const recordHandler = (record: SQSRecord): void => {
+const recordHandler = async (record: SQSRecord): Promise<void> => {
   const subsegment = tracer.getSegment()?.addNewSubsegment('### recordHandler'); // (1)!
   subsegment?.addAnnotation('messageId', record.messageId); // (2)!
 
@@ -36,7 +36,7 @@ const recordHandler = (record: SQSRecord): void => {
 
 export const handler = middy(
   async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
-    return processPartialResponseSync(event, recordHandler, processor, {
+    return processPartialResponse(event, recordHandler, processor, {
       context,
     });
   }

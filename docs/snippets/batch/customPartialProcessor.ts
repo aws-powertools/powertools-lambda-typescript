@@ -7,7 +7,7 @@ import { marshall } from '@aws-sdk/util-dynamodb';
 import {
   EventType,
   BasePartialBatchProcessor,
-  processPartialResponseSync,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import type {
   SuccessResponse,
@@ -93,7 +93,7 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
-  return processPartialResponseSync(event, recordHandler, processor, {
+  return processPartialResponse(event, recordHandler, processor, {
     context,
   });
 };

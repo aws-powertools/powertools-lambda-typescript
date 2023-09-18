@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.1...v1.13.0) (2023-09-18)
+
+### Bug Fixes
+
+- **batch:** Update processor to pass only context to handler ([#1637](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1637)) ([6fa09b2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6fa09b2638bf247fd595db51ac3d1aa1252d3379))
+- **docs:** update versions.json jq query ([4e6f662](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4e6f662b244a941a911c1ed5973bef11d7610093))
+- **parameters:** return type when options without transform is used ([#1671](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1671)) ([b2fe341](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b2fe34150a0d896f1755ca30cbe89175cdb66ff2))
+
+### Features
+
+- **batch:** rename AsyncBatchProcessor to default BatchProcessor ([#1683](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1683)) ([e253755](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e253755d09f50a75cde805168845f52d8b85af28))
+
 ## [1.12.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.0...v1.12.1) (2023-07-25)
 
 **Note:** Version bump only for package aws-lambda-powertools-typescript

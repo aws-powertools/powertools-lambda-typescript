@@ -17,7 +17,15 @@ if (process.argv.length < 3) {
 }
 const basePath = resolve(process.argv[2]);
 const packageJsonPath = join(basePath, 'package.json');
-const alphaPackages = [];
+const alphaPackages = [
+  '@aws-lambda-powertools/batch',
+  '@aws-lambda-powertools/commons',
+  '@aws-lambda-powertools/idempotency',
+  '@aws-lambda-powertools/logger',
+  '@aws-lambda-powertools/metrics',
+  '@aws-lambda-powertools/parameters',
+  '@aws-lambda-powertools/tracer',
+];
 const betaPackages = [];
 
 (() => {
@@ -44,6 +52,7 @@ const betaPackages = [];
       types,
       files,
       private,
+      type,
     } = pkgJson;
 
     let version = originalVersion;
@@ -71,6 +80,7 @@ const betaPackages = [];
       main,
       types,
       files,
+      type,
     };
 
     // Not all utilities have these fields, so only add them if they exist to avoid

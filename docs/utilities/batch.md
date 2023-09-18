@@ -52,7 +52,7 @@ journey
     Records expired: 1: Failure
 ```
 
-This behavior changes when you enable Report Batch Item Failures feature in your Lambda function event source configuration:
+This behavior changes when you enable [ReportBatchItemFailures feature](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting) in your Lambda function event source configuration:
 
 <!-- markdownlint-disable MD013 -->
 * [**SQS queues**](#sqs-standard). Only messages reported as failure will return to the queue for a retry, while successful ones will be deleted.
@@ -144,6 +144,10 @@ This helps preserve the ordering of messages in your queue.
 ```
 
 1.  **Step 1**. Creates a partial failure batch processor for SQS FIFO queues. See [partial failure mechanics for details](#partial-failure-mechanics)
+
+!!! Note 
+    Note that SqsFifoPartialProcessor is synchronous using `processPartialResponseSync`.
+    This is because we need to preserve the order of messages in the queue. See [Async or sync processing section](#async-or-sync-processing) for more details.
 
 ### Processing messages from Kinesis
 

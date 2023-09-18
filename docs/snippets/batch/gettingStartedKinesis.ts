@@ -14,7 +14,7 @@ import type {
 const processor = new BatchProcessor(EventType.KinesisDataStreams); // (1)!
 const logger = new Logger();
 
-const recordHandler = (record: KinesisStreamRecord): void => {
+const recordHandler = async (record: KinesisStreamRecord): Promise<void> => {
   logger.info('Processing record', { record: record.kinesis.data });
   const payload = JSON.parse(record.kinesis.data);
   logger.info('Processed item', { item: payload });

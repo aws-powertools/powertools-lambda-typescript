@@ -1,4 +1,4 @@
-import { BatchProcessor } from './BatchProcessor';
+import { BatchProcessorSync } from './BatchProcessorSync';
 import { EventType } from './constants';
 import { SqsFifoShortCircuitError } from './errors';
 import type { FailureResponse, SuccessResponse } from './types';
@@ -8,7 +8,7 @@ import type { FailureResponse, SuccessResponse } from './types';
  * Stops processing records when the first record fails
  * The remaining records are reported as failed items
  */
-class SqsFifoPartialProcessor extends BatchProcessor {
+class SqsFifoPartialProcessor extends BatchProcessorSync {
   public constructor() {
     super(EventType.SQS);
   }
@@ -18,7 +18,7 @@ class SqsFifoPartialProcessor extends BatchProcessor {
    * When the first failed message is detected, the process is short-circuited
    * And the remaining messages are reported as failed items
    */
-  public process(): (SuccessResponse | FailureResponse)[] {
+  public processSync(): (SuccessResponse | FailureResponse)[] {
     this.prepare();
 
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
@@ -30,7 +30,7 @@ class SqsFifoPartialProcessor extends BatchProcessor {
         return this.shortCircuitProcessing(currentIndex, processedRecords);
       }
 
-      processedRecords.push(this.processRecord(record));
+      processedRecords.push(this.processRecordSync(record));
       currentIndex++;
     }
 

@@ -15,7 +15,7 @@ import type {
 const processor = new BatchProcessor(EventType.SQS);
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-const recordHandler = (record: SQSRecord): void => {
+const recordHandler = async (record: SQSRecord): Promise<void> => {
   const subsegment = tracer.getSegment()?.addNewSubsegment('### recordHandler'); // (1)!
   subsegment?.addAnnotation('messageId', record.messageId); // (2)!
 

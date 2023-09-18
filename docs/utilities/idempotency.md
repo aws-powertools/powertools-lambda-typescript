@@ -3,9 +3,6 @@ title: Idempotency
 description: Utility
 ---
 
-???+ warning
-	**This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/7) we might introduce significant breaking changes and improvements in response to customers feedback.
-
 The idempotency utility provides a simple solution to convert your Lambda functions into idempotent operations which are safe to retry.
 
 ## Key features

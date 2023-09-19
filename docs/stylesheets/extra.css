@@ -3,10 +3,8 @@
 }
 
 .highlight .hll {
-    background-color: lavender;
-
-    [data-md-color-scheme="slate"] {
-        background-color: rgb(69, 48, 164)
+    [data-md-color-scheme="default"] {
+        background-color: lavender;
     }
 }
 

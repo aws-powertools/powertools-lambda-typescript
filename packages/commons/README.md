@@ -33,7 +33,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 * **[Metrics](https://docs.powertools.aws.dev/lambda-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
 * **[Parameters](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM, Secrets Manager, AppConfig, and DynamoDB
 * **[Idempotency](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
-* **[Batch processing](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/batch/)** - Utilities to process batches of events from Kinesis, SQS, DynamoDB Streams.
+* **[Batch processing](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
 
 ## Getting started
 

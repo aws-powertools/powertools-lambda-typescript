@@ -1,11 +1,6 @@
 # Powertools for AWS Lambda (TypeScript) - Idempotency Utility <!-- omit in toc -->
 
 
-| ⚠️ **WARNING: Do not use this utility in production just yet!** ⚠️                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**.. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/10) we might introduce significant breaking changes and improvements in response to customers feedback. | _ |
-
-
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda-typescript/latest/#features).
 
 You can use the package in both TypeScript and JavaScript code bases.

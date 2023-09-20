@@ -1,15 +1,29 @@
-type Request = {
+import { IdempotencyRecordStatusValue } from '@aws-lambda-powertools/idempotency/types';
+
+export type Request = {
   user: string;
   productId: string;
 };
 
-type Response = {
+export type Response = {
   [key: string]: unknown;
 };
 
-type SubscriptionResult = {
+export type SubscriptionResult = {
   id: string;
   productId: string;
 };
 
-export { Request, Response, SubscriptionResult };
+export type ApiSecret = {
+  apiKey: string;
+  refreshToken: string;
+  validUntil: number;
+  restEndpoint: string;
+};
+
+export type ProviderItem = {
+  validation?: string;
+  in_progress_expiration?: number;
+  status: IdempotencyRecordStatusValue;
+  data: string;
+};

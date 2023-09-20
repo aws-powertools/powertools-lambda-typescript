@@ -12,7 +12,7 @@ const persistenceStore = new DynamoDBPersistenceLayer({
 });
 
 const createSubscriptionPayment = async (
-  user: string,
+  _user: string,
   productId: string
 ): Promise<SubscriptionResult> => {
   // ... create payment

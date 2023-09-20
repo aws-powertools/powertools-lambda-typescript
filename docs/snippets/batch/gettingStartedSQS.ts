@@ -15,7 +15,7 @@ const processor = new BatchProcessor(EventType.SQS); // (1)!
 const logger = new Logger();
 
 // prettier-ignore
-const recordHandler = (record: SQSRecord): void => { // (2)!
+const recordHandler = async (record: SQSRecord): Promise<void> => { // (2)!
   const payload = record.body;
   if (payload) {
     const item = JSON.parse(payload);

@@ -3,9 +3,6 @@ title: Idempotency
 description: Utility
 ---
 
-???+ warning
-	**This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/7) we might introduce significant breaking changes and improvements in response to customers feedback.
-
 The idempotency utility provides a simple solution to convert your Lambda functions into idempotent operations which are safe to retry.
 
 ## Key features
@@ -53,9 +50,10 @@ classDiagram
 ## Getting started
 
 ### Installation
+
 Install the library in your project
 ```shell
-npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb
+npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
 ```
 
 While we support Amazon DynamoDB as a persistance layer out of the box, you need to bring your own AWS SDK for JavaScript v3 DynamoDB client.
@@ -79,132 +77,30 @@ As of now, Amazon DynamoDB is the only supported persistent storage layer, so yo
 
 If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
 
-| Configuration      | Default value | Notes                                                                                   |
-| ------------------ |:--------------|-----------------------------------------------------------------------------------------|
-| Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`.  |
-| TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.    |
+| Configuration      | Default value | Notes                                                                                  |
+| ------------------ | :------------ | -------------------------------------------------------------------------------------- |
+| Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`. |
+| TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.   |
 
 ???+ tip "Tip: You can share a single state table for all functions"
     You can reuse the same DynamoDB table to store idempotency state. We add the Lambda function name in addition to the idempotency key as a hash key.
 
-<!-- TODO: review CDK template -->
-=== "AWS Serverless Application Model (SAM) example"
+=== "AWS Cloud Development Kit (CDK) example"
 
-    ```yaml hl_lines="6-14 24-31"
-    Transform: AWS::Serverless-2016-10-31
-    Resources:
-    IdempotencyTable:
-        Type: AWS::DynamoDB::Table
-        Properties:
-        AttributeDefinitions:
-            - AttributeName: id
-            AttributeType: S
-        KeySchema:
-            - AttributeName: id
-            KeyType: HASH
-        TimeToLiveSpecification:
-            AttributeName: expiration
-            Enabled: true
-        BillingMode: PAY_PER_REQUEST
-
-    HelloWorldFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-        Runtime: nodejs18.x
-        Handler: index.handler
-        Policies:
-            - Statement:
-            - Sid: AllowDynamodbReadWrite
-                Effect: Allow
-                Action:
-                - dynamodb:PutItem
-                - dynamodb:GetItem
-                - dynamodb:UpdateItem
-                - dynamodb:DeleteItem
-                Resource: !GetAtt IdempotencyTable.Arn
+    ```typescript title="template.tf" hl_lines="11-18 26"
+    --8<-- "docs/snippets/idempotency/templates/tableCdk.ts"
     ```
 
-=== "Terraform"
+=== "AWS Serverless Application Model (SAM) example"
 
-    ```terraform hl_lines="14-26 64-70"
-    terraform {
-        required_providers {
-            aws = {
-            source  = "hashicorp/aws"
-            version = "~> 4.0"
-            }
-        }
-    }
+    ```yaml title="template.yaml" hl_lines="6-14 24-31"
+    --8<-- "docs/snippets/idempotency/templates/tableSam.yaml"
+    ```
 
-    provider "aws" {
-        region = "us-east-1" # Replace with your desired AWS region
-    }
+=== "Terraform example"
 
-    resource "aws_dynamodb_table" "IdempotencyTable" {
-        name         = "IdempotencyTable"
-        billing_mode = "PAY_PER_REQUEST"
-        hash_key     = "id"
-        attribute {
-            name = "id"
-            type = "S"
-        }
-        ttl {
-            attribute_name = "expiration"
-            enabled        = true
-        }
-    }
-
-    resource "aws_lambda_function" "IdempotencyFunction" {
-        function_name = "IdempotencyFunction"
-        role          = aws_iam_role.IdempotencyFunctionRole.arn
-        runtime       = "nodejs18.x"
-        handler       = "index.handler"
-        filename      = "lambda.zip"
-    }
-
-    resource "aws_iam_role" "IdempotencyFunctionRole" {
-        name = "IdempotencyFunctionRole"
-
-        assume_role_policy = jsonencode({
-            Version = "2012-10-17"
-            Statement = [
-            {
-                Sid    = ""
-                Effect = "Allow"
-                Principal = {
-                Service = "lambda.amazonaws.com"
-                }
-                Action = "sts:AssumeRole"
-            },
-            ]
-        })
-    }
-
-    resource "aws_iam_policy" "LambdaDynamoDBPolicy" {
-        name        = "LambdaDynamoDBPolicy"
-        description = "IAM policy for Lambda function to access DynamoDB"
-        policy = jsonencode({
-            Version = "2012-10-17"
-            Statement = [
-            {
-                Sid    = "AllowDynamodbReadWrite"
-                Effect = "Allow"
-                Action = [
-                "dynamodb:PutItem",
-                "dynamodb:GetItem",
-                "dynamodb:UpdateItem",
-                "dynamodb:DeleteItem",
-                ]
-                Resource = aws_dynamodb_table.IdempotencyTable.arn
-            },
-            ]
-        })
-    }
-
-    resource "aws_iam_role_policy_attachment" "IdempotencyFunctionRoleAttachment" {
-        role       = aws_iam_role.IdempotencyFunctionRole.name
-        policy_arn = aws_iam_policy.LambdaDynamoDBPolicy.arn
-    }
+    ```terraform title="template.tf" hl_lines="14-26 64-70"
+    --8<-- "docs/snippets/idempotency/templates/tableTerraform.tf"
     ```
 
 ???+ warning "Warning: Large responses with DynamoDB persistence layer"
@@ -231,7 +127,7 @@ You can quickly start by initializing the `DynamoDBPersistenceLayer` class and u
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts::13"
+    --8<-- "docs/snippets/idempotency/types.ts:3:16"
     ```
 
 After processing this request successfully, a second request containing the exact same payload above will now return the same response, ensuring our customer isn't charged twice.
@@ -259,7 +155,7 @@ When using `makeIdempotent` on arbitrary functions, you can tell us which argume
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts::13"
+    --8<-- "docs/snippets/idempotency/types.ts:3:16"
     ```
 
 The function this example has two arguments, note that while wrapping it with the `makeIdempotent` high-order function, we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one that contains the data we should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the second is `1`, and so on.
@@ -282,7 +178,7 @@ If you are using [Middy](https://middy.js.org){target="_blank"} as your middlewa
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts::13"
+    --8<-- "docs/snippets/idempotency/types.ts:3:16"
     ```
 
 ### Choosing a payload subset for idempotency
@@ -309,42 +205,13 @@ Imagine the function executes successfully, but the client never receives the re
 === "Example event"
 
     ```json hl_lines="28"
-    {
-      "version":"2.0",
-      "routeKey":"ANY /createpayment",
-      "rawPath":"/createpayment",
-      "rawQueryString":"",
-      "headers": {
-        "Header1": "value1",
-        "X-Idempotency-Key": "abcdefg"
-      },
-      "requestContext":{
-        "accountId":"123456789012",
-        "apiId":"api-id",
-        "domainName":"id.execute-api.us-east-1.amazonaws.com",
-        "domainPrefix":"id",
-        "http":{
-          "method":"POST",
-          "path":"/createpayment",
-          "protocol":"HTTP/1.1",
-          "sourceIp":"ip",
-          "userAgent":"agent"
-        },
-        "requestId":"id",
-        "routeKey":"ANY /createpayment",
-        "stage":"$default",
-        "time":"10/Feb/2021:13:40:43 +0000",
-        "timeEpoch":1612964443723
-      },
-      "body":"{\"user\":\"xyz\",\"productId\":\"123456789\"}",
-      "isBase64Encoded":false
-    }
+    --8<-- "docs/snippets/idempotency/samples/makeIdempotentJmes.json"
     ```
 
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts::13"
+    --8<-- "docs/snippets/idempotency/types.ts:3:16"
     ```
 
 ### Lambda timeouts
@@ -746,25 +613,36 @@ This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`
 === "Success Event"
 
     ```json hl_lines="3 6"
-    {
-        "user": {
-            "uid": "BB0D045C-8878-40C8-889E-38B3CB0A61B1",
-            "name": "Foo"
-        },
-        "productId": 10000
-    }
+    --8<-- "docs/snippets/idempotency/samples/workingWIthIdempotencyRequiredKeySuccess.json"
     ```
 
 === "Failure Event"
 
     ```json hl_lines="3 5"
-    {
-        "user": {
-            "uid": "BB0D045C-8878-40C8-889E-38B3CB0A61B1",
-            "name": "foo",
-            "productId": 10000
-        }
-    }
+    --8<-- "docs/snippets/idempotency/samples/workingWIthIdempotencyRequiredKeyError.json"
+    ```
+
+### Batch integration
+
+You can easily integrate with [Batch](batch.md) utility by using idempotency wrapper around your processing function.
+This ensures that you process each record in an idempotent manner, and guard against a [Lambda timeout](#lambda-timeouts) idempotent situation.
+
+???+ "Choosing a unique batch record attribute" 
+    In this example, we choose `messageId` as our idempotency key since we know it'll be unique.
+    Depending on your use case, it might be more accurate [to choose another field](#choosing-a-payload-subset-for-idempotency) your producer intentionally set to define uniqueness.
+
+
+
+=== "Integration with batch processor"
+
+    ```typescript hl_lines="27 31-34 41"
+    --8<-- "docs/snippets/idempotency/workingWithBatch.ts"
+    ```
+
+=== "Sample event"
+
+    ```json hl_lines="4"
+    --8<-- "docs/snippets/idempotency/samples/workingWithBatch.json"
     ```
 
 ### Customizing AWS SDK configuration
@@ -804,6 +682,42 @@ The example function above would cause data to be stored in DynamoDB like this:
 | idempotency#MyLambdaFunction | 1e956ef7da78d0cb890be999aecc0c9e | 1636549553 | COMPLETED   | {"paymentId": "12345, "message": "success", "statusCode": 200}   |
 | idempotency#MyLambdaFunction | 2b2cdb5f86361e97b4383087c1ffdf27 | 1636549571 | COMPLETED   | {"paymentId": "527212", "message": "success", "statusCode": 200} |
 | idempotency#MyLambdaFunction | f091d2527ad1c78f05d54cc3f363be80 | 1636549585 | IN_PROGRESS |                                                                  |
+
+### Bring your own persistent store
+
+This utility provides an abstract base class (ABC), so that you can implement your choice of persistent storage layer.
+
+You can create your own persistent store from scratch by inheriting the `BasePersistenceLayer` class, and implementing `_getRecord()`, `_putRecord()`, `_updateRecord()` and `_deleteRecord()`.
+
+* `_getRecord()` – Retrieves an item from the persistence store using an idempotency key and returns it as a `IdempotencyRecord` instance.
+* `_putRecord()` – Adds a `IdempotencyRecord` to the persistence store if it doesn't already exist with that key. Throws an `IdempotencyItemAlreadyExistsError` error if a non-expired entry already exists.
+* `_updateRecord()` – Updates an item in the persistence store.
+* `_deleteRecord()` – Removes an item from the persistence store.
+
+Below an example implementation of a custom persistence layer backed by a generic key-value store.
+
+=== "CustomPersistenceLayer"
+
+    ```typescript hl_lines="9 19 28 34 50 90"
+    --8<-- "docs/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
+    ```
+
+=== "index.ts"
+
+    ```typescript hl_lines="10"
+    --8<-- "docs/snippets/idempotency/advancedBringYourOwnPersistenceLayerUsage.ts"
+    ```
+
+=== "types.ts"
+
+    ```typescript
+    --8<-- "docs/snippets/idempotency/types.ts"
+    ```
+
+???+ danger
+    Pay attention to the documentation for each - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
+    
+    For example, the `_putRecord()` method needs to throw an error if a non-expired record already exists in the data store with a matching key.
 
 ## Extra resources
 

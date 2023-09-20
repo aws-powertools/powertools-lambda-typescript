@@ -10,11 +10,10 @@ nav:
   - Roadmap: roadmap.md
   - API reference: api/" target="_blank
   - We Made This (Community): we_made_this.md
-  - Core utilities:
+  - Features:
       - core/tracer.md
       - core/logger.md
       - core/metrics.md
-  - Utilities:
       - utilities/parameters.md
       - utilities/idempotency.md
       - utilities/batch.md
@@ -39,15 +38,12 @@ theme:
   features:
     - header.autohide
     - navigation.sections
-    - navigation.expand
     - navigation.top
     - navigation.instant
     - navigation.indexes
     - navigation.tracking
     - content.code.annotate
     - content.code.copy
-    - toc.follow
-    - toc.integrate
     - announce.dismiss
   icon:
     repo: fontawesome/brands/github
@@ -65,6 +61,7 @@ markdown_extensions:
   - pymdownx.snippets:
       base_path: "."
       check_paths: true
+      restrict_base_path: false
   - meta
   - toc:
       permalink: true
@@ -79,6 +76,8 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 copyright: Copyright &copy; 2023 Amazon Web Services
 

@@ -3,7 +3,6 @@ import type {
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons';
 import type { AnyFunction, IdempotencyHandlerOptions } from './types';
-import { IdempotencyRecordStatus } from './types';
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
@@ -12,7 +11,7 @@ import {
 } from './errors';
 import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
 import { IdempotencyConfig } from './IdempotencyConfig';
-import { MAX_RETRIES } from './constants';
+import { MAX_RETRIES, IdempotencyRecordStatus } from './constants';
 import { search } from 'jmespath';
 
 /**

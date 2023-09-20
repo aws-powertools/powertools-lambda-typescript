@@ -5,7 +5,7 @@
  */
 import {
   SqsFifoPartialProcessor,
-  processPartialResponse,
+  processPartialResponseSync,
   SqsFifoShortCircuitError,
 } from '../../src';
 import { sqsRecordFactory } from '../helpers/factories';
@@ -33,7 +33,11 @@ describe('Class: SqsFifoBatchProcessor', () => {
       const processor = new SqsFifoPartialProcessor();
 
       // Act
-      const result = processPartialResponse(event, sqsRecordHandler, processor);
+      const result = processPartialResponseSync(
+        event,
+        sqsRecordHandler,
+        processor
+      );
 
       // Assess
       expect(result['batchItemFailures']).toStrictEqual([]);
@@ -48,7 +52,11 @@ describe('Class: SqsFifoBatchProcessor', () => {
       const processor = new SqsFifoPartialProcessor();
 
       // Act
-      const result = processPartialResponse(event, sqsRecordHandler, processor);
+      const result = processPartialResponseSync(
+        event,
+        sqsRecordHandler,
+        processor
+      );
 
       // Assess
       expect(result['batchItemFailures'].length).toBe(2);

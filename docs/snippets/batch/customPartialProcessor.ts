@@ -5,7 +5,8 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import {
-  BasePartialProcessor,
+  EventType,
+  BasePartialBatchProcessor,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import type {
@@ -17,19 +18,13 @@ import type { SQSEvent, Context, SQSBatchResponse } from 'aws-lambda';
 
 const tableName = process.env.TABLE_NAME || 'table-not-found';
 
-class MyPartialProcessor extends BasePartialProcessor {
+class MyPartialProcessor extends BasePartialBatchProcessor {
   #tableName: string;
   #client?: DynamoDBClient;
 
   public constructor(tableName: string) {
-    super();
+    super(EventType.SQS);
     this.#tableName = tableName;
-  }
-
-  public async asyncProcessRecord(
-    _record: BaseRecord
-  ): Promise<SuccessResponse | FailureResponse> {
-    throw new Error('Not implemented');
   }
 
   /**
@@ -63,13 +58,21 @@ class MyPartialProcessor extends BasePartialProcessor {
     this.successMessages = [];
   }
 
+  public async processRecord(
+    _record: BaseRecord
+  ): Promise<SuccessResponse | FailureResponse> {
+    throw new Error('Not implemented');
+  }
+
   /**
    * It handles how your record is processed.
    *
    * Here we are keeping the status of each run, `this.handler` is
    * the function that is passed when calling `processor.register()`.
    */
-  public processRecord(record: BaseRecord): SuccessResponse | FailureResponse {
+  public processRecordSync(
+    record: BaseRecord
+  ): SuccessResponse | FailureResponse {
     try {
       const result = this.handler(record);
 

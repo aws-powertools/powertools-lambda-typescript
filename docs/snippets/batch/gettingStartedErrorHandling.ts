@@ -21,7 +21,7 @@ class InvalidPayload extends Error {
   }
 }
 
-const recordHandler = (record: SQSRecord): void => {
+const recordHandler = async (record: SQSRecord): Promise<void> => {
   const payload = record.body;
   if (payload) {
     const item = JSON.parse(payload);

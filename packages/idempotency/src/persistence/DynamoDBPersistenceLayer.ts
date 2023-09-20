@@ -2,7 +2,7 @@ import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
 } from '../errors';
-import { IdempotencyRecordStatus } from '../types';
+import { IdempotencyRecordStatus } from '../constants';
 import type { DynamoDBPersistenceOptions } from '../types';
 import {
   AttributeValue,

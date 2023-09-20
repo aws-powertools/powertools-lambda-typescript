@@ -94,6 +94,11 @@ jobs:
       - name: Copy API Docs
         run: |
           cp -r api site/
+      - name: Create Artifact (Site)
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: site
+          path: site
       - name: Deploy Docs (Version)
         env:
           VERSION: ${{ inputs.version }}
@@ -121,7 +126,7 @@ jobs:
         #   1. Download the versions.json file from S3
         #   2. Find any reference to the alias and delete it from the versions file
         #   3. This is voodoo (don't use JQ):
-        #      - we assign the input as $o and the new version/alias as $n, 
+        #      - we assign the input as $o and the new version/alias as $n,
         #      - we check if the version number exists in the file already (for republishing docs)
         #      - if it's an alias (stage/latest/*) or old version, we do nothing and output $o (original input)
         #      - if it's a new version number, we add it at position 0 in the array.

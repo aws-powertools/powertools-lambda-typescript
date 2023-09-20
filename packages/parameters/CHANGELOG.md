@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.1...v1.13.0) (2023-09-18)
+
+### Bug Fixes
+
+- **parameters:** return type when options without transform is used ([#1671](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1671)) ([b2fe341](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b2fe34150a0d896f1755ca30cbe89175cdb66ff2))
+
 ## [1.12.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.0...v1.12.1) (2023-07-25)
 
 **Note:** Version bump only for package @aws-lambda-powertools/parameters

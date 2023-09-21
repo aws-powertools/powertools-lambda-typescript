@@ -108,7 +108,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
           hello:
             handler: lambda_function.lambda_handler
             layers:
-              - arn:aws:lambda:${aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:20
+              - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:20
         ```
 
         If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools` from being bundled since the packages will be already present the Layer:

@@ -35,7 +35,7 @@
     "@types/lodash.merge": "^4.6.7"
   },
   "peerDependencies": {
-    "@middy/core": ">=3.x <4.x"
+    "@middy/core": ">=3.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {

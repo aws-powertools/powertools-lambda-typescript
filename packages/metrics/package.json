@@ -37,7 +37,7 @@
     "promise-retry": "^2.0.1"
   },
   "peerDependencies": {
-    "@middy/core": ">=3.x <4.x"
+    "@middy/core": ">=3.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {

@@ -6,7 +6,13 @@ export const handler = async (
   _event: unknown,
   _context: unknown
 ): Promise<void> => {
+  const handlerSegment = tracer.getSegment()?.addNewSubsegment('### handler');
+  handlerSegment && tracer.setSegment(handlerSegment); // (1)!
+
   tracer.putMetadata('paymentResponse', {
     foo: 'bar',
   });
+
+  handlerSegment?.close();
+  handlerSegment && tracer.setSegment(handlerSegment?.parent); // (2)!
 };

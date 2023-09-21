@@ -129,15 +129,21 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
 === "Annotations"
     You can add annotations using `putAnnotation` method.
 
-    ```typescript hl_lines="9"
+    ```typescript hl_lines="12"
     --8<-- "docs/snippets/tracer/putAnnotation.ts"
     ```
+
+    1. When Lambda starts an invocation [the X-Ray SDk creates a segment called `facade`](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda). This segment cannot be annotated or modified by your code, so you need to create a new subsegment. This is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler)
+    2. To correctly trace the current and subsequent invocations you need to restore the original segment, this is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler).
 === "Metadata"
     You can add metadata using `putMetadata` method.
 
-    ```typescript hl_lines="9-11"
+    ```typescript hl_lines="12-14"
     --8<-- "docs/snippets/tracer/putMetadata.ts"
     ```
+
+    1. When Lambda starts an invocation [the X-Ray SDk creates a segment called `facade`](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda). This segment cannot be modified by your code, so you need to create a new subsegment. This is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler)
+    2. To correctly trace the current and subsequent invocations you need to restore the original segment, this is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler).
 
 <figure>
   <img src="../../media/tracer_utility_showcase_2.png" loading="lazy" alt="Screenshot of the Amazon CloudWatch Console showing an example of segments and subsegments generated and with metadata set for the handler"/>

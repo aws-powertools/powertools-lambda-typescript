@@ -6,6 +6,7 @@ interface SdkClient {
   send: (args: unknown) => Promise<unknown>;
   config: {
     serviceId: string;
+    defaultSigningName: string;
   };
   middlewareStack: {
     identify: () => string[];

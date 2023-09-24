@@ -35,7 +35,7 @@ describe('Helpers: awsSdk', () => {
         },
         send: jest.fn(),
         config: {
-          serviceId: 'foo',
+          defaultSigningName: 'bar',
         },
       };
       const feature = 'my-feature';
@@ -56,7 +56,7 @@ describe('Helpers: awsSdk', () => {
         },
         send: jest.fn(),
         config: {
-          serviceId: 'foo',
+          defaultSigningName: 'bar',
         },
       };
       const feature = 'my-feature';
@@ -119,7 +119,7 @@ describe('Helpers: awsSdk', () => {
       const client = {
         send: jest.fn(),
         config: {
-          serviceId: 'foo',
+          defaultSigningName: 'bar',
         },
         middlewareStack: {
           identify: () => '',
@@ -151,7 +151,7 @@ describe('Helpers: awsSdk', () => {
       const result = isSdkClient(client);
 
       // Assess
-      expect(result).toEqual(true);
+      expect(result).toEqual(false);
     });
   });
 });

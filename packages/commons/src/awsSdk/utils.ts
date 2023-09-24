@@ -13,8 +13,8 @@ const isSdkClient = (client: unknown): client is SdkClient =>
   client.config !== undefined &&
   typeof client.config === 'object' &&
   client.config !== null &&
-  'serviceId' in client.config &&
-  typeof client.config.serviceId === 'string' &&
+  'defaultSigningName' in client.config &&
+  typeof client.config.defaultSigningName === 'string' &&
   'middlewareStack' in client &&
   client.middlewareStack !== undefined &&
   typeof client.middlewareStack === 'object' &&

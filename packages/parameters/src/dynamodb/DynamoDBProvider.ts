@@ -18,10 +18,7 @@ import type {
 } from '@aws-sdk/client-dynamodb';
 import type { PaginationConfiguration } from '@aws-sdk/types';
 import type { JSONValue } from '@aws-lambda-powertools/commons';
-import {
-  addUserAgentMiddleware,
-  isSdkClient,
-} from '@aws-lambda-powertools/commons';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -255,11 +252,7 @@ class DynamoDBProvider extends BaseProvider {
 
     if (config?.awsSdkV3Client) {
       const { awsSdkV3Client } = config;
-      if (
-        isSdkClient(awsSdkV3Client) &&
-        (awsSdkV3Client.config.serviceId === 'DynamoDB' ||
-          awsSdkV3Client.config.defaultSigningName === 'dynamodb')
-      ) {
+      if (this.isValidAwsSdkClient(awsSdkV3Client, 'dynamodb')) {
         this.client = awsSdkV3Client;
       } else {
         throw Error('Not a valid DynamoDBClient provided');

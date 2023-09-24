@@ -10,10 +10,7 @@ import type {
   AppConfigGetOptions,
   AppConfigGetOutput,
 } from '../types/AppConfigProvider';
-import {
-  addUserAgentMiddleware,
-  isSdkClient,
-} from '@aws-lambda-powertools/commons';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -200,11 +197,7 @@ class AppConfigProvider extends BaseProvider {
     super();
     if (options?.awsSdkV3Client) {
       const { awsSdkV3Client } = options;
-      if (
-        isSdkClient(awsSdkV3Client) &&
-        (awsSdkV3Client.config.serviceId === 'AppConfigData' ||
-          awsSdkV3Client.config.defaultSigningName === 'appconfig')
-      ) {
+      if (this.isValidAwsSdkClient(awsSdkV3Client, 'appconfig')) {
         this.client = awsSdkV3Client;
       } else {
         throw Error('Not a valid AppConfigDataClient provided');

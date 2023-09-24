@@ -17,7 +17,10 @@ import {
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { IdempotencyRecord } from './IdempotencyRecord';
 import { BasePersistenceLayer } from './BasePersistenceLayer';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import {
+  addUserAgentMiddleware,
+  isSdkClient,
+} from '@aws-lambda-powertools/commons';
 
 /**
  * DynamoDB persistence layer for idempotency records.
@@ -79,7 +82,10 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       config.staticPkValue ?? `idempotency#${this.idempotencyKeyPrefix}`;
 
     if (config?.awsSdkV3Client) {
-      if (config?.awsSdkV3Client instanceof DynamoDBClient) {
+      if (
+        isSdkClient(config?.awsSdkV3Client) &&
+        config?.awsSdkV3Client.config.serviceId === 'DynamoDB'
+      ) {
         this.client = config.awsSdkV3Client;
       } else {
         throw Error('Not valid DynamoDBClient provided.');

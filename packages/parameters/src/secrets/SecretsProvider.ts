@@ -9,7 +9,10 @@ import type {
   SecretsGetOptions,
   SecretsGetOutput,
 } from '../types/SecretsProvider';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import {
+  addUserAgentMiddleware,
+  isSdkClient,
+} from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -17,14 +20,8 @@ import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
  *
  * ## Getting started
  *
- * This utility supports AWS SDK v3 for JavaScript only. This allows the utility to be modular, and you to install only
+ * This utility supports AWS SDK v3 for JavaScript only (`@aws-sdk/client-secrets-manager`). This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
- *
- * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for Secrets Manager:
- *
- * ```sh
- * npm install @aws-lambda-powertools/parameters @aws-sdk/client-secrets-manager
- * ```
  *
  * ## Basic usage
  *
@@ -163,8 +160,13 @@ class SecretsProvider extends BaseProvider {
     super();
 
     if (config?.awsSdkV3Client) {
-      if (config?.awsSdkV3Client instanceof SecretsManagerClient) {
-        this.client = config.awsSdkV3Client;
+      const { awsSdkV3Client } = config;
+      if (
+        isSdkClient(awsSdkV3Client) &&
+        (awsSdkV3Client.config.serviceId === 'Secrets Manager' ||
+          awsSdkV3Client.config.defaultSigningName === 'secretsmanager')
+      ) {
+        this.client = awsSdkV3Client;
       } else {
         throw Error('Not a valid SecretsManagerClient provided');
       }

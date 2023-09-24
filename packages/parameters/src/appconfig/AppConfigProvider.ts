@@ -10,7 +10,10 @@ import type {
   AppConfigGetOptions,
   AppConfigGetOutput,
 } from '../types/AppConfigProvider';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import {
+  addUserAgentMiddleware,
+  isSdkClient,
+} from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -18,14 +21,8 @@ import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
  *
  * ## Getting started
  *
- * This utility supports AWS SDK v3 for JavaScript only. This allows the utility to be modular, and you to install only
+ * This utility supports AWS SDK v3 for JavaScript only (`@aws-sdk/client-appconfigdata`). This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
- *
- * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for AppConfig:
- *
- * ```sh
- * npm install @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata
- * ```
  *
  * ## Basic usage
  *
@@ -202,8 +199,13 @@ class AppConfigProvider extends BaseProvider {
   public constructor(options: AppConfigProviderOptions) {
     super();
     if (options?.awsSdkV3Client) {
-      if (options?.awsSdkV3Client instanceof AppConfigDataClient) {
-        this.client = options.awsSdkV3Client;
+      const { awsSdkV3Client } = options;
+      if (
+        isSdkClient(awsSdkV3Client) &&
+        (awsSdkV3Client.config.serviceId === 'AppConfigData' ||
+          awsSdkV3Client.config.defaultSigningName === 'appconfig')
+      ) {
+        this.client = awsSdkV3Client;
       } else {
         throw Error('Not a valid AppConfigDataClient provided');
       }

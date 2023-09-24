@@ -18,7 +18,10 @@ import type {
 } from '@aws-sdk/client-dynamodb';
 import type { PaginationConfiguration } from '@aws-sdk/types';
 import type { JSONValue } from '@aws-lambda-powertools/commons';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import {
+  addUserAgentMiddleware,
+  isSdkClient,
+} from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -26,14 +29,8 @@ import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
  *
  * ## Getting started
  *
- * This utility supports AWS SDK v3 for JavaScript only. This allows the utility to be modular, and you to install only
+ * This utility supports AWS SDK v3 for JavaScript only (`@aws-sdk/client-dynamodb` and `@aws-sdk/util-dynamodb`). This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
- *
- * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for AppConfig:
- *
- * ```sh
- * npm install @aws-lambda-powertools/parameters @aws-sdk/client-dynamodb @aws-sdk/util-dynamodb
- * ```
  *
  * ## Basic usage
  *
@@ -257,8 +254,13 @@ class DynamoDBProvider extends BaseProvider {
     super();
 
     if (config?.awsSdkV3Client) {
-      if (config?.awsSdkV3Client instanceof DynamoDBClient) {
-        this.client = config.awsSdkV3Client;
+      const { awsSdkV3Client } = config;
+      if (
+        isSdkClient(awsSdkV3Client) &&
+        (awsSdkV3Client.config.serviceId === 'DynamoDB' ||
+          awsSdkV3Client.config.defaultSigningName === 'dynamodb')
+      ) {
+        this.client = awsSdkV3Client;
       } else {
         throw Error('Not a valid DynamoDBClient provided');
       }

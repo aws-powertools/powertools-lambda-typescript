@@ -84,7 +84,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     if (config?.awsSdkV3Client) {
       if (
         isSdkClient(config?.awsSdkV3Client) &&
-        config?.awsSdkV3Client.config.serviceId === 'DynamoDB'
+        config?.awsSdkV3Client.config.defaultSigningName === 'dynamodb'
       ) {
         this.client = config.awsSdkV3Client;
       } else {

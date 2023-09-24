@@ -2,6 +2,7 @@ import {
   isNullOrUndefined,
   isRecord,
   isString,
+  isSdkClient,
 } from '@aws-lambda-powertools/commons';
 import { GetOptions } from './GetOptions';
 import { GetMultipleOptions } from './GetMultipleOptions';
@@ -14,7 +15,6 @@ import type {
   GetMultipleOptionsInterface,
   GetOptionsInterface,
 } from '../types/BaseProvider';
-import { isSdkClient } from '@aws-lambda-powertools/commons';
 
 /**
  * Base class for all providers.

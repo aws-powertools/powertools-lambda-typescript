@@ -94,7 +94,7 @@ describe('Class: AppConfigProvider', () => {
       );
     });
 
-    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+    it('falls back on a new SDK client when an unknown object is provided instead of a client', async () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: AppConfigProviderOptions = {
@@ -103,10 +103,16 @@ describe('Class: AppConfigProvider', () => {
         awsSdkV3Client: awsSdkV3Client as AppConfigDataClient,
       };
 
-      // Act & Assess
-      expect(() => {
-        new AppConfigProvider(options);
-      }).toThrow();
+      // Act
+      const provider = new AppConfigProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'AppConfigData',
+        })
+      );
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
   });
 

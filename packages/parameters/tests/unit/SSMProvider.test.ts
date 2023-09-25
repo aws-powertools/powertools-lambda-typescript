@@ -93,17 +93,23 @@ describe('Class: SSMProvider', () => {
       );
     });
 
-    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+    it('falls back on a new SDK client when an unknown object is provided instead of a client', async () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: SSMProviderOptions = {
         awsSdkV3Client: awsSdkV3Client as SSMClient,
       };
 
-      // Act & Assess
-      expect(() => {
-        new SSMProvider(options);
-      }).toThrow();
+      // Act
+      const provider = new SSMProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'SSM',
+        })
+      );
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
   });
 

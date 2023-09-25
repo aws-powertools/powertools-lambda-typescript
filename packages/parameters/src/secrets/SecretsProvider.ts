@@ -9,7 +9,10 @@ import type {
   SecretsGetOptions,
   SecretsGetOutput,
 } from '../types/SecretsProvider';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import {
+  addUserAgentMiddleware,
+  isSdkClient,
+} from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -156,18 +159,11 @@ class SecretsProvider extends BaseProvider {
   public constructor(config?: SecretsProviderOptions) {
     super();
 
-    if (config?.awsSdkV3Client) {
-      const { awsSdkV3Client } = config;
-      if (this.isValidAwsSdkClient(awsSdkV3Client, 'secretsmanager')) {
-        this.client = awsSdkV3Client;
-      } else {
-        throw Error('Not a valid SecretsManagerClient provided');
-      }
+    if (config?.awsSdkV3Client && isSdkClient(config.awsSdkV3Client)) {
+      this.client = config.awsSdkV3Client;
     } else {
-      const clientConfig = config?.clientConfig || {};
-      this.client = new SecretsManagerClient(clientConfig);
+      this.client = new SecretsManagerClient(config?.clientConfig || {});
     }
-
     addUserAgentMiddleware(this.client, 'parameters');
   }
 

@@ -82,17 +82,23 @@ describe('Class: SecretsProvider', () => {
       );
     });
 
-    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+    it('falls back on a new SDK client when an unknown object is provided instead of a client', async () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: SecretsProviderOptions = {
         awsSdkV3Client: awsSdkV3Client as SecretsManagerClient,
       };
 
-      // Act & Assess
-      expect(() => {
-        new SecretsProvider(options);
-      }).toThrow();
+      // Act
+      const provider = new SecretsProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'Secrets Manager',
+        })
+      );
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
   });
 

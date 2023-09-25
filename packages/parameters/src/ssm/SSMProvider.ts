@@ -27,7 +27,10 @@ import type {
   SSMGetParametersByNameFromCacheOutputType,
 } from '../types/SSMProvider';
 import type { PaginationConfiguration } from '@aws-sdk/types';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import {
+  addUserAgentMiddleware,
+  isSdkClient,
+} from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -275,18 +278,11 @@ class SSMProvider extends BaseProvider {
   public constructor(config?: SSMProviderOptions) {
     super();
 
-    if (config?.awsSdkV3Client) {
-      const { awsSdkV3Client } = config;
-      if (this.isValidAwsSdkClient(awsSdkV3Client, 'ssm')) {
-        this.client = awsSdkV3Client;
-      } else {
-        throw Error('Not a valid SSMClient provided');
-      }
+    if (config?.awsSdkV3Client && isSdkClient(config.awsSdkV3Client)) {
+      this.client = config.awsSdkV3Client;
     } else {
-      const clientConfig = config?.clientConfig || {};
-      this.client = new SSMClient(clientConfig);
+      this.client = new SSMClient(config?.clientConfig || {});
     }
-
     addUserAgentMiddleware(this.client, 'parameters');
   }
 

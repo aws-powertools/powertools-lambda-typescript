@@ -2,7 +2,6 @@ import {
   isNullOrUndefined,
   isRecord,
   isString,
-  isSdkClient,
 } from '@aws-lambda-powertools/commons';
 import { GetOptions } from './GetOptions';
 import { GetMultipleOptions } from './GetMultipleOptions';
@@ -194,18 +193,6 @@ abstract class BaseProvider implements BaseProviderInterface {
     path: string,
     options?: unknown
   ): Promise<Record<string, unknown> | void>;
-
-  /**
-   * Check whether the provided client is a valid AWS SDK client for the given service.
-   *
-   * @param {unknown} client - The potential AWS SDK client
-   * @param {string} serviceName - The name of the service to check
-   */
-  protected isValidAwsSdkClient(client: unknown, serviceName: string): boolean {
-    return (
-      isSdkClient(client) && client.config.defaultSigningName === serviceName
-    );
-  }
 }
 
 export { BaseProvider };

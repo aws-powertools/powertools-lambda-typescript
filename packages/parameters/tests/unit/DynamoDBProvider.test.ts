@@ -87,7 +87,7 @@ describe('Class: DynamoDBProvider', () => {
       );
     });
 
-    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+    it('falls back on a new SDK client when an unknown object is provided instead of a client', async () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: DynamoDBProviderOptions = {
@@ -95,10 +95,16 @@ describe('Class: DynamoDBProvider', () => {
         awsSdkV3Client: awsSdkV3Client as DynamoDBClient,
       };
 
-      // Act & Assess
-      expect(() => {
-        new DynamoDBProvider(options);
-      }).toThrow();
+      // Act
+      const provider = new DynamoDBProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'DynamoDB',
+        })
+      );
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
   });
 

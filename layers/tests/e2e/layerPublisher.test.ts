@@ -22,6 +22,8 @@ import {
 import { join } from 'node:path';
 import packageJson from '../../package.json';
 
+jest.spyOn(console, 'log').mockImplementation();
+
 /**
  * This test has two stacks:
  * 1. LayerPublisherStack - publishes a layer version using the LayerPublisher construct and containing the Powertools utilities from the repo
@@ -60,6 +62,7 @@ describe(`Layers E2E tests, publisher stack`, () => {
   const layerStack = new LayerPublisherStack(layerApp, layerId, {
     layerName: layerId,
     powertoolsPackageVersion: powerToolsPackageVersion,
+    buildFromLocal: true,
     ssmParameterLayerArn: ssmParameterLayerName,
   });
   const testLayerStack = new TestStack({
@@ -84,6 +87,7 @@ describe(`Layers E2E tests, publisher stack`, () => {
       {
         entry: lambdaFunctionCodeFilePath,
         environment: {
+          LAYERS_PATH: '/opt/nodejs/node_modules',
           POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
           POWERTOOLS_SERVICE_NAME: 'LayerPublisherStack',
         },
@@ -111,7 +115,7 @@ describe(`Layers E2E tests, publisher stack`, () => {
     });
   }, SETUP_TIMEOUT);
 
-  describe('LayerPublisherStack usage', () => {
+  describe('package version and path check', () => {
     it(
       'should have no errors in the logs, which indicates the pacakges version matches the expected one',
       () => {
@@ -121,7 +125,9 @@ describe(`Layers E2E tests, publisher stack`, () => {
       },
       TEST_CASE_TIMEOUT
     );
+  });
 
+  describe('utilities usage', () => {
     it(
       'should have one warning related to missing Metrics namespace',
       () => {
@@ -145,12 +151,30 @@ describe(`Layers E2E tests, publisher stack`, () => {
     );
 
     it(
-      'should have one debug log that says Hello World!',
+      'should have one debug log with tracer subsegment info',
       () => {
         const logs = invocationLogs.getFunctionLogs('DEBUG');
 
         expect(logs.length).toBe(1);
-        expect(logs[0]).toContain('Hello World!');
+        const logEntry = TestInvocationLogs.parseFunctionLog(logs[0]);
+        expect(logEntry.message).toContain('subsegment');
+        expect(logEntry.subsegment).toBeDefined();
+        const subsegment = JSON.parse(logEntry.subsegment as string);
+        const traceIdFromLog = subsegment.trace_id;
+        expect(subsegment).toEqual(
+          expect.objectContaining({
+            id: expect.any(String),
+            name: '### index.handler',
+            start_time: expect.any(Number),
+            end_time: expect.any(Number),
+            type: 'subsegment',
+            annotations: {
+              ColdStart: true,
+            },
+            parent_id: expect.any(String),
+            trace_id: traceIdFromLog,
+          })
+        );
       },
       TEST_CASE_TIMEOUT
     );

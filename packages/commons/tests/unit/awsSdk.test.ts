@@ -136,16 +136,7 @@ describe('Helpers: awsSdk', () => {
 
     it('returns false if the client is not a valid AWS SDK v3 client', () => {
       // Prepare
-      const client = {
-        send: jest.fn(),
-        config: {
-          serviceId: 'foo',
-        },
-        middlewareStack: {
-          identify: () => '',
-          addRelativeTo: jest.fn(),
-        },
-      };
+      const client = {};
 
       // Act
       const result = isSdkClient(client);

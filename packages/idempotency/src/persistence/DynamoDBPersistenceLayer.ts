@@ -81,20 +81,12 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     this.staticPkValue =
       config.staticPkValue ?? `idempotency#${this.idempotencyKeyPrefix}`;
 
-    if (config?.awsSdkV3Client) {
-      if (
-        isSdkClient(config?.awsSdkV3Client) &&
-        config?.awsSdkV3Client.config.defaultSigningName === 'dynamodb'
-      ) {
-        this.client = config.awsSdkV3Client;
-      } else {
-        throw Error('Not valid DynamoDBClient provided.');
-      }
+    if (config?.awsSdkV3Client && isSdkClient(config.awsSdkV3Client)) {
+      this.client = config.awsSdkV3Client;
     } else {
       this.clientConfig = config?.clientConfig ?? {};
       this.client = new DynamoDBClient(this.clientConfig);
     }
-
     addUserAgentMiddleware(this.client, 'idempotency');
   }
 

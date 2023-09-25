@@ -38,7 +38,7 @@ const getVersionFromModule = async (moduleName: string): Promise<string> => {
     throw new Error(`Unable to parse package.json file at ${manifestPath}`);
   }
 
-  return moduleVersion as string;
+  return moduleVersion;
 };
 
 export const handler = async (): Promise<void> => {

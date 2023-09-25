@@ -41,16 +41,16 @@ const getVersionFromModule = async (moduleName: string): Promise<string> => {
   return moduleVersion as string;
 };
 
-export const handler = (): void => {
+export const handler = async (): Promise<void> => {
   // Check that the packages version matches the expected one
-  ['commons', 'logger', 'metrics', 'tracer'].forEach(async (moduleName) => {
+  for (const moduleName of ['commons', 'logger', 'metrics', 'tracer']) {
     const moduleVersion = await getVersionFromModule(moduleName);
     if (moduleVersion != expectedVersion) {
       throw new Error(
         `Package version mismatch (${moduleName}): ${moduleVersion} != ${expectedVersion}`
       );
     }
-  });
+  }
 
   // Check that the metrics is working
   metrics.captureColdStartMetric();

@@ -36,6 +36,9 @@ interface DynamoDBProviderOptionsBase {
  */
 interface DynamoDBProviderOptionsWithClientConfig
   extends DynamoDBProviderOptionsBase {
+  /**
+   * Optional configuration to pass during client initialization, e.g. AWS region. It accepts the same configuration object as the AWS SDK v3 client (`DynamoDBClient`).
+   */
   clientConfig?: DynamoDBClientConfig;
   awsSdkV3Client?: never;
 }
@@ -50,6 +53,9 @@ interface DynamoDBProviderOptionsWithClientConfig
  */
 interface DynamoDBProviderOptionsWithClientInstance
   extends DynamoDBProviderOptionsBase {
+  /**
+   * Optional AWS SDK v3 client instance (`DynamoDBClient`) to use for DynamoDB operations. If not provided, we will create a new instance of `DynamoDBClient`.
+   */
   awsSdkV3Client?: DynamoDBClient;
   clientConfig?: never;
 }

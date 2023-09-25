@@ -14,6 +14,9 @@ import type { GetOptionsInterface, TransformOptions } from './BaseProvider';
  *  @property {never} [awsSdkV3Client] - This property should never be passed.
  */
 interface SecretsProviderOptionsWithClientConfig {
+  /**
+   * Optional configuration to pass during client initialization, e.g. AWS region. It accepts the same configuration object as the AWS SDK v3 client (`SecretsManagerClient`).
+   */
   clientConfig?: SecretsManagerClientConfig;
   awsSdkV3Client?: never;
 }
@@ -27,6 +30,9 @@ interface SecretsProviderOptionsWithClientConfig {
  *  @property {never} [clientConfig] - This property should never be passed.
  */
 interface SecretsProviderOptionsWithClientInstance {
+  /**
+   * Optional AWS SDK v3 client instance (`SecretsManagerClient`) to use for Secrets Manager operations. If not provided, we will create a new instance of `SecretsManagerClient`.
+   */
   awsSdkV3Client?: SecretsManagerClient;
   clientConfig?: never;
 }

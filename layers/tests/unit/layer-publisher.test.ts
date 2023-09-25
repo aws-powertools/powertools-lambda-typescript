@@ -15,6 +15,7 @@ describe('Class: LayerPublisherStack', () => {
     const stack = new LayerPublisherStack(app, 'MyTestStack', {
       layerName: 'AWSLambdaPowertoolsTypeScript',
       powertoolsPackageVersion: '1.0.1',
+      buildFromLocal: true,
       ssmParameterLayerArn: '/layers/powertools-layer-arn',
     });
 

@@ -69,10 +69,6 @@ jobs:
         uses: ./.github/actions/cached-node-modules
       - name: Run linting
         run: npm run lint -w layers
-      - name: Create layer files
-        run: |
-          export VERSION=latest
-          bash .github/scripts/setup_tmp_layer_files.sh
       - name: Run tests
         run: npm run test:unit -w layers
   check-docs-snippets:

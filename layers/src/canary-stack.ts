@@ -1,12 +1,12 @@
 import { CustomResource, Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { randomUUID } from 'node:crypto';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Provider } from 'aws-cdk-lib/custom-resources';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import path from 'path';
+import path from 'node:path';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 
 export interface CanaryStackProps extends StackProps {
@@ -54,6 +54,7 @@ export class CanaryStack extends Stack {
         ],
       },
       environment: {
+        LAYERS_PATH: '/opt/nodejs/node_modules',
         POWERTOOLS_SERVICE_NAME: 'canary',
         POWERTOOLS_PACKAGE_VERSION: powertoolsPackageVersion,
         POWERTOOLS_LAYER_NAME: layerName,
@@ -61,6 +62,7 @@ export class CanaryStack extends Stack {
       },
       layers: layer,
       logRetention: RetentionDays.ONE_DAY,
+      tracing: Tracing.ACTIVE,
     });
 
     canaryFunction.addToRolePolicy(

@@ -60,7 +60,15 @@ export class LayerPublisherStack extends Stack {
 
               // This is the list of packages that we need include in the Lambda Layer
               // the name is the same as the npm workspace name
-              const utilities = ['commons', 'logger', 'metrics', 'tracer'];
+              const utilities = [
+                'commons',
+                'logger',
+                'metrics',
+                'tracer',
+                'parameters',
+                'idempotency',
+                'batch',
+              ];
 
               // These files are relative to the tmp folder
               const filesToRemove = [

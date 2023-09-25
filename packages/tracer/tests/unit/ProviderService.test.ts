@@ -24,7 +24,7 @@ import {
 import http from 'http';
 import https from 'https';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 jest.mock('aws-xray-sdk-core', () => ({
   ...jest.requireActual('aws-xray-sdk-core'),
@@ -40,6 +40,11 @@ jest.mock('aws-xray-sdk-core', () => ({
   setDaemonAddress: jest.fn(),
   setLogger: jest.fn(),
   setSegment: jest.fn(),
+}));
+
+jest.mock('@aws-lambda-powertools/commons', () => ({
+  ...jest.requireActual('@aws-lambda-powertools/commons'),
+  addUserAgentMiddleware: jest.fn(),
 }));
 
 describe('Class: ProviderService', () => {
@@ -92,16 +97,16 @@ describe('Class: ProviderService', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
-      // spy on addUserAgentMiddleware
-      const spy = jest.spyOn(UserAgentMiddleware, 'addUserAgentMiddleware');
-
       // Act
       const dynamoDBClient = new DynamoDBClient({});
       provider.captureAWSv3Client(dynamoDBClient);
 
       // Assess
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith(dynamoDBClient, 'tracer');
+      expect(addUserAgentMiddleware).toHaveBeenNthCalledWith(
+        1,
+        dynamoDBClient,
+        'tracer'
+      );
     });
   });
 

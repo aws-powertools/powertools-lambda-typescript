@@ -15,9 +15,13 @@ import type {
 } from '@aws-sdk/client-dynamodb';
 import type { DynamoDBProviderOptions } from '../../src/types/DynamoDBProvider';
 import { marshall } from '@aws-sdk/util-dynamodb';
-import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
+jest.mock('@aws-lambda-powertools/commons', () => ({
+  ...jest.requireActual('@aws-lambda-powertools/commons'),
+  addUserAgentMiddleware: jest.fn(),
+}));
 
 describe('Class: DynamoDBProvider', () => {
   beforeEach(() => {
@@ -31,11 +35,6 @@ describe('Class: DynamoDBProvider', () => {
         tableName: 'test-table',
       };
 
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
-      );
-
       // Act
       const provider = new DynamoDBProvider(options);
 
@@ -45,8 +44,7 @@ describe('Class: DynamoDBProvider', () => {
           serviceId: 'DynamoDB',
         })
       );
-
-      expect(userAgentSpy).toHaveBeenCalled();
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
     test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
@@ -54,38 +52,24 @@ describe('Class: DynamoDBProvider', () => {
       const options: DynamoDBProviderOptions = {
         tableName: 'test-table',
         clientConfig: {
-          serviceId: 'with-client-config',
+          region: 'eu-south-2',
         },
       };
-
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
-      );
 
       // Act
       const provider = new DynamoDBProvider(options);
 
       // Assess
-      expect(provider.client.config).toEqual(
-        expect.objectContaining({
-          serviceId: 'with-client-config',
-        })
-      );
-
-      expect(userAgentSpy).toHaveBeenCalled();
+      expect(provider.client.config.region()).resolves.toEqual('eu-south-2');
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
     test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
       // Prepare
       const awsSdkV3Client = new DynamoDBClient({
-        serviceId: 'with-custom-sdk-client',
+        endpoint: 'http://localhost:8000',
+        serviceId: 'Foo',
       });
-
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
-      );
 
       const options: DynamoDBProviderOptions = {
         tableName: 'test-table',
@@ -96,26 +80,36 @@ describe('Class: DynamoDBProvider', () => {
       const provider = new DynamoDBProvider(options);
 
       // Assess
-      expect(provider.client.config).toEqual(
-        expect.objectContaining({
-          serviceId: 'with-custom-sdk-client',
-        })
+      expect(provider.client).toEqual(awsSdkV3Client);
+      expect(addUserAgentMiddleware).toHaveBeenCalledWith(
+        awsSdkV3Client,
+        'parameters'
       );
-      expect(userAgentSpy).toHaveBeenCalledWith(awsSdkV3Client, 'parameters');
     });
 
-    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: DynamoDBProviderOptions = {
         tableName: 'test-table',
         awsSdkV3Client: awsSdkV3Client as DynamoDBClient,
       };
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      // Act & Assess
-      expect(() => {
-        new DynamoDBProvider(options);
-      }).toThrow();
+      // Act
+      const provider = new DynamoDBProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'DynamoDB',
+        })
+      );
+      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+        1,
+        'awsSdkV3Client is not an AWS SDK v3 client, using default client'
+      );
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
   });
 

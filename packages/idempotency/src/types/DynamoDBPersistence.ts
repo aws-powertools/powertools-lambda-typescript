@@ -40,6 +40,9 @@ interface DynamoDBPersistenceOptionsBase {
 interface DynamoDBPersistenceOptionsWithClientConfig
   extends DynamoDBPersistenceOptionsBase {
   awsSdkV3Client?: never;
+  /**
+   * Optional configuration to pass during client initialization, e.g. AWS region. It accepts the same configuration object as the AWS SDK v3 client (`DynamoDBClient`).
+   */
   clientConfig?: DynamoDBClientConfig;
 }
 
@@ -53,6 +56,9 @@ interface DynamoDBPersistenceOptionsWithClientConfig
  */
 interface DynamoDBPersistenceOptionsWithClientInstance
   extends DynamoDBPersistenceOptionsBase {
+  /**
+   * Optional AWS SDK v3 client instance (`DynamoDBClient`) to use for DynamoDB operations. If not provided, we will create a new instance of `DynamoDBClient`.
+   */
   awsSdkV3Client?: DynamoDBClient;
   clientConfig?: never;
 }

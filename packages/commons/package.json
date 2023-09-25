@@ -44,13 +44,5 @@
     "powertools",
     "serverless",
     "nodejs"
-  ],
-  "devDependencies": {
-    "@aws-sdk/client-appconfigdata": "^3.413.0",
-    "@aws-sdk/client-dynamodb": "^3.413.0",
-    "@aws-sdk/client-lambda": "^3.413.0",
-    "@aws-sdk/client-secrets-manager": "^3.413.0",
-    "@aws-sdk/client-ssm": "^3.413.0",
-    "@aws-sdk/util-utf8-node": "^3.259.0"
-  }
+  ]
 }

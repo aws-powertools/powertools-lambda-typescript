@@ -21,10 +21,16 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import 'aws-sdk-client-mock-jest';
 
 const getFutureTimestamp = (seconds: number): number =>
   new Date().getTime() + seconds * 1000;
+
+jest.mock('@aws-lambda-powertools/commons', () => ({
+  ...jest.requireActual('@aws-lambda-powertools/commons'),
+  addUserAgentMiddleware: jest.fn(),
+}));
 
 describe('Class: DynamoDBPersistenceLayer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -161,36 +167,46 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           client: awsSdkV3Client,
         })
       );
+      expect(addUserAgentMiddleware).toHaveBeenCalledWith(
+        awsSdkV3Client,
+        'idempotency'
+      );
     });
 
-    test('when passed an invalid AWS SDK client, it throws an error', () => {
-      // Act & Assess
-      expect(() => {
-        new TestDynamoDBPersistenceLayer({
-          tableName: dummyTableName,
-          awsSdkV3Client: {} as DynamoDBClient,
-        });
-      }).toThrow();
-    });
-
-    test('when passed a client config it stores it for later use', () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
       // Prepare
-      const clientConfig = {
-        region: 'someRegion',
+      const awsSdkV3Client = {};
+      const options: DynamoDBPersistenceOptions = {
+        tableName: dummyTableName,
+        awsSdkV3Client: awsSdkV3Client as DynamoDBClient,
       };
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       // Act
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-        clientConfig,
-      });
+      const persistenceLayer = new TestDynamoDBPersistenceLayer(options);
 
       // Assess
       expect(persistenceLayer).toEqual(
         expect.objectContaining({
           tableName: dummyTableName,
-          clientConfig,
+          client: expect.objectContaining({
+            config: expect.objectContaining({
+              serviceId: 'DynamoDB',
+            }),
+          }),
         })
+      );
+      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+        1,
+        'awsSdkV3Client is not an AWS SDK v3 client, using default client'
+      );
+      expect(addUserAgentMiddleware).toHaveBeenCalledWith(
+        expect.objectContaining({
+          config: expect.objectContaining({
+            serviceId: 'DynamoDB',
+          }),
+        }),
+        'idempotency'
       );
     });
   });

@@ -19,6 +19,9 @@ import type {
  * @property {never} [awsSdkV3Client] - This property should never be passed.
  */
 interface SSMProviderOptionsWithClientConfig {
+  /**
+   * Optional configuration to pass during client initialization, e.g. AWS region. It accepts the same configuration object as the AWS SDK v3 client (`SSMClient`).
+   */
   clientConfig?: SSMClientConfig;
   awsSdkV3Client?: never;
 }
@@ -31,6 +34,9 @@ interface SSMProviderOptionsWithClientConfig {
  * @property {never} [clientConfig] - This property should never be passed.
  */
 interface SSMProviderOptionsWithClientInstance {
+  /**
+   * Optional AWS SDK v3 client instance (`SSMClient`) to use for SSM operations. If not provided, we will create a new instance of `SSMClient`.
+   */
   awsSdkV3Client?: SSMClient;
   clientConfig?: never;
 }

@@ -198,10 +198,15 @@ class AppConfigProvider extends BaseProvider {
    */
   public constructor(options: AppConfigProviderOptions) {
     super();
-    if (options?.awsSdkV3Client && isSdkClient(options.awsSdkV3Client)) {
-      this.client = options.awsSdkV3Client;
-    } else {
-      this.client = new AppConfigDataClient(options.clientConfig || {});
+    this.client = new AppConfigDataClient(options.clientConfig || {});
+    if (options?.awsSdkV3Client) {
+      if (isSdkClient(options.awsSdkV3Client)) {
+        this.client = options.awsSdkV3Client;
+      } else {
+        console.warn(
+          'awsSdkV3Client is not an AWS SDK v3 client, using default client'
+        );
+      }
     }
     addUserAgentMiddleware(this.client, 'parameters');
 

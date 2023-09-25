@@ -94,7 +94,7 @@ describe('Class: AppConfigProvider', () => {
       );
     });
 
-    it('falls back on a new SDK client when an unknown object is provided instead of a client', async () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: AppConfigProviderOptions = {
@@ -102,6 +102,7 @@ describe('Class: AppConfigProvider', () => {
         environment: 'MyAppProdEnv',
         awsSdkV3Client: awsSdkV3Client as AppConfigDataClient,
       };
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       // Act
       const provider = new AppConfigProvider(options);
@@ -111,6 +112,10 @@ describe('Class: AppConfigProvider', () => {
         expect.objectContaining({
           serviceId: 'AppConfigData',
         })
+      );
+      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+        1,
+        'awsSdkV3Client is not an AWS SDK v3 client, using default client'
       );
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });

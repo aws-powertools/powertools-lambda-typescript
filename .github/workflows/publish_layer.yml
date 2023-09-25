@@ -42,10 +42,6 @@ jobs:
           node-version: "18"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
-      - name: Create layer files
-        run: |
-          export VERSION=${{ inputs.latest_published_version }}
-          bash .github/scripts/setup_tmp_layer_files.sh
       - name: CDK build
         run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=${{ inputs.latest_published_version }} -o cdk.out
       - name: Zip output

@@ -4,6 +4,12 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
+const logger = new Logger({
+  logLevel: 'DEBUG',
+});
+const metrics = new Metrics();
+const tracer = new Tracer();
+
 const layerPath = process.env.LAYERS_PATH || '/opt/nodejs/node_modules';
 const expectedVersion = process.env.POWERTOOLS_PACKAGE_VERSION || '0.0.0';
 
@@ -45,13 +51,6 @@ export const handler = (): void => {
       );
     }
   });
-
-  // Initialize the packages after checking their existence and version
-  const logger = new Logger({
-    logLevel: 'DEBUG',
-  });
-  const metrics = new Metrics();
-  const tracer = new Tracer();
 
   // Check that the metrics is working
   metrics.captureColdStartMetric();

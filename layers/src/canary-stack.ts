@@ -1,6 +1,6 @@
 import { CustomResource, Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { randomUUID } from 'node:crypto';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -62,6 +62,7 @@ export class CanaryStack extends Stack {
       },
       layers: layer,
       logRetention: RetentionDays.ONE_DAY,
+      tracing: Tracing.ACTIVE,
     });
 
     canaryFunction.addToRolePolicy(

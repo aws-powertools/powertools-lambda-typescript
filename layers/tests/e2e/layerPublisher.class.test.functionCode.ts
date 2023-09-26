@@ -20,6 +20,10 @@ const logger = new Logger({
 const metrics = new Metrics();
 const tracer = new Tracer();
 
+// Instantiating these clients and the respective providers/persistence layers
+// will ensure that Idempotency & Parameters are working with
+// the AWS SDK v3 client, both coming from the Lambda Layer and the
+// bundle
 const ddbClient = new DynamoDBClient({});
 
 const ssmClient = new SSMClient({});
@@ -33,8 +37,6 @@ new DynamoDBPersistenceLayer({
   awsSdkV3Client: ddbClient,
 });
 
-new BatchProcessor(EventType.SQS);
-
 new SSMProvider({ awsSdkV3Client: ssmClient });
 
 new SecretsProvider({ awsSdkV3Client: secretsClient });
@@ -42,6 +44,9 @@ new SecretsProvider({ awsSdkV3Client: secretsClient });
 new AppConfigProvider({ environment: 'foo', awsSdkV3Client: appconfigClient });
 
 new DynamoDBProvider({ tableName: 'foo', awsSdkV3Client: ddbClient });
+
+// Instantiating the BatchProcessor will confirm that the utility can be used
+new BatchProcessor(EventType.SQS);
 
 const layerPath = process.env.LAYERS_PATH || '/opt/nodejs/node_modules';
 const expectedVersion = process.env.POWERTOOLS_PACKAGE_VERSION || '0.0.0';

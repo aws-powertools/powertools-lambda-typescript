@@ -75,17 +75,47 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/@types',
                 'package.json',
                 'package-lock.json',
-                'node_modules/**/README.md',
-                'node_modules/.bin/semver',
+                'node_modules/**/*.md',
+                'node_modules/.bin',
+                'node_modules/**/*.html',
+                'node_modules/**/.travis.yml',
+                'node_modules/**/.eslintrc',
+                'node_modules/**/.npmignore',
+                'node_modules/semver/bin',
+                'node_modules/emitter-listener/test',
+                'node_modules/fast-xml-parser/cli',
                 'node_modules/async-hook-jl/test',
+                'node_modules/stack-chain/test',
                 'node_modules/shimmer/test',
                 'node_modules/jmespath/artifacts',
-                // We remove the type definitions since they can't be used in the Lambda Layer
-                'node_modules/@aws-lambda-powertools/*/lib/*.d.ts',
-                'node_modules/@aws-lambda-powertools/*/lib/*.d.ts.map',
+                'node_modules/jmespath/bower.json',
+                'node_modules/obliterator/*.d.ts',
+                'node_modules/strnum/.vscode',
+                'node_modules/strnum/*.test.js',
+                'node_modules/uuid/bin',
+                'node_modules/uuid/esm-browser',
+                'node_modules/uuid/esm-node',
+                'node_modules/uuid/umd',
+                'node_modules/mnemonist/*.d.ts',
+                // We remove the type definitions and ES builds since they are not used in the Lambda Layer
+                'node_modules/@aws-lambda-powertools/*/lib/**/*.d.ts',
+                'node_modules/@aws-lambda-powertools/*/lib/**/*.d.ts.map',
+                'node_modules/@aws-sdk/*/dist-types',
+                'node_modules/@aws-sdk/*/dist-es',
+                'node_modules/@smithy/*/dist-types',
+                'node_modules/@smithy/*/dist-es',
+                'node_modules/@smithy/**/README.md ',
+                'node_modules/@aws-sdk/**/README.md ',
               ];
               const buildCommands: string[] = [];
-              const modulesToInstall: string[] = [];
+              // We need these modules because they are not included in the nodejs14x and nodejs16x runtimes
+              const modulesToInstall: string[] = [
+                '@aws-sdk/client-dynamodb',
+                '@aws-sdk/util-dynamodb',
+                '@aws-sdk/client-ssm',
+                '@aws-sdk/client-secrets-manager',
+                '@aws-sdk/client-appconfigdata',
+              ];
 
               if (buildFromLocal) {
                 for (const util of utilities) {

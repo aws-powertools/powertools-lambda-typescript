@@ -9,6 +9,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 
 export interface LayerPublisherStackProps extends StackProps {
@@ -146,8 +147,9 @@ export class LayerPublisherStack extends Stack {
 
               // Phase 0: Remove after pre-release
               // we need this because while we are in pre-release, the version is not updated normally on this branch
-              execSync(
-                `echo "{ \"iteration\": 0 }" > ${join(projectRoot, 'v2.json')}`
+              writeFileSync(
+                join(projectRoot, 'v2.json'),
+                JSON.stringify({ iteration: 0 })
               );
 
               // Phase 1: Cleanup & create tmp folder

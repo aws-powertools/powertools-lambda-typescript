@@ -402,8 +402,6 @@ describe('Middy middleware', () => {
     await handler({ idx: 0 }, context);
 
     // Assess
-    // Check that the subsegments are closed
-    // expect(handlerSubsegment.close()).toHaveBeenCalled();
     expect(closeSpy).toHaveBeenCalledTimes(1);
     expect(logWarningSpy).toHaveBeenNthCalledWith(
       1,

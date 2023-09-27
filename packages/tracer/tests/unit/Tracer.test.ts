@@ -914,6 +914,49 @@ describe('Class: Tracer', () => {
         otherDummyMethodSpy.mock.invocationCallOrder[0];
       expect(otherDummyCallOrder).toBeLessThan(dummyCallOrder);
     });
+
+    it('catches the error and logs a warning when a segment fails to close/serialize', async () => {
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const handlerSubsegment: Segment | Subsegment | undefined =
+        new Subsegment('### dummyMethod');
+      jest
+        .spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => handlerSubsegment);
+      setContextMissingStrategy(() => null);
+      jest
+        .spyOn(tracer.provider, 'captureAsyncFunc')
+        .mockImplementation(async (methodName, callBackFn) => {
+          await callBackFn(handlerSubsegment);
+        });
+      const logWarningSpy = jest.spyOn(console, 'warn');
+      const closeSpy = jest
+        .spyOn(handlerSubsegment, 'close')
+        .mockImplementation(() => {
+          throw new Error('dummy error');
+        });
+
+      class Lambda implements LambdaInterface {
+        @tracer.captureLambdaHandler()
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return 'foo bar';
+        }
+      }
+
+      // Act
+      await new Lambda().handler(event, context);
+
+      // Assess
+      expect(closeSpy).toHaveBeenCalledTimes(1);
+      expect(logWarningSpy).toHaveBeenNthCalledWith(
+        1,
+        `Failed to close or serialize segment, ${handlerSubsegment.name}. We are catching the error but data might be lost.`,
+        new Error('dummy error')
+      );
+    });
   });
 
   describe('Method: captureMethod', () => {
@@ -1326,6 +1369,53 @@ describe('Class: Tracer', () => {
       expect(captureAsyncFuncSpy).toHaveBeenCalledWith(
         '#### myCustomMethod',
         expect.anything()
+      );
+    });
+
+    it('catches the error and logs a warning when a segment fails to close/serialize', async () => {
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const handlerSubsegment: Segment | Subsegment | undefined =
+        new Subsegment('### dummyMethod');
+      jest
+        .spyOn(tracer.provider, 'getSegment')
+        .mockImplementation(() => handlerSubsegment);
+      setContextMissingStrategy(() => null);
+      jest
+        .spyOn(tracer.provider, 'captureAsyncFunc')
+        .mockImplementation(async (methodName, callBackFn) => {
+          await callBackFn(handlerSubsegment);
+        });
+      const logWarningSpy = jest.spyOn(console, 'warn');
+      const closeSpy = jest
+        .spyOn(handlerSubsegment, 'close')
+        .mockImplementation(() => {
+          throw new Error('dummy error');
+        });
+
+      class Lambda implements LambdaInterface {
+        @tracer.captureMethod()
+        public async dummyMethod(some: string): Promise<string> {
+          return some;
+        }
+
+        public async handler(
+          _event: unknown,
+          _context: Context
+        ): Promise<string> {
+          return await this.dummyMethod('foo bar');
+        }
+      }
+
+      // Act
+      await new Lambda().handler(event, context);
+
+      // Assess
+      expect(closeSpy).toHaveBeenCalledTimes(1);
+      expect(logWarningSpy).toHaveBeenNthCalledWith(
+        1,
+        `Failed to close or serialize segment, ${handlerSubsegment.name}. We are catching the error but data might be lost.`,
+        new Error('dummy error')
       );
     });
   });

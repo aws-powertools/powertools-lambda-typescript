@@ -103,7 +103,15 @@ class ProviderService implements ProviderServiceInterface {
 
       return;
     }
-    segment.addMetadata(key, value, namespace);
+
+    try {
+      segment.addMetadata(key, value, namespace);
+    } catch (error) {
+      console.warn(
+        'Failed to add metadata to segment, catching the error to avoid stopping the execution',
+        error
+      );
+    }
   }
 
   public setContextMissingStrategy(strategy: unknown): void {

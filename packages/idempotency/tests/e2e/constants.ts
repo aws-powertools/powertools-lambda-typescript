@@ -1,4 +1,4 @@
-export const RESOURCE_NAME_PREFIX = 'Idempotency-E2E';
+export const RESOURCE_NAME_PREFIX = 'Idempotency';
 
 export const ONE_MINUTE = 60 * 1_000;
 export const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;

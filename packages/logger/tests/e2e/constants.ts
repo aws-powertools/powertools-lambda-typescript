@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-const RESOURCE_NAME_PREFIX = 'Logger-E2E';
+const RESOURCE_NAME_PREFIX = 'Logger';
 const ONE_MINUTE = 60 * 1000;
 const TEST_CASE_TIMEOUT = ONE_MINUTE;
 const SETUP_TIMEOUT = 5 * ONE_MINUTE;

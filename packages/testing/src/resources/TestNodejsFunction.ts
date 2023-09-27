@@ -7,7 +7,7 @@ import { TEST_RUNTIMES, TEST_ARCHITECTURES } from '../constants';
 import {
   concatenateResourceName,
   getRuntimeKey,
-  getArchitecture,
+  getArchitectureKey,
 } from '../helpers';
 import type { TestStack } from '../TestStack';
 import type { ExtraTestProps, TestNodejsFunctionProps } from './types';
@@ -33,7 +33,7 @@ class TestNodejsFunction extends NodejsFunction {
         resourceName: extraProps.nameSuffix,
       }),
       runtime: TEST_RUNTIMES[getRuntimeKey()],
-      architecture: TEST_ARCHITECTURES[getArchitecture()],
+      architecture: TEST_ARCHITECTURES[getArchitectureKey()],
       logRetention: RetentionDays.ONE_DAY,
     });
 

@@ -85,8 +85,7 @@ const betaPackages = [];
       files,
       type,
       scripts: {
-        postinstall:
-          'console.warn("This is a pre-release version of Powertools for AWS (TypeScript) provided for evaluation only. Do not use in production.")',
+        postinstall: `echo 'WARNING: This is a pre-release version of Powertools for AWS (TypeScript) provided for evaluation only. Do not use in production.'`,
       },
     };
 

@@ -31,32 +31,35 @@ describe('Functions tests', () => {
       expression: 'abs(`-24`)',
       expected: 24,
     },
-  ])('should support the abs() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the abs() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -79,8 +82,7 @@ describe('Functions tests', () => {
       error:
         'Expected at least 1 argument for function abs(), received 0 in expression: abs()',
     },
-  ])('abs() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in abs() fn errors tests
+  ])('abs() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -109,8 +111,7 @@ describe('Functions tests', () => {
       expression: 'unknown_function(`1`, `2`)',
       error: 'Unknown function: unknown_function()',
     },
-  ])('unknown function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in unknown fn errors tests
+  ])('unknown function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -139,32 +140,35 @@ describe('Functions tests', () => {
       expression: 'avg(numbers)',
       expected: 2.75,
     },
-  ])('should support the avg() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the avg() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -192,8 +196,7 @@ describe('Functions tests', () => {
       error:
         'TypeError: avg() expected argument 1 to be type (Array<number>) but received type array instead.',
     },
-  ])('avg() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in avg() fn errors tests
+  ])('avg() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -234,32 +237,35 @@ describe('Functions tests', () => {
       expression: 'ceil(decimals[2])',
       expected: -1,
     },
-  ])('should support the ceil() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the ceil() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -267,8 +273,7 @@ describe('Functions tests', () => {
       error:
         'TypeError: ceil() expected argument 1 to be type (number) but received type string instead.',
     },
-  ])('ceil() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in ceil() fn errors tests
+  ])('ceil() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -313,32 +318,35 @@ describe('Functions tests', () => {
       expression: 'contains(decimals, `false`)',
       expected: false,
     },
-  ])('should support the contains() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the contains() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -346,8 +354,7 @@ describe('Functions tests', () => {
       error:
         'TypeError: contains() expected argument 1 to be type (string | array) but received type boolean instead.',
     },
-  ])('contains() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in contains() fn errors tests
+  ])('contains() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -392,32 +399,35 @@ describe('Functions tests', () => {
       expression: `ends_with(str, 'foo')`,
       expected: false,
     },
-  ])('should support the ends_with() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the ends_with() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -425,8 +435,7 @@ describe('Functions tests', () => {
       error:
         'TypeError: ends_with() expected argument 2 to be type (string) but received type number instead.',
     },
-  ])('ends_with() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in ends_with() fn errors tests
+  ])('ends_with() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -463,32 +472,35 @@ describe('Functions tests', () => {
       expression: 'floor(foo)',
       expected: -1,
     },
-  ])('should support the floor() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the floor() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -501,8 +513,7 @@ describe('Functions tests', () => {
       error:
         'TypeError: floor() expected argument 1 to be type (number) but received type string instead.',
     },
-  ])('floor() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in floor() fn errors tests
+  ])('floor() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -563,32 +574,35 @@ describe('Functions tests', () => {
       expression: 'length(strings[0])',
       expected: 1,
     },
-  ])('should support the length() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the length() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -601,8 +615,7 @@ describe('Functions tests', () => {
       error:
         'TypeError: length() expected argument 1 to be type (string | array | object) but received type number instead.',
     },
-  ])('length() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in length() fn errors tests
+  ])('length() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -647,32 +660,35 @@ describe('Functions tests', () => {
       expression: 'max(empty_list)',
       expected: null,
     },
-  ])('should support the max() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the max() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -685,8 +701,7 @@ describe('Functions tests', () => {
       error:
         'TypeError: max() expected argument 1 to be type (Array<number> | Array<string>) but received type array instead.',
     },
-  ])('max() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in max() fn errors tests
+  ])('max() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,
@@ -741,32 +756,35 @@ describe('Functions tests', () => {
         d: 4,
       },
     },
-  ])('should support the merge() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the merge() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -789,32 +807,35 @@ describe('Functions tests', () => {
       expression: 'min(strings)',
       expected: 'a',
     },
-  ])('should support the min() function', ({ expression, expected }) => {
-    // Prepare
-    const data = {
-      foo: -1,
-      zero: 0,
-      numbers: [-1, 3, 4, 5],
-      array: [-1, 3, 4, 5, 'a', '100'],
-      strings: ['a', 'b', 'c'],
-      decimals: [1.01, 1.2, -1.5],
-      str: 'Str',
-      false: false,
-      empty_list: [],
-      empty_hash: {},
-      objects: {
-        foo: 'bar',
-        bar: 'baz',
-      },
-      null_key: null,
-    };
+  ])(
+    'should support the min() function: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -827,8 +848,7 @@ describe('Functions tests', () => {
       error:
         'TypeError: min() expected argument 1 to be type (Array<number> | Array<string>) but received type array instead.',
     },
-  ])('min() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in min() fn errors tests
+  ])('min() function errors: $expression', ({ expression, error }) => {
     // Prepare
     const data = {
       foo: -1,

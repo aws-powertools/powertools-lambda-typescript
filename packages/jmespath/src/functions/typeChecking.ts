@@ -1,3 +1,4 @@
+import { isRecord } from '../visitor/utils';
 import { JMESPathTypeError, ArityError, VariadicArityError } from '../errors';
 
 /**
@@ -83,6 +84,14 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
         }
       } else if (type === 'null') {
         if (!Object.is(arg, null)) {
+          throw new JMESPathTypeError({
+            currentValue: arg,
+            expectedTypes: argumentSpec,
+            actualType: typeof arg,
+          });
+        }
+      } else if (type === 'object') {
+        if (!isRecord(arg)) {
           throw new JMESPathTypeError({
             currentValue: arg,
             expectedTypes: argumentSpec,

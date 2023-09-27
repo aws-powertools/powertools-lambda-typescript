@@ -1,4 +1,4 @@
-import type { JSONArray, JSONValue } from '../types';
+import type { JSONArray, JSONObject, JSONValue } from '../types';
 import { typeCheck, arityCheck } from './typeChecking';
 
 /**
@@ -97,6 +97,19 @@ class Functions {
   }
 
   /**
+   * Get the keys of the provided object.
+   *
+   * @param args The object to get the keys of
+   * @returns The keys of the object
+   */
+  @Functions.signature({
+    argumentsSpecs: [['object']],
+  })
+  public funcKeys(arg: JSONObject): string[] {
+    return Object.keys(arg);
+  }
+
+  /**
    * Get the number of items in the provided item.
    *
    * @param args The array to get the length of
@@ -107,6 +120,46 @@ class Functions {
   })
   public funcLength(arg: string | Array<unknown>): number {
     return arg.length;
+  }
+
+  /**
+   * Get the maximum value in the provided array.
+   *
+   * @param args The array to get the maximum value of
+   * @returns The maximum value in the array
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array-number']],
+  })
+  public funcMax(arg: Array<number>): number {
+    return Math.max(...arg);
+  }
+
+  /**
+   * Merge the provided objects into a single object.
+   *
+   * @param args The objects to merge
+   * @returns The merged object
+   */
+  @Functions.signature({
+    argumentsSpecs: [['object']],
+    variadic: true,
+  })
+  public funcMerge(...args: Array<JSONObject>): JSONObject {
+    return args.reduce((a, b) => ({ ...a, ...b }), {});
+  }
+
+  /**
+   * Get the minimum value in the provided array.
+   *
+   * @param args The array to get the minimum value of
+   * @returns The minimum value in the array
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array-number']],
+  })
+  public funcMin(arg: Array<number>): number {
+    return Math.min(...arg);
   }
 
   /**
@@ -201,6 +254,19 @@ class Functions {
    */
   public funcToString(arg: JSONValue): string {
     return typeof arg === 'string' ? arg : JSON.stringify(arg);
+  }
+
+  /**
+   * Get the values of the provided object.
+   *
+   * @param args The object to get the values of
+   * @returns The values of the object
+   */
+  @Functions.signature({
+    argumentsSpecs: [['object']],
+  })
+  public funcValues(arg: JSONObject): JSONValue[] {
+    return Object.values(arg);
   }
 
   /**

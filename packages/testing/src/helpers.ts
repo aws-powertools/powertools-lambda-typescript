@@ -25,7 +25,7 @@ const isValidArchitectureKey = (
 ): architecture is keyof typeof TEST_ARCHITECTURES =>
   architecture in TEST_ARCHITECTURES;
 
-const getArchitecture = (): keyof typeof TEST_ARCHITECTURES => {
+const getArchitectureKey = (): keyof typeof TEST_ARCHITECTURES => {
   const architecture: string = process.env.ARCH || defaultArchitecture;
 
   if (!isValidArchitectureKey(architecture)) {
@@ -60,7 +60,7 @@ const generateTestUniqueName = ({
   [
     testPrefix,
     getRuntimeKey().replace(/[nodejsx]/g, ''),
-    getArchitecture().replace(/_64/g, ''),
+    getArchitectureKey().replace(/_64/g, ''),
     randomUUID().toString().substring(0, 5),
     testName,
   ]
@@ -103,5 +103,5 @@ export {
   generateTestUniqueName,
   concatenateResourceName,
   findAndGetStackOutputValue,
-  getArchitecture,
+  getArchitectureKey,
 };

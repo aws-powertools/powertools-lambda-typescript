@@ -414,7 +414,6 @@ class Tracer extends Utility implements TracerInterface {
                   error
                 );
               }
-              subsegment?.flush();
             }
 
             return result;
@@ -504,7 +503,6 @@ class Tracer extends Utility implements TracerInterface {
                   error
                 );
               }
-              subsegment?.flush();
             }
 
             return result;

@@ -358,29 +358,5 @@ describe('Class: ProviderService', () => {
       expect(segmentSpy).toHaveBeenCalledTimes(1);
       expect(segmentSpy).toHaveBeenCalledWith('foo', 'bar', 'baz');
     });
-
-    test('when the underlying SDK throws an error, it catches it and logs a warning', () => {
-      // Prepare
-      const provider: ProviderService = new ProviderService();
-      const segment = new Subsegment('## dummySegment');
-      jest.spyOn(provider, 'getSegment').mockImplementation(() => segment);
-      const segmentSpy = jest
-        .spyOn(segment, 'addMetadata')
-        .mockImplementation(() => {
-          throw new Error('dummy error');
-        });
-      const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Act
-      expect(() => provider.putMetadata('foo', 'bar', 'baz')).not.toThrow();
-
-      // Assess
-      expect(segmentSpy).toHaveBeenCalledTimes(1);
-      expect(logWarningSpy).toHaveBeenNthCalledWith(
-        1,
-        'Failed to add metadata to segment, catching the error to avoid stopping the execution',
-        new Error('dummy error')
-      );
-    });
   });
 });

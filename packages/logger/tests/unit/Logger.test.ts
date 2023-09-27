@@ -8,7 +8,7 @@ import {
   Events as dummyEvent,
   LambdaInterface,
 } from '@aws-lambda-powertools/commons';
-import { createLogger, Logger } from '../../src';
+import { Logger } from '../../src';
 import { EnvironmentVariablesService } from '../../src/config';
 import { PowertoolsLogFormatter } from '../../src/formatter';
 import {
@@ -82,7 +82,7 @@ describe('Class: Logger', () => {
       describe('Feature: log level', () => {
         test(`when the level is DEBUG, it ${debugAction} print to stdout`, () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest
@@ -110,7 +110,7 @@ describe('Class: Logger', () => {
 
         test(`when the log level is INFO, it ${infoAction} print to stdout`, () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'INFO',
           });
           const consoleSpy = jest
@@ -138,7 +138,7 @@ describe('Class: Logger', () => {
 
         test(`when the log level is WARN, it ${warnAction} print to stdout`, () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'WARN',
           });
           const consoleSpy = jest
@@ -166,7 +166,7 @@ describe('Class: Logger', () => {
 
         test(`when the log level is ERROR, it ${errorAction} print to stdout`, () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'ERROR',
           });
           const consoleSpy = jest
@@ -194,7 +194,7 @@ describe('Class: Logger', () => {
 
         test('when the log level is SILENT, it DOES NOT print to stdout', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'SILENT',
           });
           const consoleSpy = jest
@@ -237,7 +237,7 @@ describe('Class: Logger', () => {
       describe('Feature: sample rate', () => {
         test('when the log level is higher and the current Lambda invocation IS NOT sampled for logging, it DOES NOT print to stdout', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'SILENT',
             sampleRateValue: 0,
           });
@@ -256,7 +256,7 @@ describe('Class: Logger', () => {
 
         test('when the log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'SILENT',
             sampleRateValue: 1,
           });
@@ -292,7 +292,7 @@ describe('Class: Logger', () => {
             ' log',
           () => {
             // Prepare
-            const logger: Logger = createLogger();
+            const logger = new Logger();
             const consoleSpy = jest
               .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
               .mockImplementation();
@@ -323,10 +323,9 @@ describe('Class: Logger', () => {
             ' log',
           () => {
             // Prepare
-            const logger: Logger & { addContext: (context: Context) => void } =
-              createLogger({
-                logLevel: 'DEBUG',
-              });
+            const logger = new Logger({
+              logLevel: 'DEBUG',
+            });
             logger.addContext(context);
             const consoleSpy = jest
               .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
@@ -362,7 +361,7 @@ describe('Class: Logger', () => {
       describe('Feature: ephemeral log attributes', () => {
         test('when added, they should appear in that log item only', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest
@@ -568,7 +567,7 @@ describe('Class: Logger', () => {
       describe('Feature: persistent log attributes', () => {
         test('when persistent log attributes are added to the Logger instance, they should appear in all logs printed by the instance', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
             persistentLogAttributes: {
               aws_account_id: '123456789012',
@@ -604,7 +603,7 @@ describe('Class: Logger', () => {
       describe('Feature: X-Ray Trace ID injection', () => {
         test('when the `_X_AMZN_TRACE_ID` environment variable is set it parses it correctly and adds the Trace ID to the log', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest
@@ -633,7 +632,7 @@ describe('Class: Logger', () => {
         test('when the `_X_AMZN_TRACE_ID` environment variable is NOT set it parses it correctly and adds the Trace ID to the log', () => {
           // Prepare
           delete process.env._X_AMZN_TRACE_ID;
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest
@@ -662,7 +661,7 @@ describe('Class: Logger', () => {
       describe('Feature: handle safely unexpected errors', () => {
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest

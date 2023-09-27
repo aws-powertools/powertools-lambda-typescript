@@ -144,6 +144,12 @@ export class LayerPublisherStack extends Stack {
                 );
               }
 
+              // Phase 0: Remove after pre-release
+              // we need this because while we are in pre-release, the version is not updated normally on this branch
+              execSync(
+                `echo "{ \"iteration\": 0 }" > ${join(projectRoot, 'v2.json')}`
+              );
+
               // Phase 1: Cleanup & create tmp folder
               execSync(
                 [

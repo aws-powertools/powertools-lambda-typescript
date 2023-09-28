@@ -70,7 +70,14 @@ const captureLambdaHandler = (
     if (handlerSegment === undefined || lambdaSegment === null) {
       return;
     }
-    handlerSegment.close();
+    try {
+      handlerSegment.close();
+    } catch (error) {
+      console.warn(
+        `Failed to close or serialize segment, ${handlerSegment.name}. We are catching the error but data might be lost.`,
+        error
+      );
+    }
     target.setSegment(lambdaSegment);
   };
 

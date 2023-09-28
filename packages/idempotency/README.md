@@ -25,7 +25,7 @@ You can use the package in both TypeScript and JavaScript code bases.
 ## Intro
 
 This package provides a utility to implement idempotency in your Lambda functions. 
-You can either use it to wrap a function, decorate a function, or as Middy middleware to make your AWS Lambda handler idempotent.
+You can either use it to wrap a function, decorate a method, or as Middy middleware to make your AWS Lambda handler idempotent.
 
 The current implementation provides a persistence layer for Amazon DynamoDB, which offers a variety of configuration options. You can also bring your own persistence layer by extending the `BasePersistenceLayer` class.
 
@@ -181,8 +181,8 @@ const persistenceStore = new DynamoDBPersistenceLayer({
 class MyHandler extends LambdaInterface {
   @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
   public async handler(
-          event: APIGatewayProxyEvent,
-          context: Context
+    event: APIGatewayProxyEvent,
+    context: Context
   ): Promise<void> {
     // your code goes here here
   }
@@ -192,7 +192,7 @@ const handlerClass = new MyHandler();
 export const handler = handlerClass.handler.bind(handlerClass);
 ```
 
-Using the same decorator, you can also make any other arbitrary function idempotent.
+Using the same decorator, you can also make any other arbitrary method idempotent.
 
 ```ts
 import { idempotent } from '@aws-lambda-powertools/idempotency';
@@ -207,18 +207,18 @@ const persistenceStore = new DynamoDBPersistenceLayer({
 class MyHandler extends LambdaInterface {
   
   public async handler(
-          event: unknown,
-          context: Context
+    event: unknown,
+    context: Context
   ): Promise<void> {
     for(const record of event.Records) {
       await this.processIdempotently(record);
     }
   }
   
-    @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
-    private async process(record: unknown): Promise<void> {
-      // process each code idempotently
-    }
+  @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
+  private async process(record: unknown): Promise<void> {
+    // process each code idempotently
+  }
 }
 
 const handlerClass = new MyHandler();

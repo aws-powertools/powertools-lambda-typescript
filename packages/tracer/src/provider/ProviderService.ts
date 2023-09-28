@@ -103,6 +103,7 @@ class ProviderService implements ProviderServiceInterface {
 
       return;
     }
+
     segment.addMetadata(key, value, namespace);
   }
 

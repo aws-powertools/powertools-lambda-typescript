@@ -7,6 +7,7 @@ import {
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { Request, Response } from './types';
 
+
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer({
   tableName: 'idempotencyTableName',
 });

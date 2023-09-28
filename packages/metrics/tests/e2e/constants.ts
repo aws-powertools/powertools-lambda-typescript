@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { MetricUnits } from '../../src';
 
-const RESOURCE_NAME_PREFIX = 'Metrics-E2E';
+const RESOURCE_NAME_PREFIX = 'Metrics';
 const ONE_MINUTE = 60 * 1000;
 const TEST_CASE_TIMEOUT = 3 * ONE_MINUTE;
 const SETUP_TIMEOUT = 5 * ONE_MINUTE;

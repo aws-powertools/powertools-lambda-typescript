@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { TEST_RUNTIMES, defaultRuntime } from './constants';
+import {
+  TEST_RUNTIMES,
+  defaultRuntime,
+  TEST_ARCHITECTURES,
+  defaultArchitecture,
+} from './constants';
 
 const isValidRuntimeKey = (
   runtime: string
@@ -15,6 +20,21 @@ const getRuntimeKey = (): keyof typeof TEST_RUNTIMES => {
   return runtime;
 };
 
+const isValidArchitectureKey = (
+  architecture: string
+): architecture is keyof typeof TEST_ARCHITECTURES =>
+  architecture in TEST_ARCHITECTURES;
+
+const getArchitectureKey = (): keyof typeof TEST_ARCHITECTURES => {
+  const architecture: string = process.env.ARCH || defaultArchitecture;
+
+  if (!isValidArchitectureKey(architecture)) {
+    throw new Error(`Invalid architecture key value: ${architecture}`);
+  }
+
+  return architecture;
+};
+
 /**
  * Generate a unique name for a test.
  *
@@ -23,10 +43,11 @@ const getRuntimeKey = (): keyof typeof TEST_RUNTIMES => {
  * @example
  * ```ts
  * process.env.RUNTIME = 'nodejs18x';
- * const testPrefix = 'E2E-TRACER';
+ * process.env.ARCH = 'x86_64';
+ * const testPrefix = 'TRACER';
  * const testName = 'someFeature';
  * const uniqueName = generateTestUniqueName({ testPrefix, testName });
- * // uniqueName = 'E2E-TRACER-node18-12345-someFeature'
+ * // uniqueName = 'TRACER-18-x86-12345-someFeature'
  * ```
  */
 const generateTestUniqueName = ({
@@ -38,7 +59,8 @@ const generateTestUniqueName = ({
 }): string =>
   [
     testPrefix,
-    getRuntimeKey().replace(/[jsx]/g, ''),
+    getRuntimeKey().replace(/[nodejsx]/g, ''),
+    getArchitectureKey().replace(/_64/g, ''),
     randomUUID().toString().substring(0, 5),
     testName,
   ]
@@ -81,4 +103,5 @@ export {
   generateTestUniqueName,
   concatenateResourceName,
   findAndGetStackOutputValue,
+  getArchitectureKey,
 };

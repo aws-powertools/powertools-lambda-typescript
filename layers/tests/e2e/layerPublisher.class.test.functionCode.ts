@@ -3,12 +3,50 @@ import { readFile } from 'node:fs/promises';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { BatchProcessor, EventType } from '@aws-lambda-powertools/batch';
+import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
+import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
+import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
+import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
+import { SSMClient } from '@aws-sdk/client-ssm';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
 
 const logger = new Logger({
   logLevel: 'DEBUG',
 });
 const metrics = new Metrics();
 const tracer = new Tracer();
+
+// Instantiating these clients and the respective providers/persistence layers
+// will ensure that Idempotency & Parameters are working with
+// the AWS SDK v3 client, both coming from the Lambda Layer and the
+// bundle
+const ddbClient = new DynamoDBClient({});
+
+const ssmClient = new SSMClient({});
+
+const secretsClient = new SecretsManagerClient({});
+
+const appconfigClient = new AppConfigDataClient({});
+
+new DynamoDBPersistenceLayer({
+  tableName: 'my-idempotency-table',
+  awsSdkV3Client: ddbClient,
+});
+
+new SSMProvider({ awsSdkV3Client: ssmClient });
+
+new SecretsProvider({ awsSdkV3Client: secretsClient });
+
+new AppConfigProvider({ environment: 'foo', awsSdkV3Client: appconfigClient });
+
+new DynamoDBProvider({ tableName: 'foo', awsSdkV3Client: ddbClient });
+
+// Instantiating the BatchProcessor will confirm that the utility can be used
+new BatchProcessor(EventType.SQS);
 
 const layerPath = process.env.LAYERS_PATH || '/opt/nodejs/node_modules';
 const expectedVersion = process.env.POWERTOOLS_PACKAGE_VERSION || '0.0.0';

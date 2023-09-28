@@ -176,6 +176,7 @@ You can also use the `@idempotent` decorator to make your Lambda handler idempot
     --8<-- "docs/snippets/idempotency/types.ts"
     ```
 
+
 You can use the decorator on your Lambda handler or on any function that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
 The configuration options for the `@idempotent` decorator are the same as the ones for the `makeIdempotent` function wrapper.
 

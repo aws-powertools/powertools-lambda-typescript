@@ -406,8 +406,14 @@ class Tracer extends Utility implements TracerInterface {
               tracerRef.addErrorAsMetadata(error as Error);
               throw error;
             } finally {
-              subsegment?.close();
-              subsegment?.flush();
+              try {
+                subsegment?.close();
+              } catch (error) {
+                console.warn(
+                  `Failed to close or serialize segment, ${subsegment?.name}. We are catching the error but data might be lost.`,
+                  error
+                );
+              }
             }
 
             return result;
@@ -489,8 +495,14 @@ class Tracer extends Utility implements TracerInterface {
 
               throw error;
             } finally {
-              subsegment?.close();
-              subsegment?.flush();
+              try {
+                subsegment?.close();
+              } catch (error) {
+                console.warn(
+                  `Failed to close or serialize segment, ${subsegment?.name}. We are catching the error but data might be lost.`,
+                  error
+                );
+              }
             }
 
             return result;

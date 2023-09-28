@@ -11,9 +11,10 @@ import { makeIdempotent } from './makeIdempotent';
  * import {
  *   DynamoDBPersistenceLayer,
  *   idempotentLambdaHandler
- * } from '@aws-lambda-powertools/idempotency'
+ * } from '@aws-lambda-powertools/idempotency';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons';
  *
- * class MyLambdaFunction {
+ * class MyLambdaFunction implements LambdaInterface{
  *   @idempotent({ persistenceStore: new DynamoDBPersistenceLayer() })
  *   async handler(event: any, context: any) {
  *     return "Hello World";
@@ -29,9 +30,10 @@ import { makeIdempotent } from './makeIdempotent';
  * import {
  *  DynamoDBPersistenceLayer,
  *  idempotentFunction
- *  } from '@aws-lambda-powertools/idempotency'
+ *  } from '@aws-lambda-powertools/idempotency';
+ *  import type { LambdaInterface } from '@aws-lambda-powertools/commons';
  *
- *  class MyClass {
+ *  class MyClass implements LambdaInterface {
  *
  *  public async handler(_event: any, _context: any) {
  *    for(const record of _event.records){

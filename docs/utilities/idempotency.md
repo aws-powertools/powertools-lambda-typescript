@@ -139,7 +139,7 @@ After processing this request successfully, a second request containing the exac
     See [Choosing a payload subset for idempotency](#choosing-a-payload-subset-for-idempotency) for more elaborate use cases.
 
 
-You can also use the `makeIdempotent` function wrapper on any function that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
+You can also use the `makeIdempotent` function wrapper on any method that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
 
 ???+ warning "Limitation"
     Make sure to return a JSON serializable response from your function, otherwise you'll get an error.
@@ -173,6 +173,9 @@ You can also use the `@idempotent` decorator to make your Lambda handler idempot
 === "types.ts"
 
     ```typescript
+    --8<-- "docs/snippets/idempotency/types.ts"
+    ```
+
 
 You can use the decorator on your Lambda handler or on any function that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
 The configuration options for the `@idempotent` decorator are the same as the ones for the `makeIdempotent` function wrapper.

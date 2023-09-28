@@ -160,6 +160,22 @@ When using `makeIdempotent` on arbitrary functions, you can tell us which argume
 
 The function this example has two arguments, note that while wrapping it with the `makeIdempotent` high-order function, we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one that contains the data we should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the second is `1`, and so on.
 
+### Idempotent Decorator
+
+You can also use the `@idempotent` decorator to make your Lambda handler idempotent, similar to the `makeIdempotent` function wrapper.
+
+=== "index.ts"
+
+    ```typescript hl_lines="17"
+    --8<-- "docs/snippets/idempotency/idempotentDecoratorBase.ts"
+    ```
+
+=== "types.ts"
+
+    ```typescript
+
+You can use the decorator on your Lambda handler or on any function that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
+The configuration options for the `@idempotent` decorator are the same as the ones for the `makeIdempotent` function wrapper.
 
 ### MakeHandlerIdempotent Middy middleware
 

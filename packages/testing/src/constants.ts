@@ -1,4 +1,4 @@
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime, Architecture } from 'aws-cdk-lib/aws-lambda';
 
 /**
  * The default AWS Lambda runtime to use when none is provided.
@@ -14,4 +14,22 @@ const TEST_RUNTIMES = {
   [defaultRuntime]: Runtime.NODEJS_18_X,
 } as const;
 
-export { TEST_RUNTIMES, defaultRuntime };
+/**
+ * The default AWS Lambda architecture to use when none is provided.
+ */
+const defaultArchitecture = 'x86_64';
+
+/**
+ * The AWS Lambda architectures that are supported by the project.
+ */
+const TEST_ARCHITECTURES = {
+  [defaultArchitecture]: Architecture.X86_64,
+  arm64: Architecture.ARM_64,
+} as const;
+
+export {
+  TEST_RUNTIMES,
+  defaultRuntime,
+  TEST_ARCHITECTURES,
+  defaultArchitecture,
+};

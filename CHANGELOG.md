@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.1...v1.14.0) (2023-09-29)
+
+### Features
+
+- **idempotency:** add idempotency decorator ([#1723](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1723)) ([d138673](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d138673a33ff31f40b225dc046b2ff8258d0a97d))
+- **layers:** add `arm64` to integration test matrix ([#1720](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1720)) ([61ad5ac](https://github.com/aws-powertools/powertools-lambda-typescript/commit/61ad5ac3bcf7742684aeec28553ec294696f3301))
+- **tracer:** add try/catch logic to decorator and middleware close ([#1716](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1716)) ([be16b59](https://github.com/aws-powertools/powertools-lambda-typescript/commit/be16b599b8023f95572234fb222ea70aea5b3f17))
+
 ## [1.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.0...v1.13.1) (2023-09-21)
 
 ### Bug Fixes

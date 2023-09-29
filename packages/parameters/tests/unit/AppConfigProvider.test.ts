@@ -13,8 +13,13 @@ import {
 } from '@aws-sdk/client-appconfigdata';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
-import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import 'aws-sdk-client-mock-jest';
+
+jest.mock('@aws-lambda-powertools/commons', () => ({
+  ...jest.requireActual('@aws-lambda-powertools/commons'),
+  addUserAgentMiddleware: jest.fn(),
+}));
 
 describe('Class: AppConfigProvider', () => {
   const client = mockClient(AppConfigDataClient);
@@ -35,10 +40,69 @@ describe('Class: AppConfigProvider', () => {
         environment: 'MyAppProdEnv',
       };
 
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
+      // Act
+      const provider = new AppConfigProvider(options);
+
+      // Assess
+      expect(provider.client.config).toEqual(
+        expect.objectContaining({
+          serviceId: 'AppConfigData',
+        })
       );
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
+    });
+
+    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+      // Prepare
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+        clientConfig: {
+          region: 'eu-south-2',
+        },
+      };
+
+      // Act
+      const provider = new AppConfigProvider(options);
+
+      // Assess
+      expect(provider.client.config.region()).resolves.toEqual('eu-south-2');
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
+    });
+
+    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+      // Prepare
+      const awsSdkV3Client = new AppConfigDataClient({
+        endpoint: 'http://localhost:8000',
+        serviceId: 'Foo',
+      });
+
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+        awsSdkV3Client: awsSdkV3Client,
+      };
+
+      // Act
+      const provider = new AppConfigProvider(options);
+
+      // Assess
+      expect(provider.client).toEqual(awsSdkV3Client);
+      expect(addUserAgentMiddleware).toHaveBeenCalledWith(
+        awsSdkV3Client,
+        'parameters'
+      );
+    });
+
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
+      // Prepare
+      const awsSdkV3Client = {};
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+        awsSdkV3Client: awsSdkV3Client as AppConfigDataClient,
+      };
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       // Act
       const provider = new AppConfigProvider(options);
@@ -49,81 +113,11 @@ describe('Class: AppConfigProvider', () => {
           serviceId: 'AppConfigData',
         })
       );
-
-      expect(userAgentSpy).toHaveBeenCalled();
-    });
-
-    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
-      // Prepare
-      const options: AppConfigProviderOptions = {
-        application: 'MyApp',
-        environment: 'MyAppProdEnv',
-        clientConfig: {
-          serviceId: 'with-client-config',
-        },
-      };
-
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
+      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+        1,
+        'awsSdkV3Client is not an AWS SDK v3 client, using default client'
       );
-
-      // Act
-      const provider = new AppConfigProvider(options);
-
-      // Assess
-      expect(provider.client.config).toEqual(
-        expect.objectContaining({
-          serviceId: 'with-client-config',
-        })
-      );
-
-      expect(userAgentSpy).toHaveBeenCalled();
-    });
-
-    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
-      // Prepare
-      const awsSdkV3Client = new AppConfigDataClient({
-        serviceId: 'with-custom-sdk-client',
-      });
-
-      const options: AppConfigProviderOptions = {
-        application: 'MyApp',
-        environment: 'MyAppProdEnv',
-        awsSdkV3Client: awsSdkV3Client,
-      };
-
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
-      );
-
-      // Act
-      const provider = new AppConfigProvider(options);
-
-      // Assess
-      expect(provider.client.config).toEqual(
-        expect.objectContaining({
-          serviceId: 'with-custom-sdk-client',
-        })
-      );
-
-      expect(userAgentSpy).toHaveBeenCalledWith(awsSdkV3Client, 'parameters');
-    });
-
-    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
-      // Prepare
-      const awsSdkV3Client = {};
-      const options: AppConfigProviderOptions = {
-        application: 'MyApp',
-        environment: 'MyAppProdEnv',
-        awsSdkV3Client: awsSdkV3Client as AppConfigDataClient,
-      };
-
-      // Act & Assess
-      expect(() => {
-        new AppConfigProvider(options);
-      }).toThrow();
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
   });
 

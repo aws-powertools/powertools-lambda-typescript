@@ -28,6 +28,9 @@ interface AppConfigProviderOptionsBaseInterface {
  */
 interface AppConfigProviderOptionsWithClientConfig
   extends AppConfigProviderOptionsBaseInterface {
+  /**
+   * Optional configuration to pass during client initialization, e.g. AWS region. It accepts the same configuration object as the AWS SDK v3 client (`AppConfigDataClient`).
+   */
   clientConfig?: AppConfigDataClientConfig;
   awsSdkV3Client?: never;
 }
@@ -42,6 +45,9 @@ interface AppConfigProviderOptionsWithClientConfig
  */
 interface AppConfigProviderOptionsWithClientInstance
   extends AppConfigProviderOptionsBaseInterface {
+  /**
+   * Optional AWS SDK v3 client instance (`AppConfigDataClient`) to use for AppConfig operations. If not provided, we will create a new instance of `AppConfigDataClient`.
+   */
   awsSdkV3Client?: AppConfigDataClient;
   clientConfig?: never;
 }

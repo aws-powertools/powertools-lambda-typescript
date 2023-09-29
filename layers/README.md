@@ -44,10 +44,6 @@ RUNTIME=node12.x VERSION=0.9.0 npm run test:e2e
 ```shell
  cdk bootstrap aws://AWS_ACCOUNT/NEW_REGION   
 ```
-* Build the layer folder from the project root directory
-```shell
-bash ./.github/scripts/setup_tmp_layer_files.sh 
-```
 * Deploy the first layer version to the new region, make sure to set the NEW_REGION in your AWS CLI configuration correctly, otherwise you will deploy to the wrong region
 ```shell
 npm run cdk -w layers -- deploy --app cdk.out --context region=NEW_REGION 'LayerPublisherStack' --require-approval never --verbose 

@@ -22,9 +22,13 @@ import type {
 } from '../../src/types/SSMProvider';
 import { ExpirableValue } from '../../src/base/ExpirableValue';
 import { toBase64 } from '@aws-sdk/util-base64-node';
-import * as UserAgentMiddleware from '@aws-lambda-powertools/commons/lib/userAgentMiddleware';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 const encoder = new TextEncoder();
+jest.mock('@aws-lambda-powertools/commons', () => ({
+  ...jest.requireActual('@aws-lambda-powertools/commons'),
+  addUserAgentMiddleware: jest.fn(),
+}));
 
 describe('Class: SSMProvider', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -38,10 +42,6 @@ describe('Class: SSMProvider', () => {
     test('when the class instantiates without SDK client and client config it has default options', async () => {
       // Prepare
       const options: SSMProviderOptions = {};
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
-      );
 
       // Act
       const provider = new SSMProvider(options);
@@ -52,46 +52,54 @@ describe('Class: SSMProvider', () => {
           serviceId: 'SSM',
         })
       );
-      expect(userAgentSpy).toHaveBeenCalled();
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
     test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
       // Prepare
       const options: SSMProviderOptions = {
         clientConfig: {
-          serviceId: 'with-client-config',
+          region: 'eu-south-2',
         },
       };
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
-      );
 
       // Act
       const provider = new SSMProvider(options);
 
       // Assess
-      expect(provider.client.config).toEqual(
-        expect.objectContaining({
-          serviceId: 'with-client-config',
-        })
-      );
-      expect(userAgentSpy).toHaveBeenCalled();
+      expect(provider.client.config.region()).resolves.toEqual('eu-south-2');
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
     test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
       // Prepare
       const awsSdkV3Client = new SSMClient({
-        serviceId: 'with-custom-sdk-client',
+        endpoint: 'http://localhost:3000',
+        serviceId: 'Foo',
       });
 
       const options: SSMProviderOptions = {
         awsSdkV3Client: awsSdkV3Client,
       };
-      const userAgentSpy = jest.spyOn(
-        UserAgentMiddleware,
-        'addUserAgentMiddleware'
+
+      // Act
+      const provider = new SSMProvider(options);
+
+      // Assess
+      expect(provider.client).toEqual(awsSdkV3Client);
+      expect(addUserAgentMiddleware).toHaveBeenCalledWith(
+        awsSdkV3Client,
+        'parameters'
       );
+    });
+
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
+      // Prepare
+      const awsSdkV3Client = {};
+      const options: SSMProviderOptions = {
+        awsSdkV3Client: awsSdkV3Client as SSMClient,
+      };
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       // Act
       const provider = new SSMProvider(options);
@@ -99,23 +107,14 @@ describe('Class: SSMProvider', () => {
       // Assess
       expect(provider.client.config).toEqual(
         expect.objectContaining({
-          serviceId: 'with-custom-sdk-client',
+          serviceId: 'SSM',
         })
       );
-      expect(userAgentSpy).toHaveBeenCalledWith(awsSdkV3Client, 'parameters');
-    });
-
-    test('when the user provides NOT an SDK client in the options, it throws an error', async () => {
-      // Prepare
-      const awsSdkV3Client = {};
-      const options: SSMProviderOptions = {
-        awsSdkV3Client: awsSdkV3Client as SSMClient,
-      };
-
-      // Act & Assess
-      expect(() => {
-        new SSMProvider(options);
-      }).toThrow();
+      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+        1,
+        'awsSdkV3Client is not an AWS SDK v3 client, using default client'
+      );
+      expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
   });
 

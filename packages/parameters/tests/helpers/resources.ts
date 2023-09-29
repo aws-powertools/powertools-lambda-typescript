@@ -6,6 +6,7 @@ import type {
 import {
   concatenateResourceName,
   getRuntimeKey,
+  getArchitectureKey,
   TestDynamodbTable,
   TestNodejsFunction,
 } from '@aws-lambda-powertools/testing-utils';
@@ -58,7 +59,7 @@ class TestSecureStringParameter extends Construct {
 
     const { value } = props;
 
-    const name = `/secure/${getRuntimeKey()}/${randomUUID()}`;
+    const name = `/secure/${getRuntimeKey()}/${getArchitectureKey()}/${randomUUID()}`;
     const secureStringCreator = new AwsCustomResource(
       testStack.stack,
       `create-${randomUUID()}`,

@@ -1,5 +1,5 @@
 // Prefix for all resources created by the E2E tests
-const RESOURCE_NAME_PREFIX = 'Tracer-E2E';
+const RESOURCE_NAME_PREFIX = 'Tracer';
 // Constants relating time to be used in the tests
 const ONE_MINUTE = 60 * 1_000;
 const TEST_CASE_TIMEOUT = 5 * ONE_MINUTE;

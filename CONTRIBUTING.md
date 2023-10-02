@@ -78,7 +78,7 @@ get to soon while `priority:high` issues have a bigger impact, so we are much mo
 
 ### Step 2: Design
 
-You can start by checking the project's tenets [here](https://docs.powertools.aws.dev/lambda-typescript/latest/#tenets).
+You can start by checking the project's tenets [here](https://docs.powertools.aws.dev/lambda/typescript/latest/#tenets).
 
 We ask you to seek feedback and consensus on your proposed change by iterating on a design document. This is especially useful when you plan a big change or feature, or you want advice on what would be the best path forward.
 

@@ -99,12 +99,12 @@ import type {
  *
  * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SecretsProvider} class.
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  *
  *
  * @param {string} name - The name of the secret to retrieve
  * @param {SecretsGetOptions} options - Options to configure the provider
- * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 const getSecret = async <
   ExplicitUserProvidedType = undefined,

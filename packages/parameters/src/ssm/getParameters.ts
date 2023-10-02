@@ -134,11 +134,11 @@ import type {
  * * `decrypt` - Whether to decrypt the value before returning it.
  * * `recursive` - Whether to recursively retrieve all parameters within the path.
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  *
  * @param {string} path - The path of the parameters to retrieve
  * @param {SSMGetMultipleOptions} options - Options to configure the provider
- * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 const getParameters = async <
   ExplicitUserProvidedType = undefined,

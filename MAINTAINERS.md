@@ -154,7 +154,7 @@ This allows you to have control over the commit message although it should match
 
 Manage [labels](#labels), review issues regularly, and create new labels as needed by the project. Remove `triage` label when you're able to confirm the validity of a request, a bug can be reproduced, etc. Give priority to the original author for implementation, unless it is a sensitive task that is best handled by maintainers.
 
-Make sure issues are assigned to our [board of activities](https://github.com/orgs/aws-powertools/projects/7) and have the right [status](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap/#roadmap-status-definition).
+Make sure issues are assigned to our [board of activities](https://github.com/orgs/aws-powertools/projects/7) and have the right [status](https://docs.powertools.aws.dev/lambda/typescript/latest/roadmap/#roadmap-status-definition).
 
 Use our [labels](#labels) to signal good first issues to new community members, and to set expectation that this might need additional feedback from the author, other customers, experienced community members and/or maintainers.
 
@@ -179,7 +179,7 @@ RFC is a collaborative process to help us get to the most optimal solution given
 Make sure you ask these questions in mind when reviewing:
 
 - Does it use our [RFC template](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=RFC%2Ctriage&template=rfc.yml&title=RFC%3A+TITLE)?
-- Does the match our [Tenets](https://docs.powertools.aws.dev/lambda-typescript/latest/#tenets)?
+- Does the match our [Tenets](https://docs.powertools.aws.dev/lambda/typescript/latest/#tenets)?
 - Does the proposal address the use case? If so, is the recommended usage explicit?
 - Does it focus on the mechanics to solve the use case over fine-grained implementation details?
 - Can anyone familiar with the code base implement it?
@@ -239,7 +239,7 @@ Keep the `main` branch at production quality at all times. If a PR introduces co
 
 ### Manage Roadmap
 
-See [Roadmap section](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap/)
+See [Roadmap section](https://docs.powertools.aws.dev/lambda/typescript/latest/roadmap/)
 
 Ensure the repo highlights features that should be elevated to the project roadmap. Be clear about the feature’s status, priority, target version, and whether or not it should be elevated to the roadmap.
 

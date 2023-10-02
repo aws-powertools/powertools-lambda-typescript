@@ -14,7 +14,8 @@
     "docs/snippets",
     "layers",
     "examples/cdk",
-    "examples/sam"
+    "examples/sam",
+    "packages/event-handler"
   ],
   "scripts": {
     "init-environment": "husky install",

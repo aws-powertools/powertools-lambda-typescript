@@ -10,12 +10,12 @@
     "packages/parameters",
     "packages/idempotency",
     "packages/batch",
+    "packages/event-handler",
     "packages/testing",
     "docs/snippets",
     "layers",
     "examples/cdk",
-    "examples/sam",
-    "packages/event-handler"
+    "examples/sam"
   ],
   "scripts": {
     "init-environment": "husky install",

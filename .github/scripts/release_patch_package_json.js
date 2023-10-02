@@ -58,7 +58,10 @@ const betaPackages = [];
     let version = originalVersion;
     // If the package is an alpha or beta package, update the version number to include a suffix
     if (alphaPackages.includes(name)) {
-      version = `${version}-alpha`;
+      const iteration = JSON.parse(
+        readFileSync(resolve('..', '..', 'v2.json'), 'utf8')
+      ).iteration;
+      version = `${version}-alpha.${iteration}`;
     } else if (betaPackages.includes(name)) {
       version = `${version}-beta`;
     }
@@ -81,6 +84,9 @@ const betaPackages = [];
       types,
       files,
       type,
+      scripts: {
+        postinstall: `echo 'WARNING: This is a pre-release version of Powertools for AWS (TypeScript) provided for evaluation only. Do not use in production.'`,
+      },
     };
 
     // Not all utilities have these fields, so only add them if they exist to avoid

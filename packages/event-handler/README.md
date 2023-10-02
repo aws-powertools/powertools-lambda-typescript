@@ -1,4 +1,4 @@
-# digital-event-handler
+# event-handler
 
 Minimalistic event handler & HTTP router for Serverless applications
 

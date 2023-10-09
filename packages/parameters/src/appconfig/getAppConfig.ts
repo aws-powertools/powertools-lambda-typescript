@@ -134,11 +134,11 @@ import type {
  *
  * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link AppConfigProvider} class.
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  *
  * @param {string} name - The name of the configuration profile or its ID
  * @param {GetAppConfigOptions} options - Options to configure the provider
- * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 const getAppConfig = <
   ExplicitUserProvidedType = undefined,

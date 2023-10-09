@@ -11,11 +11,11 @@ import { ConfigService } from './ConfigService';
  * @class
  * @extends {ConfigService}
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
- * @see https://docs.powertools.aws.dev/lambda-typescript/latest/#environment-variables
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  */
 class EnvironmentVariablesService extends ConfigService {
   /**
-   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/#environment-variables
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
    * @protected
    */
   protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';

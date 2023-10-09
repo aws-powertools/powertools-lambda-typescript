@@ -2,13 +2,13 @@
 
 [![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET)
 
-Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda-typescript/latest/#features).
+Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
 You can use the library in both TypeScript and JavaScript code bases.
 
-> Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [Java](https://github.com/aws-powertools/powertools-lambda-java), and [.NET](https://docs.powertools.aws.dev/lambda-dotnet/).
+> Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [Java](https://github.com/aws-powertools/powertools-lambda-java), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet).
 
-**[Documentation](https://docs.powertools.aws.dev/lambda-typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://docs.powertools.aws.dev/lambda-typescript/latest/roadmap)** | **[Examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
+**[Documentation](https://docs.powertools.aws.dev/lambda/typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://docs.powertools.aws.dev/lambda/typescript/latest/roadmap)** | **[Examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples)** | **[Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)**
 
 ## Table of contents <!-- omit in toc -->
 
@@ -31,16 +31,16 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 ## Features
 
-* **[Tracer](https://docs.powertools.aws.dev/lambda-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
-* **[Logger](https://docs.powertools.aws.dev/lambda-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
-* **[Metrics](https://docs.powertools.aws.dev/lambda-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
-* **[Parameters](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
-* **[Idempotency](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
-* **[Batch Processing](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
+* **[Tracer](https://docs.powertools.aws.dev/lambda/typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
+* **[Logger](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
+* **[Metrics](https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
+* **[Parameters](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
+* **[Idempotency](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
+* **[Batch Processing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
 
 ## Getting started
 
-Find the complete project's [documentation here](https://docs.powertools.aws.dev/lambda-typescript).
+Find the complete project's [documentation here](https://docs.powertools.aws.dev/lambda/typescript).
 
 ### Installation
 
@@ -52,7 +52,7 @@ You have 2 ways of consuming those utilities:
 
 The Powertools for AWS Lambda (TypeScript) utilities is packaged as a single [AWS Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-concepts.html#gettingstarted-concepts-layer)
 
-👉 [Installation guide for the **Powertools for AWS Lambda (TypeScript)** layer](https://docs.powertools.aws.dev/lambda-typescript/latest/#lambda-layer)
+👉 [Installation guide for the **Powertools for AWS Lambda (TypeScript)** layer](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer)
 
 #### NPM modules
 
@@ -67,15 +67,15 @@ npm install @aws-lambda-powertools/logger @aws-lambda-powertools/tracer @aws-lam
 
 Or refer to the installation guide of each utility:
 
-👉 [Installation guide for the **Tracer** utility](https://docs.powertools.aws.dev/lambda-typescript/latest/core/tracer#getting-started)
+👉 [Installation guide for the **Tracer** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/core/tracer#getting-started)
 
-👉 [Installation guide for the **Logger** utility](https://docs.powertools.aws.dev/lambda-typescript/latest/core/logger#getting-started)
+👉 [Installation guide for the **Logger** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger#getting-started)
 
-👉 [Installation guide for the **Metrics** utility](https://docs.powertools.aws.dev/lambda-typescript/latest/core/metrics#getting-started)
+👉 [Installation guide for the **Metrics** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics#getting-started)
 
-👉 [Installation guide for the **Parameters** utility](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/#getting-started)
+👉 [Installation guide for the **Parameters** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#getting-started)
 
-👉 [Installation guide for the **Idempotency** utility](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/idempotency/#getting-started)
+👉 [Installation guide for the **Idempotency** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/#getting-started)
 
 ### Examples
 
@@ -121,7 +121,7 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://docs.powertools.aws.dev/lambda-typescript/latest/we_made_this).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this).
 
 ### Using Lambda Layer
 

@@ -8,7 +8,7 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 You can use Powertools for AWS Lambda (TypeScript) in both TypeScript and JavaScript code bases.
 
 ???+ tip
-    Powertools for AWS Lambda is also available for [Python](https://docs.powertools.aws.dev/lambda-python/){target="_blank"}, [Java](https://docs.powertools.aws.dev/lambda-java/){target="_blank"}, and [.NET](https://docs.powertools.aws.dev/lambda-dotnet/){target="_blank"}
+    Powertools for AWS Lambda is also available for [Python](https://docs.powertools.aws.dev/lambda/python/){target="_blank"}, [Java](https://docs.powertools.aws.dev/lambda/java/){target="_blank"}, and [.NET](https://docs.powertools.aws.dev/lambda/dotnet/){target="_blank"}
 
 ??? hint "Support this project by becoming a reference customer, sharing your work, or using Layers :heart:"
 
@@ -283,13 +283,13 @@ If instead you want to see Powertools for AWS Lambda (TypeScript) in a slightly 
 Core utilities such as Tracing, Logging, and Metrics will be available across all Powertools for AWS Lambda languages. Additional utilities are subjective to each language ecosystem and customer demand.
 
 | Utility                                   | Description                                                                                                                                                       |
-|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Tracer](./core/tracer.md)                | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions                                                       |
 | [Logger](./core/logger.md)                | Structured logging made easier, and a middleware to enrich structured logging with key Lambda context details                                                     |
 | [Metrics](./core/metrics.md)              | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)                                                                                 |
 | [Parameters](./utilities/parameters.md)   | High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB                     |
 | [Idempotency](./utilities/idempotency.md) | Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content. |
-| [Batch Processing](./utilities/batch.md)  | Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.                                        |
+| [Batch Processing](./utilities/batch.md)  | Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.                             |
 
 ## Environment variables
 

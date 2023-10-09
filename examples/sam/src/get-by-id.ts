@@ -15,7 +15,7 @@ import { logger, metrics, tracer } from './common/powertools';
  * This example uses the Method decorator instrumentation.
  * Use TypeScript method decorators if you prefer writing your business logic using TypeScript Classes.
  * If you aren’t using Classes, this requires the most significant refactoring.
- * Find more Information in the docs: https://docs.powertools.aws.dev/lambda-typescript/
+ * Find more Information in the docs: https://docs.powertools.aws.dev/lambda/typescript/
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
  * @param {APIGatewayProxyEvent} event - API Gateway Lambda Proxy Input Format

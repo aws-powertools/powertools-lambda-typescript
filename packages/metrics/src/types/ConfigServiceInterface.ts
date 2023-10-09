@@ -5,7 +5,7 @@ import type { ConfigServiceInterface as ConfigServiceBaseInterface } from '@aws-
  *
  * @interface
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
- * @see https://docs.powertools.aws.dev/lambda-typescript/latest/#environment-variables
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  */
 interface ConfigServiceInterface extends ConfigServiceBaseInterface {
   /**

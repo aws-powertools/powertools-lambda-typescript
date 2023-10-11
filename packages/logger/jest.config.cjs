@@ -8,12 +8,7 @@ module.exports = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
-    '^.+\\.[tj]sx?$': [
-      'ts-jest',
-      {
-        useESM: true,
-      },
-    ],
+    '^.+\\.ts?$': 'ts-jest',
   },
   moduleFileExtensions: ['js', 'ts'],
   collectCoverageFrom: ['**/src/**/*.ts', '!**/node_modules/**'],

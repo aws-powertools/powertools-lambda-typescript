@@ -110,7 +110,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = await handler(event, context);
+      const result = await handler(event, context.helloworldContext);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -137,7 +137,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = await handler(event, context);
+      const result = await handler(event, context.helloworldContext);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -164,7 +164,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = await handler(event, context);
+      const result = await handler(event, context.helloworldContext);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -223,7 +223,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = await handler(event, context);
+      const result = await handler(event, context.helloworldContext);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });

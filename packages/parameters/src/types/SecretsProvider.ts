@@ -1,4 +1,4 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type {
   GetSecretValueCommandInput,
   SecretsManagerClient,

@@ -1,7 +1,7 @@
 import type {
   JSONValue,
   MiddyLikeRequest,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 import type { AnyFunction, IdempotencyHandlerOptions } from './types';
 import {
   IdempotencyAlreadyInProgressError,

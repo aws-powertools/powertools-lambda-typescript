@@ -1,8 +1,8 @@
-import {
+import type {
   AsyncHandler,
   LambdaInterface,
   SyncHandler,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 import { Handler } from 'aws-lambda';
 import { ConfigServiceInterface } from '../config/ConfigServiceInterface.js';
 import { LogFormatterInterface } from '../formatter/LogFormatterInterface.js';

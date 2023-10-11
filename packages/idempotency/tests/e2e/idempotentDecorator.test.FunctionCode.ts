@@ -1,5 +1,5 @@
 import type { Context } from 'aws-lambda';
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { idempotent } from '../../src';
 import { Logger } from '../../../logger';
 import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer';

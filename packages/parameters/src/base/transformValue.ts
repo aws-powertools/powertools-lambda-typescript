@@ -1,4 +1,4 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { isString } from '@aws-lambda-powertools/commons';
 import { fromBase64 } from '@aws-sdk/util-base64-node';
 import { TRANSFORM_METHOD_BINARY, TRANSFORM_METHOD_JSON } from '../constants';

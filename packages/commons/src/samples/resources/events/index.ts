@@ -1,1 +1,1 @@
-export * as Custom from './custom';
+export * as Custom from './custom/index.js';

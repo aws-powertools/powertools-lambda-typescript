@@ -11,8 +11,10 @@ import {
   IdempotencyPersistenceLayerError,
 } from '../../src/errors';
 import { IdempotencyConfig } from '../../src';
-import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
-import { Custom as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events';
+import {
+  ContextExamples as dummyContext,
+  Events as dummyEvent,
+} from '@aws-lambda-powertools/commons';
 import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
 import type { Context } from 'aws-lambda';
@@ -24,8 +26,8 @@ const remainingTImeInMillis = 1234;
 
 describe('Function: makeIdempotent', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext;
-  const event = dummyEvent.CustomEvent;
+  const context = dummyContext.helloworldContext;
+  const event = dummyEvent.Custom;
 
   beforeEach(() => {
     jest.clearAllMocks();

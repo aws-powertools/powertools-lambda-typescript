@@ -6,8 +6,8 @@
 import {
   ContextExamples as dummyContext,
   Events as dummyEvent,
+  cleanupMiddlewares,
 } from '@aws-lambda-powertools/commons';
-import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
 import { ConfigServiceInterface } from '../../../src/config/ConfigServiceInterface.js';
 import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
 import { injectLambdaContext } from '../../../src/middleware/middy.js';

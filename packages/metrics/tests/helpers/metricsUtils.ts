@@ -10,7 +10,7 @@ import type {
   ListMetricsCommandOutput,
 } from '@aws-sdk/client-cloudwatch';
 import type { Context, Handler } from 'aws-lambda';
-import type { LambdaInterface } from '@aws-lambda-powertools/commons';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
 const getMetrics = async (
   cloudWatchClient: CloudWatchClient,

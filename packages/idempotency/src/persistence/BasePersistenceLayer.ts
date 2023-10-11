@@ -10,7 +10,7 @@ import {
   IdempotencyValidationError,
 } from '../errors';
 import { LRUCache } from './LRUCache';
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**
  * Base class for all persistence layers. This class provides the basic functionality for

@@ -6,13 +6,12 @@
 import {
   ContextExamples as dummyContext,
   Events as dummyEvent,
-  LambdaInterface,
 } from '@aws-lambda-powertools/commons';
-import { Logger } from '../../src/Logger.js';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import { Logger, LogFormatter } from '../../src/index.js';
 import { ConfigServiceInterface } from '../../src/config/ConfigServiceInterface.js';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
-import { LogFormatter } from '../../src/formatter/LogFormatter.js';
 import { LogLevelThresholds, LogLevel } from '../../src/types/Log.js';
 import {
   ClassThatLogs,
@@ -20,7 +19,7 @@ import {
   ConstructorOptions,
 } from '../../src/types/Logger.js';
 import type { Context } from 'aws-lambda';
-import { Console } from 'console';
+import { Console } from 'node:console';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);

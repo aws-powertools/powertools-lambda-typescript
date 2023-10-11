@@ -1,10 +1,10 @@
 /**
  * Test EnvironmentVariablesService class
  *
- * @group unit/commons/all
+ * @group unit/commons/environmentService
  */
 
-import { EnvironmentVariablesService } from '../../../src/config';
+import { EnvironmentVariablesService } from '../../src/index.js';
 
 describe('Class: EnvironmentVariablesService', () => {
   const ENVIRONMENT_VARIABLES = process.env;

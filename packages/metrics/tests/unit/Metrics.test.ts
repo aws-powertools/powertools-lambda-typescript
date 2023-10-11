@@ -4,10 +4,10 @@
  * @group unit/metrics/class
  */
 import {
-  LambdaInterface,
   ContextExamples as dummyContext,
   Events as dummyEvent,
 } from '@aws-lambda-powertools/commons';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { MetricResolution, MetricUnits, Metrics } from '../../src/';
 import { Context, Handler } from 'aws-lambda';
 import { Dimensions, EmfOutput, MetricsOptions } from '../../src/types';

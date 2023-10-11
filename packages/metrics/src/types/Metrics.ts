@@ -3,7 +3,7 @@ import type {
   LambdaInterface,
   AsyncHandler,
   SyncHandler,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 import { ConfigServiceInterface } from '../config';
 import { MetricUnit } from './MetricUnit';
 import { MetricResolution } from './MetricResolution';

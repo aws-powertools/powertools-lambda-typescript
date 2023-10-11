@@ -8,11 +8,10 @@ import {
   Events as dummyEvent,
 } from '@aws-lambda-powertools/commons';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { Logger } from '../../src/index.js';
+import { Logger, LogFormatter } from '../../src/index.js';
 import { ConfigServiceInterface } from '../../src/config/ConfigServiceInterface.js';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
-import { LogFormatter } from '../../src/index.js';
 import { LogLevelThresholds, LogLevel } from '../../src/types/Log.js';
 import {
   ClassThatLogs,

@@ -13,6 +13,7 @@ import type {
 } from '../../src/types/index.js';
 
 describe('LambdaInterface with arrow function', () => {
+  jest.spyOn(console, 'log').mockImplementation();
   test('it compiles when given a callback', async () => {
     class LambdaFunction implements LambdaInterface {
       public handler: SyncHandler<Handler> = async (
@@ -28,7 +29,7 @@ describe('LambdaInterface with arrow function', () => {
       };
     }
 
-    await new LambdaFunction().handler({}, context, () =>
+    new LambdaFunction().handler({}, context, () =>
       console.log('Lambda invoked!')
     );
   });
@@ -60,7 +61,7 @@ describe('LambdaInterface with standard function', () => {
       }
     }
 
-    await new LambdaFunction().handler({}, context, () =>
+    new LambdaFunction().handler({}, context, () =>
       console.log('Lambda invoked!')
     );
   });
@@ -150,7 +151,7 @@ describe('LambdaInterface with decorator', () => {
       }
     }
 
-    await new LambdaFunction().handler({}, context, () =>
+    new LambdaFunction().handler({}, context, () =>
       console.log('Lambda invoked!')
     );
   });

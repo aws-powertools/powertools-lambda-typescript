@@ -1,6 +1,6 @@
 import merge from 'lodash.merge';
-import { LogItemInterface } from '.';
-import { LogAttributes } from '../types';
+import { LogItemInterface } from './LogItemInterface.js';
+import { LogAttributes } from '../types/Log.js';
 
 class LogItem implements LogItemInterface {
   private attributes: LogAttributes = {};

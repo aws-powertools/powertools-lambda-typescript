@@ -1,5 +1,6 @@
-import { LogAttributes, UnformattedAttributes } from '../types';
-import { LogItem } from '../log';
+import { LogAttributes } from '../types/Log.js';
+import { UnformattedAttributes } from '../types/Logger.js';
+import { LogItem } from '../log/LogItem.js';
 
 /**
  * @interface

@@ -1,4 +1,4 @@
-import { LogAttributes } from '../types';
+import { LogAttributes } from '../types/Log.js';
 
 interface LogItemInterface {
   addAttributes(attributes: LogAttributes): void;

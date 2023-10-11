@@ -32,7 +32,7 @@
   "license": "MIT-0",
   "type": "module",
   "exports": {
-    "node": {
+    ".": {
       "require": {
         "types": "./lib/cjs/index.d.ts",
         "default": "./lib/cjs/index.js"
@@ -40,6 +40,16 @@
       "import": {
         "types": "./lib/esm/index.d.ts",
         "default": "./lib/esm/index.js"
+      }
+    },
+    "./middleware": {
+      "require": {
+        "types": "./lib/cjs/middleware/middy.d.ts",
+        "default": "./lib/cjs/middleware/middy.js"
+      },
+      "import": {
+        "types": "./lib/esm/middleware/middy.d.ts",
+        "default": "./lib/esm/middleware/middy.js"
       }
     }
   },

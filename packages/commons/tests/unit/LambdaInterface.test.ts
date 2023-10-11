@@ -5,12 +5,12 @@
  */
 import { Handler } from 'aws-lambda';
 import { Callback, Context } from 'aws-lambda';
-import {
-  ContextExamples,
+import { helloworldContext as context } from '../../src/samples/resources/contexts/hello-world';
+import type {
   SyncHandler,
   AsyncHandler,
   LambdaInterface,
-} from '../../src';
+} from '../../src/types/index.js';
 
 describe('LambdaInterface with arrow function', () => {
   test('it compiles when given a callback', async () => {
@@ -28,10 +28,8 @@ describe('LambdaInterface with arrow function', () => {
       };
     }
 
-    await new LambdaFunction().handler(
-      {},
-      ContextExamples.helloworldContext,
-      () => console.log('Lambda invoked!')
+    await new LambdaFunction().handler({}, context, () =>
+      console.log('Lambda invoked!')
     );
   });
 
@@ -45,7 +43,7 @@ describe('LambdaInterface with arrow function', () => {
       };
     }
 
-    await new LambdaFunction().handler({}, ContextExamples.helloworldContext);
+    await new LambdaFunction().handler({}, context);
   });
 });
 
@@ -62,10 +60,8 @@ describe('LambdaInterface with standard function', () => {
       }
     }
 
-    await new LambdaFunction().handler(
-      {},
-      ContextExamples.helloworldContext,
-      () => console.log('Lambda invoked!')
+    await new LambdaFunction().handler({}, context, () =>
+      console.log('Lambda invoked!')
     );
   });
 
@@ -80,7 +76,7 @@ describe('LambdaInterface with standard function', () => {
       }
     }
 
-    await new LambdaFunction().handler({}, ContextExamples.helloworldContext);
+    await new LambdaFunction().handler({}, context);
   });
 });
 
@@ -138,7 +134,7 @@ describe('LambdaInterface with decorator', () => {
       }
     }
 
-    await new LambdaFunction().handler({}, ContextExamples.helloworldContext);
+    await new LambdaFunction().handler({}, context);
   });
 
   test('decorator with callback compile', async () => {
@@ -154,10 +150,8 @@ describe('LambdaInterface with decorator', () => {
       }
     }
 
-    await new LambdaFunction().handler(
-      {},
-      ContextExamples.helloworldContext,
-      () => console.log('Lambda invoked!')
+    await new LambdaFunction().handler({}, context, () =>
+      console.log('Lambda invoked!')
     );
   });
 });

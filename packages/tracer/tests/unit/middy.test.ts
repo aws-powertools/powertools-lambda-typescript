@@ -12,7 +12,7 @@ import {
   setContextMissingStrategy,
   Subsegment,
 } from 'aws-xray-sdk-core';
-import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
 
 jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);

@@ -6,8 +6,8 @@
 import {
   ContextExamples as dummyContext,
   Events as dummyEvent,
-  LambdaInterface,
 } from '@aws-lambda-powertools/commons';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Tracer } from './../../src';
 import type { Callback, Context } from 'aws-lambda/handler';
 import {

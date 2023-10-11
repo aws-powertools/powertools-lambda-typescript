@@ -1,6 +1,9 @@
-import { addUserAgentMiddleware, isSdkClient } from '../../src/index.js';
+import {
+  addUserAgentMiddleware,
+  isSdkClient,
+  PT_VERSION as version,
+} from '../../src/index.js';
 import { customUserAgentMiddleware } from '../../src/awsSdkUtils.js';
-import { PT_VERSION as version } from '../../src/version.js';
 
 describe('Helpers: awsSdk', () => {
   describe('Function: userAgentMiddleware', () => {

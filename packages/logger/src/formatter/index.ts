@@ -1,3 +1,3 @@
-export * from './LogFormatter';
-export * from './LogFormatterInterface';
-export * from './PowertoolsLogFormatter';
+export * from './LogFormatter.js';
+export * from './LogFormatterInterface.js';
+export * from './PowertoolsLogFormatter.js';

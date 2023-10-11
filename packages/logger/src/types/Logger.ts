@@ -4,14 +4,14 @@ import {
   SyncHandler,
 } from '@aws-lambda-powertools/commons';
 import { Handler } from 'aws-lambda';
-import { ConfigServiceInterface } from '../config';
-import { LogFormatterInterface } from '../formatter';
+import { ConfigServiceInterface } from '../config/index.js';
+import { LogFormatterInterface } from '../formatter/index.js';
 import {
   Environment,
   LogAttributes,
   LogAttributesWithMessage,
   LogLevel,
-} from './Log';
+} from './Log.js';
 
 type ClassThatLogs = {
   [key in Exclude<Lowercase<LogLevel>, 'silent'>]: (

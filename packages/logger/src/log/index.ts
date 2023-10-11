@@ -1,2 +1,2 @@
-export * from './LogItem';
-export * from './LogItemInterface';
+export * from './LogItem.js';
+export * from './LogItemInterface.js';

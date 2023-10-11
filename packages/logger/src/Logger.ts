@@ -2,11 +2,17 @@ import { randomInt } from 'node:crypto';
 import { Console } from 'node:console';
 import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import { LogFormatterInterface, PowertoolsLogFormatter } from './formatter';
-import { LogItem } from './log';
+import {
+  LogFormatterInterface,
+  PowertoolsLogFormatter,
+} from './formatter/index.js';
+import { LogItem } from './log/index.js';
 import merge from 'lodash.merge';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { LogJsonIndent } from './types';
+import {
+  ConfigServiceInterface,
+  EnvironmentVariablesService,
+} from './config/index.js';
+import { LogJsonIndent } from './types/index.js';
 import type {
   ClassThatLogs,
   Environment,
@@ -20,7 +26,7 @@ import type {
   LogLevelThresholds,
   PowertoolLogData,
   HandlerOptions,
-} from './types';
+} from './types/index.js';
 
 /**
  * ## Intro

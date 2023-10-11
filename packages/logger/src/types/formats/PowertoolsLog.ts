@@ -1,4 +1,4 @@
-import type { LogAttributes, LogLevel } from '..';
+import type { LogAttributes, LogLevel } from '../index.js';
 
 type PowertoolsLog = LogAttributes & {
   /**

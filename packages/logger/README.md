@@ -27,10 +27,10 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 ## Features
 
-* **[Tracer](https://docs.powertools.aws.dev/lambda-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
-* **[Logger](https://docs.powertools.aws.dev/lambda-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
-* **[Metrics](https://docs.powertools.aws.dev/lambda-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
-* **[Parameters](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM, Secrets Manager, AppConfig, and DynamoDB
+- **[Tracer](https://docs.powertools.aws.dev/lambda-typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
+- **[Logger](https://docs.powertools.aws.dev/lambda-typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
+- **[Metrics](https://docs.powertools.aws.dev/lambda-typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
+- **[Parameters](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM, Secrets Manager, AppConfig, and DynamoDB
 
 ## Getting started
 
@@ -38,7 +38,7 @@ Find the complete project's [documentation here](https://docs.powertools.aws.dev
 
 ### Installation
 
-The Powertools for AWS Lambda (TypeScript) utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).  
+The Powertools for AWS Lambda (TypeScript) utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).
 
 Each TypeScript utility is installed as standalone npm package.
 
@@ -60,8 +60,8 @@ Or refer to the installation guide of each utility:
 
 ### Examples
 
-* [CDK](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/cdk)
-* [SAM](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/sam)
+- [CDK](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/cdk)
+- [SAM](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/sam)
 
 ### Serverless TypeScript Demo application
 
@@ -79,8 +79,8 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-* **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
-* **Email**: aws-lambda-powertools-feedback@amazon.com
+- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Email**: aws-lambda-powertools-feedback@amazon.com
 
 ## How to support Powertools for AWS Lambda (TypeScript)?
 
@@ -90,15 +90,15 @@ Knowing which companies are using this library is important to help prioritize t
 
 The following companies, among others, use Powertools:
 
-* [Hashnode](https://hashnode.com/)
-* [Trek10](https://www.trek10.com/)
-* [Elva](https://elva-group.com)
-* [globaldatanet](https://globaldatanet.com/)
-* [Bailey Nelson](https://www.baileynelson.com.au)
-* [Perfect Post](https://www.perfectpost.fr)
-* [Sennder](https://sennder.com/)
-* [Certible](https://www.certible.com/)
-* [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
+- [Hashnode](https://hashnode.com/)
+- [Trek10](https://www.trek10.com/)
+- [Elva](https://elva-group.com)
+- [globaldatanet](https://globaldatanet.com/)
+- [Bailey Nelson](https://www.baileynelson.com.au)
+- [Perfect Post](https://www.perfectpost.fr)
+- [Sennder](https://sennder.com/)
+- [Certible](https://www.certible.com/)
+- [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
 
 ### Sharing your work
 

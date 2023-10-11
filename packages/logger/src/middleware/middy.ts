@@ -1,5 +1,5 @@
-import { Logger } from '../Logger';
-import { HandlerOptions, LogAttributes } from '../types';
+import { Logger } from '../Logger.js';
+import { HandlerOptions, LogAttributes } from '../types/index.js';
 import { LOGGER_KEY } from '@aws-lambda-powertools/commons/lib/middleware';
 import type {
   MiddlewareLikeObj,

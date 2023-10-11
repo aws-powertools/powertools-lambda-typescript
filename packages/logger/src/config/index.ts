@@ -1,2 +1,2 @@
-export * from './ConfigServiceInterface';
-export * from './EnvironmentVariablesService';
+export * from './ConfigServiceInterface.js';
+export * from './EnvironmentVariablesService.js';

@@ -16,10 +16,13 @@
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch --group=unit",
-    "build": "tsc --build --force",
+    "build:cjs": "tsc --build --force",
+    "build:esm": "tsc --project tsconfig.esm.json",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prebuild": "rimraf ./lib",
+    "postbuild": "node ./scripts/buildExportPackageJson.js",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
@@ -27,8 +30,21 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/logger#readme",
   "license": "MIT-0",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "type": "module",
+  "exports": {
+    "node": {
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@types/lodash.merge": "^4.6.7"

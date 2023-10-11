@@ -1,1 +1,1 @@
-export * from './PowertoolsLog';
+export * from './PowertoolsLog.js';

@@ -1,1 +1,1 @@
-export * from './middy';
+export * from './middy.js';

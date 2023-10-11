@@ -3,26 +3,29 @@ import { Console } from 'node:console';
 import { format } from 'node:util';
 import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import { LogFormatterInterface, PowertoolsLogFormatter } from './formatter';
-import { LogItem } from './log';
+import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
+import { LogFormatterInterface } from './formatter/LogFormatterInterface.js';
+import { LogItem } from './log/LogItem.js';
 import merge from 'lodash.merge';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { LogJsonIndent } from './types';
+import { ConfigServiceInterface } from './config/ConfigServiceInterface.js';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
+import { LogJsonIndent } from './types/Logger.js';
+import type {
+  Environment,
+  LogAttributes,
+  LogLevel,
+  LogLevelThresholds,
+} from './types/Log.js';
 import type {
   ClassThatLogs,
-  Environment,
   HandlerMethodDecorator,
   LambdaFunctionContext,
-  LogAttributes,
   ConstructorOptions,
   LogItemExtraInput,
   LogItemMessage,
-  LogLevel,
-  LogLevelThresholds,
   PowertoolLogData,
   HandlerOptions,
-} from './types';
-
+} from './types/Logger.js';
 /**
  * ## Intro
  * The Logger utility provides an opinionated logger with output structured as JSON.

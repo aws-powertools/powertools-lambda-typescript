@@ -4,9 +4,17 @@ module.exports = {
     color: 'cyan',
   },
   runner: 'groups',
-  preset: 'ts-jest',
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
   transform: {
-    '^.+\\.ts?$': 'ts-jest',
+    '^.+\\.[tj]sx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
   },
   moduleFileExtensions: ['js', 'ts'],
   collectCoverageFrom: ['**/src/**/*.ts', '!**/node_modules/**'],

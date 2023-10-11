@@ -1,6 +1,7 @@
-import { LogFormatterInterface } from '.';
-import { LogAttributes, UnformattedAttributes } from '../types';
-import { LogItem } from '../log';
+import { LogFormatterInterface } from './LogFormatterInterface.js';
+import { LogAttributes } from '../types/Log.js';
+import { UnformattedAttributes } from '../types/Logger.js';
+import { LogItem } from '../log/LogItem.js';
 
 /**
  * Typeguard to monkey patch Error to add a cause property.

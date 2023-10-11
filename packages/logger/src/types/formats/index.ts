@@ -1,1 +1,1 @@
-export * from './PowertoolsLog';
+export type { PowertoolsLog } from './PowertoolsLog.js';

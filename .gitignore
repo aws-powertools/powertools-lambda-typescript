@@ -50,4 +50,8 @@ tmp
 
 # TS build files
 tsconfig.tsbuildinfo
+<<<<<<< HEAD
 .tsbuildinfo
+=======
+tsconfig.esm.tsbuildinfo
+>>>>>>> 0bc7960c (feat(logger): add esmodule support (#1734))

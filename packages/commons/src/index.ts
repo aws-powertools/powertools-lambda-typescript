@@ -11,3 +11,4 @@ export {
   METRICS_KEY,
   IDEMPOTENCY_KEY,
 } from './middleware/constants.js';
+export { PT_VERSION } from './version.js';

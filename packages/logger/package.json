@@ -34,11 +34,11 @@
   "exports": {
     "node": {
       "require": {
-        "types": "./lib/index.d.ts",
+        "types": "./lib/cjs/index.d.ts",
         "default": "./lib/cjs/index.js"
       },
       "import": {
-        "types": "./lib/index.d.ts",
+        "types": "./lib/esm/index.d.ts",
         "default": "./lib/esm/index.js"
       }
     }

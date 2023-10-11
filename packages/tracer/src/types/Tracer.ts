@@ -4,7 +4,7 @@ import type {
   AsyncHandler,
   LambdaInterface,
   SyncHandler,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 
 /**
  * Options for the tracer class to be used during initialization.

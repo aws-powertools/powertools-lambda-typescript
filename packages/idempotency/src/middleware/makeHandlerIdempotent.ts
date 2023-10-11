@@ -3,13 +3,13 @@ import { IdempotencyConfig } from '../IdempotencyConfig';
 import {
   cleanupMiddlewares,
   IDEMPOTENCY_KEY,
-} from '@aws-lambda-powertools/commons/lib/middleware';
+} from '@aws-lambda-powertools/commons';
 import type { AnyFunction, IdempotencyLambdaHandlerOptions } from '../types';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
   JSONValue,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 
 /**
  * @internal

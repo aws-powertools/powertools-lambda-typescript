@@ -1,16 +1,16 @@
 /**
- * Test utils functions
+ * Test guards functions
  *
- * @group unit/commons/utils
+ * @group unit/commons/guards
  */
 import {
   isRecord,
   isTruthy,
   isNullOrUndefined,
   isString,
-} from '../../src/types/utils';
+} from '../../src/index.js';
 
-describe('Functions: utils', () => {
+describe('Functions: guards', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetModules();

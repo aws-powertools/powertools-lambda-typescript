@@ -15,7 +15,7 @@ import {
 } from '../../src/errors';
 import { IdempotencyConfig } from '../../src';
 import { Context } from 'aws-lambda';
-import { helloworldContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
+import { ContextExamples as context } from '@aws-lambda-powertools/commons';
 import { IdempotencyRecordStatus } from '../../src/constants';
 
 const mockSaveInProgress = jest
@@ -28,7 +28,7 @@ const mockGetRecord = jest
   .spyOn(BasePersistenceLayer.prototype, 'getRecord')
   .mockImplementation();
 
-const dummyContext = helloworldContext;
+const dummyContext = context.helloworldContext;
 
 const mockConfig: IdempotencyConfig = new IdempotencyConfig({});
 

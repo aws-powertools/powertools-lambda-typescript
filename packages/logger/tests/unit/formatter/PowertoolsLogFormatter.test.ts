@@ -5,6 +5,7 @@
  */
 import { AssertionError, strictEqual } from 'assert';
 import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
+import { LogItem } from '../../../src/index.js';
 import { UnformattedAttributes } from '../../../src/types/Logger.js';
 import { LogAttributes } from '../../../src/types/Log.js';
 
@@ -52,6 +53,7 @@ describe('Class: PowertoolsLogFormatter', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       });
+      expect(value).toBeInstanceOf(LogItem);
     });
 
     test('when optional parameters DO have a value set, it returns an object with expected structure and values', () => {
@@ -119,12 +121,12 @@ describe('Class: PowertoolsLogFormatter', () => {
         const formattedError = formatter.formatError(<Error>error);
         expect(formattedError).toEqual({
           location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+$/
+            /PowertoolsLogFormatter.test.ts:\d+$/
           ),
           message: 'Ouch!',
           name: 'Error',
           stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
         });
       }
@@ -151,12 +153,12 @@ describe('Class: PowertoolsLogFormatter', () => {
         const formattedReferenceError = formatter.formatError(<Error>error);
         expect(formattedReferenceError).toEqual({
           location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+$/
+            /PowertoolsLogFormatter.test.ts:\d+$/
           ),
           message: 'doesNotExist is not defined',
           name: 'ReferenceError',
           stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
         });
       }
@@ -181,15 +183,13 @@ describe('Class: PowertoolsLogFormatter', () => {
           <AssertionError>error
         );
         expect(formattedAssertionError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+/
-          ),
+          location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
           message: expect.stringMatching(
             /Expected values to be strictly equal/
           ),
           name: 'AssertionError',
           stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
         });
       }
@@ -212,13 +212,11 @@ describe('Class: PowertoolsLogFormatter', () => {
         expect(error).toBeInstanceOf(RangeError);
         const formattedRangeError = formatter.formatError(<RangeError>error);
         expect(formattedRangeError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+/
-          ),
+          location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
           message: 'The argument must be between 10 and 20',
           name: 'RangeError',
           stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
         });
       }
@@ -241,13 +239,11 @@ describe('Class: PowertoolsLogFormatter', () => {
         expect(error).toBeInstanceOf(SyntaxError);
         const formattedSyntaxError = formatter.formatError(<SyntaxError>error);
         expect(formattedSyntaxError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+/
-          ),
+          location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
           message: 'Unexpected identifier',
           name: 'SyntaxError',
           stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
         });
       }
@@ -274,13 +270,11 @@ describe('Class: PowertoolsLogFormatter', () => {
         expect(error).toBeInstanceOf(Error);
         const formattedTypeError = formatter.formatError(<Error>error);
         expect(formattedTypeError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+/
-          ),
+          location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
           message: expect.stringMatching(/Cannot read propert/),
           name: 'TypeError',
           stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
         });
       }
@@ -303,13 +297,11 @@ describe('Class: PowertoolsLogFormatter', () => {
         expect(error).toBeInstanceOf(URIError);
         const formattedURIError = formatter.formatError(<URIError>error);
         expect(formattedURIError).toEqual({
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+/
-          ),
+          location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
           message: 'URI malformed',
           name: 'URIError',
           stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
         });
       }
@@ -335,22 +327,16 @@ describe('Class: PowertoolsLogFormatter', () => {
 
       // Assess
       expect(formattedURIError).toEqual({
-        location: expect.stringMatching(
-          /PowertoolsLogFormatter.test.ts:[0-9]+/
-        ),
+        location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
         message: 'foo',
         name: 'Error',
-        stack: expect.stringMatching(
-          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-        ),
+        stack: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+:\d+/),
         cause: {
-          location: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+/
-          ),
+          location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
           message: 'bar',
           name: 'Error',
           stack: expect.stringMatching(
-            /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
+            /PowertoolsLogFormatter.test.ts:\d+:\d+/
           ),
         },
       });
@@ -374,14 +360,10 @@ describe('Class: PowertoolsLogFormatter', () => {
 
       // Assess
       expect(formattedURIError).toEqual({
-        location: expect.stringMatching(
-          /PowertoolsLogFormatter.test.ts:[0-9]+/
-        ),
+        location: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+/),
         message: 'foo',
         name: 'Error',
-        stack: expect.stringMatching(
-          /PowertoolsLogFormatter.test.ts:[0-9]+:[0-9]+/
-        ),
+        stack: expect.stringMatching(/PowertoolsLogFormatter.test.ts:\d+:\d+/),
         cause: 'bar',
       });
     });

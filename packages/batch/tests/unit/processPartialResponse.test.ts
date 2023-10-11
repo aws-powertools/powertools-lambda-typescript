@@ -9,8 +9,10 @@ import type {
   KinesisStreamEvent,
   SQSEvent,
 } from 'aws-lambda';
-import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
-import { Custom as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events';
+import {
+  ContextExamples as dummyContext,
+  Events as dummyEvent,
+} from '@aws-lambda-powertools/commons';
 import { BatchProcessor } from '../../src/BatchProcessor';
 import { processPartialResponse } from '../../src/processPartialResponse';
 import { EventType } from '../../src/constants';
@@ -33,7 +35,9 @@ import {
 describe('Function: processPartialResponse()', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const context = dummyContext;
-  const options: BatchProcessingOptions = { context: dummyContext };
+  const options: BatchProcessingOptions = {
+    context: dummyContext.helloworldContext,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -106,7 +110,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = await handler(event, context);
+      const result = await handler(event, context.helloworldContext);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -133,7 +137,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = await handler(event, context);
+      const result = await handler(event, context.helloworldContext);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -160,7 +164,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = await handler(event, context);
+      const result = await handler(event, context.helloworldContext);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -169,7 +173,7 @@ describe('Function: processPartialResponse()', () => {
     test('Process partial response through handler for SQS records with incorrect event type', async () => {
       // Prepare
       const processor = new BatchProcessor(EventType.SQS);
-      const event = dummyEvent;
+      const event = dummyEvent.Custom;
 
       const handler = async (
         event: SQSEvent,
@@ -184,7 +188,7 @@ describe('Function: processPartialResponse()', () => {
 
       // Act & Assess
       await expect(() =>
-        handler(event as unknown as SQSEvent, context)
+        handler(event as unknown as SQSEvent, context.helloworldContext)
       ).rejects.toThrowError(
         `Unexpected batch type. Possible values are: ${Object.keys(
           EventType
@@ -216,7 +220,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = await handler(event, context);
+      const result = await handler(event, context.helloworldContext);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });

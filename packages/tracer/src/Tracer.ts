@@ -1,9 +1,9 @@
 import type { Handler } from 'aws-lambda';
-import {
-  type AsyncHandler,
-  type SyncHandler,
-  Utility,
-} from '@aws-lambda-powertools/commons';
+import { Utility } from '@aws-lambda-powertools/commons';
+import type {
+  AsyncHandler,
+  SyncHandler,
+} from '@aws-lambda-powertools/commons/types';
 import type { TracerInterface } from '.';
 import {
   type ConfigServiceInterface,

@@ -17,7 +17,7 @@ import type {
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import type { PaginationConfiguration } from '@aws-sdk/types';
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import {
   addUserAgentMiddleware,
   isSdkClient,

@@ -1,10 +1,10 @@
-import { METRICS_KEY } from '@aws-lambda-powertools/commons/lib/middleware';
+import { METRICS_KEY } from '@aws-lambda-powertools/commons';
 import type { Metrics } from '../Metrics';
 import type { ExtraOptions } from '../types';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.

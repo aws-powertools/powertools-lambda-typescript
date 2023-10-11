@@ -4,7 +4,7 @@
  * @group unit/batch/class/asyncBatchProcessor
  */
 import type { Context } from 'aws-lambda';
-import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
+import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
 import { BatchProcessor } from '../../src/BatchProcessor';
 import { EventType } from '../../src/constants';
 import { BatchProcessingError, FullBatchFailureError } from '../../src/errors';
@@ -23,7 +23,9 @@ import {
 
 describe('Class: AsyncBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const options: BatchProcessingOptions = { context: dummyContext };
+  const options: BatchProcessingOptions = {
+    context: dummyContext.helloworldContext,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();

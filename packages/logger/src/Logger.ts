@@ -5,7 +5,7 @@ import { Utility } from '@aws-lambda-powertools/commons';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
 import { LogFormatterInterface } from './formatter/LogFormatterInterface.js';
 import { LogItem } from './log/LogItem.js';
-//import merge from 'lodash.merge';
+import merge from 'lodash.merge';
 import { ConfigServiceInterface } from './config/ConfigServiceInterface.js';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import { LogJsonIndent } from './types/Logger.js';
@@ -213,7 +213,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public addPersistentLogAttributes(attributes?: LogAttributes): void {
-    Object.assign(this.persistentLogAttributes!, attributes);
+    merge(this.persistentLogAttributes!, attributes);
   }
 
   /**
@@ -241,7 +241,7 @@ class Logger extends Utility implements ClassThatLogs {
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
     const childLogger = this.createLogger(
-      Object.assign(parentsOptions, parentsPowertoolsLogData, options)
+      merge(parentsOptions, parentsPowertoolsLogData, options)
     );
 
     const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
@@ -599,7 +599,7 @@ class Logger extends Utility implements ClassThatLogs {
     ...attributesArray: Array<Partial<PowertoolLogData>>
   ): void {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
-      Object.assign(this.powertoolLogData, attributes);
+      merge(this.powertoolLogData, attributes);
     });
   }
 
@@ -620,7 +620,7 @@ class Logger extends Utility implements ClassThatLogs {
     extraInput: LogItemExtraInput
   ): LogItem {
     // TODO: this method's logic is hard to understand, there is an opportunity here to simplify this logic.
-    const unformattedBaseAttributes = Object.assign(
+    const unformattedBaseAttributes = merge(
       {
         logLevel: this.getLogLevelNameFromNumber(logLevel),
         timestamp: new Date(),
@@ -631,12 +631,12 @@ class Logger extends Utility implements ClassThatLogs {
     );
 
     let additionalLogAttributes: LogAttributes = {};
-    additionalLogAttributes = Object.assign(
+    additionalLogAttributes = merge(
       additionalLogAttributes,
       this.getPersistentLogAttributes()
     );
     if (typeof input !== 'string') {
-      additionalLogAttributes = Object.assign(additionalLogAttributes, input);
+      additionalLogAttributes = merge(additionalLogAttributes, input);
     }
     extraInput.forEach((item: Error | LogAttributes | string) => {
       const attributes: LogAttributes =
@@ -646,10 +646,7 @@ class Logger extends Utility implements ClassThatLogs {
           ? { extra: item }
           : item;
 
-      additionalLogAttributes = Object.assign(
-        additionalLogAttributes,
-        attributes
-      );
+      additionalLogAttributes = merge(additionalLogAttributes, attributes);
     });
 
     const logItem = this.getLogFormatter().formatAttributes(

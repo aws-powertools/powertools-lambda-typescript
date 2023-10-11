@@ -5,6 +5,7 @@
  */
 import { AssertionError, strictEqual } from 'assert';
 import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
+import { LogItem } from '../../../src/index.js';
 import { UnformattedAttributes } from '../../../src/types/Logger.js';
 import { LogAttributes } from '../../../src/types/Log.js';
 
@@ -52,6 +53,7 @@ describe('Class: PowertoolsLogFormatter', () => {
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
       });
+      expect(value).toBeInstanceOf(LogItem);
     });
 
     test('when optional parameters DO have a value set, it returns an object with expected structure and values', () => {

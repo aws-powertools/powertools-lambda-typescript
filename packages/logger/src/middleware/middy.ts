@@ -1,11 +1,11 @@
 import { Logger } from '../Logger.js';
 import { LogAttributes } from '../types/Log.js';
 import { HandlerOptions } from '../types/Logger.js';
-import { LOGGER_KEY } from '@aws-lambda-powertools/commons/lib/middleware';
+import { LOGGER_KEY } from '@aws-lambda-powertools/commons';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 
 /**
  * A middy middleware that helps emitting CloudWatch EMF metrics in your logs.

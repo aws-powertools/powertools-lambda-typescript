@@ -213,7 +213,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public addPersistentLogAttributes(attributes?: LogAttributes): void {
-    merge(this.persistentLogAttributes!, attributes);
+    merge(this.persistentLogAttributes, attributes);
   }
 
   /**

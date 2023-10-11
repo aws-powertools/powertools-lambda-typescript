@@ -4,8 +4,8 @@ import {
   SyncHandler,
 } from '@aws-lambda-powertools/commons';
 import { Handler } from 'aws-lambda';
-import { ConfigServiceInterface } from '../config/index.js';
-import { LogFormatterInterface } from '../formatter/index.js';
+import { ConfigServiceInterface } from '../config/ConfigServiceInterface.js';
+import { LogFormatterInterface } from '../formatter/LogFormatterInterface.js';
 import {
   Environment,
   LogAttributes,

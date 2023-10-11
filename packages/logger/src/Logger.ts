@@ -2,32 +2,29 @@ import { randomInt } from 'node:crypto';
 import { Console } from 'node:console';
 import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import {
-  LogFormatterInterface,
-  PowertoolsLogFormatter,
-} from './formatter/index.js';
-import { LogItem } from './log/index.js';
-import merge from 'lodash.merge';
-import {
-  ConfigServiceInterface,
-  EnvironmentVariablesService,
-} from './config/index.js';
-import { LogJsonIndent } from './types/index.js';
+import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
+import { LogFormatterInterface } from './formatter/LogFormatterInterface.js';
+import { LogItem } from './log/LogItem.js';
+//import merge from 'lodash.merge';
+import { ConfigServiceInterface } from './config/ConfigServiceInterface.js';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
+import { LogJsonIndent } from './types/Logger.js';
+import type {
+  Environment,
+  LogAttributes,
+  LogLevel,
+  LogLevelThresholds,
+} from './types/Log.js';
 import type {
   ClassThatLogs,
-  Environment,
   HandlerMethodDecorator,
   LambdaFunctionContext,
-  LogAttributes,
   ConstructorOptions,
   LogItemExtraInput,
   LogItemMessage,
-  LogLevel,
-  LogLevelThresholds,
   PowertoolLogData,
   HandlerOptions,
-} from './types/index.js';
-
+} from './types/Logger.js';
 /**
  * ## Intro
  * The Logger utility provides an opinionated logger with output structured as JSON.
@@ -216,7 +213,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public addPersistentLogAttributes(attributes?: LogAttributes): void {
-    merge(this.persistentLogAttributes, attributes);
+    Object.assign(this.persistentLogAttributes!, attributes);
   }
 
   /**
@@ -244,7 +241,7 @@ class Logger extends Utility implements ClassThatLogs {
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
     const childLogger = this.createLogger(
-      merge(parentsOptions, parentsPowertoolsLogData, options)
+      Object.assign(parentsOptions, parentsPowertoolsLogData, options)
     );
 
     const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
@@ -602,7 +599,7 @@ class Logger extends Utility implements ClassThatLogs {
     ...attributesArray: Array<Partial<PowertoolLogData>>
   ): void {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
-      merge(this.powertoolLogData, attributes);
+      Object.assign(this.powertoolLogData, attributes);
     });
   }
 
@@ -623,7 +620,7 @@ class Logger extends Utility implements ClassThatLogs {
     extraInput: LogItemExtraInput
   ): LogItem {
     // TODO: this method's logic is hard to understand, there is an opportunity here to simplify this logic.
-    const unformattedBaseAttributes = merge(
+    const unformattedBaseAttributes = Object.assign(
       {
         logLevel: this.getLogLevelNameFromNumber(logLevel),
         timestamp: new Date(),
@@ -634,12 +631,12 @@ class Logger extends Utility implements ClassThatLogs {
     );
 
     let additionalLogAttributes: LogAttributes = {};
-    additionalLogAttributes = merge(
+    additionalLogAttributes = Object.assign(
       additionalLogAttributes,
       this.getPersistentLogAttributes()
     );
     if (typeof input !== 'string') {
-      additionalLogAttributes = merge(additionalLogAttributes, input);
+      additionalLogAttributes = Object.assign(additionalLogAttributes, input);
     }
     extraInput.forEach((item: Error | LogAttributes | string) => {
       const attributes: LogAttributes =
@@ -649,7 +646,10 @@ class Logger extends Utility implements ClassThatLogs {
           ? { extra: item }
           : item;
 
-      additionalLogAttributes = merge(additionalLogAttributes, attributes);
+      additionalLogAttributes = Object.assign(
+        additionalLogAttributes,
+        attributes
+      );
     });
 
     const logItem = this.getLogFormatter().formatAttributes(

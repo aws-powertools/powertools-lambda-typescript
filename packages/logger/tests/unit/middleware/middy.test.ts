@@ -8,15 +8,13 @@ import {
   Events as dummyEvent,
 } from '@aws-lambda-powertools/commons';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
-import {
-  ConfigServiceInterface,
-  EnvironmentVariablesService,
-} from '../../../src/config';
-import { injectLambdaContext } from '../../../src/middleware/middy';
-import { Logger } from './../../../src';
+import { ConfigServiceInterface } from '../../../src/config/ConfigServiceInterface.js';
+import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
+import { injectLambdaContext } from '../../../src/middleware/middy.js';
+import { Logger } from './../../../src/Logger.js';
 import middy from '@middy/core';
-import { PowertoolsLogFormatter } from '../../../src/formatter';
-import { Console } from 'console';
+import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
+import { Console } from 'node:console';
 import { Context } from 'aws-lambda';
 
 const mockDate = new Date(1466424490000);

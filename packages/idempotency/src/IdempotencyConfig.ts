@@ -1,6 +1,6 @@
-import { EnvironmentVariablesService } from './config';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import type { Context } from 'aws-lambda';
-import type { IdempotencyConfigOptions } from './types';
+import type { IdempotencyConfigOptions } from './types/IdempotencyOptions.js';
 
 /**
  * Configuration for the idempotency feature.

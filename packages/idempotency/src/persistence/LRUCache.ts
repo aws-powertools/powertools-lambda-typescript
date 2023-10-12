@@ -1,4 +1,4 @@
-import type { LRUCacheOptions } from '../types';
+import type { LRUCacheOptions } from '../types/LRUCache.js';
 
 const DEFAULT_MAX_SIZE = 100;
 const NEWER = Symbol('newer');

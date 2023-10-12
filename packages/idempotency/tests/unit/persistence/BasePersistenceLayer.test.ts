@@ -4,16 +4,18 @@
  * @group unit/idempotency/persistence/base
  */
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { IdempotencyConfig, IdempotencyRecordStatus } from '../../../src';
+import {
+  IdempotencyConfig,
+  IdempotencyRecordStatus,
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyValidationError,
+  IdempotencyKeyError,
+} from '../../../src/index.js';
 import {
   BasePersistenceLayer,
   IdempotencyRecord,
-} from '../../../src/persistence';
-import {
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyValidationError,
-} from '../../../src/errors';
-import type { IdempotencyConfigOptions } from '../../../src/types';
+} from '../../../src/persistence/index.js';
+import type { IdempotencyConfigOptions } from '../../../src/types/index.js';
 
 jest.mock('node:crypto', () => ({
   createHash: jest.fn().mockReturnValue({
@@ -293,7 +295,9 @@ describe('Class: BasePersistenceLayer', () => {
       await expect(
         persistenceLayer.getRecord({ foo: { bar: [] } })
       ).rejects.toThrow(
-        new Error('No data found to create a hashed idempotency_key')
+        new IdempotencyKeyError(
+          'No data found to create a hashed idempotency_key'
+        )
       );
     });
 

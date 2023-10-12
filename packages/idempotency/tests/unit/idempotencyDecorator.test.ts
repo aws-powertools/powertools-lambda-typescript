@@ -4,19 +4,22 @@
  * @group unit/idempotency/decorator
  */
 
-import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
-import { idempotent } from '../../src/';
-import type { IdempotencyRecordOptions } from '../../src/types';
 import {
+  BasePersistenceLayer,
+  IdempotencyRecord,
+} from '../../src/persistence/index.js';
+import {
+  idempotent,
+  IdempotencyConfig,
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/errors';
-import { IdempotencyConfig } from '../../src';
+} from '../../src/index.js';
+import type { IdempotencyRecordOptions } from '../../src/types/index.js';
 import { Context } from 'aws-lambda';
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { IdempotencyRecordStatus } from '../../src/constants';
+import { IdempotencyRecordStatus } from '../../src/constants.js';
 
 const mockSaveInProgress = jest
   .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')

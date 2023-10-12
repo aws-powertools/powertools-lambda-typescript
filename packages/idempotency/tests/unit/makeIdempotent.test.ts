@@ -3,17 +3,18 @@
  *
  * @group unit/idempotency/makeIdempotent
  */
-import { IdempotencyRecord } from '../../src/persistence';
-import { makeIdempotent } from '../../src';
+import { IdempotencyRecord } from '../../src/persistence/index.js';
 import {
+  makeIdempotent,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/errors';
-import { IdempotencyConfig } from '../../src';
+  IdempotencyConfig,
+  IdempotencyRecordStatus,
+} from '../../src/index.js';
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
-import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
+import { MAX_RETRIES } from '../../src/constants.js';
+import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 import type { Context } from 'aws-lambda';
 
 const mockIdempotencyOptions = {

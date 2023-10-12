@@ -3,7 +3,7 @@
  *
  * @group unit/idempotency/environment-variables-service
  */
-import { EnvironmentVariablesService } from '../../../src/config';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: EnvironmentVariableService', () => {
   const ENVIRONMENT_VARIABLES = process.env;

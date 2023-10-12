@@ -3,18 +3,19 @@
  *
  * @group unit/idempotency/makeHandlerIdempotent
  */
-import { makeHandlerIdempotent } from '../../src/middleware';
+import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { IdempotencyRecord } from '../../src/persistence';
+import { IdempotencyRecord } from '../../src/persistence/index.js';
 import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/errors';
-import { IdempotencyConfig } from '../../src/';
+  IdempotencyConfig,
+  IdempotencyRecordStatus,
+} from '../../src/index.js';
 import middy from '@middy/core';
-import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
-import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
+import { MAX_RETRIES } from '../../src/constants.js';
+import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 import type { Context } from 'aws-lambda';
 
 const mockIdempotencyOptions = {

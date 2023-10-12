@@ -3,10 +3,12 @@
  *
  * @group unit/idempotency/persistence/idempotencyRecord
  */
-import { IdempotencyInvalidStatusError } from '../../../src/errors';
-import { IdempotencyRecord } from '../../../src/persistence';
-import { IdempotencyRecordStatus } from '../../../src';
-import type { IdempotencyRecordStatusValue } from '../../../src/types';
+import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord.js';
+import {
+  IdempotencyRecordStatus,
+  IdempotencyInvalidStatusError,
+} from '../../../src/index.js';
+import type { IdempotencyRecordStatusValue } from '../../../src/types/index.js';
 
 const mockIdempotencyKey = '123';
 const mockData = undefined;

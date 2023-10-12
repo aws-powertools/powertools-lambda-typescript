@@ -13,7 +13,7 @@ import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources';
+import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,

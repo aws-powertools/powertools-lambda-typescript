@@ -2,16 +2,20 @@ import type {
   JSONValue,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
-import type { AnyFunction, IdempotencyHandlerOptions } from './types';
+import type {
+  AnyFunction,
+  IdempotencyHandlerOptions,
+} from './types/IdempotencyOptions.js';
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from './errors';
-import { BasePersistenceLayer, IdempotencyRecord } from './persistence';
-import { IdempotencyConfig } from './IdempotencyConfig';
-import { MAX_RETRIES, IdempotencyRecordStatus } from './constants';
+} from './errors.js';
+import { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
+import { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
+import { IdempotencyConfig } from './IdempotencyConfig.js';
+import { MAX_RETRIES, IdempotencyRecordStatus } from './constants.js';
 import { search } from 'jmespath';
 
 /**

@@ -1,5 +1,8 @@
-import { AnyFunction, ItempotentFunctionOptions } from './types';
-import { makeIdempotent } from './makeIdempotent';
+import {
+  AnyFunction,
+  ItempotentFunctionOptions,
+} from './types/IdempotencyOptions.js';
+import { makeIdempotent } from './makeIdempotent.js';
 
 /**
  * Use this decorator to make your lambda handler itempotent.

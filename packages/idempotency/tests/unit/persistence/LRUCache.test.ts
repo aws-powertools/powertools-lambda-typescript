@@ -3,7 +3,7 @@
  *
  * @group unit/idempotency/persistence/lru-cache
  */
-import { LRUCache } from '../../../src/persistence/LRUCache';
+import { LRUCache } from '../../../src/persistence/LRUCache.js';
 
 describe('Class: LRUMap', () => {
   describe('Method: add', () => {

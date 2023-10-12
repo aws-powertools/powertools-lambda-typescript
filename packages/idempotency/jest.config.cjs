@@ -5,6 +5,9 @@ module.exports = {
   },
   runner: 'groups',
   preset: 'ts-jest',
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
   transform: {
     '^.+\\.ts?$': 'ts-jest',
   },

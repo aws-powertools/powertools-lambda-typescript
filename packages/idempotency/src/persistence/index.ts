@@ -1,3 +1,2 @@
-export * from './BasePersistenceLayer';
-export * from './BasePersistenceLayerInterface';
-export * from './IdempotencyRecord';
+export { BasePersistenceLayer } from './BasePersistenceLayer.js';
+export { IdempotencyRecord } from './IdempotencyRecord.js';

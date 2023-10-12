@@ -1,10 +1,13 @@
-import { IdempotencyHandler } from '../IdempotencyHandler';
-import { IdempotencyConfig } from '../IdempotencyConfig';
+import { IdempotencyHandler } from '../IdempotencyHandler.js';
+import { IdempotencyConfig } from '../IdempotencyConfig.js';
 import {
   cleanupMiddlewares,
   IDEMPOTENCY_KEY,
 } from '@aws-lambda-powertools/commons';
-import type { AnyFunction, IdempotencyLambdaHandlerOptions } from '../types';
+import type {
+  AnyFunction,
+  IdempotencyLambdaHandlerOptions,
+} from '../types/IdempotencyOptions.js';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,

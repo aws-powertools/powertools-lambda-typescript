@@ -1,15 +1,18 @@
 import { createHash, Hash } from 'node:crypto';
 import { search } from 'jmespath';
-import type { BasePersistenceLayerOptions } from '../types';
-import { IdempotencyRecordStatus } from '../constants';
-import { EnvironmentVariablesService } from '../config';
-import { IdempotencyRecord } from './IdempotencyRecord';
-import { BasePersistenceLayerInterface } from './BasePersistenceLayerInterface';
+import type {
+  BasePersistenceLayerOptions,
+  BasePersistenceLayerInterface,
+} from '../types/BasePersistenceLayer.js';
+import { IdempotencyRecordStatus } from '../constants.js';
+import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import { IdempotencyRecord } from './IdempotencyRecord.js';
 import {
   IdempotencyItemAlreadyExistsError,
+  IdempotencyKeyError,
   IdempotencyValidationError,
-} from '../errors';
-import { LRUCache } from './LRUCache';
+} from '../errors.js';
+import { LRUCache } from './LRUCache.js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**
@@ -280,7 +283,9 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
     if (BasePersistenceLayer.isMissingIdempotencyKey(data)) {
       if (this.throwOnNoIdempotencyKey) {
-        throw new Error('No data found to create a hashed idempotency_key');
+        throw new IdempotencyKeyError(
+          'No data found to create a hashed idempotency_key'
+        );
       }
       console.warn(
         `No value found for idempotency_key. jmespath: ${this.eventKeyJmesPath}`

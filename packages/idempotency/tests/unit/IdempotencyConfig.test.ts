@@ -4,8 +4,8 @@
  * @group unit/idempotency/config
  */
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { IdempotencyConfig } from '../../src';
-import type { IdempotencyConfigOptions } from '../../src/types';
+import { IdempotencyConfig } from '../../src/index.js';
+import type { IdempotencyConfigOptions } from '../../src/types/index.js';
 
 describe('Class: IdempotencyConfig', () => {
   const ENVIRONMENT_VARIABLES = process.env;

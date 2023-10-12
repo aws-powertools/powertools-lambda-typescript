@@ -1,9 +1,3 @@
-import type { Handler } from 'aws-lambda';
-import type {
-  LambdaInterface,
-  AsyncHandler,
-  SyncHandler,
-} from '@aws-lambda-powertools/commons/types';
 import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 import { MetricResolution, MetricUnit } from '../constants.js';
 
@@ -28,14 +22,6 @@ type EmfOutput = Readonly<{
     }[];
   };
 }>;
-
-type HandlerMethodDecorator = (
-  target: LambdaInterface,
-  propertyKey: string | symbol,
-  descriptor:
-    | TypedPropertyDescriptor<SyncHandler<Handler>>
-    | TypedPropertyDescriptor<AsyncHandler<Handler>>
-) => void;
 
 /**
  * Options for the metrics decorator
@@ -86,7 +72,6 @@ export {
   MetricsOptions,
   Dimensions,
   EmfOutput,
-  HandlerMethodDecorator,
   ExtraOptions,
   StoredMetrics,
   StoredMetric,

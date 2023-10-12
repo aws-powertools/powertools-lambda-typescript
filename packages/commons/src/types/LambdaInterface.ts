@@ -15,4 +15,12 @@ interface LambdaInterface {
   handler: SyncHandler<Handler> | AsyncHandler<Handler>;
 }
 
-export { LambdaInterface };
+type HandlerMethodDecorator = (
+  target: LambdaInterface,
+  propertyKey: string | symbol,
+  descriptor:
+    | TypedPropertyDescriptor<SyncHandler<Handler>>
+    | TypedPropertyDescriptor<AsyncHandler<Handler>>
+) => void;
+
+export { LambdaInterface, HandlerMethodDecorator };

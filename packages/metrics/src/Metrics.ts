@@ -1,5 +1,6 @@
 import type { Callback, Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
+import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import {
   MAX_DIMENSION_COUNT,
@@ -14,7 +15,6 @@ import {
   type MetricsOptions,
   type Dimensions,
   type EmfOutput,
-  type HandlerMethodDecorator,
   type StoredMetrics,
   type ExtraOptions,
   type MetricDefinition,

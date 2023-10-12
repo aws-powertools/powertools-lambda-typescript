@@ -1,7 +1,7 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
-import { transformValue } from '../base/transformValue';
-import { GetParameterError } from '../errors';
-import { DEFAULT_MAX_AGE_SECS } from '../constants';
+import { BaseProvider } from '../base/BaseProvider.js';
+import { transformValue } from '../base/transformValue.js';
+import { GetParameterError } from '../errors.js';
+import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import {
   SSMClient,
   GetParameterCommand,
@@ -25,7 +25,7 @@ import type {
   SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
-} from '../types/SSMProvider';
+} from '../types/SSMProvider.js';
 import type { PaginationConfiguration } from '@aws-sdk/types';
 import {
   addUserAgentMiddleware,
@@ -915,4 +915,4 @@ class SSMProvider extends BaseProvider {
   }
 }
 
-export { SSMProvider, DEFAULT_PROVIDERS };
+export { SSMProvider };

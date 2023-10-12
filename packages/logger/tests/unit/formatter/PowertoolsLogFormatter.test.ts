@@ -3,7 +3,7 @@
  *
  * @group unit/logger/all
  */
-import { AssertionError, strictEqual } from 'assert';
+import { AssertionError, strictEqual } from 'node:assert';
 import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
 import { LogItem } from '../../../src/index.js';
 import { UnformattedAttributes } from '../../../src/types/Logger.js';

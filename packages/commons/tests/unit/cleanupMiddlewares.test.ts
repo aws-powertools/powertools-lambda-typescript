@@ -10,7 +10,7 @@ import {
   LOGGER_KEY,
   IDEMPOTENCY_KEY,
 } from '../../src/index.js';
-import { helloworldContext as context } from '../../src/samples/resources/contexts/hello-world';
+import context from '@aws-lambda-powertools/testing-utils/context';
 
 describe('Function: cleanupMiddlewares', () => {
   it('calls the cleanup function that are present', async () => {

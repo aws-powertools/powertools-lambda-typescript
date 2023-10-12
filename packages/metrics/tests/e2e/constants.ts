@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { MetricUnits } from '../../src';
+import { MetricUnits } from '../../src/index.js';
 
 const RESOURCE_NAME_PREFIX = 'Metrics';
 const ONE_MINUTE = 60 * 1000;

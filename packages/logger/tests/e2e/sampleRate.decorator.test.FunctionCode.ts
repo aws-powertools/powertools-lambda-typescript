@@ -1,6 +1,6 @@
-import { Logger } from '../../src';
-import { TestEvent, TestOutput } from '../helpers/types';
-import { Context } from 'aws-lambda';
+import { Logger } from '../../src/index.js';
+import type { TestEvent, TestOutput } from '../helpers/types';
+import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
 const SAMPLE_RATE = parseFloat(process.env.SAMPLE_RATE || '0.1');

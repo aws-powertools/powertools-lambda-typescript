@@ -1,10 +1,13 @@
-export * from './constants';
-export * from './errors';
-export * from './types';
-export * from './BasePartialProcessor';
-export * from './BasePartialBatchProcessor';
-export * from './BatchProcessorSync';
-export * from './BatchProcessor';
-export * from './processPartialResponseSync';
-export * from './processPartialResponse';
-export * from './SqsFifoPartialProcessor';
+export { EventType } from './constants.js';
+export {
+  BatchProcessingError,
+  FullBatchFailureError,
+  SqsFifoShortCircuitError,
+  UnexpectedBatchTypeError,
+} from './errors.js';
+export { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+export { BatchProcessorSync } from './BatchProcessorSync.js';
+export { BatchProcessor } from './BatchProcessor.js';
+export { processPartialResponseSync } from './processPartialResponseSync.js';
+export { processPartialResponse } from './processPartialResponse.js';
+export { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';

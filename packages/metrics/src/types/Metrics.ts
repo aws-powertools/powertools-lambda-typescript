@@ -4,9 +4,8 @@ import type {
   AsyncHandler,
   SyncHandler,
 } from '@aws-lambda-powertools/commons/types';
-import { ConfigServiceInterface } from '../config';
-import { MetricUnit } from './MetricUnit';
-import { MetricResolution } from './MetricResolution';
+import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
+import { MetricResolution, MetricUnit } from '../constants.js';
 
 type Dimensions = Record<string, string>;
 
@@ -63,6 +62,11 @@ type ExtraOptions = {
   captureColdStartMetric?: boolean;
 };
 
+type MetricResolution =
+  (typeof MetricResolution)[keyof typeof MetricResolution];
+
+type MetricUnit = (typeof MetricUnit)[keyof typeof MetricUnit];
+
 type StoredMetric = {
   name: string;
   unit: MetricUnit;
@@ -87,4 +91,6 @@ export {
   StoredMetrics,
   StoredMetric,
   MetricDefinition,
+  MetricResolution,
+  MetricUnit,
 };

@@ -10,6 +10,8 @@ import {
   GetOptions,
   GetMultipleOptions,
 } from '../../src/base/index.js';
+import { DEFAULT_MAX_AGE_SECS } from '../../src/index.js';
+import type { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
 import {
   GetParameterError,
@@ -618,5 +620,37 @@ describe('Function: clearCaches', () => {
     // Assess
     expect(provider1Spy).toBeCalledTimes(1);
     expect(provider2Spy).toBeCalledTimes(1);
+  });
+});
+
+describe('Class: GetOptions', () => {
+  it('should set the default maxAge when not provided', () => {
+    // Prepare
+    const envVarsService = {
+      getParametersMaxAge: jest.fn(),
+    };
+    const options = new GetOptions(
+      undefined,
+      envVarsService as unknown as EnvironmentVariablesService
+    );
+
+    // Assess
+    expect(options.maxAge).toBe(DEFAULT_MAX_AGE_SECS);
+  });
+});
+
+describe('Class: GetMultipleOptions', () => {
+  it('should set throwOnTransformError to false when not provided', () => {
+    // Prepare
+    const envVarsService = {
+      getParametersMaxAge: jest.fn(),
+    };
+    const options = new GetMultipleOptions(
+      undefined,
+      envVarsService as unknown as EnvironmentVariablesService
+    );
+
+    // Assess
+    expect(options.throwOnTransformError).toBe(false);
   });
 });

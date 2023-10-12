@@ -77,5 +77,8 @@
     "batch-processing",
     "serverless",
     "nodejs"
-  ]
+  ],
+  "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing"
+  }
 }

@@ -1,6 +1,6 @@
 import type { Context } from 'aws-lambda';
 
-const helloworldContext: Context = {
+export default {
   callbackWaitsForEmptyEventLoop: true,
   functionVersion: '$LATEST',
   functionName: 'foo-bar-function',
@@ -14,6 +14,4 @@ const helloworldContext: Context = {
   done: () => console.log('Done!'),
   fail: () => console.log('Failed!'),
   succeed: () => console.log('Succeeded!'),
-};
-
-export { helloworldContext };
+} as const as Context;

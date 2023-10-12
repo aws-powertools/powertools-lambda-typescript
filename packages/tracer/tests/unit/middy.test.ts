@@ -13,6 +13,7 @@ import {
   Subsegment,
 } from 'aws-xray-sdk-core';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 
 jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);
@@ -20,21 +21,6 @@ jest.spyOn(console, 'error').mockImplementation(() => null);
 
 describe('Middy middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = {
-    callbackWaitsForEmptyEventLoop: true,
-    functionVersion: '$LATEST',
-    functionName: 'foo-bar-function',
-    memoryLimitInMB: '128',
-    logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
-    logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
-    invokedFunctionArn:
-      'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-    awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
-    getRemainingTimeInMillis: () => 1234,
-    done: () => console.log('Done!'),
-    fail: () => console.log('Failed!'),
-    succeed: () => console.log('Succeeded!'),
-  };
 
   beforeEach(() => {
     jest.clearAllMocks();

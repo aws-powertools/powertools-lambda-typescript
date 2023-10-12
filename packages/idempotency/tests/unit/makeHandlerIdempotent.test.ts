@@ -4,10 +4,7 @@
  * @group unit/idempotency/makeHandlerIdempotent
  */
 import { makeHandlerIdempotent } from '../../src/middleware';
-import {
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-} from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import { IdempotencyRecord } from '../../src/persistence';
 import {
   IdempotencyInconsistentStateError,
@@ -27,8 +24,10 @@ const remainingTImeInMillis = 1234;
 
 describe('Middleware: makeHandlerIdempotent', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext.helloworldContext;
-  const event = dummyEvent.Custom;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();

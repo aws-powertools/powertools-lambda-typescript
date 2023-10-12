@@ -9,14 +9,14 @@ import {
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { join } from 'node:path';
-import { LoggerTestNodejsFunction } from '../helpers/resources';
+import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   STACK_OUTPUT_LOG_GROUP,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 describe(`Logger E2E tests, log event via env var setting with middy`, () => {
   const testStack = new TestStack({

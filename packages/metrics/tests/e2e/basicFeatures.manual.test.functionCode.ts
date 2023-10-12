@@ -1,4 +1,4 @@
-import { Metrics, MetricUnits } from '../../src';
+import { Metrics, MetricUnits } from '../../src/index.js';
 import type { Context } from 'aws-lambda';
 
 const namespace = process.env.EXPECTED_NAMESPACE ?? 'CdkExample';

@@ -3,10 +3,8 @@
  *
  * @group e2e/tracer/decorator
  */
-import {
-  TestStack,
-  TestDynamodbTable,
-} from '@aws-lambda-powertools/testing-utils';
+import { TestStack } from '@aws-lambda-powertools/testing-utils';
+import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import { join } from 'node:path';
 import { TracerTestNodejsFunction } from '../helpers/resources';
 import {

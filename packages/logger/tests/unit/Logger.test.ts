@@ -3,10 +3,7 @@
  *
  * @group unit/logger/all
  */
-import {
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-} from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Logger, LogFormatter } from '../../src/index.js';
 import { ConfigServiceInterface } from '../../src/config/ConfigServiceInterface.js';
@@ -32,8 +29,10 @@ const getConsoleMethod = (
 
 describe('Class: Logger', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext.helloworldContext;
-  const event = dummyEvent.Custom.CustomEvent;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
   const logLevelThresholds: LogLevelThresholds = {
     DEBUG: 8,
     INFO: 12,
@@ -1744,9 +1743,8 @@ describe('Class: Logger', () => {
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );
@@ -1794,9 +1792,8 @@ describe('Class: Logger', () => {
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );

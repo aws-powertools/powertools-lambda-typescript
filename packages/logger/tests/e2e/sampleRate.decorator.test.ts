@@ -10,14 +10,14 @@ import {
 } from '@aws-lambda-powertools/testing-utils';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { LoggerTestNodejsFunction } from '../helpers/resources';
+import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   STACK_OUTPUT_LOG_GROUP,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 describe(`Logger E2E tests, sample rate and injectLambdaContext()`, () => {
   const testStack = new TestStack({

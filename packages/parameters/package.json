@@ -156,6 +156,7 @@
     "nodejs"
   ],
   "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@aws-sdk/client-appconfigdata": "^3.515.0",
     "@aws-sdk/client-dynamodb": "^3.515.0",
     "@aws-sdk/client-secrets-manager": "^3.515.0",

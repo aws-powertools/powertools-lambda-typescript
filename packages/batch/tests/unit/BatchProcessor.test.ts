@@ -4,7 +4,7 @@
  * @group unit/batch/class/batchprocessor
  */
 import type { Context } from 'aws-lambda';
-import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import {
   BatchProcessor,
   EventType,
@@ -27,7 +27,7 @@ import {
 describe('Class: AsyncBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const options: BatchProcessingOptions = {
-    context: dummyContext.helloworldContext,
+    context,
   };
 
   beforeEach(() => {

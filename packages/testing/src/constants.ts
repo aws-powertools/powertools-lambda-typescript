@@ -27,9 +27,20 @@ const TEST_ARCHITECTURES = {
   arm64: Architecture.ARM_64,
 } as const;
 
+/**
+ * Log level. used for filtering the log
+ */
+const LogLevel = {
+  DEBUG: 'DEBUG',
+  INFO: 'INFO',
+  WARN: 'WARN',
+  ERROR: 'ERROR',
+} as const;
+
 export {
   TEST_RUNTIMES,
   defaultRuntime,
   TEST_ARCHITECTURES,
   defaultArchitecture,
+  LogLevel,
 };

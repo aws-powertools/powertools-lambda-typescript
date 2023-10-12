@@ -4,7 +4,7 @@
  * @group unit/idempotency/persistence/base
  */
 import { createHash } from 'node:crypto';
-import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import { IdempotencyConfig, IdempotencyRecordStatus } from '../../../src';
 import {
   BasePersistenceLayer,
@@ -25,7 +25,6 @@ jest.mock('node:crypto', () => ({
 
 describe('Class: BasePersistenceLayer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext.helloworldContext;
 
   class PersistenceLayerTestClass extends BasePersistenceLayer {
     public _deleteRecord = jest.fn();

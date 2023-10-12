@@ -1,14 +1,14 @@
+import {
+  type TestStack,
+  concatenateResourceName,
+} from '@aws-lambda-powertools/testing-utils';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
+import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import type {
   ExtraTestProps,
   TestDynamodbTableProps,
   TestNodejsFunctionProps,
-  TestStack,
-} from '@aws-lambda-powertools/testing-utils';
-import {
-  concatenateResourceName,
-  TestDynamodbTable,
-  TestNodejsFunction,
-} from '@aws-lambda-powertools/testing-utils';
+} from '@aws-lambda-powertools/testing-utils/types';
 import { Construct } from 'constructs';
 import { randomUUID } from 'node:crypto';
 

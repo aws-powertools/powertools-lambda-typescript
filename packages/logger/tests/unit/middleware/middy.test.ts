@@ -3,11 +3,8 @@
  *
  * @group unit/logger/all
  */
-import {
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-  cleanupMiddlewares,
-} from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
 import { ConfigServiceInterface } from '../../../src/config/ConfigServiceInterface.js';
 import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
 import { injectLambdaContext } from '../../../src/middleware/middy.js';
@@ -15,15 +12,17 @@ import { Logger } from './../../../src/Logger.js';
 import middy from '@middy/core';
 import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
 import { Console } from 'node:console';
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Middy middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext.helloworldContext;
-  const event = dummyEvent.Custom.CustomEvent;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
 
   beforeEach(() => {
     jest.resetModules();
@@ -222,9 +221,7 @@ describe('Middy middleware', () => {
         };
       };
       const handler = middy(
-        (
-          event: typeof dummyEvent.Custom.CustomEvent & { idx: number }
-        ): void => {
+        (event: { foo: string; bar: string } & { idx: number }): void => {
           // Add a key only at the first invocation, so we can check that it's cleared
           if (event.idx === 0) {
             logger.appendKeys({
@@ -287,9 +284,8 @@ describe('Middy middleware', () => {
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );
@@ -357,9 +353,8 @@ describe('Middy middleware', () => {
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );
@@ -396,9 +391,8 @@ describe('Middy middleware', () => {
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );

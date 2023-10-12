@@ -1,6 +1,6 @@
-import { Metrics, MetricUnits } from '../../src';
+import { Metrics, MetricUnits } from '../../src/index.js';
 import type { Context } from 'aws-lambda';
-import type { LambdaInterface } from '@aws-lambda-powertools/commons';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
 const namespace = process.env.EXPECTED_NAMESPACE ?? 'CdkExample';
 const serviceName =

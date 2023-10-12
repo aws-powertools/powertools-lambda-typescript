@@ -3,13 +3,10 @@
  *
  * @group unit/metrics/class
  */
-import {
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-} from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { MetricResolution, MetricUnits, Metrics } from '../../src/';
-import { Context, Handler } from 'aws-lambda';
+import { MetricResolution, MetricUnits, Metrics } from '../../src';
+import type { Context, Handler } from 'aws-lambda';
 import { Dimensions, EmfOutput, MetricsOptions } from '../../src/types';
 import {
   COLD_START_METRIC,
@@ -43,8 +40,10 @@ interface LooseObject {
 describe('Class: Metrics', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const TEST_NAMESPACE = 'test';
-  const context = dummyContext.helloworldContext;
-  const event = dummyEvent.Custom.CustomEvent;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();

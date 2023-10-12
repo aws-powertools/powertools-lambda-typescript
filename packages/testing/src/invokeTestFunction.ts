@@ -1,13 +1,7 @@
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { fromUtf8 } from '@smithy/util-utf8';
-import { TestInvocationLogs } from './TestInvocationLogs';
-
-type InvokeTestFunctionOptions = {
-  functionName: string;
-  times?: number;
-  invocationMode?: 'PARALLEL' | 'SEQUENTIAL';
-  payload?: Record<string, unknown> | Array<Record<string, unknown>>;
-};
+import { TestInvocationLogs } from './TestInvocationLogs.js';
+import type { InvokeTestFunctionOptions } from './types.js';
 
 const lambdaClient = new LambdaClient({});
 

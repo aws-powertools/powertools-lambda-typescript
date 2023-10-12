@@ -3,7 +3,6 @@
  *
  * @group unit/commons/environmentService
  */
-
 import { EnvironmentVariablesService } from '../../src/index.js';
 
 describe('Class: EnvironmentVariablesService', () => {

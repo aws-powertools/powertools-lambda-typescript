@@ -9,10 +9,7 @@ import type {
   KinesisStreamEvent,
   SQSEvent,
 } from 'aws-lambda';
-import {
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-} from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import {
   BatchProcessorSync,
   processPartialResponseSync,
@@ -38,9 +35,8 @@ import assert from 'node:assert';
 
 describe('Function: processPartialResponse()', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext;
   const options: BatchProcessingOptions = {
-    context: dummyContext.helloworldContext,
+    context,
   };
 
   beforeEach(() => {
@@ -114,7 +110,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = handler(event, context.helloworldContext);
+      const result = handler(event, context);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -141,7 +137,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = handler(event, context.helloworldContext);
+      const result = handler(event, context);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -168,7 +164,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = handler(event, context.helloworldContext);
+      const result = handler(event, context);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -177,7 +173,6 @@ describe('Function: processPartialResponse()', () => {
     test('Process partial response through handler for SQS records with incorrect event type', () => {
       // Prepare
       const processor = new BatchProcessorSync(EventType.SQS);
-      const event = dummyEvent.Custom;
 
       const handler = (
         event: SQSEvent,
@@ -188,7 +183,7 @@ describe('Function: processPartialResponse()', () => {
 
       try {
         // Act
-        handler(event as unknown as SQSEvent, context.helloworldContext);
+        handler({} as unknown as SQSEvent, context);
       } catch (error) {
         // Assess
         assert(error instanceof UnexpectedBatchTypeError);
@@ -224,7 +219,7 @@ describe('Function: processPartialResponse()', () => {
       };
 
       // Act
-      const result = handler(event, context.helloworldContext);
+      const result = handler(event, context);
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });

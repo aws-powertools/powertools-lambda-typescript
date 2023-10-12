@@ -10,7 +10,7 @@ import {
 } from '@aws-lambda-powertools/testing-utils';
 import type { APIGatewayAuthorizerResult } from 'aws-lambda';
 import { join } from 'node:path';
-import { LoggerTestNodejsFunction } from '../helpers/resources';
+import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -19,7 +19,7 @@ import {
   TEST_CASE_TIMEOUT,
   XRAY_TRACE_ID_REGEX,
   commonEnvironmentVars,
-} from './constants';
+} from './constants.js';
 
 describe(`Logger E2E tests, basic functionalities middy usage`, () => {
   const testStack = new TestStack({

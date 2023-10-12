@@ -6,11 +6,8 @@
 import { Metrics, MetricUnits, logMetrics } from '../../../../metrics/src';
 import middy from '@middy/core';
 import { ExtraOptions } from '../../../src/types';
-import {
-  cleanupMiddlewares,
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-} from '@aws-lambda-powertools/commons';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
@@ -30,6 +27,11 @@ describe('Middy middleware', () => {
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
+
   describe('throwOnEmptyMetrics', () => {
     test('should throw on empty metrics if set to true', async () => {
       // Prepare
@@ -41,7 +43,7 @@ describe('Middy middleware', () => {
         logMetrics(metrics, { throwOnEmptyMetrics: true })
       );
 
-      await expect(handler(dummyEvent, dummyContext)).rejects.toThrowError(
+      await expect(handler(event, context)).rejects.toThrowError(
         'The number of metrics recorded must be higher than zero'
       );
     });
@@ -57,9 +59,7 @@ describe('Middy middleware', () => {
       );
 
       // Act & Assess
-      await expect(
-        handler(dummyEvent, dummyContext)
-      ).resolves.not.toThrowError();
+      await expect(handler(event, context)).resolves.not.toThrowError();
     });
 
     test('should not throw on empty metrics if not set, but should log a warning', async () => {
@@ -74,9 +74,7 @@ describe('Middy middleware', () => {
       );
 
       // Act & Assess
-      await expect(
-        handler(dummyEvent, dummyContext.helloworldContext)
-      ).resolves.not.toThrowError();
+      await expect(handler(event, context)).resolves.not.toThrowError();
       expect(consoleWarnSpy).toBeCalledTimes(1);
       expect(consoleWarnSpy).toBeCalledWith(
         'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
@@ -103,8 +101,8 @@ describe('Middy middleware', () => {
       );
 
       // Act
-      await handler(dummyEvent, dummyContext);
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
+      await handler(event, context);
 
       // Assess
       const loggedData = [
@@ -139,7 +137,7 @@ describe('Middy middleware', () => {
       );
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
@@ -158,7 +156,7 @@ describe('Middy middleware', () => {
       );
 
       // Act & Assess
-      await expect(handler(dummyEvent, dummyContext)).resolves.not.toThrow();
+      await expect(handler(event, context)).resolves.not.toThrow();
     });
   });
 
@@ -176,7 +174,7 @@ describe('Middy middleware', () => {
       }).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       expect(cosoleSpy).toHaveBeenNthCalledWith(
@@ -215,7 +213,7 @@ describe('Middy middleware', () => {
       }).use(logMetrics(metrics, metricsOptions));
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toHaveBeenNthCalledWith(
@@ -251,7 +249,7 @@ describe('Middy middleware', () => {
       }).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toHaveBeenNthCalledWith(
@@ -289,7 +287,7 @@ describe('Middy middleware', () => {
       );
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toHaveBeenNthCalledWith(
@@ -340,7 +338,7 @@ describe('Middy middleware', () => {
         };
       };
       const handler = middy(
-        (_event: typeof dummyEvent & { idx: number }): void => {
+        (_event: { foo: string; bar: string } & { idx: number }): void => {
           metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         }
       )
@@ -348,8 +346,8 @@ describe('Middy middleware', () => {
         .use(myCustomMiddleware());
 
       // Act
-      await handler({ ...dummyEvent, idx: 0 }, dummyContext.helloworldContext);
-      await handler({ ...dummyEvent, idx: 1 }, dummyContext.helloworldContext);
+      await handler({ ...event, idx: 0 }, context);
+      await handler({ ...event, idx: 1 }, context);
 
       // Assess
       expect(publishStoredMetricsSpy).toBeCalledTimes(2);

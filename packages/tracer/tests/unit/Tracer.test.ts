@@ -5,15 +5,15 @@
  */
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { Tracer } from './../../src';
-import type { Callback, Context } from 'aws-lambda/handler';
+import { Tracer } from './../../src/index.js';
+import type { Callback, Context } from 'aws-lambda';
 import {
   Segment,
   setContextMissingStrategy,
   Subsegment,
 } from 'aws-xray-sdk-core';
-import { ProviderServiceInterface } from '../../src/provider';
-import { ConfigServiceInterface } from 'packages/tracer/src/config';
+import type { ProviderServiceInterface } from '../../src/types/ProviderServiceInterface.js';
+import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 
 type CaptureAsyncFuncMock = jest.SpyInstance<
   unknown,

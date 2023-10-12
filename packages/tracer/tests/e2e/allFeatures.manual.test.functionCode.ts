@@ -1,4 +1,4 @@
-import { Tracer } from '../../src';
+import { Tracer } from '../../src/index.js';
 import type { Context } from 'aws-lambda';
 import axios from 'axios';
 import AWS from 'aws-sdk';

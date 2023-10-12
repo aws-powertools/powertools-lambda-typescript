@@ -3,10 +3,10 @@
  *
  * @group unit/tracer/all
  */
-import { captureLambdaHandler } from '../../src/middleware/middy';
+import { captureLambdaHandler } from '../../src/middleware/middy.js';
 import middy from '@middy/core';
-import { Tracer } from './../../src';
-import type { Context, Handler } from 'aws-lambda/handler';
+import { Tracer } from './../../src/index.js';
+import type { Context, Handler } from 'aws-lambda';
 import {
   Segment,
   setContextMissingStrategy,

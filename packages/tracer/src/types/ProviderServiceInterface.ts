@@ -1,5 +1,11 @@
-import { Namespace } from 'cls-hooked';
-import { Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { Namespace } from 'cls-hooked';
+import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+
+type ContextMissingStrategy =
+  | 'LOG_ERROR'
+  | 'RUNTIME_ERROR'
+  | 'IGNORE_ERROR'
+  | ((msg: string) => void);
 
 interface ProviderServiceInterface {
   getNamespace(): Namespace;
@@ -12,7 +18,7 @@ interface ProviderServiceInterface {
 
   setDaemonAddress(address: string): void;
 
-  setContextMissingStrategy(strategy: unknown): void;
+  setContextMissingStrategy(strategy: ContextMissingStrategy): void;
 
   captureAWS<T>(awsservice: T): T;
 
@@ -39,4 +45,4 @@ interface ProviderServiceInterface {
   putMetadata(key: string, value: unknown, namespace?: string): void;
 }
 
-export { ProviderServiceInterface };
+export { ProviderServiceInterface, ContextMissingStrategy };

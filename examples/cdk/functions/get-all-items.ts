@@ -1,6 +1,6 @@
 import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
 import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
-import { captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import middy from '@middy/core';
 import {

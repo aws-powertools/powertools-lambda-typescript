@@ -3,20 +3,20 @@ import { Utility } from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
   SyncHandler,
-} from '@aws-lambda-powertools/commons/types';
-import type { TracerInterface } from '.';
-import {
-  type ConfigServiceInterface,
-  EnvironmentVariablesService,
-} from './config';
-import type {
   HandlerMethodDecorator,
+} from '@aws-lambda-powertools/commons/types';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
+import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
+import type {
+  TracerInterface,
   TracerOptions,
+  AnyClass,
   MethodDecorator,
   CaptureLambdaHandlerOptions,
   CaptureMethodOptions,
-} from './types';
-import { ProviderService, type ProviderServiceInterface } from './provider';
+} from './types/Tracer.js';
+import { ProviderService } from './provider/ProviderService.js';
+import type { ProviderServiceInterface } from './types/ProviderServiceInterface.js';
 import { type Segment, Subsegment } from 'aws-xray-sdk-core';
 
 /**
@@ -460,7 +460,9 @@ class Tracer extends Utility implements TracerInterface {
    * @decorator Class
    * @param options - (_optional_) Options for the decorator
    */
-  public captureMethod(options?: CaptureMethodOptions): MethodDecorator {
+  public captureMethod<T extends AnyClass>(
+    options?: CaptureMethodOptions
+  ): MethodDecorator<T> {
     return (_target, propertyKey, descriptor) => {
       // The descriptor.value is the method this decorator decorates, it cannot be undefined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

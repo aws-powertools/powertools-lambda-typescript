@@ -3,8 +3,7 @@
  *
  * @group unit/tracer/providerservice
  */
-
-import { ProviderService } from '../../src/provider';
+import { ProviderService } from '../../src/provider/ProviderService.js';
 import {
   captureAsyncFunc,
   captureAWS,
@@ -21,8 +20,8 @@ import {
   setSegment,
   Subsegment,
 } from 'aws-xray-sdk-core';
-import http from 'http';
-import https from 'https';
+import http from 'node:http';
+import https from 'node:https';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 

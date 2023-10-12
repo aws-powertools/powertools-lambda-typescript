@@ -1,4 +1,4 @@
-import { Tracer } from '../../src';
+import { Tracer } from '../../src/index.js';
 import type { Context } from 'aws-lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';

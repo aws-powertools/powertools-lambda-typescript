@@ -4,7 +4,7 @@ import type {
   TestNodejsFunctionProps,
 } from '@aws-lambda-powertools/testing-utils/types';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
-import { commonEnvironmentVars } from '../e2e/constants';
+import { commonEnvironmentVars } from '../e2e/constants.js';
 
 class TracerTestNodejsFunction extends TestNodejsFunction {
   public constructor(

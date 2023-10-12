@@ -4,7 +4,7 @@
  * @group unit/tracer/all
  */
 
-import { EnvironmentVariablesService } from '../../../src/config';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: EnvironmentVariablesService', () => {
   const ENVIRONMENT_VARIABLES = process.env;

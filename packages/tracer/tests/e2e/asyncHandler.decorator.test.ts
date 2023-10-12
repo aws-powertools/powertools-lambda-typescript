@@ -6,25 +6,25 @@
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import { join } from 'node:path';
-import { TracerTestNodejsFunction } from '../helpers/resources';
+import { TracerTestNodejsFunction } from '../helpers/resources.js';
 import {
   assertAnnotation,
   assertErrorAndFault,
-} from '../helpers/traceAssertions';
+} from '../helpers/traceAssertions.js';
 import {
   getFirstSubsegment,
   getInvocationSubsegment,
   getTraces,
   invokeAllTestCases,
   splitSegmentsByName,
-} from '../helpers/tracesUtils';
+} from '../helpers/tracesUtils.js';
 import {
   commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
   const testStack = new TestStack({

@@ -5,7 +5,7 @@
  */
 import { Handler } from 'aws-lambda';
 import { Callback, Context } from 'aws-lambda';
-import { helloworldContext as context } from '../../src/samples/resources/contexts/hello-world';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import type {
   SyncHandler,
   AsyncHandler,

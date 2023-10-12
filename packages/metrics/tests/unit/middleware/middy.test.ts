@@ -11,11 +11,8 @@ import {
 } from '../../../../metrics/src';
 import middy from '@middy/core';
 import { ExtraOptions } from '../../../src/types';
-import {
-  cleanupMiddlewares,
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-} from '@aws-lambda-powertools/commons';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -27,6 +24,11 @@ describe('Middy middleware', () => {
     jest.resetModules();
     jest.clearAllMocks();
   });
+
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
 
   describe('throwOnEmptyMetrics', () => {
     test('should throw on empty metrics if set to true', async () => {
@@ -45,9 +47,7 @@ describe('Middy middleware', () => {
       );
 
       try {
-        await handler(dummyEvent, dummyContext.helloworldContext, () =>
-          console.log('Lambda invoked!')
-        );
+        await handler(event, context, () => console.log('Lambda invoked!'));
       } catch (e) {
         expect((<Error>e).message).toBe(
           'The number of metrics recorded must be higher than zero'
@@ -71,9 +71,7 @@ describe('Middy middleware', () => {
       );
 
       try {
-        await handler(dummyEvent, dummyContext.helloworldContext, () =>
-          console.log('Lambda invoked!')
-        );
+        await handler(event, context, () => console.log('Lambda invoked!'));
       } catch (e) {
         fail(`Should not throw but got the following Error: ${e}`);
       }
@@ -91,9 +89,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
       // Act & Assess
-      await expect(
-        handler(dummyEvent, dummyContext.helloworldContext)
-      ).resolves.not.toThrowError();
+      await expect(handler(event, context)).resolves.not.toThrowError();
       expect(consoleWarnSpy).toBeCalledTimes(1);
       expect(consoleWarnSpy).toBeCalledWith(
         'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
@@ -117,12 +113,8 @@ describe('Middy middleware', () => {
         logMetrics(metrics, { captureColdStartMetric: true })
       );
 
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked! again')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(event, context, () => console.log('Lambda invoked! again'));
       const loggedData = [
         JSON.parse(consoleSpy.mock.calls[0][0]),
         JSON.parse(consoleSpy.mock.calls[1][0]),
@@ -154,12 +146,8 @@ describe('Middy middleware', () => {
         logMetrics(metrics, { captureColdStartMetric: false })
       );
 
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked! again')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(event, context, () => console.log('Lambda invoked! again'));
       const loggedData = [
         JSON.parse(consoleSpy.mock.calls[0][0]),
         JSON.parse(consoleSpy.mock.calls[1][0]),
@@ -181,12 +169,8 @@ describe('Middy middleware', () => {
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked! again')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
+      await handler(event, context, () => console.log('Lambda invoked! again'));
       const loggedData = [
         JSON.parse(consoleSpy.mock.calls[0][0]),
         JSON.parse(consoleSpy.mock.calls[1][0]),
@@ -212,9 +196,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenNthCalledWith(
@@ -256,9 +238,7 @@ describe('Middy middleware', () => {
       );
 
       // Act
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenNthCalledWith(
@@ -318,9 +298,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenNthCalledWith(
@@ -360,9 +338,7 @@ describe('Middy middleware', () => {
       );
 
       // Act
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenNthCalledWith(
@@ -413,7 +389,7 @@ describe('Middy middleware', () => {
         };
       };
       const handler = middy(
-        (_event: typeof dummyEvent & { idx: number }): void => {
+        (_event: { foo: string; bar: string } & { idx: number }): void => {
           metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
         }
       )
@@ -421,8 +397,8 @@ describe('Middy middleware', () => {
         .use(myCustomMiddleware());
 
       // Act
-      await handler({ ...dummyEvent, idx: 0 }, dummyContext.helloworldContext);
-      await handler({ ...dummyEvent, idx: 1 }, dummyContext.helloworldContext);
+      await handler({ ...event, idx: 0 }, context);
+      await handler({ ...event, idx: 1 }, context);
 
       // Assess
       expect(publishStoredMetricsSpy).toBeCalledTimes(2);
@@ -448,9 +424,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenCalledWith(
@@ -495,9 +469,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext.helloworldContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(event, context, () => console.log('Lambda invoked!'));
 
       // Assess
       expect(console.log).toHaveBeenCalledWith(

@@ -25,7 +25,7 @@
   "lint-staged": {
     "*.{js,ts}": "npm run lint-fix"
   },
-  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/metrics#readme",
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/commons#readme",
   "license": "MIT-0",
   "type": "module",
   "exports": {
@@ -70,5 +70,8 @@
     "powertools",
     "serverless",
     "nodejs"
-  ]
+  ],
+  "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing"
+  }
 }

@@ -6,9 +6,9 @@
 import {
   invokeFunctionOnce,
   TestInvocationLogs,
-  TestNodejsFunction,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { join } from 'node:path';
 import {
   TestSecureStringParameter,

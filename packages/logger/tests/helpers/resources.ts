@@ -1,10 +1,10 @@
-import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import type { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { CfnOutput } from 'aws-cdk-lib';
 import type {
-  TestNodejsFunctionProps,
   ExtraTestProps,
-} from '@aws-lambda-powertools/testing-utils';
+  TestNodejsFunctionProps,
+} from '@aws-lambda-powertools/testing-utils/types';
 import { commonEnvironmentVars } from '../e2e/constants';
 
 interface LoggerExtraTestProps extends ExtraTestProps {

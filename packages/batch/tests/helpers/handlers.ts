@@ -2,8 +2,8 @@ import type {
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,
+  Context,
 } from 'aws-lambda';
-import type { Context } from 'aws-lambda';
 
 const sqsRecordHandler = (record: SQSRecord): string => {
   const body = record.body;

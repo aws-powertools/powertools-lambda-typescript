@@ -1,7 +1,7 @@
-import { BatchProcessorSync } from './BatchProcessorSync';
-import { EventType } from './constants';
-import { SqsFifoShortCircuitError } from './errors';
-import type { FailureResponse, SuccessResponse } from './types';
+import { BatchProcessorSync } from './BatchProcessorSync.js';
+import { EventType } from './constants.js';
+import { SqsFifoShortCircuitError } from './errors.js';
+import type { FailureResponse, SuccessResponse } from './types.js';
 
 /**
  * Process native partial responses from SQS FIFO queues

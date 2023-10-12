@@ -6,7 +6,7 @@ import {
 import middy from '@middy/core';
 import { tableName } from './common/constants';
 import { logger, tracer, metrics } from './common/powertools';
-import { logMetrics } from '@aws-lambda-powertools/metrics';
+import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
 import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer';
 import { docClient } from './common/dynamodb-client';

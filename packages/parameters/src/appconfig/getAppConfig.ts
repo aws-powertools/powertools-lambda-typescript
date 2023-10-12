@@ -1,8 +1,9 @@
-import { AppConfigProvider, DEFAULT_PROVIDERS } from './AppConfigProvider';
+import { AppConfigProvider } from './AppConfigProvider.js';
+import { DEFAULT_PROVIDERS } from '../base/index.js';
 import type {
   AppConfigGetOutput,
   GetAppConfigOptions,
-} from '../types/AppConfigProvider';
+} from '../types/AppConfigProvider.js';
 
 /**
  * ## Intro

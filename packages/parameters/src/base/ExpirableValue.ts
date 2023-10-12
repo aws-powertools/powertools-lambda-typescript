@@ -1,4 +1,4 @@
-import type { ExpirableValueInterface } from '../types/BaseProvider';
+import type { ExpirableValueInterface } from '../types/BaseProvider.js';
 
 /**
  * Class to represent a value that can expire.

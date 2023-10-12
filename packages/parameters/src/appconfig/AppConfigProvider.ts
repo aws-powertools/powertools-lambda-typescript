@@ -1,4 +1,4 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,
@@ -9,7 +9,7 @@ import type {
   AppConfigProviderOptions,
   AppConfigGetOptions,
   AppConfigGetOutput,
-} from '../types/AppConfigProvider';
+} from '../types/AppConfigProvider.js';
 import {
   addUserAgentMiddleware,
   isSdkClient,
@@ -360,4 +360,4 @@ class AppConfigProvider extends BaseProvider {
   }
 }
 
-export { AppConfigProvider, DEFAULT_PROVIDERS };
+export { AppConfigProvider };

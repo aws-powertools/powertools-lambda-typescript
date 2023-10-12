@@ -1,10 +1,10 @@
 import { Context } from 'aws-lambda';
-import { TinyLogger } from '../helpers/tinyLogger';
+import { TinyLogger } from '../helpers/tinyLogger.js';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
-import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
-import { Transform } from '../../src';
-import { SecretsProvider } from '../../src/secrets';
-import { SecretsGetOptions } from '../../src/types/SecretsProvider';
+import { middleware } from '../helpers/sdkMiddlewareRequestCounter.js';
+import { Transform } from '../../src/constants.js';
+import { SecretsProvider } from '../../src/secrets/SecretsProvider.js';
+import { SecretsGetOptions } from '../../src/types/SecretsProvider.js';
 
 const logger = new TinyLogger();
 const defaultProvider = new SecretsProvider();

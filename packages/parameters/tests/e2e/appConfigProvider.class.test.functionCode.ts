@@ -1,9 +1,9 @@
 import type { Context } from 'aws-lambda';
-import { Transform } from '../../src';
-import { AppConfigProvider } from '../../src/appconfig';
-import { AppConfigGetOptions } from '../../src/types/AppConfigProvider';
-import { TinyLogger } from '../helpers/tinyLogger';
-import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
+import { Transform } from '../../src/constants.js';
+import { AppConfigProvider } from '../../src/appconfig/AppConfigProvider.js';
+import { AppConfigGetOptions } from '../../src/types/AppConfigProvider.js';
+import { TinyLogger } from '../helpers/tinyLogger.js';
+import { middleware } from '../helpers/sdkMiddlewareRequestCounter.js';
 import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
 
 // We use a custom logger to log pure JSON objects to stdout

@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/config
  */
-import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: EnvironmentVariablesService', () => {
   const ENVIRONMENT_VARIABLES = process.env;

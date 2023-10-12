@@ -4,7 +4,7 @@ import type {
   SecretsManagerClient,
   SecretsManagerClientConfig,
 } from '@aws-sdk/client-secrets-manager';
-import type { GetOptionsInterface, TransformOptions } from './BaseProvider';
+import type { GetOptionsInterface, TransformOptions } from './BaseProvider.js';
 
 /**
  * Base interface for SecretsProviderOptions.

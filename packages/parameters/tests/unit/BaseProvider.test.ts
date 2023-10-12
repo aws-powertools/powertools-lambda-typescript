@@ -3,9 +3,18 @@
  *
  * @group unit/parameters/baseProvider/class
  */
-import { BaseProvider, clearCaches, DEFAULT_PROVIDERS } from '../../src/base';
-import { ExpirableValue } from '../../src/base/ExpirableValue';
-import { GetParameterError, TransformParameterError } from '../../src/errors';
+import {
+  BaseProvider,
+  clearCaches,
+  DEFAULT_PROVIDERS,
+  GetOptions,
+  GetMultipleOptions,
+} from '../../src/base/index.js';
+import { ExpirableValue } from '../../src/base/ExpirableValue.js';
+import {
+  GetParameterError,
+  TransformParameterError,
+} from '../../src/errors.js';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 
 const encoder = new TextEncoder();
@@ -20,7 +29,7 @@ describe('Class: BaseProvider', () => {
       this.store.set(key, value);
     }
 
-    public _get(_name: string): Promise<string> {
+    public _get(_name: string, _options: GetOptions): Promise<string> {
       throw Error('Not implemented.');
     }
 
@@ -29,7 +38,8 @@ describe('Class: BaseProvider', () => {
     }
 
     public _getMultiple(
-      _path: string
+      _path: string,
+      _options?: GetMultipleOptions
     ): Promise<Record<string, string | undefined>> {
       throw Error('Not implemented.');
     }

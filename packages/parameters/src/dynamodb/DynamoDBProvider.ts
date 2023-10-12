@@ -1,4 +1,4 @@
-import { BaseProvider } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   DynamoDBClient,
   GetItemCommand,
@@ -11,7 +11,7 @@ import type {
   DynamoDBGetMultipleOptions,
   DynamoDBGetOutput,
   DynamoDBGetMultipleOutput,
-} from '../types/DynamoDBProvider';
+} from '../types/DynamoDBProvider.js';
 import type {
   GetItemCommandInput,
   QueryCommandInput,

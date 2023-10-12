@@ -3,12 +3,9 @@
  *
  * @group unit/parameters/AppConfigProvider/getAppConfig/function
  */
-import {
-  AppConfigProvider,
-  getAppConfig,
-  DEFAULT_PROVIDERS,
-} from '../../src/appconfig';
-import { Transform } from '../../src';
+import { AppConfigProvider, getAppConfig } from '../../src/appconfig/index.js';
+import { DEFAULT_PROVIDERS } from '../../src/base/DefaultProviders.js';
+import { Transform } from '../../src/index.js';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,

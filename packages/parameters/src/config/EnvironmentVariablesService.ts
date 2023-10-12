@@ -1,5 +1,5 @@
-import { ConfigServiceInterface } from './ConfigServiceInterface';
-import { DEFAULT_MAX_AGE_SECS } from '../constants';
+import { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
+import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
 class EnvironmentVariablesService

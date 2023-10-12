@@ -1,8 +1,9 @@
-import { SSMProvider, DEFAULT_PROVIDERS } from './SSMProvider';
+import { DEFAULT_PROVIDERS } from '../base/DefaultProviders.js';
+import { SSMProvider } from './SSMProvider.js';
 import type {
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,
-} from '../types/SSMProvider';
+} from '../types/SSMProvider.js';
 
 /**
  * ## Intro

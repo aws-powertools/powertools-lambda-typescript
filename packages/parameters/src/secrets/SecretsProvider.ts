@@ -1,4 +1,4 @@
-import { BaseProvider } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
@@ -8,7 +8,7 @@ import type {
   SecretsProviderOptions,
   SecretsGetOptions,
   SecretsGetOutput,
-} from '../types/SecretsProvider';
+} from '../types/SecretsProvider.js';
 
 /**
  * ## Intro

@@ -3,9 +3,9 @@
  *
  * @group unit/parameters/AppConfigProvider/class
  */
-import { AppConfigProvider } from '../../src/appconfig/index';
-import { ExpirableValue } from '../../src/base/ExpirableValue';
-import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider';
+import { AppConfigProvider } from '../../src/appconfig/index.js';
+import { ExpirableValue } from '../../src/base/ExpirableValue.js';
+import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider.js';
 import {
   AppConfigDataClient,
   GetLatestConfigurationCommand,

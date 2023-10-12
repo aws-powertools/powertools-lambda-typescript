@@ -1,4 +1,4 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,
@@ -9,8 +9,8 @@ import type {
   AppConfigProviderOptions,
   AppConfigGetOptions,
   AppConfigGetOutput,
-} from '../types/AppConfigProvider';
-import { APPCONFIG_TOKEN_EXPIRATION } from '../constants';
+} from '../types/AppConfigProvider.js';
+import { APPCONFIG_TOKEN_EXPIRATION } from '../constants.js';
 
 /**
  * ## Intro
@@ -361,4 +361,4 @@ class AppConfigProvider extends BaseProvider {
   }
 }
 
-export { AppConfigProvider, DEFAULT_PROVIDERS };
+export { AppConfigProvider };

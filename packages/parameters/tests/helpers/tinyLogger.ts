@@ -1,4 +1,4 @@
-import { Console } from 'console';
+import { Console } from 'node:console';
 
 /**
  * A tiny logger that logs to stdout and stderr.

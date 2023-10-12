@@ -4,7 +4,7 @@ import type {
   AppConfigDataClientConfig,
   StartConfigurationSessionCommandInput,
 } from '@aws-sdk/client-appconfigdata';
-import type { GetOptionsInterface } from './BaseProvider';
+import type { GetOptionsInterface } from './BaseProvider.js';
 
 /**
  * Base interface for AppConfigProviderOptions.

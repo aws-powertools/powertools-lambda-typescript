@@ -1,9 +1,9 @@
-import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService';
-import { DEFAULT_MAX_AGE_SECS } from '../constants';
+import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import type {
   GetOptionsInterface,
   TransformOptions,
-} from '../types/BaseProvider';
+} from '../types/BaseProvider.js';
 
 /**
  * Options for the `get` method.

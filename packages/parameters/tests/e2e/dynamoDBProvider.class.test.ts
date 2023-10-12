@@ -11,13 +11,13 @@ import {
 } from '@aws-lambda-powertools/testing-utils';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { join } from 'node:path';
-import { TestDynamodbTableWithItems } from '../helpers/resources';
+import { TestDynamodbTableWithItems } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of DynamoDB tables.

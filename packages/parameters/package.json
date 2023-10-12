@@ -17,11 +17,13 @@
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
-    "build": "tsc --build --force",
+    "build:cjs": "tsc --build --force && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --project tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prebuild": "rimraf ./lib",
-    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+    "prepack": "rimraf ./lib/*.tsbuildinfo && node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
     "*.{js,ts}": "npm run lint-fix"
@@ -30,93 +32,110 @@
   "license": "MIT-0",
   "exports": {
     ".": {
-      "import": "./lib/index.js",
-      "require": "./lib/index.js"
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
     },
     "./base/types": {
-      "import": "./lib/types/BaseProvider.d.ts",
-      "require": "./lib/types/BaseProvider.d.ts"
+      "import": "./lib/esm/types/BaseProvider.d.ts",
+      "require": "./lib/cjs/types/BaseProvider.d.ts"
     },
     "./base": {
-      "import": "./lib/base/index.js",
-      "require": "./lib/base/index.js"
+      "import": "./lib/esm/base/index.js",
+      "require": "./lib/cjs/base/index.js"
     },
     "./ssm/types": {
-      "import": "./lib/types/SSMProvider.d.ts",
-      "require": "./lib/types/SSMProvider.d.ts"
+      "import": "./lib/esm/types/SSMProvider.d.ts",
+      "require": "./lib/cjs/types/SSMProvider.d.ts"
     },
     "./ssm": {
-      "import": "./lib/ssm/index.js",
-      "require": "./lib/ssm/index.js"
+      "import": "./lib/esm/ssm/index.js",
+      "require": "./lib/cjs/ssm/index.js"
     },
     "./secrets/types": {
-      "import": "./lib/types/SecretsProvider.d.ts",
-      "require": "./lib/types/SecretsProvider.d.ts"
+      "import": "./lib/esm/types/SecretsProvider.d.ts",
+      "require": "./lib/cjs/types/SecretsProvider.d.ts"
     },
     "./secrets": {
-      "import": "./lib/secrets/index.js",
-      "require": "./lib/secrets/index.js"
+      "import": "./lib/esm/secrets/index.js",
+      "require": "./lib/cjs/secrets/index.js"
     },
     "./dynamodb/types": {
-      "import": "./lib/types/AppConfigProvider.d.ts",
-      "require": "./lib/types/AppConfigProvider.d.ts"
+      "import": "./lib/esm/types/AppConfigProvider.d.ts",
+      "require": "./lib/cjs/types/AppConfigProvider.d.ts"
     },
     "./dynamodb": {
-      "import": "./lib/dynamodb/index.js",
-      "require": "./lib/dynamodb/index.js"
+      "import": "./lib/esm/dynamodb/index.js",
+      "require": "./lib/cjs/dynamodb/index.js"
     },
     "./appconfig/types": {
-      "import": "./lib/appconfig/index.js",
-      "require": "./lib/appconfig/index.js"
+      "import": "./lib/esm/appconfig/index.js",
+      "require": "./lib/cjs/appconfig/index.js"
     },
     "./appconfig": {
-      "import": "./lib/appconfig/index.js",
-      "require": "./lib/appconfig/index.js"
+      "import": "./lib/esm/appconfig/index.js",
+      "require": "./lib/cjs/appconfig/index.js"
     },
     "./errors": {
-      "import": "./lib/errors.js",
-      "require": "./lib/errors.js"
+      "import": "./lib/esm/errors.js",
+      "require": "./lib/cjs/errors.js"
     }
   },
   "typesVersions": {
     "*": {
       "base/types": [
-        "lib/types/BaseProvider.d.ts"
+        "lib/cjs/types/BaseProvider.d.ts",
+        "lib/esm/types/BaseProvider.d.ts"
       ],
       "base": [
-        "lib/base/index.d.ts"
+        "lib/cjs/base/index.d.ts",
+        "lib/esm/base/index.d.ts"
       ],
       "ssm/types": [
-        "lib/types/SSMProvider.d.ts"
+        "lib/cjs/types/SSMProvider.d.ts",
+        "lib/esm/types/SSMProvider.d.ts"
       ],
       "ssm": [
-        "lib/ssm/index.d.ts"
+        "lib/cjs/ssm/index.d.ts",
+        "lib/esm/ssm/index.d.ts"
       ],
       "secrets/types": [
-        "lib/types/SecretsProvider.d.ts"
+        "lib/cjs/types/SecretsProvider.d.ts",
+        "lib/esm/types/SecretsProvider.d.ts"
       ],
       "secrets": [
-        "lib/secrets/index.d.ts"
+        "lib/cjs/secrets/index.d.ts",
+        "lib/esm/secrets/index.d.ts"
       ],
       "dynamodb/types": [
-        "./lib/types/DynamoDBProvider.d.ts"
+        "./lib/cjs/types/DynamoDBProvider.d.ts",
+        "./lib/esm/types/DynamoDBProvider.d.ts"
       ],
       "dynamodb": [
-        "lib/dynamodb/index.d.ts"
+        "lib/cjs/dynamodb/index.d.ts",
+        "lib/esm/dynamodb/index.d.ts"
       ],
       "appconfig/types": [
-        "./lib/types/AppConfigProvider.d.ts"
+        "./lib/cjs/types/AppConfigProvider.d.ts",
+        "./lib/esm/types/AppConfigProvider.d.ts"
       ],
       "appconfig": [
-        "lib/appconfig/index.d.ts"
+        "lib/cjs/appconfig/index.d.ts",
+        "lib/esm/appconfig/index.d.ts"
       ],
       "errors": [
-        "lib/errors.d.ts"
+        "lib/cjs/errors.d.ts",
+        "lib/esm/errors.d.ts"
       ]
     }
   },
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
   "files": [
     "lib"
   ],

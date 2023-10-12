@@ -8,7 +8,7 @@ import type {
 import type {
   GetMultipleOptionsInterface,
   GetOptionsInterface,
-} from './BaseProvider';
+} from './BaseProvider.js';
 
 /**
  * Base interface for DynamoDBProviderOptions.

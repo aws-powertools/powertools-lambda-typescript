@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/ssm/class
  */
-import { SSMProvider } from '../../src/ssm';
+import { SSMProvider } from '../../src/ssm/index.js';
 import {
   SSMClient,
   GetParameterCommand,
@@ -19,8 +19,8 @@ import type {
   SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface,
-} from '../../src/types/SSMProvider';
-import { ExpirableValue } from '../../src/base/ExpirableValue';
+} from '../../src/types/SSMProvider.js';
+import { ExpirableValue } from '../../src/base/ExpirableValue.js';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 

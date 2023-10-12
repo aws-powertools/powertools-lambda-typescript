@@ -1,4 +1,5 @@
-import { Metrics, MetricUnits } from '../../src/index.js';
+import { Metrics, MetricUnit } from '../../src/index.js';
+import type { MetricUnit as MetricUnitType } from '../../src/types/index.js';
 import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
@@ -7,7 +8,7 @@ const serviceName =
   process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
 const metricName = process.env.EXPECTED_METRIC_NAME ?? 'MyMetric';
 const metricUnit =
-  (process.env.EXPECTED_METRIC_UNIT as MetricUnits) ?? MetricUnits.Count;
+  (process.env.EXPECTED_METRIC_UNIT as MetricUnitType) ?? MetricUnit.Count;
 const metricValue = process.env.EXPECTED_METRIC_VALUE ?? '1';
 const defaultDimensions =
   process.env.EXPECTED_DEFAULT_DIMENSIONS ?? '{"MyDimension":"MyValue"}';
@@ -19,8 +20,8 @@ const singleMetricDimension =
 const singleMetricName =
   process.env.EXPECTED_SINGLE_METRIC_NAME ?? 'MySingleMetric';
 const singleMetricUnit =
-  (process.env.EXPECTED_SINGLE_METRIC_UNIT as MetricUnits) ??
-  MetricUnits.Percent;
+  (process.env.EXPECTED_SINGLE_METRIC_UNIT as MetricUnitType) ??
+  MetricUnit.Percent;
 const singleMetricValue = process.env.EXPECTED_SINGLE_METRIC_VALUE ?? '2';
 
 const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });

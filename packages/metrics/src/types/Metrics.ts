@@ -1,12 +1,5 @@
-import type { Handler } from 'aws-lambda';
-import type {
-  LambdaInterface,
-  AsyncHandler,
-  SyncHandler,
-} from '@aws-lambda-powertools/commons/types';
-import { ConfigServiceInterface } from '../config';
-import { MetricUnit } from './MetricUnit';
-import { MetricResolution } from './MetricResolution';
+import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
+import { MetricResolution, MetricUnit } from '../constants.js';
 
 type Dimensions = Record<string, string>;
 
@@ -29,14 +22,6 @@ type EmfOutput = Readonly<{
     }[];
   };
 }>;
-
-type HandlerMethodDecorator = (
-  target: LambdaInterface,
-  propertyKey: string | symbol,
-  descriptor:
-    | TypedPropertyDescriptor<SyncHandler<Handler>>
-    | TypedPropertyDescriptor<AsyncHandler<Handler>>
-) => void;
 
 /**
  * Options for the metrics decorator
@@ -63,6 +48,11 @@ type ExtraOptions = {
   captureColdStartMetric?: boolean;
 };
 
+type MetricResolution =
+  (typeof MetricResolution)[keyof typeof MetricResolution];
+
+type MetricUnit = (typeof MetricUnit)[keyof typeof MetricUnit];
+
 type StoredMetric = {
   name: string;
   unit: MetricUnit;
@@ -82,9 +72,10 @@ export {
   MetricsOptions,
   Dimensions,
   EmfOutput,
-  HandlerMethodDecorator,
   ExtraOptions,
   StoredMetrics,
   StoredMetric,
   MetricDefinition,
+  MetricResolution,
+  MetricUnit,
 };

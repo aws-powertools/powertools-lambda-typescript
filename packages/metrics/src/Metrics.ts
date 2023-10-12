@@ -1,29 +1,28 @@
 import type { Callback, Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import type { MetricsInterface } from './MetricsInterface';
-import {
-  type ConfigServiceInterface,
-  EnvironmentVariablesService,
-} from './config';
+import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import {
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,
   DEFAULT_NAMESPACE,
   COLD_START_METRIC,
   MAX_METRIC_VALUES_SIZE,
-} from './constants';
+  MetricUnit as MetricUnits,
+  MetricResolution as MetricResolutions,
+} from './constants.js';
 import {
-  MetricsOptions,
-  Dimensions,
-  EmfOutput,
-  HandlerMethodDecorator,
-  StoredMetrics,
-  ExtraOptions,
-  MetricUnit,
-  MetricUnits,
-  MetricResolution,
-  MetricDefinition,
-} from './types';
+  type MetricsOptions,
+  type Dimensions,
+  type EmfOutput,
+  type StoredMetrics,
+  type ExtraOptions,
+  type MetricDefinition,
+  type ConfigServiceInterface,
+  type MetricsInterface,
+  type MetricUnit,
+  type MetricResolution,
+} from './types/index.js';
 
 /**
  * ## Intro
@@ -83,7 +82,7 @@ import {
  *   @metrics.logMetrics({ captureColdStartMetric: true, throwOnEmptyMetrics: true })
  *   public handler(_event: any, _context: any): Promise<void> {
  *     // ...
- *     metrics.addMetric('test-metric', MetricUnits.Count, 10);
+ *     metrics.addMetric('test-metric', MetricUnit.Count, 10);
  *     // ...
  *   }
  * }
@@ -99,13 +98,13 @@ import {
  * @example
  *
  * ```typescript
- * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+ * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
  *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
  *
  * export const handler = async (_event: any, _context: any): Promise<void> => {
  *   metrics.captureColdStartMetric();
- *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
+ *   metrics.addMetric('test-metric', MetricUnit.Count, 10);
  *   metrics.publishStoredMetrics();
  * };
  * ```
@@ -188,15 +187,15 @@ class Metrics extends Utility implements MetricsInterface {
    * or when calling {@link Metrics.publishStoredMetrics}.
    *
    * You can add a metric by specifying the metric name, unit, and value. For convenience,
-   * we provide a set of constants for the most common units in {@link MetricUnits}.
+   * we provide a set of constants for the most common units in {@link MetricUnit}.
    *
    * @example
    * ```typescript
-   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+   * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
    *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
    *
-   * metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+   * metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
    * ```
    *
    * Optionally, you can specify the metric resolution, which can be either `High` or `Standard`.
@@ -205,11 +204,11 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @example
    * ```typescript
-   * import { Metrics, MetricUnits, MetricResolution } from '@aws-lambda-powertools/metrics';
+   * import { Metrics, MetricUnit, MetricResolution } from '@aws-lambda-powertools/metrics';
    *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
    *
-   * metrics.addMetric('successfulBooking', MetricUnits.Count, 1, MetricResolution.High);
+   * metrics.addMetric('successfulBooking', MetricUnit.Count, 1, MetricResolution.High);
    * ```
    *
    * @param name - The metric name
@@ -221,7 +220,7 @@ class Metrics extends Utility implements MetricsInterface {
     name: string,
     unit: MetricUnit,
     value: number,
-    resolution: MetricResolution = MetricResolution.Standard
+    resolution: MetricResolution = MetricResolutions.Standard
   ): void {
     this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
@@ -369,12 +368,12 @@ class Metrics extends Utility implements MetricsInterface {
    * @example
    *
    * ```typescript
-   * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+   * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
    *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' }); // Sets metric namespace, and service as a metric dimension
    *
    * export const handler = async (_event: any, _context: any): Promise<void> => {
-   *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
+   *   metrics.addMetric('test-metric', MetricUnit.Count, 10);
    *   metrics.publishStoredMetrics();
    * };
    * ```
@@ -413,7 +412,7 @@ class Metrics extends Utility implements MetricsInterface {
     ).map((metricDefinition) => ({
       Name: metricDefinition.name,
       Unit: metricDefinition.unit,
-      ...(metricDefinition.resolution === MetricResolution.High
+      ...(metricDefinition.resolution === MetricResolutions.High
         ? { StorageResolution: metricDefinition.resolution }
         : {}),
     }));
@@ -499,7 +498,7 @@ class Metrics extends Utility implements MetricsInterface {
    * ```typescript
    * const singleMetric = metrics.singleMetric();
    * singleMetric.addDimension('InnerDimension', 'true');
-   * singleMetric.addMetric('single-metric', MetricUnits.Percent, 50);
+   * singleMetric.addMetric('single-metric', MetricUnit.Percent, 50);
    * ```
    *
    * @returns the Metrics
@@ -706,4 +705,4 @@ class Metrics extends Utility implements MetricsInterface {
   }
 }
 
-export { Metrics, MetricUnits, MetricResolution };
+export { Metrics };

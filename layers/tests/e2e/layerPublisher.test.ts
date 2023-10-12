@@ -7,12 +7,12 @@ import { App } from 'aws-cdk-lib';
 import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {
-  TestNodejsFunction,
   TestStack,
   TestInvocationLogs,
   invokeFunctionOnce,
   generateTestUniqueName,
 } from '@aws-lambda-powertools/testing-utils';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,

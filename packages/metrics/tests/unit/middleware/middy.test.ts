@@ -3,14 +3,10 @@
  *
  * @group unit/metrics/middleware
  */
-import {
-  Metrics,
-  MetricUnits,
-  logMetrics,
-  MetricResolution,
-} from '../../../../metrics/src';
+import { Metrics, MetricUnit, MetricResolution } from '../../../src/index.js';
+import { logMetrics } from '../../../src/middleware/middy.js';
 import middy from '@middy/core';
-import { ExtraOptions } from '../../../src/types';
+import { ExtraOptions } from '../../../src/types/index.js';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
 import context from '@aws-lambda-powertools/testing-utils/context';
 
@@ -189,8 +185,8 @@ describe('Middy middleware', () => {
       });
 
       const lambdaHandler = (): void => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 2);
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 2);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       };
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
@@ -226,7 +222,7 @@ describe('Middy middleware', () => {
       });
 
       const lambdaHandler = (): void => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       };
       const metricsOptions: ExtraOptions = {
         throwOnEmptyMetrics: true,
@@ -292,7 +288,7 @@ describe('Middy middleware', () => {
       });
 
       const lambdaHandler = (): void => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       };
 
       const handler = middy(lambdaHandler).use(logMetrics(metrics));
@@ -328,7 +324,7 @@ describe('Middy middleware', () => {
       });
 
       const lambdaHandler = (): void => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       };
       const metricsOptions: ExtraOptions = {
         throwOnEmptyMetrics: true,
@@ -390,7 +386,7 @@ describe('Middy middleware', () => {
       };
       const handler = middy(
         (_event: { foo: string; bar: string } & { idx: number }): void => {
-          metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+          metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
         }
       )
         .use(logMetrics(metrics))
@@ -415,7 +411,7 @@ describe('Middy middleware', () => {
       const lambdaHandler = (): void => {
         metrics.addMetric(
           'successfulBooking',
-          MetricUnits.Count,
+          MetricUnit.Count,
           1,
           MetricResolution.Standard
         );
@@ -460,7 +456,7 @@ describe('Middy middleware', () => {
       const lambdaHandler = (): void => {
         metrics.addMetric(
           'successfulBooking',
-          MetricUnits.Count,
+          MetricUnit.Count,
           1,
           MetricResolution.High
         );

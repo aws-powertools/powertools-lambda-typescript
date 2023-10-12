@@ -1,4 +1,13 @@
-export * from './middy.js';
-export * from './awsSdk.js';
-export * from './json.js';
-export * from './LambdaInterface.js';
+export {
+  MiddlewareLikeObj,
+  MiddyLikeRequest,
+  CleanupFunction,
+} from './middy.js';
+export { SdkClient, MiddlewareArgsLike } from './awsSdk.js';
+export { JSONPrimitive, JSONValue, JSONObject, JSONArray } from './json.js';
+export {
+  SyncHandler,
+  AsyncHandler,
+  LambdaInterface,
+  HandlerMethodDecorator,
+} from './LambdaInterface.js';

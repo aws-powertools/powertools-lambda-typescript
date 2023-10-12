@@ -5,21 +5,23 @@
  */
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { MetricResolution, MetricUnits, Metrics } from '../../src';
+import { MetricResolution, MetricUnit, Metrics } from '../../src/index.js';
 import type { Context, Handler } from 'aws-lambda';
-import { Dimensions, EmfOutput, MetricsOptions } from '../../src/types';
+import type {
+  Dimensions,
+  EmfOutput,
+  MetricsOptions,
+  ConfigServiceInterface,
+} from '../../src/types/index.js';
 import {
   COLD_START_METRIC,
   DEFAULT_NAMESPACE,
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,
   MAX_METRIC_VALUES_SIZE,
-} from '../../src/constants';
-import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils';
-import {
-  ConfigServiceInterface,
-  EnvironmentVariablesService,
-} from '../../src/config';
+} from '../../src/constants.js';
+import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils.js';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
@@ -529,12 +531,7 @@ describe('Class: Metrics', () => {
       const metricName = 'test-metric';
 
       // Act
-      metrics.addMetric(
-        metricName,
-        MetricUnits.Count,
-        1,
-        MetricResolution.High
-      );
+      metrics.addMetric(metricName, MetricUnit.Count, 1, MetricResolution.High);
 
       // Assess
       expect(metrics).toEqual(
@@ -543,7 +540,7 @@ describe('Class: Metrics', () => {
             [metricName]: {
               name: metricName,
               resolution: MetricResolution.High,
-              unit: MetricUnits.Count,
+              unit: MetricUnit.Count,
               value: 1,
             },
           },
@@ -558,19 +555,19 @@ describe('Class: Metrics', () => {
       // Act
       metrics.addMetric(
         'test-metric-1',
-        MetricUnits.Count,
+        MetricUnit.Count,
         1,
         MetricResolution.High
       );
       metrics.addMetric(
         'test-metric-2',
-        MetricUnits.Count,
+        MetricUnit.Count,
         3,
         MetricResolution.High
       );
       metrics.addMetric(
         'test-metric-3',
-        MetricUnits.Count,
+        MetricUnit.Count,
         6,
         MetricResolution.High
       );
@@ -582,19 +579,19 @@ describe('Class: Metrics', () => {
             'test-metric-1': {
               name: 'test-metric-1',
               resolution: MetricResolution.High,
-              unit: MetricUnits.Count,
+              unit: MetricUnit.Count,
               value: 1,
             },
             'test-metric-2': {
               name: 'test-metric-2',
               resolution: MetricResolution.High,
-              unit: MetricUnits.Count,
+              unit: MetricUnit.Count,
               value: 3,
             },
             'test-metric-3': {
               name: 'test-metric-3',
               resolution: MetricResolution.High,
-              unit: MetricUnits.Count,
+              unit: MetricUnit.Count,
               value: 6,
             },
           },
@@ -607,8 +604,8 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
-      metrics.addMetric('test-metric-2', MetricUnits.Seconds, 3);
+      metrics.addMetric('test-metric-1', MetricUnit.Count, 1);
+      metrics.addMetric('test-metric-2', MetricUnit.Seconds, 3);
 
       // Assess
       expect(metrics).toEqual(
@@ -617,13 +614,13 @@ describe('Class: Metrics', () => {
             'test-metric-1': {
               name: 'test-metric-1',
               resolution: MetricResolution.Standard,
-              unit: MetricUnits.Count,
+              unit: MetricUnit.Count,
               value: 1,
             },
             'test-metric-2': {
               name: 'test-metric-2',
               resolution: MetricResolution.Standard,
-              unit: MetricUnits.Seconds,
+              unit: MetricUnit.Seconds,
               value: 3,
             },
           },
@@ -637,10 +634,10 @@ describe('Class: Metrics', () => {
       const metricName = 'test-metric';
 
       // Act
-      metrics.addMetric(metricName, MetricUnits.Count, 1);
-      metrics.addMetric(metricName, MetricUnits.Count, 5);
-      metrics.addMetric(metricName, MetricUnits.Count, 1);
-      metrics.addMetric(metricName, MetricUnits.Count, 4);
+      metrics.addMetric(metricName, MetricUnit.Count, 1);
+      metrics.addMetric(metricName, MetricUnit.Count, 5);
+      metrics.addMetric(metricName, MetricUnit.Count, 1);
+      metrics.addMetric(metricName, MetricUnit.Count, 4);
 
       // Assess
       expect(metrics).toEqual(
@@ -649,7 +646,7 @@ describe('Class: Metrics', () => {
             [metricName]: {
               name: metricName,
               resolution: MetricResolution.Standard,
-              unit: MetricUnits.Count,
+              unit: MetricUnit.Count,
               value: [1, 5, 1, 4],
             },
           },
@@ -664,10 +661,10 @@ describe('Class: Metrics', () => {
 
       // Act & Assess
       expect(() => {
-        metrics.addMetric(metricName, MetricUnits.Count, 1);
-        metrics.addMetric(metricName, MetricUnits.Kilobits, 5);
+        metrics.addMetric(metricName, MetricUnit.Count, 1);
+        metrics.addMetric(metricName, MetricUnit.Kilobits, 5);
       }).toThrowError(
-        `Metric "${metricName}" has already been added with unit "${MetricUnits.Count}", but we received unit "${MetricUnits.Kilobits}". Did you mean to use metric unit "${MetricUnits.Count}"?`
+        `Metric "${metricName}" has already been added with unit "${MetricUnit.Count}", but we received unit "${MetricUnit.Kilobits}". Did you mean to use metric unit "${MetricUnit.Count}"?`
       );
     });
 
@@ -683,7 +680,7 @@ describe('Class: Metrics', () => {
       // Act & Assess
       expect(() => {
         for (let i = 0; i < MAX_METRICS_SIZE; i++) {
-          metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
+          metrics.addMetric(`${metricName}-${i}`, MetricUnit.Count, i);
         }
       }).not.toThrowError();
       expect(Object.keys(metrics['storedMetrics']).length).toEqual(
@@ -691,7 +688,7 @@ describe('Class: Metrics', () => {
       );
       metrics.addMetric(
         'another-metric',
-        MetricUnits.Count,
+        MetricUnit.Count,
         MAX_METRICS_SIZE + 1
       );
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(1);
@@ -701,7 +698,7 @@ describe('Class: Metrics', () => {
             'another-metric': {
               name: 'another-metric',
               resolution: MetricResolution.Standard,
-              unit: MetricUnits.Count,
+              unit: MetricUnit.Count,
               value: MAX_METRICS_SIZE + 1,
             },
           },
@@ -717,7 +714,7 @@ describe('Class: Metrics', () => {
 
       // Act
       for (let i = 0; i <= MAX_METRIC_VALUES_SIZE; i++) {
-        metrics.addMetric(`${metricName}`, MetricUnits.Count, i);
+        metrics.addMetric(`${metricName}`, MetricUnit.Count, i);
       }
       metrics.publishStoredMetrics();
 
@@ -749,13 +746,13 @@ describe('Class: Metrics', () => {
       // Act & Assess
       expect(() => {
         for (let i = 0; i < MAX_METRICS_SIZE - 1; i++) {
-          metrics.addMetric(`${metricName}-${i}`, MetricUnits.Count, i);
+          metrics.addMetric(`${metricName}-${i}`, MetricUnit.Count, i);
         }
       }).not.toThrowError();
       expect(Object.keys(metrics['storedMetrics']).length).toEqual(
         MAX_METRICS_SIZE - 1
       );
-      metrics.addMetric('another-metric', MetricUnits.Count, MAX_METRICS_SIZE);
+      metrics.addMetric('another-metric', MetricUnit.Count, MAX_METRICS_SIZE);
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
       expect(Object.keys(metrics['storedMetrics']).length).toEqual(
         MAX_METRICS_SIZE
@@ -774,8 +771,8 @@ describe('Class: Metrics', () => {
       );
 
       // Act
-      metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
-      metrics.addMetric('test-metric-2', MetricUnits.Bits, 100);
+      metrics.addMetric('test-metric-1', MetricUnit.Count, 1);
+      metrics.addMetric('test-metric-2', MetricUnit.Bits, 100);
 
       // Assess
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(2);
@@ -793,8 +790,8 @@ describe('Class: Metrics', () => {
       );
 
       // Act
-      metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
-      metrics.addMetric('test-metric-2', MetricUnits.Bits, 100);
+      metrics.addMetric('test-metric-1', MetricUnit.Count, 1);
+      metrics.addMetric('test-metric-2', MetricUnit.Bits, 100);
 
       // Assess
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
@@ -809,8 +806,8 @@ describe('Class: Metrics', () => {
       );
 
       // Act
-      metrics.addMetric('test-metric-1', MetricUnits.Count, 1);
-      metrics.addMetric('test-metric-2', MetricUnits.Bits, 100);
+      metrics.addMetric('test-metric-1', MetricUnit.Count, 1);
+      metrics.addMetric('test-metric-2', MetricUnit.Bits, 100);
 
       // Assess
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
@@ -838,7 +835,7 @@ describe('Class: Metrics', () => {
       expect(addMetricSpy).toBeCalledTimes(1);
       expect(addMetricSpy).toBeCalledWith(
         COLD_START_METRIC,
-        MetricUnits.Count,
+        MetricUnit.Count,
         1
       );
     });
@@ -1079,7 +1076,7 @@ describe('Class: Metrics', () => {
       const metricName = 'test-metric';
 
       // Act
-      metrics.addMetric(metricName, MetricUnits.Count, 1);
+      metrics.addMetric(metricName, MetricUnit.Count, 1);
       metrics.clearMetrics();
 
       // Assess
@@ -1124,7 +1121,7 @@ describe('Class: Metrics', () => {
       expect(addMetricSpy).toHaveBeenNthCalledWith(
         1,
         decoratorLambdaMetric,
-        MetricUnits.Count,
+        MetricUnit.Count,
         1
       );
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
@@ -1149,7 +1146,7 @@ describe('Class: Metrics', () => {
       expect(addMetricSpy).toHaveBeenNthCalledWith(
         1,
         decoratorLambdaMetric,
-        MetricUnits.Count,
+        MetricUnit.Count,
         1
       );
       expect(captureColdStartMetricSpy).toBeCalledTimes(1);
@@ -1174,7 +1171,7 @@ describe('Class: Metrics', () => {
       expect(addMetricSpy).toHaveBeenNthCalledWith(
         1,
         decoratorLambdaMetric,
-        MetricUnits.Count,
+        MetricUnit.Count,
         1
       );
       expect(throwOnEmptyMetricsSpy).toBeCalledTimes(1);
@@ -1203,7 +1200,7 @@ describe('Class: Metrics', () => {
       expect(addMetricSpy).toHaveBeenNthCalledWith(
         1,
         decoratorLambdaMetric,
-        MetricUnits.Count,
+        MetricUnit.Count,
         1
       );
       expect(setDefaultDimensionsSpy).toHaveBeenNthCalledWith(
@@ -1254,7 +1251,7 @@ describe('Class: Metrics', () => {
     test('it should call serializeMetrics && log the stringified return value of serializeMetrics', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metric', MetricUnits.Count, 10);
+      metrics.addMetric('test-metric', MetricUnit.Count, 10);
       const consoleLogSpy = jest
         .spyOn(metrics['console'], 'log')
         .mockImplementation();
@@ -1268,7 +1265,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: 'test-metric',
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
             },
@@ -1293,7 +1290,7 @@ describe('Class: Metrics', () => {
     test('it should call clearMetrics function', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metric', MetricUnits.Count, 10);
+      metrics.addMetric('test-metric', MetricUnit.Count, 10);
       const clearMetricsSpy = jest.spyOn(metrics, 'clearMetrics');
 
       // Act
@@ -1306,7 +1303,7 @@ describe('Class: Metrics', () => {
     test('it should call clearDimensions function', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metric', MetricUnits.Count, 10);
+      metrics.addMetric('test-metric', MetricUnit.Count, 10);
       const clearDimensionsSpy = jest.spyOn(metrics, 'clearDimensions');
 
       // Act
@@ -1319,7 +1316,7 @@ describe('Class: Metrics', () => {
     test('it should call clearMetadata function', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
-      metrics.addMetric('test-metric', MetricUnits.Count, 10);
+      metrics.addMetric('test-metric', MetricUnit.Count, 10);
       const clearMetadataSpy = jest.spyOn(metrics, 'clearMetadata');
 
       // Act
@@ -1359,11 +1356,11 @@ describe('Class: Metrics', () => {
       });
 
       // Act
-      metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-      metrics.addMetric('successfulBooking', MetricUnits.Count, 3);
+      metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+      metrics.addMetric('successfulBooking', MetricUnit.Count, 3);
       metrics.addMetric(
         'failedBooking',
-        MetricUnits.Count,
+        MetricUnit.Count,
         1,
         MetricResolution.High
       );
@@ -1380,11 +1377,11 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: 'successfulBooking',
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
                 {
                   Name: 'failedBooking',
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                   StorageResolution: 1,
                 },
               ],
@@ -1408,7 +1405,7 @@ describe('Class: Metrics', () => {
       });
 
       // Act
-      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1421,7 +1418,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: testMetric,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1442,7 +1439,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1455,7 +1452,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: testMetric,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1481,7 +1478,7 @@ describe('Class: Metrics', () => {
       });
 
       // Act
-      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1499,7 +1496,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: testMetric,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1527,7 +1524,7 @@ describe('Class: Metrics', () => {
       });
 
       // Act
-      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
       metrics.addDimension('foo', 'baz');
       const loggedData = metrics.serializeMetrics();
 
@@ -1546,7 +1543,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: testMetric,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1570,7 +1567,7 @@ describe('Class: Metrics', () => {
       // Act
       metrics.addMetric(
         'test-metric',
-        MetricUnits.Count,
+        MetricUnit.Count,
         10,
         MetricResolution.High
       );
@@ -1594,7 +1591,7 @@ describe('Class: Metrics', () => {
                 {
                   Name: testMetric,
                   StorageResolution: 1,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1620,7 +1617,7 @@ describe('Class: Metrics', () => {
       // Act
       metrics.addMetric(
         testMetric,
-        MetricUnits.Count,
+        MetricUnit.Count,
         10,
         MetricResolution.High
       );
@@ -1644,7 +1641,7 @@ describe('Class: Metrics', () => {
                 {
                   Name: testMetric,
                   StorageResolution: 1,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1665,7 +1662,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
       metrics.addMetadata('foo', 'bar');
       const loggedData = metrics.serializeMetrics();
 
@@ -1679,7 +1676,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: testMetric,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1713,7 +1710,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics();
 
       // Act
-      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1728,7 +1725,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: testMetric,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: DEFAULT_NAMESPACE,
@@ -1747,7 +1744,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1762,7 +1759,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: testMetric,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1781,7 +1778,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric(metricName, MetricUnits.Count, 10);
+      metrics.addMetric(metricName, MetricUnit.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1795,7 +1792,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: metricName,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1814,8 +1811,8 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric(metricName, MetricUnits.Count, 10);
-      metrics.addMetric(metricName, MetricUnits.Count, 20);
+      metrics.addMetric(metricName, MetricUnit.Count, 10);
+      metrics.addMetric(metricName, MetricUnit.Count, 20);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1829,7 +1826,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: metricName,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1849,8 +1846,8 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric(metricName1, MetricUnits.Count, 10);
-      metrics.addMetric(metricName2, MetricUnits.Seconds, 20);
+      metrics.addMetric(metricName1, MetricUnit.Count, 10);
+      metrics.addMetric(metricName2, MetricUnit.Seconds, 20);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1865,11 +1862,11 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: metricName1,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
                 {
                   Name: metricName2,
-                  Unit: MetricUnits.Seconds,
+                  Unit: MetricUnit.Seconds,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1889,7 +1886,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric(metricName, MetricUnits.Count, 10);
+      metrics.addMetric(metricName, MetricUnit.Count, 10);
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1905,7 +1902,7 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: metricName,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
               ],
               Namespace: TEST_NAMESPACE,
@@ -1925,10 +1922,10 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act
-      metrics.addMetric(metricName1, MetricUnits.Count, 10);
+      metrics.addMetric(metricName1, MetricUnit.Count, 10);
       metrics.addMetric(
         metricName2,
-        MetricUnits.Seconds,
+        MetricUnit.Seconds,
         10,
         MetricResolution.High
       );
@@ -1950,12 +1947,12 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: metricName1,
-                  Unit: MetricUnits.Count,
+                  Unit: MetricUnit.Count,
                 },
                 {
                   Name: metricName2,
                   StorageResolution: 1,
-                  Unit: MetricUnits.Seconds,
+                  Unit: MetricUnit.Seconds,
                 },
               ],
               Namespace: TEST_NAMESPACE,

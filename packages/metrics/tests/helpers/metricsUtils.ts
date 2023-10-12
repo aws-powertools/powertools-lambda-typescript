@@ -1,6 +1,6 @@
 import promiseRetry from 'promise-retry';
-import { Metrics } from '../../src';
-import { ExtraOptions, MetricUnits } from '../../src/types';
+import { Metrics, MetricUnit } from '../../src/index.js';
+import { ExtraOptions } from '../../src/types/index.js';
 import {
   CloudWatchClient,
   ListMetricsCommand,
@@ -51,13 +51,11 @@ const setupDecoratorLambdaHandler = (
 ): Handler => {
   class LambdaFunction implements LambdaInterface {
     @metrics.logMetrics(options)
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     public async handler<TEvent>(
       _event: TEvent,
       _context: Context
     ): Promise<string> {
-      metrics.addMetric('decorator-lambda-test-metric', MetricUnits.Count, 1);
+      metrics.addMetric('decorator-lambda-test-metric', MetricUnit.Count, 1);
 
       return 'Lambda invoked!';
     }

@@ -1,12 +1,12 @@
-import { Metrics } from './Metrics';
-import {
-  MetricUnit,
-  MetricResolution,
+import type { Metrics } from '../Metrics.js';
+import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type {
   EmfOutput,
-  HandlerMethodDecorator,
   Dimensions,
   MetricsOptions,
-} from './types';
+  MetricResolution,
+  MetricUnit,
+} from './Metrics.js';
 
 interface MetricsInterface {
   addDimension(name: string, value: string): void;

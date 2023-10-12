@@ -2,7 +2,6 @@ export {
   MetricsOptions,
   Dimensions,
   EmfOutput,
-  HandlerMethodDecorator,
   ExtraOptions,
   StoredMetrics,
   StoredMetric,

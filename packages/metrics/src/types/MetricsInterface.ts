@@ -1,7 +1,7 @@
 import type { Metrics } from '../Metrics.js';
+import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type {
   EmfOutput,
-  HandlerMethodDecorator,
   Dimensions,
   MetricsOptions,
   MetricResolution,

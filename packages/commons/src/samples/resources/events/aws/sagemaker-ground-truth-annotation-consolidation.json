@@ -1,9 +1,0 @@
-{
-  "version": "2018-10-16",
-  "labelingJobArn": "arn:aws:sagemaker:eu-central-1:123456789012:labeling-job/example-job",
-  "labelAttributeName": "example-attribute",
-  "roleArn": "aws:aws:iam::{{account_id}}:role/sagemaker-role",
-  "payload": {
-    "s3Uri": "s3://sagemakerexample/output/example-job/annotations/worker_response/iteration-1/0/2019-09-06_18:35:03.json"
-  }
-}

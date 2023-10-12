@@ -1,9 +1,9 @@
 import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { randomUUID } from 'node:crypto';
-import { concatenateResourceName } from '../helpers';
-import type { TestStack } from '../TestStack';
-import type { TestDynamodbTableProps, ExtraTestProps } from './types';
+import { concatenateResourceName } from '../helpers.js';
+import type { TestStack } from '../TestStack.js';
+import type { TestDynamodbTableProps, ExtraTestProps } from '../types.js';
 
 /**
  * A DynamoDB Table that can be used in tests.
@@ -36,4 +36,4 @@ class TestDynamodbTable extends Table {
   }
 }
 
-export { TestDynamodbTable, TestDynamodbTableProps };
+export { TestDynamodbTable };

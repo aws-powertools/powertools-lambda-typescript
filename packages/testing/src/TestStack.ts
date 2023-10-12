@@ -4,35 +4,8 @@ import { readFile } from 'node:fs/promises';
 import { App, Stack } from 'aws-cdk-lib';
 import { AwsCdkCli, RequireApproval } from '@aws-cdk/cli-lib-alpha';
 import type { ICloudAssemblyDirectoryProducer } from '@aws-cdk/cli-lib-alpha';
-import { generateTestUniqueName } from './helpers';
-
-type StackNameProps = {
-  /**
-   * Prefix for the stack name.
-   */
-  stackNamePrefix: string;
-  /**
-   * Name of the test.
-   */
-  testName: string;
-};
-
-interface TestStackProps {
-  /**
-   * Name of the test stack.
-   */
-  stackNameProps: StackNameProps;
-  /**
-   * Reference to the AWS CDK App object.
-   * @default new App()
-   */
-  app?: App;
-  /**
-   * Reference to the AWS CDK Stack object.
-   * @default new Stack(this.app, stackName)
-   */
-  stack?: Stack;
-}
+import { generateTestUniqueName } from './helpers.js';
+import type { TestStackProps } from './types.js';
 
 /**
  * Test stack that can be deployed to the selected environment.

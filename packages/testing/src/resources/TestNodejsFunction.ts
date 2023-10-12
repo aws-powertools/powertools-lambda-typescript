@@ -3,14 +3,14 @@ import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { randomUUID } from 'node:crypto';
-import { TEST_RUNTIMES, TEST_ARCHITECTURES } from '../constants';
+import { TEST_RUNTIMES, TEST_ARCHITECTURES } from '../constants.js';
 import {
   concatenateResourceName,
   getRuntimeKey,
   getArchitectureKey,
-} from '../helpers';
-import type { TestStack } from '../TestStack';
-import type { ExtraTestProps, TestNodejsFunctionProps } from './types';
+} from '../helpers.js';
+import type { TestStack } from '../TestStack.js';
+import type { ExtraTestProps, TestNodejsFunctionProps } from '../types.js';
 
 /**
  * A NodejsFunction that can be used in tests.
@@ -43,4 +43,4 @@ class TestNodejsFunction extends NodejsFunction {
   }
 }
 
-export { ExtraTestProps, TestNodejsFunction, TestNodejsFunctionProps };
+export { TestNodejsFunction };

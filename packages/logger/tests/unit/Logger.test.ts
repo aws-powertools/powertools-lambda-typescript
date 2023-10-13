@@ -1977,27 +1977,6 @@ describe('Class: Logger', () => {
     });
   });
 
-  describe('Method: refreshSampleRateCalculation', () => {
-    // test('it recalculates whether the current Lambda invocation logs will be printed or not', () => {
-    //   // Prepare
-    //   const logger = new Logger({
-    //     logLevel: 'ERROR',
-    //     sampleRateValue: 0.1, // 10% probability
-    //   });
-    //   let logsSampledCount = 0;
-    //   // Act
-    //   for (let i = 0; i < 1000; i++) {
-    //     logger.refreshSampleRateCalculation();
-    //     if (logger.getLogsSampled() === true) {
-    //       logsSampledCount++;
-    //     }
-    //   }
-    //   // Assess
-    //   expect(logsSampledCount > 50).toBe(true);
-    //   expect(logsSampledCount < 150).toBe(true);
-    // });
-  });
-
   describe('Method: createChild', () => {
     test('child and grandchild loggers should have all the options of its ancestor', () => {
       // Prepare
@@ -2594,6 +2573,128 @@ describe('Class: Logger', () => {
       // Act & Assess
       expect(() => logger.setLogLevel('INVALID' as LogLevel)).toThrow(
         'Invalid log level: INVALID'
+      );
+    });
+  });
+
+  /**
+   * TODO: test sample rate value priority for constructor/custom config/env var
+   */
+  describe('Feature: Sampling debug logs', () => {
+    test('when sampling rate is set in constructor it DOES change log level to DEBUG', () => {
+      // Prepare && Act
+      const logger: Logger = new Logger({
+        logLevel: 'ERROR',
+        sampleRateValue: 1,
+      });
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+    });
+
+    test('when sampling rate is disabled it DOES NOT changes log level to DEBUG', () => {
+      // Prepare && Act
+      const logger: Logger = new Logger({
+        logLevel: 'ERROR',
+        sampleRateValue: 0,
+      });
+
+      // Assess
+      expect(logger.level).toBe(20);
+      expect(logger.getLevelName()).toBe('ERROR');
+    });
+
+    test('when sample rate value in constructor is out of expected range, it should be ignored', () => {
+      // Prepare
+      const logger: Logger = new Logger({
+        logLevel: 'INFO',
+        sampleRateValue: 42,
+      });
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'info')
+        .mockImplementation();
+
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate value is set in custom config service, sampling_rate should be set and logLevel should be changed to DEBUG', () => {
+      // Prepare
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 1;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+
+      const logger: Logger = new Logger(loggerOptions);
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'info')
+        .mockImplementation();
+
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when POWERTOOLS_LOGGER_SAMPLE_RATE env variable is set, sampling_rate should be set and logLevel should be changed to DEBUG', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
+      const logger: Logger = new Logger();
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'debug')
+        .mockImplementation();
+
+      // Act
+      logger.debug('foo');
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'DEBUG',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
       );
     });
   });

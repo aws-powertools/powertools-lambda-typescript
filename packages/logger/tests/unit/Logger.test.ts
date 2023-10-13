@@ -642,7 +642,7 @@ describe('Class: Logger', () => {
         });
       });
 
-      describe('Feature: sample rate', () => {
+      describe('Feature: sampling debug logs', () => {
         test('when the log level is higher and the current Lambda invocation IS NOT sampled for logging, it DOES NOT print to stdout', () => {
           // Prepare
           const logger = new Logger({
@@ -659,10 +659,12 @@ describe('Class: Logger', () => {
           }
 
           // Assess
+          expect(logger.level).toBe(28);
+          expect(logger.getLevelName()).toBe('SILENT');
           expect(consoleSpy).toBeCalledTimes(0);
         });
 
-        test('when the log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout', () => {
+        test('when the log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout and changes log level to DEBUG', () => {
           // Prepare
           const logger = new Logger({
             logLevel: 'SILENT',
@@ -678,6 +680,8 @@ describe('Class: Logger', () => {
           }
 
           // Assess
+          expect(logger.level).toBe(8);
+          expect(logger.getLevelName()).toBe('DEBUG');
           expect(consoleSpy).toBeCalledTimes(1);
           expect(consoleSpy).toHaveBeenNthCalledWith(
             1,

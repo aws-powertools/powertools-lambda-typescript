@@ -540,7 +540,7 @@ class Logger extends Utility implements ClassThatLogs {
    * It dynamically sets log level based on sampling rate value
    */
   private configureSampling(): void {
-    const sampleRateValue = this.getSampleRateValue();
+    const sampleRateValue = this.powertoolLogData.sampleRateValue;
     if (sampleRateValue && randomInt(0, 100) / 100 <= sampleRateValue) {
       this.debug('Setting log level to DEBUG due to sampling rate');
       this.setLogLevel('DEBUG');
@@ -695,20 +695,6 @@ class Logger extends Utility implements ClassThatLogs {
 
       return item;
     };
-  }
-
-  /**
-   * It returns the numeric sample rate value.
-   *
-   * @private
-   * @returns {number}
-   */
-  private getSampleRateValue(): number {
-    if (!this.powertoolLogData.sampleRateValue) {
-      this.setInitialSampleRate();
-    }
-
-    return this.powertoolLogData.sampleRateValue;
   }
 
   /**

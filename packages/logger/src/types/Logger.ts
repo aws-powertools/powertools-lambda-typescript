@@ -47,7 +47,7 @@ type LambdaFunctionContext = {
 type PowertoolLogData = LogAttributes & {
   environment?: Environment;
   serviceName: string;
-  sampleRateValue?: number;
+  sampleRateValue: number;
   lambdaFunctionContext: LambdaFunctionContext;
   xRayTraceId?: string;
   awsRegion: string;

@@ -52,8 +52,8 @@ jobs:
           echo -e "// this file is auto generated, do not modify\nexport const PT_VERSION = '2.0.0-alpha.$(jq -r '.iteration' v2.json)';" > packages/commons/src/version.ts
       - name: Build
         run: |
-          npm run build -w packages/commons &
           npm run build -w packages/batch \
+            -w packages/commons \
             -w packages/idempotency \
             -w packages/logger \
             -w packages/metrics \

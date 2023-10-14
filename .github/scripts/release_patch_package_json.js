@@ -62,6 +62,12 @@ const betaPackages = [];
         readFileSync(resolve('..', '..', 'v2.json'), 'utf8')
       ).iteration;
       version = `${version}-alpha.${iteration}`;
+      dependencies &&
+        Object.entries(dependencies).forEach(([dependencyName, version]) => {
+          if (alphaPackages.includes(dependencyName)) {
+            dependencies[dependencyName] = `${version}-alpha.${iteration}`;
+          }
+        });
     } else if (betaPackages.includes(name)) {
       version = `${version}-beta`;
     }
@@ -84,9 +90,6 @@ const betaPackages = [];
       types,
       files,
       type,
-      scripts: {
-        postinstall: `echo 'WARNING: This is a pre-release version of Powertools for AWS (TypeScript) provided for evaluation only. Do not use in production.'`,
-      },
     };
 
     // Not all utilities have these fields, so only add them if they exist to avoid

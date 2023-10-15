@@ -238,7 +238,7 @@ class Logger extends Utility implements ClassThatLogs {
       logFormatter: this.getLogFormatter(),
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
-    const childLogger = new Logger(
+    const childLogger = this.createLogger(
       merge(parentsOptions, parentsPowertoolsLogData, options)
     );
 
@@ -519,6 +519,34 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
     this.processLogItem(16, input, extraInput);
+  }
+
+  /**
+   * Factory method for instantiating logger instances. Used by `createChild` method.
+   * Important for customization and subclassing. It allows subclasses, like `MyOwnLogger`,
+   * to override its behavior while keeping the main business logic in `createChild` intact.
+   *
+   * **Please do not remove this method during refactoring!**
+   *
+   * @example
+   * ```typescript
+   * // MyOwnLogger subclass
+   * class MyOwnLogger extends Logger {
+   *   protected createLogger(options?: ConstructorOptions): MyOwnLogger {
+   *     return new MyOwnLogger(options);
+   *   }
+   *   // No need to re-implement business logic from `createChild` and keep track on changes
+   *   public createChild(options?: ConstructorOptions): MyOwnLogger {
+   *     return super.createChild(options) as MyOwnLogger;
+   *   }
+   * }
+   * ```
+   *
+   * @param {ConstructorOptions} [options] Logger configuration options.
+   * @returns {Logger} A new logger instance.
+   */
+  protected createLogger(options?: ConstructorOptions): Logger {
+    return new Logger(options);
   }
 
   /**

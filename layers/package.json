@@ -9,6 +9,7 @@
   "scripts": {
     "build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
     "test": "echo 'Not applicable'",
+    "jest": "jest --detectOpenHandles",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",

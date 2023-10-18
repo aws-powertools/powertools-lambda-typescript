@@ -18,6 +18,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 | **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                          | Yes                  |
 | **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                        | Yes                  |
 
+
 ### First steps
 
 Before you start, we suggest making a copy of your current working project or create a new git branch.

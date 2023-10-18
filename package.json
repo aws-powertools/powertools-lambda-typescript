@@ -19,7 +19,9 @@
   "scripts": {
     "init-environment": "husky install",
     "test": "npm t -ws",
+    "test:parallel": "lerna exec --no-bail --no-sort --stream --concurrency 8 -- npm run test",
     "test:e2e": "npm run test:e2e -ws",
+    "test:e2e:parallel": "lerna exec --no-bail --no-sort --stream --concurrency 8 -- npm run test:e2e",
     "commit": "commit",
     "setup-local": "npm ci && npm run build && npm run init-environment",
     "build": "npm run build -ws",

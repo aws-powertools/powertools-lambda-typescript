@@ -12,6 +12,7 @@
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "jest": "jest --detectOpenHandles --verbose",
     "test:e2e": "echo 'Not Applicable'",
     "watch": "jest --watch",
     "generateVersionFile": "echo \"// this file is auto generated, do not modify\nexport const PT_VERSION = '$(jq -r '.version' package.json)';\" > src/version.ts",

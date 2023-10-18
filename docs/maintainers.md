@@ -27,7 +27,7 @@ Previous active maintainers who contributed to this project.
 | Florian Chazal             | [flochaz](https://github.com/flochaz){target="_blank" rel="nofollow"}           | Amazon      |
 | Chadchapol Vittavutkarnvej | [ijemmy](https://github.com/ijemmy){target="_blank" rel="nofollow"}             | Booking.com |
 | Alan Churley               | [alan-churley](https://github.com/alan-churley){target="_blank" rel="nofollow"} | CloudCall   |
-| Bahr Michael               | [bahrmichael](https://github.com/bahrmichael){target="_blank" rel="nofollow"}   | Stedi       |
+| Michael Bahr               | [bahrmichael](https://github.com/bahrmichael){target="_blank" rel="nofollow"}   | Stedi       |
 
 ## Labels
 

@@ -384,7 +384,7 @@ class Metrics extends Utility implements MetricsInterface {
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' }); // Sets metric namespace, and service as a metric dimension
    *
    * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
-   *   metrics.addMetric('test-metric', MetricUnits.Count, 10);
+   *   metrics.addMetric('test-metric', MetricUnit.Count, 10);
    *   metrics.publishStoredMetrics();
    * };
    * ```

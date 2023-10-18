@@ -22,7 +22,7 @@ type CaptureAsyncFuncMock = jest.SpyInstance<
   [
     name: string,
     fcn: (subsegment?: Subsegment) => unknown,
-    parent?: Segment | Subsegment
+    parent?: Segment | Subsegment,
   ]
 >;
 const createCaptureAsyncFuncMock = function (
@@ -953,7 +953,8 @@ describe('Class: Tracer', () => {
       expect(closeSpy).toHaveBeenCalledTimes(1);
       expect(logWarningSpy).toHaveBeenNthCalledWith(
         1,
-        `Failed to close or serialize segment, ${handlerSubsegment.name}. We are catching the error but data might be lost.`,
+        `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+        handlerSubsegment.name,
         new Error('dummy error')
       );
     });
@@ -1414,7 +1415,8 @@ describe('Class: Tracer', () => {
       expect(closeSpy).toHaveBeenCalledTimes(1);
       expect(logWarningSpy).toHaveBeenNthCalledWith(
         1,
-        `Failed to close or serialize segment, ${handlerSubsegment.name}. We are catching the error but data might be lost.`,
+        `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+        handlerSubsegment.name,
         new Error('dummy error')
       );
     });

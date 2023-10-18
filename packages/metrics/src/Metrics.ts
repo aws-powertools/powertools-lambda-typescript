@@ -53,7 +53,7 @@ import {
  *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
  *
- * const lambdaHandler = async (_event: any, _context: any) => {
+ * const lambdaHandler = async (_event: unknown, _context: unknown) => {
  *   ...
  * };
  *
@@ -76,11 +76,9 @@ import {
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
  *
  * class Lambda implements LambdaInterface {
- *
- *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@metrics* instead of `@metrics.logMetrics`
- *
- *   @metrics.logMetrics({ captureColdStartMetric: true, throwOnEmptyMetrics: true })
- *   public handler(_event: any, _context: any): Promise<void> {
+ *   // Decorate your handler with the logMetrics decorator
+ *   ⁣@metrics.logMetrics({ captureColdStartMetric: true, throwOnEmptyMetrics: true })
+ *   public handler(_event: unknown, _context: unknown): Promise<void> {
  *     // ...
  *     metrics.addMetric('test-metric', MetricUnit.Count, 10);
  *     // ...
@@ -102,7 +100,7 @@ import {
  *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
  *
- * export const handler = async (_event: any, _context: any): Promise<void> => {
+ * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
  *   metrics.captureColdStartMetric();
  *   metrics.addMetric('test-metric', MetricUnit.Count, 10);
  *   metrics.publishStoredMetrics();
@@ -242,7 +240,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
    *
-   * export const handler = async (event: any, _context: any): Promise<void> => {
+   * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
    *     metrics.captureColdStartMetric();
    * };
    * ```
@@ -304,7 +302,7 @@ class Metrics extends Utility implements MetricsInterface {
    * class Lambda implements LambdaInterface {
    *
    *   @metrics.logMetrics({ captureColdStartMetric: true })
-   *   public handler(_event: any, _context: any): Promise<void> {
+   *   public handler(_event: unknown, __context: unknown): Promise<void> {
    *    // ...
    *   }
    * }
@@ -372,7 +370,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' }); // Sets metric namespace, and service as a metric dimension
    *
-   * export const handler = async (_event: any, _context: any): Promise<void> => {
+   * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
    *   metrics.addMetric('test-metric', MetricUnit.Count, 10);
    *   metrics.publishStoredMetrics();
    * };
@@ -522,7 +520,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName:'orders' });
    *
-   * export const handler = async (_event: any, _context: any): Promise<void> => {
+   * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
    *     metrics.throwOnEmptyMetrics();
    *     metrics.publishStoredMetrics(); // will throw since no metrics added.
    * };

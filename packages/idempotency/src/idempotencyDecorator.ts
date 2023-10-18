@@ -14,9 +14,9 @@ import { makeIdempotent } from './makeIdempotent';
  * } from '@aws-lambda-powertools/idempotency';
  * import type { LambdaInterface } from '@aws-lambda-powertools/commons';
  *
- * class MyLambdaFunction implements LambdaInterface{
- *   @idempotent({ persistenceStore: new DynamoDBPersistenceLayer() })
- *   async handler(event: any, context: any) {
+ * class MyLambdaFunction implements LambdaInterface {
+ *   ⁣@idempotent({ persistenceStore: new DynamoDBPersistenceLayer() })
+ *   async handler(event: unknown, _context: unknown) {
  *     return "Hello World";
  *   }
  * }
@@ -28,23 +28,23 @@ import { makeIdempotent } from './makeIdempotent';
  * @example
  * ```ts
  * import {
- *  DynamoDBPersistenceLayer,
- *  idempotentFunction
- *  } from '@aws-lambda-powertools/idempotency';
- *  import type { LambdaInterface } from '@aws-lambda-powertools/commons';
+ *   DynamoDBPersistenceLayer,
+ *   idempotentFunction
+ * } from '@aws-lambda-powertools/idempotency';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons';
  *
- *  class MyClass implements LambdaInterface {
+ * class MyClass implements LambdaInterface {
+ *   public async handler(event: unknown, _context: unknown) {
+ *     for(const record of event.records){
+ *       await this.process(record);
+ *     }
+ *   }
  *
- *  public async handler(_event: any, _context: any) {
- *    for(const record of _event.records){
- *      await this.process(record);
- *      }
- *    }
- *
- *  @idemptent({ persistenceStore: new DynamoDBPersistenceLayer() })
- *  public async process(record: Record<stiring, unknown) {
+ *   ⁣@idemptent({ persistenceStore: new DynamoDBPersistenceLayer() })
+ *   public async process(record: Record<stiring, unknown>) {
  *     // do some processing
- *  }
+ *   }
+ * }
  * ```
  * @see {@link DynamoDBPersistenceLayer}
  * @see https://www.typescriptlang.org/docs/handbook/decorators.html

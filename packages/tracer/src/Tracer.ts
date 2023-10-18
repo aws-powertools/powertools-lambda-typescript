@@ -51,7 +51,7 @@ import { type Segment, Subsegment } from 'aws-xray-sdk-core';
  *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  *
- * const lambdaHandler = async (_event: any, _context: any) => {
+ * const lambdaHandler = async (_event: unknown, _context: unknown) => {
  *   ...
  * };
  *
@@ -73,11 +73,9 @@ import { type Segment, Subsegment } from 'aws-xray-sdk-core';
  *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  *
- * // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@tracer* instead of `@tracer.captureLambdaHandler`
- *
  * class Lambda implements LambdaInterface {
- *   @tracer.captureLambdaHandler()
- *   public handler(event: any, context: any) {
+ *   ⁣@tracer.captureLambdaHandler()
+ *   public handler(_event: unknown, _context: unknown) {
  *     ...
  *   }
  * }
@@ -96,7 +94,7 @@ import { type Segment, Subsegment } from 'aws-xray-sdk-core';
  *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  *
- * export const handler = async (_event: any, context: any) => {
+ * export const handler = async (_event: unknown, _context: unknown) => {
  *   const segment = tracer.getSegment(); // This is the facade segment (the one that is created by AWS Lambda)
  *   // Create subsegment for the function & set it as active
  *   const subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
@@ -246,7 +244,7 @@ class Tracer extends Utility implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * const AWS = tracer.captureAWS(require('aws-sdk'));
    *
-   * export const handler = async (_event: any, _context: any) => {
+   * export const handler = async (_event: unknown, _context: unknown) => {
    *   ...
    * }
    * ```
@@ -275,7 +273,7 @@ class Tracer extends Utility implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    * const s3 = tracer.captureAWSClient(new S3({ apiVersion: '2006-03-01' }));
    *
-   * export const handler = async (_event: any, _context: any) => {
+   * export const handler = async (_event: unknown, _context: unknown) => {
    *   ...
    * }
    * ```
@@ -318,7 +316,7 @@ class Tracer extends Utility implements TracerInterface {
    * const client = new S3Client({});
    * tracer.captureAWSv3Client(client);
    *
-   * export const handler = async (_event: any, _context: any) => {
+   * export const handler = async (_event: unknown, _context: unknown) => {
    *   ...
    * }
    * ```
@@ -352,9 +350,9 @@ class Tracer extends Utility implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    *
    * class Lambda implements LambdaInterface {
-   *   @tracer.captureLambdaHandler()
-   *   public handler(event: any, context: any) {
-   *     ...
+   *   ⁣@tracer.captureLambdaHandler()
+   *   public handler(_event: unknown, _context: unknown) {
+   *     // ...
    *   }
    * }
    *
@@ -445,13 +443,13 @@ class Tracer extends Utility implements TracerInterface {
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    *
    * class Lambda implements LambdaInterface {
-   *   @tracer.captureMethod()
-   *   public myMethod(param: any) {
-   *     ...
+   *   ⁣@tracer.captureMethod()
+   *   public myMethod(param: string) {
+   *     // ...
    *   }
    *
-   *   public handler(event: any, context: any) {
-   *     ...
+   *   public handler(_event: unknown, _context: unknown) {
+   *     this.myMethod('foo');
    *   }
    * }
    *
@@ -567,7 +565,7 @@ class Tracer extends Utility implements TracerInterface {
    *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    *
-   * export const handler = async (_event: any, _context: any) => {
+   * export const handler = async (_event: unknown, _context: unknown) => {
    *   const currentSegment = tracer.getSegment();
    *   ... // Do something with segment
    * }
@@ -627,7 +625,7 @@ class Tracer extends Utility implements TracerInterface {
    *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    *
-   * export const handler = async (_event: any, _context: any) => {
+   * export const handler = async (_event: unknown, _context: unknown) => {
    *   tracer.putAnnotation('successfulBooking', true);
    * }
    * ```
@@ -652,7 +650,7 @@ class Tracer extends Utility implements TracerInterface {
    *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    *
-   * export const handler = async (_event: any, _context: any) => {
+   * export const handler = async (_event: unknown, _context: unknown) => {
    *   const res = someLogic();
    *   tracer.putMetadata('paymentResponse', res);
    * }
@@ -686,7 +684,7 @@ class Tracer extends Utility implements TracerInterface {
    *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    *
-   * export const handler = async (_event: any, _context: any) => {
+   * export const handler = async (_event: unknown, _context: unknown) => {
    *   const subsegment = new Subsegment('### foo.bar');
    *   tracer.setSegment(subsegment);
    * }

@@ -58,7 +58,7 @@ import type {
  *
  * const logger = new Logger();
  *
- * const lambdaHandler = async (_event: any, _context: any) => {
+ * const lambdaHandler = async (_event: unknown, _context: unknown) => {
  *     logger.info('This is an INFO log with some context');
  * };
  *
@@ -77,12 +77,9 @@ import type {
  * const logger = new Logger();
  *
  * class Lambda implements LambdaInterface {
- *
- *   // FYI: Decorator might not render properly in VSCode mouse over due to https://github.com/microsoft/TypeScript/issues/47679 and might show as *@logger* instead of `@logger.injectLambdaContext`
- *
  *     // Decorate your handler class method
- *     @logger.injectLambdaContext()
- *     public async handler(_event: any, _context: any): Promise<void> {
+ *     ⁣@logger.injectLambdaContext()
+ *     public async handler(_event: unknown, _context: unknown): Promise<void> {
  *         logger.info('This is an INFO log with some context');
  *     }
  * }
@@ -358,8 +355,8 @@ class Logger extends Utility implements ClassThatLogs {
    *
    * class Lambda implements LambdaInterface {
    *     // Decorate your handler class method
-   *     @logger.injectLambdaContext()
-   *     public async handler(_event: any, _context: any): Promise<void> {
+   *     ⁣@logger.injectLambdaContext()
+   *     public async handler(_event: unknown, _context: unknown): Promise<void> {
    *         logger.info('This is an INFO log with some context');
    *     }
    * }

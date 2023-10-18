@@ -410,7 +410,8 @@ class Tracer extends Utility implements TracerInterface {
                 subsegment?.close();
               } catch (error) {
                 console.warn(
-                  `Failed to close or serialize segment, ${subsegment?.name}. We are catching the error but data might be lost.`,
+                  `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+                  subsegment?.name,
                   error
                 );
               }
@@ -499,7 +500,8 @@ class Tracer extends Utility implements TracerInterface {
                 subsegment?.close();
               } catch (error) {
                 console.warn(
-                  `Failed to close or serialize segment, ${subsegment?.name}. We are catching the error but data might be lost.`,
+                  `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+                  subsegment?.name,
                   error
                 );
               }

@@ -74,7 +74,8 @@ const captureLambdaHandler = (
       handlerSegment.close();
     } catch (error) {
       console.warn(
-        `Failed to close or serialize segment, ${handlerSegment.name}. We are catching the error but data might be lost.`,
+        `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+        handlerSegment.name,
         error
       );
     }

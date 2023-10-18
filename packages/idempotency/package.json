@@ -13,7 +13,6 @@
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "jest": "jest --detectOpenHandles --verbose",
-    "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
     "test:e2e:nodejs16x": "RUNTIME=nodejs16x jest --group=e2e",
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x jest --group=e2e",

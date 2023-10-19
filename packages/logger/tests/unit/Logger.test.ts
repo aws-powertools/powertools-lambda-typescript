@@ -59,10 +59,9 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: false,
           persistentLogAttributes: {},
           powertoolLogData: {
-            sampleRateValue: undefined,
+            sampleRateValue: 0,
             awsRegion: 'eu-west-1',
             environment: '',
             serviceName: 'hello-world',
@@ -103,12 +102,11 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 16,
+        logLevel: 8, // 100% sample rate value changes log level to DEBUG
         console: expect.any(Console),
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: true,
         persistentLogAttributes: {
           awsAccountId: '123456789',
         },
@@ -145,12 +143,11 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'service_undefined',
         },
       });
@@ -169,10 +166,9 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: false,
           persistentLogAttributes: {},
           powertoolLogData: {
-            sampleRateValue: undefined,
+            sampleRateValue: 0,
             awsRegion: 'eu-west-1',
             environment: '',
             serviceName: 'hello-world',
@@ -198,10 +194,9 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: false,
           persistentLogAttributes: {},
           powertoolLogData: {
-            sampleRateValue: undefined,
+            sampleRateValue: 0,
             awsRegion: 'eu-west-1',
             environment: '',
             serviceName: 'my-backend-service',
@@ -227,10 +222,9 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: false,
           persistentLogAttributes: {},
           powertoolLogData: {
-            sampleRateValue: undefined,
+            sampleRateValue: 0,
             awsRegion: 'eu-west-1',
             environment: '',
             serviceName: 'hello-world',
@@ -256,10 +250,9 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: false,
           persistentLogAttributes: {},
           powertoolLogData: {
-            sampleRateValue: undefined,
+            sampleRateValue: 0,
             awsRegion: 'eu-west-1',
             environment: '',
             serviceName: 'hello-world',
@@ -295,12 +288,11 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -319,7 +311,6 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: true,
           persistentLogAttributes: {},
           powertoolLogData: {
             sampleRateValue: 1,
@@ -374,10 +365,9 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: false,
           persistentLogAttributes: {},
           powertoolLogData: {
-            sampleRateValue: undefined,
+            sampleRateValue: 0,
             awsRegion: 'eu-west-1',
             environment: 'dev',
             serviceName: 'my-backend-service',
@@ -410,7 +400,6 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: false,
           persistentLogAttributes: {
             aws_account_id: '123456789012',
             aws_region: 'eu-west-1',
@@ -420,7 +409,7 @@ describe('Class: Logger', () => {
             },
           },
           powertoolLogData: {
-            sampleRateValue: undefined,
+            sampleRateValue: 0,
             awsRegion: 'eu-west-1',
             environment: '',
             serviceName: 'hello-world',
@@ -446,10 +435,9 @@ describe('Class: Logger', () => {
       expect(logger).toBeInstanceOf(Logger);
       expect(logger).toEqual(
         expect.objectContaining({
-          logsSampled: false,
           persistentLogAttributes: {},
           powertoolLogData: {
-            sampleRateValue: undefined,
+            sampleRateValue: 0,
             awsRegion: 'eu-west-1',
             environment: 'dev',
             serviceName: 'hello-world',
@@ -515,6 +503,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: methodOfLogger.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -543,6 +532,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: methodOfLogger.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -571,6 +561,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: methodOfLogger.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -599,6 +590,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: methodOfLogger.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -641,6 +633,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: 'foo',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -649,7 +642,7 @@ describe('Class: Logger', () => {
         });
       });
 
-      describe('Feature: sample rate', () => {
+      describe('Feature: sampling debug logs', () => {
         test('when the log level is higher and the current Lambda invocation IS NOT sampled for logging, it DOES NOT print to stdout', () => {
           // Prepare
           const logger = new Logger({
@@ -666,10 +659,12 @@ describe('Class: Logger', () => {
           }
 
           // Assess
+          expect(logger.level).toBe(28);
+          expect(logger.getLevelName()).toBe('SILENT');
           expect(consoleSpy).toBeCalledTimes(0);
         });
 
-        test('when the log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout', () => {
+        test('when the log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout and changes log level to DEBUG', () => {
           // Prepare
           const logger = new Logger({
             logLevel: 'SILENT',
@@ -685,6 +680,8 @@ describe('Class: Logger', () => {
           }
 
           // Assess
+          expect(logger.level).toBe(8);
+          expect(logger.getLevelName()).toBe('DEBUG');
           expect(consoleSpy).toBeCalledTimes(1);
           expect(consoleSpy).toHaveBeenNthCalledWith(
             1,
@@ -724,6 +721,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: method.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -764,6 +762,7 @@ describe('Class: Logger', () => {
                 function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
                 level: method.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -848,6 +847,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'A log item without extra parameters',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -859,6 +859,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an object as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -871,6 +872,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and objects as other parameters',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -883,6 +885,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'A log item with an object as first parameters',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -895,6 +898,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an error as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -914,6 +918,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an error with custom key as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -931,6 +936,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and a string as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -943,6 +949,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an inline object as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -955,6 +962,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an arbitrary object as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1005,6 +1013,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'foo',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1037,6 +1046,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'foo',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1066,6 +1076,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'foo',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
             })
@@ -1107,6 +1118,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'A log with a circular reference',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1152,6 +1164,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: message,
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1184,6 +1197,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: message,
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1217,7 +1231,6 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
@@ -1231,7 +1244,7 @@ describe('Class: Logger', () => {
               'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
             memoryLimitInMB: 128,
           },
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -1494,6 +1507,7 @@ describe('Class: Logger', () => {
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'This is an INFO log with some context',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1531,6 +1545,7 @@ describe('Class: Logger', () => {
         JSON.stringify({
           level: 'INFO',
           message: 'An INFO log without context!',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1547,6 +1562,7 @@ describe('Class: Logger', () => {
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'This is an INFO log with some context',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1588,6 +1604,7 @@ describe('Class: Logger', () => {
         JSON.stringify({
           level: 'INFO',
           message: 'An INFO log without context!',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1604,6 +1621,7 @@ describe('Class: Logger', () => {
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'This is an INFO log with some context',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1739,6 +1757,7 @@ describe('Class: Logger', () => {
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1788,6 +1807,7 @@ describe('Class: Logger', () => {
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1848,6 +1868,7 @@ describe('Class: Logger', () => {
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'memberVariable:someValue',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1960,29 +1981,6 @@ describe('Class: Logger', () => {
     });
   });
 
-  describe('Method: refreshSampleRateCalculation', () => {
-    test('it recalculates whether the current Lambda invocation logs will be printed or not', () => {
-      // Prepare
-      const logger = new Logger({
-        logLevel: 'ERROR',
-        sampleRateValue: 0.1, // 10% probability
-      });
-      let logsSampledCount = 0;
-
-      // Act
-      for (let i = 0; i < 1000; i++) {
-        logger.refreshSampleRateCalculation();
-        if (logger.getLogsSampled() === true) {
-          logsSampledCount++;
-        }
-      }
-
-      // Assess
-      expect(logsSampledCount > 50).toBe(true);
-      expect(logsSampledCount < 150).toBe(true);
-    });
-  });
-
   describe('Method: createChild', () => {
     test('child and grandchild loggers should have all the options of its ancestor', () => {
       // Prepare
@@ -2018,12 +2016,11 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'parent-service-name',
         },
       });
@@ -2041,7 +2038,6 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: true,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
@@ -2064,7 +2060,6 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: true,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
@@ -2130,12 +2125,11 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -2153,7 +2147,6 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {
           extra:
             'This is an attribute that will be logged only by the child logger',
@@ -2161,7 +2154,7 @@ describe('Class: Logger', () => {
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -2179,7 +2172,6 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: true,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
@@ -2202,12 +2194,11 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -2246,12 +2237,11 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -2269,7 +2259,6 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {
           aws_account_id: '123456789012',
           aws_region: 'eu-west-1',
@@ -2281,7 +2270,7 @@ describe('Class: Logger', () => {
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -2299,7 +2288,6 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {
           aws_account_id: '123456789012',
           aws_region: 'eu-west-1',
@@ -2312,7 +2300,7 @@ describe('Class: Logger', () => {
         powertoolLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -2340,7 +2328,6 @@ describe('Class: Logger', () => {
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
         powertoolLogData: {
           awsRegion: 'eu-west-1',
@@ -2354,7 +2341,7 @@ describe('Class: Logger', () => {
               'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
             memoryLimitInMB: 128,
           },
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -2410,7 +2397,7 @@ describe('Class: Logger', () => {
       const options: ConstructorOptions = {
         logLevel: 'ERROR',
         serviceName: 'test-service-name',
-        sampleRateValue: 0.77,
+        sampleRateValue: 1,
         logFormatter: new MyCustomLogFormatter(),
         customConfigService: new MyCustomEnvironmentVariablesService(),
         persistentLogAttributes: {
@@ -2428,7 +2415,6 @@ describe('Class: Logger', () => {
       expect(childLogger).toEqual({
         ...parentLogger,
         console: expect.any(Console),
-        logsSampled: expect.any(Boolean),
       });
 
       expect(childLogger).toEqual(
@@ -2480,6 +2466,7 @@ describe('Class: Logger', () => {
         JSON.stringify({
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -2512,6 +2499,7 @@ describe('Class: Logger', () => {
           {
             level: 'INFO',
             message: 'Message with pretty identation',
+            sampling_rate: 0,
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -2539,6 +2527,7 @@ describe('Class: Logger', () => {
         JSON.stringify({
           level: 'INFO',
           message: 'Message without pretty identation',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -2609,6 +2598,354 @@ describe('Class: Logger', () => {
       expect(warningSpy).toHaveBeenCalledWith(
         'Current log level (WARN) does not match AWS Lambda Advanced Logging Controls minimum log level (ERROR). This can lead to data loss, consider adjusting them.'
       );
+    });
+  });
+
+  describe('Feature: Sampling debug logs', () => {
+    test('when sample rate is set in constructor, it DOES change log level to DEBUG', () => {
+      // Prepare & Act
+      const logger: Logger = new Logger({
+        logLevel: 'ERROR',
+        sampleRateValue: 1,
+      });
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+    });
+
+    test('when sample rate is set in custom config service, it DOES change log level to DEBUG', () => {
+      // Prepare & Act
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 1;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+
+      const loggerOptions: ConstructorOptions = {
+        logLevel: 'ERROR',
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+
+      const logger: Logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+    });
+
+    test('when sample rate is set in environmental variable, it DOES change log level to DEBUG', () => {
+      // Prepare & Act
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
+
+      const logger: Logger = new Logger({
+        logLevel: 'ERROR',
+      });
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+    });
+
+    test('when sample rate is disabled it DOES NOT changes log level to DEBUG', () => {
+      // Prepare & Act
+      const logger: Logger = new Logger({
+        logLevel: 'ERROR',
+        sampleRateValue: 0,
+      });
+
+      // Assess
+      expect(logger.level).toBe(20);
+      expect(logger.getLevelName()).toBe('ERROR');
+    });
+
+    test('when sample rate is set in constructor, custom config, and environmental variable, it should prioritize constructor value', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '0.5';
+
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 0.75;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        sampleRateValue: 1,
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+      const logger: Logger = new Logger(loggerOptions);
+
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'info')
+        .mockImplementation();
+
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate is set in custom config and environmental variable, it should prioritize custom config value', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '0.75';
+
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 1;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+      const logger: Logger = new Logger(loggerOptions);
+
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'info')
+        .mockImplementation();
+
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate is set in environmental variable, it should use POWERTOOLS_LOGGER_SAMPLE_RATE value', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
+      const logger: Logger = new Logger();
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'debug')
+        .mockImplementation();
+
+      // Act
+      logger.debug('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'DEBUG',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate is set in custom config service, it should use custom config service value', () => {
+      // Prepare
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 1;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+
+      const logger: Logger = new Logger(loggerOptions);
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'info')
+        .mockImplementation();
+
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate in constructor is out of expected range, it should be ignored', () => {
+      // Prepare
+      const logger: Logger = new Logger({
+        logLevel: 'INFO',
+        sampleRateValue: 42,
+      });
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'info')
+        .mockImplementation();
+
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate in custom config service is out of expected range, it should be ignored', () => {
+      // Prepare
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 42;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        logLevel: 'INFO',
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+
+      const logger: Logger = new Logger(loggerOptions);
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'info')
+        .mockImplementation();
+
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate in environmental variable is out of expected range, it should be ignored', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '42';
+      const logger: Logger = new Logger({
+        logLevel: 'INFO',
+      });
+      const consoleSpy = jest
+        .spyOn(logger['console'], 'info')
+        .mockImplementation();
+
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    describe('Method: refreshSampleRateCalculation', () => {
+      test('when sample rate calculation is refreshed, it DOES NOT overwrite the sample rate value', () => {
+        // Prepare
+        const logger = new Logger({
+          logLevel: 'INFO',
+          sampleRateValue: 1,
+        });
+        const consoleSpy = jest
+          .spyOn(logger['console'], 'info')
+          .mockImplementation();
+
+        // Act
+        logger.refreshSampleRateCalculation();
+        logger.info('foo');
+
+        // Assess
+        expect(consoleSpy).toBeCalledTimes(1);
+        expect(consoleSpy).toHaveBeenNthCalledWith(
+          1,
+          JSON.stringify({
+            level: 'INFO',
+            message: 'foo',
+            sampling_rate: 1,
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          })
+        );
+      });
+
+      test('when sample rate calculation is refreshed, it respects probability sampling and change log level to DEBUG ', () => {
+        // Prepare
+        const logger = new Logger({
+          logLevel: 'ERROR',
+          sampleRateValue: 0.1, // 10% probability
+        });
+
+        // suppress "Setting log level to DEBUG due to sampling rate" log messages
+        jest.spyOn(logger['console'], 'debug').mockImplementation();
+
+        let logLevelChangedToDebug = 0;
+        const numOfIterations = 1000;
+        const minExpected = numOfIterations * 0.05; // Min expected based on 5% probability
+        const maxExpected = numOfIterations * 0.15; // Max expected based on 15% probability
+
+        // Act
+        for (let i = 0; i < numOfIterations; i++) {
+          logger.refreshSampleRateCalculation();
+          if (logger.getLevelName() === 'DEBUG') {
+            logLevelChangedToDebug++;
+            logger.setLogLevel('ERROR');
+          }
+        }
+
+        // Assess
+        expect(logLevelChangedToDebug).toBeGreaterThanOrEqual(minExpected);
+        expect(logLevelChangedToDebug).toBeLessThanOrEqual(maxExpected);
+      });
     });
   });
 });

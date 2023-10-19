@@ -155,8 +155,6 @@ class Logger extends Utility implements ClassThatLogs {
     SILENT: 28,
   };
 
-  private logsSampled = false;
-
   private persistentLogAttributes?: LogAttributes = {};
 
   private powertoolLogData: PowertoolLogData = <PowertoolLogData>{};
@@ -235,6 +233,7 @@ class Logger extends Utility implements ClassThatLogs {
       logLevel: this.getLevelName(),
       customConfigService: this.getCustomConfigService(),
       logFormatter: this.getLogFormatter(),
+      sampleRateValue: this.powertoolLogData.sampleRateValue,
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
     const childLogger = this.createLogger(
@@ -306,15 +305,6 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public getLogEvent(): boolean {
     return this.logEvent;
-  }
-
-  /**
-   * It returns a boolean value, if true all the logs will be printed.
-   *
-   * @returns {boolean}
-   */
-  public getLogsSampled(): boolean {
-    return this.logsSampled;
   }
 
   /**
@@ -456,15 +446,14 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * If the sample rate feature is enabled, the calculation that determines whether the logs
-   * will actually be printed or not for this invocation is done when the Logger class is
-   * initialized.
-   * This method will repeat that calculation (with possible different outcome).
+   * This method allows recalculating the initial sampling decision for changing
+   * the log level to DEBUG based on a sample rate value used during initialization,
+   * potentially yielding a different outcome.
    *
    * @returns {void}
    */
   public refreshSampleRateCalculation(): void {
-    this.setLogsSampled();
+    this.setInitialSampleRate(this.powertoolLogData.sampleRateValue);
   }
 
   /**
@@ -516,19 +505,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It sets the user-provided sample rate value.
-   *
-   * @param {number} [sampleRateValue]
-   * @returns {void}
-   */
-  public setSampleRateValue(sampleRateValue?: number): void {
-    this.powertoolLogData.sampleRateValue =
-      sampleRateValue ||
-      this.getCustomConfigService()?.getSampleRateValue() ||
-      this.getEnvVarsService().getSampleRateValue();
-  }
-
-  /**
    * It checks whether the current Lambda invocation event should be printed in the logs or not.
    *
    * @private
@@ -555,34 +531,29 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * Creates a new Logger instance.
+   * Factory method for instantiating logger instances. Used by `createChild` method.
+   * Important for customization and subclassing. It allows subclasses, like `MyOwnLogger`,
+   * to override its behavior while keeping the main business logic in `createChild` intact.
    *
-   * @param {ConstructorOptions} [options]
-   * @returns {Logger}
+   * @example
+   * ```typescript
+   * // MyOwnLogger subclass
+   * class MyOwnLogger extends Logger {
+   *   protected createLogger(options?: ConstructorOptions): MyOwnLogger {
+   *     return new MyOwnLogger(options);
+   *   }
+   *   // No need to re-implement business logic from `createChild` and keep track on changes
+   *   public createChild(options?: ConstructorOptions): MyOwnLogger {
+   *     return super.createChild(options) as MyOwnLogger;
+   *   }
+   * }
+   * ```
+   *
+   * @param {ConstructorOptions} [options] Logger configuration options.
+   * @returns {Logger} A new logger instance.
    */
   protected createLogger(options?: ConstructorOptions): Logger {
     return new Logger(options);
-  }
-
-  /**
-   * Decides whether the current log item should be printed or not.
-   *
-   * The decision is based on the log level and the sample rate value.
-   * A log item will be printed if:
-   * 1. The log level is greater than or equal to the Logger's log level.
-   * 2. The log level is less than the Logger's log level, but the
-   * current sampling value is set to `true`.
-   *
-   * @param {number} logLevel
-   * @returns {boolean}
-   * @protected
-   */
-  protected shouldPrint(logLevel: number): boolean {
-    if (logLevel >= this.logLevel) {
-      return true;
-    }
-
-    return this.getLogsSampled();
   }
 
   /**
@@ -751,20 +722,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It returns the numeric sample rate value.
-   *
-   * @private
-   * @returns {number}
-   */
-  private getSampleRateValue(): number {
-    if (!this.powertoolLogData.sampleRateValue) {
-      this.setSampleRateValue();
-    }
-
-    return this.powertoolLogData.sampleRateValue as number;
-  }
-
-  /**
    * It returns true and type guards the log level if a given log level is valid.
    *
    * @param {LogLevel} logLevel
@@ -775,6 +732,23 @@ class Logger extends Utility implements ClassThatLogs {
     logLevel?: LogLevel | string
   ): logLevel is Uppercase<LogLevel> {
     return typeof logLevel === 'string' && logLevel in this.logLevelThresholds;
+  }
+
+  /**
+   * It returns true and type guards the sample rate value if a given value is valid.
+   *
+   * @param sampleRateValue
+   * @private
+   * @returns {boolean}
+   */
+  private isValidSampleRate(
+    sampleRateValue?: number
+  ): sampleRateValue is number {
+    return (
+      typeof sampleRateValue === 'number' &&
+      0 <= sampleRateValue &&
+      sampleRateValue <= 1
+    );
   }
 
   /**
@@ -817,13 +791,12 @@ class Logger extends Utility implements ClassThatLogs {
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): void {
-    if (!this.shouldPrint(logLevel)) {
-      return;
+    if (logLevel >= this.logLevel) {
+      this.printLog(
+        logLevel,
+        this.createAndPopulateLogItem(logLevel, input, extraInput)
+      );
     }
-    this.printLog(
-      logLevel,
-      this.createAndPopulateLogItem(logLevel, input, extraInput)
-    );
   }
 
   /**
@@ -906,6 +879,37 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * It sets sample rate value with the following prioprity:
+   * 1. Constructor value
+   * 2. Custom config service value
+   * 3. Environment variable value
+   * 4. Default value (zero)
+   *
+   * @private
+   * @param {number} [sampleRateValue]
+   * @returns {void}
+   */
+  private setInitialSampleRate(sampleRateValue?: number): void {
+    this.powertoolLogData.sampleRateValue = 0;
+    const constructorValue = sampleRateValue;
+    const customConfigValue =
+      this.getCustomConfigService()?.getSampleRateValue();
+    const envVarsValue = this.getEnvVarsService().getSampleRateValue();
+    for (const value of [constructorValue, customConfigValue, envVarsValue]) {
+      if (this.isValidSampleRate(value)) {
+        this.powertoolLogData.sampleRateValue = value;
+
+        if (value && randomInt(0, 100) / 100 <= value) {
+          this.setLogLevel('DEBUG');
+          this.debug('Setting log level to DEBUG due to sampling rate');
+        }
+
+        return;
+      }
+    }
+  }
+
+  /**
    * If the log event feature is enabled via env variable, it sets a property that tracks whether
    * the event passed to the Lambda function handler should be logged or not.
    *
@@ -944,20 +948,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * If the sample rate feature is enabled, it sets a property that tracks whether this Lambda function invocation
-   * will print logs or not.
-   *
-   * @private
-   * @returns {void}
-   */
-  private setLogsSampled(): void {
-    const sampleRateValue = this.getSampleRateValue();
-    this.logsSampled =
-      sampleRateValue !== undefined &&
-      (sampleRateValue === 1 || randomInt(0, 100) / 100 <= sampleRateValue);
-  }
-
-  /**
    * It configures the Logger instance settings that will affect the Logger's behaviour
    * and the content of all logs.
    *
@@ -981,10 +971,9 @@ class Logger extends Utility implements ClassThatLogs {
     this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setInitialLogLevel(logLevel);
-    this.setSampleRateValue(sampleRateValue);
-    this.setLogsSampled();
     this.setLogFormatter(logFormatter);
     this.setPowertoolLogData(serviceName, environment);
+    this.setInitialSampleRate(sampleRateValue);
     this.setLogEvent();
     this.setLogIndentation();
 
@@ -1014,7 +1003,6 @@ class Logger extends Utility implements ClassThatLogs {
           environment ||
           this.getCustomConfigService()?.getCurrentEnvironment() ||
           this.getEnvVarsService().getCurrentEnvironment(),
-        sampleRateValue: this.getSampleRateValue(),
         serviceName:
           serviceName ||
           this.getCustomConfigService()?.getServiceName() ||

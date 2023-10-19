@@ -236,6 +236,7 @@ class Logger extends Utility implements ClassThatLogs {
       logLevel: this.getLevelName(),
       customConfigService: this.getCustomConfigService(),
       logFormatter: this.getLogFormatter(),
+      sampleRateValue: this.powertoolLogData.sampleRateValue,
     };
     const parentsPowertoolsLogData = this.getPowertoolLogData();
     const childLogger = this.createLogger(
@@ -526,8 +527,6 @@ class Logger extends Utility implements ClassThatLogs {
    * Important for customization and subclassing. It allows subclasses, like `MyOwnLogger`,
    * to override its behavior while keeping the main business logic in `createChild` intact.
    *
-   * **Please do not remove this method during refactoring!**
-   *
    * @example
    * ```typescript
    * // MyOwnLogger subclass
@@ -562,17 +561,6 @@ class Logger extends Utility implements ClassThatLogs {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
       merge(this.powertoolLogData, attributes);
     });
-  }
-
-  /**
-   * It dynamically sets log level based on sampling rate value
-   */
-  private configureSampling(): void {
-    const sampleRateValue = this.powertoolLogData.sampleRateValue;
-    if (sampleRateValue && randomInt(0, 100) / 100 <= sampleRateValue) {
-      this.debug('Setting log level to DEBUG due to sampling rate');
-      this.setLogLevel('DEBUG');
-    }
   }
 
   /**
@@ -894,27 +882,23 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   private setInitialSampleRate(sampleRateValue?: number): void {
+    this.powertoolLogData.sampleRateValue = 0;
     const constructorValue = sampleRateValue;
-    if (this.isValidSampleRate(constructorValue)) {
-      this.powertoolLogData.sampleRateValue = constructorValue;
-
-      return;
-    }
     const customConfigValue =
       this.getCustomConfigService()?.getSampleRateValue();
-    if (this.isValidSampleRate(customConfigValue)) {
-      this.powertoolLogData.sampleRateValue = customConfigValue;
-
-      return;
-    }
     const envVarsValue = this.getEnvVarsService().getSampleRateValue();
-    if (this.isValidSampleRate(envVarsValue)) {
-      this.powertoolLogData.sampleRateValue = envVarsValue;
+    for (const value of [constructorValue, customConfigValue, envVarsValue]) {
+      if (this.isValidSampleRate(value)) {
+        this.powertoolLogData.sampleRateValue = value;
 
-      return;
+        if (value && randomInt(0, 100) / 100 <= value) {
+          this.setLogLevel('DEBUG');
+          this.debug('Setting log level to DEBUG due to sampling rate');
+        }
+
+        return;
+      }
     }
-
-    this.powertoolLogData.sampleRateValue = 0;
   }
 
   /**
@@ -979,12 +963,11 @@ class Logger extends Utility implements ClassThatLogs {
     this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setInitialLogLevel(logLevel);
-    this.setInitialSampleRate(sampleRateValue);
     this.setLogFormatter(logFormatter);
     this.setPowertoolLogData(serviceName, environment);
+    this.setInitialSampleRate(sampleRateValue);
     this.setLogEvent();
     this.setLogIndentation();
-    this.configureSampling();
 
     this.addPersistentLogAttributes(persistentLogAttributes);
 

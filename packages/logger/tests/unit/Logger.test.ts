@@ -2867,5 +2867,65 @@ describe('Class: Logger', () => {
         })
       );
     });
+
+    describe('Method: refreshSampleRateCalculation', () => {
+      test('when sample rate calculation is refreshed, it DOES NOT overwrite the sample rate value', () => {
+        // Prepare
+        const logger = new Logger({
+          logLevel: 'INFO',
+          sampleRateValue: 1,
+        });
+        const consoleSpy = jest
+          .spyOn(logger['console'], 'info')
+          .mockImplementation();
+
+        // Act
+        logger.refreshSampleRateCalculation();
+        logger.info('foo');
+
+        // Assess
+        expect(consoleSpy).toBeCalledTimes(1);
+        expect(consoleSpy).toHaveBeenNthCalledWith(
+          1,
+          JSON.stringify({
+            level: 'INFO',
+            message: 'foo',
+            sampling_rate: 1,
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          })
+        );
+      });
+
+      test('when sample rate calculation is refreshed, it respects probability sampling and change log level to DEBUG ', () => {
+        // Prepare
+        const logger = new Logger({
+          logLevel: 'ERROR',
+          sampleRateValue: 0.1, // 10% probability
+        });
+
+        // suppress "Setting log level to DEBUG due to sampling rate" log messages
+        jest.spyOn(logger['console'], 'debug').mockImplementation();
+
+        let logLevelChangedToDebug = 0;
+        const numOfIterations = 1000;
+        const minExpected = numOfIterations * 0.05; // Min expected based on 5% probability
+        const maxExpected = numOfIterations * 0.15; // Max expected based on 15% probability
+
+        // Act
+        for (let i = 0; i < numOfIterations; i++) {
+          logger.refreshSampleRateCalculation();
+          if (logger.getLevelName() === 'DEBUG') {
+            logLevelChangedToDebug++;
+            logger.setLogLevel('ERROR');
+          }
+        }
+
+        // Assess
+        expect(logLevelChangedToDebug).toBeGreaterThanOrEqual(minExpected);
+        expect(logLevelChangedToDebug).toBeLessThanOrEqual(maxExpected);
+      });
+    });
   });
 });

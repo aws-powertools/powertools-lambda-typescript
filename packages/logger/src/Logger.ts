@@ -449,6 +449,17 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * This method allows recalculating the initial sampling decision for changing
+   * the log level to DEBUG based on a sample rate value used during initialization,
+   * potentially yielding a different outcome.
+   *
+   * @returns {void}
+   */
+  public refreshSampleRateCalculation(): void {
+    this.setInitialSampleRate(this.powertoolLogData.sampleRateValue);
+  }
+
+  /**
    * Alias for removePersistentLogAttributes.
    *
    * @param {string[]} keys

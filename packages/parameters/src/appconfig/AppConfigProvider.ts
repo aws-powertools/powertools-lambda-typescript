@@ -198,26 +198,29 @@ class AppConfigProvider extends BaseProvider {
    */
   public constructor(options: AppConfigProviderOptions) {
     super();
-    this.client = new AppConfigDataClient(options.clientConfig || {});
-    if (options?.awsSdkV3Client) {
-      if (isSdkClient(options.awsSdkV3Client)) {
-        this.client = options.awsSdkV3Client;
-      } else {
+
+    const { clientConfig, awsSdkV3Client, application, environment } = options;
+    if (awsSdkV3Client) {
+      if (!isSdkClient(awsSdkV3Client)) {
         console.warn(
           'awsSdkV3Client is not an AWS SDK v3 client, using default client'
         );
+        this.client = new AppConfigDataClient(clientConfig ?? {});
+      } else {
+        this.client = awsSdkV3Client;
       }
+    } else {
+      this.client = new AppConfigDataClient(clientConfig ?? {});
     }
     addUserAgentMiddleware(this.client, 'parameters');
 
-    this.application =
-      options?.application || this.envVarsService.getServiceName();
+    this.application = application || this.envVarsService.getServiceName();
     if (!this.application || this.application.trim().length === 0) {
       throw new Error(
         'Application name is not defined or POWERTOOLS_SERVICE_NAME is not set'
       );
     }
-    this.environment = options.environment;
+    this.environment = environment;
   }
 
   /**

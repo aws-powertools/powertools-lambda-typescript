@@ -159,15 +159,18 @@ class SecretsProvider extends BaseProvider {
   public constructor(config?: SecretsProviderOptions) {
     super();
 
-    this.client = new SecretsManagerClient(config?.clientConfig || {});
-    if (config?.awsSdkV3Client) {
-      if (isSdkClient(config.awsSdkV3Client)) {
-        this.client = config.awsSdkV3Client;
-      } else {
+    const { clientConfig, awsSdkV3Client } = config ?? {};
+    if (awsSdkV3Client) {
+      if (!isSdkClient(awsSdkV3Client)) {
         console.warn(
           'awsSdkV3Client is not an AWS SDK v3 client, using default client'
         );
+        this.client = new SecretsManagerClient(clientConfig ?? {});
+      } else {
+        this.client = awsSdkV3Client;
       }
+    } else {
+      this.client = new SecretsManagerClient(clientConfig ?? {});
     }
     addUserAgentMiddleware(this.client, 'parameters');
   }

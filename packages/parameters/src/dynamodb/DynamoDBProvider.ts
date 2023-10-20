@@ -253,22 +253,32 @@ class DynamoDBProvider extends BaseProvider {
   public constructor(config: DynamoDBProviderOptions) {
     super();
 
-    this.client = new DynamoDBClient(config?.clientConfig || {});
-    if (config?.awsSdkV3Client) {
-      if (isSdkClient(config.awsSdkV3Client)) {
-        this.client = config.awsSdkV3Client;
-      } else {
+    const {
+      clientConfig,
+      awsSdkV3Client,
+      tableName,
+      keyAttr,
+      sortAttr,
+      valueAttr,
+    } = config;
+    if (awsSdkV3Client) {
+      if (!isSdkClient(awsSdkV3Client)) {
         console.warn(
           'awsSdkV3Client is not an AWS SDK v3 client, using default client'
         );
+        this.client = new DynamoDBClient(clientConfig ?? {});
+      } else {
+        this.client = awsSdkV3Client;
       }
+    } else {
+      this.client = new DynamoDBClient(clientConfig ?? {});
     }
     addUserAgentMiddleware(this.client, 'parameters');
 
-    this.tableName = config.tableName;
-    if (config.keyAttr) this.keyAttr = config.keyAttr;
-    if (config.sortAttr) this.sortAttr = config.sortAttr;
-    if (config.valueAttr) this.valueAttr = config.valueAttr;
+    this.tableName = tableName;
+    if (keyAttr) this.keyAttr = keyAttr;
+    if (sortAttr) this.sortAttr = sortAttr;
+    if (valueAttr) this.valueAttr = valueAttr;
   }
 
   /**

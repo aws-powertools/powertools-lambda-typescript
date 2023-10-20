@@ -48,7 +48,7 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@middy/core": "^3.6.2",
+    "@middy/core": "^4.6.5",
     "@types/aws-lambda": "^8.10.121",
     "@types/jest": "^29.5.4",
     "@types/node": "^20.6.1",

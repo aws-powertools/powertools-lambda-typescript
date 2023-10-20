@@ -8,13 +8,11 @@ export type {
 } from './Log.js';
 
 export type {
-  ClassThatLogs,
   LogItemMessage,
   LogItemExtraInput,
-  HandlerMethodDecorator,
   LambdaFunctionContext,
   UnformattedAttributes,
-  PowertoolLogData,
+  PowertoolsLogData,
   ConstructorOptions,
-  HandlerOptions,
+  InjectLambdaContextOptions,
 } from './Logger.js';

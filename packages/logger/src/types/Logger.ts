@@ -1,26 +1,22 @@
+import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 import type {
-  AsyncHandler,
-  LambdaInterface,
-  SyncHandler,
-} from '@aws-lambda-powertools/commons/types';
-import { Handler } from 'aws-lambda';
-import { ConfigServiceInterface } from '../config/ConfigServiceInterface.js';
-import { LogFormatterInterface } from '../formatter/LogFormatterInterface.js';
-import {
   Environment,
   LogAttributes,
   LogAttributesWithMessage,
   LogLevel,
+  LogFormatterInterface,
 } from './Log.js';
+import type { Context } from 'aws-lambda';
 
-type ClassThatLogs = {
+type LogFunction = {
   [key in Exclude<Lowercase<LogLevel>, 'silent'>]: (
     input: LogItemMessage,
     ...extraInput: LogItemExtraInput
   ) => void;
 };
 
-type HandlerOptions = {
+type InjectLambdaContextOptions = {
   logEvent?: boolean;
   clearState?: boolean;
 };
@@ -35,32 +31,28 @@ type ConstructorOptions = {
   environment?: Environment;
 };
 
-type LambdaFunctionContext = {
-  functionName: string;
-  memoryLimitInMB: number;
-  functionVersion: string;
+type LambdaFunctionContext = Pick<
+  Context,
+  | 'functionName'
+  | 'memoryLimitInMB'
+  | 'functionVersion'
+  | 'invokedFunctionArn'
+  | 'awsRequestId'
+> & {
   coldStart: boolean;
-  invokedFunctionArn: string;
-  awsRequestId: string;
 };
 
-type PowertoolLogData = LogAttributes & {
+type PowertoolsLogData = LogAttributes & {
   environment?: Environment;
   serviceName: string;
   sampleRateValue: number;
-  lambdaFunctionContext: LambdaFunctionContext;
+  lambdaContext?: LambdaFunctionContext;
   xRayTraceId?: string;
   awsRegion: string;
 };
 
-type UnformattedAttributes = {
-  environment?: Environment;
+type UnformattedAttributes = PowertoolsLogData & {
   error?: Error;
-  serviceName: string;
-  sampleRateValue?: number;
-  lambdaContext?: LambdaFunctionContext;
-  xRayTraceId?: string;
-  awsRegion: string;
   logLevel: LogLevel;
   timestamp: Date;
   message: string;
@@ -69,27 +61,39 @@ type UnformattedAttributes = {
 type LogItemMessage = string | LogAttributesWithMessage;
 type LogItemExtraInput = [Error | string] | LogAttributes[];
 
-type HandlerMethodDecorator = (
-  target: LambdaInterface,
-  propertyKey: string | symbol,
-  descriptor:
-    | TypedPropertyDescriptor<SyncHandler<Handler>>
-    | TypedPropertyDescriptor<AsyncHandler<Handler>>
-) => void;
-
-export {
-  ClassThatLogs,
-  LogItemMessage,
-  LogItemExtraInput,
-  HandlerMethodDecorator,
-  LambdaFunctionContext,
-  UnformattedAttributes,
-  PowertoolLogData,
-  ConstructorOptions,
-  HandlerOptions,
+type LoggerInterface = {
+  addContext(context: Context): void;
+  addPersistentLogAttributes(attributes?: LogAttributes): void;
+  appendKeys(attributes?: LogAttributes): void;
+  createChild(options?: ConstructorOptions): LoggerInterface;
+  critical(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
+  debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
+  error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
+  getLevelName(): Uppercase<LogLevel>;
+  getLogEvent(): boolean;
+  getPersistentLogAttributes(): LogAttributes;
+  info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
+  injectLambdaContext(
+    options?: InjectLambdaContextOptions
+  ): HandlerMethodDecorator;
+  logEventIfEnabled(event: unknown, overwriteValue?: boolean): void;
+  refreshSampleRateCalculation(): void;
+  removeKeys(keys?: string[]): void;
+  removePersistentLogAttributes(keys?: string[]): void;
+  setLogLevel(logLevel: LogLevel): void;
+  setPersistentLogAttributes(attributes?: LogAttributes): void;
+  shouldLogEvent(overwriteValue?: boolean): boolean;
+  warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
 };
 
-export const enum LogJsonIndent {
-  PRETTY = 4,
-  COMPACT = 0,
-}
+export {
+  LogFunction,
+  LoggerInterface,
+  LogItemMessage,
+  LogItemExtraInput,
+  LambdaFunctionContext,
+  UnformattedAttributes,
+  PowertoolsLogData,
+  ConstructorOptions,
+  InjectLambdaContextOptions,
+};

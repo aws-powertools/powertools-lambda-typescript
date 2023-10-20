@@ -1,13 +1,13 @@
 /**
  * Test Logger formatter
  *
- * @group unit/logger/all
+ * @group unit/logger/logFormatter
  */
 import { AssertionError, strictEqual } from 'node:assert';
 import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
 import { LogItem } from '../../../src/index.js';
-import { UnformattedAttributes } from '../../../src/types/Logger.js';
-import { LogAttributes } from '../../../src/types/Log.js';
+import type { UnformattedAttributes } from '../../../src/types/Logger.js';
+import type { LogAttributes } from '../../../src/types/Log.js';
 
 describe('Class: PowertoolsLogFormatter', () => {
   const mockDate = new Date(1466424490000);
@@ -22,7 +22,7 @@ describe('Class: PowertoolsLogFormatter', () => {
       // Prepare
       const formatter = new PowertoolsLogFormatter();
       const unformattedAttributes: UnformattedAttributes = {
-        sampleRateValue: undefined,
+        sampleRateValue: 0,
         awsRegion: 'eu-west-1',
         environment: '',
         serviceName: 'hello-world',
@@ -48,7 +48,7 @@ describe('Class: PowertoolsLogFormatter', () => {
         function_request_id: undefined,
         level: 'WARN',
         message: 'This is a WARN log',
-        sampling_rate: undefined,
+        sampling_rate: 0,
         service: 'hello-world',
         timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -71,7 +71,7 @@ describe('Class: PowertoolsLogFormatter', () => {
         error: new Error('Something happened!'),
         lambdaContext: {
           functionName: 'my-lambda-function',
-          memoryLimitInMB: 123,
+          memoryLimitInMB: '123',
           functionVersion: '1.23.3',
           coldStart: true,
           invokedFunctionArn:
@@ -91,7 +91,7 @@ describe('Class: PowertoolsLogFormatter', () => {
       expect(value.getAttributes()).toEqual({
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-        function_memory_size: 123,
+        function_memory_size: '123',
         function_name: 'my-lambda-function',
         function_request_id: 'abcdefg123456789',
         level: 'WARN',

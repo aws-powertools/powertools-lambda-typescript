@@ -1,30 +1,31 @@
-import { randomInt } from 'node:crypto';
-import { Console } from 'node:console';
-import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
-import { LogFormatterInterface } from './formatter/LogFormatterInterface.js';
-import { LogItem } from './log/LogItem.js';
+import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
-import { ConfigServiceInterface } from './config/ConfigServiceInterface.js';
+import { Console } from 'node:console';
+import { randomInt } from 'node:crypto';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
-import { LogJsonIndent } from './types/Logger.js';
+import { LogJsonIndent } from './constants.js';
+import { LogItem } from './formatter/LogItem.js';
+import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
+import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
   Environment,
   LogAttributes,
   LogLevel,
   LogLevelThresholds,
+  LogFormatterInterface,
 } from './types/Log.js';
 import type {
-  ClassThatLogs,
-  HandlerMethodDecorator,
-  LambdaFunctionContext,
+  LogFunction,
   ConstructorOptions,
+  InjectLambdaContextOptions,
   LogItemExtraInput,
   LogItemMessage,
-  PowertoolLogData,
-  HandlerOptions,
+  LoggerInterface,
+  PowertoolsLogData,
 } from './types/Logger.js';
+
 /**
  * ## Intro
  * The Logger utility provides an opinionated logger with output structured as JSON.
@@ -111,7 +112,7 @@ import type {
  * @implements {ClassThatLogs}
  * @see https://docs.powertools.aws.dev/lambda-typescript/latest/core/logger/
  */
-class Logger extends Utility implements ClassThatLogs {
+class Logger extends Utility implements LoggerInterface {
   /**
    * Console instance used to print logs.
    *
@@ -155,9 +156,9 @@ class Logger extends Utility implements ClassThatLogs {
     SILENT: 28,
   };
 
-  private persistentLogAttributes?: LogAttributes = {};
+  private persistentLogAttributes: LogAttributes = {};
 
-  private powertoolLogData: PowertoolLogData = <PowertoolLogData>{};
+  private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{};
 
   /**
    * Log level used by the current instance of Logger.
@@ -187,17 +188,15 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public addContext(context: Context): void {
-    const lambdaContext: Partial<LambdaFunctionContext> = {
-      invokedFunctionArn: context.invokedFunctionArn,
-      coldStart: this.getColdStart(),
-      awsRequestId: context.awsRequestId,
-      memoryLimitInMB: Number(context.memoryLimitInMB),
-      functionName: context.functionName,
-      functionVersion: context.functionVersion,
-    };
-
-    this.addToPowertoolLogData({
-      lambdaContext,
+    this.addToPowertoolsLogData({
+      lambdaContext: {
+        invokedFunctionArn: context.invokedFunctionArn,
+        coldStart: this.getColdStart(),
+        awsRequestId: context.awsRequestId,
+        memoryLimitInMB: context.memoryLimitInMB,
+        functionName: context.functionName,
+        functionVersion: context.functionVersion,
+      },
     });
   }
 
@@ -229,23 +228,27 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {Logger}
    */
   public createChild(options: ConstructorOptions = {}): Logger {
-    const parentsOptions = {
-      logLevel: this.getLevelName(),
-      customConfigService: this.getCustomConfigService(),
-      logFormatter: this.getLogFormatter(),
-      sampleRateValue: this.powertoolLogData.sampleRateValue,
-    };
-    const parentsPowertoolsLogData = this.getPowertoolLogData();
     const childLogger = this.createLogger(
-      merge(parentsOptions, parentsPowertoolsLogData, options)
+      // Merge parent logger options with options passed to createChild,
+      // the latter having precedence.
+      merge(
+        {},
+        {
+          logLevel: this.getLevelName(),
+          serviceName: this.powertoolsLogData.serviceName,
+          sampleRateValue: this.powertoolsLogData.sampleRateValue,
+          logFormatter: this.getLogFormatter(),
+          customConfigService: this.getCustomConfigService(),
+          environment: this.powertoolsLogData.environment,
+          persistentLogAttributes: this.persistentLogAttributes,
+        },
+        options
+      )
     );
-
-    const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
-    childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);
-
-    if (parentsPowertoolsLogData.lambdaContext) {
-      childLogger.addContext(parentsPowertoolsLogData.lambdaContext as Context);
-    }
+    if (this.powertoolsLogData.lambdaContext)
+      childLogger.addContext(
+        this.powertoolsLogData.lambdaContext as unknown as Context
+      );
 
     return childLogger;
   }
@@ -315,7 +318,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {LogAttributes}
    */
   public getPersistentLogAttributes(): LogAttributes {
-    return this.persistentLogAttributes as LogAttributes;
+    return this.persistentLogAttributes;
   }
 
   /**
@@ -361,7 +364,9 @@ class Logger extends Utility implements ClassThatLogs {
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */
-  public injectLambdaContext(options?: HandlerOptions): HandlerMethodDecorator {
+  public injectLambdaContext(
+    options?: InjectLambdaContextOptions
+  ): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
@@ -409,7 +414,7 @@ class Logger extends Utility implements ClassThatLogs {
   public static injectLambdaContextAfterOrOnError(
     logger: Logger,
     initialPersistentAttributes: LogAttributes,
-    options?: HandlerOptions
+    options?: InjectLambdaContextOptions
   ): void {
     if (options && options.clearState === true) {
       logger.setPersistentLogAttributes(initialPersistentAttributes);
@@ -420,13 +425,13 @@ class Logger extends Utility implements ClassThatLogs {
     logger: Logger,
     event: unknown,
     context: Context,
-    options?: HandlerOptions
+    options?: InjectLambdaContextOptions
   ): void {
     logger.addContext(context);
 
     let shouldLogEvent = undefined;
-    if (options && options.hasOwnProperty('logEvent')) {
-      shouldLogEvent = options.logEvent;
+    if (Object.hasOwn(options || {}, 'logEvent')) {
+      shouldLogEvent = options!.logEvent;
     }
     logger.logEventIfEnabled(event, shouldLogEvent);
   }
@@ -439,9 +444,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
-    if (!this.shouldLogEvent(overwriteValue)) {
-      return;
-    }
+    if (!this.shouldLogEvent(overwriteValue)) return;
     this.info('Lambda invocation event', { event });
   }
 
@@ -453,7 +456,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public refreshSampleRateCalculation(): void {
-    this.setInitialSampleRate(this.powertoolLogData.sampleRateValue);
+    this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
   }
 
   /**
@@ -473,11 +476,11 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public removePersistentLogAttributes(keys: string[]): void {
-    keys.forEach((key) => {
-      if (this.persistentLogAttributes && key in this.persistentLogAttributes) {
+    for (const key of keys) {
+      if (Object.hasOwn(this.persistentLogAttributes, key)) {
         delete this.persistentLogAttributes[key];
       }
-    });
+    }
   }
 
   /**
@@ -559,16 +562,12 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * It stores information that is printed in all log items.
    *
-   * @param {Partial<PowertoolLogData>} attributesArray
+   * @param {Partial<PowertoolsLogData>} attributes
    * @private
    * @returns {void}
    */
-  private addToPowertoolLogData(
-    ...attributesArray: Array<Partial<PowertoolLogData>>
-  ): void {
-    attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
-      merge(this.powertoolLogData, attributes);
-    });
+  private addToPowertoolsLogData(attributes: Partial<PowertoolsLogData>): void {
+    merge(this.powertoolsLogData, attributes);
   }
 
   /**
@@ -595,7 +594,7 @@ class Logger extends Utility implements ClassThatLogs {
         message: typeof input === 'string' ? input : input.message,
         xRayTraceId: this.envVarsService.getXrayTraceId(),
       },
-      this.getPowertoolLogData()
+      this.getPowertoolsLogData()
     );
 
     let additionalLogAttributes: LogAttributes = {};
@@ -665,15 +664,15 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns - The name of the log level
    */
   private getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
-    const found = Object.entries(this.logLevelThresholds).find(
-      ([key, value]) => {
-        if (value === logLevel) {
-          return key;
-        }
+    let found;
+    for (const [key, value] of Object.entries(this.logLevelThresholds)) {
+      if (value === logLevel) {
+        found = key;
+        break;
       }
-    )!;
+    }
 
-    return found[0] as Uppercase<LogLevel>;
+    return found as Uppercase<LogLevel>;
   }
 
   /**
@@ -683,8 +682,8 @@ class Logger extends Utility implements ClassThatLogs {
    * @private
    * @returns {LogAttributes}
    */
-  private getPowertoolLogData(): PowertoolLogData {
-    return this.powertoolLogData;
+  private getPowertoolsLogData(): PowertoolsLogData {
+    return this.powertoolsLogData;
   }
 
   /**
@@ -765,7 +764,7 @@ class Logger extends Utility implements ClassThatLogs {
       logLevel === 24
         ? 'error'
         : (this.getLogLevelNameFromNumber(logLevel).toLowerCase() as keyof Omit<
-            ClassThatLogs,
+            LogFunction,
             'critical'
           >);
 
@@ -890,14 +889,14 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   private setInitialSampleRate(sampleRateValue?: number): void {
-    this.powertoolLogData.sampleRateValue = 0;
+    this.powertoolsLogData.sampleRateValue = 0;
     const constructorValue = sampleRateValue;
     const customConfigValue =
       this.getCustomConfigService()?.getSampleRateValue();
     const envVarsValue = this.getEnvVarsService().getSampleRateValue();
     for (const value of [constructorValue, customConfigValue, envVarsValue]) {
       if (this.isValidSampleRate(value)) {
-        this.powertoolLogData.sampleRateValue = value;
+        this.powertoolsLogData.sampleRateValue = value;
 
         if (value && randomInt(0, 100) / 100 <= value) {
           this.setLogLevel('DEBUG');
@@ -972,7 +971,7 @@ class Logger extends Utility implements ClassThatLogs {
     this.setCustomConfigService(customConfigService);
     this.setInitialLogLevel(logLevel);
     this.setLogFormatter(logFormatter);
-    this.setPowertoolLogData(serviceName, environment);
+    this.setPowertoolsLogData(serviceName, environment);
     this.setInitialSampleRate(sampleRateValue);
     this.setLogEvent();
     this.setLogIndentation();
@@ -991,26 +990,24 @@ class Logger extends Utility implements ClassThatLogs {
    * @private
    * @returns {void}
    */
-  private setPowertoolLogData(
+  private setPowertoolsLogData(
     serviceName?: string,
     environment?: Environment,
     persistentLogAttributes: LogAttributes = {}
   ): void {
-    this.addToPowertoolLogData(
-      {
-        awsRegion: this.getEnvVarsService().getAwsRegion(),
-        environment:
-          environment ||
-          this.getCustomConfigService()?.getCurrentEnvironment() ||
-          this.getEnvVarsService().getCurrentEnvironment(),
-        serviceName:
-          serviceName ||
-          this.getCustomConfigService()?.getServiceName() ||
-          this.getEnvVarsService().getServiceName() ||
-          this.getDefaultServiceName(),
-      },
-      persistentLogAttributes
-    );
+    this.addToPowertoolsLogData({
+      awsRegion: this.getEnvVarsService().getAwsRegion(),
+      environment:
+        environment ||
+        this.getCustomConfigService()?.getCurrentEnvironment() ||
+        this.getEnvVarsService().getCurrentEnvironment(),
+      serviceName:
+        serviceName ||
+        this.getCustomConfigService()?.getServiceName() ||
+        this.getEnvVarsService().getServiceName() ||
+        this.getDefaultServiceName(),
+    });
+    this.addPersistentLogAttributes(persistentLogAttributes);
   }
 }
 

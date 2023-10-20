@@ -22,7 +22,13 @@ describe('Class: BaseProvider', () => {
   class TestProvider extends BaseProvider {
     public constructor() {
       super({
-        proto: class {},
+        proto: class {
+          #name = 'TestProvider';
+
+          public hello(): string {
+            return this.#name;
+          }
+        },
       });
     }
 

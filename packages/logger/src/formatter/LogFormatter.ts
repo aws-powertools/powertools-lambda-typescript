@@ -65,11 +65,10 @@ abstract class LogFormatter implements LogFormatterInterface {
       location: this.getCodeLocation(error.stack),
       message: error.message,
       stack: error.stack,
-      cause: isErrorWithCause(error)
-        ? error.cause instanceof Error
+      cause:
+        error.cause instanceof Error
           ? this.formatError(error.cause)
-          : error.cause
-        : undefined,
+          : error.cause,
     };
   }
 

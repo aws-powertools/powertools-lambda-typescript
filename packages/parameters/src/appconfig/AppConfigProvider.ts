@@ -10,10 +10,10 @@ import type {
   AppConfigGetOptions,
   AppConfigGetOutput,
 } from '../types/AppConfigProvider';
-import {
+/* import {
   addUserAgentMiddleware,
   isSdkClient,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons'; */
 
 /**
  * ## Intro
@@ -185,7 +185,7 @@ import {
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class AppConfigProvider extends BaseProvider {
-  public client: AppConfigDataClient;
+  public client!: AppConfigDataClient;
   protected configurationTokenStore = new Map<string, string>();
   protected valueStore = new Map<string, Uint8Array>();
   private application?: string;
@@ -197,24 +197,16 @@ class AppConfigProvider extends BaseProvider {
    * @param {AppConfigProviderOptions} options - The configuration object.
    */
   public constructor(options: AppConfigProviderOptions) {
-    super();
+    super({
+      proto: AppConfigDataClient as new (
+        config?: unknown
+      ) => AppConfigDataClient,
+      clientConfig: options.clientConfig,
+      awsSdkV3Client: options.awsSdkV3Client,
+    });
 
-    const { clientConfig, awsSdkV3Client, application, environment } = options;
-    if (awsSdkV3Client) {
-      if (!isSdkClient(awsSdkV3Client)) {
-        console.warn(
-          'awsSdkV3Client is not an AWS SDK v3 client, using default client'
-        );
-        this.client = new AppConfigDataClient(clientConfig ?? {});
-      } else {
-        this.client = awsSdkV3Client;
-      }
-    } else {
-      this.client = new AppConfigDataClient(clientConfig ?? {});
-    }
-    addUserAgentMiddleware(this.client, 'parameters');
-
-    this.application = application || this.envVarsService.getServiceName();
+    const { application, environment } = options;
+    this.application = application ?? this.envVarsService.getServiceName();
     if (!this.application || this.application.trim().length === 0) {
       throw new Error(
         'Application name is not defined or POWERTOOLS_SERVICE_NAME is not set'

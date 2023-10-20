@@ -18,10 +18,10 @@ import type {
 } from '@aws-sdk/client-dynamodb';
 import type { PaginationConfiguration } from '@aws-sdk/types';
 import type { JSONValue } from '@aws-lambda-powertools/commons';
-import {
+/* import {
   addUserAgentMiddleware,
   isSdkClient,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons'; */
 
 /**
  * ## Intro
@@ -239,7 +239,7 @@ import {
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class DynamoDBProvider extends BaseProvider {
-  public client: DynamoDBClient;
+  public client!: DynamoDBClient;
   protected keyAttr = 'id';
   protected sortAttr = 'sk';
   protected tableName: string;
@@ -251,30 +251,13 @@ class DynamoDBProvider extends BaseProvider {
    * @param {DynamoDBProviderOptions} config - The configuration object.
    */
   public constructor(config: DynamoDBProviderOptions) {
-    super();
+    super({
+      awsSdkV3Client: config.awsSdkV3Client,
+      clientConfig: config.clientConfig,
+      proto: DynamoDBClient as new (config?: unknown) => DynamoDBClient,
+    });
 
-    const {
-      clientConfig,
-      awsSdkV3Client,
-      tableName,
-      keyAttr,
-      sortAttr,
-      valueAttr,
-    } = config;
-    if (awsSdkV3Client) {
-      if (!isSdkClient(awsSdkV3Client)) {
-        console.warn(
-          'awsSdkV3Client is not an AWS SDK v3 client, using default client'
-        );
-        this.client = new DynamoDBClient(clientConfig ?? {});
-      } else {
-        this.client = awsSdkV3Client;
-      }
-    } else {
-      this.client = new DynamoDBClient(clientConfig ?? {});
-    }
-    addUserAgentMiddleware(this.client, 'parameters');
-
+    const { tableName, keyAttr, sortAttr, valueAttr } = config;
     this.tableName = tableName;
     if (keyAttr) this.keyAttr = keyAttr;
     if (sortAttr) this.sortAttr = sortAttr;

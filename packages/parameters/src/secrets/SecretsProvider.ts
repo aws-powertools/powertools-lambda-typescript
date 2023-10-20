@@ -9,10 +9,6 @@ import type {
   SecretsGetOptions,
   SecretsGetOutput,
 } from '../types/SecretsProvider';
-import {
-  addUserAgentMiddleware,
-  isSdkClient,
-} from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -149,7 +145,7 @@ import {
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 class SecretsProvider extends BaseProvider {
-  public client: SecretsManagerClient;
+  public client!: SecretsManagerClient;
 
   /**
    * It initializes the SecretsProvider class.
@@ -157,22 +153,12 @@ class SecretsProvider extends BaseProvider {
    * @param {SecretsProviderOptions} config - The configuration object.
    */
   public constructor(config?: SecretsProviderOptions) {
-    super();
-
-    const { clientConfig, awsSdkV3Client } = config ?? {};
-    if (awsSdkV3Client) {
-      if (!isSdkClient(awsSdkV3Client)) {
-        console.warn(
-          'awsSdkV3Client is not an AWS SDK v3 client, using default client'
-        );
-        this.client = new SecretsManagerClient(clientConfig ?? {});
-      } else {
-        this.client = awsSdkV3Client;
-      }
-    } else {
-      this.client = new SecretsManagerClient(clientConfig ?? {});
-    }
-    addUserAgentMiddleware(this.client, 'parameters');
+    super({
+      proto: SecretsManagerClient as new (
+        config?: unknown
+      ) => SecretsManagerClient,
+      ...(config ?? {}),
+    });
   }
 
   /**

@@ -27,10 +27,6 @@ import type {
   SSMGetParametersByNameFromCacheOutputType,
 } from '../types/SSMProvider';
 import type { PaginationConfiguration } from '@aws-sdk/types';
-import {
-  addUserAgentMiddleware,
-  isSdkClient,
-} from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -266,7 +262,7 @@ import {
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class SSMProvider extends BaseProvider {
-  public client: SSMClient;
+  public client!: SSMClient;
   protected errorsKey = '_errors';
   protected maxGetParametersItems = 10;
 
@@ -276,22 +272,10 @@ class SSMProvider extends BaseProvider {
    * @param {SSMProviderOptions} config - The configuration object.
    */
   public constructor(config?: SSMProviderOptions) {
-    super();
-
-    const { clientConfig, awsSdkV3Client } = config ?? {};
-    if (awsSdkV3Client) {
-      if (!isSdkClient(awsSdkV3Client)) {
-        console.warn(
-          'awsSdkV3Client is not an AWS SDK v3 client, using default client'
-        );
-        this.client = new SSMClient(clientConfig ?? {});
-      } else {
-        this.client = awsSdkV3Client;
-      }
-    } else {
-      this.client = new SSMClient(clientConfig ?? {});
-    }
-    addUserAgentMiddleware(this.client, 'parameters');
+    super({
+      proto: SSMClient as new (config?: unknown) => SSMClient,
+      ...(config ?? {}),
+    });
   }
 
   /**

@@ -9,6 +9,10 @@ import { GetParameterError, TransformParameterError } from '../../src/errors';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 
 const encoder = new TextEncoder();
+jest.mock('@aws-lambda-powertools/commons', () => ({
+  ...jest.requireActual('@aws-lambda-powertools/commons'),
+  addUserAgentMiddleware: jest.fn(),
+}));
 
 describe('Class: BaseProvider', () => {
   afterEach(() => {
@@ -16,6 +20,12 @@ describe('Class: BaseProvider', () => {
   });
 
   class TestProvider extends BaseProvider {
+    public constructor() {
+      super({
+        proto: class {},
+      });
+    }
+
     public _add(key: string, value: ExpirableValue): void {
       this.store.set(key, value);
     }
@@ -582,6 +592,12 @@ describe('Class: BaseProvider', () => {
 
 describe('Function: clearCaches', () => {
   class TestProvider extends BaseProvider {
+    public constructor() {
+      super({
+        proto: class {},
+      });
+    }
+
     public _get(_name: string): Promise<string> {
       throw Error('Not implemented.');
     }

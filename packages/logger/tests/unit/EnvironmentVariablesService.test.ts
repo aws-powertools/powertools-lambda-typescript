@@ -1,9 +1,9 @@
 /**
  * Test Logger EnvironmentVariablesService class
  *
- * @group unit/logger/all
+ * @group unit/logger/config
  */
-import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: EnvironmentVariablesService', () => {
   const ENVIRONMENT_VARIABLES = process.env;

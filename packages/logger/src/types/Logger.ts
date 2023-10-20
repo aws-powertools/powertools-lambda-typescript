@@ -1,17 +1,12 @@
+import { ConfigServiceInterface } from './ConfigServiceInterface.js';
+import { LogFormatterInterface } from './LogFormatterInterface.js';
 import type {
-  AsyncHandler,
-  LambdaInterface,
-  SyncHandler,
-} from '@aws-lambda-powertools/commons/types';
-import { Handler } from 'aws-lambda';
-import { ConfigServiceInterface } from '../config/ConfigServiceInterface.js';
-import { LogFormatterInterface } from '../formatter/LogFormatterInterface.js';
-import {
   Environment,
   LogAttributes,
   LogAttributesWithMessage,
   LogLevel,
 } from './Log.js';
+import type { Context } from 'aws-lambda';
 
 type ClassThatLogs = {
   [key in Exclude<Lowercase<LogLevel>, 'silent'>]: (
@@ -20,6 +15,7 @@ type ClassThatLogs = {
   ) => void;
 };
 
+// TODO: see if we can rename this
 type HandlerOptions = {
   logEvent?: boolean;
   clearState?: boolean;
@@ -35,32 +31,28 @@ type ConstructorOptions = {
   environment?: Environment;
 };
 
-type LambdaFunctionContext = {
-  functionName: string;
-  memoryLimitInMB: number;
-  functionVersion: string;
+type LambdaFunctionContext = Pick<
+  Context,
+  | 'functionName'
+  | 'memoryLimitInMB'
+  | 'functionVersion'
+  | 'invokedFunctionArn'
+  | 'awsRequestId'
+> & {
   coldStart: boolean;
-  invokedFunctionArn: string;
-  awsRequestId: string;
 };
 
-type PowertoolLogData = LogAttributes & {
+type PowertoolsLogData = LogAttributes & {
   environment?: Environment;
   serviceName: string;
   sampleRateValue: number;
-  lambdaFunctionContext: LambdaFunctionContext;
+  lambdaContext?: LambdaFunctionContext;
   xRayTraceId?: string;
   awsRegion: string;
 };
 
-type UnformattedAttributes = {
-  environment?: Environment;
+type UnformattedAttributes = PowertoolsLogData & {
   error?: Error;
-  serviceName: string;
-  sampleRateValue?: number;
-  lambdaContext?: LambdaFunctionContext;
-  xRayTraceId?: string;
-  awsRegion: string;
   logLevel: LogLevel;
   timestamp: Date;
   message: string;
@@ -69,27 +61,20 @@ type UnformattedAttributes = {
 type LogItemMessage = string | LogAttributesWithMessage;
 type LogItemExtraInput = [Error | string] | LogAttributes[];
 
-type HandlerMethodDecorator = (
-  target: LambdaInterface,
-  propertyKey: string | symbol,
-  descriptor:
-    | TypedPropertyDescriptor<SyncHandler<Handler>>
-    | TypedPropertyDescriptor<AsyncHandler<Handler>>
-) => void;
+type LoggerInterface = ClassThatLogs & {
+  addContext(context: Context): void;
+  addPersistentLogAttributes(attributes?: LogAttributes): void;
+  appendKeys(attributes?: LogAttributes): void;
+};
 
 export {
+  LoggerInterface,
   ClassThatLogs,
   LogItemMessage,
   LogItemExtraInput,
-  HandlerMethodDecorator,
   LambdaFunctionContext,
   UnformattedAttributes,
-  PowertoolLogData,
+  PowertoolsLogData,
   ConstructorOptions,
   HandlerOptions,
 };
-
-export const enum LogJsonIndent {
-  PRETTY = 4,
-  COMPACT = 0,
-}

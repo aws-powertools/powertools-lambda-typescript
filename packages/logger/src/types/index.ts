@@ -11,10 +11,9 @@ export type {
   ClassThatLogs,
   LogItemMessage,
   LogItemExtraInput,
-  HandlerMethodDecorator,
   LambdaFunctionContext,
   UnformattedAttributes,
-  PowertoolLogData,
+  PowertoolsLogData,
   ConstructorOptions,
   HandlerOptions,
 } from './Logger.js';

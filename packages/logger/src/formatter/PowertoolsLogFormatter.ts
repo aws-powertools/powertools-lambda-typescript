@@ -1,12 +1,12 @@
+import type { LogAttributes } from '../types/Log.js';
+import type { UnformattedAttributes } from '../types/Logger.js';
+import type { PowertoolsLog } from '../types/PowertoolsLog.js';
 import { LogFormatter } from './LogFormatter.js';
-import { LogAttributes } from '../types/Log.js';
-import { UnformattedAttributes } from '../types/Logger.js';
-import { PowertoolsLog } from '../types/formats/PowertoolsLog.js';
-import { LogItem } from '../log/LogItem.js';
+import { LogItem } from './LogItem.js';
 
 /**
  * This class is used to transform a set of log key-value pairs
- * in the AWS Lambda Powertools' default structure log format.
+ * in the Powertools for AWS Lambda default structure log format.
  *
  * @class
  * @extends {LogFormatter}
@@ -36,9 +36,7 @@ class PowertoolsLogFormatter extends LogFormatter {
       timestamp: this.formatTimestamp(attributes.timestamp),
       xray_trace_id: attributes.xRayTraceId,
     };
-
     const powertoolsLogItem = new LogItem({ attributes: baseAttributes });
-
     powertoolsLogItem.addAttributes(additionalLogAttributes);
 
     return powertoolsLogItem;

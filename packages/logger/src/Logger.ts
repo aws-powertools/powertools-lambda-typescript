@@ -14,12 +14,12 @@ import type {
   LogAttributes,
   LogLevel,
   LogLevelThresholds,
+  LogFormatterInterface,
 } from './types/Log.js';
-import type { LogFormatterInterface } from './types/LogFormatterInterface.js';
 import type {
-  ClassThatLogs,
+  LogFunction,
   ConstructorOptions,
-  HandlerOptions,
+  InjectLambdaContextOptions,
   LogItemExtraInput,
   LogItemMessage,
   LoggerInterface,
@@ -364,7 +364,9 @@ class Logger extends Utility implements LoggerInterface {
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */
-  public injectLambdaContext(options?: HandlerOptions): HandlerMethodDecorator {
+  public injectLambdaContext(
+    options?: InjectLambdaContextOptions
+  ): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
@@ -412,7 +414,7 @@ class Logger extends Utility implements LoggerInterface {
   public static injectLambdaContextAfterOrOnError(
     logger: Logger,
     initialPersistentAttributes: LogAttributes,
-    options?: HandlerOptions
+    options?: InjectLambdaContextOptions
   ): void {
     if (options && options.clearState === true) {
       logger.setPersistentLogAttributes(initialPersistentAttributes);
@@ -423,7 +425,7 @@ class Logger extends Utility implements LoggerInterface {
     logger: Logger,
     event: unknown,
     context: Context,
-    options?: HandlerOptions
+    options?: InjectLambdaContextOptions
   ): void {
     logger.addContext(context);
 
@@ -762,7 +764,7 @@ class Logger extends Utility implements LoggerInterface {
       logLevel === 24
         ? 'error'
         : (this.getLogLevelNameFromNumber(logLevel).toLowerCase() as keyof Omit<
-            ClassThatLogs,
+            LogFunction,
             'critical'
           >);
 

@@ -1,6 +1,5 @@
-import type { LogAttributes } from '../types/Log.js';
+import type { LogAttributes, PowertoolsLog } from '../types/Log.js';
 import type { UnformattedAttributes } from '../types/Logger.js';
-import type { PowertoolsLog } from '../types/PowertoolsLog.js';
 import { LogFormatter } from './LogFormatter.js';
 import { LogItem } from './LogItem.js';
 

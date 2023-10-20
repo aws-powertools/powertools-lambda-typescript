@@ -11,7 +11,7 @@ import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariabl
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
 import { LogLevelThresholds, LogLevel } from '../../src/types/Log.js';
 import type {
-  ClassThatLogs,
+  LogFunction,
   ConstructorOptions,
 } from '../../src/types/Logger.js';
 import { LogJsonIndent } from '../../src/constants.js';
@@ -21,10 +21,10 @@ const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 const getConsoleMethod = (
   method: string
-): keyof Omit<ClassThatLogs, 'critical'> =>
+): keyof Omit<LogFunction, 'critical'> =>
   method === 'critical'
     ? 'error'
-    : (method.toLowerCase() as keyof Omit<ClassThatLogs, 'critical'>);
+    : (method.toLowerCase() as keyof Omit<LogFunction, 'critical'>);
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
   Console: jest.fn().mockImplementation(() => ({
@@ -503,7 +503,7 @@ describe('Class: Logger', () => {
       errorAction,
       errorPrints
     ) => {
-      const methodOfLogger = method as keyof ClassThatLogs;
+      const methodOfLogger = method as keyof LogFunction;
 
       describe('Feature: log level', () => {
         test(`when the level is DEBUG, it ${debugAction} print to stdout`, () => {

@@ -1,5 +1,4 @@
-import type { LogFormatterInterface } from '../types/LogFormatterInterface.js';
-import type { LogAttributes } from '../types/Log.js';
+import type { LogAttributes, LogFormatterInterface } from '../types/Log.js';
 import type { UnformattedAttributes } from '../types/Logger.js';
 import { LogItem } from './LogItem.js';
 

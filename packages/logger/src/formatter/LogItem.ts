@@ -1,6 +1,5 @@
 import merge from 'lodash.merge';
-import { LogItemInterface } from './LogItemInterface.js';
-import { LogAttributes } from '../types/Log.js';
+import type { LogAttributes, LogItemInterface } from '../types/Log.js';
 
 class LogItem implements LogItemInterface {
   private attributes: LogAttributes = {};
@@ -13,8 +12,8 @@ class LogItem implements LogItemInterface {
     this.addAttributes(params.attributes);
   }
 
-  public addAttributes(attributes: LogAttributes): LogItem {
-    this.attributes = merge(this.attributes, attributes);
+  public addAttributes(attributes: LogAttributes): this {
+    merge(this.attributes, attributes);
 
     return this;
   }

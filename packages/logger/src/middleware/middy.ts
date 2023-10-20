@@ -1,6 +1,6 @@
 import { Logger } from '../Logger.js';
-import { LogAttributes } from '../types/Log.js';
-import { HandlerOptions } from '../types/Logger.js';
+import type { LogAttributes } from '../types/Log.js';
+import type { InjectLambdaContextOptions } from '../types/Logger.js';
 import { LOGGER_KEY } from '@aws-lambda-powertools/commons';
 import type {
   MiddlewareLikeObj,
@@ -33,7 +33,7 @@ import type {
  */
 const injectLambdaContext = (
   target: Logger | Logger[],
-  options?: HandlerOptions
+  options?: InjectLambdaContextOptions
 ): MiddlewareLikeObj => {
   const loggers = target instanceof Array ? target : [target];
   const persistentAttributes: LogAttributes[] = [];

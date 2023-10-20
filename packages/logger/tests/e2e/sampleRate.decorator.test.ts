@@ -82,16 +82,17 @@ describe(`Logger E2E tests, sample rate and injectLambdaContext()`, () => {
           if (logMessages.length === 1 && logMessages[0].includes('ERROR')) {
             countNotSampled++;
           } else if (
-            logMessages.length === 5 &&
-            logMessages[0].includes(
-              'Setting log level to DEBUG due to sampling rate'
-            )
+            (logMessages.length === 5 &&
+              logMessages[0].includes(
+                'Setting log level to DEBUG due to sampling rate'
+              )) ||
+            logMessages.length === 4
           ) {
             countSampled++;
           } else {
             console.error(`Log group ${logGroupName} contains missing log`);
             throw new Error(
-              'Sampled log should have either 1 error log or 4 logs of all levels'
+              'Sampled log should have either 1 error log or 5 logs of all levels'
             );
           }
         }

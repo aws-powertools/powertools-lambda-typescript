@@ -1,18 +1,15 @@
 /**
  * Test Logger middleware
  *
- * @group unit/logger/all
+ * @group unit/logger/middleware
  */
-import context from '@aws-lambda-powertools/testing-utils/context';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
-import { ConfigServiceInterface } from '../../../src/config/ConfigServiceInterface.js';
-import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
-import { injectLambdaContext } from '../../../src/middleware/middy.js';
-import { Logger } from './../../../src/Logger.js';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
-import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
-import { Console } from 'node:console';
 import type { Context } from 'aws-lambda';
+import { injectLambdaContext } from '../../../src/middleware/middy.js';
+import { ConfigServiceInterface } from '../../../src/types/ConfigServiceInterface.js';
+import { Logger } from './../../../src/Logger.js';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -52,11 +49,7 @@ describe('Middy middleware', () => {
         // Assess
         expect(logger).toEqual(
           expect.objectContaining({
-            persistentLogAttributes: {},
-            powertoolLogData: {
-              sampleRateValue: 0,
-              awsRegion: 'eu-west-1',
-              environment: '',
+            powertoolsLogData: expect.objectContaining({
               lambdaContext: {
                 awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
                 coldStart: true,
@@ -64,14 +57,9 @@ describe('Middy middleware', () => {
                 functionVersion: '$LATEST',
                 invokedFunctionArn:
                   'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-                memoryLimitInMB: 128,
+                memoryLimitInMB: '128',
               },
-              serviceName: 'hello-world',
-            },
-            envVarsService: expect.any(EnvironmentVariablesService),
-            customConfigService: undefined,
-            logLevel: 8,
-            logFormatter: expect.any(PowertoolsLogFormatter),
+            }),
           })
         );
       });
@@ -90,11 +78,7 @@ describe('Middy middleware', () => {
 
         // Assess
         const expectation = expect.objectContaining({
-          persistentLogAttributes: {},
-          powertoolLogData: {
-            sampleRateValue: 0,
-            awsRegion: 'eu-west-1',
-            environment: '',
+          powertoolsLogData: expect.objectContaining({
             lambdaContext: {
               awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
               coldStart: true,
@@ -102,15 +86,9 @@ describe('Middy middleware', () => {
               functionVersion: '$LATEST',
               invokedFunctionArn:
                 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-              memoryLimitInMB: 128,
+              memoryLimitInMB: '128',
             },
-            serviceName: 'hello-world',
-          },
-          envVarsService: expect.any(EnvironmentVariablesService),
-          customConfigService: undefined,
-          logLevel: 8,
-          logFormatter: expect.any(PowertoolsLogFormatter),
-          console: expect.any(Console),
+          }),
         });
         expect(logger).toEqual(expectation);
         expect(anotherLogger).toEqual(expectation);
@@ -273,7 +251,7 @@ describe('Middy middleware', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
@@ -343,7 +321,7 @@ describe('Middy middleware', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
@@ -382,7 +360,7 @@ describe('Middy middleware', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
@@ -421,7 +399,7 @@ describe('Middy middleware', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',

@@ -14,46 +14,46 @@ jest.mock('@aws-lambda-powertools/commons', () => ({
   addUserAgentMiddleware: jest.fn(),
 }));
 
+class TestProvider extends BaseProvider {
+  public constructor() {
+    super({
+      proto: class {
+        #name = 'TestProvider';
+
+        public hello(): string {
+          return this.#name;
+        }
+      },
+    });
+  }
+
+  public _add(key: string, value: ExpirableValue): void {
+    this.store.set(key, value);
+  }
+
+  public _get(_name: string): Promise<string> {
+    throw Error('Not implemented.');
+  }
+
+  public _getKeyTest(key: string): ExpirableValue | undefined {
+    return this.store.get(key);
+  }
+
+  public _getMultiple(
+    _path: string
+  ): Promise<Record<string, string | undefined>> {
+    throw Error('Not implemented.');
+  }
+
+  public _getStoreSize(): number {
+    return this.store.size;
+  }
+}
+
 describe('Class: BaseProvider', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
-
-  class TestProvider extends BaseProvider {
-    public constructor() {
-      super({
-        proto: class {
-          #name = 'TestProvider';
-
-          public hello(): string {
-            return this.#name;
-          }
-        },
-      });
-    }
-
-    public _add(key: string, value: ExpirableValue): void {
-      this.store.set(key, value);
-    }
-
-    public _get(_name: string): Promise<string> {
-      throw Error('Not implemented.');
-    }
-
-    public _getKeyTest(key: string): ExpirableValue | undefined {
-      return this.store.get(key);
-    }
-
-    public _getMultiple(
-      _path: string
-    ): Promise<Record<string, string | undefined>> {
-      throw Error('Not implemented.');
-    }
-
-    public _getStoreSize(): number {
-      return this.store.size;
-    }
-  }
 
   describe('Method: addToCache', () => {
     test('when called with a value and maxAge equal to 0, it skips the cache entirely', () => {
@@ -597,24 +597,6 @@ describe('Class: BaseProvider', () => {
 });
 
 describe('Function: clearCaches', () => {
-  class TestProvider extends BaseProvider {
-    public constructor() {
-      super({
-        proto: class {},
-      });
-    }
-
-    public _get(_name: string): Promise<string> {
-      throw Error('Not implemented.');
-    }
-
-    public _getMultiple(
-      _path: string
-    ): Promise<Record<string, string | undefined>> {
-      throw Error('Not implemented.');
-    }
-  }
-
   test('when called, it clears all the caches', () => {
     // Prepare
     const provider1 = new TestProvider();

@@ -12,8 +12,8 @@ class LogItem implements LogItemInterface {
     this.addAttributes(params.attributes);
   }
 
-  public addAttributes(attributes: LogAttributes): LogItem {
-    this.attributes = merge(this.attributes, attributes);
+  public addAttributes(attributes: LogAttributes): this {
+    merge(this.attributes, attributes);
 
     return this;
   }

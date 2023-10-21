@@ -30,14 +30,25 @@ const customUserAgentMiddleware = (feature: string) => {
     };
 };
 
+/**
+ * @internal
+ * Checks if the middleware stack already has the Powertools UA middleware
+ */
+const hasPowertools = (middlewareStack: string[]): boolean => {
+  let found = false;
+  for (const middleware of middlewareStack) {
+    if (middleware.includes('addPowertoolsToUserAgent')) {
+      found = true;
+    }
+  }
+
+  return found;
+};
+
 const addUserAgentMiddleware = (client: unknown, feature: string): void => {
   try {
     if (isSdkClient(client)) {
-      if (
-        client.middlewareStack
-          .identify()
-          .includes('addPowertoolsToUserAgent: POWERTOOLS,USER_AGENT')
-      ) {
+      if (hasPowertools(client.middlewareStack.identify())) {
         return;
       }
       client.middlewareStack.addRelativeTo(
@@ -49,8 +60,8 @@ const addUserAgentMiddleware = (client: unknown, feature: string): void => {
         `The client provided does not match the expected interface`
       );
     }
-  } catch (e) {
-    console.warn('Failed to add user agent middleware', e);
+  } catch (error) {
+    console.warn('Failed to add user agent middleware', error);
   }
 };
 

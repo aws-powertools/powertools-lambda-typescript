@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parameters#readme",
   "license": "MIT-0",
+  "type": "module",
   "exports": {
     ".": {
       "require": {

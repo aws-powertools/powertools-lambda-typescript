@@ -10,7 +10,7 @@ import {
   GetOptions,
   GetMultipleOptions,
 } from '../../src/base/index.js';
-import { DEFAULT_MAX_AGE_SECS } from '../../src/index.js';
+import { DEFAULT_MAX_AGE_SECS } from '../../src/constants.js';
 import type { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
 import {

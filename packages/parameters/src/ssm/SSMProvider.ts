@@ -267,7 +267,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class SSMProvider extends BaseProvider {
-  public client!: SSMClient;
+  public declare client: SSMClient;
   protected errorsKey = '_errors';
   protected maxGetParametersItems = 10;
 

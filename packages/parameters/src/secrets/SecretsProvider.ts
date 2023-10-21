@@ -145,7 +145,7 @@ import type {
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 class SecretsProvider extends BaseProvider {
-  public client!: SecretsManagerClient;
+  public declare client: SecretsManagerClient;
 
   /**
    * It initializes the SecretsProvider class.

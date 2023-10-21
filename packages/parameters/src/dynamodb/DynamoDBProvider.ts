@@ -235,7 +235,7 @@ import type { JSONValue } from '@aws-lambda-powertools/commons/types';
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class DynamoDBProvider extends BaseProvider {
-  public client!: DynamoDBClient;
+  public declare client: DynamoDBClient;
   protected keyAttr = 'id';
   protected sortAttr = 'sk';
   protected tableName: string;

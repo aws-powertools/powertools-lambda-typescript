@@ -181,7 +181,7 @@ import type {
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  */
 class AppConfigProvider extends BaseProvider {
-  public client!: AppConfigDataClient;
+  public declare client: AppConfigDataClient;
   protected configurationTokenStore = new Map<string, string>();
   protected valueStore = new Map<string, Uint8Array>();
   private application?: string;

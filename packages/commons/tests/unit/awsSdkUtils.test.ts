@@ -33,7 +33,9 @@ describe('Helpers: awsSdk', () => {
       // Prepare
       const client = {
         middlewareStack: {
-          identify: () => 'addPowertoolsToUserAgent: POWERTOOLS,USER_AGENT',
+          identify: () => [
+            'addPowertoolsToUserAgent: after getUserAgentMiddleware',
+          ],
           addRelativeTo: jest.fn(),
         },
         send: jest.fn(),

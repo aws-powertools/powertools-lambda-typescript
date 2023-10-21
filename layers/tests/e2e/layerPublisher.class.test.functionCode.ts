@@ -91,9 +91,12 @@ export const handler = async (): Promise<void> => {
     'batch',
   ]) {
     const moduleVersion = await getVersionFromModule(moduleName);
-    if (moduleVersion != expectedVersion) {
+    // TODO: remove this check once v2 becomes GA
+    // if (moduleVersion != expectedVersion) {
+    if (!moduleVersion.startsWith(expectedVersion)) {
       throw new Error(
-        `Package version mismatch (${moduleName}): ${moduleVersion} != ${expectedVersion}`
+        // `Package version mismatch (${moduleName}): ${moduleVersion} != ${expectedVersion}`
+        `Package version mismatch (${moduleName}): ${moduleVersion} does not start with ${expectedVersion}`
       );
     }
   }

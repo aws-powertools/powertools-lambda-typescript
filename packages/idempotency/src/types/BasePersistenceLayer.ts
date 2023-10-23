@@ -15,4 +15,4 @@ interface BasePersistenceLayerInterface {
   getRecord(data: unknown): Promise<IdempotencyRecord>;
 }
 
-export { BasePersistenceLayerOptions, BasePersistenceLayerInterface };
+export type { BasePersistenceLayerOptions, BasePersistenceLayerInterface };

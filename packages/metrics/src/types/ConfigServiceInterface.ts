@@ -10,4 +10,4 @@ interface ConfigServiceInterface {
   isDevMode(): boolean;
 }
 
-export { ConfigServiceInterface };
+export type { ConfigServiceInterface };

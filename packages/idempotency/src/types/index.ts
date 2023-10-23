@@ -1,12 +1,12 @@
-export {
+export type {
   IdempotencyRecordOptions,
   IdempotencyRecordStatusValue,
 } from './IdempotencyRecord.js';
-export {
+export type {
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
 } from './BasePersistenceLayer.js';
-export {
+export type {
   IdempotencyConfigOptions,
   IdempotencyLambdaHandlerOptions,
   IdempotencyHandlerOptions,

@@ -8,4 +8,4 @@ interface ConfigServiceInterface {
   getIdempotencyEnabled(): boolean;
 }
 
-export { ConfigServiceInterface };
+export type { ConfigServiceInterface };

@@ -45,4 +45,4 @@ interface ProviderServiceInterface {
   putMetadata(key: string, value: unknown, namespace?: string): void;
 }
 
-export { ProviderServiceInterface, ContextMissingStrategy };
+export type { ProviderServiceInterface, ContextMissingStrategy };

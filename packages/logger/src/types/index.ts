@@ -6,7 +6,6 @@ export type {
   LogAttributes,
   LogLevel,
 } from './Log.js';
-
 export type {
   LogItemMessage,
   LogItemExtraInput,

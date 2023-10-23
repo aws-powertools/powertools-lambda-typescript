@@ -86,7 +86,7 @@ type LoggerInterface = {
   warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
 };
 
-export {
+export type {
   LogFunction,
   LoggerInterface,
   LogItemMessage,

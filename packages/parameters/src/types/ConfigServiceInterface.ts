@@ -8,4 +8,4 @@ interface ConfigServiceInterface {
   getSSMDecrypt(): string;
 }
 
-export { ConfigServiceInterface };
+export type { ConfigServiceInterface };

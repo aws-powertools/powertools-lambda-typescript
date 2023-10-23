@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "./lib/esm",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "tsBuildInfoFile": ".tsbuildinfo/esm.json"
   },
   "include": [
     "./src/**/*"

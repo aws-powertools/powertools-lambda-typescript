@@ -76,7 +76,7 @@ interface TestStackProps {
   stack?: Stack;
 }
 
-export {
+export type {
   ExtraTestProps,
   TestDynamodbTableProps,
   TestNodejsFunctionProps,

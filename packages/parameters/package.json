@@ -18,13 +18,12 @@
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
-    "build:cjs": "tsc --build --force && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
-    "build:esm": "tsc --project tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "prebuild": "rimraf ./lib",
-    "prepack": "rimraf ./lib/*.tsbuildinfo && node ../../.github/scripts/release_patch_package_json.js ."
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
     "*.{js,ts}": "npm run lint-fix"

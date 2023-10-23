@@ -1,11 +1,16 @@
-export {
+export type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
   CleanupFunction,
 } from './middy.js';
-export { SdkClient, MiddlewareArgsLike } from './awsSdk.js';
-export { JSONPrimitive, JSONValue, JSONObject, JSONArray } from './json.js';
-export {
+export type { SdkClient, MiddlewareArgsLike } from './awsSdk.js';
+export type {
+  JSONPrimitive,
+  JSONValue,
+  JSONObject,
+  JSONArray,
+} from './json.js';
+export type {
   SyncHandler,
   AsyncHandler,
   LambdaInterface,

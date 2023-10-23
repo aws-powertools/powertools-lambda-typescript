@@ -68,7 +68,7 @@ type MetricDefinition = {
   StorageResolution?: MetricResolution;
 };
 
-export {
+export type {
   MetricsOptions,
   Dimensions,
   EmfOutput,

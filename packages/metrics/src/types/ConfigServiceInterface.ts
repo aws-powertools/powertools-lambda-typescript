@@ -4,4 +4,4 @@ interface ConfigServiceInterface {
   getServiceName(): string;
 }
 
-export { ConfigServiceInterface };
+export type { ConfigServiceInterface };

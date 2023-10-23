@@ -1,4 +1,4 @@
-export {
+export type {
   MetricsOptions,
   Dimensions,
   EmfOutput,
@@ -9,5 +9,5 @@ export {
   MetricResolution,
   MetricUnit,
 } from './Metrics.js';
-export { ConfigServiceInterface } from './ConfigServiceInterface.js';
-export { MetricsInterface } from './MetricsInterface.js';
+export type { ConfigServiceInterface } from './ConfigServiceInterface.js';
+export type { MetricsInterface } from './MetricsInterface.js';

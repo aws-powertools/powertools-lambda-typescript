@@ -5,7 +5,7 @@
     "target": "ES2022", // Node.js 16
     "experimentalDecorators": true,
     "module": "commonjs",
-    "moduleResolution": "node", // TODO: experiment with bundler & esnext
+    "moduleResolution": "node",
     "baseUrl": ".",
     // "traceResolution": true, // Enable this to debug module resolution issues
     "declaration": true,

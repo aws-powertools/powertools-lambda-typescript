@@ -2,7 +2,10 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./lib/cjs/",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "tsBuildInfoFile": ".tsbuildinfo/cjs.json"
   },
-  "include": ["./src/**/*"]
+  "include": [
+    "./src/**/*"
+  ]
 }

@@ -134,7 +134,7 @@ interface TracerInterface {
   setSegment(segment: Segment | Subsegment): void;
 }
 
-export {
+export type {
   TracerOptions,
   CaptureLambdaHandlerOptions,
   CaptureMethodOptions,

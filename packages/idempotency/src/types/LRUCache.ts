@@ -5,4 +5,4 @@ type LRUCacheOptions = {
   maxSize: number;
 };
 
-export { LRUCacheOptions };
+export type { LRUCacheOptions };

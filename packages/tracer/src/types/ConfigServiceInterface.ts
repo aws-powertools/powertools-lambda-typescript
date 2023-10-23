@@ -12,4 +12,4 @@ interface ConfigServiceInterface {
   getTracingCaptureError(): string;
 }
 
-export { ConfigServiceInterface };
+export type { ConfigServiceInterface };

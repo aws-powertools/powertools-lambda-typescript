@@ -29,4 +29,4 @@ interface MetricsInterface {
   singleMetric(): Metrics;
 }
 
-export { MetricsInterface };
+export type { MetricsInterface };

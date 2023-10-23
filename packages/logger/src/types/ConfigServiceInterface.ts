@@ -65,4 +65,4 @@ interface ConfigServiceInterface {
   isValueTrue(value: string): boolean;
 }
 
-export { ConfigServiceInterface };
+export type { ConfigServiceInterface };

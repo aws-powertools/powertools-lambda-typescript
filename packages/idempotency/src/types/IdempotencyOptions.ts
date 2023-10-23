@@ -179,7 +179,7 @@ type IdempotencyConfigOptions = {
   lambdaContext?: Context;
 };
 
-export {
+export type {
   AnyFunction,
   IdempotencyConfigOptions,
   ItempotentFunctionOptions,

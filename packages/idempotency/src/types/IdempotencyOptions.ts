@@ -1,6 +1,6 @@
 import type { Context } from 'aws-lambda';
-import { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
-import { IdempotencyConfig } from '../IdempotencyConfig.js';
+import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
+import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**

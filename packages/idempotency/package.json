@@ -60,30 +60,30 @@
     },
     "./types": {
       "import": "./lib/esm/types/index.d.ts",
-      "require": "./lib/esm/types/index.d.ts"
+      "require": "./lib/cjs/types/index.d.ts"
     }
   },
   "typesVersions": {
     "*": {
       "persistence": [
-        "lib/esm/persistence/index.d.ts",
-        "lib/cjs/persistence/index.d.ts"
+        "lib/cjs/persistence/index.d.ts",
+        "lib/esm/persistence/index.d.ts"
       ],
       "dynamodb": [
-        "lib/esm/persistence/DynamoDBPersistenceLayer.d.ts",
-        "lib/cjs/persistence/DynamoDBPersistenceLayer.d.ts"
+        "lib/cjs/persistence/DynamoDBPersistenceLayer.d.ts",
+        "lib/esm/persistence/DynamoDBPersistenceLayer.d.ts"
       ],
       "dynamodb/types": [
-        "lib/esm/types/DynamoDBPersistence.d.ts",
-        "lib/cjs/types/DynamoDBPersistence.d.ts"
+        "lib/cjs/types/DynamoDBPersistence.d.ts",
+        "lib/esm/types/DynamoDBPersistence.d.ts"
       ],
       "middleware": [
-        "lib/esm/middleware/makeHandlerIdempotent.d.ts",
-        "lib/cjs/middleware/makeHandlerIdempotent.d.ts"
+        "lib/cjs/middleware/makeHandlerIdempotent.d.ts",
+        "lib/esm/middleware/makeHandlerIdempotent.d.ts"
       ],
       "types": [
-        "lib/esm/types/index.d.ts",
-        "lib/cjs/types/index.d.ts"
+        "lib/cjs/types/index.d.ts",
+        "lib/esm/types/index.d.ts"
       ]
     }
   },

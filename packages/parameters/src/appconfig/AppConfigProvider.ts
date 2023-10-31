@@ -10,10 +10,6 @@ import type {
   AppConfigGetOptions,
   AppConfigGetOutput,
 } from '../types/AppConfigProvider';
-import {
-  addUserAgentMiddleware,
-  isSdkClient,
-} from '@aws-lambda-powertools/commons';
 
 /**
  * ## Intro
@@ -182,10 +178,10 @@ import {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript AppConfig Data client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/appconfigdataclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class AppConfigProvider extends BaseProvider {
-  public client: AppConfigDataClient;
+  public client!: AppConfigDataClient;
   protected configurationTokenStore = new Map<string, string>();
   protected valueStore = new Map<string, Uint8Array>();
   private application?: string;
@@ -197,27 +193,22 @@ class AppConfigProvider extends BaseProvider {
    * @param {AppConfigProviderOptions} options - The configuration object.
    */
   public constructor(options: AppConfigProviderOptions) {
-    super();
-    this.client = new AppConfigDataClient(options.clientConfig || {});
-    if (options?.awsSdkV3Client) {
-      if (isSdkClient(options.awsSdkV3Client)) {
-        this.client = options.awsSdkV3Client;
-      } else {
-        console.warn(
-          'awsSdkV3Client is not an AWS SDK v3 client, using default client'
-        );
-      }
-    }
-    addUserAgentMiddleware(this.client, 'parameters');
+    super({
+      proto: AppConfigDataClient as new (
+        config?: unknown
+      ) => AppConfigDataClient,
+      clientConfig: options.clientConfig,
+      awsSdkV3Client: options.awsSdkV3Client,
+    });
 
-    this.application =
-      options?.application || this.envVarsService.getServiceName();
+    const { application, environment } = options;
+    this.application = application ?? this.envVarsService.getServiceName();
     if (!this.application || this.application.trim().length === 0) {
       throw new Error(
         'Application name is not defined or POWERTOOLS_SERVICE_NAME is not set'
       );
     }
-    this.environment = options.environment;
+    this.environment = environment;
   }
 
   /**
@@ -249,7 +240,7 @@ class AppConfigProvider extends BaseProvider {
    *
    * @param {string} name - The name of the configuration profile or its ID
    * @param {AppConfigGetOptions} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,

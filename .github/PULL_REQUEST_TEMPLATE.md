@@ -28,7 +28,7 @@ Note: If no issue is present the PR might get blocked and not be reviewed.
 
 ## Checklist
 
-- [ ] [My changes meet the tenets criteria](https://docs.powertools.aws.dev/lambda-typescript/#tenets)
+- [ ] [My changes meet the tenets criteria](https://docs.powertools.aws.dev/lambda/typescript/#tenets)
 - [ ] I have performed a *self-review* of my own code
 - [ ] I have *commented* my code where necessary, particularly in areas that should be flagged with a TODO, or hard-to-understand areas
 - [ ] I have made corresponding changes to the *documentation*

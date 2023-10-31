@@ -9,7 +9,7 @@
     "baseUrl": ".",
     // "traceResolution": true, // Enable this to debug module resolution issues
     "declaration": true,
-    "removeComments": true,
+    "removeComments": false,
     // TODO: experiment with this & move to tslib in v2
     // "importHelpers": true,                            /* Allow importing helper functions from tslib once per project, instead of including them per-file. */
     // "downlevelIteration": true,                       /* Emit more compliant, but verbose and less performant JavaScript for iteration. */

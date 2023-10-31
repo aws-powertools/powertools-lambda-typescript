@@ -1,6 +1,8 @@
 import {
+  addUserAgentMiddleware,
   isNullOrUndefined,
   isRecord,
+  isSdkClient,
   isString,
 } from '@aws-lambda-powertools/commons';
 import { GetOptions } from './GetOptions';
@@ -36,11 +38,33 @@ import type {
  */
 abstract class BaseProvider implements BaseProviderInterface {
   public envVarsService: EnvironmentVariablesService;
+  protected client: unknown;
   protected store: Map<string, ExpirableValue>;
 
-  public constructor() {
+  public constructor({
+    awsSdkV3Client,
+    clientConfig,
+    proto,
+  }: {
+    awsSdkV3Client?: unknown;
+    clientConfig?: unknown;
+    proto: new (config?: unknown) => unknown;
+  }) {
     this.store = new Map();
     this.envVarsService = new EnvironmentVariablesService();
+    if (awsSdkV3Client) {
+      if (!isSdkClient(awsSdkV3Client)) {
+        console.warn(
+          'awsSdkV3Client is not an AWS SDK v3 client, using default client'
+        );
+        this.client = new proto(clientConfig ?? {});
+      } else {
+        this.client = awsSdkV3Client;
+      }
+    } else {
+      this.client = new proto(clientConfig ?? {});
+    }
+    addUserAgentMiddleware(this.client, 'parameters');
   }
 
   /**

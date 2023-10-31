@@ -31,17 +31,13 @@ const DynamoDBStreamRecordSchema = z.object({
   userIdentity: z.optional(UserIdentitySchema),
 });
 
+const DynamoDBStreamSchema = z.object({
+  Records: z.array(DynamoDBStreamRecordSchema),
+});
 
-type DynamoDBStreamRecord = z.infer<typeof DynamoDBStreamRecordSchema>;
-type DynamoDBStreamChangeRecord = z.infer<
-  typeof DynamoDBStreamChangeRecordSchema
->;
-type UserIdentity = z.infer<typeof UserIdentitySchema>;
 
 export {
-  DynamoDBStreamRecord,
-  DynamoDBStreamChangeRecord,
-  UserIdentity,
+  DynamoDBStreamSchema,
   DynamoDBStreamRecordSchema,
   DynamoDBStreamChangeRecordSchema,
   UserIdentitySchema,

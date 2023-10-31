@@ -314,8 +314,8 @@ export {
   getInvocationSubsegment,
   splitSegmentsByName,
   invokeAllTestCases,
-  ParsedDocument,
-  ParsedSegment,
-  ParsedTrace,
-  AssertAnnotationParams,
+  type ParsedDocument,
+  type ParsedSegment,
+  type ParsedTrace,
+  type AssertAnnotationParams,
 };

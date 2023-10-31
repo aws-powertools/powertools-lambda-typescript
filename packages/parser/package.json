@@ -45,7 +45,7 @@
   "publishConfig": {
     "access": "restricted"
   },
-  "devDependencies": {
-    "zod": "^3.22.2"
+  "peerDependencies": {
+    "zod": "^3.22.4"
   }
 }

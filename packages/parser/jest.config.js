@@ -24,5 +24,4 @@ module.exports = {
     },
   },
   coverageReporters: ['json-summary', 'text', 'lcov'],
-  setupFiles: ['<rootDir>/tests/helpers/populateEnvironmentVariables.ts'],
 };

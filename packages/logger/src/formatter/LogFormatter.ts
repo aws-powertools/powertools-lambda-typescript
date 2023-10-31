@@ -1,4 +1,8 @@
-import type { LogAttributes, LogFormatterInterface } from '../types/Log.js';
+import type {
+  LogAttributes,
+  LogFormatterInterface,
+  LogFormatterOptions,
+} from '../types/Log.js';
 import type { UnformattedAttributes } from '../types/Logger.js';
 import { LogItem } from './LogItem.js';
 
@@ -10,6 +14,16 @@ import { LogItem } from './LogItem.js';
  * @implements {LogFormatterInterface}
  */
 abstract class LogFormatter implements LogFormatterInterface {
+  /**
+   * Timezone used for formatting timestamps.
+   * @default 'UTC'
+   */
+  protected timezone: string;
+
+  public constructor(options?: LogFormatterOptions) {
+    this.timezone = options?.timezone ?? 'UTC';
+  }
+
   /**
    * It formats key-value pairs of log attributes.
    *

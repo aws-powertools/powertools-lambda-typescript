@@ -125,6 +125,13 @@ interface LogItemInterface {
   setAttributes(attributes: LogAttributes): void;
 }
 
+type LogFormatterOptions = {
+  /**
+   * Timezone to use when formatting timestamps.
+   */
+  timezone?: string;
+};
+
 /**
  * @interface
  */
@@ -175,5 +182,6 @@ export type {
   LogLevel,
   PowertoolsLog,
   LogItemInterface,
+  LogFormatterOptions,
   LogFormatterInterface,
 };

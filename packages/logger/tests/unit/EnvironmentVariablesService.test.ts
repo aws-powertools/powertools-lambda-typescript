@@ -153,6 +153,31 @@ describe('Class: EnvironmentVariablesService', () => {
     });
   });
 
+  describe('Method: getTimezone', () => {
+    it('returns the value of the TZ environment variable when set', () => {
+      // Prepare
+      process.env.TZ = 'Europe/London';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getTimezone();
+
+      // Assess
+      expect(value).toEqual('Europe/London');
+    });
+
+    it('returns the default UTC value when no TZ is set', () => {
+      // Prepare
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getTimezone();
+
+      // Assess
+      expect(value).toEqual('UTC');
+    });
+  });
+
   describe('Method: isDevMode', () => {
     test('it returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
       // Prepare

@@ -965,8 +965,8 @@ class Logger extends Utility implements LoggerInterface {
       environment,
     } = options;
 
+    // order is important, EnvVarsService() is used by other methods
     this.setEnvVarsService();
-    // order is important, it uses EnvVarsService()
     this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setInitialLogLevel(logLevel);
@@ -975,7 +975,6 @@ class Logger extends Utility implements LoggerInterface {
     this.setInitialSampleRate(sampleRateValue);
     this.setLogEvent();
     this.setLogIndentation();
-
     this.addPersistentLogAttributes(persistentLogAttributes);
 
     return this;

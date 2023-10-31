@@ -3,8 +3,8 @@ import {
   METRICS_KEY,
   LOGGER_KEY,
   IDEMPOTENCY_KEY,
-} from './constants';
-import type { MiddyLikeRequest, CleanupFunction } from '../types/middy';
+} from './constants.js';
+import type { MiddyLikeRequest, CleanupFunction } from '../types/middy.js';
 
 // Typeguard to assert that an object is of Function type
 const isFunction = (obj: unknown): obj is CleanupFunction => {

@@ -1,2 +1,2 @@
-export * from './SecretsProvider';
-export * from './getSecret';
+export { SecretsProvider } from './SecretsProvider.js';
+export { getSecret } from './getSecret.js';

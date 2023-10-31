@@ -11,7 +11,7 @@ type Request<
   TEvent = unknown,
   TResult = unknown,
   TErr = Error,
-  TContext extends Context = Context
+  TContext extends Context = Context,
 > = {
   event: TEvent;
   context: TContext;
@@ -26,14 +26,14 @@ type MiddlewareFn<
   TEvent = unknown,
   TResult = unknown,
   TErr = Error,
-  TContext extends Context = Context
+  TContext extends Context = Context,
 > = (request: Request<TEvent, TResult, TErr, TContext>) => unknown;
 
 type MiddlewareLikeObj<
   TEvent = unknown,
   TResult = unknown,
   TErr = Error,
-  TContext extends Context = Context
+  TContext extends Context = Context,
 > = {
   before?: MiddlewareFn<TEvent, TResult, TErr, TContext>;
   after?: MiddlewareFn<TEvent, TResult, TErr, TContext>;
@@ -57,4 +57,4 @@ type MiddyLikeRequest = {
  */
 type CleanupFunction = (request: MiddyLikeRequest) => Promise<void>;
 
-export { MiddlewareLikeObj, MiddyLikeRequest, CleanupFunction };
+export type { MiddlewareLikeObj, MiddyLikeRequest, CleanupFunction };

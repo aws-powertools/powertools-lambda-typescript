@@ -1,4 +1,4 @@
-import { EventType } from './constants';
+import { EventType } from './constants.js';
 
 /**
  * Base error thrown by the Batch Processing utility

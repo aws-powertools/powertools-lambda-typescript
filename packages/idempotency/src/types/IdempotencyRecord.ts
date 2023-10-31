@@ -1,5 +1,5 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons';
-import { IdempotencyRecordStatus } from '../constants';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { IdempotencyRecordStatus } from '../constants.js';
 
 type IdempotencyRecordStatusValue =
   (typeof IdempotencyRecordStatus)[keyof typeof IdempotencyRecordStatus];
@@ -13,4 +13,4 @@ type IdempotencyRecordOptions = {
   payloadHash?: string;
 };
 
-export { IdempotencyRecordStatusValue, IdempotencyRecordOptions };
+export type { IdempotencyRecordStatusValue, IdempotencyRecordOptions };

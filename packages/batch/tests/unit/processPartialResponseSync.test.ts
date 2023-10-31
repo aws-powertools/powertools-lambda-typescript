@@ -9,31 +9,35 @@ import type {
   KinesisStreamEvent,
   SQSEvent,
 } from 'aws-lambda';
-import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
-import { Custom as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events';
-import { BatchProcessorSync } from '../../src/BatchProcessorSync';
-import { processPartialResponseSync } from '../../src/processPartialResponseSync';
-import { EventType } from '../../src/constants';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import {
+  BatchProcessorSync,
+  processPartialResponseSync,
+  EventType,
+  UnexpectedBatchTypeError,
+} from '../../src/index.js';
 import type {
   BatchProcessingOptions,
   PartialItemFailureResponse,
-} from '../../src/types';
+} from '../../src/types.js';
 import {
   dynamodbRecordFactory,
   kinesisRecordFactory,
   sqsRecordFactory,
-} from '../helpers/factories';
+} from '../helpers/factories.js';
 import {
   dynamodbRecordHandler,
   handlerWithContext,
   kinesisRecordHandler,
   sqsRecordHandler,
-} from '../helpers/handlers';
+} from '../helpers/handlers.js';
+import assert from 'node:assert';
 
 describe('Function: processPartialResponse()', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext;
-  const options: BatchProcessingOptions = { context: dummyContext };
+  const options: BatchProcessingOptions = {
+    context,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -169,7 +173,6 @@ describe('Function: processPartialResponse()', () => {
     test('Process partial response through handler for SQS records with incorrect event type', () => {
       // Prepare
       const processor = new BatchProcessorSync(EventType.SQS);
-      const event = dummyEvent;
 
       const handler = (
         event: SQSEvent,
@@ -178,12 +181,18 @@ describe('Function: processPartialResponse()', () => {
         return processPartialResponseSync(event, sqsRecordHandler, processor);
       };
 
-      // Act & Assess
-      expect(() => handler(event as unknown as SQSEvent, context)).toThrowError(
-        `Unexpected batch type. Possible values are: ${Object.keys(
-          EventType
-        ).join(', ')}`
-      );
+      try {
+        // Act
+        handler({} as unknown as SQSEvent, context);
+      } catch (error) {
+        // Assess
+        assert(error instanceof UnexpectedBatchTypeError);
+        expect(error.message).toBe(
+          `Unexpected batch type. Possible values are: ${Object.keys(
+            EventType
+          ).join(', ')}`
+        );
+      }
     });
 
     test('Process partial response through handler with context provided', () => {

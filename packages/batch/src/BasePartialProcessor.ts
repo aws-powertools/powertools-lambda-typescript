@@ -5,7 +5,7 @@ import type {
   FailureResponse,
   ResultType,
   SuccessResponse,
-} from './types';
+} from './types.js';
 
 /**
  * Abstract class for batch processors.

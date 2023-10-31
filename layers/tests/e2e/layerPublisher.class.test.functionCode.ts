@@ -81,11 +81,22 @@ const getVersionFromModule = async (moduleName: string): Promise<string> => {
 
 export const handler = async (): Promise<void> => {
   // Check that the packages version matches the expected one
-  for (const moduleName of ['commons', 'logger', 'metrics', 'tracer']) {
+  for (const moduleName of [
+    'commons',
+    'logger',
+    'metrics',
+    'tracer',
+    'parameters',
+    'idempotency',
+    'batch',
+  ]) {
     const moduleVersion = await getVersionFromModule(moduleName);
-    if (moduleVersion != expectedVersion) {
+    // TODO: remove this check once v2 becomes GA
+    // if (moduleVersion != expectedVersion) {
+    if (!moduleVersion.startsWith(expectedVersion)) {
       throw new Error(
-        `Package version mismatch (${moduleName}): ${moduleVersion} != ${expectedVersion}`
+        // `Package version mismatch (${moduleName}): ${moduleVersion} != ${expectedVersion}`
+        `Package version mismatch (${moduleName}): ${moduleVersion} does not start with ${expectedVersion}`
       );
     }
   }

@@ -1,22 +1,6 @@
-import { LogFormatterInterface } from '.';
-import { LogAttributes, UnformattedAttributes } from '../types';
-
-/**
- * Typeguard to monkey patch Error to add a cause property.
- *
- * This is needed because the `cause` property was added in Node 16.x.
- * Since we want to be able to format errors in Node 14.x, we need to
- * add this property ourselves. We can remove this once we drop support
- * for Node 14.x.
- *
- * @see 1361
- * @see https://nodejs.org/api/errors.html#errors_error_cause
- */
-const isErrorWithCause = (
-  error: Error
-): error is Error & { cause: unknown } => {
-  return 'cause' in error;
-};
+import type { LogAttributes, LogFormatterInterface } from '../types/Log.js';
+import type { UnformattedAttributes } from '../types/Logger.js';
+import { LogItem } from './LogItem.js';
 
 /**
  * This class defines and implements common methods for the formatting of log attributes.
@@ -30,11 +14,13 @@ abstract class LogFormatter implements LogFormatterInterface {
    * It formats key-value pairs of log attributes.
    *
    * @param {UnformattedAttributes} attributes
-   * @returns {LogAttributes}
+   * @param {LogAttributes} additionalLogAttributes
+   * @returns {LogItem}
    */
   public abstract formatAttributes(
-    attributes: UnformattedAttributes
-  ): LogAttributes;
+    attributes: UnformattedAttributes,
+    additionalLogAttributes: LogAttributes
+  ): LogItem;
 
   /**
    * It formats a given Error parameter.
@@ -48,11 +34,10 @@ abstract class LogFormatter implements LogFormatterInterface {
       location: this.getCodeLocation(error.stack),
       message: error.message,
       stack: error.stack,
-      cause: isErrorWithCause(error)
-        ? error.cause instanceof Error
+      cause:
+        error.cause instanceof Error
           ? this.formatError(error.cause)
-          : error.cause
-        : undefined,
+          : error.cause,
     };
   }
 

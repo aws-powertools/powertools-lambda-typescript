@@ -1,5 +1,6 @@
 import middy from '@middy/core';
-import { captureLambdaHandler, Tracer } from '../../src';
+import { Tracer } from '../../src/index.js';
+import { captureLambdaHandler } from '../../src/middleware/middy.js';
 import type { Context } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import axios from 'axios';

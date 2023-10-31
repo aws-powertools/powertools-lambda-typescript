@@ -1,4 +1,4 @@
-import { BaseProvider } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   DynamoDBClient,
   GetItemCommand,
@@ -11,13 +11,13 @@ import type {
   DynamoDBGetMultipleOptions,
   DynamoDBGetOutput,
   DynamoDBGetMultipleOutput,
-} from '../types/DynamoDBProvider';
+} from '../types/DynamoDBProvider.js';
 import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import type { PaginationConfiguration } from '@aws-sdk/types';
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**
  * ## Intro
@@ -232,10 +232,10 @@ import type { JSONValue } from '@aws-lambda-powertools/commons';
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript DynamoDB client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/dynamodbclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  */
 class DynamoDBProvider extends BaseProvider {
-  public client!: DynamoDBClient;
+  public declare client: DynamoDBClient;
   protected keyAttr = 'id';
   protected sortAttr = 'sk';
   protected tableName: string;
@@ -287,13 +287,13 @@ class DynamoDBProvider extends BaseProvider {
    *
    * @param {string} name - The name of the value to retrieve (i.e. the partition key)
    * @param {DynamoDBGetOptionsInterface} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | DynamoDBGetOptions
-      | undefined = DynamoDBGetOptions
+      | undefined = DynamoDBGetOptions,
   >(
     name: string,
     options?: InferredFromOptionsType & DynamoDBGetOptions
@@ -335,13 +335,13 @@ class DynamoDBProvider extends BaseProvider {
    *
    * @param {string} path - The path of the values to retrieve (i.e. the partition key)
    * @param {DynamoDBGetMultipleOptions} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async getMultiple<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | DynamoDBGetMultipleOptions
-      | undefined = DynamoDBGetMultipleOptions
+      | undefined = DynamoDBGetMultipleOptions,
   >(
     path: string,
     options?: InferredFromOptionsType & DynamoDBGetMultipleOptions

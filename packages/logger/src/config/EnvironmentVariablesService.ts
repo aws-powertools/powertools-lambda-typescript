@@ -1,4 +1,4 @@
-import { ConfigServiceInterface } from './ConfigServiceInterface';
+import { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
 import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
 /**
@@ -100,7 +100,7 @@ class EnvironmentVariablesService
   /**
    * It returns the value of the POWERTOOLS_LOGGER_SAMPLE_RATE environment variable.
    *
-   * @returns {string|undefined}
+   * @returns {number|undefined}
    */
   public getSampleRateValue(): number | undefined {
     const value = this.get(this.sampleRateValueVariable);

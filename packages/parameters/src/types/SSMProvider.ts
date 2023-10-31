@@ -1,4 +1,4 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type {
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
@@ -9,7 +9,7 @@ import type {
   GetMultipleOptionsInterface,
   GetOptionsInterface,
   TransformOptions,
-} from './BaseProvider';
+} from './BaseProvider.js';
 
 /**
  * Interface for SSMProvider with clientConfig property.
@@ -99,7 +99,7 @@ type SSMGetOptions =
  */
 type SSMGetOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? string
@@ -173,7 +173,7 @@ type SSMGetMultipleOptions =
  */
 type SSMGetMultipleOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? Record<string, string>

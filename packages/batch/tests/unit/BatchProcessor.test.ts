@@ -1,29 +1,34 @@
 /**
- * Test AsyncBatchProcessor class
+ * Test BatchProcessor class
  *
- * @group unit/batch/class/asyncBatchProcessor
+ * @group unit/batch/class/batchprocessor
  */
 import type { Context } from 'aws-lambda';
-import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
-import { BatchProcessor } from '../../src/BatchProcessor';
-import { EventType } from '../../src/constants';
-import { BatchProcessingError, FullBatchFailureError } from '../../src/errors';
-import type { BatchProcessingOptions } from '../../src/types';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import {
+  BatchProcessor,
+  EventType,
+  BatchProcessingError,
+  FullBatchFailureError,
+} from '../../src/index.js';
+import type { BatchProcessingOptions } from '../../src/types.js';
 import {
   dynamodbRecordFactory,
   kinesisRecordFactory,
   sqsRecordFactory,
-} from '../helpers/factories';
+} from '../helpers/factories.js';
 import {
   asyncDynamodbRecordHandler,
   asyncKinesisRecordHandler,
   asyncSqsRecordHandler,
   asyncHandlerWithContext,
-} from '../helpers/handlers';
+} from '../helpers/handlers.js';
 
 describe('Class: AsyncBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const options: BatchProcessingOptions = { context: dummyContext };
+  const options: BatchProcessingOptions = {
+    context,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();

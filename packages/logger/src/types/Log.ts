@@ -1,3 +1,4 @@
+import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import type { LogItem } from '../formatter/LogItem.js';
 import type { UnformattedAttributes } from './Logger.js';
 
@@ -127,9 +128,10 @@ interface LogItemInterface {
 
 type LogFormatterOptions = {
   /**
-   * Timezone to use when formatting timestamps.
+   * EnvironmentVariablesService instance.
+   * If set, it gives the LogFormatter access to environment variables.
    */
-  timezone?: string;
+  envVarsService?: EnvironmentVariablesService;
 };
 
 /**

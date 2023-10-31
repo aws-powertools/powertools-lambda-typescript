@@ -930,7 +930,9 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   private setLogFormatter(logFormatter?: LogFormatterInterface): void {
-    this.logFormatter = logFormatter ?? new PowertoolsLogFormatter();
+    this.logFormatter =
+      logFormatter ??
+      new PowertoolsLogFormatter({ envVarsService: this.getEnvVarsService() });
   }
 
   /**

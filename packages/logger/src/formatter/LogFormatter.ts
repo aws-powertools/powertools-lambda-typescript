@@ -1,3 +1,4 @@
+import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import type {
   LogAttributes,
   LogFormatterInterface,
@@ -15,13 +16,13 @@ import { LogItem } from './LogItem.js';
  */
 abstract class LogFormatter implements LogFormatterInterface {
   /**
-   * Timezone used for formatting timestamps.
-   * @default 'UTC'
+   * EnvironmentVariablesService instance.
+   * If set, it allows to access environment variables.
    */
-  protected timezone: string;
+  protected envVarsService?: EnvironmentVariablesService;
 
   public constructor(options?: LogFormatterOptions) {
-    this.timezone = options?.timezone ?? 'UTC';
+    this.envVarsService = options?.envVarsService;
   }
 
   /**

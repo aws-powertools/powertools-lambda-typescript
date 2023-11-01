@@ -97,9 +97,9 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Decorator"
 
-    !!! info
-        Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`. If you want to trace
-        a synchronous handler method you can use the manual instrumentation instead.
+    !!! note
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        If this is not the desired behavior, you can use one of the other patterns instead.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/tracer/decorator.ts"
@@ -157,9 +157,9 @@ You can trace other class methods using the `captureMethod` decorator or any arb
 
 === "Decorator"
 
-    !!! info
-        Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`. If you want to trace
-        a function that is not a class method or that is not asynchronous, you can use the manual instrumentation instead.
+    !!! note
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        If this is not the desired behavior, you can use manual instrumentation instead.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/tracer/captureMethodDecorator.ts"

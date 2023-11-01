@@ -165,7 +165,8 @@ The function this example has two arguments, note that while wrapping it with th
 You can also use the `@idempotent` decorator to make your Lambda handler idempotent, similar to the `makeIdempotent` function wrapper.
 
 !!! info
-    Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`.
+    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+    If this is not the desired behavior, you can use one of the other patterns to make your logic idempotent.
 
 === "index.ts"
 

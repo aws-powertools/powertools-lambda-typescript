@@ -164,6 +164,9 @@ The function this example has two arguments, note that while wrapping it with th
 
 You can also use the `@idempotent` decorator to make your Lambda handler idempotent, similar to the `makeIdempotent` function wrapper.
 
+!!! info
+    Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`.
+
 === "index.ts"
 
     ```typescript hl_lines="17"
@@ -183,8 +186,8 @@ The configuration options for the `@idempotent` decorator are the same as the on
 ### MakeHandlerIdempotent Middy middleware
 
 !!! tip "A note about Middy"
-        Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
-        Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
+    Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
+    Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
 If you are using [Middy](https://middy.js.org){target="_blank"} as your middleware engine, you can use the `makeHandlerIdempotent` middleware to make your Lambda handler idempotent. Similar to the `makeIdempotent` function wrapper, you can quickly make your Lambda handler idempotent by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeHandlerIdempotent` middleware.
 

@@ -212,7 +212,7 @@ You can add default dimensions to your metrics by passing them as parameters in 
 === "with logMetrics decorator"
 
     !!! info
-        Powertools decorators can only be attached to class methods and follow the experimetal decorators proposal implementation found in TypeScript 4.x. As such, you need to enable the `experimentalDecorators` compiler option in your `tsconfig.json` file to use them.
+        Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`.
 
     ```typescript hl_lines="12"
     --8<-- "docs/snippets/metrics/defaultDimensionsDecorator.ts"
@@ -277,8 +277,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
 #### Using the class decorator
 
 !!! info
-    Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you prefer to write your handler as a standard function rather than a Class method, check the [middleware](#using-a-middleware) or [manual](#manually) method sections instead.  
-    See the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
+    Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`.
 
 The `logMetrics` decorator of the metrics utility can be used when your Lambda handler function is implemented as method of a Class.
 

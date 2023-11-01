@@ -119,7 +119,8 @@ This functionality will include the following keys in your structured logs:
 === "Decorator"
 
     !!! info
-        Powertools decorators can only be attached to class methods and follow the experimetal decorators proposal implementation found in TypeScript 4.x. As such, you need to enable the `experimentalDecorators` compiler option in your `tsconfig.json` file to use them.
+        Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`. If you want to inject
+        the context of a synchronous handler you can use the manual approach.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/logger/decorator.ts"

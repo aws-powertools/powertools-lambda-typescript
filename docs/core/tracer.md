@@ -98,7 +98,8 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 === "Decorator"
 
     !!! info
-        Powertools decorators can only be attached to class methods and follow the experimetal decorators proposal implementation found in TypeScript 4.x. As such, you need to enable the `experimentalDecorators` compiler option in your `tsconfig.json` file to use them.
+        Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`. If you want to trace
+        a synchronous handler method you can use the manual instrumentation instead.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/tracer/decorator.ts"
@@ -152,9 +153,13 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
 
 ### Methods
 
-You can trace other Class methods using the `captureMethod` decorator or any arbitrary function using manual instrumentation.
+You can trace other class methods using the `captureMethod` decorator or any arbitrary asynchronous function using manual instrumentation.
 
 === "Decorator"
+
+    !!! info
+        Powertools decorators can only be attached to async class methods and follow the experimetal decorators proposal implementation enabled via the `experimentalDecorators` compiler option in your `tsconfig.json`. If you want to trace
+        a function that is not a class method or that is not asynchronous, you can use the manual instrumentation instead.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/tracer/captureMethodDecorator.ts"
@@ -181,7 +186,7 @@ You can patch any AWS SDK clients by calling the `captureAWSv3Client` method:
 
 === "index.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="6"
     --8<-- "docs/snippets/tracer/captureAWSv3.ts"
     ```
 
@@ -192,7 +197,7 @@ You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
 
 === "index.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="6"
     --8<-- "docs/snippets/tracer/captureAWSAll.ts"
     ```
 
@@ -200,7 +205,7 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
 
 === "index.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="6"
     --8<-- "docs/snippets/tracer/captureAWS.ts"
     ```
 

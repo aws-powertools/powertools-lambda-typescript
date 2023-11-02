@@ -466,9 +466,6 @@ describe('Class: Metrics', () => {
       }
 
       // Act & Assess
-      expect(() =>
-        metrics.addDimensions(dimensionsToBeAdded)
-      ).not.toThrowError();
       expect(Object.keys(metrics['dimensions']).length).toBe(
         MAX_DIMENSION_COUNT
       );

@@ -2,11 +2,14 @@ image: gitpod/workspace-node-18
 tasks:
   - init: |
       # Install Nodejs version specified in .nvmrc
+      bash -c ". ~/nvm/nvm.sh \
+        && nvm install \
+        && nvm alias default"
       nvm install
       nvm use
       # Install AWS SAM CLI
-      wget https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
-      unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
+      wget -q https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
+      unzip -q aws-sam-cli-linux-x86_64.zip -d sam-installation
       sudo ./sam-installation/install
       rm -rf sam-installation aws-sam-cli-linux-*
       # Install repo dependencies
@@ -16,4 +19,3 @@ vscode:
     - dbaeumer.vscode-eslint
     - esbenp.prettier-vscode
     - firsttris.vscode-jest-runner
-    - amazonwebservices.aws-toolkit-vscode

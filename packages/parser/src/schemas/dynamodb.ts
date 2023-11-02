@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 const DynamoDBStreamChangeRecordSchema = z.object({
   ApproximateCreationDateTime: z.optional(z.number()),
@@ -34,7 +34,6 @@ const DynamoDBStreamRecordSchema = z.object({
 const DynamoDBStreamSchema = z.object({
   Records: z.array(DynamoDBStreamRecordSchema),
 });
-
 
 export {
   DynamoDBStreamSchema,

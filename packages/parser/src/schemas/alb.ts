@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 const AlbSchema = z.object({
   httpMethod: z.string(),
@@ -12,8 +12,6 @@ const AlbSchema = z.object({
       targetGroupArn: z.string(),
     }),
   }),
-})
+});
 
-export {
-  AlbSchema,
-}
+export { AlbSchema };

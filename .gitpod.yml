@@ -1,12 +1,9 @@
-image: gitpod/workspace-node-18
 tasks:
   - init: |
       # Install Nodejs version specified in .nvmrc
-      bash -c ". ~/nvm/nvm.sh \
+      bash -c ". ~/.nvm/nvm.sh \
         && nvm install \
         && nvm alias default"
-      nvm install
-      nvm use
       # Install AWS SAM CLI
       wget -q https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
       unzip -q aws-sam-cli-linux-x86_64.zip -d sam-installation

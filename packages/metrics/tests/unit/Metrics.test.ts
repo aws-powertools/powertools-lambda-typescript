@@ -466,9 +466,7 @@ describe('Class: Metrics', () => {
       }
 
       // Act & Assess
-      expect(() =>
-        metrics.addDimensions(dimensionsToBeAdded)
-      ).not.toThrowError();
+      metrics.addDimensions(dimensionsToBeAdded);
       expect(Object.keys(metrics['dimensions']).length).toBe(
         MAX_DIMENSION_COUNT
       );
@@ -1502,6 +1500,53 @@ describe('Class: Metrics', () => {
         [testMetric]: 10,
         env: 'dev',
         foo: 'bar',
+      });
+    });
+
+    test('it should log dimensions once when default dimensions are set and addDimension is called', () => {
+      // Prepare
+      const additionalDimensions = {
+        foo: 'bar',
+        env: 'dev',
+      };
+      const testMetric = 'test-metric';
+      const metrics: Metrics = new Metrics({
+        defaultDimensions: additionalDimensions,
+        namespace: TEST_NAMESPACE,
+      });
+
+      // Act
+      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+      metrics.addDimension('foo', 'baz');
+      const loggedData = metrics.serializeMetrics();
+
+      // Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(
+        3
+      );
+      expect(loggedData.service).toEqual(defaultServiceName);
+      expect(loggedData.foo).toEqual('baz');
+      expect(loggedData.env).toEqual(additionalDimensions.env);
+      expect(loggedData).toEqual({
+        _aws: {
+          CloudWatchMetrics: [
+            {
+              Dimensions: [['service', 'foo', 'env']],
+              Metrics: [
+                {
+                  Name: testMetric,
+                  Unit: MetricUnits.Count,
+                },
+              ],
+              Namespace: TEST_NAMESPACE,
+            },
+          ],
+          Timestamp: mockDate.getTime(),
+        },
+        service: 'service_undefined',
+        [testMetric]: 10,
+        env: 'dev',
+        foo: 'baz',
       });
     });
 

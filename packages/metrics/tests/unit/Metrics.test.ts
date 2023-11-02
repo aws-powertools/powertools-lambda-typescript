@@ -1524,7 +1524,11 @@ describe('Class: Metrics', () => {
       });
 
       // Act
+<<<<<<< HEAD
       metrics.addMetric(testMetric, MetricUnit.Count, 10);
+=======
+      metrics.addMetric(testMetric, MetricUnits.Count, 10);
+>>>>>>> 9b9fc927 (fix(metrics): deduplicate dimensions when serialising (#1780))
       metrics.addDimension('foo', 'baz');
       const loggedData = metrics.serializeMetrics();
 
@@ -1543,7 +1547,11 @@ describe('Class: Metrics', () => {
               Metrics: [
                 {
                   Name: testMetric,
+<<<<<<< HEAD
                   Unit: MetricUnit.Count,
+=======
+                  Unit: MetricUnits.Count,
+>>>>>>> 9b9fc927 (fix(metrics): deduplicate dimensions when serialising (#1780))
                 },
               ],
               Namespace: TEST_NAMESPACE,

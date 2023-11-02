@@ -1,13 +1,10 @@
+image:
+    file: .gitpod.Dockerfile
 tasks:
   - init: |
       # Install Nodejs version specified in .nvmrc
-      nvm install
-      nvm use
-      # Install AWS SAM CLI
-      wget https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
-      unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
-      sudo ./sam-installation/install
-      rm -rf sam-installation aws-sam-cli-linux-*
+      fnm install
+      fnm use
       # Install repo dependencies
       npm run setup-local
 vscode:
@@ -15,4 +12,3 @@ vscode:
     - dbaeumer.vscode-eslint
     - esbenp.prettier-vscode
     - firsttris.vscode-jest-runner
-    - amazonwebservices.aws-toolkit-vscode

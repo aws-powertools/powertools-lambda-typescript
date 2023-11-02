@@ -5,11 +5,13 @@
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "jest": "jest --detectOpenHandles --coverage --verbose",
     "watch": "jest --watch",
-    "build": "tsc --build --force",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "prebuild": "rimraf ./lib",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "author": {
@@ -21,8 +23,29 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/batch#readme",
   "license": "MIT-0",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+         "default": "./lib/esm/index.js"
+      }
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "types": [
+        "./lib/esm/index.d.ts",
+        "./lib/cjs/index.d.ts"
+      ]
+    }
+  },
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/cjs/index.d.ts",
   "files": [
     "lib"
   ],

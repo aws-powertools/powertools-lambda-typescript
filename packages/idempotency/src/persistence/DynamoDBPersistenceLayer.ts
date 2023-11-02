@@ -199,17 +199,21 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
             ':inprogress': IdempotencyRecordStatus.INPROGRESS,
           }),
           ConditionExpression: conditionExpression,
+          ReturnValuesOnConditionCheckFailure: 'ALL_OLD',
         })
       );
     } catch (error) {
       if (error instanceof DynamoDBServiceException) {
-        if (error instanceof ConditionalCheckFailedException) {
-          throw new IdempotencyItemAlreadyExistsError(
-            `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
-            error.Item
-          );
+        if (error.name === 'ConditionalCheckFailedException') {
+          if (error instanceof ConditionalCheckFailedException) {
+            throw new IdempotencyItemAlreadyExistsError(
+              `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
+              error.Item
+            );
+          }
         }
       }
+    }
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {

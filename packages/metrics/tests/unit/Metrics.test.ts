@@ -1519,7 +1519,7 @@ describe('Class: Metrics', () => {
 
       // Act
       metrics.addMetric(testMetric, MetricUnits.Count, 10);
-      metrics.addDimension('foo', 'bar');
+      metrics.addDimension('foo', 'baz');
       const loggedData = metrics.serializeMetrics();
 
       // Assess
@@ -1527,7 +1527,7 @@ describe('Class: Metrics', () => {
         3
       );
       expect(loggedData.service).toEqual(defaultServiceName);
-      expect(loggedData.foo).toEqual(additionalDimensions.foo);
+      expect(loggedData.foo).toEqual('baz');
       expect(loggedData.env).toEqual(additionalDimensions.env);
       expect(loggedData).toEqual({
         _aws: {
@@ -1548,7 +1548,7 @@ describe('Class: Metrics', () => {
         service: 'service_undefined',
         [testMetric]: 10,
         env: 'dev',
-        foo: 'bar',
+        foo: 'baz',
       });
     });
 

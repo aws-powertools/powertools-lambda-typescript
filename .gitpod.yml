@@ -1,3 +1,4 @@
+image: gitpod/workspace-node-18
 tasks:
   - init: |
       # Install Nodejs version specified in .nvmrc

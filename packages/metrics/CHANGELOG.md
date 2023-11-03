@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.1...v1.14.2) (2023-11-03)
+
+### Bug Fixes
+
+- **metrics:** deduplicate dimensions when serialising ([#1780](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1780)) ([8181b48](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8181b481ba96fa7a91959ff2d40bdedfe80b451b))
+
 ## [1.14.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.0...v1.14.1) (2023-10-31)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

@@ -1,4 +1,9 @@
-import type { LogAttributes, LogFormatterInterface } from '../types/Log.js';
+import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import type {
+  LogAttributes,
+  LogFormatterInterface,
+  LogFormatterOptions,
+} from '../types/Log.js';
 import type { UnformattedAttributes } from '../types/Logger.js';
 import { LogItem } from './LogItem.js';
 
@@ -10,6 +15,16 @@ import { LogItem } from './LogItem.js';
  * @implements {LogFormatterInterface}
  */
 abstract class LogFormatter implements LogFormatterInterface {
+  /**
+   * EnvironmentVariablesService instance.
+   * If set, it allows to access environment variables.
+   */
+  protected envVarsService?: EnvironmentVariablesService;
+
+  public constructor(options?: LogFormatterOptions) {
+    this.envVarsService = options?.envVarsService;
+  }
+
   /**
    * It formats key-value pairs of log attributes.
    *

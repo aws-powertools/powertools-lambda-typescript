@@ -29,6 +29,7 @@ class EnvironmentVariablesService
   private logLevelVariable = 'LOG_LEVEL';
   private memoryLimitInMBVariable = 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE';
   private sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
+  private tzVariable = 'TZ';
 
   /**
    * It returns the value of the AWS_REGION environment variable.
@@ -106,6 +107,17 @@ class EnvironmentVariablesService
     const value = this.get(this.sampleRateValueVariable);
 
     return value && value.length > 0 ? Number(value) : undefined;
+  }
+
+  /**
+   * It returns the value of the `TZ` environment variable or `UTC` if it is not set.
+   *
+   * @returns {string}
+   */
+  public getTimezone(): string {
+    const value = this.get(this.tzVariable);
+
+    return value.length > 0 ? value : 'UTC';
   }
 
   /**

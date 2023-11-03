@@ -193,4 +193,29 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(0.01);
     });
   });
+
+  describe('Method: getTimezone', () => {
+    it('returns the value of the TZ environment variable when set', () => {
+      // Prepare
+      process.env.TZ = 'Europe/London';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getTimezone();
+
+      // Assess
+      expect(value).toEqual('Europe/London');
+    });
+
+    it('returns the default UTC value when no TZ is set', () => {
+      // Prepare
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getTimezone();
+
+      // Assess
+      expect(value).toEqual('UTC');
+    });
+  });
 });

@@ -67,13 +67,6 @@ interface ConfigServiceInterface {
   getServiceName(): string;
 
   /**
-   * It returns the value of the POWERTOOLS_DEV environment variable.
-   *
-   * @returns {boolean}
-   */
-  isDevMode(): boolean;
-
-  /**
    * It returns true if the string value represents a boolean true value.
    *
    * @param {string} value

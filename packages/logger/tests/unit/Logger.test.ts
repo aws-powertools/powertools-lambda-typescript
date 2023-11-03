@@ -222,7 +222,7 @@ describe('Class: Logger', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           logLevel: 8,
-          logFormatter: {},
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
     });
@@ -344,7 +344,7 @@ describe('Class: Logger', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           logLevel: 8,
-          logFormatter: {},
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
     });
@@ -398,7 +398,7 @@ describe('Class: Logger', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: configService,
           logLevel: 12,
-          logFormatter: {},
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
     });
@@ -440,7 +440,7 @@ describe('Class: Logger', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           logLevel: 8,
-          logFormatter: {},
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
     });
@@ -468,7 +468,7 @@ describe('Class: Logger', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           logLevel: 8,
-          logFormatter: {},
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
     });

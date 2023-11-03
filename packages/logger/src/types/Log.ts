@@ -1,3 +1,4 @@
+import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import type { LogItem } from '../formatter/LogItem.js';
 import type { UnformattedAttributes } from './Logger.js';
 
@@ -125,6 +126,14 @@ interface LogItemInterface {
   setAttributes(attributes: LogAttributes): void;
 }
 
+type LogFormatterOptions = {
+  /**
+   * EnvironmentVariablesService instance.
+   * If set, it gives the LogFormatter access to environment variables.
+   */
+  envVarsService?: EnvironmentVariablesService;
+};
+
 /**
  * @interface
  */
@@ -175,5 +184,6 @@ export type {
   LogLevel,
   PowertoolsLog,
   LogItemInterface,
+  LogFormatterOptions,
   LogFormatterInterface,
 };

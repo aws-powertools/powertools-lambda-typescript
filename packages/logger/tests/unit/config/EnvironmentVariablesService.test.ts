@@ -137,6 +137,45 @@ describe('Class: EnvironmentVariablesService', () => {
       // Assess
       expect(value).toEqual('ERROR');
     });
+
+    test('it returns the value of the environment variable AWS_LAMBDA_LOG_LEVEL if the LOG_LEVEL one is not set and aliases it as needed', () => {
+      // Prepare
+      process.env.LOG_LEVEL = undefined;
+      process.env.AWS_LAMBDA_LOG_LEVEL = 'FATAL';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogLevel();
+
+      // Assess
+      expect(value).toEqual('CRITICAL');
+    });
+
+    test('it returns the value of the environment variable LOG_LEVEL even if the AWS_LAMBDA_LOG_LEVEL one is not set', () => {
+      // Prepare
+      process.env.LOG_LEVEL = 'WARN';
+      process.env.AWS_LAMBDA_LOG_LEVEL = 'FATAL';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogLevel();
+
+      // Assess
+      expect(value).toEqual('WARN');
+    });
+
+    test('it returns an empty value if neither AWS_LAMBDA_LOG_LEVEL nor LOG_LEVEL are set', () => {
+      // Prepare
+      process.env.LOG_LEVEL = undefined;
+      process.env.AWS_LAMBDA_LOG_LEVEL = undefined;
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogLevel();
+
+      // Assess
+      expect(value).toEqual('');
+    });
   });
 
   describe('Method: getSampleRateValue', () => {

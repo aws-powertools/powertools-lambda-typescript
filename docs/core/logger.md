@@ -394,7 +394,7 @@ The error will be logged with default key name `error`, but you can also pass yo
 
 ### Log levels
 
-The default log level is `INFO` and can be set using the `logLevel` constructor option or by using the `LOG_LEVEL` environment variable.
+The default log level is `INFO` and can be set using the `logLevel` constructor option or by using the `LOG_LEVEL` environment variable. The Logger integrates with the Lambda advanced logging feature, which allows you to set the log level in the function configuration. If you set the log level this way, the Logger will use the value unless you explicitly override it by using the `LOG_LEVEL` environment variable or the `logLevel` constructor option.
 
 Logger supports the following log levels:
 

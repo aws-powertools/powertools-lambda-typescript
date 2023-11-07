@@ -20,6 +20,7 @@ class EnvironmentVariablesService
   implements ConfigServiceInterface
 {
   // Reserved environment variables
+  private awsLogLevelVariable = 'AWS_LAMBDA_LOG_LEVEL';
   private awsRegionVariable = 'AWS_REGION';
   private currentEnvironmentVariable = 'ENVIRONMENT';
   private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
@@ -88,12 +89,23 @@ class EnvironmentVariablesService
   }
 
   /**
-   * It returns the value of the LOG_LEVEL environment variable.
+   * It returns the value of the `LOG_LEVEL` or `AWS_LAMBDA_LOG_LEVEL` environment variable.
+   *
+   * The `AWS_LAMBDA_LOG_LEVEL` environment variable is set by AWS Lambda when configuring
+   * the function's log level. The `LOG_LEVEL` environment variable always takes precedence
+   * over the `AWS_LAMBDA_LOG_LEVEL` environment variable.
    *
    * @returns {string}
    */
   public getLogLevel(): string {
-    return this.get(this.logLevelVariable);
+    const logLevelVariable = this.get(this.logLevelVariable);
+    const awsLogLevelVariable = this.get(this.awsLogLevelVariable);
+
+    return logLevelVariable !== ''
+      ? logLevelVariable
+      : awsLogLevelVariable === 'FATAL'
+      ? 'CRITICAL'
+      : awsLogLevelVariable;
   }
 
   /**

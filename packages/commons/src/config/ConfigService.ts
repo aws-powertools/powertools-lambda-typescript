@@ -36,6 +36,13 @@ abstract class ConfigService {
   public abstract getXrayTraceId(): string | undefined;
 
   /**
+   * It returns true if the `POWERTOOLS_DEV` environment variable is set to truthy value.
+   *
+   * @returns {boolean}
+   */
+  public abstract isDevMode(): boolean;
+
+  /**
    * It returns true if the string value represents a boolean true value.
    *
    * @param {string} value

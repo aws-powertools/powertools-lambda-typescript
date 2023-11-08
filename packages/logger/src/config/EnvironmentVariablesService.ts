@@ -22,7 +22,6 @@ class EnvironmentVariablesService
   // Reserved environment variables
   private awsRegionVariable = 'AWS_REGION';
   private currentEnvironmentVariable = 'ENVIRONMENT';
-  private devModeVariable = 'POWERTOOLS_DEV';
   private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
   private functionVersionVariable = 'AWS_LAMBDA_FUNCTION_VERSION';
   private logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
@@ -106,17 +105,6 @@ class EnvironmentVariablesService
     const value = this.get(this.sampleRateValueVariable);
 
     return value && value.length > 0 ? Number(value) : undefined;
-  }
-
-  /**
-   * It returns true if the POWERTOOLS_DEV environment variable is set to truthy value.
-   *
-   * @returns {boolean}
-   */
-  public isDevMode(): boolean {
-    const value = this.get(this.devModeVariable);
-
-    return this.isValueTrue(value);
   }
 }
 

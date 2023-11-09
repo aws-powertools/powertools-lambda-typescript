@@ -1,15 +1,11 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb';
-//import { IdempotencyRecord } from './persistence';
+import { IdempotencyRecord } from './persistence';
 /**
  * Item attempting to be inserted into persistence store already exists and is not expired
  */
 class IdempotencyItemAlreadyExistsError extends Error {
-  public existingRecord: Record<string, AttributeValue> | undefined;
+  public existingRecord: IdempotencyRecord;
 
-  public constructor(
-    message: string,
-    existingRecord: Record<string, AttributeValue> | undefined
-  ) {
+  public constructor(message: string, existingRecord: IdempotencyRecord) {
     super(message);
     this.existingRecord = existingRecord;
   }

@@ -49,7 +49,7 @@ const S3Record = z.object({
   glacierEventData: z.optional(S3EventRecordGlacierEventData),
 });
 
-const S3EventNotificationEventBridgeSchema = z.object({
+const S3EventNotificationEventBridgeDetailSchema = z.object({
   version: z.string(),
   bucket: z.object({
     name: z.string(),
@@ -58,18 +58,22 @@ const S3EventNotificationEventBridgeSchema = z.object({
     key: z.string(),
     size: z.number().nonnegative().optional(),
     etag: z.string(),
-    'version-id': z.string(),
+    'version-id': z.string().optional(),
     sequencer: z.string().optional(),
   }),
   'request-id': z.string(),
   requester: z.string(),
-  'source-ip-address': z.string().ip(),
+  'source-ip-address': z.string().ip().optional(),
   reason: z.string().optional(),
   'deletion-type': z.string().optional(),
   'restore-expiry-time': z.string().optional(),
   'source-storage-class': z.string().optional(),
   'destination-storage-class': z.string().optional(),
   'destination-access-tier': z.string().optional(),
+});
+
+const S3EventNotificationEventBridgeSchema = z.object({
+  detail: S3EventNotificationEventBridgeDetailSchema,
 });
 
 const S3Schema = z.object({

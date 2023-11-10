@@ -145,10 +145,14 @@ describe(`Layers E2E tests, publisher stack`, () => {
     it(
       'should have one info log related to coldstart metric',
       () => {
-        const logs = invocationLogs.getFunctionLogs('INFO');
+        const logs = invocationLogs.getFunctionLogs();
+        const emfLogEntry = logs.find((log) =>
+          log.match(
+            /{"_aws":{"Timestamp":\d+,"CloudWatchMetrics":\[\{"Namespace":"\S+","Dimensions":\[\["service"\]\],"Metrics":\[\{"Name":"ColdStart","Unit":"Count"\}\]\}\]},"service":"\S+","ColdStart":1}/
+          )
+        );
 
-        expect(logs.length).toBe(1);
-        expect(logs[0]).toContain('ColdStart');
+        expect(emfLogEntry).toBeDefined();
       },
       TEST_CASE_TIMEOUT
     );

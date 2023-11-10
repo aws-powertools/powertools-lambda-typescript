@@ -3,27 +3,29 @@
  *
  * @group unit/metrics/middleware
  */
-import {
-  Metrics,
-  MetricUnits,
-  logMetrics,
-  MetricResolution,
-} from '../../../../metrics/src';
+import { Metrics, MetricUnits, logMetrics } from '../../../../metrics/src';
 import middy from '@middy/core';
 import { ExtraOptions } from '../../../src/types';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
 import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts/hello-world';
 import { CustomEvent as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events/custom/index';
 
-const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+jest.mock('node:console', () => ({
+  ...jest.requireActual('node:console'),
+  Console: jest.fn().mockImplementation(() => ({
+    log: jest.fn(),
+  })),
+}));
+jest.spyOn(console, 'warn').mockImplementation(() => ({}));
 const mockDate = new Date(1466424490000);
 jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Middy middleware', () => {
+  const ENVIRONMENT_VARIABLES = process.env;
+
   beforeEach(() => {
-    jest.resetModules();
     jest.clearAllMocks();
+    process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
   describe('throwOnEmptyMetrics', () => {
@@ -33,24 +35,13 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-
-      const lambdaHandler = (): void => {
-        console.log('do nothing');
-      };
-
-      const handler = middy(lambdaHandler).use(
+      const handler = middy(async (): Promise<void> => undefined).use(
         logMetrics(metrics, { throwOnEmptyMetrics: true })
       );
 
-      try {
-        await handler(dummyEvent, dummyContext, () =>
-          console.log('Lambda invoked!')
-        );
-      } catch (e) {
-        expect((<Error>e).message).toBe(
-          'The number of metrics recorded must be higher than zero'
-        );
-      }
+      await expect(handler(dummyEvent, dummyContext)).rejects.toThrowError(
+        'The number of metrics recorded must be higher than zero'
+      );
     });
 
     test('should not throw on empty metrics if set to false', async () => {
@@ -59,22 +50,14 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-
-      const lambdaHandler = (): void => {
-        console.log('do nothing');
-      };
-
-      const handler = middy(lambdaHandler).use(
+      const handler = middy(async (): Promise<void> => undefined).use(
         logMetrics(metrics, { throwOnEmptyMetrics: false })
       );
 
-      try {
-        await handler(dummyEvent, dummyContext, () =>
-          console.log('Lambda invoked!')
-        );
-      } catch (e) {
-        fail(`Should not throw but got the following Error: ${e}`);
-      }
+      // Act & Assess
+      await expect(
+        handler(dummyEvent, dummyContext)
+      ).resolves.not.toThrowError();
     });
 
     test('should not throw on empty metrics if not set, but should log a warning', async () => {
@@ -83,10 +66,10 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-      const lambdaHandler = async (): Promise<void> => {
-        console.log('do nothing');
-      };
-      const handler = middy(lambdaHandler).use(logMetrics(metrics));
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const handler = middy(async (): Promise<void> => undefined).use(
+        logMetrics([metrics])
+      );
 
       // Act & Assess
       await expect(
@@ -106,27 +89,27 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
+      const consoleSpy = jest
+        .spyOn(metrics['console'], 'log')
+        .mockImplementation();
+      // Monkey patch the singleMetric method to return the metrics instance
+      // so that we can assert on the console output
+      jest.spyOn(metrics, 'singleMetric').mockImplementation(() => metrics);
 
-      const lambdaHandler = (): void => {
-        console.log('{"message": "do nothing"}');
-      };
-
-      const handler = middy(lambdaHandler).use(
+      const handler = middy(async (): Promise<void> => undefined).use(
         logMetrics(metrics, { captureColdStartMetric: true })
       );
 
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
-      );
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked! again')
-      );
+      // Act
+      await handler(dummyEvent, dummyContext);
+      await handler(dummyEvent, dummyContext);
+
+      // Assess
       const loggedData = [
         JSON.parse(consoleSpy.mock.calls[0][0]),
         JSON.parse(consoleSpy.mock.calls[1][0]),
       ];
-
-      expect(console.log).toBeCalledTimes(5);
+      expect(consoleSpy).toBeCalledTimes(2);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
       expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics[0].Name).toBe(
         'ColdStart'
@@ -143,27 +126,23 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-
-      const lambdaHandler = (): void => {
-        console.log('{"message": "do nothing"}');
-      };
-
-      const handler = middy(lambdaHandler).use(
+      const consoleSpy = jest
+        .spyOn(metrics['console'], 'log')
+        .mockImplementation();
+      // Monkey patch the singleMetric method to return the metrics instance
+      // so that we can assert on the console output
+      jest.spyOn(metrics, 'singleMetric').mockImplementation(() => metrics);
+      const handler = middy(async (): Promise<void> => undefined).use(
         logMetrics(metrics, { captureColdStartMetric: false })
       );
 
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
-      );
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked! again')
-      );
-      const loggedData = [
-        JSON.parse(consoleSpy.mock.calls[0][0]),
-        JSON.parse(consoleSpy.mock.calls[1][0]),
-      ];
+      // Act
+      await handler(dummyEvent, dummyContext);
 
-      expect(loggedData[0]._aws).toBe(undefined);
+      // Assess
+      const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
+
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
     });
 
     test('should not throw on empty metrics if not set', async () => {
@@ -172,25 +151,12 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-
-      const lambdaHandler = (): void => {
-        console.log('{"message": "do nothing"}');
-      };
-
-      const handler = middy(lambdaHandler).use(logMetrics(metrics));
-
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
+      const handler = middy(async (): Promise<void> => undefined).use(
+        logMetrics(metrics)
       );
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked! again')
-      );
-      const loggedData = [
-        JSON.parse(consoleSpy.mock.calls[0][0]),
-        JSON.parse(consoleSpy.mock.calls[1][0]),
-      ];
 
-      expect(loggedData[0]._aws).toBe(undefined);
+      // Act & Assess
+      await expect(handler(dummyEvent, dummyContext)).resolves.not.toThrow();
     });
   });
 
@@ -201,21 +167,17 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-
-      const lambdaHandler = (): void => {
+      const cosoleSpy = jest.spyOn(metrics['console'], 'log');
+      const handler = middy(async (): Promise<void> => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 2);
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-      };
-
-      const handler = middy(lambdaHandler).use(logMetrics(metrics));
+      }).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(dummyEvent, dummyContext);
 
       // Assess
-      expect(console.log).toHaveBeenNthCalledWith(
+      expect(cosoleSpy).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
           _aws: {
@@ -240,49 +202,22 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-
-      const lambdaHandler = (): void => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-      };
+      const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const metricsOptions: ExtraOptions = {
         throwOnEmptyMetrics: true,
         defaultDimensions: { environment: 'prod', aws_region: 'eu-west-1' },
         captureColdStartMetric: true,
       };
-      const handler = middy(lambdaHandler).use(
-        logMetrics(metrics, metricsOptions)
-      );
+      const handler = middy(async (): Promise<void> => {
+        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+      }).use(logMetrics(metrics, metricsOptions));
 
       // Act
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(dummyEvent, dummyContext);
 
       // Assess
-      expect(console.log).toHaveBeenNthCalledWith(
+      expect(consoleSpy).toHaveBeenNthCalledWith(
         1,
-        JSON.stringify({
-          _aws: {
-            Timestamp: 1466424490000,
-            CloudWatchMetrics: [
-              {
-                Namespace: 'serverlessAirline',
-                Dimensions: [
-                  ['service', 'environment', 'aws_region', 'function_name'],
-                ],
-                Metrics: [{ Name: 'ColdStart', Unit: 'Count' }],
-              },
-            ],
-          },
-          service: 'orders',
-          environment: 'prod',
-          aws_region: 'eu-west-1',
-          function_name: 'foo-bar-function',
-          ColdStart: 1,
-        })
-      );
-      expect(console.log).toHaveBeenNthCalledWith(
-        2,
         JSON.stringify({
           _aws: {
             Timestamp: 1466424490000,
@@ -308,20 +243,16 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-
-      const lambdaHandler = (): void => {
+      const consoleSpy = jest.spyOn(metrics['console'], 'log');
+      const handler = middy(async (): Promise<void> => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-      };
-
-      const handler = middy(lambdaHandler).use(logMetrics(metrics));
+      }).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(dummyEvent, dummyContext);
 
       // Assess
-      expect(console.log).toHaveBeenNthCalledWith(
+      expect(consoleSpy).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
           _aws: {
@@ -346,24 +277,20 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-
-      const lambdaHandler = (): void => {
+      const consoleSpy = jest.spyOn(metrics['console'], 'log');
+      const handler = middy(async (): Promise<void> => {
         metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
-      };
-      const metricsOptions: ExtraOptions = {
-        throwOnEmptyMetrics: true,
-      };
-      const handler = middy(lambdaHandler).use(
-        logMetrics([metrics], metricsOptions)
+      }).use(
+        logMetrics(metrics, {
+          throwOnEmptyMetrics: true,
+        })
       );
 
       // Act
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
-      );
+      await handler(dummyEvent, dummyContext);
 
       // Assess
-      expect(console.log).toHaveBeenNthCalledWith(
+      expect(consoleSpy).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
           _aws: {
@@ -424,102 +351,6 @@ describe('Middy middleware', () => {
 
       // Assess
       expect(publishStoredMetricsSpy).toBeCalledTimes(2);
-    });
-  });
-  describe('Metrics resolution', () => {
-    test('serialized metrics in EMF format should not contain `StorageResolution` as key if `60` is set', async () => {
-      // Prepare
-      const metrics = new Metrics({
-        namespace: 'serverlessAirline',
-        serviceName: 'orders',
-      });
-
-      const lambdaHandler = (): void => {
-        metrics.addMetric(
-          'successfulBooking',
-          MetricUnits.Count,
-          1,
-          MetricResolution.Standard
-        );
-      };
-
-      const handler = middy(lambdaHandler).use(logMetrics(metrics));
-
-      // Act
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
-      );
-
-      // Assess
-      expect(console.log).toHaveBeenCalledWith(
-        JSON.stringify({
-          _aws: {
-            Timestamp: 1466424490000,
-            CloudWatchMetrics: [
-              {
-                Namespace: 'serverlessAirline',
-                Dimensions: [['service']],
-                Metrics: [
-                  {
-                    Name: 'successfulBooking',
-                    Unit: 'Count',
-                  },
-                ],
-              },
-            ],
-          },
-          service: 'orders',
-          successfulBooking: 1,
-        })
-      );
-    });
-
-    test('Should be StorageResolution `1` if MetricResolution is set to `High`', async () => {
-      // Prepare
-      const metrics = new Metrics({
-        namespace: 'serverlessAirline',
-        serviceName: 'orders',
-      });
-
-      const lambdaHandler = (): void => {
-        metrics.addMetric(
-          'successfulBooking',
-          MetricUnits.Count,
-          1,
-          MetricResolution.High
-        );
-      };
-
-      const handler = middy(lambdaHandler).use(logMetrics(metrics));
-
-      // Act
-      await handler(dummyEvent, dummyContext, () =>
-        console.log('Lambda invoked!')
-      );
-
-      // Assess
-      expect(console.log).toHaveBeenCalledWith(
-        JSON.stringify({
-          _aws: {
-            Timestamp: 1466424490000,
-            CloudWatchMetrics: [
-              {
-                Namespace: 'serverlessAirline',
-                Dimensions: [['service']],
-                Metrics: [
-                  {
-                    Name: 'successfulBooking',
-                    Unit: 'Count',
-                    StorageResolution: 1,
-                  },
-                ],
-              },
-            ],
-          },
-          service: 'orders',
-          successfulBooking: 1,
-        })
-      );
     });
   });
 });

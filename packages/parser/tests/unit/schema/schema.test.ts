@@ -24,21 +24,25 @@ import snsEvent from '../../events/snsEvent.json';
 import sqsEvent from '../../events/sqsEvent.json';
 import {
   AlbSchema,
-  APIGatewayProxyEventSchema,
-  APIGatewayProxyEventV2Schema,
+  AlbMultiValueHeadersSchema,
+} from '../../../src/schemas/alb';
+import { APIGatewayProxyEventSchema } from '../../../src/schemas/apigw';
+import { APIGatewayProxyEventV2Schema } from '../../../src/schemas/apigwv2';
+import {
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceUpdateSchema,
   CloudFormationCustomResourceDeleteSchema,
-  DynamoDBStreamSchema,
-  EventBridgeSchema,
+} from '../../../src/schemas/cloudformation-custom-resource';
+import { DynamoDBStreamSchema } from '../../../src/schemas/dynamodb';
+import { EventBridgeSchema } from '../../../src/schemas/eventbridge';
+import {
   S3Schema,
-  SesSchema,
-  SnsSchema,
-  SqsSchema,
   S3EventNotificationEventBridgeSchema,
   S3SqsEventNotificationSchema,
-  AlbMultiValueHeadersSchema,
-} from '../../../src';
+} from '../../../src/schemas/s3';
+import { SnsSchema } from '../../../src/schemas/sns';
+import { SqsSchema } from '../../../src/schemas/sqs';
+import { SesSchema } from '../../../src/schemas/ses';
 
 /**
  * keep everything in one describe block for now.

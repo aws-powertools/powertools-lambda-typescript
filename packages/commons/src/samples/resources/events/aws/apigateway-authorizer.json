@@ -1,5 +1,0 @@
-{
-  "type": "TOKEN",
-  "authorizationToken": "incoming-client-token",
-  "methodArn": "arn:aws:execute-api:eu-central-1:123456789012:example/prod/POST/{proxy+}"
-}

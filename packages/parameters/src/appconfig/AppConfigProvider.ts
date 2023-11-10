@@ -1,4 +1,4 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,
@@ -9,7 +9,7 @@ import type {
   AppConfigProviderOptions,
   AppConfigGetOptions,
   AppConfigGetOutput,
-} from '../types/AppConfigProvider';
+} from '../types/AppConfigProvider.js';
 
 /**
  * ## Intro
@@ -178,10 +178,10 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript AppConfig Data client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/appconfigdataclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  */
 class AppConfigProvider extends BaseProvider {
-  public client!: AppConfigDataClient;
+  public declare client: AppConfigDataClient;
   protected configurationTokenStore = new Map<string, string>();
   protected valueStore = new Map<string, Uint8Array>();
   private application?: string;
@@ -240,13 +240,13 @@ class AppConfigProvider extends BaseProvider {
    *
    * @param {string} name - The name of the configuration profile or its ID
    * @param {AppConfigGetOptions} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | AppConfigGetOptions
-      | undefined = AppConfigGetOptions
+      | undefined = AppConfigGetOptions,
   >(
     name: string,
     options?: InferredFromOptionsType & AppConfigGetOptions
@@ -351,4 +351,4 @@ class AppConfigProvider extends BaseProvider {
   }
 }
 
-export { AppConfigProvider, DEFAULT_PROVIDERS };
+export { AppConfigProvider };

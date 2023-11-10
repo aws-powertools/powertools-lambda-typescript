@@ -1,26 +1,30 @@
-import { randomInt } from 'node:crypto';
-import { Console } from 'node:console';
-import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
-import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
-import { LogItem } from './log';
+import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
-import { ConfigServiceInterface, EnvironmentVariablesService } from './config';
-import { LogJsonIndent } from './types';
+import { Console } from 'node:console';
+import { randomInt } from 'node:crypto';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
+import { LogJsonIndent } from './constants.js';
+import { LogItem } from './formatter/LogItem.js';
+import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
+import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
-  ClassThatLogs,
   Environment,
-  HandlerMethodDecorator,
-  LambdaFunctionContext,
   LogAttributes,
-  ConstructorOptions,
-  LogItemExtraInput,
-  LogItemMessage,
   LogLevel,
   LogLevelThresholds,
-  PowertoolLogData,
-  HandlerOptions,
-} from './types';
+  LogFormatterInterface,
+} from './types/Log.js';
+import type {
+  LogFunction,
+  ConstructorOptions,
+  InjectLambdaContextOptions,
+  LogItemExtraInput,
+  LogItemMessage,
+  LoggerInterface,
+  PowertoolsLogData,
+} from './types/Logger.js';
 
 /**
  * ## Intro
@@ -108,7 +112,7 @@ import type {
  * @implements {ClassThatLogs}
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/
  */
-class Logger extends Utility implements ClassThatLogs {
+class Logger extends Utility implements LoggerInterface {
   /**
    * Console instance used to print logs.
    *
@@ -152,11 +156,9 @@ class Logger extends Utility implements ClassThatLogs {
     SILENT: 28,
   };
 
-  private logsSampled = false;
+  private persistentLogAttributes: LogAttributes = {};
 
-  private persistentLogAttributes?: LogAttributes = {};
-
-  private powertoolLogData: PowertoolLogData = <PowertoolLogData>{};
+  private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{};
 
   /**
    * Log level used by the current instance of Logger.
@@ -186,17 +188,15 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public addContext(context: Context): void {
-    const lambdaContext: Partial<LambdaFunctionContext> = {
-      invokedFunctionArn: context.invokedFunctionArn,
-      coldStart: this.getColdStart(),
-      awsRequestId: context.awsRequestId,
-      memoryLimitInMB: Number(context.memoryLimitInMB),
-      functionName: context.functionName,
-      functionVersion: context.functionVersion,
-    };
-
-    this.addToPowertoolLogData({
-      lambdaContext,
+    this.addToPowertoolsLogData({
+      lambdaContext: {
+        invokedFunctionArn: context.invokedFunctionArn,
+        coldStart: this.getColdStart(),
+        awsRequestId: context.awsRequestId,
+        memoryLimitInMB: context.memoryLimitInMB,
+        functionName: context.functionName,
+        functionVersion: context.functionVersion,
+      },
     });
   }
 
@@ -228,22 +228,27 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {Logger}
    */
   public createChild(options: ConstructorOptions = {}): Logger {
-    const parentsOptions = {
-      logLevel: this.getLevelName(),
-      customConfigService: this.getCustomConfigService(),
-      logFormatter: this.getLogFormatter(),
-    };
-    const parentsPowertoolsLogData = this.getPowertoolLogData();
     const childLogger = this.createLogger(
-      merge(parentsOptions, parentsPowertoolsLogData, options)
+      // Merge parent logger options with options passed to createChild,
+      // the latter having precedence.
+      merge(
+        {},
+        {
+          logLevel: this.getLevelName(),
+          serviceName: this.powertoolsLogData.serviceName,
+          sampleRateValue: this.powertoolsLogData.sampleRateValue,
+          logFormatter: this.getLogFormatter(),
+          customConfigService: this.getCustomConfigService(),
+          environment: this.powertoolsLogData.environment,
+          persistentLogAttributes: this.persistentLogAttributes,
+        },
+        options
+      )
     );
-
-    const parentsPersistentLogAttributes = this.getPersistentLogAttributes();
-    childLogger.addPersistentLogAttributes(parentsPersistentLogAttributes);
-
-    if (parentsPowertoolsLogData.lambdaContext) {
-      childLogger.addContext(parentsPowertoolsLogData.lambdaContext as Context);
-    }
+    if (this.powertoolsLogData.lambdaContext)
+      childLogger.addContext(
+        this.powertoolsLogData.lambdaContext as unknown as Context
+      );
 
     return childLogger;
   }
@@ -306,15 +311,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It returns a boolean value, if true all the logs will be printed.
-   *
-   * @returns {boolean}
-   */
-  public getLogsSampled(): boolean {
-    return this.logsSampled;
-  }
-
-  /**
    * It returns the persistent log attributes, which are the attributes
    * that will be logged in all log items.
    *
@@ -322,7 +318,7 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {LogAttributes}
    */
   public getPersistentLogAttributes(): LogAttributes {
-    return this.persistentLogAttributes as LogAttributes;
+    return this.persistentLogAttributes;
   }
 
   /**
@@ -368,7 +364,9 @@ class Logger extends Utility implements ClassThatLogs {
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
    * @returns {HandlerMethodDecorator}
    */
-  public injectLambdaContext(options?: HandlerOptions): HandlerMethodDecorator {
+  public injectLambdaContext(
+    options?: InjectLambdaContextOptions
+  ): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
       /**
        * The descriptor.value is the method this decorator decorates, it cannot be undefined.
@@ -416,7 +414,7 @@ class Logger extends Utility implements ClassThatLogs {
   public static injectLambdaContextAfterOrOnError(
     logger: Logger,
     initialPersistentAttributes: LogAttributes,
-    options?: HandlerOptions
+    options?: InjectLambdaContextOptions
   ): void {
     if (options && options.clearState === true) {
       logger.setPersistentLogAttributes(initialPersistentAttributes);
@@ -427,13 +425,13 @@ class Logger extends Utility implements ClassThatLogs {
     logger: Logger,
     event: unknown,
     context: Context,
-    options?: HandlerOptions
+    options?: InjectLambdaContextOptions
   ): void {
     logger.addContext(context);
 
     let shouldLogEvent = undefined;
-    if (options && options.hasOwnProperty('logEvent')) {
-      shouldLogEvent = options.logEvent;
+    if (Object.hasOwn(options || {}, 'logEvent')) {
+      shouldLogEvent = options!.logEvent;
     }
     logger.logEventIfEnabled(event, shouldLogEvent);
   }
@@ -446,22 +444,19 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
-    if (!this.shouldLogEvent(overwriteValue)) {
-      return;
-    }
+    if (!this.shouldLogEvent(overwriteValue)) return;
     this.info('Lambda invocation event', { event });
   }
 
   /**
-   * If the sample rate feature is enabled, the calculation that determines whether the logs
-   * will actually be printed or not for this invocation is done when the Logger class is
-   * initialized.
-   * This method will repeat that calculation (with possible different outcome).
+   * This method allows recalculating the initial sampling decision for changing
+   * the log level to DEBUG based on a sample rate value used during initialization,
+   * potentially yielding a different outcome.
    *
    * @returns {void}
    */
   public refreshSampleRateCalculation(): void {
-    this.setLogsSampled();
+    this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
   }
 
   /**
@@ -481,11 +476,11 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   public removePersistentLogAttributes(keys: string[]): void {
-    keys.forEach((key) => {
-      if (this.persistentLogAttributes && key in this.persistentLogAttributes) {
+    for (const key of keys) {
+      if (Object.hasOwn(this.persistentLogAttributes, key)) {
         delete this.persistentLogAttributes[key];
       }
-    });
+    }
   }
 
   /**
@@ -510,19 +505,6 @@ class Logger extends Utility implements ClassThatLogs {
    */
   public setPersistentLogAttributes(attributes: LogAttributes): void {
     this.persistentLogAttributes = attributes;
-  }
-
-  /**
-   * It sets the user-provided sample rate value.
-   *
-   * @param {number} [sampleRateValue]
-   * @returns {void}
-   */
-  public setSampleRateValue(sampleRateValue?: number): void {
-    this.powertoolLogData.sampleRateValue =
-      sampleRateValue ||
-      this.getCustomConfigService()?.getSampleRateValue() ||
-      this.getEnvVarsService().getSampleRateValue();
   }
 
   /**
@@ -552,49 +534,40 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * Creates a new Logger instance.
+   * Factory method for instantiating logger instances. Used by `createChild` method.
+   * Important for customization and subclassing. It allows subclasses, like `MyOwnLogger`,
+   * to override its behavior while keeping the main business logic in `createChild` intact.
    *
-   * @param {ConstructorOptions} [options]
-   * @returns {Logger}
+   * @example
+   * ```typescript
+   * // MyOwnLogger subclass
+   * class MyOwnLogger extends Logger {
+   *   protected createLogger(options?: ConstructorOptions): MyOwnLogger {
+   *     return new MyOwnLogger(options);
+   *   }
+   *   // No need to re-implement business logic from `createChild` and keep track on changes
+   *   public createChild(options?: ConstructorOptions): MyOwnLogger {
+   *     return super.createChild(options) as MyOwnLogger;
+   *   }
+   * }
+   * ```
+   *
+   * @param {ConstructorOptions} [options] Logger configuration options.
+   * @returns {Logger} A new logger instance.
    */
   protected createLogger(options?: ConstructorOptions): Logger {
     return new Logger(options);
   }
 
   /**
-   * Decides whether the current log item should be printed or not.
-   *
-   * The decision is based on the log level and the sample rate value.
-   * A log item will be printed if:
-   * 1. The log level is greater than or equal to the Logger's log level.
-   * 2. The log level is less than the Logger's log level, but the
-   * current sampling value is set to `true`.
-   *
-   * @param {number} logLevel
-   * @returns {boolean}
-   * @protected
-   */
-  protected shouldPrint(logLevel: number): boolean {
-    if (logLevel >= this.logLevel) {
-      return true;
-    }
-
-    return this.getLogsSampled();
-  }
-
-  /**
    * It stores information that is printed in all log items.
    *
-   * @param {Partial<PowertoolLogData>} attributesArray
+   * @param {Partial<PowertoolsLogData>} attributes
    * @private
    * @returns {void}
    */
-  private addToPowertoolLogData(
-    ...attributesArray: Array<Partial<PowertoolLogData>>
-  ): void {
-    attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
-      merge(this.powertoolLogData, attributes);
-    });
+  private addToPowertoolsLogData(attributes: Partial<PowertoolsLogData>): void {
+    merge(this.powertoolsLogData, attributes);
   }
 
   /**
@@ -621,19 +594,16 @@ class Logger extends Utility implements ClassThatLogs {
         message: typeof input === 'string' ? input : input.message,
         xRayTraceId: this.envVarsService.getXrayTraceId(),
       },
-      this.getPowertoolLogData()
+      this.getPowertoolsLogData()
     );
 
-    const logItem = new LogItem({
-      baseAttributes: this.getLogFormatter().formatAttributes(
-        unformattedBaseAttributes
-      ),
-      persistentAttributes: this.getPersistentLogAttributes(),
-    });
-
-    // Add ephemeral attributes
+    let additionalLogAttributes: LogAttributes = {};
+    additionalLogAttributes = merge(
+      additionalLogAttributes,
+      this.getPersistentLogAttributes()
+    );
     if (typeof input !== 'string') {
-      logItem.addAttributes(input);
+      additionalLogAttributes = merge(additionalLogAttributes, input);
     }
     extraInput.forEach((item: Error | LogAttributes | string) => {
       const attributes: LogAttributes =
@@ -643,8 +613,13 @@ class Logger extends Utility implements ClassThatLogs {
           ? { extra: item }
           : item;
 
-      logItem.addAttributes(attributes);
+      additionalLogAttributes = merge(additionalLogAttributes, attributes);
     });
+
+    const logItem = this.getLogFormatter().formatAttributes(
+      unformattedBaseAttributes,
+      additionalLogAttributes
+    );
 
     return logItem;
   }
@@ -689,15 +664,15 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns - The name of the log level
    */
   private getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
-    const found = Object.entries(this.logLevelThresholds).find(
-      ([key, value]) => {
-        if (value === logLevel) {
-          return key;
-        }
+    let found;
+    for (const [key, value] of Object.entries(this.logLevelThresholds)) {
+      if (value === logLevel) {
+        found = key;
+        break;
       }
-    )!;
+    }
 
-    return found[0] as Uppercase<LogLevel>;
+    return found as Uppercase<LogLevel>;
   }
 
   /**
@@ -707,8 +682,8 @@ class Logger extends Utility implements ClassThatLogs {
    * @private
    * @returns {LogAttributes}
    */
-  private getPowertoolLogData(): PowertoolLogData {
-    return this.powertoolLogData;
+  private getPowertoolsLogData(): PowertoolsLogData {
+    return this.powertoolsLogData;
   }
 
   /**
@@ -746,20 +721,6 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
-   * It returns the numeric sample rate value.
-   *
-   * @private
-   * @returns {number}
-   */
-  private getSampleRateValue(): number {
-    if (!this.powertoolLogData.sampleRateValue) {
-      this.setSampleRateValue();
-    }
-
-    return this.powertoolLogData.sampleRateValue as number;
-  }
-
-  /**
    * It returns true and type guards the log level if a given log level is valid.
    *
    * @param {LogLevel} logLevel
@@ -770,6 +731,23 @@ class Logger extends Utility implements ClassThatLogs {
     logLevel?: LogLevel | string
   ): logLevel is Uppercase<LogLevel> {
     return typeof logLevel === 'string' && logLevel in this.logLevelThresholds;
+  }
+
+  /**
+   * It returns true and type guards the sample rate value if a given value is valid.
+   *
+   * @param sampleRateValue
+   * @private
+   * @returns {boolean}
+   */
+  private isValidSampleRate(
+    sampleRateValue?: number
+  ): sampleRateValue is number {
+    return (
+      typeof sampleRateValue === 'number' &&
+      0 <= sampleRateValue &&
+      sampleRateValue <= 1
+    );
   }
 
   /**
@@ -786,7 +764,7 @@ class Logger extends Utility implements ClassThatLogs {
       logLevel === 24
         ? 'error'
         : (this.getLogLevelNameFromNumber(logLevel).toLowerCase() as keyof Omit<
-            ClassThatLogs,
+            LogFunction,
             'critical'
           >);
 
@@ -812,13 +790,12 @@ class Logger extends Utility implements ClassThatLogs {
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): void {
-    if (!this.shouldPrint(logLevel)) {
-      return;
+    if (logLevel >= this.logLevel) {
+      this.printLog(
+        logLevel,
+        this.createAndPopulateLogItem(logLevel, input, extraInput)
+      );
     }
-    this.printLog(
-      logLevel,
-      this.createAndPopulateLogItem(logLevel, input, extraInput)
-    );
   }
 
   /**
@@ -901,6 +878,37 @@ class Logger extends Utility implements ClassThatLogs {
   }
 
   /**
+   * It sets sample rate value with the following prioprity:
+   * 1. Constructor value
+   * 2. Custom config service value
+   * 3. Environment variable value
+   * 4. Default value (zero)
+   *
+   * @private
+   * @param {number} [sampleRateValue]
+   * @returns {void}
+   */
+  private setInitialSampleRate(sampleRateValue?: number): void {
+    this.powertoolsLogData.sampleRateValue = 0;
+    const constructorValue = sampleRateValue;
+    const customConfigValue =
+      this.getCustomConfigService()?.getSampleRateValue();
+    const envVarsValue = this.getEnvVarsService().getSampleRateValue();
+    for (const value of [constructorValue, customConfigValue, envVarsValue]) {
+      if (this.isValidSampleRate(value)) {
+        this.powertoolsLogData.sampleRateValue = value;
+
+        if (value && randomInt(0, 100) / 100 <= value) {
+          this.setLogLevel('DEBUG');
+          this.debug('Setting log level to DEBUG due to sampling rate');
+        }
+
+        return;
+      }
+    }
+  }
+
+  /**
    * If the log event feature is enabled via env variable, it sets a property that tracks whether
    * the event passed to the Lambda function handler should be logged or not.
    *
@@ -922,7 +930,9 @@ class Logger extends Utility implements ClassThatLogs {
    * @returns {void}
    */
   private setLogFormatter(logFormatter?: LogFormatterInterface): void {
-    this.logFormatter = logFormatter || new PowertoolLogFormatter();
+    this.logFormatter =
+      logFormatter ??
+      new PowertoolsLogFormatter({ envVarsService: this.getEnvVarsService() });
   }
 
   /**
@@ -936,20 +946,6 @@ class Logger extends Utility implements ClassThatLogs {
     if (this.getEnvVarsService().isDevMode()) {
       this.logIndentation = LogJsonIndent.PRETTY;
     }
-  }
-
-  /**
-   * If the sample rate feature is enabled, it sets a property that tracks whether this Lambda function invocation
-   * will print logs or not.
-   *
-   * @private
-   * @returns {void}
-   */
-  private setLogsSampled(): void {
-    const sampleRateValue = this.getSampleRateValue();
-    this.logsSampled =
-      sampleRateValue !== undefined &&
-      (sampleRateValue === 1 || randomInt(0, 100) / 100 <= sampleRateValue);
   }
 
   /**
@@ -971,18 +967,16 @@ class Logger extends Utility implements ClassThatLogs {
       environment,
     } = options;
 
+    // order is important, EnvVarsService() is used by other methods
     this.setEnvVarsService();
-    // order is important, it uses EnvVarsService()
     this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setInitialLogLevel(logLevel);
-    this.setSampleRateValue(sampleRateValue);
-    this.setLogsSampled();
     this.setLogFormatter(logFormatter);
-    this.setPowertoolLogData(serviceName, environment);
+    this.setPowertoolsLogData(serviceName, environment);
+    this.setInitialSampleRate(sampleRateValue);
     this.setLogEvent();
     this.setLogIndentation();
-
     this.addPersistentLogAttributes(persistentLogAttributes);
 
     return this;
@@ -997,27 +991,24 @@ class Logger extends Utility implements ClassThatLogs {
    * @private
    * @returns {void}
    */
-  private setPowertoolLogData(
+  private setPowertoolsLogData(
     serviceName?: string,
     environment?: Environment,
     persistentLogAttributes: LogAttributes = {}
   ): void {
-    this.addToPowertoolLogData(
-      {
-        awsRegion: this.getEnvVarsService().getAwsRegion(),
-        environment:
-          environment ||
-          this.getCustomConfigService()?.getCurrentEnvironment() ||
-          this.getEnvVarsService().getCurrentEnvironment(),
-        sampleRateValue: this.getSampleRateValue(),
-        serviceName:
-          serviceName ||
-          this.getCustomConfigService()?.getServiceName() ||
-          this.getEnvVarsService().getServiceName() ||
-          this.getDefaultServiceName(),
-      },
-      persistentLogAttributes
-    );
+    this.addToPowertoolsLogData({
+      awsRegion: this.getEnvVarsService().getAwsRegion(),
+      environment:
+        environment ||
+        this.getCustomConfigService()?.getCurrentEnvironment() ||
+        this.getEnvVarsService().getCurrentEnvironment(),
+      serviceName:
+        serviceName ||
+        this.getCustomConfigService()?.getServiceName() ||
+        this.getEnvVarsService().getServiceName() ||
+        this.getDefaultServiceName(),
+    });
+    this.addPersistentLogAttributes(persistentLogAttributes);
   }
 }
 

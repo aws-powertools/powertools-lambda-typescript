@@ -1,8 +1,8 @@
-import { getFirstSubsegment } from './tracesUtils';
-import type {
-  AssertAnnotationParams,
-  ParsedDocument,
-} from './traceUtils.types';
+import {
+  getFirstSubsegment,
+  type AssertAnnotationParams,
+  type ParsedDocument,
+} from './tracesUtils.js';
 
 export const assertAnnotation = (params: AssertAnnotationParams): void => {
   const {

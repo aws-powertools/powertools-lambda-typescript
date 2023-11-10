@@ -1,6 +1,6 @@
-import { GetOptions } from './GetOptions';
-import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService';
-import type { GetMultipleOptionsInterface } from '../types/BaseProvider';
+import { GetOptions } from './GetOptions.js';
+import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import type { GetMultipleOptionsInterface } from '../types/BaseProvider.js';
 
 /**
  * Options for the `getMultiple` method.

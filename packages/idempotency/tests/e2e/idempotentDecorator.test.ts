@@ -1,7 +1,7 @@
 /**
  * Test idempotency decorator
  *
- * @group e2e/idempotency
+ * @group e2e/idempotency/decorator
  */
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
@@ -9,25 +9,18 @@ import {
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { createHash } from 'node:crypto';
 import {
   invokeFunction,
-  isValidRuntimeKey,
   TestInvocationLogs,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
-import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources';
+import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import { join } from 'node:path';
 import { Duration } from 'aws-cdk-lib';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
-
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
 
 const dynamoDBClient = new DynamoDBClient({});
 

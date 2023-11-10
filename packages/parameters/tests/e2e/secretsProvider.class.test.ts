@@ -6,18 +6,18 @@
 import {
   invokeFunctionOnce,
   TestInvocationLogs,
-  TestNodejsFunction,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { SecretValue } from 'aws-cdk-lib';
 import { join } from 'node:path';
-import { TestSecret } from '../helpers/resources';
+import { TestSecret } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 /**
  * Collection of e2e tests for SecretsProvider utility.

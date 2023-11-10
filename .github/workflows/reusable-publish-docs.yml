@@ -78,9 +78,9 @@ jobs:
         run: |
           rm -rf site
           mkdocs build
-          mike deploy --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }} --branch backup-gh-pages
+          # mike deploy --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }} --branch backup-gh-pages
           # Set latest version as a default
-          mike set-default latest --branch backup-gh-pages
+          # mike set-default latest --branch backup-gh-pages
       - name: Build API docs
         run: |
           rm -rf api

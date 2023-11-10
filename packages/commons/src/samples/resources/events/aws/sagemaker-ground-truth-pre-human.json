@@ -1,7 +1,0 @@
-{
-  "version": "2018-10-16",
-  "labelingJobArn": "arn:aws:sagemaker:eu-central-1:123456789012:labeling-job/example-job",
-  "dataObject": {
-    "source-ref": "s3://sagemakerexample/object_to_annotate.jpg"
-  }
-}

@@ -3,13 +3,17 @@ import {
   LogAttributes,
   UnformattedAttributes,
 } from '@aws-lambda-powertools/logger/lib/types';
+import { LogItem } from '@aws-lambda-powertools/logger/lib/log';
 
 // Replace this line with your own type
 type MyCompanyLog = LogAttributes;
 
 class MyCompanyLogFormatter extends LogFormatter {
-  public formatAttributes(attributes: UnformattedAttributes): MyCompanyLog {
-    return {
+  public formatAttributes(
+    attributes: UnformattedAttributes,
+    additionalLogAttributes: LogAttributes
+  ): LogItem {
+    const baseAttributes: MyCompanyLog = {
       message: attributes.message,
       service: attributes.serviceName,
       environment: attributes.environment,
@@ -31,6 +35,11 @@ class MyCompanyLogFormatter extends LogFormatter {
         sampleRateValue: attributes.sampleRateValue,
       },
     };
+
+    const logItem = new LogItem({ attributes: baseAttributes });
+    logItem.addAttributes(additionalLogAttributes); // add any attributes not explicitly defined
+
+    return logItem;
   }
 }
 

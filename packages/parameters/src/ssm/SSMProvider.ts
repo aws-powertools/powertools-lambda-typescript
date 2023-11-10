@@ -1,7 +1,7 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
-import { transformValue } from '../base/transformValue';
-import { GetParameterError } from '../errors';
-import { DEFAULT_MAX_AGE_SECS } from '../constants';
+import { BaseProvider } from '../base/BaseProvider.js';
+import { transformValue } from '../base/transformValue.js';
+import { GetParameterError } from '../errors.js';
+import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import {
   SSMClient,
   GetParameterCommand,
@@ -25,7 +25,7 @@ import type {
   SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
-} from '../types/SSMProvider';
+} from '../types/SSMProvider.js';
 import type { PaginationConfiguration } from '@aws-sdk/types';
 
 /**
@@ -259,10 +259,10 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript SSM client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/ssmclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
  */
 class SSMProvider extends BaseProvider {
-  public client!: SSMClient;
+  public declare client: SSMClient;
   protected errorsKey = '_errors';
   protected maxGetParametersItems = 10;
 
@@ -304,11 +304,11 @@ class SSMProvider extends BaseProvider {
    *
    * @param {string} name - The name of the value to retrieve (i.e. the partition key)
    * @param {SSMGetOptions} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,
-    InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions
+    InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions,
   >(
     name: string,
     options?: InferredFromOptionsType & SSMGetOptions
@@ -349,13 +349,13 @@ class SSMProvider extends BaseProvider {
    *
    * @param {string} path - The path of the parameters to retrieve
    * @param {SSMGetMultipleOptions} options - Options to configure the retrieval
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async getMultiple<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | SSMGetMultipleOptions
-      | undefined = undefined
+      | undefined = undefined,
   >(
     path: string,
     options?: InferredFromOptionsType & SSMGetMultipleOptions
@@ -417,7 +417,7 @@ class SSMProvider extends BaseProvider {
    *
    * @param {Record<string, SSMGetParametersByNameOptions>} parameters - Object containing parameter names and any optional overrides
    * @param {SSMGetParametersByNameOptions} options - Options to configure the retrieval
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
    */
   public async getParametersByName<ExplicitUserProvidedType = undefined>(
     parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -617,9 +617,8 @@ class SSMProvider extends BaseProvider {
     let errors: string[] = [];
 
     // Fetch each possible batch param from cache and return if entire batch is cached
-    const { cached, toFetch } = await this.getParametersByNameFromCache(
-      parameters
-    );
+    const { cached, toFetch } =
+      await this.getParametersByNameFromCache(parameters);
     if (Object.keys(cached).length >= Object.keys(parameters).length) {
       response = cached;
 
@@ -903,4 +902,4 @@ class SSMProvider extends BaseProvider {
   }
 }
 
-export { SSMProvider, DEFAULT_PROVIDERS };
+export { SSMProvider };

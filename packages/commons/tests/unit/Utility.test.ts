@@ -3,7 +3,7 @@
  *
  * @group unit/commons/utility
  */
-import { Utility } from '../../src';
+import { Utility } from '../../src/index.js';
 
 describe('Class: Utility', () => {
   beforeEach(() => {

@@ -1,3 +1,2 @@
-export * from './Metrics';
-export * from './MetricsInterface';
-export * from './middleware';
+export { Metrics } from './Metrics.js';
+export { MetricUnit, MetricResolution } from './constants.js';

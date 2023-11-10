@@ -4,19 +4,22 @@
  * @group unit/idempotency/decorator
  */
 
-import { BasePersistenceLayer, IdempotencyRecord } from '../../src/persistence';
-import { idempotent } from '../../src/';
-import type { IdempotencyRecordOptions } from '../../src/types';
 import {
+  BasePersistenceLayer,
+  IdempotencyRecord,
+} from '../../src/persistence/index.js';
+import {
+  idempotent,
+  IdempotencyConfig,
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/errors';
-import { IdempotencyConfig } from '../../src';
+} from '../../src/index.js';
+import type { IdempotencyRecordOptions } from '../../src/types/index.js';
 import { Context } from 'aws-lambda';
-import { helloworldContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
-import { IdempotencyRecordStatus } from '../../src/constants';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import { IdempotencyRecordStatus } from '../../src/constants.js';
 
 const mockSaveInProgress = jest
   .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')
@@ -27,8 +30,6 @@ const mockSaveSuccess = jest
 const mockGetRecord = jest
   .spyOn(BasePersistenceLayer.prototype, 'getRecord')
   .mockImplementation();
-
-const dummyContext = helloworldContext;
 
 const mockConfig: IdempotencyConfig = new IdempotencyConfig({});
 
@@ -81,13 +82,13 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
 
   describe('When wrapping a function with no previous executions', () => {
     beforeEach(async () => {
-      await classWithFunctionDecorator.handler(inputRecord, dummyContext);
+      await classWithFunctionDecorator.handler(inputRecord, context);
     });
 
     test('Then it will save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(
         inputRecord,
-        dummyContext.getRemainingTimeInMillis()
+        context.getRemainingTimeInMillis()
       );
     });
 
@@ -101,13 +102,13 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
   });
   describe('When wrapping a handler function with no previous executions', () => {
     beforeEach(async () => {
-      await classWithLambdaHandler.testing(inputRecord, dummyContext);
+      await classWithLambdaHandler.testing(inputRecord, context);
     });
 
     test('Then it will save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(
         inputRecord,
-        dummyContext.getRemainingTimeInMillis()
+        context.getRemainingTimeInMillis()
       );
     });
 
@@ -134,7 +135,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
         new IdempotencyRecord(idempotencyOptions)
       );
       try {
-        await classWithLambdaHandler.testing(inputRecord, dummyContext);
+        await classWithLambdaHandler.testing(inputRecord, context);
       } catch (e) {
         resultingError = e as Error;
       }
@@ -143,7 +144,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     test('Then it will attempt to save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(
         inputRecord,
-        dummyContext.getRemainingTimeInMillis()
+        context.getRemainingTimeInMillis()
       );
     });
 
@@ -174,7 +175,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
         new IdempotencyRecord(idempotencyOptions)
       );
       try {
-        await classWithLambdaHandler.testing(inputRecord, dummyContext);
+        await classWithLambdaHandler.testing(inputRecord, context);
       } catch (e) {
         resultingError = e as Error;
       }
@@ -183,7 +184,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     test('Then it will attempt to save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(
         inputRecord,
-        dummyContext.getRemainingTimeInMillis()
+        context.getRemainingTimeInMillis()
       );
     });
 
@@ -214,13 +215,13 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
       mockGetRecord.mockResolvedValue(
         new IdempotencyRecord(idempotencyOptions)
       );
-      await classWithLambdaHandler.testing(inputRecord, dummyContext);
+      await classWithLambdaHandler.testing(inputRecord, context);
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(
         inputRecord,
-        dummyContext.getRemainingTimeInMillis()
+        context.getRemainingTimeInMillis()
       );
     });
 
@@ -237,7 +238,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     class TestinClassWithLambdaHandlerWithConfig {
       @idempotent({
         persistenceStore: new PersistenceLayerTestClass(),
-        config: new IdempotencyConfig({ lambdaContext: dummyContext }),
+        config: new IdempotencyConfig({ lambdaContext: context }),
       })
       public testing(record: Record<string, unknown>): string {
         functionalityToDecorate(record);
@@ -261,7 +262,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     test('Then it will attempt to save the record to INPROGRESS', () => {
       expect(mockSaveInProgress).toBeCalledWith(
         inputRecord,
-        dummyContext.getRemainingTimeInMillis()
+        context.getRemainingTimeInMillis()
       );
     });
 
@@ -276,7 +277,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
       class TestingClassWithIdempotencyDisabled {
         @idempotent({
           persistenceStore: new PersistenceLayerTestClass(),
-          config: new IdempotencyConfig({ lambdaContext: dummyContext }),
+          config: new IdempotencyConfig({ lambdaContext: context }),
         })
         public testing(
           record: Record<string, unknown>,
@@ -289,7 +290,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
       }
       const classWithoutIdempotencyDisabled =
         new TestingClassWithIdempotencyDisabled();
-      await classWithoutIdempotencyDisabled.testing(inputRecord, dummyContext);
+      await classWithoutIdempotencyDisabled.testing(inputRecord, context);
     });
 
     test('Then it will skip ipdemotency', async () => {

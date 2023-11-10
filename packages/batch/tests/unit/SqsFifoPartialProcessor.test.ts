@@ -7,9 +7,9 @@ import {
   SqsFifoPartialProcessor,
   processPartialResponseSync,
   SqsFifoShortCircuitError,
-} from '../../src';
-import { sqsRecordFactory } from '../helpers/factories';
-import { sqsRecordHandler } from '../helpers/handlers';
+} from '../../src/index.js';
+import { sqsRecordFactory } from '../helpers/factories.js';
+import { sqsRecordHandler } from '../helpers/handlers.js';
 
 describe('Class: SqsFifoBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;

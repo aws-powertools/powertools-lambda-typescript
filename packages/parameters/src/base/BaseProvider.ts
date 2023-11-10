@@ -5,17 +5,17 @@ import {
   isSdkClient,
   isString,
 } from '@aws-lambda-powertools/commons';
-import { GetOptions } from './GetOptions';
-import { GetMultipleOptions } from './GetMultipleOptions';
-import { ExpirableValue } from './ExpirableValue';
-import { GetParameterError, TransformParameterError } from '../errors';
-import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService';
-import { transformValue } from './transformValue';
+import { GetOptions } from './GetOptions.js';
+import { GetMultipleOptions } from './GetMultipleOptions.js';
+import { ExpirableValue } from './ExpirableValue.js';
+import { GetParameterError, TransformParameterError } from '../errors.js';
+import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import { transformValue } from './transformValue.js';
 import type {
   BaseProviderInterface,
   GetMultipleOptionsInterface,
   GetOptionsInterface,
-} from '../types/BaseProvider';
+} from '../types/BaseProvider.js';
 
 /**
  * Base class for all providers.

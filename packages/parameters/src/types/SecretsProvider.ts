@@ -1,10 +1,10 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type {
   GetSecretValueCommandInput,
   SecretsManagerClient,
   SecretsManagerClientConfig,
 } from '@aws-sdk/client-secrets-manager';
-import type { GetOptionsInterface, TransformOptions } from './BaseProvider';
+import type { GetOptionsInterface, TransformOptions } from './BaseProvider.js';
 
 /**
  * Base interface for SecretsProviderOptions.
@@ -89,7 +89,7 @@ type SecretsGetOptions =
  */
 type SecretsGetOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? string | Uint8Array

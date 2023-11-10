@@ -17,7 +17,15 @@ if (process.argv.length < 3) {
 }
 const basePath = resolve(process.argv[2]);
 const packageJsonPath = join(basePath, 'package.json');
-const alphaPackages = [];
+const alphaPackages = [
+  '@aws-lambda-powertools/batch',
+  '@aws-lambda-powertools/commons',
+  '@aws-lambda-powertools/idempotency',
+  '@aws-lambda-powertools/logger',
+  '@aws-lambda-powertools/metrics',
+  '@aws-lambda-powertools/parameters',
+  '@aws-lambda-powertools/tracer',
+];
 const betaPackages = [];
 
 (() => {
@@ -44,12 +52,22 @@ const betaPackages = [];
       types,
       files,
       private,
+      type,
     } = pkgJson;
 
     let version = originalVersion;
     // If the package is an alpha or beta package, update the version number to include a suffix
     if (alphaPackages.includes(name)) {
-      version = `${version}-alpha`;
+      const iteration = JSON.parse(
+        readFileSync(resolve('..', '..', 'v2.json'), 'utf8')
+      ).iteration;
+      version = `${version}-alpha.${iteration}`;
+      dependencies &&
+        Object.entries(dependencies).forEach(([dependencyName, version]) => {
+          if (alphaPackages.includes(dependencyName)) {
+            dependencies[dependencyName] = `${version}-alpha.${iteration}`;
+          }
+        });
     } else if (betaPackages.includes(name)) {
       version = `${version}-beta`;
     }
@@ -71,6 +89,7 @@ const betaPackages = [];
       main,
       types,
       files,
+      type,
     };
 
     // Not all utilities have these fields, so only add them if they exist to avoid

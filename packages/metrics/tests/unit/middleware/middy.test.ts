@@ -169,7 +169,7 @@ describe('Middy middleware', () => {
         serviceName: 'orders',
       });
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
-      const handler = middy(() => {
+      const handler = middy(async (): Promise<void> => {
         metrics.addMetric('successfulBooking', MetricUnit.Count, 2);
         metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       }).use(logMetrics(metrics));

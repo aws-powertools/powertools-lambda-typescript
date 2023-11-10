@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-const DynamoDBStreamChangeRecordSchema = z.object({
-  ApproximateCreationDateTime: z.optional(z.number()),
+const DynamoDBStreamChangeRecord = z.object({
+  ApproximateCreationDateTime: z.number().optional(),
   Keys: z.record(z.string(), z.record(z.string(), z.any())),
-  NewImage: z.optional(z.record(z.string(), z.any())),
-  OldImage: z.optional(z.record(z.string(), z.any())),
+  NewImage: z.record(z.string(), z.any()).optional(),
+  OldImage: z.record(z.string(), z.any()).optional(),
   SequenceNumber: z.string(),
   SizeBytes: z.number(),
   StreamViewType: z.enum([
@@ -15,29 +15,29 @@ const DynamoDBStreamChangeRecordSchema = z.object({
   ]),
 });
 
-const UserIdentitySchema = z.object({
+const UserIdentity = z.object({
   type: z.enum(['Service']),
   principalId: z.literal('dynamodb.amazonaws.com'),
 });
 
-const DynamoDBStreamRecordSchema = z.object({
+const DynamoDBStreamRecord = z.object({
   eventID: z.string(),
   eventName: z.enum(['INSERT', 'MODIFY', 'REMOVE']),
   eventVersion: z.string(),
   eventSource: z.literal('aws:dynamodb'),
   awsRegion: z.string(),
   eventSourceARN: z.string(),
-  dynamodb: DynamoDBStreamChangeRecordSchema,
-  userIdentity: z.optional(UserIdentitySchema),
+  dynamodb: DynamoDBStreamChangeRecord,
+  userIdentity: UserIdentity.optional(),
 });
 
 const DynamoDBStreamSchema = z.object({
-  Records: z.array(DynamoDBStreamRecordSchema),
+  Records: z.array(DynamoDBStreamRecord),
 });
 
 export {
   DynamoDBStreamSchema,
-  DynamoDBStreamRecordSchema,
-  DynamoDBStreamChangeRecordSchema,
-  UserIdentitySchema,
+  DynamoDBStreamRecord,
+  DynamoDBStreamChangeRecord,
+  UserIdentity,
 };

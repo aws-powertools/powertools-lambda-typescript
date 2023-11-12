@@ -407,7 +407,17 @@ describe('Class: BasePersistenceLayer', () => {
       // Act & Assess
       await expect(
         persistenceLayer.saveInProgress({ foo: 'bar' })
-      ).rejects.toThrow(new IdempotencyItemAlreadyExistsError());
+      ).rejects.toThrow(
+        new IdempotencyItemAlreadyExistsError(
+          'Failed to put record for already existing idempotency key: my-lambda-function#mocked-hash',
+          new IdempotencyRecord({
+            idempotencyKey: 'my-lambda-function#mocked-hash',
+            status: IdempotencyRecordStatus.EXPIRED,
+            payloadHash: 'different-hash',
+            expiryTimestamp: Date.now() / 1000 - 1,
+          })
+        )
+      );
       expect(putRecordSpy).toHaveBeenCalledTimes(0);
     });
 

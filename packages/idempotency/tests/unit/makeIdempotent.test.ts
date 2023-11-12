@@ -177,7 +177,19 @@ describe('Function: makeIdempotent', () => {
     );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-      .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      .mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError(
+          'Failed to put record for already existing idempotency key: idempotencyKey',
+          new IdempotencyRecord({
+            idempotencyKey: 'idempotencyKey',
+            expiryTimestamp: Date.now() + 10000,
+            inProgressExpiryTimestamp: 0,
+            responseData: { response: false },
+            payloadHash: 'payloadHash',
+            status: IdempotencyRecordStatus.COMPLETED,
+          })
+        )
+      );
     const stubRecord = new IdempotencyRecord({
       idempotencyKey: 'idempotencyKey',
       expiryTimestamp: Date.now() + 10000,
@@ -209,7 +221,19 @@ describe('Function: makeIdempotent', () => {
     );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-      .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      .mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError(
+          'Failed to put record for already existing idempotency key: idempotencyKey',
+          new IdempotencyRecord({
+            idempotencyKey: 'idempotencyKey',
+            expiryTimestamp: Date.now() + 10000,
+            inProgressExpiryTimestamp: 0,
+            responseData: { response: false },
+            payloadHash: 'payloadHash',
+            status: IdempotencyRecordStatus.COMPLETED,
+          })
+        )
+      );
     const stubRecordInconsistent = new IdempotencyRecord({
       idempotencyKey: 'idempotencyKey',
       expiryTimestamp: Date.now() + 10000,
@@ -249,7 +273,19 @@ describe('Function: makeIdempotent', () => {
     );
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-      .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      .mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError(
+          'Failed to put record for already existing idempotency key: idempotencyKey',
+          new IdempotencyRecord({
+            idempotencyKey: 'idempotencyKey',
+            expiryTimestamp: Date.now() + 10000,
+            inProgressExpiryTimestamp: 0,
+            responseData: { response: false },
+            payloadHash: 'payloadHash',
+            status: IdempotencyRecordStatus.EXPIRED,
+          })
+        )
+      );
     const stubRecordInconsistent = new IdempotencyRecord({
       idempotencyKey: 'idempotencyKey',
       expiryTimestamp: Date.now() + 10000,

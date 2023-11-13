@@ -13,6 +13,7 @@ import apiGatewayProxyV2Event from '../../events/apiGatewayProxyV2Event.json';
 import cloudFormationCustomResourceCreateEvent from '../../events/cloudformationCustomResourceCreate.json';
 import cloudFormationCustomResourceUpdateEvent from '../../events/cloudformationCustomResourceUpdate.json';
 import cloudFormationCustomResourceDeleteEvent from '../../events/cloudformationCustomResourceDelete.json';
+import cloudWatchLogEvent from '../../events/cloudWatchLogEvent.json';
 import eventBridgeEvent from '../../events/eventBridgeEvent.json';
 import s3Event from '../../events/s3Event.json';
 import s3EventBridgeNotificationObjectCreatedEvent from '../../events/s3EventBridgeNotificationObjectCreatedEvent.json';
@@ -43,6 +44,7 @@ import {
 import { SnsSchema } from '../../../src/schemas/sns';
 import { SqsSchema } from '../../../src/schemas/sqs';
 import { SesSchema } from '../../../src/schemas/ses';
+import { CloudWatchLogsSchema } from '../../../src/schemas/cloudwatch';
 
 /**
  * keep everything in one describe block for now.
@@ -86,6 +88,15 @@ describe('Schema:', () => {
       CloudFormationCustomResourceDeleteSchema.parse(
         cloudFormationCustomResourceDeleteEvent
       );
+    });
+  });
+  it('CloudWatchLogs should parse cloudwatch logs event', () => {
+    const parsed = CloudWatchLogsSchema.parse(cloudWatchLogEvent);
+    expect(parsed.awslogs.data).toBeDefined();
+    expect(parsed.awslogs.data?.logEvents[0]).toEqual({
+      id: 'eventId1',
+      timestamp: 1440442987000,
+      message: '[ERROR] First test message',
     });
   });
   it('DynamoDB should parse a stream of records', () => {

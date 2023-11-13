@@ -4,6 +4,7 @@ import {
   Code,
   LayerVersion,
   Runtime,
+  RuntimeFamily,
 } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
@@ -41,7 +42,7 @@ export class LayerPublisherStack extends Stack {
         Runtime.NODEJS_16_X,
         Runtime.NODEJS_18_X,
         // TODO: address when working on #1664: replace with `Runtime.NODEJS_20_X` as well as L52
-        'nodejs20.x' as unknown as Runtime,
+        new Runtime('nodejs20.x', RuntimeFamily.NODEJS),
       ],
       license: 'MIT-0',
       // This is needed because the following regions do not support the compatibleArchitectures property #1400

@@ -90,13 +90,24 @@ describe('Schema:', () => {
       );
     });
   });
-  it('CloudWatchLogs should parse cloudwatch logs event', () => {
-    const parsed = CloudWatchLogsSchema.parse(cloudWatchLogEvent);
-    expect(parsed.awslogs.data).toBeDefined();
-    expect(parsed.awslogs.data?.logEvents[0]).toEqual({
-      id: 'eventId1',
-      timestamp: 1440442987000,
-      message: '[ERROR] First test message',
+  describe('CloudWatchLogs ', () => {
+    it('should parse cloudwatch logs event', () => {
+      const parsed = CloudWatchLogsSchema.parse(cloudWatchLogEvent);
+      expect(parsed.awslogs.data).toBeDefined();
+      expect(parsed.awslogs.data?.logEvents[0]).toEqual({
+        id: 'eventId1',
+        timestamp: 1440442987000,
+        message: '[ERROR] First test message',
+      });
+    });
+    it('should throw error if cloudwatch logs event is invalid', () => {
+      expect(() =>
+        CloudWatchLogsSchema.parse({
+          awslogs: {
+            data: 'invalid',
+          },
+        })
+      ).toThrowError();
     });
   });
   it('DynamoDB should parse a stream of records', () => {

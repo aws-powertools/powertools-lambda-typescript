@@ -28,6 +28,7 @@ const CloudWatchLogsSchema = z.object({
         return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
       } catch (e) {
         console.debug('Failed to gunzip data', e);
+        throw e;
       }
     }),
   }),

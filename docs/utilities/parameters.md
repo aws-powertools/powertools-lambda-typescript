@@ -44,7 +44,7 @@ Depending on the provider you want to use, install the library and the correspon
 	```
 
 ???+ tip
-	If you are using the `nodejs18.x` runtime, the AWS SDK for JavaScript v3 is already installed and you can install the utility only.
+	If you are using the `nodejs18.x` runtime or newer, the AWS SDK for JavaScript v3 is already installed and you can install the utility only.
 
 ### IAM Permissions
 

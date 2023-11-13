@@ -11,7 +11,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
 const commonProps: Partial<NodejsFunctionProps> = {
-  runtime: Runtime.NODEJS_18_X,
+  runtime: Runtime.NODEJS_20_X,
   tracing: Tracing.ACTIVE,
   timeout: Duration.seconds(30),
   logRetention: RetentionDays.ONE_DAY,
@@ -112,7 +112,7 @@ class UuidApi extends Construct {
     super(scope, id);
 
     const uuidFn = new NodejsFunction(this, 'UuidFn', {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       entry: './functions/uuid.ts',
     });
 

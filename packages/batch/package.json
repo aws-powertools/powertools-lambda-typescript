@@ -16,6 +16,7 @@
     "test:e2e:nodejs14x": "echo 'Not Implemented'",
     "test:e2e:nodejs16x": "echo 'Not Implemented'",
     "test:e2e:nodejs18x": "echo 'Not Implemented'",
+    "test:e2e:nodejs20x": "echo 'Not Implemented'",
     "test:e2e": "echo 'Not Implemented'",
     "watch": "jest --watch",
     "build": "tsc --build --force",

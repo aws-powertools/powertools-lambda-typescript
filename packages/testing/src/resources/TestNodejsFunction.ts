@@ -1,5 +1,5 @@
 import { CfnOutput, Duration } from 'aws-cdk-lib';
-import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import { Tracing, type Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { randomUUID } from 'node:crypto';
@@ -32,7 +32,8 @@ class TestNodejsFunction extends NodejsFunction {
         testName: stack.testName,
         resourceName: extraProps.nameSuffix,
       }),
-      runtime: TEST_RUNTIMES[getRuntimeKey()],
+      // TODO: address when working on #1664: remove the `as unknown as Runtime`
+      runtime: TEST_RUNTIMES[getRuntimeKey()] as unknown as Runtime,
       architecture: TEST_ARCHITECTURES[getArchitectureKey()],
       logRetention: RetentionDays.ONE_DAY,
     });

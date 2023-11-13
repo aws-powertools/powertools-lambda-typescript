@@ -12,7 +12,8 @@ const TEST_RUNTIMES = {
   nodejs14x: Runtime.NODEJS_14_X,
   nodejs16x: Runtime.NODEJS_16_X,
   nodejs18x: Runtime.NODEJS_18_X,
-  [defaultRuntime]: Runtime.NODEJS_20_X,
+  // TODO: address when working on #1664: replace with `Runtime.NODEJS_20_X`
+  [defaultRuntime]: 'nodejs20.x',
 } as const;
 
 /**

@@ -8,6 +8,7 @@
     "include": [
         "../src/**/*",
         "./**/*",
-        "../tests/events/*.json"
+        "../tests/events/*.json",
+        "../tests/events/*.*"
     ]
 }

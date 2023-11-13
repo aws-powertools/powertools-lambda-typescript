@@ -26,7 +26,7 @@ const SqsRecordSchema = z.object({
   attributes: SqsAttributeSchema,
   messageAttributes: z.record(z.string(), SqsMsgAttributeSchema),
   md5OfBody: z.string(),
-  md5OfMessageAttributes: z.string().optional(),
+  md5OfMessageAttributes: z.string().optional().nullable(),
   eventSource: z.literal('aws:sqs'),
   eventSourceARN: z.string(),
   awsRegion: z.string(),

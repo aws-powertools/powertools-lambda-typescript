@@ -16,22 +16,30 @@ const CloudWatchLogsDecodeSchema = z.object({
   logEvents: z.array(CloudWatchLogEventSchema),
 });
 
+function decompressRecordToJSON(
+  data: string
+): z.infer<typeof CloudWatchLogsDecodeSchema> {
+  try {
+    console.debug('Decoding data', data);
+    const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString(
+      'utf8'
+    );
+
+    return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
+  } catch (e) {
+    console.debug('Failed to gunzip data', e);
+    throw e;
+  }
+}
+
 const CloudWatchLogsSchema = z.object({
   awslogs: z.object({
-    data: z.string().transform((data) => {
-      try {
-        console.debug('Decoding data', data);
-        const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString(
-          'utf8'
-        );
-
-        return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
-      } catch (e) {
-        console.debug('Failed to gunzip data', e);
-        throw e;
-      }
-    }),
+    data: z.string().transform((data) => decompressRecordToJSON(data)),
   }),
 });
 
-export { CloudWatchLogsSchema };
+export {
+  CloudWatchLogsSchema,
+  CloudWatchLogsDecodeSchema,
+  decompressRecordToJSON,
+};

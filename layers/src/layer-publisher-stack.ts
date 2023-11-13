@@ -4,7 +4,6 @@ import {
   Code,
   LayerVersion,
   Runtime,
-  RuntimeFamily,
 } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
@@ -41,8 +40,7 @@ export class LayerPublisherStack extends Stack {
         Runtime.NODEJS_14_X,
         Runtime.NODEJS_16_X,
         Runtime.NODEJS_18_X,
-        // TODO: address when working on #1664: replace with `Runtime.NODEJS_20_X` as well as L52
-        new Runtime('nodejs20.x', RuntimeFamily.NODEJS),
+        Runtime.NODEJS_20_X,
       ],
       license: 'MIT-0',
       // This is needed because the following regions do not support the compatibleArchitectures property #1400
@@ -50,7 +48,7 @@ export class LayerPublisherStack extends Stack {
       code: Code.fromAsset(resolve(__dirname), {
         bundling: {
           // This is here only because is required by CDK, however it is not used since the bundling is done locally
-          image: Runtime.NODEJS_18_X.bundlingImage,
+          image: Runtime.NODEJS_20_X.bundlingImage,
           // We need to run a command to generate a random UUID to force the bundling to run every time
           command: [`echo "${randomUUID()}"`],
           local: {

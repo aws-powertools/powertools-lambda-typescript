@@ -1,12 +1,7 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import {
-  LayerVersion,
-  Runtime,
-  RuntimeFamily,
-  Tracing,
-} from 'aws-cdk-lib/aws-lambda';
+import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import {
   NodejsFunction,
   NodejsFunctionProps,
@@ -16,8 +11,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
 const commonProps: Partial<NodejsFunctionProps> = {
-  // TODO: address when working on #1664: move to `Runtime.NODEJS_20_X`
-  runtime: new Runtime('nodejs20.x', RuntimeFamily.NODEJS),
+  runtime: Runtime.NODEJS_20_X,
   tracing: Tracing.ACTIVE,
   timeout: Duration.seconds(30),
   logRetention: RetentionDays.ONE_DAY,
@@ -118,8 +112,7 @@ class UuidApi extends Construct {
     super(scope, id);
 
     const uuidFn = new NodejsFunction(this, 'UuidFn', {
-      // TODO: address when working on #1664: move to `Runtime.NODEJS_20_X`
-      runtime: new Runtime('nodejs20.x', RuntimeFamily.NODEJS),
+      runtime: Runtime.NODEJS_20_X,
       entry: './functions/uuid.ts',
     });
 

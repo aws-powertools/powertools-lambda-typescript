@@ -1,4 +1,4 @@
-import { Runtime, Architecture, RuntimeFamily } from 'aws-cdk-lib/aws-lambda';
+import { Runtime, Architecture } from 'aws-cdk-lib/aws-lambda';
 
 /**
  * The default AWS Lambda runtime to use when none is provided.
@@ -12,8 +12,7 @@ const TEST_RUNTIMES = {
   nodejs14x: Runtime.NODEJS_14_X,
   nodejs16x: Runtime.NODEJS_16_X,
   nodejs18x: Runtime.NODEJS_18_X,
-  // TODO: address when working on #1664: replace with `Runtime.NODEJS_20_X`
-  [defaultRuntime]: new Runtime('nodejs20.x', RuntimeFamily.NODEJS),
+  [defaultRuntime]: Runtime.NODEJS_20_X,
 } as const;
 
 /**

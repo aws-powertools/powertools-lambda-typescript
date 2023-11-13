@@ -35,7 +35,7 @@
     "@types/aws-lambda": "^8.10.121",
     "@types/jest": "^29.5.4",
     "@types/node": "20.6.1",
-    "aws-cdk": "^2.96.1",
+    "aws-cdk": "^2.107.0",
     "esbuild": "^0.19.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@middy/core": "^3.6.2",
-    "aws-cdk-lib": "^2.96.1",
+    "aws-cdk-lib": "^2.107.0",
     "constructs": "^10.2.70",
     "phin": "^3.7.0",
     "source-map-support": "^0.5.21"

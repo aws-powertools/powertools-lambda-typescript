@@ -15,6 +15,8 @@ import cloudFormationCustomResourceUpdateEvent from '../../events/cloudformation
 import cloudFormationCustomResourceDeleteEvent from '../../events/cloudformationCustomResourceDelete.json';
 import cloudWatchLogEvent from '../../events/cloudWatchLogEvent.json';
 import eventBridgeEvent from '../../events/eventBridgeEvent.json';
+import kafkaEventMsk from '../../events/kafkaEventMsk.json';
+import kafkaEventSelfManaged from '../../events/kafkaEventSelfManaged.json';
 import s3Event from '../../events/s3Event.json';
 import s3EventBridgeNotificationObjectCreatedEvent from '../../events/s3EventBridgeNotificationObjectCreatedEvent.json';
 import s3EventBridgeNotificationObjectDeletedEvent from '../../events/s3EventBridgeNotificationObjectDeletedEvent.json';
@@ -45,6 +47,10 @@ import { SnsSchema } from '../../../src/schemas/sns';
 import { SqsSchema } from '../../../src/schemas/sqs';
 import { SesSchema } from '../../../src/schemas/ses';
 import { CloudWatchLogsSchema } from '../../../src/schemas/cloudwatch';
+import {
+  KafkaMskEventSchema,
+  KafkaSelfManagedEventSchema,
+} from '../../../src/schemas/kafka';
 
 /**
  * keep everything in one describe block for now.
@@ -115,6 +121,31 @@ describe('Schema:', () => {
   });
   it('EventBridge should parse eventbridge event', () => {
     EventBridgeSchema.parse(eventBridgeEvent);
+  });
+  describe('Kafka ', () => {
+    const expectedTestEvent = {
+      key: 'recordKey',
+      value: JSON.stringify({ key: 'value' }),
+      partition: 0,
+      topic: 'mytopic',
+      offset: 15,
+      timestamp: 1545084650987,
+      timestampType: 'CREATE_TIME',
+      headers: [
+        {
+          headerKey: 'headerValue',
+        },
+      ],
+    };
+    it('should parse kafka MSK event', () => {
+      const parsed = KafkaMskEventSchema.parse(kafkaEventMsk);
+
+      expect(parsed.records['mytopic-0'][0]).toEqual(expectedTestEvent);
+    });
+    it('should parse kafka self managed event', () => {
+      const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
+      expect(parsed.records['mytopic-0'][0]).toEqual(expectedTestEvent);
+    });
   });
   describe('S3 ', () => {
     it('should parse s3 event', () => {

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EventBridgeSchema } from './eventbridge.js';
+import { SqsRecordSchema } from './sqs.js';
 
 const S3Identity = z.object({
   principalId: z.string(),
@@ -81,7 +82,7 @@ const S3Schema = z.object({
   Records: z.array(S3Record),
 });
 
-const S3SqsEventNotificationRecordSchema = z.object({
+const S3SqsEventNotificationRecordSchema = SqsRecordSchema.extend({
   body: z.string(),
 });
 

@@ -7,10 +7,10 @@ const KafkaRecordSchema = z.object({
   timestamp: z.number(),
   timestampType: z.string(),
   key: z.string().transform((key) => {
-    return key ? Buffer.from(key, 'base64').toString() : undefined;
+    return Buffer.from(key, 'base64').toString();
   }),
   value: z.string().transform((value) => {
-    return value ? Buffer.from(value, 'base64').toString() : undefined;
+    return Buffer.from(value, 'base64').toString();
   }),
   headers: z.array(
     z.record(

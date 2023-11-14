@@ -26,9 +26,25 @@ class EnvironmentVariablesService
   private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
   private functionVersionVariable = 'AWS_LAMBDA_FUNCTION_VERSION';
   private logEventVariable = 'POWERTOOLS_LOGGER_LOG_EVENT';
-  private logLevelVariable = 'LOG_LEVEL';
+  private logLevelVariable = 'POWERTOOLS_LOG_LEVEL';
+  private logLevelVariableAlias = 'LOG_LEVEL';
   private memoryLimitInMBVariable = 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE';
   private sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
+
+  /**
+   * It returns the value of the `AWS_LAMBDA_LOG_LEVEL` environment variable.
+   *
+   * The `AWS_LAMBDA_LOG_LEVEL` environment variable is set by AWS Lambda when configuring
+   * the function's log level using the Advanced Logging Controls feature. This value always
+   * takes precedence over other means of configuring the log level.
+   *
+   * @returns {string}
+   */
+  public getAwsLogLevel(): string {
+    const awsLogLevelVariable = this.get(this.awsLogLevelVariable);
+
+    return awsLogLevelVariable === 'FATAL' ? 'CRITICAL' : awsLogLevelVariable;
+  }
 
   /**
    * It returns the value of the AWS_REGION environment variable.
@@ -89,23 +105,19 @@ class EnvironmentVariablesService
   }
 
   /**
-   * It returns the value of the `LOG_LEVEL` or `AWS_LAMBDA_LOG_LEVEL` environment variable.
+   * It returns the value of the `POWERTOOLS_LOG_LEVEL, or `LOG_LEVEL` environment variables
+   * when the first one is not set.
    *
-   * The `AWS_LAMBDA_LOG_LEVEL` environment variable is set by AWS Lambda when configuring
-   * the function's log level. The `LOG_LEVEL` environment variable always takes precedence
-   * over the `AWS_LAMBDA_LOG_LEVEL` environment variable.
+   * @note The `LOG_LEVEL` environment variable is deprecated and will be removed in a future release.
+   * @note The `AWS_LAMBDA_LOG_LEVEL` environment variable always takes precedence over the ones above.
    *
    * @returns {string}
    */
   public getLogLevel(): string {
     const logLevelVariable = this.get(this.logLevelVariable);
-    const awsLogLevelVariable = this.get(this.awsLogLevelVariable);
+    const logLevelVariableAlias = this.get(this.logLevelVariableAlias);
 
-    return logLevelVariable !== ''
-      ? logLevelVariable
-      : awsLogLevelVariable === 'FATAL'
-      ? 'CRITICAL'
-      : awsLogLevelVariable;
+    return logLevelVariable !== '' ? logLevelVariable : logLevelVariableAlias;
   }
 
   /**

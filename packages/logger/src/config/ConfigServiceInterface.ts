@@ -15,6 +15,17 @@ interface ConfigServiceInterface {
   get(name: string): string;
 
   /**
+   * It returns the value of the `AWS_LAMBDA_LOG_LEVEL` environment variable.
+   *
+   * The `AWS_LAMBDA_LOG_LEVEL` environment variable is set by AWS Lambda when configuring
+   * the function's log level using the Advanced Logging Controls feature. This value always
+   * takes precedence over other means of configuring the log level.
+   *
+   * @returns {string}
+   */
+  getAwsLogLevel(): string;
+
+  /**
    * It returns the value of the ENVIRONMENT environment variable.
    *
    * @returns {string}

@@ -1,5 +1,6 @@
 import { randomInt } from 'node:crypto';
 import { Console } from 'node:console';
+import { format } from 'node:util';
 import type { Context, Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import { LogFormatterInterface, PowertoolLogFormatter } from './formatter';
@@ -491,9 +492,13 @@ class Logger extends Utility implements ClassThatLogs {
   /**
    * Set the log level for this Logger instance.
    *
+   * If the log level is set using AWS Lambda Advanced Logging Controls, it sets it
+   * instead of the given log level to avoid data loss.
+   *
    * @param logLevel The log level to set, i.e. `error`, `warn`, `info`, `debug`, etc.
    */
   public setLogLevel(logLevel: LogLevel): void {
+    if (this.awsLogLevelShortCircuit(logLevel)) return;
     if (this.isValidLogLevel(logLevel)) {
       this.logLevel = this.logLevelThresholds[logLevel];
     } else {
@@ -595,6 +600,30 @@ class Logger extends Utility implements ClassThatLogs {
     attributesArray.forEach((attributes: Partial<PowertoolLogData>) => {
       merge(this.powertoolLogData, attributes);
     });
+  }
+
+  private awsLogLevelShortCircuit(selectedLogLevel?: string): boolean {
+    const awsLogLevel = this.getEnvVarsService().getAwsLogLevel();
+    if (this.isValidLogLevel(awsLogLevel)) {
+      this.logLevel = this.logLevelThresholds[awsLogLevel];
+
+      if (
+        this.isValidLogLevel(selectedLogLevel) &&
+        this.logLevel > this.logLevelThresholds[selectedLogLevel]
+      ) {
+        this.warn(
+          format(
+            `Current log level (%s) does not match AWS Lambda Advanced Logging Controls minimum log level (%s). This can lead to data loss, consider adjusting them.`,
+            selectedLogLevel,
+            awsLogLevel
+          )
+        );
+      }
+
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -868,17 +897,21 @@ class Logger extends Utility implements ClassThatLogs {
 
   /**
    * Sets the initial Logger log level based on the following order:
-   * 1. If a log level is passed to the constructor, it sets it.
-   * 2. If a log level is set via custom config service, it sets it.
-   * 3. If a log level is set via env variables, it sets it.
+   * 1. If a log level is set using AWS Lambda Advanced Logging Controls, it sets it.
+   * 2. If a log level is passed to the constructor, it sets it.
+   * 3. If a log level is set via custom config service, it sets it.
+   * 4. If a log level is set via env variables, it sets it.
    *
-   * If none of the above is true, the default log level applies (INFO).
+   * If none of the above is true, the default log level applies (`INFO`).
    *
    * @private
    * @param {LogLevel} [logLevel] - Log level passed to the constructor
    */
   private setInitialLogLevel(logLevel?: LogLevel): void {
     const constructorLogLevel = logLevel?.toUpperCase();
+
+    if (this.awsLogLevelShortCircuit(constructorLogLevel)) return;
+
     if (this.isValidLogLevel(constructorLogLevel)) {
       this.logLevel = this.logLevelThresholds[constructorLogLevel];
 

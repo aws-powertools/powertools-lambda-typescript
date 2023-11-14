@@ -34,4 +34,16 @@ describe('Kafka ', () => {
     const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
     expect(parsed.records['mytopic-0'][0]).toEqual(expectedTestEvent);
   });
+  it('should transform bootstrapServers to array', () => {
+    const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
+    expect(parsed.bootstrapServers).toEqual([
+      'b-2.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
+      'b-1.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
+    ]);
+  });
+  it('should return undefined if bootstrapServers is not present', () => {
+    kafkaEventSelfManaged.bootstrapServers = '';
+    const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
+    expect(parsed.bootstrapServers).toBeUndefined();
+  });
 });

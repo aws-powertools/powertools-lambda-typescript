@@ -70,4 +70,9 @@ describe('Kinesis ', () => {
       logStream: '2022/11/10/[$LATEST]26b6a45d574f442ea28438923cbf7bf7',
     });
   });
+  it('should return original value if cannot parse KinesisFirehoseSqsRecord', () => {
+    kinesisFirehoseSQSEvent.records[0].data = 'not a valid json';
+    const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
+    expect(parsed.records[0].data).toEqual('not a valid json');
+  });
 });

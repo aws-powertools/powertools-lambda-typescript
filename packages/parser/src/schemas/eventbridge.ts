@@ -8,9 +8,9 @@ const EventBridgeSchema = z.object({
   time: z.string().datetime(),
   region: z.string(),
   resources: z.array(z.string()),
-  detail_type: z.string().optional(),
-  detail: z.object({}).optional(),
-  replay_name: z.string().optional(),
+  'detail-type': z.string().optional(),
+  detail: z.unknown(),
+  'replay-name': z.string().optional(),
 });
 
 export { EventBridgeSchema };

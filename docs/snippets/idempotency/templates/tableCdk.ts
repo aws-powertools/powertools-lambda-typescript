@@ -18,7 +18,7 @@ export class IdempotencyStack extends Stack {
     });
 
     const fnHandler = new NodejsFunction(this, 'helloWorldFunction', {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       handler: 'handler',
       entry: 'src/index.ts',
       environment: {

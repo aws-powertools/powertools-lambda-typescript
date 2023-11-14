@@ -68,7 +68,7 @@ These settings will be used across all logs emitted:
       ShoppingCartApiFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs18.x
+          Runtime: nodejs20.x
           Environment:
             Variables:
               LOG_LEVEL: WARN

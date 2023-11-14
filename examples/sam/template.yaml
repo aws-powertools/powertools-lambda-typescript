@@ -31,7 +31,7 @@ Parameters:
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
 Globals:
   Function:
-    Runtime: nodejs18.x
+    Runtime: nodejs20.x
     Architectures:
       - x86_64
     MemorySize: 128

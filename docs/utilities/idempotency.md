@@ -60,7 +60,7 @@ While we support Amazon DynamoDB as a persistance layer out of the box, you need
 
 
 ???+ note
-    This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="_blank"} only**. If you are using the `nodejs18.x` runtime, the AWS SDK for JavaScript v3 is already installed and you can install only the utility.
+    This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="_blank"} only**. If you are using the `nodejs18.x` runtime or newer, the AWS SDK for JavaScript v3 is already installed and you can install only the utility.
 
 
 ### IAM Permissions

@@ -28,7 +28,7 @@ jobs:
             packages/parameters,
             packages/idempotency,
           ]
-        version: [14, 16, 18]
+        version: [14, 16, 18, 20]
         arch: [x86_64, arm64]
       fail-fast: false
     steps:
@@ -53,11 +53,11 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
-          node-version: ${{ matrix.version }}
+          node-version: '20'
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
         with:
-          nodeVersion: ${{ matrix.version }}
+          nodeVersion: '20'
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@04b98b3f9e85f563fb061be8751a0352327246b0 # v3.0.1
         with:

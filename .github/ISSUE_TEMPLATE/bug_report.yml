@@ -67,6 +67,7 @@ body:
     attributes:
       label: AWS Lambda function runtime
       options:
+        - 20.x
         - 18.x
         - 16.x
         - 14.x

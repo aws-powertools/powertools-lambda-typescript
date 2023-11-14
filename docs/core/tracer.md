@@ -74,7 +74,7 @@ The `Tracer` utility is instantiated outside of the Lambda handler. In doing thi
       HelloWorldFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs18.x
+          Runtime: nodejs20.x
           Tracing: Active
           Environment:
             Variables:

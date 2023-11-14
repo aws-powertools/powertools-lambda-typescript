@@ -1,9 +1,9 @@
 name: 'Cached Node Modules'
 description: 'A simple action to cache node_modules or install them if they are not cached'
 inputs:
-  nodeVersion:  # id of input
+  nodeVersion: # id of input
     description: 'Node.js version to use in the cache key'
-    default: '18'
+    default: '20'
 outputs:
   cache-hit:
     description: "Whether the cache was hit or not"
@@ -12,6 +12,7 @@ runs:
   using: "composite"
   steps:
     - name: Install npm
+      # We need to keep this npm version until we drop Node.js 16 support because Node.js 16 doesn't support npm 10
       run: npm i -g npm@next-9
       shell: bash
     - name: Cache node modules

@@ -14,7 +14,6 @@ import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { createHash } from 'node:crypto';
 import {
   invokeFunction,
-  isValidRuntimeKey,
   TestInvocationLogs,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
@@ -22,12 +21,6 @@ import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resource
 import { join } from 'node:path';
 import { Duration } from 'aws-cdk-lib';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-
-const runtime: string = process.env.RUNTIME || 'nodejs18x';
-
-if (!isValidRuntimeKey(runtime)) {
-  throw new Error(`Invalid runtime key value: ${runtime}`);
-}
 
 const dynamoDBClient = new DynamoDBClient({});
 

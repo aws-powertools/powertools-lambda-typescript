@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EventBridgeSchema } from './eventbridge.js';
 
 const S3Identity = z.object({
   principalId: z.string(),
@@ -72,7 +73,7 @@ const S3EventNotificationEventBridgeDetailSchema = z.object({
   'destination-access-tier': z.string().optional(),
 });
 
-const S3EventNotificationEventBridgeSchema = z.object({
+const S3EventNotificationEventBridgeSchema = EventBridgeSchema.extend({
   detail: S3EventNotificationEventBridgeDetailSchema,
 });
 

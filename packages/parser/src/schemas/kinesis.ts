@@ -27,9 +27,9 @@ const KinesisDataStreamSchema = z.object({
 });
 
 const extractCloudWatchLogFromEvent = (
-  event: z.infer<typeof KinesisDataStreamRecord>
+  data: string
 ): z.infer<typeof CloudWatchLogsDecodeSchema> => {
-  return decompressRecordToJSON(event.kinesis.data);
+  return decompressRecordToJSON(data);
 };
 
 export { KinesisDataStreamSchema, extractCloudWatchLogFromEvent };

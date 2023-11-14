@@ -60,7 +60,9 @@ describe('Kinesis ', () => {
       kinesisStreamCloudWatchLogsEvent
     );
 
-    const jsonParsed = extractCloudWatchLogFromEvent(parsed.Records[0]);
+    const jsonParsed = extractCloudWatchLogFromEvent(
+      parsed.Records[0].kinesis.data
+    );
     expect(jsonParsed).toMatchObject({
       messageType: 'DATA_MESSAGE',
       owner: '231436140809',

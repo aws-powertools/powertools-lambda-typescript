@@ -47,6 +47,10 @@ Install the library in your project:
 npm install @aws-lambda-powertools/metrics
 ```
 
+!!! warning "Caution"
+    
+    Using the Lambda [Advanced Logging Controls](...docs link) feature requires you to update your version of Powertools for AWS Lambda (TypeScript) to at least v1.15.0 to ensure metrics are reported correctly to Amazon CloudWatch Metrics.
+
 ### Usage
 
 The `Metrics` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Metrics` can track cold start and emit the appropriate metrics.

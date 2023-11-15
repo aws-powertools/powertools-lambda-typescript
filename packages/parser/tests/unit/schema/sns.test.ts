@@ -8,6 +8,6 @@ import snsEvent from '../../events/snsEvent.json';
 
 describe('Schema:', () => {
   it('SNS should parse sns event', () => {
-    SnsSchema.parse(snsEvent);
+    expect(SnsSchema.parse(snsEvent)).toEqual(snsEvent);
   });
 });

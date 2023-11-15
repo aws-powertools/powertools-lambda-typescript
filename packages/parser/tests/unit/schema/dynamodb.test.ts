@@ -8,6 +8,8 @@ import dynamodbStreamEvent from '../../events/dynamoStreamEvent.json';
 
 describe('DynamoDB ', () => {
   it('should parse a stream of records', () => {
-    DynamoDBStreamSchema.parse(dynamodbStreamEvent);
+    expect(DynamoDBStreamSchema.parse(dynamodbStreamEvent)).toEqual(
+      dynamodbStreamEvent
+    );
   });
 });

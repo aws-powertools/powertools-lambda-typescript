@@ -11,20 +11,26 @@ const CloudFormationCustomResourceBaseSchema = z.object({
 });
 
 const CloudFormationCustomResourceCreateSchema =
-  CloudFormationCustomResourceBaseSchema.extend({
-    RequestType: z.literal('Create'),
-  });
+  CloudFormationCustomResourceBaseSchema.merge(
+    z.object({
+      RequestType: z.literal('Create'),
+    })
+  );
 
 const CloudFormationCustomResourceDeleteSchema =
-  CloudFormationCustomResourceBaseSchema.extend({
-    RequestType: z.literal('Delete'),
-  });
+  CloudFormationCustomResourceBaseSchema.merge(
+    z.object({
+      RequestType: z.literal('Delete'),
+    })
+  );
 
 const CloudFormationCustomResourceUpdateSchema =
-  CloudFormationCustomResourceBaseSchema.extend({
-    RequestType: z.literal('Update'),
-    OldResourceProperties: z.record(z.any()),
-  });
+  CloudFormationCustomResourceBaseSchema.merge(
+    z.object({
+      RequestType: z.literal('Update'),
+      OldResourceProperties: z.record(z.any()),
+    })
+  );
 
 export {
   CloudFormationCustomResourceCreateSchema,

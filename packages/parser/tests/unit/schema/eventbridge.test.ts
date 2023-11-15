@@ -9,6 +9,6 @@ import eventBridgeEvent from '../../events/eventBridgeEvent.json';
 
 describe('EventBridge ', () => {
   it('should parse eventbridge event', () => {
-    EventBridgeSchema.parse(eventBridgeEvent);
+    expect(EventBridgeSchema.parse(eventBridgeEvent)).toEqual(eventBridgeEvent);
   });
 });

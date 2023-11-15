@@ -16,6 +16,7 @@ const S3ResponseElements = z.object({
 });
 
 const S3Message = z.object({
+  s3SchemaVersion: z.string(),
   configurationId: z.string(),
   object: z.object({
     key: z.string(),

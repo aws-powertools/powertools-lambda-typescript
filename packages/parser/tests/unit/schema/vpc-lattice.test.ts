@@ -10,11 +10,11 @@ import vpcLatticeEventPathTrailingSlash from '../../events/vpcLatticeEventPathTr
 
 describe('VPC Lattice ', () => {
   it('should parse vpc lattice event', () => {
-    const parsed = VpcLatticeSchema.parse(vpcLatticeEvent);
-    expect(parsed).toMatchObject(vpcLatticeEvent);
+    expect(VpcLatticeSchema.parse(vpcLatticeEvent)).toEqual(vpcLatticeEvent);
   });
   it('should parse vpc lattice path trailing slash event', () => {
-    const parsed = VpcLatticeSchema.parse(vpcLatticeEventPathTrailingSlash);
-    expect(parsed).toMatchObject(vpcLatticeEventPathTrailingSlash);
+    expect(VpcLatticeSchema.parse(vpcLatticeEventPathTrailingSlash)).toEqual(
+      vpcLatticeEventPathTrailingSlash
+    );
   });
 });

@@ -26,17 +26,21 @@ describe('Kafka ', () => {
     ],
   };
   it('should parse kafka MSK event', () => {
-    const parsed = KafkaMskEventSchema.parse(kafkaEventMsk);
-
-    expect(parsed.records['mytopic-0'][0]).toEqual(expectedTestEvent);
+    expect(
+      KafkaMskEventSchema.parse(kafkaEventMsk).records['mytopic-0'][0]
+    ).toEqual(expectedTestEvent);
   });
   it('should parse kafka self managed event', () => {
-    const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
-    expect(parsed.records['mytopic-0'][0]).toEqual(expectedTestEvent);
+    expect(
+      KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged).records[
+        'mytopic-0'
+      ][0]
+    ).toEqual(expectedTestEvent);
   });
   it('should transform bootstrapServers to array', () => {
-    const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
-    expect(parsed.bootstrapServers).toEqual([
+    expect(
+      KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged).bootstrapServers
+    ).toEqual([
       'b-2.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
       'b-1.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
     ]);

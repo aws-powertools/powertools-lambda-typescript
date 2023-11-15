@@ -14,18 +14,25 @@ import cloudFormationCustomResourceDeleteEvent from '../../events/cloudformation
 
 describe('CloudFormationCustomResource ', () => {
   it('should parse create event', () => {
-    CloudFormationCustomResourceCreateSchema.parse(
-      cloudFormationCustomResourceCreateEvent
-    );
+    console.log(CloudFormationCustomResourceCreateSchema.shape);
+    expect(
+      CloudFormationCustomResourceCreateSchema.parse(
+        cloudFormationCustomResourceCreateEvent
+      )
+    ).toEqual(cloudFormationCustomResourceCreateEvent);
   });
   it('should parse update event', () => {
-    CloudFormationCustomResourceUpdateSchema.parse(
-      cloudFormationCustomResourceUpdateEvent
-    );
+    expect(
+      CloudFormationCustomResourceUpdateSchema.parse(
+        cloudFormationCustomResourceUpdateEvent
+      )
+    ).toEqual(cloudFormationCustomResourceUpdateEvent);
   });
   it('should parse delete event', () => {
-    CloudFormationCustomResourceDeleteSchema.parse(
-      cloudFormationCustomResourceDeleteEvent
-    );
+    expect(
+      CloudFormationCustomResourceDeleteSchema.parse(
+        cloudFormationCustomResourceDeleteEvent
+      )
+    ).toEqual(cloudFormationCustomResourceDeleteEvent);
   });
 });

@@ -16,27 +16,33 @@ import s3SqsEvent from '../../events/s3SqsEvent.json';
 
 describe('S3 ', () => {
   it('should parse s3 event', () => {
-    S3Schema.parse(s3Event);
+    expect(S3Schema.parse(s3Event)).toEqual(s3Event);
   });
 
   it('should parse s3 event bridge notification event created', () => {
-    S3EventNotificationEventBridgeSchema.parse(
-      s3EventBridgeNotificationObjectCreatedEvent
-    );
+    expect(
+      S3EventNotificationEventBridgeSchema.parse(
+        s3EventBridgeNotificationObjectCreatedEvent
+      )
+    ).toEqual(s3EventBridgeNotificationObjectCreatedEvent);
   });
 
   it('should parse s3 event bridge notification event detelted', () => {
-    S3EventNotificationEventBridgeSchema.parse(
-      s3EventBridgeNotificationObjectDeletedEvent
-    );
+    expect(
+      S3EventNotificationEventBridgeSchema.parse(
+        s3EventBridgeNotificationObjectDeletedEvent
+      )
+    ).toEqual(s3EventBridgeNotificationObjectDeletedEvent);
   });
   it('should parse s3 event bridge notification event expired', () => {
-    S3EventNotificationEventBridgeSchema.parse(
-      s3EventBridgeNotificationObjectExpiredEvent
-    );
+    expect(
+      S3EventNotificationEventBridgeSchema.parse(
+        s3EventBridgeNotificationObjectExpiredEvent
+      )
+    ).toEqual(s3EventBridgeNotificationObjectExpiredEvent);
   });
 
   it('should parse s3 sqs notification event', () => {
-    S3SqsEventNotificationSchema.parse(s3SqsEvent);
+    expect(S3SqsEventNotificationSchema.parse(s3SqsEvent)).toEqual(s3SqsEvent);
   });
 });

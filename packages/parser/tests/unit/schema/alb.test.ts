@@ -13,12 +13,16 @@ import albMultiValueHeadersEvent from '../../events/albMultiValueHeadersEvent.js
 
 describe('ALB ', () => {
   it('should parse alb event', () => {
-    AlbSchema.parse(albEvent);
+    expect(AlbSchema.parse(albEvent)).toEqual(albEvent);
   });
   it('should parse alb event path trailing slash', () => {
-    AlbSchema.parse(albEventPathTrailingSlash);
+    expect(AlbSchema.parse(albEventPathTrailingSlash)).toEqual(
+      albEventPathTrailingSlash
+    );
   });
   it('should parse alb event with multi value headers event', () => {
-    AlbMultiValueHeadersSchema.parse(albMultiValueHeadersEvent);
+    expect(AlbMultiValueHeadersSchema.parse(albMultiValueHeadersEvent)).toEqual(
+      albMultiValueHeadersEvent
+    );
   });
 });

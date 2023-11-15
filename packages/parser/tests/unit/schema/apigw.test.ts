@@ -54,4 +54,33 @@ describe('APIGateway ', () => {
       apiGatewayProxyOtherEvent
     );
   });
+  it('should throw error when event is not a valid proxy event', () => {
+    const event = {
+      resource: '/',
+      path: '/',
+      httpMethod: 'GET',
+      headers: {},
+      multiValueHeaders: {},
+      isBase64Encoded: false,
+      body: 'Foo!',
+      requestContext: {
+        accountId: '1234',
+        apiId: 'myApi',
+        httpMethod: 'GET',
+        identity: {
+          sourceIp: '127.0.0.1',
+        },
+        path: '/',
+        protocol: 'Https',
+        requestId: '1234',
+        requestTime: '2018-09-07T16:20:46Z',
+        requestTimeEpoch: 1536992496000,
+        resourcePath: '/',
+        stage: 'test',
+        eventType: 'DISCONNECT',
+        messageId: 'messageId',
+      },
+    };
+    expect(() => APIGatewayProxyEventSchema.parse(event)).toThrow();
+  });
 });

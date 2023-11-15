@@ -70,7 +70,9 @@ const APIGatewayEventRequestContext = z
   })
   .refine(
     (input) => {
-      return !(input.messageId && input.eventType === 'MESSAGE');
+      return (
+        !input.messageId || (input.messageId && input.eventType === 'MESSAGE')
+      );
     },
     {
       message: 'messageId is available only when `eventType` is MESSAGE',

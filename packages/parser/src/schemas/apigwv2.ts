@@ -5,7 +5,7 @@ const RequestContextV2Authorizer = z.object({
   jwt: z
     .object({
       claims: z.record(z.string(), z.any()),
-      scopes: z.array(z.string()),
+      scopes: z.array(z.string()).optional(),
     })
     .optional(),
   iam: z

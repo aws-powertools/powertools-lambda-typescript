@@ -50,7 +50,7 @@
       "cognitoIdentityId": null,
       "cognitoIdentityPoolId": null,
       "principalOrgId": null,
-      "sourceIp": "192.168.0.1/32",
+      "sourceIp": "192.168.0.1",
       "user": null,
       "userAgent": "user-agent",
       "userArn": null,
@@ -76,6 +76,6 @@
   },
   "pathParameters": null,
   "stageVariables": null,
-  "body": "{\"message\": \"hello world\", \"username\": \"lessa\"}",
+  "body": "{\"username\": \"lessa\"}",
   "isBase64Encoded": false
 }

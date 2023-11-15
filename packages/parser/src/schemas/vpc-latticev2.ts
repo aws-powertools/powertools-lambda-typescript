@@ -25,7 +25,7 @@ const VpcLatticeV2RequestContext = z.object({
 const VpcLatticeV2Schema = z.object({
   version: z.string(),
   path: z.string(),
-  method: z.string(),
+  method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']),
   headers: z.record(z.string(), z.string()),
   queryStringParameters: z.record(z.string(), z.string()).optional(),
   body: z.string().optional(),

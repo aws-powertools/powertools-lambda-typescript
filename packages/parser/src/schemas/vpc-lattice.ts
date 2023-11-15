@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const VpcLatticeSchema = z.object({
-  method: z.string(),
+  method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']),
   raw_path: z.string(),
   body: z.string(),
   is_base64_encoded: z.boolean(),

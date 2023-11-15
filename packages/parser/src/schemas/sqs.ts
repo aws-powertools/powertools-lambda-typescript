@@ -8,7 +8,7 @@ const SqsMsgAttributeSchema = z.object({
   dataType: z.string(),
 });
 
-const SqsAttributeSchema = z.object({
+const SqsAttributesSchema = z.object({
   ApproximateReceiveCount: z.string(),
   ApproximateFirstReceiveTimestamp: z.string(),
   MessageDeduplicationId: z.string().optional(),
@@ -23,7 +23,7 @@ const SqsRecordSchema = z.object({
   messageId: z.string(),
   receiptHandle: z.string(),
   body: z.string(),
-  attributes: SqsAttributeSchema,
+  attributes: SqsAttributesSchema,
   messageAttributes: z.record(z.string(), SqsMsgAttributeSchema),
   md5OfBody: z.string(),
   md5OfMessageAttributes: z.string().optional().nullable(),
@@ -39,6 +39,6 @@ const SqsSchema = z.object({
 export {
   SqsSchema,
   SqsRecordSchema,
-  SqsAttributeSchema,
+  SqsAttributesSchema,
   SqsMsgAttributeSchema,
 };

@@ -8,6 +8,6 @@ import sqsEvent from '../../events/sqsEvent.json';
 
 describe('SQS ', () => {
   it('should parse sqs event', () => {
-    SqsSchema.parse(sqsEvent);
+    expect(SqsSchema.parse(sqsEvent)).toEqual(sqsEvent);
   });
 });

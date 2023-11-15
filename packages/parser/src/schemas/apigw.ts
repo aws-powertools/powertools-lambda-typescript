@@ -101,8 +101,8 @@ const APIGatewayProxyEventSchema = z.object({
   requestContext: APIGatewayEventRequestContext,
   pathParameters: z.record(z.string()).optional().nullish(),
   stageVariables: z.record(z.string()).optional().nullish(),
-  isBase64Encoded: z.boolean().optional(),
+  isBase64Encoded: z.boolean(),
   body: z.string().optional(),
 });
 
-export { APIGatewayProxyEventSchema };
+export { APIGatewayProxyEventSchema, APIGatewayCert };

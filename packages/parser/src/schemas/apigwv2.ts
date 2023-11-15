@@ -1,10 +1,13 @@
 import { z } from 'zod';
+import { APIGatewayCert } from './apigw.js';
 
 const RequestContextV2Authorizer = z.object({
-  jwt: z.object({
-    claims: z.record(z.string()),
-    scopes: z.array(z.string()),
-  }),
+  jwt: z
+    .object({
+      claims: z.record(z.string(), z.any()),
+      scopes: z.array(z.string()),
+    })
+    .optional(),
   iam: z
     .object({
       accessKey: z.string().optional(),
@@ -12,7 +15,7 @@ const RequestContextV2Authorizer = z.object({
       callerId: z.string().optional(),
       principalOrgId: z.string().optional(),
       userArn: z.string().optional(),
-      user: z.string().optional(),
+      userId: z.string().optional(),
       cognitoIdentity: z.object({
         amr: z.array(z.string()),
         identityId: z.string(),
@@ -20,6 +23,7 @@ const RequestContextV2Authorizer = z.object({
       }),
     })
     .optional(),
+  lambda: z.record(z.string(), z.any()).optional(),
 });
 
 const RequestContextV2Http = z.object({
@@ -34,6 +38,11 @@ const RequestContextV2 = z.object({
   accountId: z.string(),
   apiId: z.string(),
   authorizer: RequestContextV2Authorizer.optional(),
+  authentication: z
+    .object({
+      clientCert: APIGatewayCert.optional(),
+    })
+    .optional(),
   domainName: z.string(),
   domainPrefix: z.string(),
   http: RequestContextV2Http,

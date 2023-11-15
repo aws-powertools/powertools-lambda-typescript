@@ -9,9 +9,13 @@ import apiGatewayAuthorizerRequestEvent from '../../events/apiGatewayAuthorizerR
 
 describe('APIGateway ', () => {
   it('should parse api gateway event', () => {
-    APIGatewayProxyEventSchema.parse(apiGatewayProxyEvent);
+    const parsed = APIGatewayProxyEventSchema.parse(apiGatewayProxyEvent);
+    expect(parsed).toEqual(apiGatewayProxyEvent);
   });
   it('should parse api gateway authorizer request event', () => {
-    APIGatewayProxyEventSchema.parse(apiGatewayAuthorizerRequestEvent);
+    const parsed = APIGatewayProxyEventSchema.parse(
+      apiGatewayAuthorizerRequestEvent
+    );
+    expect(parsed).toEqual(apiGatewayAuthorizerRequestEvent);
   });
 });

@@ -45,22 +45,12 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - **logger:** add support for `AWS_LAMBDA_LOG_LEVEL` and `POWERTOOLS_LOG_LEVEL` ([#1795](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1795)) ([e69abfb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e69abfb5f1b5d3bf993ac2fe66fae85a85af9905))
 
-=======
->>>>>>> 140c1282 (chore(release): v1.15.0 [skip ci])
 # [1.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.2...v1.15.0) (2023-11-14)
 
 ### Features
 
 - **maintenance:** add support for nodejs20.x runtime ([#1790](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1790)) ([6b9b1bc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b9b1bcb9baf4b3d8e0e5ec6709594aca09bb033))
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> 38bc54f0 (chore(release): v1.14.2 [skip ci])
-=======
->>>>>>> 140c1282 (chore(release): v1.15.0 [skip ci])
->>>>>>> 85c6da66 (chore(release): v1.15.0 [skip ci])
 ## [1.14.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.1...v1.14.2) (2023-11-03)
 
 **Note:** Version bump only for package cdk-sample

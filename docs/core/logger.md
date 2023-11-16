@@ -428,7 +428,7 @@ By setting the log level to `SILENT`, which can be done either through the `logL
 
 #### AWS Lambda Advanced Logging Controls (ALC)
 
-With [AWS Lambda Advanced Logging Controls (ALC)](...docs link), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. Regardless of the output format setting in Lambda, we will always output JSON formatted logging messages.
+With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. Regardless of the output format setting in Lambda, we will always output JSON formatted logging messages.
 
 When you have this feature enabled, log messages that don’t meet the configured log level are discarded by Lambda. For example, if you set the minimum log level to `WARN`, you will only receive `WARN` and `ERROR` messages in your AWS CloudWatch Logs, all other log levels will be discarded by Lambda.
 
@@ -453,7 +453,7 @@ sequenceDiagram
 
 **Priority of log level settings in Powertools for AWS Lambda**
 
-When the Advanced Logging Controls feature is enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see [AWS Lambda service documentation](...docs link) for more details.
+When the Advanced Logging Controls feature is enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see [AWS Lambda service documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-log-level) for more details.
 
 We prioritise log level settings in this order:
 

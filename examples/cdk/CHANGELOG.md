@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.15.0...v1.16.0) (2023-11-16)
+
+### Features
+
+- **logger:** add support for `AWS_LAMBDA_LOG_LEVEL` and `POWERTOOLS_LOG_LEVEL` ([#1795](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1795)) ([e69abfb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e69abfb5f1b5d3bf993ac2fe66fae85a85af9905))
+
 # [1.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.2...v1.15.0) (2023-11-14)
 
 ### Features

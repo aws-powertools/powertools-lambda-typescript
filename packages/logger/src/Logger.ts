@@ -2,6 +2,7 @@ import { Utility } from '@aws-lambda-powertools/commons';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
+import { format } from 'node:util';
 import { Console } from 'node:console';
 import { format } from 'node:util';
 import { randomInt } from 'node:crypto';

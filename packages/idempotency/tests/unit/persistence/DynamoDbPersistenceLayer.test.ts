@@ -12,13 +12,12 @@ import { IdempotencyRecord } from '../../../src/persistence';
 import type { DynamoDBPersistenceOptions } from '../../../src/types';
 import { IdempotencyRecordStatus } from '../../../src';
 import {
+  ConditionalCheckFailedException,
   DynamoDBClient,
-  //DynamoDBServiceException,
   PutItemCommand,
   GetItemCommand,
   UpdateItemCommand,
   DeleteItemCommand,
-  ConditionalCheckFailedException,
 } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
@@ -397,7 +396,6 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       });
       client.on(PutItemCommand).rejects(
         new ConditionalCheckFailedException({
-          //$fault: 'client',
           $metadata: {
             httpStatusCode: 400,
             requestId: 'someRequestId',
@@ -408,7 +406,6 @@ describe('Class: DynamoDBPersistenceLayer', () => {
             status: { S: 'INPROGRESS' },
             expiration: { N: Date.now().toString() },
           },
-          //name: 'ConditionalCheckFailedException',
         })
       );
 
@@ -710,7 +707,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       })
     );
     await expect(persistenceLayer._putRecord(mockRecord)).rejects.toThrowError(
-      'Item is undefined'
+      'item is undefined'
     );
   });
 });

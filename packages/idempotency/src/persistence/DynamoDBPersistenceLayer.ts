@@ -10,7 +10,6 @@ import {
   DeleteItemCommand,
   DynamoDBClient,
   DynamoDBClientConfig,
-  DynamoDBServiceException,
   GetItemCommand,
   PutItemCommand,
   UpdateItemCommand,
@@ -203,24 +202,22 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
         })
       );
     } catch (error) {
-      if (error instanceof DynamoDBServiceException) {
-        if (error instanceof ConditionalCheckFailedException) {
-          if (!error.Item) {
-            throw new Error('Item is undefined');
-          }
-          const Item = unmarshall(error.Item);
-          throw new IdempotencyItemAlreadyExistsError(
-            `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
-            new IdempotencyRecord({
-              idempotencyKey: Item[this.keyAttr],
-              status: Item[this.statusAttr],
-              expiryTimestamp: Item[this.expiryAttr],
-              inProgressExpiryTimestamp: Item[this.inProgressExpiryAttr],
-              responseData: Item[this.dataAttr],
-              payloadHash: Item[this.validationKeyAttr],
-            })
-          );
+      if (error instanceof ConditionalCheckFailedException) {
+        if (!error.Item) {
+          throw new Error('item is undefined');
         }
+        const item = unmarshall(error.Item);
+        throw new IdempotencyItemAlreadyExistsError(
+          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
+          new IdempotencyRecord({
+            idempotencyKey: item[this.keyAttr],
+            status: item[this.statusAttr],
+            expiryTimestamp: item[this.expiryAttr],
+            inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
+            responseData: item[this.dataAttr],
+            payloadHash: item[this.validationKeyAttr],
+          })
+        );
       }
     }
   }

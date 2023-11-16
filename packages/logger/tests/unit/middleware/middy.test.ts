@@ -303,6 +303,9 @@ describe('Middy middleware', () => {
         get(name: string): string {
           return `a-string-from-${name}`;
         },
+        getAwsLogLevel(): string {
+          return 'INFO';
+        },
         getCurrentEnvironment(): string {
           return 'dev';
         },

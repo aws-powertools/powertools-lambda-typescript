@@ -110,7 +110,7 @@ describe('Helper: createLogger function', () => {
       // Prepare
       const loggerOptions = undefined;
       delete process.env.POWERTOOLS_SERVICE_NAME;
-      delete process.env.LOG_LEVEL;
+      delete process.env.POWERTOOLS_LOG_LEVEL;
 
       // Act
       const logger = createLogger(loggerOptions);
@@ -260,7 +260,7 @@ describe('Helper: createLogger function', () => {
     test('when no log level is set, returns a Logger instance with INFO level', () => {
       // Prepare
       const loggerOptions: ConstructorOptions = {};
-      delete process.env.LOG_LEVEL;
+      delete process.env.POWERTOOLS_LOG_LEVEL;
 
       // Act
       const logger = createLogger(loggerOptions);
@@ -324,6 +324,9 @@ describe('Helper: createLogger function', () => {
       const configService: ConfigServiceInterface = {
         get(name: string): string {
           return `a-string-from-${name}`;
+        },
+        getAwsLogLevel(): string {
+          return 'INFO';
         },
         getCurrentEnvironment(): string {
           return 'dev';

@@ -23,7 +23,7 @@ const commonEnvironmentVars = {
   CHILD_LOG_MSG: 'child-only-log-msg',
   CHILD_LOG_LEVEL: 'ERROR',
   POWERTOOLS_SERVICE_NAME: 'logger-e2e-testing',
-  LOG_LEVEL: 'INFO',
+  POWERTOOLS_LOG_LEVEL: 'INFO',
 };
 
 export {

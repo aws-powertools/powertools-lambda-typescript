@@ -46,12 +46,12 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all logs emitted:
 
-| Setting                | Description                                                                                                      | Environment variable            | Default Value       | Allowed Values                             | Example Value       | Constructor parameter |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- | ------------------------------------------ | ------------------- | --------------------- |
-| **Service name**       | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                 | `serverlessAirline` | `serviceName`         |
-| **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `LOG_LEVEL`                     | `info`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `SILENT` | `ERROR`             | `logLevel`            |
-| **Log incoming event** | Whether to log or not the incoming event when using the decorator or middleware                                  | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                            | `false`             | `logEvent`            |
-| **Debug log sampling** | Probability that a Lambda invocation will print all the log items regardless of the log level setting            | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1`                               | `0.5`               | `sampleRateValue`     |
+| Setting                | Description                                                                                                      | Environment variable            | Default Value       | Allowed Values                                         | Example Value       | Constructor parameter |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- | ------------------------------------------------------ | ------------------- | --------------------- |
+| **Service name**       | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                             | `serverlessAirline` | `serviceName`         |
+| **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `POWERTOOLS_LOG_LEVEL`          | `INFO`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`, `SILENT` | `ERROR`             | `logLevel`            |
+| **Log incoming event** | Whether to log or not the incoming event when using the decorator or middleware                                  | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                                        | `false`             | `logEvent`            |
+| **Debug log sampling** | Probability that a Lambda invocation will print all the log items regardless of the log level setting            | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1`                                           | `0.5`               | `sampleRateValue`     |
 
 #### Example using AWS Serverless Application Model (SAM)
 
@@ -71,7 +71,7 @@ These settings will be used across all logs emitted:
           Runtime: nodejs20.x
           Environment:
             Variables:
-              LOG_LEVEL: WARN
+              POWERTOOLS_LOG_LEVEL: WARN
               POWERTOOLS_SERVICE_NAME: serverlessAirline
     ```
 
@@ -394,9 +394,9 @@ The error will be logged with default key name `error`, but you can also pass yo
 
 ### Log levels
 
-The default log level is `INFO` and can be set using the `logLevel` constructor option or by using the `LOG_LEVEL` environment variable.
+The default log level is `INFO` and can be set using the `logLevel` constructor option or by using the `POWERTOOLS_LOG_LEVEL` environment variable.
 
-Logger supports the following log levels:
+We support the following log levels:
 
 | Level      | Numeric value |
 | ---------- | ------------- |
@@ -421,10 +421,47 @@ The `SILENT` log level provides a simple and efficient way to suppress all log m
 
 This feature is useful when you want to have your code instrumented to produce logs, but due to some requirement or business decision, you prefer to not emit them.
 
-By setting the log level to `SILENT`, which can be done either through the `logLevel` constructor option or by using the `LOG_LEVEL` environment variable, you can easily suppress all logs as needed.
+By setting the log level to `SILENT`, which can be done either through the `logLevel` constructor option or by using the `POWERTOOLS_LOG_LEVEL` environment variable, you can easily suppress all logs as needed.
 
 !!! note
     Use the `SILENT` log level with care, as it can make it more challenging to monitor and debug your application. Therefore, we advise using this log level judiciously.
+
+#### AWS Lambda Advanced Logging Controls (ALC)
+
+With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. Regardless of the output format setting in Lambda, we will always output JSON formatted logging messages.
+
+When you have this feature enabled, log messages that don’t meet the configured log level are discarded by Lambda. For example, if you set the minimum log level to `WARN`, you will only receive `WARN` and `ERROR` messages in your AWS CloudWatch Logs, all other log levels will be discarded by Lambda.
+
+```mermaid
+sequenceDiagram
+    title Lambda ALC allows WARN logs only
+    participant Lambda service
+    participant Lambda function
+    participant Application Logger
+
+    Note over Lambda service: AWS_LAMBDA_LOG_LEVEL="WARN"
+    Lambda service->>Lambda function: Invoke (event)
+    Lambda function->>Lambda function: Calls handler
+    Lambda function->>Application Logger: logger.warn("Something happened")
+    Lambda function-->>Application Logger: logger.debug("Something happened")
+    Lambda function-->>Application Logger: logger.info("Something happened")
+    
+    Lambda service->>Lambda service: DROP INFO and DEBUG logs
+
+    Lambda service->>CloudWatch Logs: Ingest error logs
+```
+
+**Priority of log level settings in Powertools for AWS Lambda**
+
+When the Advanced Logging Controls feature is enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see [AWS Lambda service documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-log-level) for more details.
+
+We prioritise log level settings in this order:
+
+1. `AWS_LAMBDA_LOG_LEVEL` environment variable
+2. Setting the log level in code using the `logLevel` constructor option, or by calling the `logger.setLogLevel()` method
+3. `POWERTOOLS_LOG_LEVEL` environment variable
+
+In the event you have set a log level in Powertools to a level that is lower than the ACL setting, we will output a warning log message informing you that your messages will be discarded by Lambda.
 
 ### Using multiple Logger instances across your code
 

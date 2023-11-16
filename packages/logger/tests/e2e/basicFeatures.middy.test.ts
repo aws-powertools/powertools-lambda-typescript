@@ -72,7 +72,7 @@ describe(`Logger E2E tests, basic functionalities middy usage`, () => {
 
   describe('Log level filtering', () => {
     it(
-      'should filter log based on LOG_LEVEL (INFO) environment variable in Lambda',
+      'should filter log based on POWERTOOLS_LOG_LEVEL (INFO) environment variable in Lambda',
       async () => {
         for (let i = 0; i < invocationCount; i++) {
           // Get log messages of the invocation and filter by level

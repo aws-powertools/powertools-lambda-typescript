@@ -208,9 +208,9 @@ describe('Class: Logger', () => {
           expect(consoleSpy).toBeCalledTimes(0);
         });
 
-        test('when the log level is set through LOG_LEVEL env variable, it DOES print to stdout', () => {
+        test('when the log level is set through POWERTOOLS_LOG_LEVEL env variable, it DOES print to stdout', () => {
           // Prepare
-          process.env.LOG_LEVEL = methodOfLogger.toUpperCase();
+          process.env.POWERTOOLS_LOG_LEVEL = methodOfLogger.toUpperCase();
           const logger = new Logger();
           const consoleSpy = jest
             .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
@@ -2176,6 +2176,26 @@ describe('Class: Logger', () => {
       // Act & Assess
       expect(() => logger.setLogLevel('INVALID' as LogLevel)).toThrow(
         'Invalid log level: INVALID'
+      );
+    });
+
+    it('uses log level set by ALC & emits a warning when setting a higher log level than ALC', () => {
+      // Prepare
+      process.env.AWS_LAMBDA_LOG_LEVEL = 'ERROR';
+      process.env.LOG_LEVEL = undefined;
+      process.env.POWERTOOLS_LOG_LEVEL = undefined;
+      const logger = new Logger();
+      const warningSpy = jest.spyOn(logger, 'warn');
+
+      // Act
+      logger.setLogLevel('WARN');
+
+      // Assess
+      expect(logger.level).toBe(20);
+      expect(logger.getLevelName()).toBe('ERROR');
+      expect(warningSpy).toHaveBeenCalledTimes(1);
+      expect(warningSpy).toHaveBeenCalledWith(
+        'Current log level (WARN) does not match AWS Lambda Advanced Logging Controls minimum log level (ERROR). This can lead to data loss, consider adjusting them.'
       );
     });
   });

@@ -44,7 +44,7 @@ describe(`Logger E2E tests, sample rate and injectLambdaContext()`, () => {
       {
         entry: lambdaFunctionCodeFilePath,
         environment: {
-          LOG_LEVEL: 'ERROR',
+          POWERTOOLS_LOG_LEVEL: 'ERROR',
           SAMPLE_RATE: '0.5',
           LOG_MSG: `Log message ${randomUUID()}`,
         },

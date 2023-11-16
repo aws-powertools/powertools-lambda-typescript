@@ -19,7 +19,7 @@ const commonProps: Partial<NodejsFunctionProps> = {
     NODE_OPTIONS: '--enable-source-maps', // see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
     POWERTOOLS_SERVICE_NAME: 'items-store',
     POWERTOOLS_METRICS_NAMESPACE: 'PowertoolsCDKExample',
-    LOG_LEVEL: 'DEBUG',
+    POWERTOOLS_LOG_LEVEL: 'DEBUG',
   },
   bundling: {
     externalModules: [

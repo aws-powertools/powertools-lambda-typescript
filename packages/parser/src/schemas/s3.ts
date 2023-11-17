@@ -44,7 +44,7 @@ const S3RecordSchema = z.object({
   eventVersion: z.string(),
   eventSource: z.literal('aws:s3'),
   awsRegion: z.string(),
-  eventTime: z.string(),
+  eventTime: z.string().datetime(),
   eventName: z.string(),
   userIdentity: S3Identity,
   requestParameters: S3RequestParameters,

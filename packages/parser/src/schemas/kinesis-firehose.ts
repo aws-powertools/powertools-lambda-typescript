@@ -31,14 +31,10 @@ const KinesisFirehoseRecord = KinesisFireHoseRecordBase.extend({
 const KinesisFirehoseSqsRecord = KinesisFireHoseRecordBase.extend({
   data: z.string().transform((data) => {
     try {
-      console.debug('Parsing sqs record', data);
-
       return SqsRecordSchema.parse(
         JSON.parse(Buffer.from(data, 'base64').toString('utf8'))
       );
     } catch (e) {
-      console.warn('Failed to parse sqs record', e);
-
       return data;
     }
   }),

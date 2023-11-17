@@ -15,7 +15,6 @@ describe('CloudFormationCustomResource ', () => {
     const cloudFormationCustomResourceCreateEvent = loadExampleEvent(
       'cloudFormationCustomResourceCreateEvent.json'
     );
-    console.log(CloudFormationCustomResourceCreateSchema.shape);
     expect(
       CloudFormationCustomResourceCreateSchema.parse(
         cloudFormationCustomResourceCreateEvent

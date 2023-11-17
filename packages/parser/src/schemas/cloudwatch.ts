@@ -19,17 +19,9 @@ const CloudWatchLogsDecodeSchema = z.object({
 const decompressRecordToJSON = (
   data: string
 ): z.infer<typeof CloudWatchLogsDecodeSchema> => {
-  try {
-    console.debug('Decoding data', data);
-    const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString(
-      'utf8'
-    );
+  const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString('utf8');
 
-    return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
-  } catch (e) {
-    console.debug('Failed to gunzip data', e);
-    throw e;
-  }
+  return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
 };
 
 const CloudWatchLogsSchema = z.object({

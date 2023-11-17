@@ -55,7 +55,6 @@ describe('Kinesis ', () => {
       'kinesisFirehoseSQSEvent.json'
     );
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
-    console.log(parsed.records[0].data);
     expect(parsed.records[0].data).toMatchObject({
       messageId: '5ab807d4-5644-4c55-97a3-47396635ac74',
       body: 'Test message.',

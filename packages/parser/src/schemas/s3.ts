@@ -40,7 +40,7 @@ const S3EventRecordGlacierEventData = z.object({
   }),
 });
 
-const S3Record = z.object({
+const S3RecordSchema = z.object({
   eventVersion: z.string(),
   eventSource: z.literal('aws:s3'),
   awsRegion: z.string(),
@@ -81,7 +81,7 @@ const S3EventNotificationEventBridgeSchema = EventBridgeSchema.extend({
 });
 
 const S3Schema = z.object({
-  Records: z.array(S3Record),
+  Records: z.array(S3RecordSchema),
 });
 
 const S3SqsEventNotificationRecordSchema = SqsRecordSchema.extend({

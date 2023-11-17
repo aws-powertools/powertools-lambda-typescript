@@ -16,7 +16,7 @@ const SnsNotificationSchema = z.object({
   Signature: z.string().optional(),
   SignatureVersion: z.string().optional(),
   SigningCertUrl: z.string().url().optional(),
-  Timestamp: z.string(),
+  Timestamp: z.string().datetime(),
 });
 
 const SnsRecordSchema = z.object({

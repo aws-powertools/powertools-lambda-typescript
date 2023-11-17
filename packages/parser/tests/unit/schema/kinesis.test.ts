@@ -82,7 +82,7 @@ describe('Kinesis ', () => {
   it('should return original value if cannot parse KinesisFirehoseSqsRecord', () => {
     const kinesisFirehoseSQSEvent = loadExampleEvent(
       'kinesisFirehoseSQSEvent.json'
-    );
+    ) as { records: { data: string }[] };
     kinesisFirehoseSQSEvent.records[0].data = 'not a valid json';
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
     expect(parsed.records[0].data).toEqual('not a valid json');

@@ -54,7 +54,7 @@ describe('Kafka ', () => {
   it('should return undefined if bootstrapServers is not present', () => {
     const kafkaEventSelfManaged = loadExampleEvent(
       'kafkaEventSelfManaged.json'
-    );
+    ) as { bootstrapServers: string };
     kafkaEventSelfManaged.bootstrapServers = '';
     const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
     expect(parsed.bootstrapServers).toBeUndefined();

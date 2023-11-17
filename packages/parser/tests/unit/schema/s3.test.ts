@@ -77,12 +77,14 @@ describe('S3 ', () => {
   });
 
   it('should parse s3 object event temp credentials', () => {
+    // ignore any because we don't want typed json
     const s3ObjectEventTempCredentials = loadExampleEvent(
       's3ObjectEventTempCredentials.json'
-    );
+    ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     const parsed = S3ObjectLambdaEventSchema.parse(
       s3ObjectEventTempCredentials
     );
+
     expect(parsed.userRequest).toEqual(
       s3ObjectEventTempCredentials.userRequest
     );

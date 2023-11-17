@@ -3,8 +3,9 @@
  *
  * @group unit/parser/schema/
  */
-import { DynamoDBStreamSchema } from '../../../src/schemas/dynamodb';
-import { loadExampleEvent } from './utils';
+
+import { DynamoDBStreamSchema } from '../../../src/schemas/dynamodb.js';
+import { loadExampleEvent } from './utils.js';
 
 describe('DynamoDB ', () => {
   const dynamoStreamEvent = loadExampleEvent('dynamoStreamEvent.json');

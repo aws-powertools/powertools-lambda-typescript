@@ -3,8 +3,9 @@
  *
  * @group unit/parser/schema/
  */
-import { SesSchema } from '../../../src/schemas/ses';
-import { loadExampleEvent } from './utils';
+
+import { loadExampleEvent } from './utils.js';
+import { SesSchema } from '../../../src/schemas/ses.js';
 
 describe('Schema:', () => {
   const sesEvent = loadExampleEvent('sesEvent.json');

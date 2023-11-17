@@ -3,13 +3,14 @@
  *
  * @group unit/parser/schema/
  */
+
 import {
-  S3Schema,
   S3EventNotificationEventBridgeSchema,
   S3SqsEventNotificationSchema,
+  S3Schema,
   S3ObjectLambdaEventSchema,
-} from '../../../src/schemas/s3';
-import { loadExampleEvent } from './utils';
+} from '../../../src/schemas/s3.js';
+import { loadExampleEvent } from './utils.js';
 
 describe('S3 ', () => {
   it('should parse s3 event', () => {

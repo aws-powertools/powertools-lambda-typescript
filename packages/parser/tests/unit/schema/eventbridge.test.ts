@@ -4,8 +4,8 @@
  * @group unit/parser/schema/
  */
 
-import { EventBridgeSchema } from '../../../src/schemas/eventbridge';
-import { loadExampleEvent } from './utils';
+import { loadExampleEvent } from './utils.js';
+import { EventBridgeSchema } from '../../../src/schemas/eventbridge.js';
 
 describe('EventBridge ', () => {
   it('should parse eventbridge event', () => {

@@ -3,8 +3,9 @@
  *
  * @group unit/parser/schema/
  */
-import { SqsSchema } from '../../../src/schemas/sqs';
-import { loadExampleEvent } from './utils';
+
+import { loadExampleEvent } from './utils.js';
+import { SqsSchema } from '../../../src/schemas/sqs.js';
 
 describe('SQS ', () => {
   const sqsEvent = loadExampleEvent('sqsEvent.json');

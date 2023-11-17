@@ -3,8 +3,9 @@
  *
  * @group unit/parser/schema/
  */
-import { CloudWatchLogsSchema } from '../../../src/schemas/cloudwatch';
-import { loadExampleEvent } from './utils';
+
+import { loadExampleEvent } from './utils.js';
+import { CloudWatchLogsSchema } from '../../../src/schemas/cloudwatch.js';
 
 describe('CloudWatchLogs ', () => {
   it('should parse cloudwatch logs event', () => {

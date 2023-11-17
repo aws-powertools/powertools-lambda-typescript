@@ -3,12 +3,13 @@
  *
  * @group unit/parser/schema/
  */
+
+import { loadExampleEvent } from './utils.js';
 import {
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceUpdateSchema,
   CloudFormationCustomResourceDeleteSchema,
-} from '../../../src/schemas/cloudformation-custom-resource';
-import { loadExampleEvent } from './utils';
+} from '../../../src/schemas/cloudformation-custom-resource.js';
 
 describe('CloudFormationCustomResource ', () => {
   it('should parse create event', () => {

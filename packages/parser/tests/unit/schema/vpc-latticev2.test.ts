@@ -4,8 +4,8 @@
  * @group unit/parser/schema/
  */
 
-import { VpcLatticeV2Schema } from '../../../src/schemas/vpc-latticev2';
-import { loadExampleEvent } from './utils';
+import { loadExampleEvent } from './utils.js';
+import { VpcLatticeV2Schema } from '../../../src/schemas/vpc-latticev2.js';
 
 describe('VpcLatticeV2 ', () => {
   it('should parse VpcLatticeV2 event', () => {

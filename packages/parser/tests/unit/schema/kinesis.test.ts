@@ -3,13 +3,14 @@
  *
  * @group unit/parser/schema/
  */
-import { KinesisDataStreamSchema } from '../../../src/schemas/kinesis';
+
+import { loadExampleEvent } from './utils.js';
+import { KinesisDataStreamSchema } from '../../../src/schemas/kinesis.js';
 import {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
-} from '../../../src/schemas/kinesis-firehose';
-import { loadExampleEvent } from './utils';
-import { extractCloudWatchLogFromEvent } from '../../../src/schemas/cloudwatch';
+} from '../../../src/schemas/kinesis-firehose.js';
+import { extractCloudWatchLogFromEvent } from '../../../src/schemas/cloudwatch.js';
 
 describe('Kinesis ', () => {
   it('should parse kinesis event', () => {
@@ -21,7 +22,7 @@ describe('Kinesis ', () => {
     ).toString('utf8');
     expect(decodedData).toEqual('Hello, this is a test.');
   });
-  it('should prase single kinesis record', () => {
+  it('should parse single kinesis record', () => {
     const kinesisStreamEventOneRecord = loadExampleEvent(
       'kinesisStreamEventOneRecord.json'
     );

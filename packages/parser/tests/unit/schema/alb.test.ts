@@ -6,8 +6,8 @@
 import {
   AlbSchema,
   AlbMultiValueHeadersSchema,
-} from '../../../src/schemas/alb';
-import { loadExampleEvent } from './utils';
+} from '../../../src/schemas/alb.js';
+import { loadExampleEvent } from './utils.js';
 
 describe('ALB ', () => {
   it('should parse alb event', () => {

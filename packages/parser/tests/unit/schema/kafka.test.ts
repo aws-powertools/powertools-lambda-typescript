@@ -3,11 +3,12 @@
  *
  * @group unit/parser/schema/
  */
+
+import { loadExampleEvent } from './utils.js';
 import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
-} from '../../../src/schemas/kafka';
-import { loadExampleEvent } from './utils';
+} from '../../../src/schemas/kafka.js';
 
 describe('Kafka ', () => {
   const expectedTestEvent = {

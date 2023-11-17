@@ -3,8 +3,9 @@
  *
  * @group unit/parser/schema/
  */
-import { SnsSchema } from '../../../src/schemas/sns';
-import { loadExampleEvent } from './utils';
+
+import { loadExampleEvent } from './utils.js';
+import { SnsSchema } from '../../../src/schemas/sns.js';
 
 describe('Schema:', () => {
   const snsEvent = loadExampleEvent('snsEvent.json');

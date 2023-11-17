@@ -7,8 +7,7 @@ import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
 } from '../../../src/schemas/kafka';
-import kafkaEventMsk from '../../events/kafkaEventMsk.json';
-import kafkaEventSelfManaged from '../../events/kafkaEventSelfManaged.json';
+import { loadExampleEvent } from './utils';
 
 describe('Kafka ', () => {
   const expectedTestEvent = {
@@ -26,11 +25,15 @@ describe('Kafka ', () => {
     ],
   };
   it('should parse kafka MSK event', () => {
+    const kafkaEventMsk = loadExampleEvent('kafkaEventMsk.json');
     expect(
       KafkaMskEventSchema.parse(kafkaEventMsk).records['mytopic-0'][0]
     ).toEqual(expectedTestEvent);
   });
   it('should parse kafka self managed event', () => {
+    const kafkaEventSelfManaged = loadExampleEvent(
+      'kafkaEventSelfManaged.json'
+    );
     expect(
       KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged).records[
         'mytopic-0'
@@ -38,6 +41,9 @@ describe('Kafka ', () => {
     ).toEqual(expectedTestEvent);
   });
   it('should transform bootstrapServers to array', () => {
+    const kafkaEventSelfManaged = loadExampleEvent(
+      'kafkaEventSelfManaged.json'
+    );
     expect(
       KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged).bootstrapServers
     ).toEqual([
@@ -46,6 +52,9 @@ describe('Kafka ', () => {
     ]);
   });
   it('should return undefined if bootstrapServers is not present', () => {
+    const kafkaEventSelfManaged = loadExampleEvent(
+      'kafkaEventSelfManaged.json'
+    );
     kafkaEventSelfManaged.bootstrapServers = '';
     const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
     expect(parsed.bootstrapServers).toBeUndefined();

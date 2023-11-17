@@ -3,23 +3,17 @@
  *
  * @group unit/parser/schema/
  */
-import {
-  KinesisDataStreamSchema,
-  extractCloudWatchLogFromEvent,
-} from '../../../src/schemas/kinesis';
-import kinesisStreamEvent from '../../events/kinesisStreamEvent.json';
-import kinesisStreamEventOneRecord from '../../events/kinesisStreamEventOneRecord.json';
+import { KinesisDataStreamSchema } from '../../../src/schemas/kinesis';
 import {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
 } from '../../../src/schemas/kinesis-firehose';
-import kinesisFirehoseKinesisEvent from '../../events/kinesisFirehoseKinesisEvent.json';
-import kinesisFirehosePutEvent from '../../events/kinesisFirehosePutEvent.json';
-import kinesisFirehoseSQSEvent from '../../events/kinesisFirehoseSQSEvent.json';
-import kinesisStreamCloudWatchLogsEvent from '../../events/kinesisStreamCloudWatchLogsEvent.json';
+import { loadExampleEvent } from './utils';
+import { extractCloudWatchLogFromEvent } from '../../../src/schemas/cloudwatch';
 
 describe('Kinesis ', () => {
   it('should parse kinesis event', () => {
+    const kinesisStreamEvent = loadExampleEvent('kinesisStreamEvent.json');
     const parsed = KinesisDataStreamSchema.parse(kinesisStreamEvent);
     const decodedData = Buffer.from(
       parsed.Records[0].kinesis.data,
@@ -28,6 +22,9 @@ describe('Kinesis ', () => {
     expect(decodedData).toEqual('Hello, this is a test.');
   });
   it('should prase single kinesis record', () => {
+    const kinesisStreamEventOneRecord = loadExampleEvent(
+      'kinesisStreamEventOneRecord.json'
+    );
     const parsed = KinesisDataStreamSchema.parse(kinesisStreamEventOneRecord);
     const decodedJson = JSON.parse(
       Buffer.from(parsed.Records[0].kinesis.data, 'base64').toString('utf8')
@@ -38,16 +35,25 @@ describe('Kinesis ', () => {
     });
   });
   it('should parse Firehose event', () => {
+    const kinesisFirehoseKinesisEvent = loadExampleEvent(
+      'kinesisFirehoseKinesisEvent.json'
+    );
     const parsed = KinesisFirehoseSchema.parse(kinesisFirehoseKinesisEvent);
     expect(parsed.records[0].data).toEqual('Hello World');
   });
   it('should parse Kinesis Firehose PutEvents event', () => {
+    const kinesisFirehosePutEvent = loadExampleEvent(
+      'kinesisFirehosePutEvent.json'
+    );
     const parsed = KinesisFirehoseSchema.parse(kinesisFirehosePutEvent);
     expect(JSON.parse(parsed.records[1].data)).toEqual({
       Hello: 'World',
     });
   });
   it('should parse Firehose event with SQS event', () => {
+    const kinesisFirehoseSQSEvent = loadExampleEvent(
+      'kinesisFirehoseSQSEvent.json'
+    );
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
     console.log(parsed.records[0].data);
     expect(parsed.records[0].data).toMatchObject({
@@ -56,6 +62,9 @@ describe('Kinesis ', () => {
     });
   });
   it('should parse Firehose event with CloudWatch event', () => {
+    const kinesisStreamCloudWatchLogsEvent = loadExampleEvent(
+      'kinesisStreamCloudWatchLogsEvent.json'
+    );
     const parsed = KinesisDataStreamSchema.parse(
       kinesisStreamCloudWatchLogsEvent
     );
@@ -71,6 +80,9 @@ describe('Kinesis ', () => {
     });
   });
   it('should return original value if cannot parse KinesisFirehoseSqsRecord', () => {
+    const kinesisFirehoseSQSEvent = loadExampleEvent(
+      'kinesisFirehoseSQSEvent.json'
+    );
     kinesisFirehoseSQSEvent.records[0].data = 'not a valid json';
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
     expect(parsed.records[0].data).toEqual('not a valid json');

@@ -8,12 +8,13 @@ import {
   CloudFormationCustomResourceUpdateSchema,
   CloudFormationCustomResourceDeleteSchema,
 } from '../../../src/schemas/cloudformation-custom-resource';
-import cloudFormationCustomResourceCreateEvent from '../../events/cloudformationCustomResourceCreate.json';
-import cloudFormationCustomResourceUpdateEvent from '../../events/cloudformationCustomResourceUpdate.json';
-import cloudFormationCustomResourceDeleteEvent from '../../events/cloudformationCustomResourceDelete.json';
+import { loadExampleEvent } from './utils';
 
 describe('CloudFormationCustomResource ', () => {
   it('should parse create event', () => {
+    const cloudFormationCustomResourceCreateEvent = loadExampleEvent(
+      'cloudFormationCustomResourceCreateEvent.json'
+    );
     console.log(CloudFormationCustomResourceCreateSchema.shape);
     expect(
       CloudFormationCustomResourceCreateSchema.parse(
@@ -22,6 +23,9 @@ describe('CloudFormationCustomResource ', () => {
     ).toEqual(cloudFormationCustomResourceCreateEvent);
   });
   it('should parse update event', () => {
+    const cloudFormationCustomResourceUpdateEvent = loadExampleEvent(
+      'cloudFormationCustomResourceUpdateEvent.json'
+    );
     expect(
       CloudFormationCustomResourceUpdateSchema.parse(
         cloudFormationCustomResourceUpdateEvent
@@ -29,6 +33,9 @@ describe('CloudFormationCustomResource ', () => {
     ).toEqual(cloudFormationCustomResourceUpdateEvent);
   });
   it('should parse delete event', () => {
+    const cloudFormationCustomResourceDeleteEvent = loadExampleEvent(
+      'cloudFormationCustomResourceDeleteEvent.json'
+    );
     expect(
       CloudFormationCustomResourceDeleteSchema.parse(
         cloudFormationCustomResourceDeleteEvent

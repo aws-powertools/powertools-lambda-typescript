@@ -4,52 +4,67 @@
  * @group unit/parser/schema/
  */
 import { APIGatewayProxyEventSchema } from '../../../src/schemas/apigw';
-import apiGatewayProxyEvent from '../../events/apiGatewayProxyEvent.json';
-import apiGatewayAuthorizerRequestEvent from '../../events/apiGatewayAuthorizerRequestEvent.json';
-import apiGatewaySchemaMiddlewareInvalidEvent from '../../events/apiGatewaySchemaMiddlewareInvalidEvent.json';
-import apiGatewaySchemaMiddlewareValidEvent from '../../events/apiGatewaySchemaMiddlewareValidEvent.json';
-import apiGatewayProxyEvent_noVersionAuth from '../../events/apiGatewayProxyEvent_noVersionAuth.json';
-import apiGatewayProxyEventAnotherPath from '../../events/apiGatewayProxyEventAnotherPath.json';
-import apiGatewayProxyEventPathTrailingSlash from '../../events/apiGatewayProxyEventPathTrailingSlash.json';
-import apiGatewayProxyOtherEvent from '../../events/apiGatewayProxyOtherEvent.json';
+import { loadExampleEvent } from './utils';
 
 describe('APIGateway ', () => {
   it('should parse api gateway event', () => {
+    const apiGatewayProxyEvent = loadExampleEvent('apiGatewayProxyEvent.json');
     expect(APIGatewayProxyEventSchema.parse(apiGatewayProxyEvent)).toEqual(
       apiGatewayProxyEvent
     );
   });
   it('should parse api gateway authorizer request event', () => {
+    const apiGatewayAuthorizerRequestEvent = loadExampleEvent(
+      'apiGatewayAuthorizerRequestEvent.json'
+    );
     expect(
       APIGatewayProxyEventSchema.parse(apiGatewayAuthorizerRequestEvent)
     ).toEqual(apiGatewayAuthorizerRequestEvent);
   });
   it('should parse schema middleware invalid event', () => {
+    const apiGatewaySchemaMiddlewareInvalidEvent = loadExampleEvent(
+      'apiGatewaySchemaMiddlewareInvalidEvent.json'
+    );
     expect(
       APIGatewayProxyEventSchema.parse(apiGatewaySchemaMiddlewareInvalidEvent)
     ).toEqual(apiGatewaySchemaMiddlewareInvalidEvent);
   });
   it('should parse schema middleware valid event', () => {
+    const apiGatewaySchemaMiddlewareValidEvent = loadExampleEvent(
+      'apiGatewaySchemaMiddlewareValidEvent.json'
+    );
     expect(
       APIGatewayProxyEventSchema.parse(apiGatewaySchemaMiddlewareValidEvent)
     ).toEqual(apiGatewaySchemaMiddlewareValidEvent);
   });
   it('should parse proxy event with no version auth', () => {
+    const apiGatewayProxyEvent_noVersionAuth = loadExampleEvent(
+      'apiGatewayProxyEvent_noVersionAuth.json'
+    );
     expect(
       APIGatewayProxyEventSchema.parse(apiGatewayProxyEvent_noVersionAuth)
     ).toEqual(apiGatewayProxyEvent_noVersionAuth);
   });
   it('should parse proxy event with another path', () => {
+    const apiGatewayProxyEventAnotherPath = loadExampleEvent(
+      'apiGatewayProxyEventAnotherPath.json'
+    );
     expect(
       APIGatewayProxyEventSchema.parse(apiGatewayProxyEventAnotherPath)
     ).toEqual(apiGatewayProxyEventAnotherPath);
   });
   it('should parse proxy event with path trailing slash', () => {
+    const apiGatewayProxyEventPathTrailingSlash = loadExampleEvent(
+      'apiGatewayProxyEventPathTrailingSlash.json'
+    );
     expect(
       APIGatewayProxyEventSchema.parse(apiGatewayProxyEventPathTrailingSlash)
     ).toEqual(apiGatewayProxyEventPathTrailingSlash);
   });
   it('should parse other proxy event', () => {
+    const apiGatewayProxyOtherEvent = loadExampleEvent(
+      'apiGatewayProxyOtherEvent.json'
+    );
     expect(APIGatewayProxyEventSchema.parse(apiGatewayProxyOtherEvent)).toEqual(
       apiGatewayProxyOtherEvent
     );

@@ -20,8 +20,9 @@ const S3Message = z.object({
   configurationId: z.string(),
   object: z.object({
     key: z.string(),
-    size: z.number(),
-    eTag: z.string(),
+    size: z.number().optional(),
+    urlDecodedKey: z.string().optional(),
+    eTag: z.string().optional(),
     sequencer: z.string(),
     versionId: z.optional(z.string()),
   }),
@@ -118,7 +119,9 @@ const S3ObjectSessionContext = z.object({
   }),
   attributes: z.object({
     creationDate: z.string(),
-    mfaAuthenticated: z.string(),
+    mfaAuthenticated: z
+      .union([z.boolean(), z.literal('true'), z.literal('false')])
+      .transform((value) => value === true || value === 'true'),
   }),
 });
 
@@ -129,13 +132,13 @@ const S3ObjectUserIdentity = z.object({
   userName: z.string().optional(),
   principalId: z.string(),
   arn: z.string(),
-  sessionContext: S3ObjectSessionContext,
+  sessionContext: S3ObjectSessionContext.optional(),
 });
 
 const S3ObjectLambdaEventSchema = z.object({
   xAmzRequestId: z.string(),
   getObjectContext: S3ObjectContext,
-  configurationId: S3ObjectConfiguration,
+  configuration: S3ObjectConfiguration,
   userRequest: S3ObjectUserRequest,
   userIdentity: S3ObjectUserIdentity,
   protocolVersion: z.string(),

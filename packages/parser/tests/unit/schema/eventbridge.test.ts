@@ -5,10 +5,11 @@
  */
 
 import { EventBridgeSchema } from '../../../src/schemas/eventbridge';
-import eventBridgeEvent from '../../events/eventBridgeEvent.json';
+import { loadExampleEvent } from './utils';
 
 describe('EventBridge ', () => {
   it('should parse eventbridge event', () => {
+    const eventBridgeEvent = loadExampleEvent('eventBridgeEvent.json');
     expect(EventBridgeSchema.parse(eventBridgeEvent)).toEqual(eventBridgeEvent);
   });
 });

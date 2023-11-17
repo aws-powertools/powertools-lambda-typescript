@@ -1,8 +1,4 @@
 import { z } from 'zod';
-import {
-  CloudWatchLogsDecodeSchema,
-  decompressRecordToJSON,
-} from './cloudwatch.js';
 
 const KinesisDataStreamRecordPayload = z.object({
   kinesisSchemaVersion: z.string(),
@@ -26,10 +22,4 @@ const KinesisDataStreamSchema = z.object({
   Records: z.array(KinesisDataStreamRecord),
 });
 
-const extractCloudWatchLogFromEvent = (
-  data: string
-): z.infer<typeof CloudWatchLogsDecodeSchema> => {
-  return decompressRecordToJSON(data);
-};
-
-export { KinesisDataStreamSchema, extractCloudWatchLogFromEvent };
+export { KinesisDataStreamSchema };

@@ -4,12 +4,13 @@
  * @group unit/parser/schema/
  */
 import { DynamoDBStreamSchema } from '../../../src/schemas/dynamodb';
-import dynamodbStreamEvent from '../../events/dynamoStreamEvent.json';
+import { loadExampleEvent } from './utils';
 
 describe('DynamoDB ', () => {
+  const dynamoStreamEvent = loadExampleEvent('dynamoStreamEvent.json');
   it('should parse a stream of records', () => {
-    expect(DynamoDBStreamSchema.parse(dynamodbStreamEvent)).toEqual(
-      dynamodbStreamEvent
+    expect(DynamoDBStreamSchema.parse(dynamoStreamEvent)).toEqual(
+      dynamoStreamEvent
     );
   });
 });

@@ -4,10 +4,11 @@
  * @group unit/parser/schema/
  */
 import { CloudWatchLogsSchema } from '../../../src/schemas/cloudwatch';
-import cloudWatchLogEvent from '../../events/cloudWatchLogEvent.json';
+import { loadExampleEvent } from './utils';
 
 describe('CloudWatchLogs ', () => {
   it('should parse cloudwatch logs event', () => {
+    const cloudWatchLogEvent = loadExampleEvent('cloudWatchLogEvent.json');
     const parsed = CloudWatchLogsSchema.parse(cloudWatchLogEvent);
     expect(parsed.awslogs.data).toBeDefined();
     expect(parsed.awslogs.data?.logEvents[0]).toEqual({

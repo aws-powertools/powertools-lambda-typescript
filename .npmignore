@@ -1,6 +1,6 @@
 src
 tests
-jest.config.js
+jest.config.cjs
 tsconfig.json
 .vscode
 .github
@@ -13,7 +13,6 @@ coverage
 tslint.json
 tsconfig.json
 MakeFile
-jest.config.js
 .npmignore
 .eslintignore
 .huskyrc.js

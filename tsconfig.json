@@ -44,5 +44,8 @@
     {
       "path": "./packages/testing"
     },
+    {
+      "path": "./packages/parser"
+    }
   ]
 }

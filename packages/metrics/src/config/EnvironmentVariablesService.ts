@@ -7,6 +7,11 @@ class EnvironmentVariablesService
 {
   private namespaceVariable = 'POWERTOOLS_METRICS_NAMESPACE';
 
+  /**
+   * It returns the value of the POWERTOOLS_METRICS_NAMESPACE environment variable.
+   *
+   * @returns {string}
+   */
   public getNamespace(): string {
     return this.get(this.namespaceVariable);
   }

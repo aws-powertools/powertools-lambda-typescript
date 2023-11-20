@@ -242,8 +242,14 @@ describe('Class: Metrics', () => {
         getServiceName(): string {
           return 'test-service';
         },
+        getXrayTraceId(): string | undefined {
+          return 'test-trace-id';
+        },
         isDevMode(): boolean {
           return false;
+        },
+        isValueTrue(value: string): boolean {
+          return value === 'true';
         },
       };
       const metricsOptions: MetricsOptions = {

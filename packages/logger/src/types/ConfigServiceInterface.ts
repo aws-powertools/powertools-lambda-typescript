@@ -1,3 +1,5 @@
+import type { ConfigServiceInterface as ConfigServiceBaseInterface } from '@aws-lambda-powertools/commons/types';
+
 /**
  * Interface ConfigServiceInterface
  *
@@ -5,15 +7,7 @@
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  */
-interface ConfigServiceInterface {
-  /**
-   * It returns the value of an environment variable that has given name.
-   *
-   * @param {string} name
-   * @returns {string}
-   */
-  get(name: string): string;
-
+interface ConfigServiceInterface extends ConfigServiceBaseInterface {
   /**
    * It returns the value of the `AWS_LAMBDA_LOG_LEVEL` environment variable.
    *
@@ -58,21 +52,6 @@ interface ConfigServiceInterface {
    * @returns {string|undefined}
    */
   getSampleRateValue(): number | undefined;
-
-  /**
-   * It returns the value of the POWERTOOLS_SERVICE_NAME environment variable.
-   *
-   * @returns {string}
-   */
-  getServiceName(): string;
-
-  /**
-   * It returns true if the string value represents a boolean true value.
-   *
-   * @param {string} value
-   * @returns boolean
-   */
-  isValueTrue(value: string): boolean;
 }
 
 export type { ConfigServiceInterface };

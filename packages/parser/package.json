@@ -60,8 +60,11 @@
     "serverless",
     "nodejs"
   ],
-
   "peerDependencies": {
     "zod": ">=3.x"
+  },
+  "devDependencies": {
+    "@anatine/zod-mock": "^3.13.3",
+    "@faker-js/faker": "^8.3.1"
   }
 }

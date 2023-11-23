@@ -8,6 +8,9 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: read
+
 jobs:
   run-e2e-tests-on-utils:
     runs-on: ubuntu-latest

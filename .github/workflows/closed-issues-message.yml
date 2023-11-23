@@ -2,9 +2,15 @@ name: Closed Issue Message
 on:
   issues:
     types: [closed]
+
+permissions:
+  contents: read
+
 jobs:
   auto_comment:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - uses: aws-actions/closed-issue-message@36b7048ea77bb834d16e7a7c5b5471ac767a4ca1 # v1.0.0
         with:

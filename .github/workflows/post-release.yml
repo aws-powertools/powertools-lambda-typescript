@@ -12,6 +12,9 @@ on:
   release:
     types: [released]
 
+permissions:
+  contents: read
+
 jobs:
   post_release:
     permissions:

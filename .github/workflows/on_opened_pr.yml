@@ -6,6 +6,9 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+
 jobs:
   get_pr_details:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -16,6 +19,9 @@ jobs:
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
   check_related_issue:
+    permissions:
+      issues: read
+      pull-requests: write
     needs: get_pr_details
     runs-on: ubuntu-latest
     steps:

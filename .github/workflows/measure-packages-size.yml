@@ -7,8 +7,13 @@ on:
         description: "PR Number"
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   measure-utils-sizes:
+    permissions:
+        pull-requests: write
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev

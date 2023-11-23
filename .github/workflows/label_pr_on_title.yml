@@ -6,6 +6,9 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+
 jobs:
   get_pr_details:
     # Guardrails to only ever run if PR recording workflow was indeed
@@ -18,6 +21,8 @@ jobs:
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
   label_pr:
+    permissions:
+      pull-requests: write
     needs: get_pr_details
     runs-on: ubuntu-latest
     steps:

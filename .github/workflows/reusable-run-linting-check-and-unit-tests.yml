@@ -3,6 +3,9 @@ name: Run unit tests
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   run-linting-check-and-unit-tests-on-utilities:
     runs-on: ubuntu-latest

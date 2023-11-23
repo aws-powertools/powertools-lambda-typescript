@@ -5,12 +5,18 @@ on:
     workflows: ["Record PR details"]
     types:
       - completed
+
 concurrency:
   group: on-merge-to-main
+
+permissions:
+  contents: read
 
 jobs:
   get_pr_details:
     if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    permissions:
+      pull-requests: read
     uses: ./.github/workflows/reusable_export_pr_details.yml
     with:
       record_pr_workflow_id: ${{ github.event.workflow_run.id }}
@@ -22,6 +28,8 @@ jobs:
     if: ${{ needs.get_pr_details.outputs.prIsMerged == 'true' }}
     uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
   update-release-draft:
+    permissions:
+      contents: write
     needs: run-unit-tests
     runs-on: ubuntu-latest
     steps:
@@ -32,6 +40,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release_label_on_merge:
+    permissions:
+      pull-requests: read
+      contents: write
     needs: [get_pr_details, update-release-draft]
     runs-on: ubuntu-latest
     steps:

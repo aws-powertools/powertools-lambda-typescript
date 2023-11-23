@@ -54,10 +54,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b # v4.6.0
         with:
-          python-version: "3.8"
+          python-version: "3.11"
       - name: Install doc generation dependencies
         run: |
-          pip install --upgrade pip 
           pip install -r docs/requirements.txt
       - name: Setup doc deploy
         run: |

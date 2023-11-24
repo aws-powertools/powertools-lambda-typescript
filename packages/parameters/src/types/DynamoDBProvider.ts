@@ -115,17 +115,17 @@ type DynamoDBGetOptions =
  */
 type DynamoDBGetOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? JSONValue
     : InferredFromOptionsType extends
-        | DynamoDBGetOptionsTransformNone
-        | DynamoDBGetOptionsTransformJson
-    ? JSONValue
-    : InferredFromOptionsType extends DynamoDBGetOptionsTransformBinary
-    ? string
-    : never
+          | DynamoDBGetOptionsTransformNone
+          | DynamoDBGetOptionsTransformJson
+      ? JSONValue
+      : InferredFromOptionsType extends DynamoDBGetOptionsTransformBinary
+        ? string
+        : never
   : ExplicitUserProvidedType;
 
 /**
@@ -174,18 +174,18 @@ type DynamoDBGetMultipleOptions =
  */
 type DynamoDBGetMultipleOutput<
   ExplicitUserProvidedType = undefined,
-  InferredFromOptionsType = undefined
+  InferredFromOptionsType = undefined,
 > = undefined extends ExplicitUserProvidedType
   ? undefined extends InferredFromOptionsType
     ? JSONValue
     : InferredFromOptionsType extends
-        | DynamoDBGetMultipleOptionsTransformNone
-        | DynamoDBGetMultipleOptionsTransformAuto
-        | DynamoDBGetMultipleOptionsTransformJson
-    ? JSONValue
-    : InferredFromOptionsType extends DynamoDBGetOptionsTransformBinary
-    ? string
-    : never
+          | DynamoDBGetMultipleOptionsTransformNone
+          | DynamoDBGetMultipleOptionsTransformAuto
+          | DynamoDBGetMultipleOptionsTransformJson
+      ? JSONValue
+      : InferredFromOptionsType extends DynamoDBGetOptionsTransformBinary
+        ? string
+        : never
   : ExplicitUserProvidedType;
 
 export type {

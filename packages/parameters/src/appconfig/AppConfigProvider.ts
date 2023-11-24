@@ -246,7 +246,7 @@ class AppConfigProvider extends BaseProvider {
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | AppConfigGetOptions
-      | undefined = AppConfigGetOptions
+      | undefined = AppConfigGetOptions,
   >(
     name: string,
     options?: InferredFromOptionsType & AppConfigGetOptions

@@ -22,7 +22,7 @@ type CaptureAsyncFuncMock = jest.SpyInstance<
   [
     name: string,
     fcn: (subsegment?: Subsegment) => unknown,
-    parent?: Segment | Subsegment
+    parent?: Segment | Subsegment,
   ]
 >;
 const createCaptureAsyncFuncMock = function (

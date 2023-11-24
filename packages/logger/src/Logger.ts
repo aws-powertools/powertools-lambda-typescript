@@ -669,8 +669,8 @@ class Logger extends Utility implements ClassThatLogs {
         item instanceof Error
           ? { error: item }
           : typeof item === 'string'
-          ? { extra: item }
-          : item;
+            ? { extra: item }
+            : item;
 
       logItem.addAttributes(attributes);
     });

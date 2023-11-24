@@ -70,7 +70,6 @@ body:
         - 20.x
         - 18.x
         - 16.x
-        - 14.x
     validations:
       required: true
   - type: dropdown

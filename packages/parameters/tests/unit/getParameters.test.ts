@@ -34,9 +34,8 @@ describe('Function: getParameters', () => {
       });
 
     // Act
-    const parameters: Record<string, string> | undefined = await getParameters(
-      parameterPath
-    );
+    const parameters: Record<string, string> | undefined =
+      await getParameters(parameterPath);
 
     // Assess
     expect(client).toReceiveCommandWith(GetParametersByPathCommand, {
@@ -65,9 +64,8 @@ describe('Function: getParameters', () => {
       });
 
     // Act
-    const parameters: Record<string, string> | undefined = await getParameters(
-      parameterPath
-    );
+    const parameters: Record<string, string> | undefined =
+      await getParameters(parameterPath);
 
     // Assess
     expect(client).toReceiveCommandWith(GetParametersByPathCommand, {

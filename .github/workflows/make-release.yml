@@ -38,7 +38,7 @@ jobs:
         uses: ./.github/actions/cached-node-modules
       - name: Version
         run: |
-          npx lerna version --conventional-commits --force-publish --no-commit-hooks --yes
+          npx lerna version minor --force-publish --no-commit-hooks --yes
       - name: Publish to npm
         run: |
           NPM_CONFIG_PROVENANCE=true npx lerna publish from-git --yes

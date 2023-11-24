@@ -3,7 +3,7 @@ const RESOURCE_NAME_PREFIX = 'Tracer';
 // Constants relating time to be used in the tests
 const ONE_MINUTE = 60 * 1_000;
 const TEST_CASE_TIMEOUT = 5 * ONE_MINUTE;
-const SETUP_TIMEOUT = 5 * ONE_MINUTE;
+const SETUP_TIMEOUT = 7 * ONE_MINUTE;
 const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;
 
 // Expected values for custom annotations, metadata, and response

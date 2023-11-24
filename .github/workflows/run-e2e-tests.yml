@@ -28,7 +28,7 @@ jobs:
             packages/parameters,
             packages/idempotency,
           ]
-        version: [14, 16, 18, 20]
+        version: [16, 18, 20]
         arch: [x86_64, arm64]
       fail-fast: false
     steps:

@@ -4,12 +4,11 @@ import { LogAttributes, UnformattedAttributes } from '../types';
 /**
  * Typeguard to monkey patch Error to add a cause property.
  *
- * This is needed because the `cause` property was added in Node 16.x.
- * Since we want to be able to format errors in Node 14.x, we need to
+ * This is needed because the `cause` property is present in ES2022 or newer.
+ * Since we want to be able to format errors in Node 16.x, we need to
  * add this property ourselves. We can remove this once we drop support
- * for Node 14.x.
+ * for Node 16.x.
  *
- * @see 1361
  * @see https://nodejs.org/api/errors.html#errors_error_cause
  */
 const isErrorWithCause = (

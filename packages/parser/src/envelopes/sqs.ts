@@ -2,7 +2,16 @@ import { z, ZodSchema } from 'zod';
 import { SqsSchema } from '../schemas/sqs.js';
 import { Envelope } from './Envelope.js';
 
-class SqsEnvelope extends Envelope {
+/**
+ *  SQS Envelope to extract array of Records
+ *
+ *  The record's body parameter is a string, though it can also be a JSON encoded string.
+ *  Regardless of its type it'll be parsed into a BaseModel object.
+ *
+ *  Note: Records will be parsed the same way so if model is str,
+ *  all items in the list will be parsed as str and npt as JSON (and vice versa)
+ */
+export class SqsEnvelope extends Envelope {
   public constructor() {
     super();
   }
@@ -17,9 +26,3 @@ class SqsEnvelope extends Envelope {
     });
   }
 }
-
-class Envelopes {
-  public static readonly SQS_ENVELOPE = new SqsEnvelope();
-}
-
-export { SqsEnvelope, Envelopes };

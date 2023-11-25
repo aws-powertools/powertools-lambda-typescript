@@ -1,5 +1,8 @@
 import { z, ZodSchema } from 'zod';
 
+/**
+ * Abstract class for envelopes.
+ */
 export abstract class Envelope {
   protected constructor() {}
 

@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { generateMock } from '@anatine/zod-mock';
 import { SqsRecordSchema } from '../../../src/schemas/sqs.js';
-import { Envelopes } from '../../../src/envelopes/SqsEnvelope.js';
+import { Envelopes } from '../../../src/envelopes/Envelope.js';
 
 describe('SqsEnvelope ', () => {
   const schema = z.object({

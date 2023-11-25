@@ -25,7 +25,7 @@ describe('Middleware: parser', () => {
     return event;
   };
 
-  describe(' when envelope is provided', () => {
+  describe(' when envelope is provided ', () => {
     const middyfiedHandler = middy(handler).use(
       parser({ schema: schema, envelope: Envelopes.SQS_ENVELOPE })
     );
@@ -50,7 +50,8 @@ describe('Middleware: parser', () => {
         await middyfiedHandler({ name: 'John', age: 18 }, {} as Context);
       }).rejects.toThrowError();
     });
-    it('should throw when the schema does not match', async () => {
+
+    it('should throw when schema does not match', async () => {
       const event = generateMock(SqsSchema, {
         stringMap: {
           body: () => '42',
@@ -65,6 +66,21 @@ describe('Middleware: parser', () => {
       );
 
       await expect(middyfiedHandler(42, {} as Context)).rejects.toThrowError();
+    });
+    it('should throw when envelope is correct but schema is invalid', async () => {
+      const event = generateMock(SqsSchema, {
+        stringMap: {
+          body: () => JSON.stringify({ name: 'John', foo: 'bar' }),
+        },
+      });
+
+      const middyfiedHandler = middy(handler).use(
+        parser({ schema: {} as ZodSchema, envelope: Envelopes.SQS_ENVELOPE })
+      );
+
+      await expect(
+        middyfiedHandler(event, {} as Context)
+      ).rejects.toThrowError();
     });
   });
 

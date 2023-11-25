@@ -8,19 +8,12 @@ class SqsEnvelope extends Envelope {
   }
 
   public parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
-    if (typeof data !== 'object') {
-      throw new Error('Data must be an object');
-    }
-
-    if (!schema) {
-      throw new Error('Schema must be provided');
-    }
     const parsedEnvelope = SqsSchema.parse(data);
 
     return parsedEnvelope.Records.map((record) => {
       const body = JSON.parse(record.body);
 
-      return schema.parse(body);
+      return this._parse(body, schema);
     });
   }
 }

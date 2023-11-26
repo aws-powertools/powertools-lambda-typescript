@@ -22,4 +22,8 @@ const KinesisDataStreamSchema = z.object({
   Records: z.array(KinesisDataStreamRecord),
 });
 
-export { KinesisDataStreamSchema };
+export {
+  KinesisDataStreamSchema,
+  KinesisDataStreamRecord,
+  KinesisDataStreamRecordPayload,
+};

@@ -1,6 +1,10 @@
 name: Make Release v2 (pre-release)
 on:
   workflow_dispatch: {}
+
+permissions:
+  contents: read
+
 concurrency:
   group: on-release-publish
 jobs:

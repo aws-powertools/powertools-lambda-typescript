@@ -8,6 +8,9 @@ on:
       - "docs/**"
       - "mkdocs.yml"
 
+permissions:
+  contents: read
+
 jobs:
   release-docs:
     permissions:

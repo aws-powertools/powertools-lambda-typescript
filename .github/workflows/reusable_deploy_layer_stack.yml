@@ -1,9 +1,5 @@
 name: Deploy cdk stack
 
-permissions:
-  id-token: write
-  contents: read
-
 on:
   workflow_call:
     inputs:
@@ -23,9 +19,13 @@ on:
       target-account-role:
         required: true
 
+permissions:
+  contents: read
 
 jobs:
   deploy-cdk-stack:
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

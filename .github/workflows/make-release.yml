@@ -1,6 +1,10 @@
 name: Make Release
 on:
   workflow_dispatch: {}
+
+permissions:
+  contents: read
+
 concurrency:
   group: on-release-publish
 jobs:

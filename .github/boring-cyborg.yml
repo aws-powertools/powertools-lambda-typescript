@@ -158,7 +158,7 @@ labelPRBasedOnFilePath:
 
 ##### Greetings ########################################################################################################
 firstPRWelcomeComment: >
-  Thanks a lot for your first contribution! Please check out our [contributing guidelines](https://github.com/aws-powertools/powertools-lambda-typescript/blob/chore/pr_automation/CONTRIBUTING.md) and don't hesitate to ask whatever you need.
+  Thanks a lot for your first contribution! Please check out our [contributing guidelines](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md) and don't hesitate to ask whatever you need.
 
   In the meantime, check out the #typescript channel on our Powertools for AWS Lambda Discord: [Invite link](https://discord.gg/B8zZKbbyET)
 

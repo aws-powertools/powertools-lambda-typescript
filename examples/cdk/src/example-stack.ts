@@ -53,7 +53,7 @@ export class CdkAppStack extends Stack {
         'powertools-layer',
         `arn:aws:lambda:${
           Stack.of(this).region
-        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:18`
+        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:24`
       )
     );
 

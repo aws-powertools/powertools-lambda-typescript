@@ -64,7 +64,7 @@ export class CanaryStack extends Stack {
         SSM_PARAMETER_LAYER_ARN: props.ssmParameterLayerArn,
       },
       layers: layer,
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.TEN_YEARS,
       tracing: Tracing.ACTIVE,
     });
 
@@ -79,7 +79,7 @@ export class CanaryStack extends Stack {
     // use custom resource to trigger the lambda function during the CFN deployment
     const provider = new Provider(this, 'CanaryCustomResourceProvider', {
       onEventHandler: canaryFunction,
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.TEN_YEARS,
     });
 
     // random suffix forces recreation of the custom resource otherwise the custom resource will be reused from prevous deployment

@@ -18,6 +18,8 @@ jobs:
       workflow_origin: ${{ github.event.repository.full_name }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
+    permissions: 
+      pull-requests: read
   check_related_issue:
     permissions:
       issues: read

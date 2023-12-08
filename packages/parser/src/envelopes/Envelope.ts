@@ -15,10 +15,13 @@ export abstract class Envelope {
     data: unknown,
     schema: T
   ): z.infer<T>[] {
-    if (typeof data !== 'object') {
-      throw new Error('Data must be an object');
-    }
-
-    return schema.parse(data);
+    if (typeof data === 'string') {
+      return schema.parse(JSON.parse(data));
+    } else if (typeof data === 'object') {
+      return schema.parse(data);
+    } else
+      throw new Error(
+        `Invalid data type for envelope. Expected string or object, got ${typeof data}`
+      );
   }
 }

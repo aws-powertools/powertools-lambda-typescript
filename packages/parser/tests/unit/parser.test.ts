@@ -9,8 +9,8 @@ import { Context } from 'aws-lambda';
 import { parser } from '../../src/middleware/parser.js';
 import { generateMock } from '@anatine/zod-mock';
 import { SqsSchema } from '../../src/schemas/sqs.js';
-import { Envelopes } from '../../src/envelopes/SqsEnvelope.js';
 import { z, ZodSchema } from 'zod';
+import { Envelopes } from '../../src/envelopes/Envelopes.js';
 
 describe('Middleware: parser', () => {
   const schema = z.object({
@@ -27,6 +27,8 @@ describe('Middleware: parser', () => {
 
   describe(' when envelope is provided ', () => {
     const middyfiedHandler = middy(handler).use(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       parser({ schema: schema, envelope: Envelopes.SQS_ENVELOPE })
     );
 

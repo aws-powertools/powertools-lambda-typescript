@@ -4,12 +4,12 @@
  * @group unit/parser/schema/
  */
 
-import { loadExampleEvent } from './utils.js';
 import { SqsSchema } from '../../../src/schemas/sqs.js';
+import { TestEvents } from './utils.js';
 
 describe('SQS ', () => {
-  const sqsEvent = loadExampleEvent('sqsEvent.json');
   it('should parse sqs event', () => {
+    const sqsEvent = TestEvents.sqsEvent;
     expect(SqsSchema.parse(sqsEvent)).toEqual(sqsEvent);
   });
 });

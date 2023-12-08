@@ -3,9 +3,9 @@ import { MiddlewareObj } from '@middy/core';
 import { ZodSchema } from 'zod';
 import { Envelope } from '../envelopes/Envelope.js';
 
-interface ParserOptions {
-  schema: ZodSchema;
-  envelope?: Envelope;
+interface ParserOptions<S extends ZodSchema, E extends Envelope> {
+  schema: S;
+  envelope?: E;
 }
 
 /**
@@ -36,7 +36,9 @@ interface ParserOptions {
  *
  * @param options
  */
-const parser = (options: ParserOptions): MiddlewareObj => {
+const parser = <S extends ZodSchema, E extends Envelope>(
+  options: ParserOptions<S, E>
+): MiddlewareObj => {
   const before = (request: MiddyLikeRequest): void => {
     const { schema, envelope } = options;
     if (envelope) {
@@ -46,14 +48,8 @@ const parser = (options: ParserOptions): MiddlewareObj => {
     }
   };
 
-  const after = (_request: MiddyLikeRequest): void => {};
-
-  const onError = (_request: MiddyLikeRequest): void => {};
-
   return {
     before,
-    after,
-    onError,
   };
 };
 

@@ -4,11 +4,11 @@
  * @group unit/parser/schema/
  */
 
-import { loadExampleEvent } from './utils.js';
 import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
 } from '../../../src/schemas/kafka.js';
+import { TestEvents } from './utils.js';
 
 describe('Kafka ', () => {
   const expectedTestEvent = {
@@ -26,15 +26,15 @@ describe('Kafka ', () => {
     ],
   };
   it('should parse kafka MSK event', () => {
-    const kafkaEventMsk = loadExampleEvent('kafkaEventMsk.json');
+    const kafkaEventMsk = TestEvents.kafkaEventMsk;
+
     expect(
       KafkaMskEventSchema.parse(kafkaEventMsk).records['mytopic-0'][0]
     ).toEqual(expectedTestEvent);
   });
   it('should parse kafka self managed event', () => {
-    const kafkaEventSelfManaged = loadExampleEvent(
-      'kafkaEventSelfManaged.json'
-    );
+    const kafkaEventSelfManaged = TestEvents.kafkaEventSelfManaged;
+
     expect(
       KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged).records[
         'mytopic-0'
@@ -42,9 +42,8 @@ describe('Kafka ', () => {
     ).toEqual(expectedTestEvent);
   });
   it('should transform bootstrapServers to array', () => {
-    const kafkaEventSelfManaged = loadExampleEvent(
-      'kafkaEventSelfManaged.json'
-    );
+    const kafkaEventSelfManaged = TestEvents.kafkaEventSelfManaged;
+
     expect(
       KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged).bootstrapServers
     ).toEqual([
@@ -53,11 +52,12 @@ describe('Kafka ', () => {
     ]);
   });
   it('should return undefined if bootstrapServers is not present', () => {
-    const kafkaEventSelfManaged = loadExampleEvent(
-      'kafkaEventSelfManaged.json'
-    ) as { bootstrapServers: string };
+    const kafkaEventSelfManaged = TestEvents.kafkaEventSelfManaged as {
+      bootstrapServers: string;
+    };
     kafkaEventSelfManaged.bootstrapServers = '';
     const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
+
     expect(parsed.bootstrapServers).toBeUndefined();
   });
 });

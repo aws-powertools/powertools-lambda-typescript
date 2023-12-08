@@ -20,9 +20,7 @@ export class SqsEnvelope extends Envelope {
     const parsedEnvelope = SqsSchema.parse(data);
 
     return parsedEnvelope.Records.map((record) => {
-      const body = JSON.parse(record.body);
-
-      return this._parse(body, schema);
+      return this._parse(record.body, schema);
     });
   }
 }

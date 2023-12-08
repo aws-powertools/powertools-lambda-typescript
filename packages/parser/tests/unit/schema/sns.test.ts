@@ -4,12 +4,12 @@
  * @group unit/parser/schema/
  */
 
-import { loadExampleEvent } from './utils.js';
 import { SnsSchema } from '../../../src/schemas/sns.js';
+import { TestEvents } from './utils.js';
 
 describe('Schema:', () => {
-  const snsEvent = loadExampleEvent('snsEvent.json');
   it('SNS should parse sns event', () => {
+    const snsEvent = TestEvents.snsEvent;
     expect(SnsSchema.parse(snsEvent)).toEqual(snsEvent);
   });
 });

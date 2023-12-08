@@ -20,7 +20,7 @@ export class CloudWatchEnvelope extends Envelope {
     const parsedEnvelope = CloudWatchLogsSchema.parse(data);
 
     return parsedEnvelope.awslogs.data.logEvents.map((record) => {
-      return this._parse(record, schema);
+      return this._parse(record.message, schema);
     });
   }
 }

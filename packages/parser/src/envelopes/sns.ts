@@ -1,6 +1,6 @@
 import { z, ZodSchema } from 'zod';
 import { Envelope } from './Envelope.js';
-import { SnsNotificationSchema, SnsSchema } from '../schemas/sns.js';
+import { SnsSchema, SnsSqsNotificationSchema } from '../schemas/sns.js';
 import { SqsSchema } from '../schemas/sqs.js';
 
 /**
@@ -46,9 +46,11 @@ export class SnsSqsEnvelope extends Envelope {
     const parsedEnvelope = SqsSchema.parse(data);
 
     return parsedEnvelope.Records.map((record) => {
-      const snsNotification = SnsNotificationSchema.parse(record.body);
+      const snsNotification = SnsSqsNotificationSchema.parse(
+        JSON.parse(record.body)
+      );
 
-      return this._parse(snsNotification, schema);
+      return this._parse(snsNotification.Message, schema);
     });
   }
 }

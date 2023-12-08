@@ -30,15 +30,9 @@ const CloudWatchLogsSchema = z.object({
   }),
 });
 
-const extractCloudWatchLogFromEvent = (
-  data: string
-): z.infer<typeof CloudWatchLogsDecodeSchema> => {
-  return decompressRecordToJSON(data);
-};
-
 export {
   CloudWatchLogsSchema,
   CloudWatchLogsDecodeSchema,
   decompressRecordToJSON,
-  extractCloudWatchLogFromEvent,
+  CloudWatchLogEventSchema,
 };

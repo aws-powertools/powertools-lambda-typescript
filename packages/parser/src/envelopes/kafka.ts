@@ -33,8 +33,10 @@ export class KafkaEnvelope extends Envelope {
         ? KafkaMskEventSchema.parse(data)
         : KafkaSelfManagedEventSchema.parse(data);
 
-    return parsedEnvelope.records.data.map((record: KafkaRecord) => {
-      return this._parse(record.value, schema);
+    return Object.values(parsedEnvelope.records).map((topicRecord) => {
+      return topicRecord.map((record: KafkaRecord) => {
+        return this._parse(record.value, schema);
+      });
     });
   }
 }

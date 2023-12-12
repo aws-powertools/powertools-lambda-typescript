@@ -11,13 +11,10 @@ import { generateMock } from '@anatine/zod-mock';
 import { SqsSchema } from '../../src/schemas/sqs.js';
 import { z, ZodSchema } from 'zod';
 import { sqsEnvelope } from '../../src/envelopes/sqs';
+import { TestSchema } from './schema/utils';
 
 describe('Middleware: parser', () => {
-  const schema = z.object({
-    name: z.string(),
-    age: z.number().min(18).max(99),
-  });
-  type schema = z.infer<typeof schema>;
+  type schema = z.infer<typeof TestSchema>;
   const handler = async (
     event: schema | unknown,
     _context: Context
@@ -27,11 +24,11 @@ describe('Middleware: parser', () => {
 
   describe(' when envelope is provided ', () => {
     const middyfiedHandler = middy(handler).use(
-      parser({ schema: schema, envelope: sqsEnvelope })
+      parser({ schema: TestSchema, envelope: sqsEnvelope })
     );
 
     it('should parse request body with schema and envelope', async () => {
-      const bodyMock = generateMock(schema);
+      const bodyMock = generateMock(TestSchema);
 
       const event = generateMock(SqsSchema, {
         stringMap: {
@@ -97,13 +94,17 @@ describe('Middleware: parser', () => {
 
     it('should parse custom event', async () => {
       const event = { name: 'John', age: 18 };
-      const middyfiedHandler = middy(handler).use(parser({ schema }));
+      const middyfiedHandler = middy(handler).use(
+        parser({ schema: TestSchema })
+      );
 
       expect(await middyfiedHandler(event, {} as Context)).toEqual(event);
     });
 
     it('should throw when the schema does not match', async () => {
-      const middyfiedHandler = middy(handler).use(parser({ schema }));
+      const middyfiedHandler = middy(handler).use(
+        parser({ schema: TestSchema })
+      );
 
       await expect(middyfiedHandler(42, {} as Context)).rejects.toThrow();
     });

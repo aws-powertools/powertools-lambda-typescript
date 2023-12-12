@@ -11,10 +11,20 @@ import { generateMock } from '@anatine/zod-mock';
 import { SqsSchema } from '../../src/schemas/sqs.js';
 import { z, ZodSchema } from 'zod';
 import { sqsEnvelope } from '../../src/envelopes/sqs';
+<<<<<<< HEAD
 import { TestSchema } from './schema/utils';
 
 describe('Middleware: parser', () => {
   type schema = z.infer<typeof TestSchema>;
+=======
+
+describe('Middleware: parser', () => {
+  const schema = z.object({
+    name: z.string(),
+    age: z.number().min(18).max(99),
+  });
+  type schema = z.infer<typeof schema>;
+>>>>>>> 8c75dae3 (add middy middleware)
   const handler = async (
     event: schema | unknown,
     _context: Context
@@ -24,11 +34,19 @@ describe('Middleware: parser', () => {
 
   describe(' when envelope is provided ', () => {
     const middyfiedHandler = middy(handler).use(
+<<<<<<< HEAD
       parser({ schema: TestSchema, envelope: sqsEnvelope })
     );
 
     it('should parse request body with schema and envelope', async () => {
       const bodyMock = generateMock(TestSchema);
+=======
+      parser({ schema: schema, envelope: sqsEnvelope })
+    );
+
+    it('should parse request body with schema and envelope', async () => {
+      const bodyMock = generateMock(schema);
+>>>>>>> 8c75dae3 (add middy middleware)
 
       const event = generateMock(SqsSchema, {
         stringMap: {
@@ -94,17 +112,25 @@ describe('Middleware: parser', () => {
 
     it('should parse custom event', async () => {
       const event = { name: 'John', age: 18 };
+<<<<<<< HEAD
       const middyfiedHandler = middy(handler).use(
         parser({ schema: TestSchema })
       );
+=======
+      const middyfiedHandler = middy(handler).use(parser({ schema }));
+>>>>>>> 8c75dae3 (add middy middleware)
 
       expect(await middyfiedHandler(event, {} as Context)).toEqual(event);
     });
 
     it('should throw when the schema does not match', async () => {
+<<<<<<< HEAD
       const middyfiedHandler = middy(handler).use(
         parser({ schema: TestSchema })
       );
+=======
+      const middyfiedHandler = middy(handler).use(parser({ schema }));
+>>>>>>> 8c75dae3 (add middy middleware)
 
       await expect(middyfiedHandler(42, {} as Context)).rejects.toThrow();
     });

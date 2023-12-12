@@ -7,13 +7,12 @@
 import { z } from 'zod';
 import { generateMock } from '@anatine/zod-mock';
 import { SNSEvent, SQSEvent } from 'aws-lambda';
-import { Envelopes } from '../../../src/envelopes/Envelopes.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';
+import { snsEnvelope, snsSqsEnvelope } from '../../../src/envelopes/sns';
 
 describe('SNS Envelope', () => {
   it('should parse custom schema in envelope', () => {
     const testEvent = TestEvents.snsEvent as SNSEvent;
-    const envelope = Envelopes.SNS_ENVELOPE;
 
     const testRecords = [] as z.infer<typeof TestSchema>[];
 
@@ -23,12 +22,11 @@ describe('SNS Envelope', () => {
       record.Sns.Message = JSON.stringify(value);
     });
 
-    expect(envelope.parse(testEvent, TestSchema)).toEqual(testRecords);
+    expect(snsEnvelope(testEvent, TestSchema)).toEqual(testRecords);
   });
 
   it('should throw if message does not macht schema', () => {
     const testEvent = TestEvents.snsEvent as SNSEvent;
-    const envelope = Envelopes.SNS_ENVELOPE;
 
     testEvent.Records.map((record) => {
       record.Sns.Message = JSON.stringify({
@@ -36,7 +34,7 @@ describe('SNS Envelope', () => {
       });
     });
 
-    expect(() => envelope.parse(testEvent, TestSchema)).toThrowError();
+    expect(() => snsEnvelope(testEvent, TestSchema)).toThrowError();
   });
 
   it('should parse sqs inside sns envelope', () => {
@@ -48,8 +46,6 @@ describe('SNS Envelope', () => {
 
     snsSqsTestEvent.Records[0].body = JSON.stringify(snsEvent);
 
-    expect(
-      Envelopes.SNS_SQS_ENVELOPE.parse(snsSqsTestEvent, TestSchema)
-    ).toEqual([data]);
+    expect(snsSqsEnvelope(snsSqsTestEvent, TestSchema)).toEqual([data]);
   });
 });

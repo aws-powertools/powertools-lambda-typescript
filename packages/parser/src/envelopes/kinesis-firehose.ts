@@ -1,4 +1,4 @@
-import { Envelope } from './Envelope.js';
+import { parse } from './envelope.js';
 import { z, ZodSchema } from 'zod';
 import { KinesisFirehoseSchema } from '../schemas/kinesis-firehose.js';
 
@@ -14,16 +14,13 @@ import { KinesisFirehoseSchema } from '../schemas/kinesis-firehose.js';
  *
  *  https://docs.aws.amazon.com/lambda/latest/dg/services-kinesisfirehose.html
  */
-export class KinesisFirehoseEnvelope extends Envelope {
-  public constructor() {
-    super();
-  }
+export const kinesisFirehoseEnvelope = <T extends ZodSchema>(
+  data: unknown,
+  schema: T
+): z.infer<T> => {
+  const parsedEnvelope = KinesisFirehoseSchema.parse(data);
 
-  public parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
-    const parsedEnvelope = KinesisFirehoseSchema.parse(data);
-
-    return parsedEnvelope.records.map((record) => {
-      return this._parse(record.data, schema);
-    });
-  }
-}
+  return parsedEnvelope.records.map((record) => {
+    return parse(record.data, schema);
+  });
+};

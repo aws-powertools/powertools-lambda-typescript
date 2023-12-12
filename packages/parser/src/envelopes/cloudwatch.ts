@@ -1,4 +1,4 @@
-import { Envelope } from './Envelope.js';
+import { parse } from './envelope.js';
 import { z, ZodSchema } from 'zod';
 import { CloudWatchLogsSchema } from '../schemas/cloudwatch.js';
 
@@ -11,16 +11,13 @@ import { CloudWatchLogsSchema } from '../schemas/cloudwatch.js';
  *
  *  Note: The record will be parsed the same way so if model is str
  */
-export class CloudWatchEnvelope extends Envelope {
-  public constructor() {
-    super();
-  }
+export const cloudWatchEnvelope = <T extends ZodSchema>(
+  data: unknown,
+  schema: T
+): z.infer<T> => {
+  const parsedEnvelope = CloudWatchLogsSchema.parse(data);
 
-  public parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
-    const parsedEnvelope = CloudWatchLogsSchema.parse(data);
-
-    return parsedEnvelope.awslogs.data.logEvents.map((record) => {
-      return this._parse(record.message, schema);
-    });
-  }
-}
+  return parsedEnvelope.awslogs.data.logEvents.map((record) => {
+    return parse(record.message, schema);
+  });
+};

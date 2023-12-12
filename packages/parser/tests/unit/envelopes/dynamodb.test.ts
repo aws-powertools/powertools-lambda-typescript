@@ -8,7 +8,7 @@ import { generateMock } from '@anatine/zod-mock';
 import { TestEvents } from '../schema/utils.js';
 import { DynamoDBStreamEvent } from 'aws-lambda';
 import { z } from 'zod';
-import { Envelopes } from '../../../src/envelopes/Envelopes.js';
+import { dynamoDDStreamEnvelope } from '../../../src/envelopes/dynamodb';
 
 describe('DynamoDB', () => {
   const schema = z.object({
@@ -16,7 +16,6 @@ describe('DynamoDB', () => {
     Id: z.record(z.literal('N'), z.number().min(0).max(100)),
   });
 
-  const envelope = Envelopes.DYNAMO_DB_STREAM_ENVELOPE;
   it('should parse dynamodb envelope', () => {
     const mockOldImage = generateMock(schema);
     const mockNewImage = generateMock(schema);
@@ -31,7 +30,7 @@ describe('DynamoDB', () => {
     (dynamodbEvent.Records[1].dynamodb!.OldImage as typeof mockOldImage) =
       mockOldImage;
 
-    const parsed = envelope.parse(dynamodbEvent, schema);
+    const parsed = dynamoDDStreamEnvelope(dynamodbEvent, schema);
     expect(parsed[0]).toEqual({
       OldImage: mockOldImage,
       NewImage: mockNewImage,

@@ -7,11 +7,9 @@
 import { generateMock } from '@anatine/zod-mock';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { MSKEvent, SelfManagedKafkaEvent } from 'aws-lambda';
-import { Envelopes } from '../../../src/envelopes/Envelopes.js';
+import { kafkaEnvelope } from '../../../src/envelopes/kafka';
 
 describe('Kafka', () => {
-  const envelope = Envelopes.KAFKA_ENVELOPE;
-
   it('should parse MSK kafka envelope', () => {
     const mock = generateMock(TestSchema);
 
@@ -20,7 +18,7 @@ describe('Kafka', () => {
       JSON.stringify(mock)
     ).toString('base64');
 
-    const result = envelope.parse(kafkaEvent, TestSchema);
+    const result = kafkaEnvelope(kafkaEvent, TestSchema);
 
     expect(result).toEqual([[mock]]);
   });
@@ -34,7 +32,7 @@ describe('Kafka', () => {
       JSON.stringify(mock)
     ).toString('base64');
 
-    const result = envelope.parse(kafkaEvent, TestSchema);
+    const result = kafkaEnvelope(kafkaEvent, TestSchema);
 
     expect(result).toEqual([[mock]]);
   });

@@ -4,7 +4,6 @@
  * @group unit/parser/envelopes
  */
 
-import { Envelopes } from '../../../src/envelopes/Envelopes.js';
 import { generateMock } from '@anatine/zod-mock';
 import { gzipSync } from 'node:zlib';
 import {
@@ -12,6 +11,7 @@ import {
   CloudWatchLogsDecodeSchema,
 } from '../../../src/schemas/cloudwatch.js';
 import { TestSchema } from '../schema/utils.js';
+import { cloudWatchEnvelope } from '../../../src/envelopes/cloudwatch';
 
 describe('CloudWatch', () => {
   it('should parse custom schema in envelope', () => {
@@ -20,7 +20,6 @@ describe('CloudWatch', () => {
         data: '',
       },
     };
-    const envelope = Envelopes.CLOUDWATCH_ENVELOPE;
 
     const data = generateMock(TestSchema);
     const eventMock = generateMock(CloudWatchLogEventSchema, {
@@ -36,7 +35,7 @@ describe('CloudWatch', () => {
       Buffer.from(JSON.stringify(logMock), 'utf8')
     ).toString('base64');
 
-    expect(envelope.parse(testEvent, TestSchema)).toEqual([data]);
+    expect(cloudWatchEnvelope(testEvent, TestSchema)).toEqual([data]);
   });
 
   it('should throw when schema does not match', () => {
@@ -45,7 +44,6 @@ describe('CloudWatch', () => {
         data: '',
       },
     };
-    const envelope = Envelopes.CLOUDWATCH_ENVELOPE;
 
     const eventMock = generateMock(CloudWatchLogEventSchema, {
       stringMap: {
@@ -60,6 +58,6 @@ describe('CloudWatch', () => {
       Buffer.from(JSON.stringify(logMock), 'utf8')
     ).toString('base64');
 
-    expect(() => envelope.parse(testEvent, TestSchema)).toThrow();
+    expect(() => cloudWatchEnvelope(testEvent, TestSchema)).toThrow();
   });
 });

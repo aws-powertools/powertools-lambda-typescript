@@ -1,5 +1,5 @@
 import { z, ZodSchema } from 'zod';
-import { Envelope } from './Envelope.js';
+import { parse } from './envelope.js';
 import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
@@ -14,29 +14,26 @@ import { type KafkaRecord } from '../types/schema.js';
  * Note: Records will be parsed the same way so if model is str,
  * all items in the list will be parsed as str and not as JSON (and vice versa)
  */
-export class KafkaEnvelope extends Envelope {
-  public constructor() {
-    super();
-  }
+export const kafkaEnvelope = <T extends ZodSchema>(
+  data: unknown,
+  schema: T
+): z.infer<T> => {
+  // manually fetch event source to deside between Msk or SelfManaged
 
-  public parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
-    // manually fetch event source to deside between Msk or SelfManaged
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const eventSource = data['eventSource'];
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const eventSource = data['eventSource'];
+  const parsedEnvelope:
+    | z.infer<typeof KafkaMskEventSchema>
+    | z.infer<typeof KafkaSelfManagedEventSchema> =
+    eventSource === 'aws:kafka'
+      ? KafkaMskEventSchema.parse(data)
+      : KafkaSelfManagedEventSchema.parse(data);
 
-    const parsedEnvelope:
-      | z.infer<typeof KafkaMskEventSchema>
-      | z.infer<typeof KafkaSelfManagedEventSchema> =
-      eventSource === 'aws:kafka'
-        ? KafkaMskEventSchema.parse(data)
-        : KafkaSelfManagedEventSchema.parse(data);
-
-    return Object.values(parsedEnvelope.records).map((topicRecord) => {
-      return topicRecord.map((record: KafkaRecord) => {
-        return this._parse(record.value, schema);
-      });
+  return Object.values(parsedEnvelope.records).map((topicRecord) => {
+    return topicRecord.map((record: KafkaRecord) => {
+      return parse(record.value, schema);
     });
-  }
-}
+  });
+};

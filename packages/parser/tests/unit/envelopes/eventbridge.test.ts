@@ -5,13 +5,11 @@
  */
 
 import { TestEvents, TestSchema } from '../schema/utils.js';
-import { Envelopes } from '../../../src/envelopes/Envelopes.js';
 import { generateMock } from '@anatine/zod-mock';
 import { EventBridgeEvent } from 'aws-lambda';
+import { eventBridgeEnvelope } from '../../../src/envelopes/eventBridgeEnvelope';
 
 describe('EventBridgeEnvelope ', () => {
-  const envelope = Envelopes.EVENT_BRIDGE_ENVELOPE;
-
   it('should parse eventbridge event', () => {
     const eventBridgeEvent = TestEvents.eventBridgeEvent as EventBridgeEvent<
       string,
@@ -22,7 +20,7 @@ describe('EventBridgeEnvelope ', () => {
 
     eventBridgeEvent.detail = data;
 
-    expect(envelope.parse(eventBridgeEvent, TestSchema)).toEqual(data);
+    expect(eventBridgeEnvelope(eventBridgeEvent, TestSchema)).toEqual(data);
   });
 
   it('should throw error if detail type does not match schema', () => {
@@ -31,23 +29,23 @@ describe('EventBridgeEnvelope ', () => {
       object
     >;
 
-    const envelope = Envelopes.EVENT_BRIDGE_ENVELOPE;
-
     eventBridgeEvent.detail = {
       foo: 'bar',
     };
 
-    expect(() => envelope.parse(eventBridgeEvent, TestSchema)).toThrowError();
+    expect(() =>
+      eventBridgeEnvelope(eventBridgeEvent, TestSchema)
+    ).toThrowError();
   });
 
   it('should throw when invalid data type provided', () => {
-    const testEvent = TestEvents.eventBridgeEvent as EventBridgeEvent<
+    const eventBridgeEvent = TestEvents.eventBridgeEvent as EventBridgeEvent<
       string,
       object
     >;
 
-    testEvent.detail = 1 as unknown as object;
+    eventBridgeEvent.detail = 1 as unknown as object;
 
-    expect(() => envelope.parse(testEvent, TestSchema)).toThrow();
+    expect(() => eventBridgeEnvelope(eventBridgeEvent, TestSchema)).toThrow();
   });
 });

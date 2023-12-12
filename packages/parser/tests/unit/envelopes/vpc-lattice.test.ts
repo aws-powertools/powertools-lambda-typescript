@@ -4,14 +4,13 @@
  * @group unit/parser/envelopes
  */
 
-import { Envelopes } from '../../../src/envelopes/Envelopes.js';
 import { generateMock } from '@anatine/zod-mock';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { VpcLatticeSchema } from '../../../src/schemas/vpc-lattice.js';
 import { z } from 'zod';
+import { vpcLatticeEnvelope } from '../../../src/envelopes/vpc-lattice';
 
 describe('VPC Lattice envelope', () => {
-  const evnelope = Envelopes.VPC_LATTICE_ENVELOPE;
   it('should parse VPC Lattice event', () => {
     const mock = generateMock(TestSchema);
     const testEvent = TestEvents.vpcLatticeEvent as z.infer<
@@ -20,7 +19,7 @@ describe('VPC Lattice envelope', () => {
 
     testEvent.body = JSON.stringify(mock);
 
-    const resp = evnelope.parse(testEvent, TestSchema);
+    const resp = vpcLatticeEnvelope(testEvent, TestSchema);
 
     expect(resp).toEqual(mock);
   });
@@ -33,7 +32,7 @@ describe('VPC Lattice envelope', () => {
 
     testEvent.body = JSON.stringify(mock);
 
-    const resp = evnelope.parse(testEvent, TestSchema);
+    const resp = vpcLatticeEnvelope(testEvent, TestSchema);
     expect(resp).toEqual(mock);
   });
 });

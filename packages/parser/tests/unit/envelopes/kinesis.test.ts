@@ -6,11 +6,10 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import { KinesisStreamEvent } from 'aws-lambda';
-import { Envelopes } from '../../../src/envelopes/Envelopes.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';
+import { kinesisEnvelope } from '../../../src/envelopes/kinesis';
 
 describe('Kinesis', () => {
-  const envelope = Envelopes.KINESIS_ENVELOPE;
   it('should parse Kinesis Stream event', () => {
     const mock = generateMock(TestSchema);
     const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
@@ -21,7 +20,7 @@ describe('Kinesis', () => {
       );
     });
 
-    const resp = envelope.parse(testEvent, TestSchema);
+    const resp = kinesisEnvelope(testEvent, TestSchema);
     expect(resp).toEqual([mock, mock]);
   });
 });

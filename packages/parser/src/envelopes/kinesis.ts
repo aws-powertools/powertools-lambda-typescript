@@ -1,4 +1,4 @@
-import { Envelope } from './Envelope.js';
+import { parse } from './envelope.js';
 import { z, ZodSchema } from 'zod';
 import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
 
@@ -12,16 +12,13 @@ import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
  * Note: Records will be parsed the same way so if model is str,
  * all items in the list will be parsed as str and not as JSON (and vice versa)
  */
-export class KinesisEnvelope extends Envelope {
-  public constructor() {
-    super();
-  }
+export const kinesisEnvelope = <T extends ZodSchema>(
+  data: unknown,
+  schema: T
+): z.infer<T> => {
+  const parsedEnvelope = KinesisDataStreamSchema.parse(data);
 
-  public parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
-    const parsedEnvelope = KinesisDataStreamSchema.parse(data);
-
-    return parsedEnvelope.Records.map((record) => {
-      return this._parse(record.kinesis.data, schema);
-    });
-  }
-}
+  return parsedEnvelope.Records.map((record) => {
+    return parse(record.kinesis.data, schema);
+  });
+};

@@ -156,7 +156,7 @@ In each case, the printed log will look like this:
 
 ### Log incoming event
 
-When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent` or via `POWERTOOLS_LOGGER_LOG_EVENT` env var set to `true`.
+When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent`.
 
 ???+ warning
 	This is disabled by default to prevent sensitive info being logged
@@ -175,8 +175,7 @@ When debugging in non-production environments, you can instruct Logger to log th
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
 
-Logging incoming events only works with middy or decorator by using `injectLambdaContext`.  
-Only setting `POWERTOOLS_LOGGER_LOG_EVENT` to `true` will not log the incoming event.
+Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature.
 
 ### Appending persistent additional log keys and values
 

@@ -313,7 +313,6 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         );
       } catch (e) {
         if (e instanceof IdempotencyItemAlreadyExistsError) {
-          //const idempotencyRecord: IdempotencyRecord = e.existingRecord;
           const idempotencyRecord: IdempotencyRecord =
             await this.#persistenceStore.getRecord(
               this.#functionPayloadToBeHashed

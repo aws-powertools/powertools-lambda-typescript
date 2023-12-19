@@ -124,13 +124,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     let resultingError: Error;
     beforeEach(async () => {
       mockSaveInProgress.mockRejectedValue(
-        new IdempotencyItemAlreadyExistsError(
-          'Failed to put record for already existing idempotency key: key',
-          new IdempotencyRecord({
-            idempotencyKey: 'key',
-            status: IdempotencyRecordStatus.INPROGRESS,
-          })
-        )
+        new IdempotencyItemAlreadyExistsError()
       );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
@@ -170,13 +164,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     let resultingError: Error;
     beforeEach(async () => {
       mockSaveInProgress.mockRejectedValue(
-        new IdempotencyItemAlreadyExistsError(
-          'Failed to put record for already existing idempotency key: key',
-          new IdempotencyRecord({
-            idempotencyKey: 'key',
-            status: IdempotencyRecordStatus.EXPIRED,
-          })
-        )
+        new IdempotencyItemAlreadyExistsError()
       );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',
@@ -215,14 +203,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
   describe('When wrapping a function with previous execution that is COMPLETED', () => {
     beforeEach(async () => {
       mockSaveInProgress.mockRejectedValue(
-        new IdempotencyItemAlreadyExistsError(
-          'Failed to put record for already existing idempotency key: key',
-          new IdempotencyRecord({
-            idempotencyKey: 'key',
-            status: IdempotencyRecordStatus.COMPLETED,
-            responseData: 'Hi',
-          })
-        )
+        new IdempotencyItemAlreadyExistsError()
       );
       const idempotencyOptions: IdempotencyRecordOptions = {
         idempotencyKey: 'key',

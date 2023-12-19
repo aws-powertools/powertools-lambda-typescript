@@ -202,10 +202,10 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
         })
       );
     } catch (error) {
-      if (error instanceof ConditionalCheckFailedException && error.Item) {
-        const item = unmarshall(error.Item);
-        throw new IdempotencyItemAlreadyExistsError(
-          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
+      if (error instanceof ConditionalCheckFailedException) {
+        const item = error.Item && unmarshall(error.Item);
+        const idempotencyRecord =
+          item &&
           new IdempotencyRecord({
             idempotencyKey: item[this.keyAttr],
             status: item[this.statusAttr],
@@ -213,7 +213,10 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
             inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
             responseData: item[this.dataAttr],
             payloadHash: item[this.validationKeyAttr],
-          })
+          });
+        throw new IdempotencyItemAlreadyExistsError(
+          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
+          idempotencyRecord
         );
       }
 

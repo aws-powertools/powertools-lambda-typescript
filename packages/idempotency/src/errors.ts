@@ -1,11 +1,12 @@
 import type { IdempotencyRecord } from './persistence';
+
 /**
  * Item attempting to be inserted into persistence store already exists and is not expired
  */
 class IdempotencyItemAlreadyExistsError extends Error {
-  public existingRecord: IdempotencyRecord;
+  public existingRecord?: IdempotencyRecord;
 
-  public constructor(message: string, existingRecord: IdempotencyRecord) {
+  public constructor(message?: string, existingRecord?: IdempotencyRecord) {
     super(message);
     this.existingRecord = existingRecord;
   }

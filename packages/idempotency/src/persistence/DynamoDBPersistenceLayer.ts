@@ -202,10 +202,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
         })
       );
     } catch (error) {
-      if (error instanceof ConditionalCheckFailedException) {
-        if (!error.Item) {
-          throw new Error('item is undefined');
-        }
+      if (error instanceof ConditionalCheckFailedException && error.Item) {
         const item = unmarshall(error.Item);
         throw new IdempotencyItemAlreadyExistsError(
           `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,

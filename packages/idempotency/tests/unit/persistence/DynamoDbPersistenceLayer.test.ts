@@ -688,7 +688,6 @@ describe('Class: DynamoDBPersistenceLayer', () => {
     });
   });
 
-  //write test for when Item is undefined
   test('_putRecord throws Error when Item is undefined', async () => {
     // Prepare
     const persistenceLayer = new TestDynamoDBPersistenceLayer({
@@ -706,8 +705,8 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         $metadata: {},
       })
     );
-    await expect(persistenceLayer._putRecord(mockRecord)).rejects.toThrowError(
-      'item is undefined'
-    );
+    await expect(
+      persistenceLayer._putRecord(mockRecord)
+    ).rejects.toThrowError();
   });
 });

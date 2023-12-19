@@ -173,7 +173,7 @@ When debugging in non-production environments, you can instruct Logger to log th
     1. Binding your handler method allows your handler to access `this` within the class methods.
 
 Logging incoming events only works with middy or decorator by using `injectLambdaContext`.  
-Only setting `POWEETOOLS_LOGGER_LOG_EVENT` to `true` will not log the incoming event.
+Only setting `POWERTOOLS_LOGGER_LOG_EVENT` to `true` will not log the incoming event.
 
 ### Appending persistent additional log keys and values
 

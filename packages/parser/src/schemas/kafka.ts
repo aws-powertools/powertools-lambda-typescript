@@ -41,4 +41,4 @@ const KafkaMskEventSchema = KafkaBaseEventSchema.extend({
   eventSourceArn: z.string(),
 });
 
-export { KafkaSelfManagedEventSchema, KafkaMskEventSchema };
+export { KafkaSelfManagedEventSchema, KafkaMskEventSchema, KafkaRecordSchema };

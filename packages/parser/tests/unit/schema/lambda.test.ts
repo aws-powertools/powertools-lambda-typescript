@@ -4,14 +4,13 @@
  * @group unit/parser/schema/
  */
 
-import { loadExampleEvent } from './utils.js';
 import { LambdaFunctionUrlSchema } from '../../../src/schemas/lambda.js';
+import { TestEvents } from './utils.js';
 
 describe('Lambda ', () => {
   it('should parse lambda event', () => {
-    const lambdaFunctionUrlEvent = loadExampleEvent(
-      'apiGatewayProxyV2Event.json'
-    );
+    const lambdaFunctionUrlEvent = TestEvents.apiGatewayProxyV2Event;
+
     expect(LambdaFunctionUrlSchema.parse(lambdaFunctionUrlEvent)).toEqual(
       lambdaFunctionUrlEvent
     );

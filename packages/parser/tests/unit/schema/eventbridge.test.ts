@@ -4,12 +4,13 @@
  * @group unit/parser/schema/
  */
 
-import { loadExampleEvent } from './utils.js';
 import { EventBridgeSchema } from '../../../src/schemas/eventbridge.js';
+import { TestEvents } from './utils.js';
 
 describe('EventBridge ', () => {
   it('should parse eventbridge event', () => {
-    const eventBridgeEvent = loadExampleEvent('eventBridgeEvent.json');
+    const eventBridgeEvent = TestEvents.eventBridgeEvent;
+
     expect(EventBridgeSchema.parse(eventBridgeEvent)).toEqual(eventBridgeEvent);
   });
 });

@@ -5,10 +5,10 @@
  */
 
 import { DynamoDBStreamSchema } from '../../../src/schemas/dynamodb.js';
-import { loadExampleEvent } from './utils.js';
+import { TestEvents } from './utils.js';
 
 describe('DynamoDB ', () => {
-  const dynamoStreamEvent = loadExampleEvent('dynamoStreamEvent.json');
+  const dynamoStreamEvent = TestEvents.dynamoStreamEvent;
   it('should parse a stream of records', () => {
     expect(DynamoDBStreamSchema.parse(dynamoStreamEvent)).toEqual(
       dynamoStreamEvent

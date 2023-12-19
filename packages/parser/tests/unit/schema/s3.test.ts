@@ -10,18 +10,19 @@ import {
   S3Schema,
   S3ObjectLambdaEventSchema,
 } from '../../../src/schemas/s3.js';
-import { loadExampleEvent } from './utils.js';
+import { TestEvents } from './utils.js';
 
 describe('S3 ', () => {
   it('should parse s3 event', () => {
-    const s3Event = loadExampleEvent('s3Event.json');
+    const s3Event = TestEvents.s3Event;
+
     expect(S3Schema.parse(s3Event)).toEqual(s3Event);
   });
 
   it('should parse s3 event bridge notification event created', () => {
-    const s3EventBridgeNotificationObjectCreatedEvent = loadExampleEvent(
-      's3EventBridgeNotificationObjectCreatedEvent.json'
-    );
+    const s3EventBridgeNotificationObjectCreatedEvent =
+      TestEvents.s3EventBridgeNotificationObjectCreatedEvent;
+
     expect(
       S3EventNotificationEventBridgeSchema.parse(
         s3EventBridgeNotificationObjectCreatedEvent
@@ -30,9 +31,9 @@ describe('S3 ', () => {
   });
 
   it('should parse s3 event bridge notification event detelted', () => {
-    const s3EventBridgeNotificationObjectDeletedEvent = loadExampleEvent(
-      's3EventBridgeNotificationObjectDeletedEvent.json'
-    );
+    const s3EventBridgeNotificationObjectDeletedEvent =
+      TestEvents.s3EventBridgeNotificationObjectDeletedEvent;
+
     expect(
       S3EventNotificationEventBridgeSchema.parse(
         s3EventBridgeNotificationObjectDeletedEvent
@@ -40,9 +41,9 @@ describe('S3 ', () => {
     ).toEqual(s3EventBridgeNotificationObjectDeletedEvent);
   });
   it('should parse s3 event bridge notification event expired', () => {
-    const s3EventBridgeNotificationObjectExpiredEvent = loadExampleEvent(
-      's3EventBridgeNotificationObjectExpiredEvent.json'
-    );
+    const s3EventBridgeNotificationObjectExpiredEvent =
+      TestEvents.s3EventBridgeNotificationObjectExpiredEvent;
+
     expect(
       S3EventNotificationEventBridgeSchema.parse(
         s3EventBridgeNotificationObjectExpiredEvent
@@ -51,27 +52,27 @@ describe('S3 ', () => {
   });
 
   it('should parse s3 sqs notification event', () => {
-    const s3SqsEvent = loadExampleEvent('s3SqsEvent.json');
+    const s3SqsEvent = TestEvents.s3SqsEvent;
     expect(S3SqsEventNotificationSchema.parse(s3SqsEvent)).toEqual(s3SqsEvent);
   });
 
   it('should parse s3 event with decoded key', () => {
-    const s3EventDecodedKey = loadExampleEvent('s3EventDecodedKey.json');
+    const s3EventDecodedKey = TestEvents.s3EventDecodedKey;
     expect(S3Schema.parse(s3EventDecodedKey)).toEqual(s3EventDecodedKey);
   });
 
   it('should parse s3 event delete object', () => {
-    const s3EventDeleteObject = loadExampleEvent('s3EventDeleteObject.json');
+    const s3EventDeleteObject = TestEvents.s3EventDeleteObject;
     expect(S3Schema.parse(s3EventDeleteObject)).toEqual(s3EventDeleteObject);
   });
 
   it('should parse s3 event glacier', () => {
-    const s3EventGlacier = loadExampleEvent('s3EventGlacier.json');
+    const s3EventGlacier = TestEvents.s3EventGlacier;
     expect(S3Schema.parse(s3EventGlacier)).toEqual(s3EventGlacier);
   });
 
   it('should parse s3 object event iam user', () => {
-    const s3ObjectEventIAMUser = loadExampleEvent('s3ObjectEventIAMUser.json');
+    const s3ObjectEventIAMUser = TestEvents.s3ObjectEventIAMUser;
     expect(S3ObjectLambdaEventSchema.parse(s3ObjectEventIAMUser)).toEqual(
       s3ObjectEventIAMUser
     );
@@ -79,9 +80,8 @@ describe('S3 ', () => {
 
   it('should parse s3 object event temp credentials', () => {
     // ignore any because we don't want typed json
-    const s3ObjectEventTempCredentials = loadExampleEvent(
-      's3ObjectEventTempCredentials.json'
-    ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const s3ObjectEventTempCredentials =
+      TestEvents.s3ObjectEventTempCredentials as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     const parsed = S3ObjectLambdaEventSchema.parse(
       s3ObjectEventTempCredentials
     );

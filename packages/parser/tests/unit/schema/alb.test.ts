@@ -7,25 +7,22 @@ import {
   AlbSchema,
   AlbMultiValueHeadersSchema,
 } from '../../../src/schemas/alb.js';
-import { loadExampleEvent } from './utils.js';
+import { TestEvents } from './utils.js';
 
 describe('ALB ', () => {
   it('should parse alb event', () => {
-    const albEvent = loadExampleEvent('albEvent.json');
+    const albEvent = TestEvents.albEvent;
     expect(AlbSchema.parse(albEvent)).toEqual(albEvent);
   });
   it('should parse alb event path trailing slash', () => {
-    const albEventPathTrailingSlash = loadExampleEvent(
-      'albEventPathTrailingSlash.json'
-    );
+    const albEventPathTrailingSlash = TestEvents.albEventPathTrailingSlash;
     expect(AlbSchema.parse(albEventPathTrailingSlash)).toEqual(
       albEventPathTrailingSlash
     );
   });
   it('should parse alb event with multi value headers event', () => {
-    const albMultiValueHeadersEvent = loadExampleEvent(
-      'albMultiValueHeadersEvent.json'
-    );
+    const albMultiValueHeadersEvent = TestEvents.albMultiValueHeadersEvent;
+
     expect(AlbMultiValueHeadersSchema.parse(albMultiValueHeadersEvent)).toEqual(
       albMultiValueHeadersEvent
     );

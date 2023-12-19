@@ -216,6 +216,8 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
           })
         );
       }
+
+      throw error;
     }
   }
 

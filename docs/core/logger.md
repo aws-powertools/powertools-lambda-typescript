@@ -50,8 +50,6 @@ These settings will be used across all logs emitted:
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- | ------------------------------------------------------ | ------------------- | --------------------- |
 | **Service name**       | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                             | `serverlessAirline` | `serviceName`         |
 | **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `POWERTOOLS_LOG_LEVEL`          | `INFO`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`, `SILENT` | `ERROR`             | `logLevel`            |
-| **Log incoming event** | Whether to log or not the incoming event when using the decorator or middleware                                  | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                                        | `false`             | `logEvent`            |
-| **Debug log sampling** | Probability that a Lambda invocation will print all the log items regardless of the log level setting            | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1`                                           | `0.5`               | `sampleRateValue`     |
 
 #### Example using AWS Serverless Application Model (SAM)
 
@@ -153,7 +151,7 @@ In each case, the printed log will look like this:
     }
     ```
 
-#### Log incoming event
+### Log incoming event
 
 When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent` or via `POWERTOOLS_LOGGER_LOG_EVENT` env var set to `true`.
 
@@ -173,6 +171,9 @@ When debugging in non-production environments, you can instruct Logger to log th
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
+
+Logging incoming events only works with middy or decorator by using `injectLambdaContext`.  
+Only setting `POWEETOOLS_LOGGER_LOG_EVENT` to `true` will not log the incoming event.
 
 ### Appending persistent additional log keys and values
 
@@ -388,6 +389,18 @@ The error will be logged with default key name `error`, but you can also pass yo
 
 !!! tip "Logging errors and log level"
     You can also log errors using the `warn`, `info`, and `debug` methods. Be aware of the log level though, you might miss those  errors when analyzing the log later depending on the log level configuration.
+
+### Environment variables
+
+The following environment variables are available to configure Logger at a global scope:
+
+
+| Setting                | Description                                                                                                     | Environment variable            | Default Value       | Allowed Values                                         | Example Value       | Constructor parameter |
+| ---------------------- |-----------------------------------------------------------------------------------------------------------------| ------------------------------- | ------------------- | ------------------------------------------------------ | ------------------- | --------------------- |
+| **Service name**       | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                             | `serverlessAirline` | `serviceName`         |
+| **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                         | `POWERTOOLS_LOG_LEVEL`          | `INFO`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`, `SILENT` | `ERROR`             | `logLevel`            |
+| **Log event**          | Whether to log or not the incoming event when using the decorator or middleware                                 | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                                        | `true`              | `logEvent`            |
+| **Sample rate**        | Probability that a Lambda invocation will print all the log items regardless of the log level setting           | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1.0`                                         | `0.1`               | `sampleRateValue`     |
 
 
 ## Advanced

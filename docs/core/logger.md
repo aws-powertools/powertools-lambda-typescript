@@ -41,8 +41,7 @@ The `Logger` utility must always be instantiated outside the Lambda handler. By 
     ```
 
 ### Utility settings
-
-The library requires two settings. You can set them as environment variables, or pass them in the constructor.
+The library has three optional settings, which can be set via environment variables or passed in the constructor.
 
 These settings will be used across all logs emitted:
 
@@ -50,6 +49,10 @@ These settings will be used across all logs emitted:
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- | ------------------------------------------------------ | ------------------- | --------------------- |
 | **Service name**       | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                             | `serverlessAirline` | `serviceName`         |
 | **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `POWERTOOLS_LOG_LEVEL`          | `INFO`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`, `SILENT` | `ERROR`             | `logLevel`            |
+| **Sample rate**        | Probability that a Lambda invocation will print all the log items regardless of the log level setting           | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1.0`                                         | `0.1`               | `sampleRateValue`     |
+
+See all enivronment variables in the [Environment variables](../index.md/#environment-variables) section.
+Check API docs to learn more about [Logger constructor options](https://docs.powertools.aws.dev/lambda/typescript/latest/api/types/_aws_lambda_powertools_logger.types.ConstructorOptions.html){target="_blank"}.
 
 #### Example using AWS Serverless Application Model (SAM)
 
@@ -389,19 +392,6 @@ The error will be logged with default key name `error`, but you can also pass yo
 
 !!! tip "Logging errors and log level"
     You can also log errors using the `warn`, `info`, and `debug` methods. Be aware of the log level though, you might miss those  errors when analyzing the log later depending on the log level configuration.
-
-### Environment variables
-
-The following environment variables are available to configure Logger at a global scope:
-
-
-| Setting                | Description                                                                                                     | Environment variable            | Default Value       | Allowed Values                                         | Example Value       | Constructor parameter |
-| ---------------------- |-----------------------------------------------------------------------------------------------------------------| ------------------------------- | ------------------- | ------------------------------------------------------ | ------------------- | --------------------- |
-| **Service name**       | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                             | `serverlessAirline` | `serviceName`         |
-| **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                         | `POWERTOOLS_LOG_LEVEL`          | `INFO`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`, `SILENT` | `ERROR`             | `logLevel`            |
-| **Log event**          | Whether to log or not the incoming event when using the decorator or middleware                                 | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                                        | `true`              | `logEvent`            |
-| **Sample rate**        | Probability that a Lambda invocation will print all the log items regardless of the log level setting           | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1.0`                                         | `0.1`               | `sampleRateValue`     |
-
 
 ## Advanced
 

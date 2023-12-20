@@ -1,7 +1,7 @@
-import { MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
-import { MiddlewareObj } from '@middy/core';
-import { ZodSchema } from 'zod';
-import { Envelope } from '../types/envelope.js';
+import { type MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
+import { type MiddlewareObj } from '@middy/core';
+import { type ZodSchema } from 'zod';
+import { type Envelope } from '../types/envelope.js';
 
 interface ParserOptions<S extends ZodSchema> {
   schema: S;
@@ -12,7 +12,7 @@ interface ParserOptions<S extends ZodSchema> {
  * A middiy middleware to parse your event.
  *
  * @exmaple
- * ```typescirpt
+ * ```typescript
  * import { parser } from '@aws-lambda-powertools/parser/middleware';
  * import middy from '@middy/core';
  * import { sqsEnvelope } from '@aws-lambda-powertools/parser/envelopes/sqs;'

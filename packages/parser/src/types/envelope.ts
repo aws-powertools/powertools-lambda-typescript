@@ -1,17 +1,17 @@
-import { apiGatewayEnvelope } from '../envelopes/apigw.js';
-import { apiGatewayV2Envelope } from '../envelopes/apigwv2.js';
-import { cloudWatchEnvelope } from '../envelopes/cloudwatch.js';
-import { dynamoDDStreamEnvelope } from '../envelopes/dynamodb.js';
-import { kafkaEnvelope } from '../envelopes/kafka.js';
-import { kinesisEnvelope } from '../envelopes/kinesis.js';
-import { kinesisFirehoseEnvelope } from '../envelopes/kinesis-firehose.js';
-import { lambdaFunctionUrlEnvelope } from '../envelopes/lambda.js';
-import { snsEnvelope } from '../envelopes/sns.js';
-import { snsSqsEnvelope } from '../envelopes/sns.js';
-import { sqsEnvelope } from '../envelopes/sqs.js';
-import { vpcLatticeEnvelope } from '../envelopes/vpc-lattice.js';
-import { vpcLatticeV2Envelope } from '../envelopes/vpc-latticev2.js';
-import { eventBridgeEnvelope } from '../envelopes/event-bridge.js';
+import { type apiGatewayEnvelope } from '../envelopes/apigw.js';
+import { type apiGatewayV2Envelope } from '../envelopes/apigwv2.js';
+import { type cloudWatchEnvelope } from '../envelopes/cloudwatch.js';
+import { type dynamoDDStreamEnvelope } from '../envelopes/dynamodb.js';
+import { type kafkaEnvelope } from '../envelopes/kafka.js';
+import { type kinesisEnvelope } from '../envelopes/kinesis.js';
+import { type kinesisFirehoseEnvelope } from '../envelopes/kinesis-firehose.js';
+import { type lambdaFunctionUrlEnvelope } from '../envelopes/lambda.js';
+import { type snsEnvelope } from '../envelopes/sns.js';
+import { type snsSqsEnvelope } from '../envelopes/sns.js';
+import { type sqsEnvelope } from '../envelopes/sqs.js';
+import { type vpcLatticeEnvelope } from '../envelopes/vpc-lattice.js';
+import { type vpcLatticeV2Envelope } from '../envelopes/vpc-latticev2.js';
+import { type eventBridgeEnvelope } from '../envelopes/event-bridge.js';
 
 export type Envelope =
   | typeof apiGatewayEnvelope

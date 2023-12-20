@@ -108,10 +108,13 @@ click==8.1.7 \
     --hash=sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28 \
     --hash=sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de
     # via mkdocs
+<<<<<<< HEAD
 colorama==0.4.6 \
     --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
     --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
     # via mkdocs-material
+=======
+>>>>>>> befbedfe (chore(maintenance): add --require-hashes flag to pip installs (#1827))
 ghp-import==2.1.0 \
     --hash=sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619 \
     --hash=sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343
@@ -120,6 +123,7 @@ gitdb==4.0.11 \
     --hash=sha256:81a3407ddd2ee8df444cbacea00e2d038e40150acfa3001696fe0dcf1d3adfa4 \
     --hash=sha256:bf5421126136d6d0af55bc1e7c1af1c397a34f5b7bd79e776cd3e89785c2b04b
     # via gitpython
+<<<<<<< HEAD
 gitpython==3.1.41 \
     --hash=sha256:c36b6634d069b3f719610175020a9aed919421c87552185b085e04fbbdb10b7c \
     --hash=sha256:ed66e624884f76df22c8e16066d567aaa5a37d5b5fa19db2c6df6f7156db9048
@@ -143,6 +147,22 @@ markdown==3.5.1 \
     #   mkdocs
     #   mkdocs-material
     #   pymdown-extensions
+=======
+gitpython==3.1.40 \
+    --hash=sha256:22b126e9ffb671fdd0c129796343a02bf67bf2994b35449ffc9321aa755e18a4 \
+    --hash=sha256:cf14627d5a8049ffbf49915732e5eddbe8134c3bdb9d476e6182b676fc573f8a
+    # via mkdocs-git-revision-date-plugin
+jinja2==3.1.2 \
+    --hash=sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852 \
+    --hash=sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61
+    # via
+    #   mkdocs
+    #   mkdocs-git-revision-date-plugin
+markdown==3.5.1 \
+    --hash=sha256:5874b47d4ee3f0b14d764324d2c94c03ea66bee56f2d929da9f2508d65e722dc \
+    --hash=sha256:b65d7beb248dc22f2e8a31fb706d93798093c308dc1aba295aedeb9d41a813bd
+    # via mkdocs
+>>>>>>> befbedfe (chore(maintenance): add --require-hashes flag to pip installs (#1827))
 markupsafe==2.1.3 \
     --hash=sha256:05fb21170423db021895e1ea1e1f3ab3adb85d1c2333cbc2310f2a26bc77272e \
     --hash=sha256:0a4e4a1aff6c7ac4cd55792abf96c915634c2b97e3cc1c7129578aa68ebd754e \
@@ -211,14 +231,18 @@ mergedeep==1.3.4 \
     --hash=sha256:0096d52e9dad9939c3d975a774666af186eda617e6ca84df4c94dec30004f2a8 \
     --hash=sha256:70775750742b25c0d8f36c55aed03d24c3384d17c951b3175d898bd778ef0307
     # via mkdocs
+<<<<<<< HEAD
 mike==1.1.2 \
     --hash=sha256:4c307c28769834d78df10f834f57f810f04ca27d248f80a75f49c6fa2d1527ca \
     --hash=sha256:56c3f1794c2d0b5fdccfa9b9487beb013ca813de2e3ad0744724e9d34d40b77b
     # via -r requirements.in
+=======
+>>>>>>> befbedfe (chore(maintenance): add --require-hashes flag to pip installs (#1827))
 mkdocs==1.5.3 \
     --hash=sha256:3b3a78e736b31158d64dbb2f8ba29bd46a379d0c6e324c2246c3bc3d2189cfc1 \
     --hash=sha256:eb7c99214dcb945313ba30426c2451b735992c73c2e10838f76d09e39ff4d0e2
     # via
+<<<<<<< HEAD
     #   mike
     #   mkdocs-exclude
     #   mkdocs-git-revision-date-plugin
@@ -237,10 +261,21 @@ mkdocs-material-extensions==1.3.1 \
     --hash=sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443 \
     --hash=sha256:adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31
     # via mkdocs-material
+=======
+    #   mkdocs-exclude
+    #   mkdocs-git-revision-date-plugin
+mkdocs-exclude==1.0.2 \
+    --hash=sha256:ba6fab3c80ddbe3fd31d3e579861fd3124513708271180a5f81846da8c7e2a51
+    # via -r docker-requirements.txt
+mkdocs-git-revision-date-plugin==0.3.2 \
+    --hash=sha256:2e67956cb01823dd2418e2833f3623dee8604cdf223bddd005fe36226a56f6ef
+    # via -r docker-requirements.txt
+>>>>>>> befbedfe (chore(maintenance): add --require-hashes flag to pip installs (#1827))
 packaging==23.2 \
     --hash=sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5 \
     --hash=sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7
     # via mkdocs
+<<<<<<< HEAD
 paginate==0.5.6 \
     --hash=sha256:5e6007b6a9398177a7e1648d04fdd9f8c9766a1a945bceac82f1929e8c78af2d
     # via mkdocs-material
@@ -260,6 +295,16 @@ pymdown-extensions==10.5 \
     --hash=sha256:1b60f1e462adbec5a1ed79dac91f666c9c0d241fa294de1989f29d20096cfd0b \
     --hash=sha256:1f0ca8bb5beff091315f793ee17683bc1390731f6ac4c5eb01e27464b80fe879
     # via mkdocs-material
+=======
+pathspec==0.11.2 \
+    --hash=sha256:1d6ed233af05e679efb96b1851550ea95bbb64b7c490b0f5aa52996c11e92a20 \
+    --hash=sha256:e0d8d0ac2f12da61956eb2306b69f9469b42f4deb0f3cb6ed47b9cce9996ced3
+    # via mkdocs
+platformdirs==4.0.0 \
+    --hash=sha256:118c954d7e949b35437270383a3f2531e99dd93cf7ce4dc8340d3356d30f173b \
+    --hash=sha256:cb633b2bcf10c51af60beb0ab06d2f1d69064b43abf4c185ca6b28865f3f9731
+    # via mkdocs
+>>>>>>> befbedfe (chore(maintenance): add --require-hashes flag to pip installs (#1827))
 python-dateutil==2.8.2 \
     --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \
     --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9
@@ -316,14 +361,19 @@ pyyaml==6.0.1 \
     --hash=sha256:fd1592b3fdf65fff2ad0004b5e363300ef59ced41c2e6b3a99d4089fa8c5435d \
     --hash=sha256:fd66fc5d0da6d9815ba2cebeb4205f95818ff4b79c3ebe268e75d961704af52f
     # via
+<<<<<<< HEAD
     #   mike
     #   mkdocs
     #   pymdown-extensions
+=======
+    #   mkdocs
+>>>>>>> befbedfe (chore(maintenance): add --require-hashes flag to pip installs (#1827))
     #   pyyaml-env-tag
 pyyaml-env-tag==0.1 \
     --hash=sha256:70092675bda14fdec33b31ba77e7543de9ddc88f2e5b99160396572d11525bdb \
     --hash=sha256:af31106dec8a4d68c60207c1886031cbf839b68aa7abccdb19868200532c2069
     # via mkdocs
+<<<<<<< HEAD
 regex==2023.10.3 \
     --hash=sha256:00ba3c9818e33f1fa974693fb55d24cdc8ebafcb2e4207680669d8f8d7cca79a \
     --hash=sha256:00e871d83a45eee2f8688d7e6849609c2ca2a04a6d48fba3dff4deef35d14f07 \
@@ -418,6 +468,8 @@ requests==2.31.0 \
     --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
     --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1
     # via mkdocs-material
+=======
+>>>>>>> befbedfe (chore(maintenance): add --require-hashes flag to pip installs (#1827))
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
@@ -426,6 +478,7 @@ smmap==5.0.1 \
     --hash=sha256:dceeb6c0028fdb6734471eb07c0cd2aae706ccaecab45965ee83f11c8d3b1f62 \
     --hash=sha256:e6d8668fa5f93e706934a62d7b4db19c8d9eb8cf2adbb75ef1b675aa332b69da
     # via gitdb
+<<<<<<< HEAD
 urllib3==2.1.0 \
     --hash=sha256:55901e917a5896a349ff771be919f8bd99aff50b79fe58fec595eb37bbc56bb3 \
     --hash=sha256:df7aa8afb0148fa78488e7899b2c59b5f4ffcfa82e6c54ccb9dd37c1d7b52d54
@@ -434,6 +487,8 @@ verspec==0.1.0 \
     --hash=sha256:741877d5633cc9464c45a469ae2a31e801e6dbbaa85b9675d481cda100f11c31 \
     --hash=sha256:c4504ca697b2056cdb4bfa7121461f5a0e81809255b41c03dda4ba823637c01e
     # via mike
+=======
+>>>>>>> befbedfe (chore(maintenance): add --require-hashes flag to pip installs (#1827))
 watchdog==3.0.0 \
     --hash=sha256:0e06ab8858a76e1219e68c7573dfeba9dd1c0219476c5a44d5333b01d7e1743a \
     --hash=sha256:13bbbb462ee42ec3c5723e1205be8ced776f05b100e4737518c67c8325cf6100 \

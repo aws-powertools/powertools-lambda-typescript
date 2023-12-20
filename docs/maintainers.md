@@ -160,7 +160,7 @@ Some examples using our initial and new RFC templates: [#447](https://github.com
 
 ### Releasing a new version
 
-Firstly, make sure all the PRs that you want to include in the release are merged into the `main` banch.
+Firstly, make sure all the PRs that you want to include in the release are merged into the `main` branch.
 
 Next, run the integration tests one last time to make sure everything is working as expected. See [Run end to end tests](#run-end-to-end-tests) for more details.
 

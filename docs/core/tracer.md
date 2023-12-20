@@ -22,7 +22,7 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 
 ## Getting started
 
-!!! note "Tracer relies on AWS X-Ray SDK over [OpenTelememetry Distro (ADOT)](https://aws-otel.github.io/docs/getting-started/lambda){target="_blank"} for optimal cold start (lower latency)."
+!!! note "Tracer relies on AWS X-Ray SDK over [OpenTelemetry Distro (ADOT)](https://aws-otel.github.io/docs/getting-started/lambda){target="_blank"} for optimal cold start (lower latency)."
 
 ### Installation
 
@@ -268,7 +268,7 @@ Use **`POWERTOOLS_TRACER_CAPTURE_RESPONSE=false`** environment variable to instr
     2. You might manipulate **streaming objects that can be read only once**; this prevents subsequent calls from being empty
     3. You might return **more than 64K** of data _e.g., `message too long` error_
 
-Alternatively, use the `captureResponse: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators, or use the same option in the Middy `captureLambdaHander` middleware to instruct Tracer **not** to serialize function responses as metadata.
+Alternatively, use the `captureResponse: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators, or use the same option in the Middy `captureLambdaHandler` middleware to instruct Tracer **not** to serialize function responses as metadata.
 
 === "method.ts"
 

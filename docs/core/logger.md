@@ -51,7 +51,7 @@ These settings will be used across all logs emitted:
 | **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `POWERTOOLS_LOG_LEVEL`          | `INFO`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`, `SILENT` | `ERROR`             | `logLevel`            |
 | **Sample rate**        | Probability that a Lambda invocation will print all the log items regardless of the log level setting           | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1.0`                                         | `0.1`               | `sampleRateValue`     |
 
-See all enivronment variables in the [Environment variables](../index.md/#environment-variables) section.
+See all environment variables in the [Environment variables](../index.md/#environment-variables) section.
 Check API docs to learn more about [Logger constructor options](https://docs.powertools.aws.dev/lambda/typescript/latest/api/types/_aws_lambda_powertools_logger.types.ConstructorOptions.html){target="_blank"}.
 
 #### Example using AWS Serverless Application Model (SAM)

@@ -57,7 +57,7 @@ jobs:
           python-version: "3.11"
       - name: Install doc generation dependencies
         run: |
-          pip install -r docs/requirements.txt
+          pip install --require-hashes -r docs/requirements.txt
       - name: Setup doc deploy
         run: |
           git config --global user.name Docs deploy

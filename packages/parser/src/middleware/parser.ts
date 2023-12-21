@@ -1,12 +1,7 @@
 import { type MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
 import { type MiddlewareObj } from '@middy/core';
 import { type ZodSchema } from 'zod';
-import { type Envelope } from '../types/envelope.js';
-
-interface ParserOptions<S extends ZodSchema> {
-  schema: S;
-  envelope?: Envelope;
-}
+import { type ParserOptions } from '../types/ParserOptions.js';
 
 /**
  * A middiy middleware to parse your event.

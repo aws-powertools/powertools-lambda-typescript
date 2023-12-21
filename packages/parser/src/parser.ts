@@ -39,7 +39,7 @@ const parser = <S extends ZodSchema>(
 
     const { schema, envelope } = options;
 
-    descriptor.value = function (
+    descriptor.value = async function (
       this: Handler,
       event: unknown,
       context: Context,

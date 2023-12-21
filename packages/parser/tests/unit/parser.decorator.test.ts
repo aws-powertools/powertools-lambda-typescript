@@ -37,11 +37,23 @@ describe('Parser Decorator', () => {
       return event;
     }
 
+    @parser({ schema: TestSchema, envelope: eventBridgeEnvelope })
+    public async handlerWithParserCallsAnotherMethod(
+      event: unknown,
+      _context: Context
+    ): Promise<unknown> {
+      return this.anotherMethod(event as TestSchema);
+    }
+
     @parser({ envelope: eventBridgeEnvelope, schema: TestSchema })
     public async handlerWithSchemaAndEnvelope(
       event: unknown,
       _context: Context
     ): Promise<unknown> {
+      return event;
+    }
+
+    private async anotherMethod(event: TestSchema): Promise<TestSchema> {
       return event;
     }
   }
@@ -88,5 +100,19 @@ describe('Parser Decorator', () => {
     expect(resp.detail).toEqual(customPayload);
   });
 
-  it('should return original event if no schema is provided', async () => {});
+  it('should parse and call private async method', async () => {
+    const customPayload = generateMock(TestSchema);
+    const testEvent = TestEvents.eventBridgeEvent as EventBridgeEvent<
+      string,
+      unknown
+    >;
+    testEvent.detail = customPayload;
+
+    const resp = await lambda.handlerWithParserCallsAnotherMethod(
+      testEvent,
+      {} as Context
+    );
+
+    expect(resp).toEqual(customPayload);
+  });
 });

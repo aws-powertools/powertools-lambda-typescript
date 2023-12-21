@@ -1,5 +1,5 @@
 /**
- * Test middelware parser
+ * Test middleware parser
  *
  * @group unit/parser
  */
@@ -9,20 +9,16 @@ import { Context } from 'aws-lambda';
 import { parser } from '../../src/middleware/parser.js';
 import { generateMock } from '@anatine/zod-mock';
 import { SqsSchema } from '../../src/schemas/sqs.js';
-import { z, ZodSchema } from 'zod';
+import { z, type ZodSchema } from 'zod';
 import { sqsEnvelope } from '../../src/envelopes/sqs';
 import { TestSchema } from './schema/utils';
 
 describe('Middleware: parser', () => {
-  const schema = z.object({
-    name: z.string(),
-    age: z.number().min(18).max(99),
-  });
-  type schema = z.infer<typeof schema>;
+  type schema = z.infer<typeof TestSchema>;
   const handler = async (
-    event: schema | unknown,
+    event: unknown,
     _context: Context
-  ): Promise<schema | unknown> => {
+  ): Promise<unknown> => {
     return event;
   };
 
@@ -33,7 +29,7 @@ describe('Middleware: parser', () => {
 
     it('should parse request body with schema and envelope', async () => {
       const bodyMock = generateMock(TestSchema);
-      parser({ schema: schema, envelope: sqsEnvelope });
+      parser({ schema: TestSchema, envelope: sqsEnvelope });
 
       const event = generateMock(SqsSchema, {
         stringMap: {

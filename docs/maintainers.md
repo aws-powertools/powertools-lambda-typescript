@@ -79,7 +79,7 @@ These are the most common labels used by maintainers to triage issues, pull requ
 | status/completed                       | Items that are complete and have been merged and/or shipped                                    |                                                                  |
 | status/rejected                        | This is something we will not be working on. At least, not in the measurable future            |                                                                  |
 | status/pending-close-response-required | This issue will be closed soon unless the discussion moves forward                             | Stale Automation                                                 |
-| revisit-in-3-months                    | Blocked issues/PRs that need to be revisited                                                   | Often releated to `need-customer-feedback`, prioritization, etc. |
+| revisit-in-3-months                    | Blocked issues/PRs that need to be revisited                                                   | Often related to `need-customer-feedback`, prioritization, etc. |
 | good-first-issue                       | Something that is suitable for those who want to start contributing                            |                                                                  |
 | help-wanted                            | Tasks you want help from anyone to move forward                                                | Bandwidth, complex topics, etc.                                  |
 | need-customer-feedback                 | Tasks that need more feedback before proceeding                                                | 80/20% rule, uncertain, etc.                                     |

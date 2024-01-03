@@ -44,7 +44,7 @@ Just like for the feature parity, if you have any feedback or would like to cont
 
 ### Improve operational excellence
 
-We continue to work on increasing operational excellence to remove as much undifferentiated heavylifting for maintainers, so that we can focus on delivering features that help you.
+We continue to work on increasing operational excellence to remove as much undifferentiated heavy lifting for maintainers, so that we can focus on delivering features that help you.
 
 This means improving our automation workflows, project management, and test coverage.
 

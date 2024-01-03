@@ -4,6 +4,8 @@
     "rootDir": "./",
     "baseUrl": ".",
     "noEmit": true,
+    "noUnusedLocals": false,
+    "allowUnusedLabels": true,
     "paths": {
       "@aws-lambda-powertools/parameters/ssm": [
         "../../packages/parameters/lib/ssm"

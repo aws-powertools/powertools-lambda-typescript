@@ -1,7 +1,7 @@
 import { type apiGatewayEnvelope } from '../envelopes/apigw.js';
 import { type apiGatewayV2Envelope } from '../envelopes/apigwv2.js';
 import { type cloudWatchEnvelope } from '../envelopes/cloudwatch.js';
-import { type dynamoDDStreamEnvelope } from '../envelopes/dynamodb.js';
+import { type dynamoDBStreamEnvelope } from '../envelopes/dynamodb.js';
 import { type kafkaEnvelope } from '../envelopes/kafka.js';
 import { type kinesisEnvelope } from '../envelopes/kinesis.js';
 import { type kinesisFirehoseEnvelope } from '../envelopes/kinesis-firehose.js';
@@ -16,7 +16,7 @@ export type Envelope =
   | typeof apiGatewayEnvelope
   | typeof apiGatewayV2Envelope
   | typeof cloudWatchEnvelope
-  | typeof dynamoDDStreamEnvelope
+  | typeof dynamoDBStreamEnvelope
   | typeof eventBridgeEnvelope
   | typeof kafkaEnvelope
   | typeof kinesisEnvelope

@@ -18,8 +18,7 @@ const orderSchema = z.object({
 });
 
 const orderEventSchema = EventBridgeSchema.extend({
-  // (1)
-  detail: orderSchema,
+  detail: orderSchema, // (1)
 });
 
 type OrderEvent = z.infer<typeof orderEventSchema>;
@@ -34,5 +33,5 @@ class Lambda extends LambdaInterface {
   }
 }
 
-export const myFunction = new Lambda();
+const myFunction = new Lambda();
 export const handler = myFunction.handler.bind(myFunction);

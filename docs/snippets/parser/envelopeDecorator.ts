@@ -22,7 +22,6 @@ type Order = z.infer<typeof orderSchema>;
 class Lambda extends LambdaInterface {
   @parser({ schema: orderSchema, envelope: eventBridgeEnvelope }) // (1)
   public async handler(event: Order, _context: Context): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const item of event.items) {
       // item is parsed as OrderItem (2)
       console.log(item.id);
@@ -30,5 +29,5 @@ class Lambda extends LambdaInterface {
   }
 }
 
-export const myFunction = new Lambda();
+const myFunction = new Lambda();
 export const handler = myFunction.handler.bind(myFunction);

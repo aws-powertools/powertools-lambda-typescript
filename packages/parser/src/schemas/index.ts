@@ -2,7 +2,6 @@ export { AlbSchema, AlbMultiValueHeadersSchema } from './alb.js';
 export { APIGatewayProxyEventSchema } from './apigw.js';
 export { APIGatewayProxyEventV2Schema } from './apigwv2.js';
 export {
-  CloudFormationCustomResourceBaseSchema,
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,

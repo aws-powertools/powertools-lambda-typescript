@@ -161,17 +161,26 @@ Parser comes with the following built-in envelopes:
 
 You can use built-in envelopes and schemas to parse the incoming events manually: 
 
-```typescript
---8<-- "docs/snippets/parser/manual.ts"
-```
-1. Use `SqsSchema` to parse the event, the `Records` will be parsed as string. You have to parse the records manually
+=== "Manual parsing"
+    ```typescript hl_lines="25 28"
+    --8<-- "docs/snippets/parser/manual.ts"
+    ```
+    
+    1. Use `EventBridgeSchema` to parse the event, the `details` fields will be parsed as a generic record.
+    2. Use `eventBridgeEnvelope` with a combination of `orderSchema` to get `Order` object from the `details` field.
 
 
-## Types
+## Custom validation
 
+Because Parser uses zod, you can use all the features of zod to validate your data.
+For example, you can use `refine` to validate a field or a combination of fields:
 
+=== "Custom validation"
+    ```typescript hl_lines="13 18"
+    --8<-- "docs/snippets/parser/refine.ts"
+    ```
 
-## FAQs
+Zod provides a lot of other features and customization, see [zod documentation](https://zod.dev) for more details.
 
 
 

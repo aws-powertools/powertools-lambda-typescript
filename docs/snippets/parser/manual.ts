@@ -25,6 +25,6 @@ export const handler = async (
   const parsed = EventBridgeSchema.parse(event); // (1)
   console.log(parsed);
 
-  const orders: Order[] = eventBridgeEnvelope(event, orderSchema); // (2)
+  const orders: Order = eventBridgeEnvelope(event, orderSchema); // (2)
   console.log(orders);
 };

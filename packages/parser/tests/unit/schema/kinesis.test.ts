@@ -4,8 +4,8 @@
  * @group unit/parser/schema/
  */
 
-import { KinesisDataStreamSchema } from '../../../src/schemas';
 import {
+  KinesisDataStreamSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
 } from '../../../src/schemas';

@@ -4,7 +4,7 @@
  * @group unit/parser/schema/
  */
 
-import { APIGatewayProxyEventSchema } from '../../../src/schemas/apigw.js';
+import { APIGatewayProxyEventSchema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('APIGateway ', () => {

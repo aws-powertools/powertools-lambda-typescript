@@ -407,7 +407,7 @@ describe('Class: BasePersistenceLayer', () => {
       // Act & Assess
       await expect(
         persistenceLayer.saveInProgress({ foo: 'bar' })
-      ).rejects.toThrow(new IdempotencyItemAlreadyExistsError());
+      ).rejects.toThrow(IdempotencyItemAlreadyExistsError);
       expect(putRecordSpy).toHaveBeenCalledTimes(0);
     });
 

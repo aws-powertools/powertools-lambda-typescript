@@ -119,6 +119,28 @@ describe('Class IdempotencyHandler', () => {
       expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
     });
 
+    test('when IdempotencyAlreadyInProgressError is thrown and it contains the existing item, it returns it directly', async () => {
+      // Prepare
+      const saveInProgressSpy = jest
+        .spyOn(persistenceStore, 'saveInProgress')
+        .mockRejectedValueOnce(
+          new IdempotencyItemAlreadyExistsError(
+            'Failed to put record for already existing idempotency key: idempotence-key',
+            new IdempotencyRecord({
+              idempotencyKey: 'key',
+              status: IdempotencyRecordStatus.COMPLETED,
+              responseData: 'Hi',
+            })
+          )
+        );
+      const getRecordSpy = jest.spyOn(persistenceStore, 'getRecord');
+
+      // Act & Assess
+      await expect(idempotentHandler.handle()).resolves.toEqual('Hi');
+      expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
+      expect(getRecordSpy).toHaveBeenCalledTimes(0);
+    });
+
     test('when IdempotencyInconsistentStateError is thrown, it retries until max retries are exhausted', async () => {
       // Prepare
       const mockProcessIdempotency = jest

@@ -16,15 +16,15 @@ const orderSchema = z.object({
   optionalField: z.string().optional(),
 });
 
-type Order = z.infer<typeof orderSchema>; // (1)
+type Order = z.infer<typeof orderSchema>; // (1)!
 
 const lambdaHandler = async (
-  event: Order, // (2)
+  event: Order, // (2)!
   _context: Context
 ): Promise<void> => {
   for (const item of event.items) {
     // item is parsed as OrderItem
-    console.log(item.id); // (3)
+    console.log(item.id); // (3)!
   }
 };
 

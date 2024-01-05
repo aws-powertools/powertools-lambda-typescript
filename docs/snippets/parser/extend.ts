@@ -18,17 +18,17 @@ const orderSchema = z.object({
 });
 
 const orderEventSchema = EventBridgeSchema.extend({
-  detail: orderSchema, // (1)
+  detail: orderSchema, // (1)!
 });
 
 type OrderEvent = z.infer<typeof orderEventSchema>;
 
 class Lambda extends LambdaInterface {
-  @parser({ schema: orderEventSchema }) // (2)
+  @parser({ schema: orderEventSchema }) // (2)!
   public async handler(event: OrderEvent, _context: Context): Promise<void> {
     for (const item of event.detail.items) {
-      // process OrderItem // (3)
-      console.log(item);
+      // process OrderItem
+      console.log(item); // (3)!
     }
   }
 }

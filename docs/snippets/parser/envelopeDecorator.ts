@@ -20,11 +20,11 @@ const orderSchema = z.object({
 type Order = z.infer<typeof orderSchema>;
 
 class Lambda extends LambdaInterface {
-  @parser({ schema: orderSchema, envelope: eventBridgeEnvelope }) // (1)
+  @parser({ schema: orderSchema, envelope: eventBridgeEnvelope }) // (1)!
   public async handler(event: Order, _context: Context): Promise<void> {
     for (const item of event.items) {
-      // item is parsed as OrderItem (2)
-      console.log(item.id);
+      // item is parsed as OrderItem
+      console.log(item.id); // (2)!
     }
   }
 }

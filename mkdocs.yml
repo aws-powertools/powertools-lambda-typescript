@@ -19,6 +19,7 @@ nav:
       - utilities/parameters.md
       - utilities/idempotency.md
       - utilities/batch.md
+      - utilities/parser.md
   - Processes:
     - Roadmap: roadmap.md
     - Maintainers: maintainers.md

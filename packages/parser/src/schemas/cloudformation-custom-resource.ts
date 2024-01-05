@@ -36,5 +36,4 @@ export {
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
-  CloudFormationCustomResourceBaseSchema,
 };

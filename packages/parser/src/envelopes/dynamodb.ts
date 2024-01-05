@@ -13,7 +13,7 @@ type DynamoDBStreamEnvelopeResponse<T extends ZodSchema> = {
  * Note: Values are the parsed models. Images' values can also be None, and
  * length of the list is the record's amount in the original event.
  */
-export const dynamoDDStreamEnvelope = <T extends ZodSchema>(
+export const dynamoDBStreamEnvelope = <T extends ZodSchema>(
   data: unknown,
   schema: T
 ): DynamoDBStreamEnvelopeResponse<T>[] => {

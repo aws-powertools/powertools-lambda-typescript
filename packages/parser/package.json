@@ -37,6 +37,18 @@
         "types": "./lib/esm/index.d.ts",
         "default": "./lib/esm/index.js"
       }
+    },
+    "./middleware": {
+      "import": "./lib/esm/parser.js",
+        "require": "./lib/cjs/parser.js"
+    },
+    "./schemas": {
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js"
+    },
+    "./envelopes": {
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js"
     }
   },
   "main": "./lib/cjs/index.js",

@@ -31,11 +31,11 @@ This utility supports zod v3.0.0 and above.
 
 You can define your schema using zod:
 
-```typescript
+```typescript title="schema.ts"
 --8<-- "docs/snippets/parser/schema.ts"
 ```
 
-This is a schema for order and oder items using zod. 
+This is a schema for order and order items using zod. 
 You can create more complex schemas using zod, such as nested objects, arrays, unions, etc. see [zod documentation](https://zod.dev) for more details.
 
 ## Parse events
@@ -66,7 +66,6 @@ Parser comes with the following built-in schemas:
 | **AlbSchema**                                 | Lambda Event Source payload for Amazon Application Load Balancer                      |
 | **APIGatewayProxyEventSchema**                | Lambda Event Source payload for Amazon API Gateway                                    |
 | **APIGatewayProxyEventV2Schema**              | Lambda Event Source payload for Amazon API Gateway v2 payload                         |
-| **BedrockAgentEventSchema**                   | Lambda Event Source payload for Bedrock Agents                                        |
 | **CloudFormationCustomResourceCreateSchema**  | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                 |
 | **CloudFormationCustomResourceUpdateSchema**  | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                 |
 | **CloudFormationCustomResourceDeleteSchema**  | Lambda Event Source payload for AWS CloudFormation `DELETE` operation                 |
@@ -91,7 +90,7 @@ Parser comes with the following built-in schemas:
 
 ### Extend built-in schemas
 
-You can extend them to include your own schema, and yet have all other known fields parsed along the way.
+You can extend every built-in schema to include your own schema, and yet have all other known fields parsed along the way.
 
 === "handler.ts"
     ```typescript hl_lines="20-22 27 30"
@@ -111,15 +110,15 @@ You can extend them to include your own schema, and yet have all other known fie
 
 ## Envelopes
 
-When trying to parse your payloads wrapped in a known structure, you might encounter the following situations:
+When trying to parse your payload you might encounter the following situations:
 
 * Your actual payload is wrapped around a known structure, for example Lambda Event Sources like EventBridge
 * You're only interested in a portion of the payload, for example parsing the detail of custom events in EventBridge, or body of SQS records
 * You can either solve these situations by creating a schema of these known structures, parsing them, then extracting and parsing a key where your payload is.
 
 This can become difficult quite quickly. Parser simplifies the development through a feature named Envelope.
-Envelopes can be used via envelope parameter available in both parse function and `parser` decorator.
-Here's an example of parsing a schema found in an event coming from EventBridge, where all you want is what's inside the detail key.
+Envelopes can be used via envelope parameter available in middy and decorator.
+Here's an example of parsing a custom schema in an event coming from EventBridge, where all you want is what's inside the detail key.
 
 === "Decorator"
     ```typescript hl_lines="5 23"
@@ -137,6 +136,10 @@ Here's an example of parsing a schema found in an event coming from EventBridge,
 The envelopes are functions that take an event and the schema to parse, and return the result of the inner schema.
 Depending on the envelope it can be something simple like extracting a key. 
 We have also complex envelopes that parse the payload from a string, decode base64, uncompress gzip, etc.
+
+!!! tip "Envelopes vs schema extension"
+    Use envelopes if you want to extract only the inner part of an event payload and don't use the information from the Lambda event.
+    Otherwise, extend built-in schema to parse the whole payload and use the metadata from the Lambda event.
 
 ### Built-in envelopes
 
@@ -188,27 +191,26 @@ Zod provides a lot of other features and customization, see [zod documentation](
 
 ## Types
 
-## Schema and Type inference
-Zod provides a way to extract the TypeScript type of a schema. 
-This is useful when you want to use the parsed data in your handler:
+### Schema and Type inference
+Zod provides a way to extract the type of schema, so you can use it in your handler:
 
 === "Types"
     ```typescript hl_lines="19 22 27"
     --8<-- "docs/snippets/parser/types.ts"
     ```
     
-    1. Use `z.infer` to extract the TypeScript type of the schema
-    2. Use the type in your handler
-    3. TypeScript inferce deeply nested types, here `Order` and `OrderItem` are inferred
+    1. Use `z.infer` to extract the type of the schema
+    2. `event` is typed as `Order` object
+    3. we can infer deeply nested types, here `Order` and `OrderItem` are inferred
 
-## Compatibility with @types/aws-lambda
+### Compatibility with @types/aws-lambda
 
-The package `@types/aws-lambda` contains type definitions for aws-lambda. 
-Powertools parser utility also bring lambda event types based on the built-in schema definitions. 
-Both libraries try to provide types for the same events, but they are not compatible with each other yet. 
+The package `@types/aws-lambda` contains type definitions for AWS service event invocations. 
+Powertools parser utility also bring AWS Lambda event types based on the built-in schema definitions. 
+Both libraries try to provide types for the same event structure, but they might not be compatible with each other yet. 
 We are working on a sustainable solution to make them compatible and avoid any breaking changes in the future. 
 
 We recommend to use the types provided by the parser utility. 
 
 ## Error handling
-We don't have any error handling in the utility and propagate any errors from zod, which are thrown as `ZodError`. 
+We don't have any error handling in the utility and propagate all errors from zod, which are thrown as `ZodError`. 

@@ -22,8 +22,8 @@ export const handler = async (
   event: EventBridgeEvent<string, unknown>,
   _context: Context
 ): Promise<void> => {
-  const parsed = EventBridgeSchema.parse(event); // (1)!
-  console.log(parsed);
+  const parsedEvent = EventBridgeSchema.parse(event); // (1)!
+  console.log(parsedEvent);
 
   const orders: Order = eventBridgeEnvelope(event, orderSchema); // (2)!
   console.log(orders);

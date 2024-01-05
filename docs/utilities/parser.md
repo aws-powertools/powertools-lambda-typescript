@@ -5,9 +5,10 @@ descrition: Utility
 
 
 ???+ warning
-**This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/16) we might introduce significant breaking changes and improvements in response to customers feedback.
+    **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/16) we might introduce significant breaking changes and improvements in response to customers feedback.
 
-This utility provides data validation and parsing using [zod](https://zod.dev).
+This utility provides data validation and parsing using [zod](https://zod.dev){target="_blank"}.
+Zod is a TypeScript-first schema declaration and validation library.  
 
 ## Key features
 
@@ -108,8 +109,6 @@ You can extend them to include your own schema, and yet have all other known fie
     --8<-- "docs/snippets/parser/examplePayload.json"
     ```
 
-
-
 ## Envelopes
 
 When trying to parse your payloads wrapped in a known structure, you might encounter the following situations:
@@ -187,7 +186,29 @@ For example, you can use `refine` to validate a field or a combination of fields
 Zod provides a lot of other features and customization, see [zod documentation](https://zod.dev) for more details.
 
 
+## Types
 
+## Schema and Type inference
+Zod provides a way to extract the TypeScript type of a schema. 
+This is useful when you want to use the parsed data in your handler:
 
+=== "Types"
+    ```typescript hl_lines="19 22 27"
+    --8<-- "docs/snippets/parser/types.ts"
+    ```
+    
+    1. Use `z.infer` to extract the TypeScript type of the schema
+    2. Use the type in your handler
+    3. TypeScript inferce deeply nested types, here `Order` and `OrderItem` are inferred
 
+## Compatibility with @types/aws-lambda
 
+The package `@types/aws-lambda` contains type definitions for aws-lambda. 
+Powertools parser utility also bring lambda event types based on the built-in schema definitions. 
+Both libraries try to provide types for the same events, but they are not compatible with each other yet. 
+We are working on a sustainable solution to make them compatible and avoid any breaking changes in the future. 
+
+We recommend to use the types provided by the parser utility. 
+
+## Error handling
+We don't have any error handling in the utility and propagate any errors from zod, which are thrown as `ZodError`. 

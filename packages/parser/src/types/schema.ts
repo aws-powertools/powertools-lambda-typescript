@@ -1,5 +1,4 @@
 import {
-  KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
   KafkaMskEventSchema,
 } from '../schemas/kafka.js';
@@ -19,10 +18,7 @@ import {
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
 } from '../schemas/cloudformation-custom-resource.js';
-import {
-  CloudWatchLogsSchema,
-  CloudWatchLogEventSchema,
-} from '../schemas/cloudwatch.js';
+import { CloudWatchLogsSchema } from '../schemas/cloudwatch.js';
 import { EventBridgeSchema } from '../schemas/eventbridge.js';
 import {
   KinesisFirehoseSchema,
@@ -34,64 +30,49 @@ import {
   S3Schema,
   S3SqsEventNotificationSchema,
 } from '../schemas/s3.js';
-import { SesSchema, SesRecordSchema } from '../schemas/ses.js';
-import {
-  SnsSchema,
-  SnsRecordSchema,
-  SnsNotificationSchema,
-  SnsSqsNotificationSchema,
-} from '../schemas/sns.js';
+import { SesSchema } from '../schemas/ses.js';
+import { SnsSchema } from '../schemas/sns.js';
 import { VpcLatticeSchema } from '../schemas/vpc-lattice.js';
 import { VpcLatticeV2Schema } from '../schemas/vpc-latticev2.js';
 
-type Alb = z.infer<typeof AlbSchema>;
+type ALBEvent = z.infer<typeof AlbSchema>;
 
-type AlbMultiValueHeaders = z.infer<typeof AlbMultiValueHeadersSchema>;
+type ALBMultiValueHeadersEvent = z.infer<typeof AlbMultiValueHeadersSchema>;
 
 type APIGatewayProxyEvent = z.infer<typeof APIGatewayProxyEventSchema>;
 type APIGatewayProxyEventV2 = z.infer<typeof APIGatewayProxyEventV2Schema>;
 
-type CloudFormationCustomResourceCreate = z.infer<
+type CloudFormationCustomResourceCreateEvent = z.infer<
   typeof CloudFormationCustomResourceCreateSchema
 >;
 
-type CloudFormationCustomResourceDelete = z.infer<
+type CloudFormationCustomResourceDeleteEvent = z.infer<
   typeof CloudFormationCustomResourceDeleteSchema
 >;
 
-type CloudFormationCustomResourceUpdate = z.infer<
+type CloudFormationCustomResourceUpdateEvent = z.infer<
   typeof CloudFormationCustomResourceUpdateSchema
 >;
 
-type CloudWatchLogs = z.infer<typeof CloudWatchLogsSchema>;
+type CloudWatchLogsEvent = z.infer<typeof CloudWatchLogsSchema>;
 
-type CloudWatchLogsEvent = z.infer<typeof CloudWatchLogEventSchema>;
+type DynamoDBStreamEvent = z.infer<typeof DynamoDBStreamSchema>;
 
-type DynamoDBStream = z.infer<typeof DynamoDBStreamSchema>;
-
-type EventBridge = z.infer<typeof EventBridgeSchema>;
-
-type KafkaRecord = z.infer<typeof KafkaRecordSchema>;
+type EventBridgeEvent = z.infer<typeof EventBridgeSchema>;
 
 type KafkaSelfManagedEvent = z.infer<typeof KafkaSelfManagedEventSchema>;
 
 type KafkaMskEvent = z.infer<typeof KafkaMskEventSchema>;
 
-type KinesisDataStream = z.infer<typeof KinesisDataStreamSchema>;
+type KinesisDataStreamEvent = z.infer<typeof KinesisDataStreamSchema>;
 
-type KinesisDataStreamRecord = z.infer<typeof KinesisDataStreamRecord>;
+type KinesisFireHoseEvent = z.infer<typeof KinesisFirehoseSchema>;
 
-type KinesisDataStreamRecordPayload = z.infer<
-  typeof KinesisDataStreamRecordPayload
->;
+type KinesisFireHoseSqsEvent = z.infer<typeof KinesisFirehoseSqsSchema>;
 
-type KinesisFireHose = z.infer<typeof KinesisFirehoseSchema>;
+type LambdaFunctionUrlEvent = z.infer<typeof LambdaFunctionUrlSchema>;
 
-type KinesisFireHoseSqs = z.infer<typeof KinesisFirehoseSqsSchema>;
-
-type LambdaFunctionUrl = z.infer<typeof LambdaFunctionUrlSchema>;
-
-type S3 = z.infer<typeof S3Schema>;
+type S3Event = z.infer<typeof S3Schema>;
 
 type S3EventNotificationEventBridge = z.infer<
   typeof S3EventNotificationEventBridgeSchema
@@ -99,55 +80,41 @@ type S3EventNotificationEventBridge = z.infer<
 
 type S3SqsEventNotification = z.infer<typeof S3SqsEventNotificationSchema>;
 
-type Ses = z.infer<typeof SesSchema>;
+type SesEvent = z.infer<typeof SesSchema>;
 
-type SesRecord = z.infer<typeof SesRecordSchema>;
+type SnsEvent = z.infer<typeof SnsSchema>;
 
-type Sns = z.infer<typeof SnsSchema>;
+type SqsEvent = z.infer<typeof SqsSchema>;
 
-type SnsRecord = z.infer<typeof SnsRecordSchema>;
+type VpcLatticeEvent = z.infer<typeof VpcLatticeSchema>;
 
-type SnsNotification = z.infer<typeof SnsNotificationSchema>;
-
-type SnsSqsNotification = z.infer<typeof SnsSqsNotificationSchema>;
-
-type Sqs = z.infer<typeof SqsSchema>;
-
-type VpcLattice = z.infer<typeof VpcLatticeSchema>;
-
-type VpcLatticeV2 = z.infer<typeof VpcLatticeV2Schema>;
+type VpcLatticeEventV2 = z.infer<typeof VpcLatticeV2Schema>;
 
 export {
-  type Alb,
-  type AlbMultiValueHeaders,
+  type ALBEvent,
+  type ALBMultiValueHeadersEvent,
   type APIGatewayProxyEvent,
   type APIGatewayProxyEventV2,
-  type CloudFormationCustomResourceCreate,
-  type CloudFormationCustomResourceDelete,
-  type CloudFormationCustomResourceUpdate,
-  type CloudWatchLogs,
+  type CloudFormationCustomResourceCreateEvent,
+  type CloudFormationCustomResourceDeleteEvent,
+  type CloudFormationCustomResourceUpdateEvent,
   type CloudWatchLogsEvent,
-  type DynamoDBStream,
-  type EventBridge,
+  type DynamoDBStreamEvent,
+  type EventBridgeEvent,
   type KafkaSelfManagedEvent,
   type KafkaMskEvent,
-  type KinesisDataStream,
+  type KinesisDataStreamEvent,
   type KinesisDataStreamRecord,
   type KinesisDataStreamRecordPayload,
-  type KinesisFireHose,
-  type KinesisFireHoseSqs,
-  type LambdaFunctionUrl,
-  type S3,
+  type KinesisFireHoseEvent,
+  type KinesisFireHoseSqsEvent,
+  type LambdaFunctionUrlEvent,
+  type S3Event,
   type S3EventNotificationEventBridge,
   type S3SqsEventNotification,
-  type Ses,
-  type SesRecord,
-  type Sns,
-  type SnsRecord,
-  type SnsNotification,
-  type SnsSqsNotification,
-  type Sqs,
-  type VpcLattice,
-  type VpcLatticeV2,
-  type KafkaRecord,
+  type SesEvent,
+  type SnsEvent,
+  type SqsEvent,
+  type VpcLatticeEvent,
+  type VpcLatticeEventV2,
 };

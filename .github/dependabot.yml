@@ -32,7 +32,6 @@ updates:
     directory: /examples/cdk
     schedule:
       interval: daily
-    versioning-strategy: increase
 
 
   - package-ecosystem: npm
@@ -49,6 +48,9 @@ updates:
     directory: /
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "@middy/core"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /packages/batch

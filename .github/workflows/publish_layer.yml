@@ -47,7 +47,7 @@ jobs:
       - name: Zip output
         run: zip -r cdk.out.zip layers/cdk.out
       - name: Archive CDK artifacts
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
         with:
           name: cdk-layer-artifact
           path: cdk.out.zip

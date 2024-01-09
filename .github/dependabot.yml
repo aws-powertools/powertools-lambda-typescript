@@ -1,0 +1,86 @@
+version: 2
+updates:
+  - package-ecosystem: docker
+    directory: /.devcontainer
+    schedule:
+      interval: daily
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /docs
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /docs
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /docs/snippets
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /examples/cdk
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /examples/sam
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /layers
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/batch
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/commons
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/idempotency
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/logger
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/metrics
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/parameters
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/testing
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/tracer
+    schedule:
+      interval: daily

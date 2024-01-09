@@ -23,7 +23,7 @@ jobs:
       # we need first to use the PR number to retrieve the PR SHA number. This means we need three steps to: checkout the repo,
       # run a custom script to get the SHA, and then finally checkout the PR branch
       - name: Checkout Repo
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       - name: Extract PR details
         id: extract_PR_details
         uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
@@ -32,7 +32,7 @@ jobs:
             const script = require('.github/scripts/get_pr_info.js');
             await script({github, context, core});
       - name: Checkout PR code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
           ref: ${{ steps.extract_PR_details.outputs.headSHA }}
       - name: Packages size report

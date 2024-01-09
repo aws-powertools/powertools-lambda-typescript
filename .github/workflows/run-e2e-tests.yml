@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       # If we pass a PR Number when triggering the workflow we will retrieve the PR info and get its headSHA
       - name: Extract PR details
         id: extract_PR_details
@@ -50,7 +50,7 @@ jobs:
       # we checkout the PR at that point in time
       - name: Checkout PR code
         if: ${{ inputs.prNumber != '' }}
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ steps.extract_PR_details.outputs.headSHA }}
       - name: Setup NodeJS

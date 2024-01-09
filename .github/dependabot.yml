@@ -19,6 +19,9 @@ updates:
     directory: /docs
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "mike"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /docs/snippets

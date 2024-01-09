@@ -19,6 +19,9 @@ updates:
     directory: /docs
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "mike"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /docs/snippets
@@ -29,6 +32,7 @@ updates:
     directory: /examples/cdk
     schedule:
       interval: daily
+
 
   - package-ecosystem: npm
     directory: /examples/sam
@@ -44,6 +48,9 @@ updates:
     directory: /
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "@middy/core"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /packages/batch

@@ -43,7 +43,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@middy/core": "^3.6.2",
+    "@middy/core": "^5.2.2",
     "aws-cdk-lib": "^2.107.0",
     "constructs": "^10.2.70",
     "phin": "^3.7.0",

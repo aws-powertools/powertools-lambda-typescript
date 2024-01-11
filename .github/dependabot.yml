@@ -9,6 +9,10 @@ updates:
     directory: /
     schedule:
       interval: daily
+    groups:
+      aws-sdk:
+        patterns:
+          - "@aws-sdk/**"
 
   - package-ecosystem: docker
     directory: /docs
@@ -32,12 +36,17 @@ updates:
     directory: /examples/cdk
     schedule:
       interval: daily
-
+    ignore:
+      - dependency-name: "@middy/core"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /examples/sam
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "@middy/core"
+        update-types: [ "version-update:semver-major" ]
 
   - package-ecosystem: npm
     directory: /layers

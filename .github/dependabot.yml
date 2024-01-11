@@ -9,10 +9,6 @@ updates:
     directory: /
     schedule:
       interval: daily
-    groups:
-      aws-sdk:
-        patterns:
-          - "@aws-sdk/**"
 
   - package-ecosystem: docker
     directory: /docs

@@ -26,9 +26,12 @@ jest.useFakeTimers();
 describe('Class: AppConfigProvider', () => {
   const client = mockClient(AppConfigDataClient);
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   afterEach(() => {
     client.reset();
-    jest.clearAllMocks();
   });
 
   describe('Method: constructor', () => {

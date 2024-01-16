@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/javascript-node@sha256:ff7fcaf39a616
 
 # Install fnm to manage Node.js versions
 RUN curl -fsSL https://fnm.vercel.app/install -o /tmp/install \
-  && chmod a+x /tmp/install 
+  && chmod a+x /tmp/install \
   && /tmp/install \
   && rm /tmp/install
 

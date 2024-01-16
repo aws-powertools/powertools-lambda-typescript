@@ -3,6 +3,7 @@ import {
   DynamoDBClient,
   GetItemCommand,
   paginateQuery,
+  type DynamoDBPaginationConfiguration,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import type {
@@ -16,7 +17,6 @@ import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
-import type { PaginationConfiguration } from '@aws-sdk/types';
 import type { JSONValue } from '@aws-lambda-powertools/commons';
 
 /**
@@ -407,7 +407,7 @@ class DynamoDBProvider extends BaseProvider {
       },
       ProjectionExpression: '#sk, #value',
     };
-    const paginationOptions: PaginationConfiguration = {
+    const paginationOptions: DynamoDBPaginationConfiguration = {
       client: this.client,
       pageSize: options?.sdkOptions?.Limit,
     };

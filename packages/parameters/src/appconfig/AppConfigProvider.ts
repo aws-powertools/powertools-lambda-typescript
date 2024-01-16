@@ -10,6 +10,7 @@ import type {
   AppConfigGetOptions,
   AppConfigGetOutput,
 } from '../types/AppConfigProvider';
+import { APPCONFIG_TOKEN_EXPIRATION } from '../constants';
 
 /**
  * ## Intro
@@ -182,7 +183,10 @@ import type {
  */
 class AppConfigProvider extends BaseProvider {
   public client!: AppConfigDataClient;
-  protected configurationTokenStore = new Map<string, string>();
+  protected configurationTokenStore = new Map<
+    string,
+    { value: string; expiration: number }
+  >();
   protected valueStore = new Map<string, Uint8Array>();
   private application?: string;
   private environment: string;
@@ -270,6 +274,15 @@ class AppConfigProvider extends BaseProvider {
   /**
    * Retrieve a configuration from AWS AppConfig.
    *
+   * First we start the session and after that we retrieve the configuration from AppSync.
+   * When starting a session, the service returns a token that can be used to poll for changes
+   * for up to 24hrs, so we cache it for later use together with the expiration date.
+   *
+   * The value of the configuration is also cached internally because AppConfig returns an empty
+   * value if the configuration has not changed since the last poll. This way even if your code
+   * polls the configuration multiple times, we return the most recent value by returning the cached
+   * one if an empty response is returned by AppConfig.
+   *
    * @param {string} name - Name of the configuration or its ID
    * @param {AppConfigGetOptions} options - SDK options to propagate to `StartConfigurationSession` API call
    */
@@ -277,16 +290,10 @@ class AppConfigProvider extends BaseProvider {
     name: string,
     options?: AppConfigGetOptions
   ): Promise<Uint8Array | undefined> {
-    /**
-     * The new AppConfig APIs require two API calls to return the configuration
-     * First we start the session and after that we retrieve the configuration
-     * We need to store { name: token } pairs to use in the next execution
-     * We also need to store { name : value } pairs because AppConfig returns
-     * an empty value if the session already has the latest configuration
-     * but, we don't want to return an empty value to our callers.
-     * {@link https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration.html}
-     **/
-    if (!this.configurationTokenStore.has(name)) {
+    if (
+      !this.configurationTokenStore.has(name) ||
+      this.configurationTokenStore.get(name)!.expiration <= Date.now()
+    ) {
       const sessionOptions: StartConfigurationSessionCommandInput = {
         ...(options?.sdkOptions || {}),
         ApplicationIdentifier: this.application,
@@ -303,20 +310,23 @@ class AppConfigProvider extends BaseProvider {
       if (!session.InitialConfigurationToken)
         throw new Error('Unable to retrieve the configuration token');
 
-      this.configurationTokenStore.set(name, session.InitialConfigurationToken);
+      this.configurationTokenStore.set(name, {
+        value: session.InitialConfigurationToken,
+        expiration: Date.now() + APPCONFIG_TOKEN_EXPIRATION,
+      });
     }
 
     const getConfigurationCommand = new GetLatestConfigurationCommand({
-      ConfigurationToken: this.configurationTokenStore.get(name),
+      ConfigurationToken: this.configurationTokenStore.get(name)?.value,
     });
 
     const response = await this.client.send(getConfigurationCommand);
 
     if (response.NextPollConfigurationToken) {
-      this.configurationTokenStore.set(
-        name,
-        response.NextPollConfigurationToken
-      );
+      this.configurationTokenStore.set(name, {
+        value: response.NextPollConfigurationToken,
+        expiration: Date.now() + APPCONFIG_TOKEN_EXPIRATION,
+      });
     } else {
       this.configurationTokenStore.delete(name);
     }

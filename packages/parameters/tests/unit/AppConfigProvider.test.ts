@@ -15,11 +15,13 @@ import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import 'aws-sdk-client-mock-jest';
+import { APPCONFIG_TOKEN_EXPIRATION } from '../../src/constants';
 
 jest.mock('@aws-lambda-powertools/commons', () => ({
   ...jest.requireActual('@aws-lambda-powertools/commons'),
   addUserAgentMiddleware: jest.fn(),
 }));
+jest.useFakeTimers();
 
 describe('Class: AppConfigProvider', () => {
   const client = mockClient(AppConfigDataClient);
@@ -201,7 +203,10 @@ describe('Class: AppConfigProvider', () => {
       // Prepare
       class AppConfigProviderMock extends AppConfigProvider {
         public _addToStore(key: string, value: string): void {
-          this.configurationTokenStore.set(key, value);
+          this.configurationTokenStore.set(key, {
+            value,
+            expiration: Date.now() + APPCONFIG_TOKEN_EXPIRATION,
+          });
         }
 
         public _storeHas(key: string): boolean {
@@ -288,6 +293,56 @@ describe('Class: AppConfigProvider', () => {
       // Assess
       expect(result1).toBe(mockData);
       expect(result2).toBe(mockData);
+    });
+
+    test('when the session token has expired, it starts a new session and retrieves the token', async () => {
+      // Prepare
+      const options: AppConfigProviderOptions = {
+        application: 'MyApp',
+        environment: 'MyAppProdEnv',
+      };
+      const provider = new AppConfigProvider(options);
+      const name = 'MyAppFeatureFlag';
+
+      const fakeInitialToken = 'aW5pdGlhbFRva2Vu';
+      const fakeSecondToken = 'bZ6pdGlhbFRva3Wk';
+      const fakeNextToken1 = 'bmV4dFRva2Vu';
+      const mockData = Uint8ArrayBlobAdapter.fromString('foo');
+      const mockData2 = Uint8ArrayBlobAdapter.fromString('bar');
+
+      client
+        .on(StartConfigurationSessionCommand)
+        .resolvesOnce({
+          InitialConfigurationToken: fakeInitialToken,
+        })
+        .resolvesOnce({
+          InitialConfigurationToken: fakeSecondToken,
+        })
+        .on(GetLatestConfigurationCommand, {
+          ConfigurationToken: fakeInitialToken,
+        })
+        .resolves({
+          Configuration: mockData,
+          NextPollConfigurationToken: fakeNextToken1,
+        })
+        .on(GetLatestConfigurationCommand, {
+          ConfigurationToken: fakeSecondToken,
+        })
+        .resolves({
+          Configuration: mockData2,
+          NextPollConfigurationToken: fakeNextToken1,
+        });
+      jest.setSystemTime(new Date('2022-03-10'));
+
+      // Act
+      const result1 = await provider.get(name, { forceFetch: true });
+      // Mock time skip of 24hrs
+      jest.setSystemTime(new Date('2022-03-11'));
+      const result2 = await provider.get(name, { forceFetch: true });
+
+      // Assess
+      expect(result1).toBe(mockData);
+      expect(result2).toBe(mockData2);
     });
   });
 

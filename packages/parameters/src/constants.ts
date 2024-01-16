@@ -2,6 +2,7 @@ const DEFAULT_MAX_AGE_SECS = 5;
 const TRANSFORM_METHOD_JSON = 'json';
 const TRANSFORM_METHOD_BINARY = 'binary';
 const TRANSFORM_METHOD_AUTO = 'auto';
+const APPCONFIG_TOKEN_EXPIRATION = 23 * 60 * 60 * 1000 + 45 * 60 * 1000; // 23 hrs 45 min
 
 /**
  * Transform methods for values retrieved by parameter providers.
@@ -22,6 +23,7 @@ const Transform = {
 } as const;
 
 export {
+  APPCONFIG_TOKEN_EXPIRATION,
   DEFAULT_MAX_AGE_SECS,
   TRANSFORM_METHOD_JSON,
   TRANSFORM_METHOD_BINARY,

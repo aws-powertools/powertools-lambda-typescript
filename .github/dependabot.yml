@@ -28,71 +28,21 @@ updates:
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
-    directory: /docs/snippets
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /examples/cdk
-    schedule:
-      interval: daily
-
-
-  - package-ecosystem: npm
-    directory: /examples/sam
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /layers
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
     directory: /
     labels: [ ]
     schedule:
       interval: daily
+    versioning-strategy: increase
     ignore:
       - dependency-name: "@middy/core"
-        update-types: ["version-update:semver-major"]
-
-  - package-ecosystem: npm
-    directory: /packages/batch
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /packages/commons
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /packages/idempotency
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /packages/logger
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /packages/metrics
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /packages/parameters
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /packages/testing
-    schedule:
-      interval: daily
-
-  - package-ecosystem: npm
-    directory: /packages/tracer
-    schedule:
-      interval: daily
+        update-types: [ "version-update:semver-major" ]
+    groups:
+      aws-sdk:
+        patterns:
+        - "@aws-sdk/**"
+        - "aws-sdk-client-mock"
+        - "aws-sdk-client-mock-jest"
+      aws-cdk:
+        patterns:
+        - "@aws-cdk/**"
+        - "aws-cdk-lib"

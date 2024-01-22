@@ -21,9 +21,9 @@
     "*.js": "npm run lint-fix"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.495.0",
-    "@aws-sdk/client-ssm": "^3.495.0",
-    "@aws-sdk/lib-dynamodb": "^3.495.0",
+    "@aws-sdk/client-dynamodb": "^3.496.0",
+    "@aws-sdk/client-ssm": "^3.496.0",
+    "@aws-sdk/lib-dynamodb": "^3.496.0",
     "@types/aws-lambda": "^8.10.131",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.5",

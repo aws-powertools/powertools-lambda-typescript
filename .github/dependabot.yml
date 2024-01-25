@@ -47,3 +47,4 @@ updates:
         patterns:
         - "@aws-cdk/**"
         - "aws-cdk-lib"
+        - "aws-cdk"

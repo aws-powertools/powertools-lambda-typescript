@@ -37,7 +37,7 @@
     "@aws-sdk/client-dynamodb": "^3.495.0",
     "@aws-sdk/client-xray": "^3.495.0",
     "@types/promise-retry": "^1.1.6",
-    "aws-sdk": "^2.1540.0",
+    "aws-sdk": "^2.1543.0",
     "axios": "^1.6.5",
     "promise-retry": "^2.0.1"
   },

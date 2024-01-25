@@ -1,6 +1,6 @@
 {
   "name": "cdk-sample",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -25,11 +25,11 @@
     "*.js": "npm run lint-fix"
   },
   "devDependencies": {
-    "@aws-lambda-powertools/commons": "^1.17.0",
-    "@aws-lambda-powertools/logger": "^1.17.0",
-    "@aws-lambda-powertools/metrics": "^1.17.0",
-    "@aws-lambda-powertools/parameters": "^1.17.0",
-    "@aws-lambda-powertools/tracer": "^1.17.0",
+    "@aws-lambda-powertools/commons": "^1.18.0",
+    "@aws-lambda-powertools/logger": "^1.18.0",
+    "@aws-lambda-powertools/metrics": "^1.18.0",
+    "@aws-lambda-powertools/parameters": "^1.18.0",
+    "@aws-lambda-powertools/tracer": "^1.18.0",
     "@aws-sdk/client-ssm": "^3.499.0",
     "@aws-sdk/lib-dynamodb": "^3.499.0",
     "@types/aws-lambda": "^8.10.131",

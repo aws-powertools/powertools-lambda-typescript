@@ -63,7 +63,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
     | `eu-south-1`     | [arn:aws:lambda:eu-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:27](#){: .copyMe}:clipboard:     |
     | `eu-south-2`     | [arn:aws:lambda:eu-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScript:27](#){: .copyMe}:clipboard:     |
     | `ca-central-1`   | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:27](#){: .copyMe}:clipboard:   |
-    | `ca-west-1`      | [arn:aws:lambda:ca-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:27](#){: .copyMe}:clipboard:   |
+    | `ca-west-1`      | [arn:aws:lambda:ca-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:27](#){: .copyMe}:clipboard:      |
     | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:27](#){: .copyMe}:clipboard:      |
     | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:27](#){: .copyMe}:clipboard:     |
     | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScript:27](#){: .copyMe}:clipboard:     |
@@ -277,7 +277,8 @@ The project's repository includes examples of how to instrument your functions b
 * [AWS CDK](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/cdk){target="_blank"}
 * [AWS SAM](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/sam){target="_blank"}
 
-If instead you want to see Powertools for AWS Lambda (TypeScript) in a slightly more complex use case, check the [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo). You can find instructions on how to deploy and load test this application in the [repository](https://github.com/aws-samples/serverless-typescript-demo).
+If instead you want to see Powertools for AWS Lambda (TypeScript) in a slightly more complex use case, check the [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) or the [AWS Lambda performance tuning](https://github.com/aws-samples/optimizations-for-lambda-functions) repository. Both demos use Powertools for AWS Lambda (TypeScript) as well as demonstrating other common techniques for Lambda functions written in TypeScript.
+
 
 ## Features
 

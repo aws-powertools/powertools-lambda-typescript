@@ -16,6 +16,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
+    environment: Release
     runs-on: ubuntu-latest
     outputs:
       RELEASE_VERSION: ${{ steps.set-release-version.outputs.RELEASE_VERSION }}

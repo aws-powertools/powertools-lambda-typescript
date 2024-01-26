@@ -1,7 +1,7 @@
 name: Deploy layer to all regions
 
 permissions:
-  contents: read
+  contents: write
 
 on:
   # Manual trigger
@@ -55,6 +55,8 @@ jobs:
     needs:
       - build-layer
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
+    permissions:
+      id-token: write
     with:
       stage: "BETA"
       artifact-name: "cdk-layer-artifact"
@@ -67,6 +69,8 @@ jobs:
     needs:
       - deploy-beta
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
+    permissions:
+      id-token: write
     with:
       stage: "PROD"
       artifact-name: "cdk-layer-artifact"

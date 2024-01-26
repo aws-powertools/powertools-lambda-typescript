@@ -1,9 +1,9 @@
 name: Reusable Publish docs
 
+# see .github/workflows/on_push_docs.yml for docs
+
 env:
-  BRANCH: main
   ORIGIN: aws-powertools/powertools-lambda-typescript
-  VERSION: ""
 
 on:
   workflow_call:
@@ -28,22 +28,30 @@ on:
         required: false
         default: false
         type: boolean
+      git_ref:
+        description: "Branch or commit ID to checkout from"
+        required: false
+        type: string
+        default: develop
 
 permissions:
-  contents: write
-  id-token: write
-  pages: write
+  contents: read
 
 jobs:
-  publish-docs:
+  publish_docs:
+    if: github.repository == 'aws-powertools/powertools-lambda-python'
+    # Force Github action to run only a single job at a time (based on the group name)
+    # This is to prevent "race-condition" in publishing a new version of doc to `gh-pages`
+    concurrency:
+      group: on-docs-rebuild
     runs-on: ubuntu-latest
     environment: Docs
+    permissions:
+      actions: write # upload artifacts (for debugging issues with the docs build)
+      id-token: write  # trade JWT token for AWS credentials in AWS Docs account
     steps:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-        with:
-          # While `fetch-depth` is used to allow the workflow to later commit & push the changes.
-          fetch-depth: 0
       - name: Setup NodeJS
         uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
@@ -54,14 +62,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install doc generation dependencies
         run: |
           pip install --require-hashes -r docs/requirements.txt
-      - name: Setup doc deploy
-        run: |
-          git config --global user.name Docs deploy
-          git config --global user.email aws-devax-open-source@amazon.com
       - name: Git refresh tip (detached mode)
         # Git Detached mode (release notes) doesn't have origin
         if: ${{ inputs.detached_mode }}
@@ -69,6 +73,8 @@ jobs:
           git config pull.rebase true
           git config remote.origin.url >&- || git remote add origin https://github.com/"$ORIGIN"
           git pull origin "$BRANCH"
+        env:
+          BRANCH: ${{ inputs.git_ref }}
       - name: Normalize Version Number
         run: echo "VERSION=$(echo ${{ inputs.version }} | sed 's/v//')" >> $GITHUB_ENV
       - name: Build docs website and API reference
@@ -77,9 +83,6 @@ jobs:
         run: |
           rm -rf site
           mkdocs build
-          mike deploy --update-aliases --no-redirect ${{ env.VERSION }} ${{ env.ALIAS }} --branch backup-gh-pages
-          # Set latest version as a default
-          mike set-default latest --branch backup-gh-pages
       - name: Build API docs
         run: |
           rm -rf api

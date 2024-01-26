@@ -1,0 +1,34 @@
+name: Closed Issue Message
+
+# PROCESS
+#
+# 1. Comment on recently closed issues to warn future responses may not be looked after
+
+# USAGE
+#
+# Always triggered upon issue closure
+
+on:
+  issues:
+      types: [closed]
+
+permissions:
+  contents: read
+
+jobs:
+  auto_comment:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write  # comment on issues
+    steps:
+      - uses: aws-actions/closed-issue-message@36b7048ea77bb834d16e7a7c5b5471ac767a4ca1 # v1.0.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          message: |
+              ⚠️ **COMMENT VISIBILITY WARNING** ⚠️
+              
+              This issue is now closed. Please be mindful that future comments are hard for our team to see.
+
+              If you need more assistance, please either tag a [team member](https://docs.powertools.aws.dev/lambda/typescript/latest/maintainers/#current-maintainers) or open a new issue that references this one.
+
+              If you wish to keep having a conversation with other community members under this issue feel free to do so.

@@ -14,8 +14,7 @@ permissions:
 jobs:
   release-docs:
     permissions:
-      contents: write
-      pages: write
+      actions: write
       id-token: write
     secrets: inherit
     uses: ./.github/workflows/reusable-publish-docs.yml

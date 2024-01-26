@@ -47,7 +47,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: Docs
     permissions:
-      actions: write # upload artifacts (for debugging issues with the docs build)
       id-token: write  # trade JWT token for AWS credentials in AWS Docs account
     steps:
       - name: Checkout code
@@ -96,11 +95,6 @@ jobs:
       - name: Copy API Docs
         run: |
           cp -r api site/
-      - name: Create Artifact (Site)
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
-        with:
-          name: site
-          path: site
       - name: Deploy Docs (Version)
         env:
           VERSION: ${{ inputs.version }}

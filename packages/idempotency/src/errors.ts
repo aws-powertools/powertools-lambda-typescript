@@ -1,4 +1,4 @@
-import type { IdempotencyRecord } from './persistence';
+import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 
 /**
  * Item attempting to be inserted into persistence store already exists and is not expired

@@ -4,7 +4,6 @@ import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
 import { format } from 'node:util';
 import { Console } from 'node:console';
-import { format } from 'node:util';
 import { randomInt } from 'node:crypto';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import { LogJsonIndent } from './constants.js';
@@ -432,7 +431,7 @@ class Logger extends Utility implements LoggerInterface {
     logger.addContext(context);
 
     let shouldLogEvent = undefined;
-    if (Object.hasOwn(options || {}, 'logEvent')) {
+    if (options && options.hasOwnProperty('logEvent')) {
       shouldLogEvent = options!.logEvent;
     }
     logger.logEventIfEnabled(event, shouldLogEvent);
@@ -479,7 +478,7 @@ class Logger extends Utility implements LoggerInterface {
    */
   public removePersistentLogAttributes(keys: string[]): void {
     for (const key of keys) {
-      if (Object.hasOwn(this.persistentLogAttributes, key)) {
+      if (this.persistentLogAttributes && key in this.persistentLogAttributes) {
         delete this.persistentLogAttributes[key];
       }
     }

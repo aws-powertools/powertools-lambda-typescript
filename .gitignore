@@ -49,4 +49,5 @@ site
 tmp
 
 # TS build files
-*.tsbuildinfo
+tsconfig.tsbuildinfo
+.tsbuildinfo

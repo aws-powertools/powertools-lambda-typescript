@@ -11,7 +11,7 @@ We've made targeted breaking changes to make your transition to v2 as smooth as 
 
 | Area                                   | Change                                                                                                                                           | Code change required |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
-| **ES Modules support**                 | TBD                                                                                                                                              | -                    |
+| **ES Modules support**                 | Added ES Modules support via dual CommonJS and ES Module bundling, this enables top-level `await` and tree-shaking.                              | No                   |
 | **Middy.js middleware imports**        | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.                      | Yes                  |
 | **Types imports**                      | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.                               | Yes                  |
 | **Logger - log sampling**              | Changed implementation of [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
@@ -28,7 +28,78 @@ Before you start, we suggest making a copy of your current working project or cr
 
 ## ES Modules support
 
-TBD
+Starting with v2, Powertools for AWS Lambda (TypeScript) supports ES Modules. This means that you can now import the package using the `import` syntax instead of the `require` syntax. This is especially useful if you want to leverage features like top-level `await` in your Lambda function to run asynchronous code during the initialization phase.
+
+```typescript
+import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
+
+// This code will run during the initialization phase of your Lambda function
+const myApiKey = await getSecret('my-api-key', { transform: 'json' });
+
+export const handler = async () => {
+    // ...
+};
+```
+
+With this change, you can also apply tree-shaking to your function bundle to reduce its size. As part of this release we have made changes to the package and its exports to better support this feature, and we remain committed to improving this in the future based on your feedback.
+
+While we recommend using ES Modules, we understand that this change might not be possible for everyone. If you're unable to use ES Modules, you can continue to use the `require` syntax to import the package. Powertools for AWS Lambda (TypeScript) will continue to support this syntax by shipping CommonJS modules alongside ES Modules.
+
+In some cases, even when opting for ES Modules, you might still need to use the `require` syntax to import a package. For example, if you're using a package that doesn't support ES Modules, or if one of your transitive dependencies is using the `require` syntax like it's the case for `@aws-lambda-powertools/tracer` which relies on the AWS X-Ray SDK for Node.js. In these cases, you can still use ES Modules for the rest of your codebase and set a special build flag to tell your bundler to inject a banner at the top of the file to use the `require` syntax for the specific package.
+
+=== "With AWS CDK"
+
+    ```typescript hl_lines="15 20-21"
+    import { Stack, type StackProps } from 'aws-cdk-lib';
+    import { Construct } from 'constructs';
+    import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
+    import { Runtime } from 'aws-cdk-lib/aws-lambda';
+
+    export class MyStack extends Stack {
+      public constructor(scope: Construct, id: string, props?: StackProps) {
+        super(scope, id, props);
+
+        const handler = new NodejsFunction(this, 'helloWorldFunction', {
+          runtime: Runtime.NODEJS_20_X,
+          handler: 'handler',
+          entry: 'src/index.ts',
+          bundling: {
+            format: OutputFormat.ESM,
+            minify: true,
+            esbuildArgs: {
+              "--tree-shaking": "true",
+            },
+            banner: 
+              "import { createRequire } from 'module';const require = createRequire(import.meta.url);",
+          },
+        });
+      }
+    }
+    ```
+
+=== "With AWS SAM"
+
+    ```yaml hl_lines="14 17-18"
+    Transform: AWS::Serverless-2016-10-31
+    Resources:
+      HelloWorldFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+          Runtime: nodejs20.x
+          Handler: src/index.handler
+        Metadata:
+          BuildMethod: esbuild
+          BuildProperties:
+            Minify: true
+            Target: 'ES2020'
+            Sourcemap: true
+            Format: esm
+            EntryPoints:
+              - src/index.ts
+            Banner:
+              js: "import { createRequire } from 'module';const require = createRequire(import.meta.url);"
+ 
+    ```
 
 ## Scoped imports
 

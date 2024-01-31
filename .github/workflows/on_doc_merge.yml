@@ -15,6 +15,7 @@ jobs:
   release-docs:
     permissions:
       id-token: write  # trade JWT token for AWS credentials in AWS Docs account
+      contents: read
     secrets: inherit
     uses: ./.github/workflows/reusable_publish_docs.yml
     with:

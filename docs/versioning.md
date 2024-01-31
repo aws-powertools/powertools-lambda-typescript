@@ -11,7 +11,7 @@ This document outlines the maintenance policy for Powertools for AWS Lambda and 
 
 We recommend users to stay up-to-date with Powertools for AWS Lambda releases to keep up with the latest features, security updates, and underlying dependencies. Continued use of an unsupported Powertools for AWS Lambda version is not recommended and is done at the user’s discretion.
 
-!!! info "For brevity, we will interchangeably refer to Powertools for AWS Lambda as "SDK" _(Software Development Toolkit)_."
+!!! info "For brevity, we will interchangeably refer to Powertools for AWS Lambda (TypeScript) as "SDK" _(Software Development Toolkit)_."
 
 ### Versioning
 
@@ -59,5 +59,5 @@ To see the list of available major versions of Powertools for AWS Lambda and whe
 
 | SDK                                  | Major version | Current Phase            | General Availability Date | Notes                                                                                                   |
 | ------------------------------------ | ------------- | ------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Powertools for AWS Lambda TypeScript | 1.x           | Maintenance Announcement | 06/18/2020                | See [v2 RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1714)                |
-| Powertools for AWS Lambda TypeScript | 1.x           | General Availability     | 06/18/2020                | See [Release Notes](https://github.com/aws-powertools/powertools-lambda-typescript/releases/tag/v1.0.0) |
+| Powertools for AWS Lambda TypeScript | 1.x           | Maintenance Announcement | 07/15/2022                | See [v2 RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1714)                |
+| Powertools for AWS Lambda TypeScript | 1.x           | General Availability     | 07/15/2022                | See [Release Notes](https://github.com/aws-powertools/powertools-lambda-typescript/releases/tag/v1.0.0) |

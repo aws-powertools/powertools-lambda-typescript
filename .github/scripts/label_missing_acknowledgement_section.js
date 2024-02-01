@@ -30,7 +30,7 @@ module.exports = async ({ github, context, core }) => {
     );
 
     const msg =
-      "No acknowledgement section found. Please make sure you used the template to open a PR and didn't remove the acknowledgment section. Check the template here: https://github.com/aws-powertools/powertools-lambda-python/blob/develop/.github/PULL_REQUEST_TEMPLATE.md#acknowledgment";
+      "No acknowledgement section found. Please make sure you used the template to open a PR and didn't remove the acknowledgment section. Check the template here: https://github.com/aws-powertools/powertools-lambda-typescript/blob/develop/.github/PULL_REQUEST_TEMPLATE.md#acknowledgment";
 
     await Promise.allSettled([
       github.rest.issues.createComment({

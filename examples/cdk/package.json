@@ -34,7 +34,7 @@
     "@aws-sdk/lib-dynamodb": "^3.499.0",
     "@types/aws-lambda": "^8.10.131",
     "@types/jest": "^29.5.11",
-    "@types/node": "20.11.7",
+    "@types/node": "20.11.15",
     "aws-cdk": "^2.123.0",
     "constructs": "^10.3.0",
     "esbuild": "^0.19.12",

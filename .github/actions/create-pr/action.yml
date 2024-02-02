@@ -3,12 +3,15 @@ description: "Create a PR and a temporary branch, close duplicates"
 
 # PROCESS
 #
-# 1. Setup git client using Powertools for AWS Lambda (Python) bot username
+# 1. Setup git client using Powertools for AWS Lambda bot username
 # 2. Pushes staged files to a temporary branch
 # 3. Creates a PR from temporary branch against a target branch (typically trunk: develop, main, etc.)
 # 4. Searches for duplicate PRs with the same title
 # 5. If duplicates are found, link to the most recent one, close and delete their branches so we keep a single PR
 # 6. In the event of failure, we delete the now orphaned branch (if any), and propagate the failure
+
+# REQUIREMENTS
+# You need to enable "Allow GitHub Actions to create and approve pull requests" in your repository settings
 
 # USAGE
 #

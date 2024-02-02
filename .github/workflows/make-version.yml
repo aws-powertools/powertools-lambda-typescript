@@ -22,7 +22,7 @@ jobs:
         with:
           ref: ${{ github.ref }}
       - name: Setup NodeJS
-        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v3.6.0
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
           node-version: "20"
           cache: "npm"
@@ -30,6 +30,8 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+      - name: Setup dependencies
+        uses: ./.github/actions/cached-node-modules
       - name: Version
         id: bump_version
         run: |

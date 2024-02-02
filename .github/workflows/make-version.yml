@@ -1,0 +1,49 @@
+name: Make Version
+
+on:
+  workflow_dispatch: { }
+
+
+env:
+  RELEASE_COMMIT: ${{ github.sha }}
+
+jobs:
+  bump-version:
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    outputs:
+      RELEASE_VERSION: ${{ steps.set-release-version.outputs.RELEASE_VERSION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ github.ref }}
+      - name: Setup NodeJS
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v3.6.0
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Setup auth tokens
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+      - name: Version
+        id: bump_version
+        run: |
+          npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes
+          git add .
+      - name: Set release version
+        id: set-release-version
+        run: |
+          VERSION=$(cat lerna.json | jq .version -r)
+          echo RELEASE_VERSION="$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Create PR
+        id: create-pr
+        uses: ./.github/actions/create-pr
+        with:
+          temp_branch_prefix: "ci-bump"
+          pull_request_title: "chore(ci): bump version to ${{ needs.bump-version.outputs.RELEASE_VERSION }}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}

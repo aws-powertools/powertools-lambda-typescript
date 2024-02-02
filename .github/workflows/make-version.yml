@@ -33,7 +33,7 @@ jobs:
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Version
-        id: bump_version
+        id: bump-version
         run: |
           npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes
           git add .

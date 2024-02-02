@@ -12,6 +12,7 @@ description: "Create a PR and a temporary branch, close duplicates"
 
 # REQUIREMENTS
 # You need to enable "Allow GitHub Actions to create and approve pull requests" in your repository settings
+# You need to have "skip-changelog" label in your repository to skip changelog generation.
 
 # USAGE
 #

@@ -47,5 +47,5 @@ jobs:
         uses: ./.github/actions/create-pr
         with:
           temp_branch_prefix: "ci-bump"
-          pull_request_title: "chore(ci): bump version to ${{ needs.bump-version.outputs.RELEASE_VERSION }}"
+          pull_request_title: "chore(ci): bump version to ${{ steps.set-release-version.outputs.RELEASE_VERSION }}"
           github_token: ${{ secrets.GITHUB_TOKEN }}

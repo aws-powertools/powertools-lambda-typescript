@@ -32,7 +32,7 @@
     "@aws-lambda-powertools/tracer": "^1.18.0",
     "@aws-sdk/client-ssm": "^3.504.0",
     "@aws-sdk/lib-dynamodb": "^3.506.0",
-    "@types/aws-lambda": "^8.10.131",
+    "@types/aws-lambda": "^8.10.133",
     "@types/jest": "^29.5.11",
     "@types/node": "20.11.16",
     "aws-cdk": "^2.126.0",

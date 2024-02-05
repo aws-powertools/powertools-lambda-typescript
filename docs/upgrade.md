@@ -5,13 +5,15 @@ description: Guide to update between major Powertools for AWS Lambda (TypeScript
 
 ## Migrate from v1 to v2
 
-We've made targeted breaking changes to make your transition to v2 as smooth as possible while still providing you with the most up-to-date features and patterns. This guide will help you migrate your existing codebase to v2.
+To make your transition to v2 as smooth as possible while still providing you with the most up-to-date features and patterns we have made targeted breaking changes to some of the utilities. This guide will help you migrate your existing codebase to v2.
 
 ### Quick summary
 
+Below a list of the main changes introduced in v2, review the sections below for more details and code examples for the changes that apply to your codebase.
+
 | Area                                   | Change                                                                                                                                           | Code change required |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
-| **ES Modules support**                 | Added ES Modules support via dual CommonJS and ES Module bundling, this enables top-level `await` and tree-shaking.                              | No                   |
+| **ES Modules support**                 | Added ES Modules support via dual CommonJS and ES Module bundling, this enables top-level `await` and tree-shaking.                              | -                    |
 | **Middy.js middleware imports**        | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.                      | Yes                  |
 | **Types imports**                      | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.                               | Yes                  |
 | **Logger - log sampling**              | Changed implementation of [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |

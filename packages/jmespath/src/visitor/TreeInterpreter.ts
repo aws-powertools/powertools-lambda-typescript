@@ -215,7 +215,7 @@ class TreeInterpreter {
     }`;
     const methodName = methods.find((method) => method === funcName);
     if (!methodName) {
-      throw new UnknownFunctionError();
+      throw new UnknownFunctionError(node.value);
     }
 
     try {

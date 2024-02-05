@@ -1,3 +1,4 @@
+import { isNumber, isRecord } from '../visitor/utils';
 import type { JSONArray, JSONObject, JSONValue } from '../types';
 import { typeCheck, arityCheck } from './typeChecking';
 
@@ -68,7 +69,6 @@ class Functions {
     argumentsSpecs: [['array', 'string'], ['any']],
   })
   public funcContains(haystack: string, needle: string): boolean {
-    // TODO: review this implementation
     return haystack.includes(needle);
   }
 
@@ -116,10 +116,16 @@ class Functions {
    * @returns The length of the array
    */
   @Functions.signature({
-    argumentsSpecs: [['array', 'string']],
+    argumentsSpecs: [['array', 'string', 'object']],
   })
-  public funcLength(arg: string | Array<unknown>): number {
-    return arg.length;
+  public funcLength(
+    arg: string | Array<unknown> | Record<string, unknown>
+  ): number {
+    if (isRecord(arg)) {
+      return Object.keys(arg).length;
+    } else {
+      return arg.length;
+    }
   }
 
   /**
@@ -129,10 +135,18 @@ class Functions {
    * @returns The maximum value in the array
    */
   @Functions.signature({
-    argumentsSpecs: [['array-number']],
+    argumentsSpecs: [['array-number', 'array-string']],
   })
-  public funcMax(arg: Array<number>): number {
-    return Math.max(...arg);
+  public funcMax(arg: Array<number | string>): number | string | null {
+    if (arg.length === 0) {
+      return null;
+      // The signature decorator already enforces that all elements are of the same type
+    } else if (isNumber(arg[0])) {
+      return Math.max(...(arg as number[]));
+    } else {
+      // local compare function to handle string comparison
+      return arg.reduce((a, b) => (a > b ? a : b));
+    }
   }
 
   /**
@@ -156,10 +170,17 @@ class Functions {
    * @returns The minimum value in the array
    */
   @Functions.signature({
-    argumentsSpecs: [['array-number']],
+    argumentsSpecs: [['array-number', 'array-string']],
   })
-  public funcMin(arg: Array<number>): number {
-    return Math.min(...arg);
+  public funcMin(arg: Array<number>): number | string | null {
+    if (arg.length === 0) {
+      return null;
+      // The signature decorator already enforces that all elements are of the same type
+    } else if (isNumber(arg[0])) {
+      return Math.min(...arg);
+    } else {
+      return arg.reduce((a, b) => (a < b ? a : b));
+    }
   }
 
   /**
@@ -254,6 +275,24 @@ class Functions {
    */
   public funcToString(arg: JSONValue): string {
     return typeof arg === 'string' ? arg : JSON.stringify(arg);
+  }
+
+  public funcType(arg: Array<unknown>): string {
+    if (Array.isArray(arg[0])) {
+      return 'array';
+    } else if (isRecord(arg[0])) {
+      return 'object';
+    } else if (typeof arg[0] === 'string') {
+      return 'string';
+    } else if (typeof arg[0] === 'number') {
+      return 'number';
+    } else if (typeof arg[0] === 'boolean') {
+      return 'boolean';
+    } else if (Object.is(arg[0], null)) {
+      return 'null';
+    } else {
+      return 'unknown';
+    }
   }
 
   /**

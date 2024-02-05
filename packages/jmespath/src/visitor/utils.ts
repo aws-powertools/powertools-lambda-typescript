@@ -183,14 +183,14 @@ const sliceArray = <T>(
   start = isIntegerNumber(start)
     ? capSliceRange(length, start, isStepNegative)
     : isStepNegative
-    ? length - 1
-    : 0;
+      ? length - 1
+      : 0;
 
   end = isIntegerNumber(end)
     ? capSliceRange(length, end, isStepNegative)
     : isStepNegative
-    ? -1
-    : length;
+      ? -1
+      : length;
 
   const result: T[] = [];
   if (step > 0) {

@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles",
+    "test:unit": "jest --group=unit/jmespath --detectOpenHandles",
     "test:e2e": "echo 'Not applicable for this package'",
     "watch": "jest --watch",
     "build": "tsc",

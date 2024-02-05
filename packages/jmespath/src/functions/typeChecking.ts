@@ -54,13 +54,18 @@ const typeCheck = (
  * @param argumentSpec
  */
 const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
-  // TODO: check if all types in argumentSpec are valid
   if (argumentSpec.length === 0 || argumentSpec[0] === 'any') {
     return;
   }
-  argumentSpec.forEach((type) => {
+  const entryCount = argumentSpec.length;
+  let hasMoreTypesToCheck = argumentSpec.length > 1;
+  for (const [index, type] of argumentSpec.entries()) {
+    hasMoreTypesToCheck = index < entryCount - 1;
     if (type.startsWith('array')) {
       if (!Array.isArray(arg)) {
+        if (hasMoreTypesToCheck) {
+          continue;
+        }
         throw new JMESPathTypeError({
           currentValue: arg,
           expectedTypes: argumentSpec,
@@ -69,38 +74,59 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
       }
       if (type.includes('-')) {
         const arrayItemsType = type.slice(6);
-        arg.forEach((element) => {
-          typeCheckArgument(element, [arrayItemsType]);
-        });
+        let actualType: string | undefined;
+        for (const element of arg) {
+          try {
+            typeCheckArgument(element, [arrayItemsType]);
+            actualType = arrayItemsType;
+          } catch (error) {
+            if (!hasMoreTypesToCheck || actualType !== undefined) {
+              throw error;
+            }
+          }
+        }
       }
+      break;
     } else {
       if (type === 'string' || type === 'number' || type === 'boolean') {
         if (typeof arg !== type) {
-          throw new JMESPathTypeError({
-            currentValue: arg,
-            expectedTypes: argumentSpec,
-            actualType: type === 'boolean' ? 'boolean' : typeof arg, // TODO: fix this
-          });
+          if (!hasMoreTypesToCheck) {
+            throw new JMESPathTypeError({
+              currentValue: arg,
+              expectedTypes: argumentSpec,
+              actualType: type === 'boolean' ? 'boolean' : typeof arg, // TODO: fix this
+            });
+          }
+          continue;
         }
+        break;
       } else if (type === 'null') {
         if (!Object.is(arg, null)) {
-          throw new JMESPathTypeError({
-            currentValue: arg,
-            expectedTypes: argumentSpec,
-            actualType: typeof arg,
-          });
+          if (!hasMoreTypesToCheck) {
+            throw new JMESPathTypeError({
+              currentValue: arg,
+              expectedTypes: argumentSpec,
+              actualType: typeof arg,
+            });
+          }
+          continue;
         }
+        break;
       } else if (type === 'object') {
         if (!isRecord(arg)) {
-          throw new JMESPathTypeError({
-            currentValue: arg,
-            expectedTypes: argumentSpec,
-            actualType: typeof arg,
-          });
+          if (index === entryCount - 1) {
+            throw new JMESPathTypeError({
+              currentValue: arg,
+              expectedTypes: argumentSpec,
+              actualType: typeof arg,
+            });
+          }
+          continue;
         }
+        break;
       }
     }
-  });
+  }
 };
 
 export { arityCheck, typeCheck };

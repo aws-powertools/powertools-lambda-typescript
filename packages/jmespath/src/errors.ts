@@ -270,12 +270,12 @@ class JMESPathTypeError extends FunctionError {
  * provided by the user. If the function name is not found, this error is thrown.
  */
 class UnknownFunctionError extends FunctionError {
-  public constructor() {
+  public constructor(funcName: string) {
     super('Unknown function');
     this.name = 'UnknownFunctionError';
 
     // Set the message to include the error info.
-    this.message = `Unknown function:`;
+    this.message = `Unknown function: ${funcName}()`;
   }
 }
 

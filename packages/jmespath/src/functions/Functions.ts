@@ -62,8 +62,11 @@ class Functions {
   }
 
   /**
-   * Determine if the provided value is contained in the provided item.
-   * TODO: write docs for funcContains()
+   * Determine if the given value is contained in the provided array or string.
+   *
+   * @param haystack The array or string to check
+   * @param needle The value to check for
+   * @returns True if the value is in the array or string, false otherwise
    */
   @Functions.signature({
     argumentsSpecs: [['array', 'string'], ['any']],
@@ -128,6 +131,13 @@ class Functions {
     }
   }
 
+  /**
+   * Map the provided function over the provided array.
+   *
+   * @param expression The expression to map over the array
+   * @param args The array to map the expression over
+   * @returns The result of mapping the expression over the array
+   */
   @Functions.signature({
     argumentsSpecs: [['any'], ['array']],
   })
@@ -203,7 +213,7 @@ class Functions {
     argumentsSpecs: [[]],
     variadic: true,
   })
-  public funcNotNull(args: Array<JSONValue>): JSONValue | null {
+  public funcNotNull(...args: Array<JSONValue>): JSONValue | null {
     return args.find((arg) => !Object.is(arg, null)) || null;
   }
 

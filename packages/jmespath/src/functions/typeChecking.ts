@@ -44,11 +44,20 @@ const typeCheck = (
 };
 
 /**
- * TODO: write docs for Functions.#typeCheckArgument()
+ * Type checks an argument against a list of types.
  *
  * Type checking at runtime involves checking the top level type,
  * and in the case of arrays, potentially checking the types of
  * the elements in the array.
+ *
+ * If the list of types includes 'any', then the type check is a
+ * no-op.
+ *
+ * If the list of types includes more than one type, then the
+ * argument is checked against each type in the list. If the
+ * argument matches any of the types, then the type check
+ * passes. If the argument does not match any of the types, then
+ * a JMESPathTypeError is thrown.
  *
  * @param arg
  * @param argumentSpec

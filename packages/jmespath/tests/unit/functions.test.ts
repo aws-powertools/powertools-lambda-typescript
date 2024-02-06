@@ -1479,7 +1479,7 @@ describe('Functions tests', () => {
     expect(() => search(expression, data)).toThrow(error);
   });
 
-  /* it.each([
+  it.each([
     {
       expression: 'not_null(unknown_key, str)',
       expected: 'Str',
@@ -1521,15 +1521,15 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: 'not_null()',
       error:
-        'ArgumentError: not_null() takes at least 1 argument but received 0',
+        'Expected 1 argument for function not_null(), received 0 in expression: not_null()',
     },
   ])('not_null() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in not_null() errors tests
     // Prepare
     const data = {
       type: 'object',
@@ -1537,9 +1537,9 @@ describe('Functions tests', () => {
 
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
-  }); */
+  });
 
-  /* it.each([
+  it.each([
     {
       description: 'function projection on variadic function',
       expression: 'foo[].not_null(f, e, d, c, b, a)',
@@ -1580,7 +1580,7 @@ describe('Functions tests', () => {
       // Assess
       expect(result).toStrictEqual(expected);
     }
-  ); */
+  );
 
   /* it.each([
     {

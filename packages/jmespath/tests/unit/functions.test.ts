@@ -693,7 +693,7 @@ describe('Functions tests', () => {
     {
       expression: 'max(abc)',
       error:
-        'Invalid argument type for function max(), expected one of "array-number", "array-string" but found "object" in expression: max(abc)',
+        'Invalid argument type for function max(), expected one of "array-number", "array-string" but found "null" in expression: max(abc)',
     },
     {
       expression: 'max(array)',
@@ -840,7 +840,7 @@ describe('Functions tests', () => {
     {
       expression: 'min(abc)',
       error:
-        'Invalid argument type for function min(), expected one of "array-number", "array-string" but found "object" in expression: min(abc)',
+        'Invalid argument type for function min(), expected one of "array-number", "array-string" but found "null" in expression: min(abc)',
     },
     {
       expression: 'min(array)',
@@ -2171,7 +2171,8 @@ describe('Functions tests', () => {
     // Assess
     expect(result).toStrictEqual(expected);
   }); */
-  /* it.each([
+
+  it.each([
     {
       expression: 'map(&a, people)',
       expected: [10, 10, 10, 10, 10, 10, 10, 10, 10],
@@ -2179,6 +2180,10 @@ describe('Functions tests', () => {
     {
       expression: 'map(&c, people)',
       expected: ['z', null, null, 'z', null, null, 'z', null, null],
+    },
+    {
+      expression: 'map(&foo, empty)',
+      expected: [],
     },
   ])('should support map() special cases', ({ expression, expected }) => {
     // Prepare
@@ -2235,19 +2240,15 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: 'map(&a, badkey)',
       error:
-        'TypeError: map() expected argument 2 to be type (array) but received type null instead.',
-    },
-    {
-      expression: 'map(&foo, empty)',
-      expected: [],
+        'Invalid argument type for function map(), expected "array" but found "null" in expression: map(&a, badkey)',
     },
   ])('map() function special cases errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in map() function special cases errors tests
     // Prepare
     const data = {
       people: [
@@ -2299,8 +2300,9 @@ describe('Functions tests', () => {
 
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: 'map(&foo.bar, array)',
       expected: ['yes1', 'yes2', null],
@@ -2343,8 +2345,9 @@ describe('Functions tests', () => {
       // Assess
       expect(result).toStrictEqual(expected);
     }
-  ); */
-  /* it.each([
+  );
+
+  it.each([
     {
       expression: 'map(&[], array)',
       expected: [
@@ -2366,5 +2369,5 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
+  });
 });

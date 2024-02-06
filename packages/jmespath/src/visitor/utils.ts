@@ -2,8 +2,7 @@ import type { TreeInterpreter } from './TreeInterpreter';
 import type { Node, JSONValue } from '../types';
 
 /**
- * TODO: write docs for Expression
- * TODO: see if #expression is needed
+ * Apply a JMESPath expression to a JSON value.
  */
 class Expression {
   readonly #expression: Node;
@@ -14,8 +13,8 @@ class Expression {
     this.#interpreter = interpreter;
   }
 
-  public visit(node: Node, value: JSONValue): JSONValue {
-    return this.#interpreter.visit(node, value);
+  public visit(value: JSONValue, node?: Node): JSONValue {
+    return this.#interpreter.visit(node ?? this.#expression, value);
   }
 }
 

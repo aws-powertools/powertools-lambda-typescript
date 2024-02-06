@@ -1,4 +1,4 @@
-import { isNumber, isRecord } from '../visitor/utils';
+import { Expression, isNumber, isRecord } from '../visitor/utils';
 import type { JSONArray, JSONObject, JSONValue } from '../types';
 import { typeCheck, arityCheck } from './typeChecking';
 
@@ -126,6 +126,15 @@ class Functions {
     } else {
       return arg.length;
     }
+  }
+
+  @Functions.signature({
+    argumentsSpecs: [['any'], ['array']],
+  })
+  public funcMap(expression: Expression, args: JSONArray): JSONArray {
+    return args.map((arg: JSONValue) => {
+      return expression.visit(arg) || null;
+    });
   }
 
   /**
@@ -277,6 +286,12 @@ class Functions {
     return typeof arg === 'string' ? arg : JSON.stringify(arg);
   }
 
+  /**
+   * Get the type of the provided value.
+   *
+   * @param arg The value to check the type of
+   * @returns The type of the value
+   */
   public funcType(arg: Array<unknown>): string {
     if (Array.isArray(arg[0])) {
       return 'array';

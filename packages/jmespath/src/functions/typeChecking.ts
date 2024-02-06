@@ -69,7 +69,7 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
         throw new JMESPathTypeError({
           currentValue: arg,
           expectedTypes: argumentSpec,
-          actualType: typeof arg,
+          actualType: Object.is(arg, null) ? 'null' : typeof arg,
         });
       }
       if (type.includes('-')) {

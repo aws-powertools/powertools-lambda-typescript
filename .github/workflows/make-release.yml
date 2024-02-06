@@ -35,15 +35,9 @@ jobs:
           cache: "npm"
       - name: Setup auth tokens
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PUBLISH_TOKEN }}@github.com/$GITHUB_REPOSITORY
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
-      - name: Version
-        run: |
-          npx lerna version minor --force-publish --no-commit-hooks --yes
       - name: Publish to npm
         run: |
           NPM_CONFIG_PROVENANCE=true npx lerna publish from-git --yes
@@ -52,7 +46,28 @@ jobs:
         run: |
           VERSION=$(cat lerna.json | jq .version -r)
           echo RELEASE_VERSION="$VERSION" >> "$GITHUB_OUTPUT"
-
+  
+  create_tag: 
+    needs: [publish-npm]
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          token: ${{ secrets.GH_PUBLISH_TOKEN }}
+          fetch-depth: 0
+      - name: Git client setup
+        run: | 
+          git config --global user.name 'aws-powertools-bot'
+          git config --global user.email '151832416+aws-powertools-bot@users.noreply.github.com'
+          git config remote.origin.url >&-
+      - name: Create git tag
+        run : |
+          git tag -a v${{ needs.publish-npm.outputs.RELEASE_VERSION }} -m "Release v${{ needs.publish-npm.outputs.RELEASE_VERSION }}"
+          git push origin v${{ needs.publish-npm.outputs.RELEASE_VERSION }}
+   
   # NOTE: Watch out for the depth limit of 4 nested workflow_calls.
   # publish_layer -> reusable_deploy_layer_stack -> reusable_update_layer_arn_docs
   publish_layer:

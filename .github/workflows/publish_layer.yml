@@ -1,7 +1,7 @@
 name: Deploy layer to all regions
 
 permissions:
-  contents: write
+  contents: read
 
 on:
   # Manual trigger

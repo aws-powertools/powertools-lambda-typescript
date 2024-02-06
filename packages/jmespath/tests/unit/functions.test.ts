@@ -1057,7 +1057,7 @@ describe('Functions tests', () => {
     }
   );
 
-  /* it.each([
+  it.each([
     {
       expression: `join(', ', strings)`,
       expected: 'a, b, c',
@@ -1107,39 +1107,51 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
+  });
 
-  /* it.each([
+  it.each([
     {
       expression: 'join(\',\', `["a", 0]`)',
       error:
-        'TypeError: join() expected argument 2 to be type (Array<string>) but received type array instead.',
+        'Invalid argument type for function join(), expected "string" but found "number" in expression: join(\',\', `["a", 0]`)',
     },
     {
       expression: `join(', ', str)`,
-      error:
-        'TypeError: join() expected argument 2 to be type (Array<string>) but received type string instead.',
+      error: `Invalid argument type for function join(), expected "array-string" but found "string" in expression: join(', ', str)`,
     },
     {
       expression: 'join(`2`, strings)',
       error:
-        'TypeError: join() expected argument 1 to be type (string) but received type number instead.',
+        'Invalid argument type for function join(), expected "string" but found "number" in expression: join(`2`, strings)',
     },
     {
       expression: `join('|', decimals)`,
       error:
-        'TypeError: join() expected argument 2 to be type (Array<string>) but received type array instead.',
+        'Invalid argument type for function join(), expected "string" but found "number" in expression: join(\'|\', decimals)',
     },
   ])('join() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in join() errors tests
     // Prepare
     const data = {
-      type: 'object',
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
     };
 
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
-  }); */
+  });
 
   /* it.each([
     {

@@ -100,6 +100,20 @@ class Functions {
   }
 
   /**
+   * Join the provided array into a single string.
+   *
+   * @param separator The separator to use
+   * @param items The array of itmes to join
+   * @returns The joined array
+   */
+  @Functions.signature({
+    argumentsSpecs: [['string'], ['array-string']],
+  })
+  public funcJoin(separator: string, items: Array<string>): string {
+    return items.join(separator);
+  }
+
+  /**
    * Get the keys of the provided object.
    *
    * @param args The object to get the keys of

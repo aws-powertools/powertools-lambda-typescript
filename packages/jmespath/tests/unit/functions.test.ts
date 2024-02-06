@@ -724,7 +724,7 @@ describe('Functions tests', () => {
     expect(() => search(expression, data)).toThrow(error);
   });
 
-  /* it.each([
+  it.each([
     {
       expression: 'merge(`{}`)',
       expected: {},
@@ -783,7 +783,7 @@ describe('Functions tests', () => {
       // Assess
       expect(result).toStrictEqual(expected);
     }
-  ); */
+  );
 
   it.each([
     {

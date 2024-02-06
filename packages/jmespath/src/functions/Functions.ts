@@ -171,6 +171,8 @@ class Functions {
   /**
    * Merge the provided objects into a single object.
    *
+   * Note that this is a shallow merge and will not merge nested objects.
+   *
    * @param args The objects to merge
    * @returns The merged object
    */

@@ -40,7 +40,7 @@ import type { Node, Token } from './types';
  * If you don't want to read the full paper, there are some other good
  * overviews that explain the general idea:
  * - [Pratt Parsers: Expression Parsing Made Easy](https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/)
- * - [Simple Top-Down Parsing in Python](http://effbot.org/zone/simple-top-down-parsing.htm)
+ * - [Simple Top-Down Parsing in Python](https://11l-lang.org/archive/simple-top-down-parsing/)
  * - [Top Down Operator Precedence](http://javascript.crockford.com/tdop/tdop.html)
  */
 class Parser {

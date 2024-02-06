@@ -1,4 +1,4 @@
-import { Expression, isNumber, isRecord } from '../visitor/utils';
+import { Expression, getType, isNumber, isRecord } from '../visitor/utils';
 import type { JSONArray, JSONObject, JSONValue } from '../types';
 import { typeCheck, arityCheck } from './typeChecking';
 
@@ -235,6 +235,19 @@ class Functions {
   }
 
   /**
+   * Sort the provided array.
+   *
+   * @param arg The array to sort
+   * @returns The sorted array
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array-number', 'array-string']],
+  })
+  public funcSort(arg: Array<unknown>): Array<unknown> {
+    return arg.sort();
+  }
+
+  /**
    * Determines if the provided string starts with the provided suffix.
    *
    * @param args The string to check
@@ -330,21 +343,7 @@ class Functions {
     argumentsSpecs: [['any']],
   })
   public funcType(arg: JSONValue): string {
-    if (Array.isArray(arg)) {
-      return 'array';
-    } else if (isRecord(arg)) {
-      return 'object';
-    } else if (typeof arg === 'string') {
-      return 'string';
-    } else if (typeof arg === 'number') {
-      return 'number';
-    } else if (typeof arg === 'boolean') {
-      return 'boolean';
-    } else if (Object.is(arg, null)) {
-      return 'null';
-    } else {
-      return 'unknown';
-    }
+    return getType(arg);
   }
 
   /**

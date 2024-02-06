@@ -935,12 +935,11 @@ describe('Functions tests', () => {
     expect(result).toStrictEqual(expected);
   });
 
-  /* it.each([
+  it.each([
     {
       expression: 'sort(keys(objects))',
       expected: ['bar', 'foo'],
     },
-
     {
       expression: 'sort(values(objects))',
       expected: ['bar', 'baz'],
@@ -960,6 +959,10 @@ describe('Functions tests', () => {
     {
       expression: 'sort(decimals)',
       expected: [-1.5, 1.01, 1.2],
+    },
+    {
+      expression: 'sort(empty_list)',
+      expected: [],
     },
   ])(
     'should support the sort(), key(), and values() functions',
@@ -989,61 +992,70 @@ describe('Functions tests', () => {
       // Assess
       expect(result).toStrictEqual(expected);
     }
-  ); */
+  );
 
-  /* it.each([
+  it.each([
     {
       expression: 'keys(foo)',
       error:
-        'TypeError: keys() expected argument 1 to be type (object) but received type number instead.',
+        'Invalid argument type for function keys(), expected "object" but found "number" in expression: keys(foo)',
     },
     {
       expression: 'keys(strings)',
       error:
-        'TypeError: keys() expected argument 1 to be type (object) but received type array instead.',
+        'Invalid argument type for function keys(), expected "object" but found "array" in expression: keys(strings)',
     },
     {
       expression: 'keys(`false`)',
       error:
-        'TypeError: keys() expected argument 1 to be type (object) but received type boolean instead.',
+        'Invalid argument type for function keys(), expected "object" but found "boolean" in expression: keys(`false`)',
     },
     {
       expression: 'values(foo)',
       error:
-        'TypeError: values() expected argument 1 to be type (object) but received type number instead.',
+        'Invalid argument type for function values(), expected "object" but found "number" in expression: values(foo)',
     },
     {
       expression: 'sort(array)',
       error:
-        'TypeError: sort() expected argument 1 to be type (Array<string> | Array<number>) but received type array instead.',
+        'Invalid argument type for function sort(), expected "number" but found "string" in expression: sort(array)',
     },
     {
       expression: 'sort(abc)',
       error:
-        'TypeError: sort() expected argument 1 to be type (Array<string> | Array<number>) but received type null instead.',
-    },
-    {
-      expression: 'sort(empty_list)',
-      expected: [],
+        'Invalid argument type for function sort(), expected one of "array-number", "array-string" but found "null" in expression: sort(abc)',
     },
     {
       expression: 'sort(@)',
       error:
-        'TypeError: sort() expected argument 1 to be type (Array<string> | Array<number>) but received type object instead.',
+        'Invalid argument type for function sort(), expected one of "array-number", "array-string" but found "object" in expression: sort(@)',
     },
   ])(
     'sort(), keys(), and values() function errors',
     ({ expression, error }) => {
-      // TODO: see if we can assert the error type as well in sort(), keys(), values() errors tests
       // Prepare
       const data = {
-        type: 'object',
+        foo: -1,
+        zero: 0,
+        numbers: [-1, 3, 4, 5],
+        array: [-1, 3, 4, 5, 'a', '100'],
+        strings: ['a', 'b', 'c'],
+        decimals: [1.01, 1.2, -1.5],
+        str: 'Str',
+        false: false,
+        empty_list: [],
+        empty_hash: {},
+        objects: {
+          foo: 'bar',
+          bar: 'baz',
+        },
+        null_key: null,
       };
 
       // Act & Assess
       expect(() => search(expression, data)).toThrow(error);
     }
-  ); */
+  );
 
   /* it.each([
     {
@@ -1228,7 +1240,7 @@ describe('Functions tests', () => {
     {
       expression: 'starts_with(str, `0`)',
       error:
-        'Invalid argument type for function starts_with(), expected "string" but found "object" in expression: starts_with(str, `0`)',
+        'Invalid argument type for function starts_with(), expected "string" but found "null" in expression: starts_with(str, `0`)',
     },
   ])('starts_with() function errors', ({ expression, error }) => {
     // Prepare

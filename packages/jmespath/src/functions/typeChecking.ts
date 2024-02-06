@@ -1,4 +1,4 @@
-import { isRecord } from '../visitor/utils';
+import { getType, isRecord } from '../visitor/utils';
 import { JMESPathTypeError, ArityError, VariadicArityError } from '../errors';
 
 /**
@@ -78,7 +78,7 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
         throw new JMESPathTypeError({
           currentValue: arg,
           expectedTypes: argumentSpec,
-          actualType: Object.is(arg, null) ? 'null' : typeof arg,
+          actualType: getType(arg),
         });
       }
       if (type.includes('-')) {
@@ -103,7 +103,7 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
             throw new JMESPathTypeError({
               currentValue: arg,
               expectedTypes: argumentSpec,
-              actualType: type === 'boolean' ? 'boolean' : typeof arg, // TODO: fix this
+              actualType: getType(arg),
             });
           }
           continue;
@@ -115,7 +115,7 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
             throw new JMESPathTypeError({
               currentValue: arg,
               expectedTypes: argumentSpec,
-              actualType: typeof arg,
+              actualType: getType(arg),
             });
           }
           continue;
@@ -127,7 +127,7 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
             throw new JMESPathTypeError({
               currentValue: arg,
               expectedTypes: argumentSpec,
-              actualType: typeof arg,
+              actualType: getType(arg),
             });
           }
           continue;

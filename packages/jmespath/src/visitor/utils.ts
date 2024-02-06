@@ -205,6 +205,24 @@ const sliceArray = <T>(
   return result;
 };
 
+const getType = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return 'array';
+  } else if (isRecord(value)) {
+    return 'object';
+  } else if (typeof value === 'string') {
+    return 'string';
+  } else if (isNumber(value)) {
+    return 'number';
+  } else if (typeof value === 'boolean') {
+    return 'boolean';
+  } else if (Object.is(value, null)) {
+    return 'null';
+  } else {
+    return 'unknown';
+  }
+};
+
 export {
   Expression,
   isRecord,
@@ -213,4 +231,5 @@ export {
   isNumber,
   isIntegerNumber,
   sliceArray,
+  getType,
 };

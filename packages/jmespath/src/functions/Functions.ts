@@ -236,6 +236,19 @@ class Functions {
   }
 
   /**
+   * Sum the provided numbers.
+   *
+   * @param args The numbers to sum
+   * @returns The sum of the numbers
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array-number']],
+  })
+  public funcSum(args: Array<number>): number {
+    return args.reduce((a, b) => a + b, 0);
+  }
+
+  /**
    * Convert the provided value to an array.
    *
    * If the provided value is an array, then it is returned.

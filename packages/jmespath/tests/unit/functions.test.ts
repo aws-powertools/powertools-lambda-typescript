@@ -1240,7 +1240,7 @@ describe('Functions tests', () => {
     expect(() => search(expression, data)).toThrow(error);
   });
 
-  /* it.each([
+  it.each([
     {
       expression: 'sum(numbers)',
       expected: 11,
@@ -1288,10 +1288,9 @@ describe('Functions tests', () => {
     {
       expression: 'sum(array)',
       error:
-        'TypeError: sum() expected argument 1 to be type (Array<number>) but received type array instead.',
+        'Invalid argument type for function sum(), expected "array-number" but found "null" in expression: sum(array)',
     },
   ])('sum() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in sum() errors tests
     // Prepare
     const data = {
       type: 'object',
@@ -1299,7 +1298,7 @@ describe('Functions tests', () => {
 
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
-  }); */
+  });
 
   it.each([
     {
@@ -1539,6 +1538,7 @@ describe('Functions tests', () => {
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
   }); */
+
   /* it.each([
     {
       description: 'function projection on variadic function',
@@ -1581,6 +1581,7 @@ describe('Functions tests', () => {
       expect(result).toStrictEqual(expected);
     }
   ); */
+
   /* it.each([
     {
       description: 'sort by field expression',

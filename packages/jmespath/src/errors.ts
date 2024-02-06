@@ -94,8 +94,9 @@ class ParseError extends JMESPathError {
     this.reason = options.reason;
 
     // Set the message to include the lexer position and token info.
-    const issue =
-      this.tokenType === 'eof'
+    const issue = this.reason
+      ? this.reason
+      : this.tokenType === 'eof'
         ? 'found unexpected end of expression (EOF)'
         : `found unexpected token "${this.tokenValue}" (${this.tokenType})`;
     this.message = `${this.message}: parse error at column ${this.lexPosition}, ${issue}`;

@@ -176,7 +176,7 @@ class Parser {
           lexPosition: 0,
           tokenValue: token.value,
           tokenType: token.type,
-          reason: 'Quoted identifier cannot be used as a function name',
+          reason: 'quoted identifiers cannot be used as a function name',
         });
       }
 
@@ -247,7 +247,6 @@ class Parser {
         lexPosition: token.start,
         tokenValue: token.value,
         tokenType: token.type,
-        reason: 'invalid token',
       });
     }
   }
@@ -354,7 +353,6 @@ class Parser {
         lexPosition: token.start,
         tokenValue: token.value,
         tokenType: token.type,
-        reason: 'invalid token',
       });
     }
   }
@@ -402,7 +400,6 @@ class Parser {
             lexPosition: token.start,
             tokenValue: token.value,
             tokenType: token.type,
-            reason: 'syntax error',
           });
         }
         this.#advance();
@@ -419,7 +416,6 @@ class Parser {
           lexPosition: token.start,
           tokenValue: token.value,
           tokenType: token.type,
-          reason: 'syntax error',
         });
       }
       currentToken = this.#currentToken();
@@ -531,7 +527,6 @@ class Parser {
         lexPosition: token.start,
         tokenValue: token.value,
         tokenType: token.type,
-        reason: 'syntax error',
       });
     }
 
@@ -568,17 +563,10 @@ class Parser {
       return this.#parseMultiSelectHash();
     } else {
       const token = this.#lookaheadToken(0);
-      const allowed = [
-        'quoted_identifier',
-        'unquoted_identifier',
-        'lbracket',
-        'lbrace',
-      ];
       throw new ParseError({
         lexPosition: token.start,
         tokenValue: token.value,
         tokenType: token.type,
-        reason: `Expecting one of: ${allowed.join(', ')}, got: ${token.type}`,
       });
     }
   }
@@ -605,7 +593,6 @@ class Parser {
           lexPosition: token.start,
           tokenValue: token.value,
           tokenType: token.type,
-          reason: `Expecting: ${tokenType}, got: ${token.type}`,
         });
       }
     }
@@ -631,7 +618,6 @@ class Parser {
           lexPosition: token.start,
           tokenValue: token.value,
           tokenType: token.type,
-          reason: `Expecting: ${tokenTypes}, got: ${token.type}`,
         });
       }
     }

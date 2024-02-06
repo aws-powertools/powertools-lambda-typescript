@@ -1301,7 +1301,7 @@ describe('Functions tests', () => {
     expect(() => search(expression, data)).toThrow(error);
   }); */
 
-  /* it.each([
+  it.each([
     {
       expression: `to_array('foo')`,
       expected: ['foo'],
@@ -1352,9 +1352,9 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
+  });
 
-  /* it.each([
+  it.each([
     {
       expression: `to_string('foo')`,
       expected: 'foo',
@@ -1397,8 +1397,9 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: `to_number('1.0')`,
       expected: 1.0,
@@ -1461,14 +1462,15 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: '"to_string"(`1.0`)',
-      error: 'Quoted identifier not allowed for function names.',
+      error:
+        'Invalid jmespath expression: parse error at column 0, quoted identifiers cannot be used as a function name in expression: "to_string"(`1.0`)',
     },
   ])('to_number() function errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in to_number() errors tests
     // Prepare
     const data = {
       type: 'object',
@@ -1476,7 +1478,8 @@ describe('Functions tests', () => {
 
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
-  }); */
+  });
+
   /* it.each([
     {
       expression: 'not_null(unknown_key, str)',

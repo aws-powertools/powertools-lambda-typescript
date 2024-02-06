@@ -244,6 +244,9 @@ class Functions {
    * @param args The items to convert to an array
    * @returns The items as an array
    */
+  @Functions.signature({
+    argumentsSpecs: [['any']],
+  })
   public funcToArray(
     arg: JSONArray | Array<JSONValue>
   ): Array<JSONValue> | JSONArray {
@@ -261,6 +264,9 @@ class Functions {
    * @param arg The value to convert to a number
    * @returns The value as a number or null if the value cannot be converted to a number
    */
+  @Functions.signature({
+    argumentsSpecs: [['any']],
+  })
   public funcToNumber(arg: JSONValue): number | null {
     if (typeof arg === 'number') {
       return arg;
@@ -282,6 +288,9 @@ class Functions {
    * @param arg The value to convert to a string
    * @returns The value as a string
    */
+  @Functions.signature({
+    argumentsSpecs: [['any']],
+  })
   public funcToString(arg: JSONValue): string {
     return typeof arg === 'string' ? arg : JSON.stringify(arg);
   }
@@ -292,18 +301,21 @@ class Functions {
    * @param arg The value to check the type of
    * @returns The type of the value
    */
-  public funcType(arg: Array<unknown>): string {
-    if (Array.isArray(arg[0])) {
+  @Functions.signature({
+    argumentsSpecs: [['any']],
+  })
+  public funcType(arg: JSONValue): string {
+    if (Array.isArray(arg)) {
       return 'array';
-    } else if (isRecord(arg[0])) {
+    } else if (isRecord(arg)) {
       return 'object';
-    } else if (typeof arg[0] === 'string') {
+    } else if (typeof arg === 'string') {
       return 'string';
-    } else if (typeof arg[0] === 'number') {
+    } else if (typeof arg === 'number') {
       return 'number';
-    } else if (typeof arg[0] === 'boolean') {
+    } else if (typeof arg === 'boolean') {
       return 'boolean';
-    } else if (Object.is(arg[0], null)) {
+    } else if (Object.is(arg, null)) {
       return 'null';
     } else {
       return 'unknown';

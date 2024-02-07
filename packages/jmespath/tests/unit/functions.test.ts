@@ -1606,7 +1606,7 @@ describe('Functions tests', () => {
     }
   );
 
-  /* it.each([
+  it.each([
     {
       description: 'sort by field expression',
       expression: 'sort_by(people, &age)',
@@ -1734,6 +1734,16 @@ describe('Functions tests', () => {
       expression: 'sort_by(`[]`, &age)',
       expected: [],
     },
+    {
+      expression: 'sort_by(people, &name)',
+      expected: [
+        { age: 10, age_str: '10', bool: true, name: 3 },
+        { age: 20, age_str: '20', bool: true, name: 'a', extra: 'foo' },
+        { age: 40, age_str: '40', bool: false, name: 'b', extra: 'bar' },
+        { age: 30, age_str: '30', bool: true, name: 'c' },
+        { age: 50, age_str: '50', bool: false, name: 'd' },
+      ],
+    },
   ])('should support sorty_by() special cases', ({ expression, expected }) => {
     // Prepare
     const data = {
@@ -1778,27 +1788,25 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: 'sort_by(people, &extra)',
-      error: 'TypeError: expected (string), received null',
+      error:
+        'Invalid argument type for function sort_by(), expected "string" but found "null" in expression: sort_by(people, &extra)',
     },
     {
       expression: 'sort_by(people, &bool)',
-      error: 'TypeError: unexpected type (boolean)',
-    },
-    {
-      expression: 'sort_by(people, &name)',
-      error: 'TypeError: expected (string), received number',
+      error:
+        'Invalid argument type for function sort_by(), expected "string" but found "boolean" in expression: sort_by(people, &bool)',
     },
     {
       expression: 'sort_by(people, name)',
       error:
-        'TypeError: sort_by() expected argument 2 to be type (expression) but received type null instead.',
+        'Invalid argument type for function sort_by(), expected "expression" but found "null" in expression: sort_by(people, name)',
     },
   ])('sort_by() function special cases errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in sort_by() function special cases errors tests
     // Prepare
     const data = {
       people: [
@@ -1839,7 +1847,8 @@ describe('Functions tests', () => {
 
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
-  }); */
+  });
+
   /* it.each([
     {
       expression: 'max_by(people, &age)',
@@ -2091,7 +2100,7 @@ describe('Functions tests', () => {
     expect(() => search(expression, data)).toThrow(error);
   });
  */
-  /* it.each([
+  it.each([
     {
       description: 'stable sort order',
       expression: 'sort_by(people, &age)',
@@ -2198,7 +2207,7 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
+  });
 
   it.each([
     {

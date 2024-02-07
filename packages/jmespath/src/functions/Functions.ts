@@ -1,6 +1,7 @@
 import { Expression, getType, isNumber, isRecord } from '../visitor/utils';
 import type { JSONArray, JSONObject, JSONValue } from '../types';
 import { typeCheck, arityCheck } from './typeChecking';
+import { JMESPathTypeError } from '../errors';
 
 /**
  * TODO: validate SignatureDecorator type and extract to a separate file
@@ -259,6 +260,54 @@ class Functions {
   })
   public funcSort(arg: Array<unknown>): Array<unknown> {
     return arg.sort();
+  }
+
+  /**
+   * Sort the provided array by the provided expression.
+   *
+   * @param arg The array to sort
+   * @param expression The expression to sort by
+   * @returns The sorted array
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array'], ['expression']],
+  })
+  public funcSortBy(
+    args: Array<JSONValue>,
+    expression: Expression
+  ): Array<unknown> {
+    return args
+      .map((value, index) => {
+        const visited = expression.visit(value);
+        const type = getType(visited);
+        if (type !== 'string' && type !== 'number') {
+          throw new JMESPathTypeError({
+            currentValue: visited,
+            expectedTypes: ['string'],
+            actualType: getType(visited),
+          });
+        }
+
+        return {
+          value,
+          index,
+          visited: visited ? visited : null,
+        };
+      })
+      .sort((a, b) => {
+        if (a.visited === null && b.visited === null) {
+          return 0;
+        } else if (a.visited === null) {
+          return -1;
+        } else if (b.visited === null) {
+          return 1;
+        } else if (a.visited === b.visited) {
+          return a.index - b.index; // Make the sort stable
+        } else {
+          return a.visited > b.visited ? 1 : -1;
+        }
+      })
+      .map(({ value }) => value); // Extract the original values
   }
 
   /**

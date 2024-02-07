@@ -1,4 +1,4 @@
-import { getType, isRecord } from '../visitor/utils';
+import { Expression, getType, isRecord } from '../visitor/utils';
 import { JMESPathTypeError, ArityError, VariadicArityError } from '../errors';
 
 /**
@@ -97,7 +97,19 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
       }
       break;
     } else {
-      if (type === 'string' || type === 'number' || type === 'boolean') {
+      if (type === 'expression') {
+        if (!(arg instanceof Expression)) {
+          if (!hasMoreTypesToCheck) {
+            throw new JMESPathTypeError({
+              currentValue: arg,
+              expectedTypes: argumentSpec,
+              actualType: getType(arg),
+            });
+          }
+          continue;
+        }
+        break;
+      } else if (type === 'string' || type === 'number' || type === 'boolean') {
         if (typeof arg !== type) {
           if (!hasMoreTypesToCheck) {
             throw new JMESPathTypeError({

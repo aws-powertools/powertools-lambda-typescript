@@ -50,7 +50,7 @@
   "devDependencies": {
     "@middy/core": "^4.7.0",
     "@types/aws-lambda": "^8.10.133",
-    "@types/jest": "^29.5.11",
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",

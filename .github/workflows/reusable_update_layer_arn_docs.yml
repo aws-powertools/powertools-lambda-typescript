@@ -13,7 +13,6 @@ permissions:
 
 env:
   BRANCH: main
-  RELEASE_COMMIT: ${{ github.sha }}
 
 jobs:
   publish_layer_arn:
@@ -30,7 +29,7 @@ jobs:
       - name: Checkout repository # reusable workflows start clean, so we need to checkout again
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          ref: ${{ env.RELEASE_COMMIT }}
+          ref: ${{ github.sha }}
       - name: Download CDK layer artifact
         uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
         with:

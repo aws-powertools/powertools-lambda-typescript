@@ -1153,7 +1153,7 @@ describe('Functions tests', () => {
     expect(() => search(expression, data)).toThrow(error);
   });
 
-  /* it.each([
+  it.each([
     {
       expression: 'reverse(numbers)',
       expected: [5, 4, 3, -1],
@@ -1199,7 +1199,7 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
+  });
 
   it.each([
     {

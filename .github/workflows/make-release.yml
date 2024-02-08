@@ -37,7 +37,7 @@ jobs:
         uses: ./.github/actions/cached-node-modules
       - name: Publish to npm
         run: |
-          NPM_CONFIG_PROVENANCE=true npx lerna publish from-git --yes
+          NPM_CONFIG_PROVENANCE=true npx lerna publish from-package --git-head ${{ github.sha }} --yes 
       - name: Set release version
         id: set-release-version
         run: |

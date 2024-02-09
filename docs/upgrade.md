@@ -11,14 +11,14 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 ### Quick summary
 
 
-| Area                                   | Change                                                                                                                                           | Code change required |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
-| **ESM support**                 | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                              | -                    |
-| **Middy.js **        | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.                      | Yes                  |
-| **Types imports**                      | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.                               | Yes                  |
-| **Logger**              | Changed [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
-| **Logger**      | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.           | Yes                  |
-| **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                                          | Yes                  |
+| Area                  | Change                                                                                                                         | Code change required |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
+| **ESM support**       | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                             | -                    |
+| **Middy.js **         | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.    | Yes                  |
+| **Types imports**     | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.             | Yes                  |
+| **Logger**            | Changed [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
+| **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                          | Yes                  |
+| **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                        | Yes                  |
 
 ### First steps
 
@@ -40,7 +40,7 @@ import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
 // This code will run during the initialization phase of your Lambda function
 const myApiKey = await getSecret('my-api-key', { transform: 'json' });
 
-export const handler = async (_event, _context) => {
+export const handler = async (_event: unknown, _context: unknown) => {
     // ...
 };
 ```

@@ -122,48 +122,30 @@ In v2, you can now import only the Middy.js middlewares you want to use from a s
 
 ### Types imports
 
-In v1, importing TypeScript types in your codebase required you to be aware of the underlying directory structure of the Powertools for AWS Lambda (TypeScript) package. For example, to import a type from the `@aws-lambda-powertools/logger` package, you would need to import it from `@aws-lambda-powertools/logger/lib/types`.
+In v1, you could import package types from each package under `/lib`, for example `@aws-lambda-powertools/logger/lib/types`.
 
-Starting with v2, we've added support for subpath exports. This means that you can now import types directly from a well-known path, i.e. `@aws-lambda-powertools/logger/types`. This makes it easier and cleaner to import types in your codebase and removes the likelihood of breaking changes in the future.
+In v2, you can now directly import from the `types` subpath export, e.g., `@aws-lambda-powertools/logger/types`. This will optimize your bundle size, standardize types import across packages, future-proofing growth.
 
 ## Logger
 
 ### Log sampling
 
-This only applies if you're using the [log sampling](./core/logger.md#sampling-logs) feature in your codebase.
+!!! note "Disregard if you are not using the [log sampling feature](./core/logger.md#sampling-logs)."
 
-In v1, the `sampleRateValue` attribute could be set to a value between 0 and 1 when instantiating the `Logger` class. This value was used to determine the percentage of requests that would print logs at any log level regardless of the log level set in the `Logger` class.
+In v1, log sampling implementation was inconsistent from other Powertools for AWS Lambda languages _(Python, .NET, and Java)_. 
 
-For example, by setting the sample rate to 0.5 together with log level `ERROR`, roughly 50% of your Lambda invocations would print all the log items, including the `debug`, `info`, and `warn` ones.
+In v2, we changed these behaviors for consistency across languages:
 
-```typescript
-import { Logger } from '@aws-lambda-powertools/logger';
+| Behavior                | v1                                                           | v2                                            |
+| ----------------------- | ------------------------------------------------------------ | --------------------------------------------- |
+| Log Level               | Log level remains unchanged but any log statement is printed | Log level changes to `DEBUG`                  |
+| Log sampling indication | No indication                                                | Debug message indicates sampling is in effect |
 
-const logger = new Logger({
-    logLevel: 'ERROR',
-    sampleRateValue: 0.5,
-});
-
-export const handler = async () => {
-    // This log item (equal to log level 'ERROR') will be printed to standard output
-    // in all Lambda invocations
-    logger.error('This is an ERROR log');
-
-    // These log items (below the log level 'ERROR') have ~50% chance
-    // of being printed in a Lambda invocation
-    logger.debug('This is a DEBUG log that has 50% chance of being printed');
-    logger.info('This is an INFO log that has 50% chance of being printed');
-    logger.warn('This is a WARN log that has 50% chance of being printed');
-};
-```
-
-In v2, the `sampleRateValue` attribute is now used to determine the approximate percentage of requests that will have their log level switched to `DEBUG`. This means that the log level set in the `Logger` class will be used for all Lambda invocations, but for a percentage of them, the log level will be switched to `DEBUG` and all log items will be printed to standard output.
-
-With this new behavior, you should see roughly the same number of log items printed to standard output as in v1, however, the implementation and logic is now in line with other runtimes of Powertools for AWS Lambda like Python, Java, and .NET.
+Logger `sampleRateValue` **continues** to determine the percentage of concurrent/cold start invocations that logs will be sampled, _e.g., log level set to `DEBUG`_.
 
 ### Custom log formatter
 
-This only applies if you're using [a custom log formatter](./core/logger.md#custom-log-formatter-bring-your-own-formatter) to customize the log output.
+!!! note "Disregard if you are not customizing log output with a [custom log formatter](./core/logger.md#custom-log-formatter-bring-your-own-formatter)."
 
 In v1, `Logger` combined both [standard]((./core/logger.md#standard-structured-keys)) and [custom keys](./core/logger.md#appending-persistent-additional-log-keys-and-values) as a single argument, _e.g., `formatAttributes(attributes: UnformattedAttributes)`_. It expected a plain object with keys and values you wanted in the final log output.
 

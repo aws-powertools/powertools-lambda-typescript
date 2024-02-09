@@ -100,11 +100,3 @@ jobs:
           overwrite: true
       - name: CDK deploy canary
         run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'CanaryStack' --require-approval never --verbose --outputs-file cdk-outputs.json
-  update_layer_arn_docs:
-    needs: deploy-cdk-stack
-    permissions:
-      contents: write
-    if: ${{ inputs.stage == 'PROD' }}
-    uses: ./.github/workflows/reusable_update_layer_arn_docs.yml
-    with:
-      latest_published_version: ${{ inputs.latest_published_version }}

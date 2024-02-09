@@ -158,89 +158,99 @@ With this new behavior, you should see roughly the same number of log items prin
 
 This only applies if you're using [a custom log formatter](./core/logger.md#custom-log-formatter-bring-your-own-formatter) to customize the log output.
 
-Previously, the `formatAttributes` method was called with a single argument `attributes` of type `UnformattedAttributes`. This object contained all the [standard structured keys](./core/logger.md#standard-structured-keys) and values managed by Powertools for AWS Lambda (TypeScript). The method returned a plain object with the keys and values you wanted to include in the log output.
+In v1, `Logger` combined both [standard]((./core/logger.md#standard-structured-keys)) and [custom keys](./core/logger.md#appending-persistent-additional-log-keys-and-values) as a single argument, _e.g., `formatAttributes(attributes: UnformattedAttributes)`_. It expected a plain object with keys and values you wanted in the final log output.
 
-```typescript hl_lines="5 8"
-import { LogFormatter } from '@aws-lambda-powertools/logger';
-import {
-  LogAttributes,
-  UnformattedAttributes,
-} from '@aws-lambda-powertools/logger/lib/types';
+In v2, you have more control over **standard** (`attributes`) and **custom keys** (`additionalLogAttributes`) in the `formatAttributes` method. Also, you now return a `LogItem` object to increase type safety when defining the final log output.
 
-class MyCompanyLogFormatter extends LogFormatter {
-  public formatAttributes(attributes: UnformattedAttributes): LogAttributes {
-    return {
-      message: attributes.message,
-      service: attributes.serviceName,
-      environment: attributes.environment,
-      awsRegion: attributes.awsRegion,
-      correlationIds: {
-        awsRequestId: attributes.lambdaContext?.awsRequestId,
-        xRayTraceId: attributes.xRayTraceId,
-      },
-      lambdaFunction: {
-        name: attributes.lambdaContext?.functionName,
-        arn: attributes.lambdaContext?.invokedFunctionArn,
-        memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
-        version: attributes.lambdaContext?.functionVersion,
-        coldStart: attributes.lambdaContext?.coldStart,
-      },
-      logLevel: attributes.logLevel,
-      timestamp: this.formatTimestamp(attributes.timestamp),
-      logger: {
-        sampleRateValue: attributes.sampleRateValue,
-      },
-    };
-  }
-}
+=== "Before"
 
-export { MyCompanyLogFormatter };
-```
+    ```typescript hl_lines="5 8"
+    import { LogFormatter } from '@aws-lambda-powertools/logger';
+    import {
+      LogAttributes,
+      UnformattedAttributes,
+    } from '@aws-lambda-powertools/logger/lib/types';
 
-In v2, the `formatAttributes` method is instead called with two arguments `attributes` and `additionalLogAttributes`. The `attributes` argument is the same as in v1, but the `additionalLogAttributes` argument is a plain object containing any [additional attributes you might have added](./core/logger.md#appending-persistent-additional-log-keys-and-values) to your logger. The method returns a `LogItem` object that contains all the attributes you want to include in the log output.
-
-```typescript hl_lines="1-2 5-8"
-import { LogFormatter, LogItem } from '@aws-lambda-powertools/logger';
-import type { LogAttributes, UnformattedAttributes } from '@aws-lambda-powertools/logger/types';
-
-class MyCompanyLogFormatter extends LogFormatter {
-  public formatAttributes(
-    attributes: UnformattedAttributes,
-    additionalLogAttributes: LogAttributes
-  ): LogItem {
-    const baseAttributes = {
-        message: attributes.message,
-        service: attributes.serviceName,
-        environment: attributes.environment,
-        awsRegion: attributes.awsRegion,
-        correlationIds: {
+    class MyCompanyLogFormatter extends LogFormatter {
+      public formatAttributes(attributes: UnformattedAttributes): LogAttributes {
+        return {
+          message: attributes.message,
+          service: attributes.serviceName,
+          environment: attributes.environment,
+          awsRegion: attributes.awsRegion,
+          correlationIds: {
             awsRequestId: attributes.lambdaContext?.awsRequestId,
             xRayTraceId: attributes.xRayTraceId,
-        },
-        lambdaFunction: {
+          },
+          lambdaFunction: {
             name: attributes.lambdaContext?.functionName,
             arn: attributes.lambdaContext?.invokedFunctionArn,
             memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
             version: attributes.lambdaContext?.functionVersion,
             coldStart: attributes.lambdaContext?.coldStart,
-        },
-        logLevel: attributes.logLevel,
-        timestamp: this.formatTimestamp(attributes.timestamp),
-        logger: {
+          },
+          logLevel: attributes.logLevel,
+          timestamp: this.formatTimestamp(attributes.timestamp),
+          logger: {
             sampleRateValue: attributes.sampleRateValue,
-        },
-    };
-    // Create a new LogItem with the base attributes
-    const logItem = new LogItem({ attributes: baseAttributes });
-    // Merge additional attributes
-    logItem.addAttributes(additionalLogAttributes);
+          },
+        };
+      }
+    }
 
-    return logItem;
-  }
-}
+    export { MyCompanyLogFormatter };
+    ```
 
-export { MyCompanyLogFormatter };
-```
+=== "After"
+
+    ```typescript hl_lines="1-2 5-8"
+    import { LogFormatter, LogItem } from '@aws-lambda-powertools/logger';
+    import type { LogAttributes, UnformattedAttributes } from '@aws-lambda-powertools/logger/types';
+
+    class MyCompanyLogFormatter extends LogFormatter {
+      public formatAttributes(
+        attributes: UnformattedAttributes,
+        additionalLogAttributes: LogAttributes  // (1)!
+      ): LogItem {  // (2)!
+        const baseAttributes = {
+            message: attributes.message,
+            service: attributes.serviceName,
+            environment: attributes.environment,
+            awsRegion: attributes.awsRegion,
+            correlationIds: {
+                awsRequestId: attributes.lambdaContext?.awsRequestId,
+                xRayTraceId: attributes.xRayTraceId,
+            },
+            lambdaFunction: {
+                name: attributes.lambdaContext?.functionName,
+                arn: attributes.lambdaContext?.invokedFunctionArn,
+                memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
+                version: attributes.lambdaContext?.functionVersion,
+                coldStart: attributes.lambdaContext?.coldStart,
+            },
+            logLevel: attributes.logLevel,
+            timestamp: this.formatTimestamp(attributes.timestamp),
+            logger: {
+                sampleRateValue: attributes.sampleRateValue,
+            },
+        };
+
+        // Create a new LogItem with the base attributes
+        const logItem = new LogItem({ attributes: baseAttributes });
+
+        // Merge additional attributes
+        logItem.addAttributes(additionalLogAttributes); // (3)!
+
+        return logItem;
+      }
+    }
+
+    export { MyCompanyLogFormatter };
+    ```
+
+    1. This new argument contains all [your custom keys](./core/logger.md#appending-persistent-additional-log-keys-and-values).
+    2. `LogItem` is the new return object instead of a plain object.
+    3. If you prefer adding at the initialization, use: <br/><br/> **`LogItem({persistentAttributes: additionalLogAttributes, attributes: baseAttributes})`**
 
 ## Helper functions
 

@@ -3,13 +3,13 @@ title: Upgrade guide
 description: Guide to update between major Powertools for AWS Lambda (TypeScript) versions
 ---
 
-## Migrate from v1 to v2
+!!! note "We expect to release v2 by the end of February 2024."
 
+## Migrate from v1 to v2
 
 V2 is focused on official support for ESM (ECMAScript modules). We've made other minimal breaking changes to make your transition to v2 as smooth as possible.
 
 ### Quick summary
-
 
 | Area                  | Change                                                                                                                         | Code change required |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------- |

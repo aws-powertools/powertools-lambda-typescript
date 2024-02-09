@@ -13,7 +13,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 
 | Area                                   | Change                                                                                                                                           | Code change required |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
-| **ES Modules support**                 | Added ES Modules support via dual CommonJS and ES Module bundling, this enables top-level `await` and tree-shaking.                              | -                    |
+| **ESM support**                 | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                              | -                    |
 | **Middy.js middleware imports**        | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.                      | Yes                  |
 | **Types imports**                      | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.                               | Yes                  |
 | **Logger - log sampling**              | Changed implementation of [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |

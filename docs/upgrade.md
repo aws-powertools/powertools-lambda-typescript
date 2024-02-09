@@ -34,18 +34,18 @@ With support for ES Modules in v2, you can now use `import` instead of `require`
 
 This is especially useful when you want to run asynchronous code during the initialization phase by using top-level `await`.
 
-```typescript
+```typescript title="top-level await example in v2"
 import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
 
 // This code will run during the initialization phase of your Lambda function
 const myApiKey = await getSecret('my-api-key', { transform: 'json' });
 
-export const handler = async () => {
+export const handler = async (_event, _context) => {
     // ...
 };
 ```
 
-With this change, you can also apply tree-shaking to your function bundle to reduce its size. As part of this release we have made changes to the package and its exports to better support this feature, and we remain committed to improving this in the future based on your feedback.
+In v2, we improved tree-shaking support to help you reduce your function bundle size. We would love to hear your feedback on further improvements we could make.
 
 While we recommend using ES Modules, we understand that this change might not be possible for everyone. If you're unable to use ES Modules, you can continue to use the `require` syntax to import the package. Powertools for AWS Lambda (TypeScript) will continue to support this syntax by shipping CommonJS modules alongside ES Modules.
 

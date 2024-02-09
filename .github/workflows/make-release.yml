@@ -3,17 +3,17 @@ name: Make Release
 # RELEASE PROCESS
 #
 # === Automated activities ===
-# 1. [Quality check] Run unit tests, linting
-# 2. [Release] Publish to npm, all packages using the latest git commit sha, ensure provenance with NPM_CONFIG_PROVENANCE=true
-# 3. [Create tag] Create a new git tag using released version
-# 4. [Publish layer] build and package layer, kick off the workflow for beta and prod deployment
-# 5. [Publish layer] update documentation with the latest layer ARN version
-# 6. [Publish layer] Create PR to merge the updated documentation
+# 1. [Quality check] run unit tests, linting, examples, layer, doc snippets
+# 2. [Release] publish all packages to npmjs.org using the latest git commit, ensure provenance with NPM_CONFIG_PROVENANCE=true
+# 3. [Create tag] create a new git tag using released version, i.e. v1.13.1
+# 4. [Publish layer] build and package layer, kick off the workflow for beta and prod deployment, including canary tests
+# 5. [Publish layer] update documentation with the latest layer ARN version of the prod deployment
+# 6. [Publish layer] create PR to merge the updated documentation
 #
 # === Manual activities ===
 # 1. Kick off `make-version` workflow to bump and review the version changes and changelog for each package
 # 2. Merge the PR created by `make-version` workflow
-# 3. Kick off this opw workflow to make the release
+# 3. Kick off this workflow to make the release
 # 4. Merge the PR created by the `publish_layer` workflow to update the documentation
 # 5. Update draft release notes with the latest changes and publish the release on GitHub
 

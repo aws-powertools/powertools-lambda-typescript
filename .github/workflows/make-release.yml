@@ -1,4 +1,22 @@
 name: Make Release
+
+# RELEASE PROCESS
+#
+# === Automated activities ===
+# 1. [Quality check] Run unit tests, linting
+# 2. [Release] Publish to npm, all packages using the latest git commit sha, ensure provenance with NPM_CONFIG_PROVENANCE=true
+# 3. [Create tag] Create a new git tag using released version
+# 4. [Publish layer] build and package layer, kick off the workflow for beta and prod deployment
+# 5. [Publish layer] update documentation with the latest layer ARN version
+# 6. [Publish layer] Create PR to merge the updated documentation
+#
+# === Manual activities ===
+# 1. Kick off `make-version` workflow to bump and review the version changes and changelog for each package
+# 2. Merge the PR created by `make-version` workflow
+# 3. Kick off this opw workflow to make the release
+# 4. Merge the PR created by the `publish_layer` workflow to update the documentation
+# 5. Update draft release notes with the latest changes and publish the release on GitHub
+
 on:
   workflow_dispatch: {}
 
@@ -7,9 +25,15 @@ permissions:
 
 concurrency:
   group: on-release-publish
+
+
 jobs:
   run-unit-tests:
     uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
+  # This job publishes the packages to npm.
+  # It uses the latest git commit sha as the version and ensures provenance with NPM_CONFIG_PROVENANCE flag.
+  # We don't bump the version because we do that in the `make-version` workflow.
+  # It also sets the RELEASE_VERSION output to be used by the next job to create a git tag.
   publish-npm:
     needs: run-unit-tests
     # Needed as recommended by npm docs on publishing with provenance https://docs.npmjs.com/generating-provenance-statements
@@ -44,6 +68,7 @@ jobs:
           VERSION=$(cat lerna.json | jq .version -r)
           echo RELEASE_VERSION="$VERSION" >> "$GITHUB_OUTPUT"
   
+  # This job creates a new git tag using the released version (v1.18.1)
   create_tag: 
     needs: [publish-npm]
     permissions:

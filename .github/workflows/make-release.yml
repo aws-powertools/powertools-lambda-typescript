@@ -1,4 +1,22 @@
 name: Make Release
+
+# RELEASE PROCESS
+#
+# === Automated activities ===
+# 1. [Quality check] run unit tests, linting, examples, layer, doc snippets
+# 2. [Release] publish all packages to npmjs.org using the latest git commit, ensure provenance with NPM_CONFIG_PROVENANCE=true
+# 3. [Create tag] create a new git tag using released version, i.e. v1.13.1
+# 4. [Publish layer] build and package layer, kick off the workflow for beta and prod deployment, including canary tests
+# 5. [Publish layer] update documentation with the latest layer ARN version of the prod deployment
+# 6. [Publish layer] create PR to merge the updated documentation
+#
+# === Manual activities ===
+# 1. Kick off `make-version` workflow to bump and review the version changes and changelog for each package
+# 2. Merge the PR created by `make-version` workflow
+# 3. Kick off this workflow to make the release
+# 4. Merge the PR created by the `publish_layer` workflow to update the documentation
+# 5. Update draft release notes with the latest changes and publish the release on GitHub
+
 on:
   workflow_dispatch: {}
 
@@ -7,9 +25,15 @@ permissions:
 
 concurrency:
   group: on-release-publish
+
+
 jobs:
   run-unit-tests:
     uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
+  # This job publishes the packages to npm.
+  # It uses the latest git commit sha as the version and ensures provenance with NPM_CONFIG_PROVENANCE flag.
+  # We don't bump the version because we do that in the `make-version` workflow.
+  # It also sets the RELEASE_VERSION output to be used by the next job to create a git tag.
   publish-npm:
     needs: run-unit-tests
     # Needed as recommended by npm docs on publishing with provenance https://docs.npmjs.com/generating-provenance-statements
@@ -24,10 +48,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          # Here `token` is needed to avoid incurring in error GH006 Protected  Branch Update Failed,
-          token: ${{ secrets.GH_PUBLISH_TOKEN }}
-          # While `fetch-depth` is used to allow the workflow to later commit & push the changes.
-          fetch-depth: 0
+          ref: ${{ github.sha }}
       - name: Setup NodeJS
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
@@ -35,24 +56,39 @@ jobs:
           cache: "npm"
       - name: Setup auth tokens
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PUBLISH_TOKEN }}@github.com/$GITHUB_REPOSITORY
           npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
-      - name: Version
-        run: |
-          npx lerna version minor --force-publish --no-commit-hooks --yes
       - name: Publish to npm
         run: |
-          NPM_CONFIG_PROVENANCE=true npx lerna publish from-git --yes
+          NPM_CONFIG_PROVENANCE=true npx lerna publish from-package --git-head ${{ github.sha }} --yes 
       - name: Set release version
         id: set-release-version
         run: |
           VERSION=$(cat lerna.json | jq .version -r)
           echo RELEASE_VERSION="$VERSION" >> "$GITHUB_OUTPUT"
-
+  
+  # This job creates a new git tag using the released version (v1.18.1)
+  create_tag: 
+    needs: [publish-npm]
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ github.sha }}
+      - name: Git client setup
+        run: | 
+          git config --global user.name 'aws-powertools-bot'
+          git config --global user.email '151832416+aws-powertools-bot@users.noreply.github.com'
+          git config remote.origin.url >&-
+      - name: Create git tag
+        run : |
+          git tag -a v${{ needs.publish-npm.outputs.RELEASE_VERSION }} -m "Release v${{ needs.publish-npm.outputs.RELEASE_VERSION }}"
+          git push origin v${{ needs.publish-npm.outputs.RELEASE_VERSION }}
+   
   # NOTE: Watch out for the depth limit of 4 nested workflow_calls.
   # publish_layer -> reusable_deploy_layer_stack -> reusable_update_layer_arn_docs
   publish_layer:

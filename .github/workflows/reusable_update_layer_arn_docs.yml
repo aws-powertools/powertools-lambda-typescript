@@ -9,7 +9,7 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   BRANCH: main
@@ -21,18 +21,15 @@ jobs:
     concurrency:
       group: changelog-build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: none
     steps:
       - name: Checkout repository # reusable workflows start clean, so we need to checkout again
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          fetch-depth: 0
-      - name: Git client setup and refresh tip
-        run: |
-          git config user.name "Release bot[bot]"
-          git config user.email "aws-devax-open-source@amazon.com"
-          git config pull.rebase true
-          git config remote.origin.url >&- || git remote add origin https://github.com/"${origin}" # Git Detached mode (release notes) doesn't have origin
-          git pull origin "${BRANCH}"
+          ref: ${{ github.sha }}
       - name: Download CDK layer artifact
         uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
         with:
@@ -42,11 +39,12 @@ jobs:
         run: |
           ls -la cdk-layer-stack/
           ./.github/scripts/update_layer_arn.sh cdk-layer-stack
-      - name: Update documentation in trunk
-        run: |
-          HAS_CHANGE=$(git status --porcelain)
-          test -z "${HAS_CHANGE}" && echo "Nothing to update" && exit 0
-          git add docs/index.md
-          git commit -m "chore: update layer ARN on documentation"
-          git pull origin "${BRANCH}" # prevents concurrent branch update failing push
-          git push origin HEAD:refs/heads/"${BRANCH}"
+      - name: Create PR
+        id: create-pr
+        uses: ./.github/actions/create-pr
+        with: 
+          files: 'docs/index.md'
+          temp_branch_prefix: 'ci-layer-docs'
+          pull_request_title: 'chore(ci): update layer ARN on documentation'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  

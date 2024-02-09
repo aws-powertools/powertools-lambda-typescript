@@ -77,30 +77,3 @@ jobs:
       latest_published_version: ${{ inputs.latest_published_version }}
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
-
-  prepare_docs_alias:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      DOCS_ALIAS: ${{ steps.set-alias.outputs.DOCS_ALIAS }}
-    steps:
-      - name: Set docs alias
-        id: set-alias
-        run: |
-          DOCS_ALIAS=latest
-          if [[ "${{ inputs.pre_release }}" == true ]] ; then
-            DOCS_ALIAS=alpha
-          fi
-          echo DOCS_ALIAS="$DOCS_ALIAS" >> "$GITHUB_OUTPUT"
-
-  release-docs:
-    needs: [ deploy-prod, prepare_docs_alias ]
-    permissions:
-      id-token: write
-    secrets: inherit
-    uses: ./.github/workflows/reusable_publish_docs.yml
-    with:
-      version: ${{ inputs.latest_published_version }}
-      alias: ${{ needs.prepare_docs_alias.outputs.DOCS_ALIAS }}
-      detached_mode: true

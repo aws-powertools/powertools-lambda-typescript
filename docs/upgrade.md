@@ -18,7 +18,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 | **Types imports**                      | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.                               | Yes                  |
 | **Logger**              | Changed [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
 | **Logger**      | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.           | Yes                  |
-| **Logger & Tracer - helper functions** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                                          | Yes                  |
+| **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                                          | Yes                  |
 
 ### First steps
 

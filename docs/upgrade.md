@@ -74,12 +74,14 @@ In some cases, even when opting for ES Modules, you might still need to use the 
               "--tree-shaking": "true",
             },
             banner: 
-              "import { createRequire } from 'module';const require = createRequire(import.meta.url);",
+              "import { createRequire } from 'module';const require = createRequire(import.meta.url);", // (1)!
           },
         });
       }
     }
     ```
+    
+    1. `esbuild` will include this arbitrary code at the top of your bundle to maximize CommonJS compatibility _(`require` keyword)_.
 
 === "With AWS SAM"
 
@@ -101,19 +103,22 @@ In some cases, even when opting for ES Modules, you might still need to use the 
             EntryPoints:
               - src/index.ts
             Banner:
-              js: "import { createRequire } from 'module';const require = createRequire(import.meta.url);"
+              js: "import { createRequire } from 'module';const require = createRequire(import.meta.url);"  # (1)!
  
     ```
+
+    1. `esbuild` will include this arbitrary code at the top of your bundle to maximize CommonJS compatibility _(`require` keyword)_.
 
 ## Scoped imports
 
 ### Middy.js middleware imports
 
-Code changes are required only if you're using Middy.js middlewares, however this update benefits especially those who are **not** using Middy.js middlewares due to less code being imported and bundled in your Lambda function.
+???+ note "Disregard if you are not using Middy.js middlewares."
+    In v2, we've added support for subpath exports. This means if you don't import Middy.js middlewares, you will benefit from a smaller bundle size.
 
-In v1, you could importing Middy.js middlewares in your codebase directly from the default export of a package. For example, to import the `injectLambdaContext` middleware for Logger, you would import it from `@aws-lambda-powertools/logger`. 
+In v1, you could import Middy.js middlewares from the default export of a package _(e.g., `logger`)_. For example, you'd import `injectLambdaContext` Logger middleware from `@aws-lambda-powertools/logger`.
 
-With v2, we've added support for subpath exports. This means that you can now import Middy.js middlewares directly from a well-known path, i.e. `@aws-lambda-powertools/logger/middleware`. This allows you to import the middleware only when you need it, instead of requiring it and having it bundled in your Lambda function when you import the package.
+In v2, you can now import only the Middy.js middlewares you want to use from a subpath export, _e.g., `@aws-lambda-powertools/logger/middleware`_, leading to a smaller bundle size.
 
 ### Types imports
 

@@ -47,9 +47,16 @@ export const handler = async (_event: unknown, _context: unknown) => {
 
 In v2, we improved tree-shaking support to help you reduce your function bundle size. We would love to hear your feedback on further improvements we could make.
 
-While we recommend using ES Modules, we understand that this change might not be possible for everyone. If you're unable to use ES Modules, you can continue to use the `require` syntax to import the package. Powertools for AWS Lambda (TypeScript) will continue to support this syntax by shipping CommonJS modules alongside ES Modules.
+### Unable to use ESM?
 
-In some cases, even when opting for ES Modules, you might still need to use the `require` syntax to import a package. For example, if you're using a package that doesn't support ES Modules, or if one of your transitive dependencies is using the `require` syntax like it's the case for `@aws-lambda-powertools/tracer` which relies on the AWS X-Ray SDK for Node.js. In these cases, you can still use ES Modules for the rest of your codebase and set a special build flag to tell your bundler to inject a banner at the top of the file to use the `require` syntax for the specific package.
+!!! note "We recommend using ESM for the best experience _(top-level await, smaller bundle size etc.)_."
+
+If you're unable to use ESM, you can still use the `require` syntax to import the package. We will continue to support it by shipping CommonJS modules alongside ESM.
+
+You might still need the `require` syntax when using a dependency or a transitive dependency that doesn't support ESM. For example, Tracer _(`@aws-lambda-powertools/tracer`)_ relies on the AWS X-Ray SDK for Node.js which uses `require`.
+
+When that happens, you can instruct your bundler to use the `require` syntax for specific dependencies while using ESM for everything else. This is commonly known as [polyfill](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill){target="_blank"}. 
+Here is an example using `esbuild` bundler.
 
 === "With AWS CDK"
 

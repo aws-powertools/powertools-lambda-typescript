@@ -166,9 +166,9 @@ Logger `sampleRateValue` **continues** to determine the percentage of concurrent
 
 !!! note "Disregard if you are not customizing log output with a [custom log formatter](./core/logger.md#custom-log-formatter-bring-your-own-formatter)."
 
-In v1, `Logger` combined both [standard]((./core/logger.md#standard-structured-keys)) and [custom keys](./core/logger.md#appending-persistent-additional-log-keys-and-values) as a single argument, _e.g., `formatAttributes(attributes: UnformattedAttributes)`_. It expected a plain object with keys and values you wanted in the final log output.
+In v1, `Logger` exposed the [standard](./core/logger.md#standard-structured-keys) as a single argument, _e.g., `formatAttributes(attributes: UnformattedAttributes)`_. It expected a plain object with keys and values you wanted in the final log output.
 
-In v2, you have more control over **standard** (`attributes`) and **custom keys** (`additionalLogAttributes`) in the `formatAttributes` method. Also, you now return a `LogItem` object to increase type safety when defining the final log output.
+In v2, you have more control over **standard** (`attributes`) and [**custom keys**](./core/logger.md#appending-persistent-additional-log-keys-and-values) (`additionalLogAttributes`) in the `formatAttributes` method. Also, you now return a `LogItem` object to increase type safety when defining the final log output.
 
 === "Before"
 

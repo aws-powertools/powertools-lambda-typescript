@@ -30,7 +30,9 @@ Before you start, we suggest making a copy of your current working project or cr
 
 ## ESM support
 
-Starting with v2, Powertools for AWS Lambda (TypeScript) supports ES Modules. This means that you can now import the package using the `import` syntax instead of the `require` syntax. This is especially useful if you want to leverage features like top-level `await` in your Lambda function to run asynchronous code during the initialization phase.
+With support for ES Modules in v2, you can now use `import` instead of `require` syntax.
+
+This is especially useful when you want to run asynchronous code during the initialization phase by using top-level `await`.
 
 ```typescript
 import { getSecret } from '@aws-lambda-powertools/parameters/secrets';

@@ -120,6 +120,25 @@ In v1, you could import Middy.js middlewares from the default export of a packag
 
 In v2, you can now import only the Middy.js middlewares you want to use from a subpath export, _e.g., `@aws-lambda-powertools/logger/middleware`_, leading to a smaller bundle size.
 
+=== "Before"
+
+    ```typescript
+    import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
+    import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+    import { Metrics, logMetrics } from '@aws-lambda-powertools/metrics';
+    ```
+
+=== "After"
+
+    ```typescript hl_lines="2 4 6"
+    import { Logger } from '@aws-lambda-powertools/logger';
+    import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
+    import { Tracer } from '@aws-lambda-powertools/tracer';
+    import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
+    import { Metrics } from '@aws-lambda-powertools/metrics';
+    import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
+    ```
+
 ### Types imports
 
 In v1, you could import package types from each package under `/lib`, for example `@aws-lambda-powertools/logger/lib/types`.

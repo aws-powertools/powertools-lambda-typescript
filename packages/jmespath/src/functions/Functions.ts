@@ -184,6 +184,58 @@ class Functions {
   }
 
   /**
+   * Get the item in the provided array that has the maximum value when the provided expression is evaluated.
+   *
+   * @param args The array of items to get the maximum value of
+   * @param expression The expression to evaluate for each item in the array
+   * @returns The item in the array that has the maximum value when the expression is evaluated
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array'], ['expression']],
+  })
+  public funcMaxBy(
+    args: Array<JSONObject>,
+    expression: Expression
+  ): JSONObject | null {
+    if (args.length === 0) {
+      return null;
+    }
+
+    const visitedArgs = args.map((arg) => ({
+      arg,
+      visited: expression.visit(arg),
+    }));
+
+    const max = visitedArgs.reduce((max, current) => {
+      const type = getType(current.visited);
+      if (type !== 'string' && type !== 'number') {
+        throw new JMESPathTypeError({
+          currentValue: current.visited,
+          expectedTypes: ['string'],
+          actualType: type,
+        });
+      }
+
+      if (
+        (max.visited === null || max.visited === undefined) &&
+        (current.visited === null || current.visited === undefined)
+      ) {
+        return max;
+      } else if (max.visited === null || max.visited === undefined) {
+        return current;
+      } else if (current.visited === null || current.visited === undefined) {
+        return max;
+      } else if (max.visited === current.visited) {
+        return max;
+      } else {
+        return max.visited > current.visited ? max : current;
+      }
+    }, visitedArgs[0]);
+
+    return max.arg;
+  }
+
+  /**
    * Merge the provided objects into a single object.
    *
    * Note that this is a shallow merge and will not merge nested objects.
@@ -217,6 +269,58 @@ class Functions {
     } else {
       return arg.reduce((a, b) => (a < b ? a : b));
     }
+  }
+
+  /**
+   * Get the item in the provided array that has the minimum value when the provided expression is evaluated.
+   *
+   * @param args The array of items to get the minimum value of
+   * @param expression The expression to evaluate for each item in the array
+   * @returns The item in the array that has the minimum value when the expression is evaluated
+   */
+  @Functions.signature({
+    argumentsSpecs: [['array'], ['expression']],
+  })
+  public funcMinBy(
+    args: Array<JSONObject>,
+    expression: Expression
+  ): JSONObject | null {
+    if (args.length === 0) {
+      return null;
+    }
+
+    const visitedArgs = args.map((arg) => ({
+      arg,
+      visited: expression.visit(arg),
+    }));
+
+    const min = visitedArgs.reduce((min, current) => {
+      const type = getType(current.visited);
+      if (type !== 'string' && type !== 'number') {
+        throw new JMESPathTypeError({
+          currentValue: current.visited,
+          expectedTypes: ['string'],
+          actualType: type,
+        });
+      }
+
+      if (
+        (min.visited === null || min.visited === undefined) &&
+        (current.visited === null || current.visited === undefined)
+      ) {
+        return min;
+      } else if (min.visited === null || min.visited === undefined) {
+        return current;
+      } else if (current.visited === null || current.visited === undefined) {
+        return min;
+      } else if (min.visited === current.visited) {
+        return min;
+      } else {
+        return min.visited < current.visited ? min : current;
+      }
+    }, visitedArgs[0]);
+
+    return min.arg;
   }
 
   /**

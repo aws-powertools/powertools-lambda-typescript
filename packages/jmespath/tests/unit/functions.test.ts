@@ -1849,7 +1849,7 @@ describe('Functions tests', () => {
     expect(() => search(expression, data)).toThrow(error);
   });
 
-  /* it.each([
+  it.each([
     {
       expression: 'max_by(people, &age)',
       expected: {
@@ -1921,18 +1921,20 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: 'max_by(people, &bool)',
-      error: 'TypeError: expected one of (number | string), received boolean',
+      error:
+        'Invalid argument type for function max_by(), expected "string" but found "boolean" in expression: max_by(people, &bool)',
     },
     {
       expression: 'max_by(people, &extra)',
-      error: 'TypeError: expected one of (number | string), received null',
+      error:
+        'Invalid argument type for function max_by(), expected "string" but found "null" in expression: max_by(people, &extra)',
     },
   ])('max_by() function special cases errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in max_by() function special cases errors tests
     // Prepare
     const data = {
       people: [
@@ -1973,8 +1975,9 @@ describe('Functions tests', () => {
 
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: 'min_by(people, &age)',
       expected: {
@@ -2046,18 +2049,20 @@ describe('Functions tests', () => {
 
     // Assess
     expect(result).toStrictEqual(expected);
-  }); */
-  /* it.each([
+  });
+
+  it.each([
     {
       expression: 'min_by(people, &bool)',
-      error: 'TypeError: expected one of (number | string), received boolean',
+      error:
+        'Invalid argument type for function min_by(), expected "string" but found "boolean" in expression: min_by(people, &bool)',
     },
     {
       expression: 'min_by(people, &extra)',
-      error: 'TypeError: expected one of (number | string), received null',
+      error:
+        'Invalid argument type for function min_by(), expected "string" but found "null" in expression: min_by(people, &extra)',
     },
   ])('min_by() function special cases errors', ({ expression, error }) => {
-    // TODO: see if we can assert the error type as well in min_by() function special cases errors tests
     // Prepare
     const data = {
       people: [
@@ -2099,7 +2104,7 @@ describe('Functions tests', () => {
     // Act & Assess
     expect(() => search(expression, data)).toThrow(error);
   });
- */
+
   it.each([
     {
       description: 'stable sort order',

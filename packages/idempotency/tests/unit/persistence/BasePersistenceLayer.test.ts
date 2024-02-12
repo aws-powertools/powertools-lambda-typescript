@@ -243,18 +243,20 @@ describe('Class: BasePersistenceLayer', () => {
           payloadValidationJmesPath: 'foo',
         }),
       });
-      jest.spyOn(persistenceLayer, '_getRecord').mockReturnValue(
-        new IdempotencyRecord({
-          idempotencyKey: 'my-lambda-function#mocked-hash',
-          status: IdempotencyRecordStatus.INPROGRESS,
-          payloadHash: 'different-hash',
-        })
-      );
+      const existingRecord = new IdempotencyRecord({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        status: IdempotencyRecordStatus.INPROGRESS,
+        payloadHash: 'different-hash',
+      });
+      jest
+        .spyOn(persistenceLayer, '_getRecord')
+        .mockReturnValue(existingRecord);
 
       // Act & Assess
       await expect(persistenceLayer.getRecord({ foo: 'bar' })).rejects.toThrow(
         new IdempotencyValidationError(
-          'Payload does not match stored record for this event key'
+          'Payload does not match stored record for this event key',
+          existingRecord
         )
       );
     });

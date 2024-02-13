@@ -14,7 +14,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 | Area                  | Change                                                                                                                         | Code change required |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
 | **ESM support**       | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                             | -                    |
-| **Middy.js **         | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.    | Yes                  |
+| **Middy.js**         | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.    | Yes                  |
 | **Types imports**     | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.             | Yes                  |
 | **Logger**            | Changed [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
 | **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                          | Yes                  |
@@ -137,11 +137,13 @@ In v2, you can now import only the Middy.js middlewares you want to use from a s
 
 === "After"
 
-    ```typescript hl_lines="2 4 6"
+    ```typescript hl_lines="2 5 8"
     import { Logger } from '@aws-lambda-powertools/logger';
     import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
+    
     import { Tracer } from '@aws-lambda-powertools/tracer';
     import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
+    
     import { Metrics } from '@aws-lambda-powertools/metrics';
     import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
     ```

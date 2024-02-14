@@ -1,4 +1,4 @@
-name: On PR code update
+name: Build
 
 on:
   pull_request:

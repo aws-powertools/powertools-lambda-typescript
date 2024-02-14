@@ -1,6 +1,12 @@
 # Powertools for AWS Lambda (TypeScript) <!-- omit in toc -->
 
-[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET)
+[![Build](https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/pr-run-linting-check-and-unit-tests.yml/badge.svg)]([https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/pr-run-linting-check-and-unit-tests.yml])
+![NodeSupport](https://img.shields.io/static/v1?label=node&message=%2016|%2018|%2020&color=green?style=flat-square&logo=node)
+![GitHub Release](https://img.shields.io/github/v/release/aws-powertools/powertools-lambda-typescript?style=flat-square)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-typescript/badge)](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-typescript)
+[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET?style=flat-square)](https://discord.gg/B8zZKbbyET)
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
@@ -31,12 +37,24 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 ## Features
 
-* **[Tracer](https://docs.powertools.aws.dev/lambda/typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
-* **[Logger](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
-* **[Metrics](https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
-* **[Parameters](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
-* **[Idempotency](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
-* **[Batch Processing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
+* **[Tracer](https://docs.powertools.aws.dev/lambda/typescript/latest/core/tracer/)** [![Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Ftracer.svg?style=flat-square
+)](https://www.npmjs.com/package/@aws-lambda-powertools/tracer)
+  * Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
+* **[Logger](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/)** [![Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Flogger.svg?style=flat-square
+)](https://www.npmjs.com/package/@aws-lambda-powertools/logger)
+  * Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
+* **[Metrics](https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/)** [![Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Fmetrics.svg?style=flat-square
+)](https://www.npmjs.com/package/@aws-lambda-powertools/metrics)
+  * Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
+* **[Parameters](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)** [![Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Fparameters.svg?style=flat-square
+)](https://www.npmjs.com/package/@aws-lambda-powertools/parameters)
+  * High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
+* **[Idempotency](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)** [![Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Fidempotency.svg?style=flat-square
+)](https://www.npmjs.com/package/@aws-lambda-powertools/idempotency)
+  * Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
+* **[Batch Processing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)** [![Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Fbatch.svg?style=flat-square
+)](https://www.npmjs.com/package/@aws-lambda-powertools/batch)
+  * Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
 
 ## Getting started
 

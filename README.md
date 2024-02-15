@@ -6,9 +6,6 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-typescript/badge)](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-typescript)
-![NPM Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Ftracer?style=flat-square&label=Tracer)
-![NPM Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Flogger?style=flat-square&label=Logger)
-![NPM Downloads](https://img.shields.io/npm/dw/%40aws-lambda-powertools%2Fmetrics?style=flat-square&label=Metrics)
 [![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET?style=flat-square)](https://discord.gg/B8zZKbbyET)
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).

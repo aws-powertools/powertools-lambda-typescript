@@ -1,6 +1,5 @@
 # Powertools for AWS Lambda (TypeScript) <!-- omit in toc -->
 
-[![Build](https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/pr-run-linting-check-and-unit-tests.yml/badge.svg)]([https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/pr-run-linting-check-and-unit-tests.yml])
 ![NodeSupport](https://img.shields.io/static/v1?label=node&message=%2016|%2018|%2020&color=green?style=flat-square&logo=node)
 ![GitHub Release](https://img.shields.io/github/v/release/aws-powertools/powertools-lambda-typescript?style=flat-square)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)

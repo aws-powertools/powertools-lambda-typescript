@@ -34,8 +34,8 @@
   "types": "./lib/index.d.ts",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.511.0",
-    "@aws-sdk/client-xray": "^3.511.0",
+    "@aws-sdk/client-dynamodb": "^3.514.0",
+    "@aws-sdk/client-xray": "^3.514.0",
     "@types/promise-retry": "^1.1.6",
     "aws-sdk": "^2.1557.0",
     "axios": "^1.6.7",

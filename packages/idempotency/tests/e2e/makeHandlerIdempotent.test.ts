@@ -74,7 +74,8 @@ describe(`Idempotency E2E tests, middy middleware usage`, () => {
       function: {
         entry: lambdaFunctionCodeFilePath,
         handler: 'handlerTimeout',
-        timeout: Duration.seconds(2),
+        timeout: Duration.seconds(3),
+        memorySize: 512,
       },
     },
     {
@@ -263,9 +264,9 @@ describe(`Idempotency E2E tests, middy middleware usage`, () => {
       });
       expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
 
-      // During the first invocation the function should timeout so the logs should contain 2 logs
-      expect(functionLogs[0]).toHaveLength(2);
-      expect(functionLogs[0][0]).toContain('Task timed out after');
+      // During the first invocation the function should timeout so the logs should not contain any log and the report log should contain a timeout message
+      expect(functionLogs[0]).toHaveLength(0);
+      expect(logs[0].getReportLog()).toMatch(/Status: timeout$/);
       // During the second invocation the handler should be called and complete, so the logs should
       // contain 1 log
       expect(functionLogs[1]).toHaveLength(1);

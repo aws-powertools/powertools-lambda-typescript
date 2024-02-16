@@ -184,6 +184,31 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     this.saveToCache(idempotencyRecord);
   }
 
+  /**
+   * Validates the payload against the stored record. If the payload does not match the stored record,
+   * an `IdempotencyValidationError` error is thrown.
+   *
+   * @param data - The data payload to validate against the stored record
+   * @param storedDataRecord - The stored record to validate against
+   */
+  public validatePayload(
+    data: JSONValue | IdempotencyRecord,
+    storedDataRecord: IdempotencyRecord
+  ): void {
+    if (this.payloadValidationEnabled) {
+      const hashedPayload =
+        data instanceof IdempotencyRecord
+          ? data.payloadHash
+          : this.getHashedPayload(data);
+      if (hashedPayload !== storedDataRecord.payloadHash) {
+        throw new IdempotencyValidationError(
+          'Payload does not match stored record for this event key',
+          storedDataRecord
+        );
+      }
+    }
+  }
+
   protected abstract _deleteRecord(record: IdempotencyRecord): Promise<void>;
 
   protected abstract _getRecord(
@@ -312,18 +337,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     if (!this.useLocalCache) return;
     if (record.getStatus() === IdempotencyRecordStatus.INPROGRESS) return;
     this.cache?.add(record.idempotencyKey, record);
-  }
-
-  private validatePayload(data: JSONValue, record: IdempotencyRecord): void {
-    if (this.payloadValidationEnabled) {
-      const hashedPayload: string = this.getHashedPayload(data);
-      if (hashedPayload !== record.payloadHash) {
-        throw new IdempotencyValidationError(
-          'Payload does not match stored record for this event key',
-          record
-        );
-      }
-    }
   }
 }
 

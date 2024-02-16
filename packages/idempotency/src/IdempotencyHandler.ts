@@ -313,11 +313,17 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         );
       } catch (e) {
         if (e instanceof IdempotencyItemAlreadyExistsError) {
-          const idempotencyRecord: IdempotencyRecord =
-            e.existingRecord ||
-            (await this.#persistenceStore.getRecord(
+          let idempotencyRecord = e.existingRecord;
+          if (idempotencyRecord !== undefined) {
+            this.#persistenceStore.validatePayload(
+              this.#functionPayloadToBeHashed,
+              idempotencyRecord
+            );
+          } else {
+            idempotencyRecord = await this.#persistenceStore.getRecord(
               this.#functionPayloadToBeHashed
-            ));
+            );
+          }
 
           return IdempotencyHandler.determineResultFromIdempotencyRecord(
             idempotencyRecord

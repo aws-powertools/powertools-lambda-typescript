@@ -65,11 +65,12 @@ export const handlerTimeout = middy(
     logger.addContext(context);
 
     if (event.invocation === 0) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, context.getRemainingTimeInMillis());
-      });
+      await new Promise((resolve) => setTimeout(resolve, 4000));
     }
-    logger.info('Processed event', { details: event.foo });
+
+    logger.info('Processed event', {
+      details: event.foo,
+    });
 
     return {
       foo: event.foo,

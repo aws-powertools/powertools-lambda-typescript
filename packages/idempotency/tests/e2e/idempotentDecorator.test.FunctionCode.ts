@@ -80,9 +80,7 @@ class DefaultLambda implements LambdaInterface {
   ): Promise<string> {
     logger.addContext(context);
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, context.getRemainingTimeInMillis())
-    );
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     logger.info('Processed event', { details: event.foo });
 

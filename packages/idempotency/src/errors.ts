@@ -30,7 +30,14 @@ class IdempotencyInvalidStatusError extends Error {}
 /**
  * Payload does not match stored idempotency record
  */
-class IdempotencyValidationError extends Error {}
+class IdempotencyValidationError extends Error {
+  public existingRecord?: IdempotencyRecord;
+
+  public constructor(message?: string, existingRecord?: IdempotencyRecord) {
+    super(message);
+    this.existingRecord = existingRecord;
+  }
+}
 
 /**
  * State is inconsistent across multiple requests to persistence store

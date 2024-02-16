@@ -319,7 +319,8 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       const hashedPayload: string = this.getHashedPayload(data);
       if (hashedPayload !== record.payloadHash) {
         throw new IdempotencyValidationError(
-          'Payload does not match stored record for this event key'
+          'Payload does not match stored record for this event key',
+          record
         );
       }
     }

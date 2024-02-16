@@ -105,6 +105,22 @@ class TestInvocationLogs {
     return filteredLogs;
   }
 
+  /**
+   * Return the log that contains the report of the function `REPORT RequestId`
+   */
+  public getReportLog(): string {
+    const endLogIndex = TestInvocationLogs.getReportLogIndex(this.logs);
+
+    return this.logs[endLogIndex];
+  }
+
+  /**
+   * The index of the log that contains the report of the function `REPORT RequestId`
+   */
+  public static getReportLogIndex(logs: string[]): number {
+    return logs.findIndex((log) => log.startsWith('REPORT RequestId'));
+  }
+
   public static getStartLogIndex(logs: string[]): number {
     return logs.findIndex((log) => log.startsWith('START RequestId'));
   }

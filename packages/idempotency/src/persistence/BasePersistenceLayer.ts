@@ -114,8 +114,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
 
     const record = await this._getRecord(idempotencyKey);
-    this.saveToCache(record);
-    this.validatePayload(data, record);
+    this.processExistingRecord(record, data);
 
     return record;
   }
@@ -125,6 +124,29 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   public isPayloadValidationEnabled(): boolean {
     return this.payloadValidationEnabled;
+  }
+
+  /**
+   * Validates an existing record against the data payload being processed.
+   * If the payload does not match the stored record, an `IdempotencyValidationError` error is thrown.
+   *
+   * Whenever a record is retrieved from the persistence layer, it should be validated against the data payload
+   * being processed. This is to ensure that the data payload being processed is the same as the one that was
+   * used to create the record in the first place.
+   *
+   * The record is also saved to the local cache if local caching is enabled.
+   *
+   * @param record - the stored record to validate against
+   * @param data - the data payload being processed and to be validated against the stored record
+   */
+  public processExistingRecord(
+    storedDataRecord: IdempotencyRecord,
+    processedData: JSONValue | IdempotencyRecord
+  ): IdempotencyRecord {
+    this.validatePayload(processedData, storedDataRecord);
+    this.saveToCache(storedDataRecord);
+
+    return storedDataRecord;
   }
 
   /**
@@ -303,8 +325,9 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   /**
    * Save record to local cache except for when status is `INPROGRESS`.
    *
-   * We can't cache `INPROGRESS` records because we have no way to reflect updates
-   * that might happen to the record outside the execution context of the function.
+   * Records with `INPROGRESS` status are not cached because we have no way to
+   * reflect updates that might happen to the record outside the execution
+   * context of the function.
    *
    * @param record - record to save
    */
@@ -314,13 +337,26 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     this.cache?.add(record.idempotencyKey, record);
   }
 
-  private validatePayload(data: JSONValue, record: IdempotencyRecord): void {
+  /**
+   * Validates the payload against the stored record. If the payload does not match the stored record,
+   * an `IdempotencyValidationError` error is thrown.
+   *
+   * @param data - The data payload to validate against the stored record
+   * @param storedDataRecord - The stored record to validate against
+   */
+  private validatePayload(
+    data: JSONValue | IdempotencyRecord,
+    storedDataRecord: IdempotencyRecord
+  ): void {
     if (this.payloadValidationEnabled) {
-      const hashedPayload: string = this.getHashedPayload(data);
-      if (hashedPayload !== record.payloadHash) {
+      const hashedPayload =
+        data instanceof IdempotencyRecord
+          ? data.payloadHash
+          : this.getHashedPayload(data);
+      if (hashedPayload !== storedDataRecord.payloadHash) {
         throw new IdempotencyValidationError(
           'Payload does not match stored record for this event key',
-          record
+          storedDataRecord
         );
       }
     }

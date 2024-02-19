@@ -300,9 +300,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   };
 
   /**
-   * Save an in progress record to the idempotency store or return an existing result.
+   * Save an in progress record to the idempotency store or return an stored result.
    *
-   * If the record already exists, return the result from the record.
+   * Before returning a result, we might neede to look up the idempotency record
+   * and validate it to ensure that it is consistent with the payload to be hashed.
    */
   #saveInProgressOrReturnExistingResult =
     async (): Promise<JSONValue | void> => {
@@ -315,9 +316,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         if (e instanceof IdempotencyItemAlreadyExistsError) {
           let idempotencyRecord = e.existingRecord;
           if (idempotencyRecord !== undefined) {
-            this.#persistenceStore.validatePayload(
-              this.#functionPayloadToBeHashed,
-              idempotencyRecord
+            this.#persistenceStore.validateExistingRecord(
+              idempotencyRecord,
+              this.#functionPayloadToBeHashed
             );
           } else {
             idempotencyRecord = await this.#persistenceStore.getRecord(

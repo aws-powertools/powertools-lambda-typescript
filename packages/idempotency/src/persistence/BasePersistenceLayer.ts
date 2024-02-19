@@ -114,7 +114,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
 
     const record = await this._getRecord(idempotencyKey);
-    this.validateExistingRecord(record, data);
+    this.processExistingRecord(record, data);
 
     return record;
   }
@@ -124,6 +124,29 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   public isPayloadValidationEnabled(): boolean {
     return this.payloadValidationEnabled;
+  }
+
+  /**
+   * Validates an existing record against the data payload being processed.
+   * If the payload does not match the stored record, an `IdempotencyValidationError` error is thrown.
+   *
+   * Whenever a record is retrieved from the persistence layer, it should be validated against the data payload
+   * being processed. This is to ensure that the data payload being processed is the same as the one that was
+   * used to create the record in the first place.
+   *
+   * The record is also saved to the local cache if local caching is enabled.
+   *
+   * @param record - the stored record to validate against
+   * @param data - the data payload being processed and to be validated against the stored record
+   */
+  public processExistingRecord(
+    storedDataRecord: IdempotencyRecord,
+    processedData: JSONValue | IdempotencyRecord
+  ): IdempotencyRecord {
+    this.saveToCache(storedDataRecord);
+    this.validatePayload(processedData, storedDataRecord);
+
+    return storedDataRecord;
   }
 
   /**
@@ -181,27 +204,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     await this._updateRecord(idempotencyRecord);
 
     this.saveToCache(idempotencyRecord);
-  }
-
-  /**
-   * Validates an existing record against the data payload being processed.
-   * If the payload does not match the stored record, an `IdempotencyValidationError` error is thrown.
-   *
-   * Whenever a record is retrieved from the persistence layer, it should be validated against the data payload
-   * being processed. This is to ensure that the data payload being processed is the same as the one that was
-   * used to create the record in the first place.
-   *
-   * The record is also saved to the local cache if local caching is enabled.
-   *
-   * @param record - the stored record to validate against
-   * @param data - the data payload being processed and to be validated against the stored record
-   */
-  public validateExistingRecord(
-    storedDataRecord: IdempotencyRecord,
-    processedData: JSONValue | IdempotencyRecord
-  ): void {
-    this.saveToCache(storedDataRecord);
-    this.validatePayload(processedData, storedDataRecord);
   }
 
   protected abstract _deleteRecord(record: IdempotencyRecord): Promise<void>;

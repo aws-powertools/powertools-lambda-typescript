@@ -465,7 +465,7 @@ describe('Class: BasePersistenceLayer', () => {
     });
   });
 
-  describe('Method: validateExistingRecord', () => {
+  describe('Method: processExistingRecord', () => {
     it('throws an error if the payload does not match the stored record', () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
@@ -482,7 +482,7 @@ describe('Class: BasePersistenceLayer', () => {
 
       // Act & Assess
       expect(() =>
-        persistenceLayer.validateExistingRecord(existingRecord, { foo: 'bar' })
+        persistenceLayer.processExistingRecord(existingRecord, { foo: 'bar' })
       ).toThrow(
         new IdempotencyValidationError(
           'Payload does not match stored record for this event key',
@@ -507,7 +507,7 @@ describe('Class: BasePersistenceLayer', () => {
 
       // Act & Assess
       expect(() =>
-        persistenceLayer.validateExistingRecord(existingRecord, { foo: 'bar' })
+        persistenceLayer.processExistingRecord(existingRecord, { foo: 'bar' })
       ).not.toThrow();
     });
 
@@ -522,7 +522,7 @@ describe('Class: BasePersistenceLayer', () => {
 
       // Act & Assess
       expect(() =>
-        persistenceLayer.validateExistingRecord(existingRecord, { foo: 'bar' })
+        persistenceLayer.processExistingRecord(existingRecord, { foo: 'bar' })
       ).not.toThrow();
     });
 
@@ -546,7 +546,7 @@ describe('Class: BasePersistenceLayer', () => {
       });
 
       // Act
-      persistenceLayer.validateExistingRecord(existingRecord, payload);
+      persistenceLayer.processExistingRecord(existingRecord, payload);
       expect(createHash).toHaveBeenCalledTimes(0);
     });
   });

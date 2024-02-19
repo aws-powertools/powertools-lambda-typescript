@@ -316,7 +316,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         if (e instanceof IdempotencyItemAlreadyExistsError) {
           let idempotencyRecord = e.existingRecord;
           if (idempotencyRecord !== undefined) {
-            this.#persistenceStore.validateExistingRecord(
+            idempotencyRecord = this.#persistenceStore.processExistingRecord(
               idempotencyRecord,
               this.#functionPayloadToBeHashed
             );

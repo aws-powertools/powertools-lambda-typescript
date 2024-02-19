@@ -143,8 +143,8 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     storedDataRecord: IdempotencyRecord,
     processedData: JSONValue | IdempotencyRecord
   ): IdempotencyRecord {
-    this.saveToCache(storedDataRecord);
     this.validatePayload(processedData, storedDataRecord);
+    this.saveToCache(storedDataRecord);
 
     return storedDataRecord;
   }

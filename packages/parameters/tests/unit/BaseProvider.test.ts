@@ -5,7 +5,6 @@
  */
 import {
   BaseProvider,
-  clearCaches,
   DEFAULT_PROVIDERS,
   GetOptions,
   GetMultipleOptions,
@@ -13,7 +12,11 @@ import {
 import { DEFAULT_MAX_AGE_SECS } from '../../src/constants.js';
 import type { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
-import { GetParameterError, TransformParameterError } from '../../src/index.js';
+import {
+  GetParameterError,
+  TransformParameterError,
+  clearCaches,
+} from '../../src/index.js';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 
 const encoder = new TextEncoder();

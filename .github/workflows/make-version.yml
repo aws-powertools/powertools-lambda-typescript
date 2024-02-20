@@ -32,6 +32,7 @@ jobs:
         id: bump-version
         run: |
           npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes
+          echo "// this file is auto generated, do not modify\nexport const PT_VERSION = '$(jq -r '.version' lerna.json)';" > packages/commons/src/version.ts
           git add .
       - name: Set release version
         id: set-release-version

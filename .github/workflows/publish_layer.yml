@@ -99,6 +99,8 @@ jobs:
         with:
           name: cdk-layer-stack
           path: cdk-layer-stack/
+          pattern: cdk-layer-stack-*
+          merge-multiple: true
       - name: Replace layer versions in documentation
         run: |
           ls -la cdk-layer-stack/

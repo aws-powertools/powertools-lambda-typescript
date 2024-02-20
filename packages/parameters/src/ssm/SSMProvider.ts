@@ -26,12 +26,7 @@ import type {
   SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
-<<<<<<< HEAD
-} from '../types/SSMProvider';
-=======
 } from '../types/SSMProvider.js';
-import type { PaginationConfiguration } from '@aws-sdk/types';
->>>>>>> 6153463c (feat(parameters): add esmodule support (#1736))
 
 /**
  * ## Intro

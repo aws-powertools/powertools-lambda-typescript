@@ -300,9 +300,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   };
 
   /**
-   * Save an in progress record to the idempotency store or return an existing result.
+   * Save an in progress record to the idempotency store or return an stored result.
    *
-   * If the record already exists, return the result from the record.
+   * Before returning a result, we might neede to look up the idempotency record
+   * and validate it to ensure that it is consistent with the payload to be hashed.
    */
   #saveInProgressOrReturnExistingResult =
     async (): Promise<JSONValue | void> => {
@@ -313,11 +314,22 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         );
       } catch (e) {
         if (e instanceof IdempotencyItemAlreadyExistsError) {
-          const idempotencyRecord: IdempotencyRecord =
-            e.existingRecord ||
-            (await this.#persistenceStore.getRecord(
+          let idempotencyRecord = e.existingRecord;
+          if (idempotencyRecord !== undefined) {
+            // If the error includes the existing record, we can use it to validate
+            // the record being processed and cache it in memory.
+            idempotencyRecord = this.#persistenceStore.processExistingRecord(
+              idempotencyRecord,
               this.#functionPayloadToBeHashed
-            ));
+            );
+            // If the error doesn't include the existing record, we need to fetch
+            // it from the persistence layer. In doing so, we also call the processExistingRecord
+            // method to validate the record and cache it in memory.
+          } else {
+            idempotencyRecord = await this.#persistenceStore.getRecord(
+              this.#functionPayloadToBeHashed
+            );
+          }
 
           return IdempotencyHandler.determineResultFromIdempotencyRecord(
             idempotencyRecord

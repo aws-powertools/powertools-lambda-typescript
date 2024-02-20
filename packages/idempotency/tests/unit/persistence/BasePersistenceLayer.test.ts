@@ -3,6 +3,7 @@
  *
  * @group unit/idempotency/persistence/base
  */
+import { createHash } from 'node:crypto';
 import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
 import { IdempotencyConfig, IdempotencyRecordStatus } from '../../../src';
 import {
@@ -461,6 +462,92 @@ describe('Class: BasePersistenceLayer', () => {
           responseData: result,
         })
       );
+    });
+  });
+
+  describe('Method: processExistingRecord', () => {
+    it('throws an error if the payload does not match the stored record', () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          payloadValidationJmesPath: 'foo',
+        }),
+      });
+      const existingRecord = new IdempotencyRecord({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        status: IdempotencyRecordStatus.INPROGRESS,
+        payloadHash: 'different-hash',
+      });
+
+      // Act & Assess
+      expect(() =>
+        persistenceLayer.processExistingRecord(existingRecord, { foo: 'bar' })
+      ).toThrow(
+        new IdempotencyValidationError(
+          'Payload does not match stored record for this event key',
+          existingRecord
+        )
+      );
+    });
+
+    it('returns if the payload matches the stored record', () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          payloadValidationJmesPath: 'foo',
+        }),
+      });
+      const existingRecord = new IdempotencyRecord({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        status: IdempotencyRecordStatus.INPROGRESS,
+        payloadHash: 'mocked-hash',
+      });
+
+      // Act & Assess
+      expect(() =>
+        persistenceLayer.processExistingRecord(existingRecord, { foo: 'bar' })
+      ).not.toThrow();
+    });
+
+    it('skips validation if payload validation is not enabled', () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      const existingRecord = new IdempotencyRecord({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        status: IdempotencyRecordStatus.INPROGRESS,
+        payloadHash: 'different-hash',
+      });
+
+      // Act & Assess
+      expect(() =>
+        persistenceLayer.processExistingRecord(existingRecord, { foo: 'bar' })
+      ).not.toThrow();
+    });
+
+    it('skips hashing if the payload is already an IdempotencyRecord', () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          payloadValidationJmesPath: 'foo',
+        }),
+      });
+      const existingRecord = new IdempotencyRecord({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        status: IdempotencyRecordStatus.INPROGRESS,
+        payloadHash: 'mocked-hash',
+      });
+      const payload = new IdempotencyRecord({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        status: IdempotencyRecordStatus.INPROGRESS,
+        payloadHash: 'mocked-hash',
+      });
+
+      // Act
+      persistenceLayer.processExistingRecord(existingRecord, payload);
+      expect(createHash).toHaveBeenCalledTimes(0);
     });
   });
 

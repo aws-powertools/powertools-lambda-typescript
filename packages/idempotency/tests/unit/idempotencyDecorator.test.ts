@@ -164,7 +164,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will not call the function that was decorated', () => {
-      expect(functionalityToDecorate).not.toBeCalled();
+      expect(functionalityToDecorate).not.toHaveBeenCalled();
     });
 
     test('Then an IdempotencyAlreadyInProgressError is thrown', () => {
@@ -204,7 +204,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will not call the function that was decorated', () => {
-      expect(functionalityToDecorate).not.toBeCalled();
+      expect(functionalityToDecorate).not.toHaveBeenCalled();
     });
 
     test('Then an IdempotencyInconsistentStateError is thrown', () => {
@@ -305,8 +305,8 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will skip ipdemotency', async () => {
-      expect(mockSaveInProgress).not.toBeCalled();
-      expect(mockSaveSuccess).not.toBeCalled();
+      expect(mockSaveInProgress).not.toHaveBeenCalled();
+      expect(mockSaveSuccess).not.toHaveBeenCalled();
     });
 
     afterAll(() => {

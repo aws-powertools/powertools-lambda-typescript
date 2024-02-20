@@ -50,16 +50,7 @@ const betaPackages = [];
     let version = originalVersion;
     // If the package is an alpha or beta package, update the version number to include a suffix
     if (alphaPackages.includes(name)) {
-      const iteration = JSON.parse(
-        readFileSync(resolve('..', '..', 'v2.json'), 'utf8')
-      ).iteration;
-      version = `${version}-alpha.${iteration}`;
-      dependencies &&
-        Object.entries(dependencies).forEach(([dependencyName, version]) => {
-          if (alphaPackages.includes(dependencyName)) {
-            dependencies[dependencyName] = `${version}-alpha.${iteration}`;
-          }
-        });
+      version = `${version}-alpha`;
     } else if (betaPackages.includes(name)) {
       version = `${version}-beta`;
     }

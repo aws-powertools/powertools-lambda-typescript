@@ -57,6 +57,7 @@ jobs:
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
     permissions:
       id-token: write
+      contents: read
     with:
       stage: "BETA"
       artifact-name: "cdk-layer-artifact"
@@ -71,6 +72,7 @@ jobs:
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
     permissions:
       id-token: write
+      contents: read
     with:
       stage: "PROD"
       artifact-name: "cdk-layer-artifact"

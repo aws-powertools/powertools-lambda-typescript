@@ -13,6 +13,7 @@ import type {
   GetParametersByPathCommandInput,
   GetParametersCommandInput,
   GetParametersCommandOutput,
+  SSMPaginationConfiguration,
 } from '@aws-sdk/client-ssm';
 import type {
   SSMProviderOptions,
@@ -26,7 +27,6 @@ import type {
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
 } from '../types/SSMProvider';
-import type { PaginationConfiguration } from '@aws-sdk/types';
 
 /**
  * ## Intro
@@ -524,7 +524,7 @@ class SSMProvider extends BaseProvider {
       ...(options?.sdkOptions || {}),
       Path: path,
     };
-    const paginationOptions: PaginationConfiguration = {
+    const paginationOptions: SSMPaginationConfiguration = {
       client: this.client,
     };
     sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(

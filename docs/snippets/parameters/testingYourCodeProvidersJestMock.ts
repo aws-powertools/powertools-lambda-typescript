@@ -1,5 +1,6 @@
 import { handler } from './testingYourCodeFunctionsHandler';
 import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
+import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 
 describe('Function tests', () => {
   const providerSpy = jest.spyOn(AppConfigProvider.prototype, 'get');
@@ -16,7 +17,9 @@ describe('Function tests', () => {
         name: 'paywall',
       },
     };
-    providerSpy.mockResolvedValueOnce(expectedConfig);
+    providerSpy.mockResolvedValueOnce(
+      Uint8ArrayBlobAdapter.fromString(JSON.stringify(expectedConfig))
+    );
 
     // Act
     const result = await handler({}, {});

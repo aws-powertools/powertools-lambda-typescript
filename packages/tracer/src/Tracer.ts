@@ -46,7 +46,8 @@ import { type Segment, Subsegment } from 'aws-xray-sdk-core';
  *
  * @example
  * ```typescript
- * import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';
+ * import { Tracer } from '@aws-lambda-powertools/tracer';
+ * import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
  * import middy from '@middy/core';
  *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
@@ -69,7 +70,7 @@ import { type Segment, Subsegment } from 'aws-xray-sdk-core';
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
- * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  *
@@ -345,7 +346,7 @@ class Tracer extends Utility implements TracerInterface {
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+   * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
    *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    *

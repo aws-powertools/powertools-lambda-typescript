@@ -49,7 +49,8 @@ import {
  *
  * @example
  * ```typescript
- * import { Metrics, logMetrics } from '@aws-lambda-powertools/metrics';
+ * import { Metrics } from '@aws-lambda-powertools/metrics';
+ * import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
  * import middy from '@middy/core';
  *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
@@ -71,8 +72,8 @@ import {
  * @example
  *
  * ```typescript
- * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
- * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+ * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
  *
@@ -308,15 +309,14 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * ```typescript
    * import { Metrics } from '@aws-lambda-powertools/metrics';
-   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+   * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
    *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
    *
    * class Lambda implements LambdaInterface {
-   *
    *   @metrics.logMetrics({ captureColdStartMetric: true })
    *   public handler(_event: unknown, __context: unknown): Promise<void> {
-   *    // ...
+   *     // ...
    *   }
    * }
    *

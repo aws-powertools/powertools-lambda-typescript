@@ -110,10 +110,10 @@ This functionality will include the following keys in your structured logs:
 === "Middy Middleware"
 
     !!! tip "A note about Middy"
-        Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
+        We guarantee support only for Middy.js `v4.x`, that you can install it by running `npm i @middy/core@~4`.
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
-    ```typescript hl_lines="1 13"
+    ```typescript hl_lines="2 14"
     --8<-- "docs/snippets/logger/middy.ts"
     ```
 
@@ -131,7 +131,7 @@ This functionality will include the following keys in your structured logs:
 
 === "Manual"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="10"
     --8<-- "docs/snippets/logger/manual.ts"
     ```
 
@@ -163,7 +163,7 @@ When debugging in non-production environments, you can instruct Logger to log th
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="10"
+    ```typescript hl_lines="15"
     --8<-- "docs/snippets/logger/eventMiddy.ts"
     ```
 
@@ -236,7 +236,7 @@ If you want to make sure that persistent attributes added **inside the handler f
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="30"
+    ```typescript hl_lines="31"
     --8<-- "docs/snippets/logger/clearStateMiddy.ts"
     ```
 
@@ -509,23 +509,21 @@ The `createChild` method allows you to create a child instance of the Logger, wh
     }
     ```
 
-### Sampling logs
+### Sampling debug logs
 
-Use sampling when you want to print all the log items generated in your code, based on a **percentage of your concurrent/cold start invocations**.
+Use sampling when you want to dynamically change your log level to **DEBUG** based on a **percentage of your concurrent/cold start invocations**.
 
-You can do that by setting a "sample rate", a float value ranging from `0.0` (0%) to `1` (100%), by using a `POWERTOOLS_LOGGER_SAMPLE_RATE` env var or passing the `sampleRateValue` parameter in the Logger constructor.
-This number represents the probability that a Lambda invocation will print all the log items regardless of the log level setting.
-
-For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda invocations will print all the log items, including the `debug` ones.
+You can use values ranging from `0` to `1` (100%) when setting the `sampleRateValue` constructor option or `POWERTOOLS_LOGGER_SAMPLE_RATE` env var.
 
 !!! tip "When is this useful?"
-    In production, to avoid log data pollution and reduce CloudWatch costs, developers are encouraged to use the logger with `logLevel` equal to `ERROR` or `WARN`.
-    This means that only errors or warnings will be printed.
+    Let's imagine a sudden spike increase in concurrency triggered a transient issue downstream. When looking into the logs you might not have enough information, and while you can adjust log levels it might not happen again.
 
-    However, it might still be useful to print all the logs (including debug ones) of a very small percentage of invocations to have a better understanding of the behaviour of your code in production even when there are no errors.
-    
-    **Sampling decision happens at the Logger initialization**. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
-    If you want to reset the sampling decision and refresh it for each invocation, you can call the `logger.refreshSampleRateCalculation()` method at the beginning or end of your handler.
+    This feature takes into account transient issues where additional debugging information can be useful.
+
+Sampling decision happens at the Logger initialization. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
+
+!!! note
+    Open a [feature request](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type%2Ffeature-request%2Ctriage&projects=aws-powertools%2F7&template=feature_request.yml&title=Feature+request%3A+TITLE) if you want Logger to calculate sampling for every invocation
 
 === "handler.ts"
 
@@ -639,7 +637,7 @@ You can customize the structure (keys and values) of your log items by passing a
 
 === "handler.ts"
 
-    ```typescript hl_lines="2 5"
+    ```typescript hl_lines="2 6"
     --8<-- "docs/snippets/logger/bringYourOwnFormatterHandler.ts"
     ```
 
@@ -699,9 +697,6 @@ This is a Jest sample that provides the minimum information necessary for Logger
     ```typescript
     --8<-- "docs/snippets/logger/unitTesting.ts"
     ```
-
-!!! tip
-    If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/packages/commons/src/samples/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).
 
 ### Suppress logs with Jest
 

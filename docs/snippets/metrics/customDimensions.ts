@@ -1,4 +1,4 @@
-import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics({
   namespace: 'serverlessAirline',
@@ -10,6 +10,6 @@ export const handler = async (
   _context: unknown
 ): Promise<void> => {
   metrics.addDimension('environment', 'prod');
-  metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+  metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
   metrics.publishStoredMetrics();
 };

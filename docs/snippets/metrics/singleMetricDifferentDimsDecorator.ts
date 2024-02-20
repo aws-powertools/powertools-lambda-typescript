@@ -1,5 +1,5 @@
-import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
 const metrics = new Metrics({
   namespace: 'serverlessAirline',
@@ -11,12 +11,12 @@ class Lambda implements LambdaInterface {
   public async handler(_event: unknown, _context: unknown): Promise<void> {
     metrics.addDimension('metricUnit', 'milliseconds');
     // This metric will have the "metricUnit" dimension, and no "metricType" dimension:
-    metrics.addMetric('latency', MetricUnits.Milliseconds, 56);
+    metrics.addMetric('latency', MetricUnit.Milliseconds, 56);
 
     const singleMetric = metrics.singleMetric();
     // This metric will have the "metricType" dimension, and no "metricUnit" dimension:
     singleMetric.addDimension('metricType', 'business');
-    singleMetric.addMetric('orderSubmitted', MetricUnits.Count, 1);
+    singleMetric.addMetric('orderSubmitted', MetricUnit.Count, 1);
   }
 }
 

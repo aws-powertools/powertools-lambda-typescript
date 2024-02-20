@@ -58,7 +58,8 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
+ * import { Logger } from '@aws-lambda-powertools/logger';
+ * import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
  * import middy from '@middy/core';
  *
  * const logger = new Logger();
@@ -77,7 +78,7 @@ import type {
  * @example
  * ```typescript
  * import { Logger } from '@aws-lambda-powertools/logger';
- * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
  * const logger = new Logger();
  *
@@ -346,7 +347,7 @@ class Logger extends Utility implements LoggerInterface {
    * @example
    * ```typescript
    * import { Logger } from '@aws-lambda-powertools/logger';
-   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+   * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
    *
    * const logger = new Logger();
    *

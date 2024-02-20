@@ -12,7 +12,7 @@
     "examples/sam",
     "layers"
   ],
-  "version": "1.18.0",
+  "version": "1.18.1",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

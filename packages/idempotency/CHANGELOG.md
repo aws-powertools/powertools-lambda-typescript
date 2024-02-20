@@ -3,9 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [1.16.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.16.1) (2023-11-24)
+## [1.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.17.0...v1.18.0) (2024-01-26)
 
-**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+### Features
+
+- **idempotency:** leverage new DynamoDB failed conditional writes ([#1779](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1779)) ([1917ec6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1917ec6b48df17de3126a1b8b1d008295e60f4ef))
+
+## [1.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.17.0) (2023-11-24)
+
+**maintenance:** drop support for Node.js 14 ([#1664](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1664)) ([e2a0923](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e2a09232f86167b5208be2daf892aa1ea433ce0f))
 
 # [1.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.15.0...v1.16.0) (2023-11-16)
 

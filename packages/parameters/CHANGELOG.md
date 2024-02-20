@@ -3,9 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [1.16.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.16.1) (2023-11-24)
+## [1.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.17.0...v1.18.0) (2024-01-26)
 
-**Note:** Version bump only for package @aws-lambda-powertools/parameters
+### Bug Fixes
+
+- **parameters:** refresh AppConfig session token after 24 hrs ([#1916](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1916)) ([559ef2d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/559ef2dd0d012cb8c4e378b2a1457a6f52885a17))
+
+## [1.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.17.0) (2023-11-24)
+
+**maintenance:** drop support for Node.js 14 ([#1664](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1664)) ([e2a0923](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e2a09232f86167b5208be2daf892aa1ea433ce0f))
 
 # [1.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.15.0...v1.16.0) (2023-11-16)
 

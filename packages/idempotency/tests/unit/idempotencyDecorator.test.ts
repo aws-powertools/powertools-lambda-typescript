@@ -290,10 +290,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
           persistenceStore: new PersistenceLayerTestClass(),
           config: new IdempotencyConfig({ lambdaContext: context }),
         })
-        public testing(
+        public async testing(
           record: Record<string, unknown>,
           _context: Context
-        ): string {
+        ): Promise<string> {
           functionalityToDecorate(record);
 
           return 'Hi';

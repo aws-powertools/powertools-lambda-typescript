@@ -433,7 +433,7 @@ class Logger extends Utility implements LoggerInterface {
 
     let shouldLogEvent = undefined;
     if (options && options.hasOwnProperty('logEvent')) {
-      shouldLogEvent = options!.logEvent;
+      shouldLogEvent = options.logEvent;
     }
     logger.logEventIfEnabled(event, shouldLogEvent);
   }

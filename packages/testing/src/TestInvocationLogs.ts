@@ -10,7 +10,7 @@ const CloudWatchLogKeywords = {
 } as const;
 
 class TestInvocationLogs {
-  public static LEVEL = LogLevel;
+  public static readonly LEVEL = LogLevel;
 
   /**
    * Array of logs from invocation.

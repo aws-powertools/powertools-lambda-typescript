@@ -97,7 +97,6 @@ jobs:
       - name: Download CDK layer artifacts
         uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
         with:
-          name: cdk-layer-stack
           path: cdk-layer-stack/
           pattern: cdk-layer-stack-*
           merge-multiple: true

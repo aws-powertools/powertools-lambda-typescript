@@ -64,6 +64,13 @@ This behavior changes when you enable [ReportBatchItemFailures feature](https://
 
 ## Getting started
 
+### Installation
+
+Install the library in your project
+```shell
+npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
+```
+
 For this feature to work, you need to **(1)** configure your Lambda function event source to use `ReportBatchItemFailures`, and **(2)** return [a specific response](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting){target="_blank" rel="nofollow"} to report which records failed to be processed.
 
 Use your preferred deployment framework to set the correct configuration while this utility handles the correct response to be returned.

@@ -20,7 +20,7 @@ runs:
       shell: bash
     - name: Cache node modules
       id: cache-node-modules
-      uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: '**/node_modules'
         # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that

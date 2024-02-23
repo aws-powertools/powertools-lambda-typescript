@@ -17,13 +17,12 @@
     "examples/sam"
   ],
   "scripts": {
-    "init-environment": "husky",
     "test": "npm t -ws",
     "test:parallel": "lerna exec --no-bail --no-sort --stream --concurrency 8 -- npm run test",
     "test:e2e": "npm run test:e2e -ws",
     "test:e2e:parallel": "lerna exec --no-bail --no-sort --stream --concurrency 8 -- npm run test:e2e",
     "commit": "commit",
-    "setup-local": "npm ci && npm run build && npm run init-environment",
+    "setup-local": "npm ci && npm run build && husky",
     "build": "npm run build -ws",
     "docs-website-build-run": "npm run docs-buildDockerImage && npm run docs-runLocalDocker",
     "docs-buildDockerImage": "docker build -t powertools-typescript/docs ./docs/",

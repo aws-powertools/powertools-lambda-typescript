@@ -17,7 +17,7 @@
     "examples/sam"
   ],
   "scripts": {
-    "init-environment": "husky install",
+    "init-environment": "husky",
     "test": "npm t -ws",
     "test:parallel": "lerna exec --no-bail --no-sort --stream --concurrency 8 -- npm run test",
     "test:e2e": "npm run test:e2e -ws",

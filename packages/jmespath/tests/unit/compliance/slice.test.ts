@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/slice
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Slices tests', () => {
   it.each([
@@ -147,7 +147,7 @@ describe('Slices tests', () => {
     {
       expression: 'foo[8:2&]',
       error:
-        'Invalid jmespath expression: parse error at column 8, found unexpected token "]" (rbracket) in expression: foo[8:2&]',
+        'Invalid jmespath expression: parse error at column 7, found unexpected token "&" (expref) in expression: foo[8:2&]',
     },
     {
       expression: 'foo[2:a:3]',

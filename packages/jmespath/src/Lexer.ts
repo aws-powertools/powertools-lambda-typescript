@@ -1,13 +1,18 @@
 import {
+  SIMPLE_TOKENS,
   START_IDENTIFIER,
   VALID_IDENTIFIER,
   VALID_NUMBER,
   WHITESPACE,
-  SIMPLE_TOKENS,
-} from './constants';
-import { LexerError, EmptyExpressionError } from './errors';
-import type { Token } from './types';
+} from './constants.js';
+import { EmptyExpressionError, LexerError } from './errors.js';
+import type { Token } from './types.js';
 
+/**
+ * A lexer for JMESPath expressions.
+ *
+ * This lexer tokenizes a JMESPath expression into a sequence of tokens.
+ */
 class Lexer {
   #position!: number;
   #expression!: string;
@@ -15,6 +20,13 @@ class Lexer {
   #current!: string;
   #length!: number;
 
+  /**
+   * Tokenize a JMESPath expression.
+   *
+   * This method is a generator that yields tokens for the given expression.
+   *
+   * @param expression The JMESPath expression to tokenize.
+   */
   public *tokenize(expression: string): Generator<Token> {
     this.#initializeForExpression(expression);
     while (this.#current !== '' && this.#current !== undefined) {
@@ -77,16 +89,12 @@ class Lexer {
         // Negative number.
         const start = this.#position;
         const buff = this.#consumeNumber();
-        if (buff.length > 1) {
-          yield {
-            type: 'number',
-            value: parseInt(buff),
-            start: start,
-            end: start + buff.length,
-          };
-        } else {
-          throw new LexerError(start, buff);
-        }
+        yield {
+          type: 'number',
+          value: parseInt(buff),
+          start: start,
+          end: start + buff.length,
+        };
       } else if (this.#current === '"') {
         yield this.#consumeQuotedIdentifier();
       } else if (this.#current === '<') {
@@ -105,17 +113,7 @@ class Lexer {
           };
           this.#next();
         } else {
-          let position;
-          // TODO: check this this.#current === undefined case
-          if (this.#current === undefined) {
-            // If we're at the EOF, we never advanced
-            // the position so we don't need to rewind
-            // it back one location.
-            position = this.#position;
-          } else {
-            position = this.#position - 1;
-          }
-          throw new LexerError(position, '=');
+          throw new LexerError(this.#position - 1, '=');
         }
       } else {
         throw new LexerError(this.#position, this.#current);
@@ -164,8 +162,6 @@ class Lexer {
 
   /**
    * Advance the lexer to the next character in the expression.
-   *
-   * @returns The next character in the expression.
    */
   #next(): string {
     if (this.#position === this.#length - 1) {
@@ -196,8 +192,6 @@ class Lexer {
       if (this.#current === '') {
         // We've reached the end of the expression (EOF) before
         // we found the delimiter. This is an error.
-        // TODO: see if we can pass a message to the Lexer.#consumeUntil() call
-        // @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/lexer.py#L151
         throw new LexerError(start, this.#expression.substring(start));
       }
       buff += this.#current;
@@ -210,9 +204,9 @@ class Lexer {
   }
 
   /**
-   * TODO: write docs for Lexer.#consumeLiteral()
+   * Process a literal.
    *
-   * @returns
+   * A literal is a JSON string that is enclosed in backticks.
    */
   #consumeLiteral(): Token {
     const start = this.#position;
@@ -227,41 +221,32 @@ class Lexer {
         end: this.#position - start,
       };
     } catch (error) {
-      // TODO: see if we can get the error message from JSON.parse() and use that
-      // @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/lexer.py#L174
       throw new LexerError(start, lexeme);
     }
   }
 
   /**
-   * TODO: write docs for Lexer.#consumeQuotedIdentifier()
+   * Process a quoted identifier.
    *
-   * @returns
+   * A quoted identifier is a string that is enclosed in double quotes.
    */
   #consumeQuotedIdentifier(): Token {
     const start = this.#position;
     const lexeme = '"' + this.#consumeUntil('"') + '"';
-    try {
-      const tokenLen = this.#position - start;
+    const tokenLen = this.#position - start;
 
-      return {
-        type: 'quoted_identifier',
-        value: JSON.parse(lexeme),
-        start,
-        end: tokenLen,
-      };
-    } catch (error) {
-      // TODO: see if we can get the error message from JSON.parse() and use that
-      // @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/lexer.py#L187
-      // const errorMessage = `Invalid quoted identifier: ${lexeme}`;
-      throw new LexerError(start, lexeme);
-    }
+    return {
+      type: 'quoted_identifier',
+      value: JSON.parse(lexeme),
+      start,
+      end: tokenLen,
+    };
   }
 
   /**
-   * TODO: write docs for Lexer.#consumeRawStringLiteral()
+   * Process a raw string literal.
    *
-   * @returns
+   * A raw string literal is a string that is enclosed in single quotes.
    */
   #consumeRawStringLiteral(): Token {
     const start = this.#position;
@@ -277,12 +262,11 @@ class Lexer {
   }
 
   /**
-   * TODO: write docs for Lexer.#matchOrElse()
+   * Match the expected character and return the corresponding token type.
    *
-   * @param expected
-   * @param matchType
-   * @param elseType
-   * @returns
+   * @param expected The expected character
+   * @param matchType The token type to return if the expected character is found
+   * @param elseType  The token type to return if the expected character is not found
    */
   #matchOrElse(
     expected: string,

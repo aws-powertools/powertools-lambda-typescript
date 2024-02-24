@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/pipe
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Pipe expressions tests', () => {
   it.each([

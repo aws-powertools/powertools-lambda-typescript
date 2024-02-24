@@ -1,25 +1,35 @@
-import type { JSONValue, Node, TreeInterpreterOptions } from '../types';
-import { Functions } from '../functions';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import {
-  Expression,
   isIntegerNumber,
   isRecord,
   isStrictEqual,
-  isTruthy,
-  sliceArray,
-} from './utils';
+} from '@aws-lambda-powertools/commons/typeutils';
 import {
   ArityError,
+  JMESPathError,
   JMESPathTypeError,
   UnknownFunctionError,
   VariadicArityError,
-} from '../errors';
+} from './errors.js';
+import { Expression } from './Expression.js';
+import { Functions } from './Functions.js';
+import type { Node, TreeInterpreterOptions } from './types.js';
+import { isTruthy, sliceArray } from './utils.js';
 
+/**
+ *
+ * A tree interpreter for JMESPath ASTs.
+ *
+ * The tree interpreter is responsible for visiting nodes in the AST and
+ * evaluating them to produce a result.
+ *
+ * @internal
+ */
 class TreeInterpreter {
   #functions: Functions;
 
   /**
-   * @param _options
+   * @param options The options to use for the interpreter.
    */
   public constructor(options?: TreeInterpreterOptions) {
     if (options?.customFunctions) {
@@ -30,12 +40,12 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visit()
-   * TODO: finalize types for TreeInterpreter.visit()
+   * Visit a node in the AST.
    *
-   * @param node
-   * @param value
-   * @returns
+   * The function will call the appropriate method to visit the node based on its type.
+   *
+   * @param node The node to visit.
+   * @param value The current value to visit.
    */
   public visit(node: Node, value: JSONValue): JSONValue | undefined {
     const nodeType = node.type;
@@ -48,7 +58,14 @@ class TreeInterpreter {
     } else if (nodeType === 'current') {
       return this.#visitCurrent(node, value);
     } else if (nodeType === 'expref') {
-      // TODO: review #visitExpref() return type
+      // This is a special case where we return an instance of the Expression
+      // class instead of the result of visiting the node. This is because the
+      // expref node represents a reference to another expression, so we want
+      // to return an instance of the Expression class so that we can evaluate
+      // the referenced expression later. Adding `Expression` to the return
+      // type of the `visit` method would mean having to type-check the return
+      // type of every call to `visit` in the interpreter even though we only
+      // return an instance of `Expression` in this one case.
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore-next-line
       return this.#visitExpref(node, value);
@@ -70,8 +87,8 @@ class TreeInterpreter {
       return this.#visitKeyValPair(node, value);
     } else if (nodeType === 'literal') {
       return this.#visitLiteral(node, value);
-    } else if (nodeType === 'multi_select_dict') {
-      return this.#visitMultiSelectDict(node, value);
+    } else if (nodeType === 'multi_select_object') {
+      return this.#visitMultiSelectObject(node, value);
     } else if (nodeType === 'multi_select_list') {
       return this.#visitMultiSelectList(node, value);
     } else if (nodeType === 'or_expression') {
@@ -87,16 +104,17 @@ class TreeInterpreter {
     } else if (nodeType === 'value_projection') {
       return this.#visitValueProjection(node, value);
     } else {
-      // TODO: convert to a custom error
-      throw new Error(`Not Implemented: Invalid node type: ${node.type}`);
+      throw new JMESPathError(
+        `Not Implemented: Invalid node type: ${node.type}`
+      );
     }
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitSubexpression()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a subexpression node.
+   *
+   * @param node The subexpression node to visit.
+   * @param value The current value to visit.
    */
   #visitSubexpression(node: Node, value: JSONValue): JSONValue {
     let result = value;
@@ -108,10 +126,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitField()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a field node.
+   *
+   * @param node The field node to visit.
+   * @param value The current value to visit.
    */
   #visitField(node: Node, value: JSONValue): JSONValue {
     if (!node.value) return null;
@@ -127,10 +145,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitComparator()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a comparator node.
+   *
+   * @param node The comparator node to visit.
+   * @param value The current value to visit.
    */
   #visitComparator(node: Node, value: JSONValue): JSONValue {
     const comparator = node.value;
@@ -157,40 +175,37 @@ class TreeInterpreter {
         } else {
           return left >= right;
         }
-      } else {
-        return null;
       }
     } else {
-      // TODO: make invalid comparator a custom error
-      throw new Error(`Invalid comparator: ${comparator}`);
+      throw new JMESPathError(`Invalid comparator: ${comparator}`);
     }
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitCurrent()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a current node.
+   *
+   * @param node The current node to visit.
+   * @param value The current value to visit.
    */
   #visitCurrent(_node: Node, value: JSONValue): JSONValue {
     return value;
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitExpref()
-   * @param node
-   * @param value
-   * @returns
+   * Visit an expref node.
+   *
+   * @param node The expref node to visit.
+   * @param value The current value to visit.
    */
   #visitExpref(node: Node, _value: JSONValue): Expression {
     return new Expression(node.children[0], this);
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitFunctionExpression()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a function expression node.
+   *
+   * @param node The function expression node to visit.
+   * @param value The current value to visit.
    */
   #visitFunctionExpression(node: Node, value: JSONValue): JSONValue {
     const args = [];
@@ -199,11 +214,23 @@ class TreeInterpreter {
     }
     // check that method name is a string
     if (typeof node.value !== 'string') {
-      throw new Error(`Function name must be a string, got ${node.value}`);
+      throw new JMESPathError(
+        `Function name must be a string, got ${node.value}`
+      );
     }
-    const methods = Object.getOwnPropertyNames(
-      Object.getPrototypeOf(this.#functions)
-    );
+    // get all methods of the functions object
+    const functionsProto = Object.getPrototypeOf(this.#functions);
+    const methods = [
+      ...Object.getOwnPropertyNames(functionsProto),
+      // If the functions object's prototype is the Functions class, then it
+      // must be a custom functions object, so we'll also include the methods
+      // from the Functions class itself.
+      ...(functionsProto.__proto__.constructor.name === 'Functions'
+        ? Object.getOwnPropertyNames(
+            Object.getPrototypeOf(this.#functions).__proto__
+          )
+        : []),
+    ];
     // convert snake_case to camelCase
     const normalizedFunctionName = node.value.replace(/_([a-z])/g, (g) =>
       g[1].toUpperCase()
@@ -229,8 +256,8 @@ class TreeInterpreter {
     } catch (error) {
       if (
         error instanceof JMESPathTypeError ||
-        error instanceof ArityError ||
-        error instanceof VariadicArityError
+        error instanceof VariadicArityError ||
+        error instanceof ArityError
       ) {
         error.setFunctionName(node.value);
         throw error;
@@ -239,10 +266,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitFilterProjection()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a filter projection node.
+   *
+   * @param node The filter projection node to visit.
+   * @param value The current value to visit.
    */
   #visitFilterProjection(node: Node, value: JSONValue): JSONValue {
     const base = this.visit(node.children[0], value);
@@ -264,10 +291,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitFlatten()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a flatten node.
+   *
+   * @param node The flatten node to visit.
+   * @param value The current value to visit.
    */
   #visitFlatten(node: Node, value: JSONValue): JSONValue {
     const base = this.visit(node.children[0], value);
@@ -287,29 +314,29 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitIdentity()
-   * @param node
-   * @param value
-   * @returns
+   * Visit an identity node.
+   *
+   * @param node The identity node to visit.
+   * @param value The current value to visit.
    */
   #visitIdentity(_node: Node, value: JSONValue): JSONValue {
     return value;
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitIndex()
-   * @param node
-   * @param value
-   * @returns
+   * Visit an index node.
+   *
+   * @param node The index node to visit.
+   * @param value The current value to visit.
    */
   #visitIndex(node: Node, value: JSONValue): JSONValue {
-    // The Python implementation doesn't support string indexing
-    // even though we could, so we won't either for now.
     if (!Array.isArray(value)) {
       return null;
     }
+    // The Python implementation doesn't support string indexing
+    // even though we could, so we won't either for now.
     if (typeof node.value !== 'number') {
-      throw new Error(`Invalid index: ${node.value}`);
+      throw new JMESPathError(`Invalid index: ${node.value}`);
     }
     const index = node.value < 0 ? value.length + node.value : node.value;
     const found = value[index];
@@ -321,10 +348,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitIndexExpression()
-   * @param node
-   * @param value
-   * @returns
+   * Visit an index expression node.
+   *
+   * @param node The index expression node to visit.
+   * @param value The current value to visit.
    */
   #visitIndexExpression(node: Node, value: JSONValue): JSONValue {
     let result = value;
@@ -336,10 +363,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitSlice()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a slice node.
+   *
+   * @param node The slice node to visit.
+   * @param value The current value to visit.
    */
   #visitSlice(node: Node, value: JSONValue): JSONValue {
     const step = isIntegerNumber(node.children[2]) ? node.children[2] : 1;
@@ -353,41 +380,41 @@ class TreeInterpreter {
       return [];
     }
 
-    return sliceArray(
-      value,
-      node.children[0] as unknown as number,
-      node.children[1] as unknown as number,
-      step
-    );
+    return sliceArray({
+      array: value,
+      start: node.children[0] as unknown as number,
+      end: node.children[1] as unknown as number,
+      step,
+    });
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitKeyValPair()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a key-value pair node.
+   *
+   * @param node The key-value pair node to visit.
+   * @param value The current value to visit.
    */
   #visitKeyValPair(node: Node, value: JSONValue): JSONValue {
     return this.visit(node.children[0], value);
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitLiteral()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a literal node.
+   *
+   * @param node The literal node to visit.
+   * @param value The current value to visit.
    */
   #visitLiteral(node: Node, _value: JSONValue): JSONValue {
     return node.value;
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitMultiSelectDict()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a multi-select object node.
+   *
+   * @param node The multi-select object node to visit.
+   * @param value The current value to visit.
    */
-  #visitMultiSelectDict(node: Node, value: JSONValue): JSONValue {
+  #visitMultiSelectObject(node: Node, value: JSONValue): JSONValue {
     if (Object.is(value, null)) {
       return null;
     }
@@ -402,10 +429,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitMultiSelectList()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a multi-select list node.
+   *
+   * @param node The multi-select list node to visit.
+   * @param value The current value to visit.
    */
   #visitMultiSelectList(node: Node, value: JSONValue): JSONValue {
     if (Object.is(value, null)) {
@@ -420,10 +447,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitOrExpression()
-   * @param node
-   * @param value
-   * @returns
+   * Visit an or expression node.
+   *
+   * @param node The or expression node to visit.
+   * @param value The current value to visit.
    */
   #visitOrExpression(node: Node, value: JSONValue): JSONValue {
     const matched = this.visit(node.children[0], value);
@@ -435,10 +462,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitAndExpression()
-   * @param node
-   * @param value
-   * @returns
+   * Visit an and expression node.
+   *
+   * @param node The and expression node to visit.
+   * @param value The current value to visit.
    */
   #visitAndExpression(node: Node, value: JSONValue): JSONValue {
     const matched = this.visit(node.children[0], value);
@@ -450,10 +477,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitNotExpression()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a not expression node.
+   *
+   * @param node The not expression node to visit.
+   * @param value The current value to visit.
    */
   #visitNotExpression(node: Node, value: JSONValue): JSONValue {
     const originalResult = this.visit(node.children[0], value);
@@ -467,10 +494,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitPipe()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a pipe node.
+   *
+   * @param node The pipe node to visit.
+   * @param value The current value to visit.
    */
   #visitPipe(node: Node, value: JSONValue): JSONValue {
     let result = value;
@@ -482,10 +509,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitProjection()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a projection node.
+   *
+   * @param node The projection node to visit.
+   * @param value The current value to visit.
    */
   #visitProjection(node: Node, value: JSONValue): JSONValue {
     const base = this.visit(node.children[0], value);
@@ -504,10 +531,10 @@ class TreeInterpreter {
   }
 
   /**
-   * TODO: write docs for TreeInterpreter.visitValueProjection()
-   * @param node
-   * @param value
-   * @returns
+   * Visit a value projection node.
+   *
+   * @param node The value projection node to visit.
+   * @param value The current value to visit.
    */
   #visitValueProjection(node: Node, value: JSONValue): JSONValue {
     const base = this.visit(node.children[0], value);

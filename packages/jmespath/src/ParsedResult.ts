@@ -1,11 +1,12 @@
-import { TreeInterpreter } from './visitor';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { TreeInterpreter } from './TreeInterpreter.js';
 import {
+  ArityError,
   JMESPathTypeError,
   UnknownFunctionError,
-  ArityError,
   VariadicArityError,
-} from './errors';
-import type { Node, JSONValue, ParsingOptions } from './types';
+} from './errors.js';
+import type { Node, ParsingOptions } from './types.js';
 
 class ParsedResult {
   public expression: string;
@@ -16,6 +17,12 @@ class ParsedResult {
     this.parsed = parsed;
   }
 
+  /**
+   * Perform a JMESPath search on a JSON value.
+   *
+   * @param value The JSON value to search
+   * @param options The parsing options to use
+   */
   public search(value: JSONValue, options?: ParsingOptions): unknown {
     const interpreter = new TreeInterpreter(options);
 

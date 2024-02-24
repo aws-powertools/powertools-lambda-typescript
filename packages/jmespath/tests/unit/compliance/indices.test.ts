@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/indices
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Indices tests', () => {
   it.each([

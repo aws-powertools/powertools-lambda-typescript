@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/filters
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Filer operator tests', () => {
   it.each([

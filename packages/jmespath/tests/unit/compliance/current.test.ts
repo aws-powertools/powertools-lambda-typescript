@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/current
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Current operator tests', () => {
   it.each([

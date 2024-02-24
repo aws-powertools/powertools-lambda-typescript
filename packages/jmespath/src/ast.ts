@@ -1,7 +1,14 @@
-import type { JSONValue, Node } from './types';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { Node } from './types.js';
 
 /**
- * TODO: write docs for comparator()
+ * AST node representing a comparator expression.
+ *
+ * A comparator expression is a binary expression that compares two values.
+ *
+ * @param name The name of the comparator
+ * @param first The left-hand side of the comparator
+ * @param second The right-hand side of the comparator
  */
 const comparator = (name: string, first: Node, second: Node): Node => ({
   type: 'comparator',
@@ -10,7 +17,10 @@ const comparator = (name: string, first: Node, second: Node): Node => ({
 });
 
 /**
- * TODO: write docs for currentNode()
+ * AST node representing the current node.
+ *
+ * The current node is a reference to the current value being processed.
+ * In JMESPath, the current node is represented by the `@` symbol.
  */
 const currentNode = (): Node => ({
   type: 'current',
@@ -18,7 +28,12 @@ const currentNode = (): Node => ({
 });
 
 /**
- * TODO: write docs for expref()
+ * AST node representing an expression reference.
+ *
+ * An expression reference is a reference to another expression.
+ * In JMESPath, an expression reference is represented by the `&` symbol.
+ *
+ * @param expression The expression to reference
  */
 const expref = (expression: Node): Node => ({
   type: 'expref',
@@ -26,7 +41,16 @@ const expref = (expression: Node): Node => ({
 });
 
 /**
- * TODO: write docs for functionExpression()
+ * AST node representing a function expression.
+ *
+ * A function expression is a reference to a function and its arguments.
+ * The JMESPath specification defines a set of built-in functions that can
+ * be used in expressions like `length(@)`, `map(@, &foo)`, etc.
+ *
+ * Custom functions can be added by extending the `Functions` class.
+ *
+ * @param name The name of the function
+ * @param args The arguments to the function
  */
 const functionExpression = (name: string, args: Node[]): Node => ({
   type: 'function_expression',
@@ -35,7 +59,9 @@ const functionExpression = (name: string, args: Node[]): Node => ({
 });
 
 /**
- * TODO: write docs for field()
+ * AST node representing a field reference.
+ *
+ * A field reference is a reference to a field in an object.
  */
 const field = (name: JSONValue): Node => ({
   type: 'field',
@@ -44,12 +70,18 @@ const field = (name: JSONValue): Node => ({
 });
 
 /**
- * TODO: write docs for fieldExpression()
+ * AST node representing a filter projection.
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * A filter projection is a binary expression that filters the left-hand side
+ * based on the right-hand side.
+ *
+ * In JMESPath, a filter projection is represented by the `[]` operator.
+ * For example, `people[?age > 18]` filters the `people` array based on the
+ * `age` field.
+ *
+ * @param left The left-hand side of the filter projection
+ * @param right The right-hand side of the filter projection
+ * @param comparator The comparator to use for the filter
  */
 const filterProjection = (left: Node, right: Node, comparator: Node): Node => ({
   type: 'filter_projection',
@@ -57,12 +89,16 @@ const filterProjection = (left: Node, right: Node, comparator: Node): Node => ({
 });
 
 /**
- * TODO: write docs for flatten()
+ * AST node representing a flatten expression.
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * A flatten expression is a unary expression that flattens an array of arrays
+ * into a single array.
+ *
+ * In JMESPath, a flatten expression is represented by the `[]` operator.
+ * For example, `people[].name` flattens the `people` array and returns the
+ * `name` field of each object in the array.
+ *
+ * @param node The node to flatten
  */
 const flatten = (node: Node): Node => ({
   type: 'flatten',
@@ -70,22 +106,17 @@ const flatten = (node: Node): Node => ({
 });
 
 /**
- * TODO: write docs for identity()
- *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * AST node representing an identity expression.
  */
 const identity = (): Node => ({ type: 'identity', children: [] });
 
 /**
- * TODO: write docs for index()
+ * AST node representing an index reference.
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * An index reference is a reference to an index in an array.
+ * For example, `people[0]` references the first element in the `people` array.
+ *
+ * @param index The index to reference
  */
 const index = (index: JSONValue): Node => ({
   type: 'index',
@@ -94,12 +125,11 @@ const index = (index: JSONValue): Node => ({
 });
 
 /**
- * TODO: write docs for indexExpression()
+ * AST node representing an index expression.
  *
- * @param left
- * @param right
- * @param comparator
- * @returns
+ * An index expression holds the index and the children of the expression.
+ *
+ * @param children The children of the index expression
  */
 const indexExpression = (children: Node[]): Node => ({
   type: 'index_expression',
@@ -107,10 +137,10 @@ const indexExpression = (children: Node[]): Node => ({
 });
 
 /**
- * TODO: write docs for keyValPair()
+ * AST node representing a key-value pair.
  *
- * @param keyName
- * @param node
+ * @param keyName The name of the key
+ * @param node The value of the key
  */
 const keyValPair = (keyName: JSONValue, node: Node): Node => ({
   type: 'key_val_pair',
@@ -119,9 +149,11 @@ const keyValPair = (keyName: JSONValue, node: Node): Node => ({
 });
 
 /**
- * TODO: write docs for literal()
+ * AST node representing a literal value.
  *
- * @param literalValue
+ * A literal value is a value that is not a reference to another node.
+ *
+ * @param literalValue The value of the literal
  */
 const literal = (literalValue: JSONValue): Node => ({
   type: 'literal',
@@ -130,19 +162,19 @@ const literal = (literalValue: JSONValue): Node => ({
 });
 
 /**
- * TODO: write docs for multiSelectDict()
- * TODO: check if multiSelectDict() could be possibly be renamed to multiSelectObject() / multiSelectMap() / multiSelectHash()
+ * AST node representing a multi-select object.
+ *
+ * A multi-select object is a reference to multiple nodes in an object.
  *
  * @param nodes
  */
-const multiSelectDict = (nodes: Node[]): Node => ({
-  type: 'multi_select_dict',
+const multiSelectObject = (nodes: Node[]): Node => ({
+  type: 'multi_select_object',
   children: nodes,
 });
 
 /**
- * TODO: write docs for multiSelectList()
- * TODO: check if multiSelectList() could be possibly be renamed to multiSelectArray()
+ * AST node representing a multi-select list.
  *
  * @param nodes
  */
@@ -152,9 +184,10 @@ const multiSelectList = (nodes: Node[]): Node => ({
 });
 
 /**
- * TODO: write docs for orExpression()
- * @param left
- * @param right
+ * AST node representing an or expression.
+ *
+ * @param left The left-hand side of the or expression
+ * @param right The right-hand side of the or expression
  */
 const orExpression = (left: Node, right: Node): Node => ({
   type: 'or_expression',
@@ -162,9 +195,10 @@ const orExpression = (left: Node, right: Node): Node => ({
 });
 
 /**
- * TODO: write docs for andExpression()
- * @param left
- * @param right
+ * AST node representing an and expression.
+ *
+ * @param left The left-hand side of the and expression
+ * @param right The right-hand side of the and expression
  */
 const andExpression = (left: Node, right: Node): Node => ({
   type: 'and_expression',
@@ -172,9 +206,10 @@ const andExpression = (left: Node, right: Node): Node => ({
 });
 
 /**
- * TODO: write docs for notExpression()
- * @param left
- * @param right
+ * AST node representing a not expression.
+ *
+ * @param left The left-hand side of the not expression
+ * @param right The right-hand side of the not expression
  */
 const notExpression = (expr: Node): Node => ({
   type: 'not_expression',
@@ -182,9 +217,10 @@ const notExpression = (expr: Node): Node => ({
 });
 
 /**
- * TODO: write docs for multiSelectList()
- * @param left
- * @param right
+ * AST node representing a pipe expression.
+ *
+ * @param left The left-hand side of the pipe expression
+ * @param right The right-hand side of the pipe expression
  */
 const pipe = (left: Node, right: Node): Node => ({
   type: 'pipe',
@@ -192,9 +228,10 @@ const pipe = (left: Node, right: Node): Node => ({
 });
 
 /**
- * TODO: write docs for projection()
- * @param left
- * @param right
+ * AST node representing a projection.
+ *
+ * @param left The left-hand side of the projection
+ * @param right The right-hand side of the projection
  */
 const projection = (left: Node, right: Node): Node => ({
   type: 'projection',
@@ -202,8 +239,9 @@ const projection = (left: Node, right: Node): Node => ({
 });
 
 /**
- * TODO: write docs for subexpression()
- * @param children
+ * AST node representing a subexpression.
+ *
+ * @param children The children of the subexpression
  */
 const subexpression = (children: Node[]): Node => ({
   type: 'subexpression',
@@ -211,12 +249,13 @@ const subexpression = (children: Node[]): Node => ({
 });
 
 /**
- * TODO: write docs for slice()
- * TODO: fix type for slice()
+ * AST node representing a slice.
  *
- * @param start
- * @param end
- * @param step
+ * A slice is a reference to a range of values in an array.
+ *
+ * @param start The start of the slice
+ * @param end The end of the slice
+ * @param step The step of the slice
  */
 const slice = (start: JSONValue, end: JSONValue, step: JSONValue): Node => ({
   type: 'slice',
@@ -224,10 +263,10 @@ const slice = (start: JSONValue, end: JSONValue, step: JSONValue): Node => ({
 });
 
 /**
- * TODO: write docs for valueProjection()
+ * AST node representing a value projection.
  *
- * @param left
- * @param right
+ * @param left The left-hand side of the value projection
+ * @param right The right-hand side of the value projection
  */
 const valueProjection = (left: Node, right: Node): Node => ({
   type: 'value_projection',
@@ -235,26 +274,26 @@ const valueProjection = (left: Node, right: Node): Node => ({
 });
 
 export {
+  andExpression,
   comparator,
   currentNode,
   expref,
-  functionExpression,
   field,
   filterProjection,
   flatten,
+  functionExpression,
   identity,
   index,
   indexExpression,
   keyValPair,
   literal,
-  multiSelectDict,
+  multiSelectObject,
   multiSelectList,
-  orExpression,
-  andExpression,
   notExpression,
+  orExpression,
   pipe,
   projection,
-  subexpression,
   slice,
+  subexpression,
   valueProjection,
 };

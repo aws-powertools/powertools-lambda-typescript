@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/multiselect
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Multiselect expressions tests', () => {
   it.each([

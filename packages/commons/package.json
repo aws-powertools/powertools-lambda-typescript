@@ -40,6 +40,10 @@
         "default": "./lib/esm/index.js"
       }
     },
+    "./typeutils": {
+      "import": "./lib/esm/typeUtils.js",
+      "require": "./lib/cjs/typeUtils.js"
+    },
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
@@ -50,6 +54,10 @@
       "types": [
         "lib/cjs/types/index.d.ts",
         "lib/esm/types/index.d.ts"
+      ],
+      "typeutils": [
+        "lib/cjs/typeUtils.d.ts",
+        "lib/esm/typeUtils.d.ts"
       ]
     }
   },

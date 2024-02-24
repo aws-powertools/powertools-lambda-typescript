@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/literal
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Literal expressions tests', () => {
   it.each([

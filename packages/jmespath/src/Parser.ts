@@ -1,33 +1,33 @@
 import { randomInt } from 'node:crypto';
-import { BINDING_POWER } from './constants';
+import { Lexer } from './Lexer.js';
+import { ParsedResult } from './ParsedResult.js';
 import {
-  field,
-  literal,
-  identity,
-  valueProjection,
-  flatten,
-  projection,
-  notExpression,
-  index,
-  slice,
+  andExpression,
+  comparator,
   currentNode,
   expref,
-  indexExpression,
-  comparator,
-  multiSelectList,
-  multiSelectDict,
-  keyValPair,
+  field,
   filterProjection,
+  flatten,
   functionExpression,
-  pipe,
+  identity,
+  index,
+  indexExpression,
+  keyValPair,
+  literal,
+  multiSelectObject,
+  multiSelectList,
+  notExpression,
   orExpression,
-  andExpression,
+  pipe,
+  projection,
+  slice,
   subexpression,
-} from './ast';
-import { Lexer } from './Lexer';
-import { ParsedResult } from './ParsedResult';
-import { LexerError, IncompleteExpressionError, ParseError } from './errors';
-import type { Node, Token } from './types';
+  valueProjection,
+} from './ast.js';
+import { BINDING_POWER } from './constants.js';
+import { IncompleteExpressionError, LexerError, ParseError } from './errors.js';
+import type { Node, Token } from './types.js';
 
 /**
  * Top down operaotr precedence parser for JMESPath.
@@ -59,19 +59,20 @@ class Parser {
   #maxCacheSize = 128;
   #tokenizer?: Lexer;
   #tokens: Token[];
-  #bufferSize: number;
   #index = 0;
 
   public constructor(lookahead = 2) {
     this.#tokens = Array.from({ length: lookahead });
-    this.#bufferSize = lookahead;
   }
 
   /**
-   * TODO: write docs for Parser.parse()
+   * Parse a JMESPath expression and return the Abstract Syntax Tree (AST)
+   * that represents the expression.
+   *
+   * The AST is cached, so if you parse the same expression multiple times,
+   * the AST will be returned from the cache.
    *
    * @param expression The JMESPath expression to parse.
-   * @returns The parsed expression.
    */
   public parse(expression: string): ParsedResult {
     const cached = this.#cache[expression];
@@ -95,10 +96,9 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#doParse()
+   * Do the actual parsing of the expression.
    *
    * @param expression The JMESPath expression to parse.
-   * @returns The parsed expression.
    */
   #doParse(expression: string): ParsedResult {
     try {
@@ -118,7 +118,7 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#parse()
+   * Parse a JMESPath expression and return the parsed result.
    */
   #parse(expression: string): ParsedResult {
     this.#tokenizer = new Lexer();
@@ -138,7 +138,7 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#expression()
+   * Process an expression.
    */
   #expression(bindingPower = 0): Node {
     const leftToken = this.#lookaheadToken(0);
@@ -155,9 +155,8 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for arser.#advance()
-   * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/parser.py#L121-L123
-   * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/parser.py#L137-L138
+   * Get the nud function for a token. This is the function that
+   * is called when a token is found at the beginning of an expression.
    *
    * @param tokenType The type of token to get the nud function for.
    */
@@ -282,19 +281,7 @@ class Parser {
 
       return andExpression(leftNode, right);
     } else if (tokenType === 'lparen') {
-      if (leftNode.type !== 'field' || typeof leftNode.value !== 'string') {
-        //  0 - first func arg or closing parenthesis
-        // -1 - '(' token
-        // -2 - invalid func "name"
-        const previousToken = this.#lookaheadToken(-2);
-        throw new ParseError({
-          lexPosition: previousToken.start,
-          tokenValue: previousToken.value,
-          tokenType: previousToken.type,
-          reason: `Invalid function name '${previousToken.value}'`,
-        });
-      }
-      const name = leftNode.value;
+      const name = leftNode.value as string;
       const args = [];
       while (this.#currentToken() !== 'rparen') {
         const expression = this.#expression();
@@ -358,9 +345,11 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#parseIndexExpression()
+   * Process an index expression.
    *
-   * @returns
+   * An index expression is a syntax that allows you to
+   * access elements in a list or dictionary. For example
+   * `foo[0]` accesses the first element in the list `foo`.
    */
   #parseIndexExpression(): Node {
     // We're here:
@@ -380,9 +369,23 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#parseSliceExpression()
+   * Process a slice expression.
    *
-   * @returns
+   * A slice expression is a syntax that allows you to
+   * access a range of elements in a list. For example
+   * `foo[0:10:2]` accesses every other element in the
+   * list `foo` from index 0 to 10.
+   *
+   * In a slice expression, the first index represents the
+   * start of the slice, the second index represents the
+   * end of the slice, and the third index represents the
+   * step.
+   *
+   * If the first index is omitted, it defaults to 0.
+   * If the second index is omitted, it defaults to the
+   * length of the list. If the third index is omitted, it
+   * defaults to 1. If the last colon is omitted, it defaults
+   * to a single index.
    */
   #parseSliceExpression(): Node {
     // [start:end:step]
@@ -406,10 +409,6 @@ class Parser {
       } else if (currentToken === 'number') {
         parts[index] = this.#lookaheadToken(0).value;
         this.#advance();
-      } else if (currentToken === 'current') {
-        return currentNode();
-      } else if (currentToken === 'expref') {
-        return expref(this.#expression(BINDING_POWER['expref']));
       } else {
         const token = this.#lookaheadToken(0);
         throw new ParseError({
@@ -426,10 +425,11 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#projectIfSlice()
+   * Process a projection if the right hand side of the
+   * projection is a slice.
    *
-   * @param left
-   * @param right
+   * @param left The left hand side of the projection.
+   * @param right The right hand side of the projection.
    */
   #projectIfSlice(left: Node, right: Node): Node {
     const idxExpression = indexExpression([left, right]);
@@ -444,11 +444,14 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#parseComparator()
-   * TODO: narrow comparatorChar type to only values like 'eq', 'ne', etc.
+   * Process a comparator.
    *
-   * @param left
-   * @param comparatorChar
+   * A comparator is a syntax that allows you to compare
+   * two values. For example `foo == bar` compares the
+   * value of `foo` with the value of `bar`.
+   *
+   * @param left The left hand side of the comparator.
+   * @param comparatorChar The comparator character.
    */
   #parseComparator(left: Node, comparatorChar: Token['type']): Node {
     return comparator(
@@ -459,7 +462,11 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#parseMultiSelectList()
+   * Process a multi-select list.
+   *
+   * A multi-select list is a syntax that allows you to
+   * select multiple elements from a list. For example
+   * `foo[*]` selects all elements in the list `foo`.
    */
   #parseMultiSelectList(): Node {
     const expressions = [];
@@ -478,7 +485,12 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#parseMultiSelectHash()
+   * Process a multi-select hash.
+   *
+   * A multi-select hash is a syntax that allows you to
+   * select multiple key-value pairs from a dictionary.
+   * For example `foo{a: a, b: b}` selects the keys `a`
+   * and `b` from the dictionary `foo`.
    */
   #parseMultiSelectHash(): Node {
     const pairs = [];
@@ -500,13 +512,13 @@ class Parser {
       }
     }
 
-    return multiSelectDict(pairs);
+    return multiSelectObject(pairs);
   }
 
   /**
-   * TODO: write docs for Parser.#parseMultiSelectHash()
+   * Process the right hand side of a projection.
    *
-   * @param bindingPower
+   * @param bindingPower The binding power of the current token.
    */
   #parseProjectionRhs(bindingPower: number): Node {
     // Parse the right hand side of the projection.
@@ -534,9 +546,9 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#parseDotRhs()
+   * Process the right hand side of a dot expression.
    *
-   * @param bindingPower
+   * @param bindingPower The binding power of the current token.
    */
   #parseDotRhs(bindingPower: number): Node {
     // From the grammar:
@@ -572,9 +584,9 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#match()
+   * Process a token and throw an error if it doesn't match the expected token.
    *
-   * @param tokenType
+   * @param tokenType The expected token type.
    */
   #match(tokenType: Token['type']): void {
     const currentToken = this.#currentToken();
@@ -599,9 +611,9 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#matchMultipleTokens()
+   * Process a token and throw an error if it doesn't match the expected token.
    *
-   * @param tokenTypes
+   * @param tokenTypes The expected token types.
    */
   #matchMultipleTokens(tokenTypes: Token['type'][]): void {
     const currentToken = this.#currentToken();
@@ -625,32 +637,32 @@ class Parser {
   }
 
   /**
-   * TODO: write docs for Parser.#advance()
+   * Advance the index to the next token.
    */
   #advance(): void {
     this.#index += 1;
   }
 
   /**
-   * TODO: write docs for Parser.#currentToken()
+   * Get the current token type.
    */
   #currentToken(): Token['type'] {
     return this.#tokens[this.#index].type;
   }
 
   /**
-   * TODO: write docs for Parser.#lookahead()
+   * Look ahead in the token stream and get the type of the token
    *
-   * @param number
+   * @param number The number of tokens to look ahead.
    */
   #lookahead(number: number): Token['type'] {
     return this.#tokens[this.#index + number].type;
   }
 
   /**
-   * TODO: write docs for Parser.#lookaheadToken()
+   * Look ahead in the token stream and get the token
    *
-   * @param number
+   * @param number The number of tokens to look ahead.
    */
   #lookaheadToken(number: number): Token {
     return this.#tokens[this.#index + number];
@@ -658,8 +670,6 @@ class Parser {
 
   /**
    * Remove half of the cached expressions randomly.
-   *
-   * TODO: check if this is the correct way to do this or maybe replace cache with LRU cache
    */
   #evictCache(): void {
     const newCache = Object.keys(this.#cache).reduce(

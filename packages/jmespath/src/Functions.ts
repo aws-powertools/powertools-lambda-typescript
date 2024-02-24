@@ -1,32 +1,52 @@
-import { Expression, getType, isNumber, isRecord } from '../visitor/utils';
-import type { JSONArray, JSONObject, JSONValue } from '../types';
-import { typeCheck, arityCheck } from './typeChecking';
-import { JMESPathTypeError } from '../errors';
+import type {
+  JSONArray,
+  JSONObject,
+  JSONValue,
+} from '@aws-lambda-powertools/commons/types';
+import {
+  getType,
+  isNumber,
+  isRecord,
+} from '@aws-lambda-powertools/commons/typeutils';
+import type { Expression } from './Expression.js';
+import { JMESPathTypeError } from './errors.js';
+import type {
+  FunctionSignatureDecorator,
+  FunctionSignatureOptions,
+} from './types.js';
+import { arityCheck, typeCheck } from './utils.js';
 
 /**
- * TODO: validate SignatureDecorator type and extract to a separate file
- */
-type SignatureDecorator = (
-  target: Functions,
-  propertyKey: string | symbol,
-  descriptor: PropertyDescriptor
-) => void;
-
-/**
- * TODO: validate SignatureOptions type and extract to a separate file
- */
-type SignatureOptions = {
-  argumentsSpecs: Array<Array<string>>;
-  variadic?: boolean;
-};
-
-/**
- * TODO: write docs for Functions
+ * A class that contains the built-in JMESPath functions.
+ *
+ * The built-in functions are implemented as methods on the Functions class.
+ * Each method is decorated with the `@Function.signature()` decorator to enforce the
+ * arity and types of the arguments passed to the function at runtime.
+ *
+ * You can extend the Functions class to add custom functions by creating a new class
+ * that extends Functions and adding new methods to it.
+ *
+ * @example
+ * ```typescript
+ * import { search } from '@aws-lambda-powertools/jmespath';
+ * import { Functions } from '@aws-lambda-powertools/jmespath/functions';
+ *
+ * class MyFunctions extends Functions {
+ *   ⁣@Functions.signature({
+ *     argumentsSpecs: [['number'], ['number']],
+ *     variadic: true,
+ *   })
+ *   public funcMyMethod(args: Array<number>): unknown {
+ *     // ...
+ *   }
+ * }
+ *
+ * const myFunctions = new MyFunctions();
+ *
+ * search('myMethod(@)', {}, { customFunctions: new MyFunctions() });
+ * ```
  */
 class Functions {
-  // TODO: find a type for FUNCTION_TABLE
-  public FUNCTION_TABLE: Map<string, unknown> = new Map();
-
   /**
    * Get the absolute value of the provided number.
    *
@@ -216,19 +236,15 @@ class Functions {
         });
       }
 
-      if (
-        (max.visited === null || max.visited === undefined) &&
-        (current.visited === null || current.visited === undefined)
-      ) {
-        return max;
-      } else if (max.visited === null || max.visited === undefined) {
-        return current;
-      } else if (current.visited === null || current.visited === undefined) {
-        return max;
-      } else if (max.visited === current.visited) {
+      if (max.visited === current.visited) {
         return max;
       } else {
-        return max.visited > current.visited ? max : current;
+        // We can safely cast visited to number | string here because we've already
+        // checked the type at runtime above and we know that it's either a number or a string
+        return (max.visited as number | string) >
+          (current.visited as number | string)
+          ? max
+          : current;
       }
     }, visitedArgs[0]);
 
@@ -304,19 +320,15 @@ class Functions {
         });
       }
 
-      if (
-        (min.visited === null || min.visited === undefined) &&
-        (current.visited === null || current.visited === undefined)
-      ) {
-        return min;
-      } else if (min.visited === null || min.visited === undefined) {
-        return current;
-      } else if (current.visited === null || current.visited === undefined) {
-        return min;
-      } else if (min.visited === current.visited) {
+      if (min.visited === current.visited) {
         return min;
       } else {
-        return min.visited < current.visited ? min : current;
+        // We can safely cast visited to number | string here because we've already
+        // checked the type at runtime above and we know that it's either a number or a string
+        return (min.visited as string | number) <
+          (current.visited as string | number)
+          ? min
+          : current;
       }
     }, visitedArgs[0]);
 
@@ -395,20 +407,18 @@ class Functions {
         return {
           value,
           index,
-          visited: visited ? visited : null,
+          visited,
         };
       })
       .sort((a, b) => {
-        if (a.visited === null && b.visited === null) {
-          return 0;
-        } else if (a.visited === null) {
-          return -1;
-        } else if (b.visited === null) {
-          return 1;
-        } else if (a.visited === b.visited) {
+        if (a.visited === b.visited) {
           return a.index - b.index; // Make the sort stable
         } else {
-          return a.visited > b.visited ? 1 : -1;
+          // We can safely cast visited to number | string here because we've already
+          // checked the type at runtime above and we know that it's either a number or a string
+          return (a.visited as string | number) > (b.visited as string | number)
+            ? 1
+            : -1;
         }
       })
       .map(({ value }) => value); // Extract the original values
@@ -527,17 +537,34 @@ class Functions {
   }
 
   /**
-   * TODO: write docs for Functions.signature()
+   * Decorator to enforce the signature of a function at runtime.
    *
-   * @param options
-   * @returns
+   * The signature decorator enforces the arity and types of the arguments
+   * passed to a function at runtime. If the arguments do not match the
+   * expected arity or types errors are thrown.
+   *
+   * @example
+   * ```typescript
+   * import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
+   *
+   * class MyFunctions extends Functions {
+   *   ⁣@Functions.signature({
+   *     argumentsSpecs: [['number'], ['number']],
+   *     variadic: true,
+   *   })
+   *   public funcMyMethod(args: Array<number>): unknown {
+   *     // ...
+   *   }
+   * }
+   * ```
+   *
+   * @param options The options for the signature decorator
    */
-  public static signature(options: SignatureOptions): SignatureDecorator {
+  public static signature(
+    options: FunctionSignatureOptions
+  ): FunctionSignatureDecorator {
     return (_target, _propertyKey, descriptor) => {
       const originalMethod = descriptor.value;
-      if (typeof originalMethod !== 'function') {
-        throw new TypeError('Only methods can be decorated with @signature.');
-      }
 
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.

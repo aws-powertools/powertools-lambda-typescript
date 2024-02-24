@@ -1,7 +1,7 @@
-import type { Token } from './types';
+import type { Token } from './types.js';
 
 /**
- * TODO: write docs for JMESPathError
+ * Base class for errors thrown during expression parsing and evaluation.
  */
 class JMESPathError extends Error {
   /**
@@ -35,7 +35,6 @@ class JMESPathError extends Error {
 
 /**
  * Error thrown when an unknown token is encountered during the AST construction.
- * TODO: improve field names for LexerError
  */
 class LexerError extends JMESPathError {
   /**
@@ -60,7 +59,6 @@ class LexerError extends JMESPathError {
 
 /**
  * Error thrown when an invalid or unexpected token type or value is encountered during parsing.
- * TODO: improve field names for ParseError
  */
 class ParseError extends JMESPathError {
   /**
@@ -104,11 +102,7 @@ class ParseError extends JMESPathError {
 }
 
 /**
- * TODO: complete IncompleteExpressionError implementation
- * TODO: write docs for IncompleteExpressionError
- * TODO: add `name` to `IncompleteExpressionError`
- *
- * @see https://github.com/jmespath/jmespath.py/blob/develop/jmespath/exceptions.py#L32
+ * Error thrown when an incomplete expression is encountered during parsing.
  */
 class IncompleteExpressionError extends ParseError {
   /**
@@ -117,11 +111,20 @@ class IncompleteExpressionError extends ParseError {
    * Can be set by whatever catches the error.
    */
   public expression?: string;
+
+  public constructor(options: {
+    lexPosition: number;
+    tokenValue: Token['value'];
+    tokenType: Token['type'];
+    reason?: string;
+  }) {
+    super(options);
+    this.name = 'IncompleteExpressionError';
+  }
 }
 
 /**
- * TODO: write docs for EmptyExpressionError
- * TODO: see if this is ever being thrown
+ * Error thrown when an empty expression is encountered during parsing.
  */
 class EmptyExpressionError extends JMESPathError {
   public constructor() {
@@ -209,7 +212,14 @@ class ArityError extends FunctionError {
 }
 
 /**
- * TODO: write docs for VariadicArityError
+ * Error thrown when an unexpected number of arguments is passed to a variadic function.
+ *
+ * Variadic functions are functions that accept a variable number of arguments.
+ * For example, the `max()` function accepts any number of arguments and returns
+ * the largest one. If no arguments are passed, it returns `null`.
+ *
+ * If the number of arguments passed to a variadic function is not within the
+ * expected range, this error is thrown.
  */
 class VariadicArityError extends ArityError {
   public constructor(options: { expectedArity: number; actualArity: number }) {
@@ -281,13 +291,13 @@ class UnknownFunctionError extends FunctionError {
 }
 
 export {
+  ArityError,
+  EmptyExpressionError,
+  IncompleteExpressionError,
   JMESPathError,
+  JMESPathTypeError,
   LexerError,
   ParseError,
-  IncompleteExpressionError,
-  ArityError,
-  VariadicArityError,
-  JMESPathTypeError,
-  EmptyExpressionError,
   UnknownFunctionError,
+  VariadicArityError,
 };

@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/wildcard
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Wildcard tests', () => {
   it.each([

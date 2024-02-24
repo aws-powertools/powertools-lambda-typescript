@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/escape
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Escape characters tests', () => {
   it.each([

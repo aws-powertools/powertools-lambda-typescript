@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/identifiers
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Identifiers tests', () => {
   it.each([

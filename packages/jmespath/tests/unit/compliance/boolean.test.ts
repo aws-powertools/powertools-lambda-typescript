@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/boolean
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Boolean tests', () => {
   it.each([

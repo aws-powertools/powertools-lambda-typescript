@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/syntax
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Syntax tests', () => {
   it.each([

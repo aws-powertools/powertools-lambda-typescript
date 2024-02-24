@@ -3,7 +3,7 @@
  *
  * @group unit/jmespath/compliance/unicode
  */
-import { search } from '../../src';
+import { search } from '../../../src';
 
 describe('Unicode tests', () => {
   it.each([

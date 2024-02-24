@@ -4,7 +4,9 @@ module.exports = {
     color: 'purple',
   },
   runner: 'groups',
-  preset: 'ts-jest',
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
   transform: {
     '^.+\\.ts?$': 'ts-jest',
   },
@@ -14,7 +16,11 @@ module.exports = {
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testPathIgnorePatterns: ['/node_modules/'],
   testEnvironment: 'node',
-  coveragePathIgnorePatterns: ['/node_modules/', '/types/'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    'src/index.ts',
+    'src/types/index.ts',
+  ],
   coverageThreshold: {
     global: {
       statements: 100,

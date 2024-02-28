@@ -1,10 +1,10 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type {
   IdempotencyRecordOptions,
   IdempotencyRecordStatusValue,
-} from '../types';
-import { IdempotencyRecordStatus } from '../constants';
-import { IdempotencyInvalidStatusError } from '../errors';
+} from '../types/IdempotencyRecord.js';
+import { IdempotencyRecordStatus } from '../constants.js';
+import { IdempotencyInvalidStatusError } from '../errors.js';
 
 /**
  * Class representing an idempotency record.

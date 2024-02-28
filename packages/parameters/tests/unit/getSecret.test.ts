@@ -3,8 +3,8 @@
  *
  * @group unit/parameters/SecretsProvider/getSecret/function
  */
-import { DEFAULT_PROVIDERS } from '../../src/base';
-import { SecretsProvider, getSecret } from '../../src/secrets';
+import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
+import { SecretsProvider, getSecret } from '../../src/secrets/index.js';
 import {
   SecretsManagerClient,
   GetSecretValueCommand,

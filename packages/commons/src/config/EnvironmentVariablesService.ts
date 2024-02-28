@@ -1,4 +1,4 @@
-import { ConfigService } from './ConfigService';
+import type { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
 
 /**
  * Class EnvironmentVariablesService
@@ -13,7 +13,7 @@ import { ConfigService } from './ConfigService';
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  */
-class EnvironmentVariablesService implements ConfigService {
+class EnvironmentVariablesService implements ConfigServiceInterface {
   /**
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
    * @protected

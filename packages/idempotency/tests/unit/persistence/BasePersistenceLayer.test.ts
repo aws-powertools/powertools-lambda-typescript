@@ -4,17 +4,19 @@
  * @group unit/idempotency/persistence/base
  */
 import { createHash } from 'node:crypto';
-import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
-import { IdempotencyConfig, IdempotencyRecordStatus } from '../../../src';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import {
+  IdempotencyConfig,
+  IdempotencyRecordStatus,
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyValidationError,
+  IdempotencyKeyError,
+} from '../../../src/index.js';
 import {
   BasePersistenceLayer,
   IdempotencyRecord,
-} from '../../../src/persistence';
-import {
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyValidationError,
-} from '../../../src/errors';
-import type { IdempotencyConfigOptions } from '../../../src/types';
+} from '../../../src/persistence/index.js';
+import type { IdempotencyConfigOptions } from '../../../src/types/index.js';
 
 jest.mock('node:crypto', () => ({
   createHash: jest.fn().mockReturnValue({
@@ -25,7 +27,6 @@ jest.mock('node:crypto', () => ({
 
 describe('Class: BasePersistenceLayer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext.helloworldContext;
 
   class PersistenceLayerTestClass extends BasePersistenceLayer {
     public _deleteRecord = jest.fn();
@@ -297,7 +298,9 @@ describe('Class: BasePersistenceLayer', () => {
       await expect(
         persistenceLayer.getRecord({ foo: { bar: [] } })
       ).rejects.toThrow(
-        new Error('No data found to create a hashed idempotency_key')
+        new IdempotencyKeyError(
+          'No data found to create a hashed idempotency_key'
+        )
       );
     });
 

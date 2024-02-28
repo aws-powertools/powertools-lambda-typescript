@@ -1,4 +1,4 @@
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { GetCommand } from '@aws-sdk/lib-dynamodb';
 import {
   APIGatewayProxyEvent,

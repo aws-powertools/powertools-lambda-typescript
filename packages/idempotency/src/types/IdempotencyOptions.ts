@@ -1,7 +1,7 @@
 import type { Context } from 'aws-lambda';
-import { BasePersistenceLayer } from '../persistence/BasePersistenceLayer';
-import { IdempotencyConfig } from '../IdempotencyConfig';
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
+import type { IdempotencyConfig } from '../IdempotencyConfig.js';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**
  * Configuration options for the idempotency utility.
@@ -179,7 +179,7 @@ type IdempotencyConfigOptions = {
   lambdaContext?: Context;
 };
 
-export {
+export type {
   AnyFunction,
   IdempotencyConfigOptions,
   ItempotentFunctionOptions,

@@ -1,5 +1,11 @@
-import { LogFormatterInterface } from '.';
-import { LogAttributes, UnformattedAttributes } from '../types';
+import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import type {
+  LogAttributes,
+  LogFormatterInterface,
+  LogFormatterOptions,
+} from '../types/Log.js';
+import type { UnformattedAttributes } from '../types/Logger.js';
+import { LogItem } from './LogItem.js';
 
 /**
  * Typeguard to monkey patch Error to add a cause property.
@@ -26,14 +32,26 @@ const isErrorWithCause = (
  */
 abstract class LogFormatter implements LogFormatterInterface {
   /**
+   * EnvironmentVariablesService instance.
+   * If set, it allows to access environment variables.
+   */
+  protected envVarsService?: EnvironmentVariablesService;
+
+  public constructor(options?: LogFormatterOptions) {
+    this.envVarsService = options?.envVarsService;
+  }
+
+  /**
    * It formats key-value pairs of log attributes.
    *
    * @param {UnformattedAttributes} attributes
-   * @returns {LogAttributes}
+   * @param {LogAttributes} additionalLogAttributes
+   * @returns {LogItem}
    */
   public abstract formatAttributes(
-    attributes: UnformattedAttributes
-  ): LogAttributes;
+    attributes: UnformattedAttributes,
+    additionalLogAttributes: LogAttributes
+  ): LogItem;
 
   /**
    * It formats a given Error parameter.

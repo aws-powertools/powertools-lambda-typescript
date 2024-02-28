@@ -1,4 +1,4 @@
-import { BaseProvider } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
@@ -8,7 +8,7 @@ import type {
   SecretsProviderOptions,
   SecretsGetOptions,
   SecretsGetOutput,
-} from '../types/SecretsProvider';
+} from '../types/SecretsProvider.js';
 
 /**
  * ## Intro
@@ -145,7 +145,7 @@ import type {
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 class SecretsProvider extends BaseProvider {
-  public client!: SecretsManagerClient;
+  public declare client: SecretsManagerClient;
 
   /**
    * It initializes the SecretsProvider class.

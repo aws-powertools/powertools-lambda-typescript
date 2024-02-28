@@ -3,14 +3,14 @@
  *
  * @group unit/idempotency/persistence/dynamodb
  */
-import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDBPersistenceLayer';
+import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDBPersistenceLayer.js';
+import { IdempotencyRecord } from '../../../src/persistence/index.js';
+import type { DynamoDBPersistenceOptions } from '../../../src/types/DynamoDBPersistence.js';
 import {
+  IdempotencyRecordStatus,
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
-} from '../../../src/errors';
-import { IdempotencyRecord } from '../../../src/persistence';
-import type { DynamoDBPersistenceOptions } from '../../../src/types';
-import { IdempotencyRecordStatus } from '../../../src';
+} from '../../../src/index.js';
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,

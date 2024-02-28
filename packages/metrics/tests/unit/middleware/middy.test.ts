@@ -3,12 +3,12 @@
  *
  * @group unit/metrics/middleware
  */
-import { Metrics, MetricUnits, logMetrics } from '../../../../metrics/src';
+import { Metrics, MetricUnit, MetricResolution } from '../../../src/index.js';
+import { logMetrics } from '../../../src/middleware/middy.js';
 import middy from '@middy/core';
-import { ExtraOptions } from '../../../src/types';
-import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
-import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts/hello-world';
-import { CustomEvent as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events/custom/index';
+import { ExtraOptions } from '../../../src/types/index.js';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
@@ -28,6 +28,11 @@ describe('Middy middleware', () => {
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
+
   describe('throwOnEmptyMetrics', () => {
     test('should throw on empty metrics if set to true', async () => {
       // Prepare
@@ -39,7 +44,7 @@ describe('Middy middleware', () => {
         logMetrics(metrics, { throwOnEmptyMetrics: true })
       );
 
-      await expect(handler(dummyEvent, dummyContext)).rejects.toThrowError(
+      await expect(handler(event, context)).rejects.toThrowError(
         'The number of metrics recorded must be higher than zero'
       );
     });
@@ -55,9 +60,7 @@ describe('Middy middleware', () => {
       );
 
       // Act & Assess
-      await expect(
-        handler(dummyEvent, dummyContext)
-      ).resolves.not.toThrowError();
+      await expect(handler(event, context)).resolves.not.toThrowError();
     });
 
     test('should not throw on empty metrics if not set, but should log a warning', async () => {
@@ -72,9 +75,7 @@ describe('Middy middleware', () => {
       );
 
       // Act & Assess
-      await expect(
-        handler(dummyEvent, dummyContext)
-      ).resolves.not.toThrowError();
+      await expect(handler(event, context)).resolves.not.toThrowError();
       expect(consoleWarnSpy).toBeCalledTimes(1);
       expect(consoleWarnSpy).toBeCalledWith(
         'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
@@ -101,8 +102,8 @@ describe('Middy middleware', () => {
       );
 
       // Act
-      await handler(dummyEvent, dummyContext);
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
+      await handler(event, context);
 
       // Assess
       const loggedData = [
@@ -137,7 +138,7 @@ describe('Middy middleware', () => {
       );
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
@@ -156,7 +157,7 @@ describe('Middy middleware', () => {
       );
 
       // Act & Assess
-      await expect(handler(dummyEvent, dummyContext)).resolves.not.toThrow();
+      await expect(handler(event, context)).resolves.not.toThrow();
     });
   });
 
@@ -167,17 +168,17 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
-      const cosoleSpy = jest.spyOn(metrics['console'], 'log');
+      const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const handler = middy(async (): Promise<void> => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 2);
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 2);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       }).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
-      expect(cosoleSpy).toHaveBeenNthCalledWith(
+      expect(consoleSpy).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
           _aws: {
@@ -209,11 +210,11 @@ describe('Middy middleware', () => {
         captureColdStartMetric: true,
       };
       const handler = middy(async (): Promise<void> => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       }).use(logMetrics(metrics, metricsOptions));
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toHaveBeenNthCalledWith(
@@ -245,11 +246,11 @@ describe('Middy middleware', () => {
       });
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const handler = middy(async (): Promise<void> => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       }).use(logMetrics(metrics));
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toHaveBeenNthCalledWith(
@@ -279,7 +280,7 @@ describe('Middy middleware', () => {
       });
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const handler = middy(async (): Promise<void> => {
-        metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
       }).use(
         logMetrics(metrics, {
           throwOnEmptyMetrics: true,
@@ -287,7 +288,7 @@ describe('Middy middleware', () => {
       );
 
       // Act
-      await handler(dummyEvent, dummyContext);
+      await handler(event, context);
 
       // Assess
       expect(consoleSpy).toHaveBeenNthCalledWith(
@@ -338,19 +339,108 @@ describe('Middy middleware', () => {
         };
       };
       const handler = middy(
-        (_event: typeof dummyEvent & { idx: number }): void => {
-          metrics.addMetric('successfulBooking', MetricUnits.Count, 1);
+        (_event: { foo: string; bar: string } & { idx: number }): void => {
+          metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
         }
       )
         .use(logMetrics(metrics))
         .use(myCustomMiddleware());
 
       // Act
-      await handler({ ...dummyEvent, idx: 0 }, dummyContext);
-      await handler({ ...dummyEvent, idx: 1 }, dummyContext);
+      await handler({ ...event, idx: 0 }, context);
+      await handler({ ...event, idx: 1 }, context);
 
       // Assess
       expect(publishStoredMetricsSpy).toBeCalledTimes(2);
+    });
+  });
+  describe('Metrics resolution', () => {
+    test('serialized metrics in EMF format should not contain `StorageResolution` as key if `60` is set', async () => {
+      // Prepare
+      const metrics = new Metrics({
+        namespace: 'serverlessAirline',
+        serviceName: 'orders',
+      });
+
+      const consoleSpy = jest.spyOn(metrics['console'], 'log');
+      const handler = middy((): void => {
+        metrics.addMetric(
+          'successfulBooking',
+          MetricUnit.Count,
+          1,
+          MetricResolution.Standard
+        );
+      }).use(logMetrics(metrics));
+
+      // Act
+      await handler(event, context);
+
+      // Assess
+      expect(consoleSpy).toHaveBeenCalledWith(
+        JSON.stringify({
+          _aws: {
+            Timestamp: 1466424490000,
+            CloudWatchMetrics: [
+              {
+                Namespace: 'serverlessAirline',
+                Dimensions: [['service']],
+                Metrics: [
+                  {
+                    Name: 'successfulBooking',
+                    Unit: 'Count',
+                  },
+                ],
+              },
+            ],
+          },
+          service: 'orders',
+          successfulBooking: 1,
+        })
+      );
+    });
+
+    test('Should be StorageResolution `1` if MetricResolution is set to `High`', async () => {
+      // Prepare
+      const metrics = new Metrics({
+        namespace: 'serverlessAirline',
+        serviceName: 'orders',
+      });
+      const consoleSpy = jest.spyOn(metrics['console'], 'log');
+      const handler = middy((): void => {
+        metrics.addMetric(
+          'successfulBooking',
+          MetricUnit.Count,
+          1,
+          MetricResolution.High
+        );
+      }).use(logMetrics(metrics));
+
+      // Act
+      await handler(event, context);
+
+      // Assess
+      expect(consoleSpy).toHaveBeenCalledWith(
+        JSON.stringify({
+          _aws: {
+            Timestamp: 1466424490000,
+            CloudWatchMetrics: [
+              {
+                Namespace: 'serverlessAirline',
+                Dimensions: [['service']],
+                Metrics: [
+                  {
+                    Name: 'successfulBooking',
+                    Unit: 'Count',
+                    StorageResolution: 1,
+                  },
+                ],
+              },
+            ],
+          },
+          service: 'orders',
+          successfulBooking: 1,
+        })
+      );
     });
   });
 });

@@ -88,10 +88,10 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 === "Middy Middleware"
 
     !!! tip "A note about Middy"
-        Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
+        We guarantee support only for Middy.js `v4.x`, that you can install it by running `npm i @middy/core@~4`.
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
-    ```typescript hl_lines="1 14 16"
+    ```typescript hl_lines="2 15 17"
     --8<-- "docs/snippets/tracer/middy.ts"
     ```
 
@@ -197,7 +197,7 @@ You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
 
 === "index.ts"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="7"
     --8<-- "docs/snippets/tracer/captureAWSAll.ts"
     ```
 
@@ -284,7 +284,7 @@ Alternatively, use the `captureResponse: false` option in both `tracer.captureLa
 
 === "middy.ts"
 
-    ```typescript hl_lines="17"
+    ```typescript hl_lines="18"
     --8<-- "docs/snippets/tracer/disableCaptureResponseMiddy.ts"
     ```
 

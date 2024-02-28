@@ -7,14 +7,18 @@ import {
   cleanupMiddlewares,
   TRACER_KEY,
   METRICS_KEY,
-} from '../../src/middleware';
-import { helloworldContext as context } from '../../src/samples/resources/contexts/hello-world';
+  LOGGER_KEY,
+  IDEMPOTENCY_KEY,
+} from '../../src/index.js';
+import context from '@aws-lambda-powertools/testing-utils/context';
 
 describe('Function: cleanupMiddlewares', () => {
   it('calls the cleanup function that are present', async () => {
     // Prepare
     const mockCleanupFunction1 = jest.fn();
     const mockCleanupFunction2 = jest.fn();
+    const mockCleanupFunction3 = jest.fn();
+    const mockCleanupFunction4 = jest.fn();
     const mockRequest = {
       event: {},
       context: context,
@@ -23,6 +27,8 @@ describe('Function: cleanupMiddlewares', () => {
       internal: {
         [TRACER_KEY]: mockCleanupFunction1,
         [METRICS_KEY]: mockCleanupFunction2,
+        [LOGGER_KEY]: mockCleanupFunction3,
+        [IDEMPOTENCY_KEY]: mockCleanupFunction4,
       },
     };
 
@@ -34,6 +40,10 @@ describe('Function: cleanupMiddlewares', () => {
     expect(mockCleanupFunction1).toHaveBeenCalledWith(mockRequest);
     expect(mockCleanupFunction2).toHaveBeenCalledTimes(1);
     expect(mockCleanupFunction2).toHaveBeenCalledWith(mockRequest);
+    expect(mockCleanupFunction3).toHaveBeenCalledTimes(1);
+    expect(mockCleanupFunction3).toHaveBeenCalledWith(mockRequest);
+    expect(mockCleanupFunction4).toHaveBeenCalledTimes(1);
+    expect(mockCleanupFunction4).toHaveBeenCalledWith(mockRequest);
   });
   it('resolves successfully if no cleanup function is present', async () => {
     // Prepare

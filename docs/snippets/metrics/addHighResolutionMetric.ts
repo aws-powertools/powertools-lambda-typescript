@@ -1,6 +1,6 @@
 import {
   Metrics,
-  MetricUnits,
+  MetricUnit,
   MetricResolution,
 } from '@aws-lambda-powertools/metrics';
 
@@ -15,7 +15,7 @@ export const handler = async (
 ): Promise<void> => {
   metrics.addMetric(
     'successfulBooking',
-    MetricUnits.Count,
+    MetricUnit.Count,
     1,
     MetricResolution.High
   );

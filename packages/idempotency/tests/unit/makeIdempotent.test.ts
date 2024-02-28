@@ -3,18 +3,18 @@
  *
  * @group unit/idempotency/makeIdempotent
  */
-import { IdempotencyRecord } from '../../src/persistence';
-import { makeIdempotent } from '../../src';
+import { IdempotencyRecord } from '../../src/persistence/index.js';
 import {
+  makeIdempotent,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/errors';
-import { IdempotencyConfig } from '../../src';
-import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
-import { Custom as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events';
-import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
-import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
+  IdempotencyConfig,
+  IdempotencyRecordStatus,
+} from '../../src/index.js';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import { MAX_RETRIES } from '../../src/constants.js';
+import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 import type { Context } from 'aws-lambda';
 
 const mockIdempotencyOptions = {
@@ -24,8 +24,10 @@ const remainingTImeInMillis = 1234;
 
 describe('Function: makeIdempotent', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext;
-  const event = dummyEvent.CustomEvent;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();

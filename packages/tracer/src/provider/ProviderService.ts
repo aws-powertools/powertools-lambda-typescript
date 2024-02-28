@@ -1,6 +1,8 @@
-import { ContextMissingStrategy } from 'aws-xray-sdk-core/dist/lib/context_utils';
 import { Namespace } from 'cls-hooked';
-import { ProviderServiceInterface } from '.';
+import type {
+  ProviderServiceInterface,
+  ContextMissingStrategy,
+} from '../types/ProviderServiceInterface.js';
 import {
   captureAWS,
   captureAWSClient,
@@ -107,8 +109,8 @@ class ProviderService implements ProviderServiceInterface {
     segment.addMetadata(key, value, namespace);
   }
 
-  public setContextMissingStrategy(strategy: unknown): void {
-    setContextMissingStrategy(strategy as ContextMissingStrategy);
+  public setContextMissingStrategy(strategy: ContextMissingStrategy): void {
+    setContextMissingStrategy(strategy);
   }
 
   public setDaemonAddress(address: string): void {

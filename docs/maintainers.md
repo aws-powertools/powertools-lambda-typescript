@@ -33,59 +33,59 @@ Previous active maintainers who contributed to this project.
 
 These are the most common labels used by maintainers to triage issues, pull requests (PR), and for project management:
 
-| Label                                  | Usage                                                                                          | Notes                                                            |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| triage                                 | New issues that require maintainers review                                                     | Issue template                                                   |
-| area/documentation                     | Improvements or additions to documentation                                                     | Examples/Readme files; Doc additions, fixes, etc.;               |
-| area/logger                            | Items related to the Logger Utility                                                            | PR automation                                                    |
-| area/metrics                           | Items related to the Metrics Utility                                                           | PR automation                                                    |
-| area/tracer                            | Items related to the Tracer Utility                                                            | PR automation                                                    |
-| area/idempotency                       | Items related to the Idempotency Utility                                                       | PR automation                                                    |
-| area/parameters                        | Items related to the Parameters Utility                                                        | PR automation                                                    |
-| area/commons                           | Items related to the Commons Utility                                                           | PR automation                                                    |
-| area/jmespath                          | Items related to the JMESPath Utility                                                          | PR automation                                                    |
-| area/validation                        | Items related to the Validation Utility                                                        | PR automation                                                    |
-| area/batch                             | Items related to the Batch Processing Utility                                                  | PR automation                                                    |
-| area/parser                            | Items related to the Parser Utility                                                            | PR automation                                                    |
-| area/automation                        | Items related to automation like GitHub workflows or CI/CD                                     | PR automation                                                    |
-| area/layers                            | Items related to the Lambda Layers pipeline                                                    | PR automation                                                    |
-| size/XS                                | PRs between 0-9 LOC                                                                            | PR automation                                                    |
-| size/S                                 | PRs between 10-29 LOC                                                                          | PR automation                                                    |
-| size/M                                 | PRs between 30-99 LOC                                                                          | PR automation                                                    |
-| size/L                                 | PRs between 100-499 LOC                                                                        | PR automation                                                    |
-| size/XL                                | PRs between 500-999 LOC, often PRs that grown with feedback                                    | PR automation                                                    |
-| size/XXL                               | PRs with 1K+ LOC, largely documentation related                                                | PR automation                                                    |
-| customer-reference                     | Authorization to use company name in our documentation                                         | Public Relations                                                 |
-| community-content                      | Suggested content to feature in our documentation                                              | Public Relations                                                 |
-| do-not-merge                           | PRs that are blocked for varying reasons                                                       | Timeline is uncertain                                            |
-| type/bug                               | Unexpected, reproducible and unintended software behavior                                      | PR/Release automation; Doc snippets are excluded;                |
-| type/bug-upstream                      | Bug caused by upstream dependency                                                              |                                                                  |
-| type/not-a-bug                         | New and existing bug reports incorrectly submitted as bug                                      | Analytics                                                        |
-| type/deprecation                       | This item contains code deprecation                                                            |                                                                  |
-| type/duplicate                         | This issue is a duplicate of an existing one                                                   | Analytics                                                        |
-| type/feature-request                   | Issue requesting new or enhancements to existing features                                      | Issue template                                                   |
-| type/feature                           | PRs that introduce new features                                                                | PR automation                                                    |
-| type/enhancement                       | PRs that introduce minor changes, usually to existing features                                 | PR automation                                                    |
-| type/RFC                               | Technical design documents related to a feature request                                        |                                                                  |
-| type/internal                          | PRs that introduce changes in governance, tech debt and chores (linting setup, baseline, etc.) | PR automation                                                    |
-| type/tests                             | PRs that add or change tests                                                                   | PR automation                                                    |
-| type/dependencies                      | Changes that touch dependencies, e.g. Dependabot, etc.                                         | Issues/PR automation                                             |
-| type/breaking-change                   | Changes that will cause customer impact and need careful triage                                |                                                                  |
-| status/blocked                         | Items which progress is blocked by external dependency or reason                               |                                                                  |
-| status/confirmed                       | Items with clear scope and that are ready for implementation                                   |                                                                  |
-| status/discussing                      | Items that need to be discussed, elaborated, or refined                                        |                                                                  |
-| status/on-hold                         | Items that are on hold and will be revisited in the future                                     |                                                                  |
-| status/pending-release                 | Merged changes that will be available soon                                                     | Release automation auto-closes/notifies it                       |
-| status/completed                       | Items that are complete and have been merged and/or shipped                                    |                                                                  |
-| status/rejected                        | This is something we will not be working on. At least, not in the measurable future            |                                                                  |
-| status/pending-close-response-required | This issue will be closed soon unless the discussion moves forward                             | Stale Automation                                                 |
+| Label                                  | Usage                                                                                          | Notes                                                           |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| triage                                 | New issues that require maintainers review                                                     | Issue template                                                  |
+| area/documentation                     | Improvements or additions to documentation                                                     | Examples/Readme files; Doc additions, fixes, etc.;              |
+| area/logger                            | Items related to the Logger Utility                                                            | PR automation                                                   |
+| area/metrics                           | Items related to the Metrics Utility                                                           | PR automation                                                   |
+| area/tracer                            | Items related to the Tracer Utility                                                            | PR automation                                                   |
+| area/idempotency                       | Items related to the Idempotency Utility                                                       | PR automation                                                   |
+| area/parameters                        | Items related to the Parameters Utility                                                        | PR automation                                                   |
+| area/commons                           | Items related to the Commons Utility                                                           | PR automation                                                   |
+| area/jmespath                          | Items related to the JMESPath Utility                                                          | PR automation                                                   |
+| area/validation                        | Items related to the Validation Utility                                                        | PR automation                                                   |
+| area/batch                             | Items related to the Batch Processing Utility                                                  | PR automation                                                   |
+| area/parser                            | Items related to the Parser Utility                                                            | PR automation                                                   |
+| area/automation                        | Items related to automation like GitHub workflows or CI/CD                                     | PR automation                                                   |
+| area/layers                            | Items related to the Lambda Layers pipeline                                                    | PR automation                                                   |
+| size/XS                                | PRs between 0-9 LOC                                                                            | PR automation                                                   |
+| size/S                                 | PRs between 10-29 LOC                                                                          | PR automation                                                   |
+| size/M                                 | PRs between 30-99 LOC                                                                          | PR automation                                                   |
+| size/L                                 | PRs between 100-499 LOC                                                                        | PR automation                                                   |
+| size/XL                                | PRs between 500-999 LOC, often PRs that grown with feedback                                    | PR automation                                                   |
+| size/XXL                               | PRs with 1K+ LOC, largely documentation related                                                | PR automation                                                   |
+| customer-reference                     | Authorization to use company name in our documentation                                         | Public Relations                                                |
+| community-content                      | Suggested content to feature in our documentation                                              | Public Relations                                                |
+| do-not-merge                           | PRs that are blocked for varying reasons                                                       | Timeline is uncertain                                           |
+| type/bug                               | Unexpected, reproducible and unintended software behavior                                      | PR/Release automation; Doc snippets are excluded;               |
+| type/bug-upstream                      | Bug caused by upstream dependency                                                              |                                                                 |
+| type/not-a-bug                         | New and existing bug reports incorrectly submitted as bug                                      | Analytics                                                       |
+| type/deprecation                       | This item contains code deprecation                                                            |                                                                 |
+| type/duplicate                         | This issue is a duplicate of an existing one                                                   | Analytics                                                       |
+| type/feature-request                   | Issue requesting new or enhancements to existing features                                      | Issue template                                                  |
+| type/feature                           | PRs that introduce new features                                                                | PR automation                                                   |
+| type/enhancement                       | PRs that introduce minor changes, usually to existing features                                 | PR automation                                                   |
+| type/RFC                               | Technical design documents related to a feature request                                        |                                                                 |
+| type/internal                          | PRs that introduce changes in governance, tech debt and chores (linting setup, baseline, etc.) | PR automation                                                   |
+| type/tests                             | PRs that add or change tests                                                                   | PR automation                                                   |
+| type/dependencies                      | Changes that touch dependencies, e.g. Dependabot, etc.                                         | Issues/PR automation                                            |
+| type/breaking-change                   | Changes that will cause customer impact and need careful triage                                |                                                                 |
+| status/blocked                         | Items which progress is blocked by external dependency or reason                               |                                                                 |
+| status/confirmed                       | Items with clear scope and that are ready for implementation                                   |                                                                 |
+| status/discussing                      | Items that need to be discussed, elaborated, or refined                                        |                                                                 |
+| status/on-hold                         | Items that are on hold and will be revisited in the future                                     |                                                                 |
+| status/pending-release                 | Merged changes that will be available soon                                                     | Release automation auto-closes/notifies it                      |
+| status/completed                       | Items that are complete and have been merged and/or shipped                                    |                                                                 |
+| status/rejected                        | This is something we will not be working on. At least, not in the measurable future            |                                                                 |
+| status/pending-close-response-required | This issue will be closed soon unless the discussion moves forward                             | Stale Automation                                                |
 | revisit-in-3-months                    | Blocked issues/PRs that need to be revisited                                                   | Often related to `need-customer-feedback`, prioritization, etc. |
-| good-first-issue                       | Something that is suitable for those who want to start contributing                            |                                                                  |
-| help-wanted                            | Tasks you want help from anyone to move forward                                                | Bandwidth, complex topics, etc.                                  |
-| need-customer-feedback                 | Tasks that need more feedback before proceeding                                                | 80/20% rule, uncertain, etc.                                     |
-| need-more-information                  | Missing information before making any calls                                                    | Signal that investigation or answers are needed                  |
-| need-response                          | Requires a response from a customer and might be automatically closed if none is received      | Marked as stale after 2 weeks, and closed after 3                |
-| need-issue                             | PR is missing a related issue for tracking change                                              |                                                                  |
+| good-first-issue                       | Something that is suitable for those who want to start contributing                            |                                                                 |
+| help-wanted                            | Tasks you want help from anyone to move forward                                                | Bandwidth, complex topics, etc.                                 |
+| need-customer-feedback                 | Tasks that need more feedback before proceeding                                                | 80/20% rule, uncertain, etc.                                    |
+| need-more-information                  | Missing information before making any calls                                                    | Signal that investigation or answers are needed                 |
+| need-response                          | Requires a response from a customer and might be automatically closed if none is received      | Marked as stale after 2 weeks, and closed after 3               |
+| need-issue                             | PR is missing a related issue for tracking change                                              |                                                                 |
 
 ## Maintainer Responsibilities
 

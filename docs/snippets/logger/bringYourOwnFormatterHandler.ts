@@ -1,5 +1,6 @@
 import { Logger } from '@aws-lambda-powertools/logger';
-import { MyCompanyLogFormatter } from './utils/formatters/MyCompanyLogFormatter';
+import { MyCompanyLogFormatter } from './bringYourOwnFormatterClass';
+import type { Context } from 'aws-lambda';
 
 const logger = new Logger({
   logFormatter: new MyCompanyLogFormatter(),
@@ -15,7 +16,10 @@ const logger = new Logger({
   },
 });
 
-export const handler = async (event, context): Promise<void> => {
+export const handler = async (
+  _event: unknown,
+  context: Context
+): Promise<void> => {
   logger.addContext(context);
 
   logger.info('This is an INFO log', {

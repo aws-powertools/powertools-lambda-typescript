@@ -1,4 +1,4 @@
-import { ConfigServiceInterface } from './ConfigServiceInterface';
+import { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
 import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
 /**
@@ -30,6 +30,7 @@ class EnvironmentVariablesService
   private logLevelVariableLegacy = 'LOG_LEVEL';
   private memoryLimitInMBVariable = 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE';
   private sampleRateValueVariable = 'POWERTOOLS_LOGGER_SAMPLE_RATE';
+  private tzVariable = 'TZ';
 
   /**
    * It returns the value of the `AWS_LAMBDA_LOG_LEVEL` environment variable.
@@ -125,12 +126,23 @@ class EnvironmentVariablesService
   /**
    * It returns the value of the POWERTOOLS_LOGGER_SAMPLE_RATE environment variable.
    *
-   * @returns {string|undefined}
+   * @returns {number|undefined}
    */
   public getSampleRateValue(): number | undefined {
     const value = this.get(this.sampleRateValueVariable);
 
     return value && value.length > 0 ? Number(value) : undefined;
+  }
+
+  /**
+   * It returns the value of the `TZ` environment variable or `UTC` if it is not set.
+   *
+   * @returns {string}
+   */
+  public getTimezone(): string {
+    const value = this.get(this.tzVariable);
+
+    return value.length > 0 ? value : 'UTC';
   }
 }
 

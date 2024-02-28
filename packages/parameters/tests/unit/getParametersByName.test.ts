@@ -3,9 +3,9 @@
  *
  * @group unit/parameters/ssm/getParametersByName/function
  */
-import { DEFAULT_PROVIDERS } from '../../src/base';
-import { SSMProvider, getParametersByName } from '../../src/ssm';
-import type { SSMGetParametersByNameOptions } from '../../src/types/SSMProvider';
+import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
+import { SSMProvider, getParametersByName } from '../../src/ssm/index.js';
+import type { SSMGetParametersByNameOptions } from '../../src/types/SSMProvider.js';
 
 describe('Function: getParametersByName', () => {
   beforeEach(() => {

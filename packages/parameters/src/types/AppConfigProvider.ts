@@ -1,10 +1,10 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type {
   AppConfigDataClient,
   AppConfigDataClientConfig,
   StartConfigurationSessionCommandInput,
 } from '@aws-sdk/client-appconfigdata';
-import type { GetOptionsInterface } from './BaseProvider';
+import type { GetOptionsInterface } from './BaseProvider.js';
 
 /**
  * Base interface for AppConfigProviderOptions.

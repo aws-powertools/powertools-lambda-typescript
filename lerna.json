@@ -10,7 +10,8 @@
     "packages/testing",
     "examples/cdk",
     "examples/sam",
-    "layers"
+    "layers",
+    "docs/snippets"
   ],
   "version": "1.18.1",
   "npmClient": "npm",

@@ -1,5 +1,8 @@
-import { AnyFunction, ItempotentFunctionOptions } from './types';
-import { makeIdempotent } from './makeIdempotent';
+import {
+  AnyFunction,
+  ItempotentFunctionOptions,
+} from './types/IdempotencyOptions.js';
+import { makeIdempotent } from './makeIdempotent.js';
 
 /**
  * Use this decorator to make your lambda handler itempotent.
@@ -12,7 +15,7 @@ import { makeIdempotent } from './makeIdempotent';
  *   DynamoDBPersistenceLayer,
  *   idempotentLambdaHandler
  * } from '@aws-lambda-powertools/idempotency';
- * import type { LambdaInterface } from '@aws-lambda-powertools/commons';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
  * class MyLambdaFunction implements LambdaInterface {
  *   ⁣@idempotent({ persistenceStore: new DynamoDBPersistenceLayer() })
@@ -31,7 +34,7 @@ import { makeIdempotent } from './makeIdempotent';
  *   DynamoDBPersistenceLayer,
  *   idempotentFunction
  * } from '@aws-lambda-powertools/idempotency';
- * import type { LambdaInterface } from '@aws-lambda-powertools/commons';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
  * class MyClass implements LambdaInterface {
  *   public async handler(event: unknown, _context: unknown) {

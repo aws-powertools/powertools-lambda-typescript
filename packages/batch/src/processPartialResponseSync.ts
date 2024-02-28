@@ -1,10 +1,10 @@
-import { BasePartialBatchProcessor } from './BasePartialBatchProcessor';
-import { UnexpectedBatchTypeError } from './errors';
+import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import { UnexpectedBatchTypeError } from './errors.js';
 import type {
   BaseRecord,
   BatchProcessingOptions,
   PartialItemFailureResponse,
-} from './types';
+} from './types.js';
 
 /**
  * Higher level function to handle batch event processing

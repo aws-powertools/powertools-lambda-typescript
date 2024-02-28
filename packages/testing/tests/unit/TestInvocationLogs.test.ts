@@ -5,7 +5,7 @@
  *
  */
 
-import { TestInvocationLogs } from '../../src/TestInvocationLogs';
+import { TestInvocationLogs } from '../../src/TestInvocationLogs.js';
 
 const exampleLogs = `START RequestId: c6af9ac6-7b61-11e6-9a41-93e812345678 Version: $LATEST
 {"cold_start":true,"function_arn":"arn:aws:lambda:eu-west-1:561912387782:function:loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_memory_size":128,"function_name":"loggerMiddyStandardFeatures-c555a2ec-1121-4586-9c04-185ab36ea34c","function_request_id":"7f586697-238a-4c3b-9250-a5f057c1119c","level":"DEBUG","message":"This is a DEBUG log but contains the word INFO some context and persistent key","service":"logger-e2e-testing","timestamp":"2022-01-27T16:04:39.323Z","persistentKey":"works"}

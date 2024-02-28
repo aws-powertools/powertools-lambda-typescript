@@ -13,16 +13,16 @@
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "jest": "jest --detectOpenHandles --verbose",
-    "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
     "test:e2e:nodejs16x": "RUNTIME=nodejs16x jest --group=e2e",
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch --group=unit",
-    "build": "tsc --build --force",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "prebuild": "rimraf ./lib",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
@@ -30,8 +30,41 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/logger#readme",
   "license": "MIT-0",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    },
+    "./middleware": {
+      "import": "./lib/esm/middleware/middy.js",
+      "require": "./lib/cjs/middleware/middy.js"
+    },
+    "./types": {
+      "import": "./lib/esm/types/index.js",
+      "require": "./lib/cjs/types/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "middleware": [
+        "lib/cjs/middleware/middy.d.ts",
+        "lib/esm/middleware/middy.d.ts"
+      ],
+      "types": [
+        "lib/cjs/types/index.d.ts",
+        "lib/esm/types/index.d.ts"
+      ]
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@types/lodash.merge": "^4.6.9"

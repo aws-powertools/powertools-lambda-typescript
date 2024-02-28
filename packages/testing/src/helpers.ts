@@ -4,7 +4,7 @@ import {
   defaultRuntime,
   TEST_ARCHITECTURES,
   defaultArchitecture,
-} from './constants';
+} from './constants.js';
 
 const isValidRuntimeKey = (
   runtime: string

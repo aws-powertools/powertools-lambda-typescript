@@ -5,14 +5,15 @@
  */
 import { Handler } from 'aws-lambda';
 import { Callback, Context } from 'aws-lambda';
-import {
-  ContextExamples,
+import context from '@aws-lambda-powertools/testing-utils/context';
+import type {
   SyncHandler,
   AsyncHandler,
   LambdaInterface,
-} from '../../src';
+} from '../../src/types/index.js';
 
 describe('LambdaInterface with arrow function', () => {
+  jest.spyOn(console, 'log').mockImplementation();
   test('it compiles when given a callback', async () => {
     class LambdaFunction implements LambdaInterface {
       public handler: SyncHandler<Handler> = async (
@@ -28,10 +29,8 @@ describe('LambdaInterface with arrow function', () => {
       };
     }
 
-    await new LambdaFunction().handler(
-      {},
-      ContextExamples.helloworldContext,
-      () => console.log('Lambda invoked!')
+    new LambdaFunction().handler({}, context, () =>
+      console.log('Lambda invoked!')
     );
   });
 
@@ -45,7 +44,7 @@ describe('LambdaInterface with arrow function', () => {
       };
     }
 
-    await new LambdaFunction().handler({}, ContextExamples.helloworldContext);
+    await new LambdaFunction().handler({}, context);
   });
 });
 
@@ -62,10 +61,8 @@ describe('LambdaInterface with standard function', () => {
       }
     }
 
-    await new LambdaFunction().handler(
-      {},
-      ContextExamples.helloworldContext,
-      () => console.log('Lambda invoked!')
+    new LambdaFunction().handler({}, context, () =>
+      console.log('Lambda invoked!')
     );
   });
 
@@ -80,7 +77,7 @@ describe('LambdaInterface with standard function', () => {
       }
     }
 
-    await new LambdaFunction().handler({}, ContextExamples.helloworldContext);
+    await new LambdaFunction().handler({}, context);
   });
 });
 
@@ -138,7 +135,7 @@ describe('LambdaInterface with decorator', () => {
       }
     }
 
-    await new LambdaFunction().handler({}, ContextExamples.helloworldContext);
+    await new LambdaFunction().handler({}, context);
   });
 
   test('decorator with callback compile', async () => {
@@ -154,10 +151,8 @@ describe('LambdaInterface with decorator', () => {
       }
     }
 
-    await new LambdaFunction().handler(
-      {},
-      ContextExamples.helloworldContext,
-      () => console.log('Lambda invoked!')
+    new LambdaFunction().handler({}, context, () =>
+      console.log('Lambda invoked!')
     );
   });
 });

@@ -1,6 +1,6 @@
-import { BasePartialBatchProcessor } from './BasePartialBatchProcessor';
-import { BatchProcessingError } from './errors';
-import type { BaseRecord, FailureResponse, SuccessResponse } from './types';
+import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import { BatchProcessingError } from './errors.js';
+import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
 
 /**
  * Process native partial responses from SQS, Kinesis Data Streams, and DynamoDB

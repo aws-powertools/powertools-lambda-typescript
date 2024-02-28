@@ -10,14 +10,14 @@ import {
 } from '@aws-lambda-powertools/testing-utils';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { LoggerTestNodejsFunction } from '../helpers/resources';
+import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   STACK_OUTPUT_LOG_GROUP,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 describe(`Logger E2E tests, sample rate and injectLambdaContext()`, () => {
   const testStack = new TestStack({
@@ -81,12 +81,18 @@ describe(`Logger E2E tests, sample rate and injectLambdaContext()`, () => {
 
           if (logMessages.length === 1 && logMessages[0].includes('ERROR')) {
             countNotSampled++;
-          } else if (logMessages.length === 4) {
+          } else if (
+            (logMessages.length === 5 &&
+              logMessages[0].includes(
+                'Setting log level to DEBUG due to sampling rate'
+              )) ||
+            logMessages.length === 4
+          ) {
             countSampled++;
           } else {
             console.error(`Log group ${logGroupName} contains missing log`);
             throw new Error(
-              'Sampled log should have either 1 error log or 4 logs of all levels'
+              'Sampled log should have either 1 error log or 5 logs of all levels'
             );
           }
         }

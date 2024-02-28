@@ -1,4 +1,4 @@
-import { Transform } from '../constants';
+import { Transform } from '../constants.js';
 
 /**
  * Type for the transform option.

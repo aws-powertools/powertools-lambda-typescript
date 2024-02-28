@@ -3,17 +3,17 @@
  *
  * @group unit/idempotency/IdempotencyHandler
  */
+import { IdempotencyRecord } from '../../src/persistence/index.js';
+import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
 import {
+  IdempotencyConfig,
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/errors';
-import { IdempotencyRecord } from '../../src/persistence';
-import { IdempotencyHandler } from '../../src/IdempotencyHandler';
-import { IdempotencyConfig } from '../../src/';
-import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
-import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
+} from '../../src/index.js';
+import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants.js';
+import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 
 const mockFunctionToMakeIdempotent = jest.fn();
 const mockFunctionPayloadToBeHashed = {};

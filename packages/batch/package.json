@@ -13,16 +13,16 @@
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "jest": "jest --detectOpenHandles --verbose",
-    "test:e2e:nodejs14x": "echo 'Not Implemented'",
     "test:e2e:nodejs16x": "echo 'Not Implemented'",
     "test:e2e:nodejs18x": "echo 'Not Implemented'",
     "test:e2e:nodejs20x": "echo 'Not Implemented'",
     "test:e2e": "echo 'Not Implemented'",
     "watch": "jest --watch",
-    "build": "tsc --build --force",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "prebuild": "rimraf ./lib",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
@@ -30,8 +30,33 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/batch#readme",
   "license": "MIT-0",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    },
+    "./types": {
+      "import": "./lib/esm/types.js",
+      "require": "./lib/cjs/types.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
+      ]
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
   "files": [
     "lib"
   ],
@@ -50,5 +75,8 @@
     "batch-processing",
     "serverless",
     "nodejs"
-  ]
+  ],
+  "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing"
+  }
 }

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-exports.handler = async (_event) => {
+exports.handler = async () => {
   return {
     statusCode: 200,
     body: JSON.stringify(randomUUID()),

@@ -1,10 +1,11 @@
-import { Logger } from '../Logger';
-import { HandlerOptions, LogAttributes } from '../types';
-import { LOGGER_KEY } from '@aws-lambda-powertools/commons/lib/middleware';
+import { Logger } from '../Logger.js';
+import type { LogAttributes } from '../types/Log.js';
+import type { InjectLambdaContextOptions } from '../types/Logger.js';
+import { LOGGER_KEY } from '@aws-lambda-powertools/commons';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 
 /**
  * A middy middleware that helps emitting CloudWatch EMF metrics in your logs.
@@ -13,7 +14,8 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
+ * import { Logger } from '@aws-lambda-powertools/logger';
+ * import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
  * import middy from '@middy/core';
  *
  *
@@ -32,7 +34,7 @@ import type {
  */
 const injectLambdaContext = (
   target: Logger | Logger[],
-  options?: HandlerOptions
+  options?: InjectLambdaContextOptions
 ): MiddlewareLikeObj => {
   const loggers = target instanceof Array ? target : [target];
   const persistentAttributes: LogAttributes[] = [];

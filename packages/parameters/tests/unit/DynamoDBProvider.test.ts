@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/DynamoDBProvider/class
  */
-import { DynamoDBProvider } from '../../src/dynamodb';
+import { DynamoDBProvider } from '../../src/dynamodb/index.js';
 import {
   DynamoDBClient,
   GetItemCommand,
@@ -13,7 +13,7 @@ import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
-import type { DynamoDBProviderOptions } from '../../src/types/DynamoDBProvider';
+import type { DynamoDBProviderOptions } from '../../src/types/DynamoDBProvider.js';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { mockClient } from 'aws-sdk-client-mock';

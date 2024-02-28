@@ -9,7 +9,7 @@ import {
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { join } from 'node:path';
-import { LoggerTestNodejsFunction } from '../helpers/resources';
+import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
@@ -17,7 +17,7 @@ import {
   STACK_OUTPUT_LOG_GROUP,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 describe(`Logger E2E tests, child logger`, () => {
   const testStack = new TestStack({

@@ -13,13 +13,13 @@ import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { Duration } from 'aws-cdk-lib';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources';
+import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 const ddb = new DynamoDBClient({});
 

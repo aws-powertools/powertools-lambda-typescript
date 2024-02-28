@@ -1,7 +1,7 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
-import { transformValue } from '../base/transformValue';
-import { GetParameterError } from '../errors';
-import { DEFAULT_MAX_AGE_SECS } from '../constants';
+import { BaseProvider } from '../base/BaseProvider.js';
+import { transformValue } from '../base/transformValue.js';
+import { GetParameterError } from '../errors.js';
+import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import {
   SSMClient,
   GetParameterCommand,
@@ -26,7 +26,7 @@ import type {
   SSMGetParametersByNameOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
-} from '../types/SSMProvider';
+} from '../types/SSMProvider.js';
 
 /**
  * ## Intro
@@ -262,7 +262,7 @@ import type {
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class SSMProvider extends BaseProvider {
-  public client!: SSMClient;
+  public declare client: SSMClient;
   protected errorsKey = '_errors';
   protected maxGetParametersItems = 10;
 
@@ -902,4 +902,4 @@ class SSMProvider extends BaseProvider {
   }
 }
 
-export { SSMProvider, DEFAULT_PROVIDERS };
+export { SSMProvider };

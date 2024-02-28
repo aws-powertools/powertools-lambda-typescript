@@ -49,7 +49,7 @@ npm install @aws-lambda-powertools/metrics
 
 !!! warning "Caution"
     
-    Using the Lambda [Advanced Logging Controls](...docs link) feature requires you to update your version of Powertools for AWS Lambda (TypeScript) to at least v1.15.0 to ensure metrics are reported correctly to Amazon CloudWatch Metrics.
+    Using the Lambda [Advanced Logging Controls](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced) feature requires you to update your version of Powertools for AWS Lambda (TypeScript) to at least v1.15.0 to ensure metrics are reported correctly to Amazon CloudWatch Metrics.
 
 ### Usage
 
@@ -253,7 +253,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
 
 === "handler.ts"
 
-    ```typescript hl_lines="20"
+    ```typescript hl_lines="2 17"
     --8<-- "docs/snippets/metrics/middy.ts"
     ```
 
@@ -368,7 +368,7 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="21"
+    ```typescript hl_lines="18"
     --8<-- "docs/snippets/metrics/captureColdStartMetricMiddy.ts"
     ```
 
@@ -398,7 +398,7 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
 
 === "handler.ts"
 
-    ```typescript hl_lines="18"
+    ```typescript hl_lines="15"
     --8<-- "docs/snippets/metrics/addMetadata.ts"
     ```
 

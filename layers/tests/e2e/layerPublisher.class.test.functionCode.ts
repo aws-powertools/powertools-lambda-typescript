@@ -81,7 +81,15 @@ const getVersionFromModule = async (moduleName: string): Promise<string> => {
 
 export const handler = async (): Promise<void> => {
   // Check that the packages version matches the expected one
-  for (const moduleName of ['commons', 'logger', 'metrics', 'tracer']) {
+  for (const moduleName of [
+    'commons',
+    'logger',
+    'metrics',
+    'tracer',
+    'parameters',
+    'idempotency',
+    'batch',
+  ]) {
     const moduleVersion = await getVersionFromModule(moduleName);
     if (moduleVersion != expectedVersion) {
       throw new Error(

@@ -1,4 +1,4 @@
-import { BaseProvider } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   DynamoDBClient,
   GetItemCommand,
@@ -12,12 +12,12 @@ import type {
   DynamoDBGetMultipleOptions,
   DynamoDBGetOutput,
   DynamoDBGetMultipleOutput,
-} from '../types/DynamoDBProvider';
+} from '../types/DynamoDBProvider.js';
 import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**
  * ## Intro
@@ -235,7 +235,7 @@ import type { JSONValue } from '@aws-lambda-powertools/commons';
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class DynamoDBProvider extends BaseProvider {
-  public client!: DynamoDBClient;
+  public declare client: DynamoDBClient;
   protected keyAttr = 'id';
   protected sortAttr = 'sk';
   protected tableName: string;

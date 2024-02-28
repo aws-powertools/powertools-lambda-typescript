@@ -3,12 +3,9 @@
  *
  * @group unit/parameters/AppConfigProvider/getAppConfig/function
  */
-import {
-  AppConfigProvider,
-  getAppConfig,
-  DEFAULT_PROVIDERS,
-} from '../../src/appconfig';
-import { Transform } from '../../src';
+import { AppConfigProvider, getAppConfig } from '../../src/appconfig/index.js';
+import { DEFAULT_PROVIDERS } from '../../src/base/DefaultProviders.js';
+import { Transform } from '../../src/index.js';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,
@@ -18,7 +15,7 @@ import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 import { toBase64 } from '@aws-sdk/util-base64-node';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
-import { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 describe('Function: getAppConfig', () => {
   const client = mockClient(AppConfigDataClient);

@@ -6,20 +6,20 @@
 import {
   invokeFunctionOnce,
   TestInvocationLogs,
-  TestNodejsFunction,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { join } from 'node:path';
 import {
   TestSecureStringParameter,
   TestStringParameter,
-} from '../helpers/resources';
+} from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of SSM parameters.

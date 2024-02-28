@@ -44,6 +44,7 @@ const betaPackages = [];
       types,
       files,
       private,
+      type,
     } = pkgJson;
 
     let version = originalVersion;
@@ -71,6 +72,7 @@ const betaPackages = [];
       main,
       types,
       files,
+      type,
     };
 
     // Not all utilities have these fields, so only add them if they exist to avoid

@@ -6,7 +6,7 @@ import type {
 import type {
   PartialItemFailureResponse,
   EventSourceDataClassTypes,
-} from './types';
+} from './types.js';
 
 const EventType = {
   SQS: 'SQS',

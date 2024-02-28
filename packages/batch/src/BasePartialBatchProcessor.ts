@@ -3,14 +3,18 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
-import { BasePartialProcessor } from './BasePartialProcessor';
-import { DATA_CLASS_MAPPING, DEFAULT_RESPONSE, EventType } from './constants';
-import { FullBatchFailureError } from './errors';
+import { BasePartialProcessor } from './BasePartialProcessor.js';
+import {
+  DATA_CLASS_MAPPING,
+  DEFAULT_RESPONSE,
+  EventType,
+} from './constants.js';
+import { FullBatchFailureError } from './errors.js';
 import type {
   EventSourceDataClassTypes,
   PartialItemFailureResponse,
   PartialItemFailures,
-} from './types';
+} from './types.js';
 
 /**
  * Process batch and partially report failed items

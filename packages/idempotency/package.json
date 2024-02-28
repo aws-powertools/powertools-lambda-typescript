@@ -13,16 +13,16 @@
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "jest": "jest --detectOpenHandles --verbose",
-    "test:e2e:nodejs14x": "RUNTIME=nodejs14x jest --group=e2e",
     "test:e2e:nodejs16x": "RUNTIME=nodejs16x jest --group=e2e",
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
     "watch": "jest --watch",
-    "build": "tsc --build --force",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "prebuild": "rimraf ./lib",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "lint-staged": {
@@ -30,46 +30,65 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/idempotency#readme",
   "license": "MIT-0",
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./lib/index.js",
-      "require": "./lib/index.js"
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
     },
     "./persistence": {
-      "import": "./lib/persistence/index.js",
-      "require": "./lib/persistence/index.js"
+      "import": "./lib/esm/persistence/index.js",
+      "require": "./lib/cjs/persistence/index.js"
     },
     "./dynamodb": {
-      "import": "./lib/persistence/DynamoDBPersistenceLayer.js",
-      "require": "./lib/persistence/DynamoDBPersistenceLayer.js"
+      "import": "./lib/esm/persistence/DynamoDBPersistenceLayer.js",
+      "require": "./lib/cjs/persistence/DynamoDBPersistenceLayer.js"
+    },
+    "./dynamodb/types": {
+      "import": "./lib/esm/types/DynamoDBPersistence.js",
+      "require": "./lib/cjs/types/DynamoDBPersistence.js"
     },
     "./middleware": {
-      "import": "./lib/middleware/index.js",
-      "require": "./lib/middleware/index.js"
+      "import": "./lib/esm/middleware/makeHandlerIdempotent.js",
+      "require": "./lib/cjs/middleware/makeHandlerIdempotent.js"
     },
     "./types": {
-      "import": "./lib/types/index.d.ts",
-      "require": "./lib/types/index.d.ts"
+      "import": "./lib/esm/types/index.d.ts",
+      "require": "./lib/cjs/types/index.d.ts"
     }
   },
   "typesVersions": {
     "*": {
       "persistence": [
-        "lib/persistence/index.d.ts"
+        "lib/cjs/persistence/index.d.ts",
+        "lib/esm/persistence/index.d.ts"
       ],
       "dynamodb": [
-        "lib/persistence/DynamoDBPersistenceLayer.d.ts"
+        "lib/cjs/persistence/DynamoDBPersistenceLayer.d.ts",
+        "lib/esm/persistence/DynamoDBPersistenceLayer.d.ts"
+      ],
+      "dynamodb/types": [
+        "lib/cjs/types/DynamoDBPersistence.d.ts",
+        "lib/esm/types/DynamoDBPersistence.d.ts"
       ],
       "middleware": [
-        "lib/middleware/index.d.ts"
+        "lib/cjs/middleware/makeHandlerIdempotent.d.ts",
+        "lib/esm/middleware/makeHandlerIdempotent.d.ts"
       ],
       "types": [
-        "lib/types/index.d.ts"
+        "lib/cjs/types/index.d.ts",
+        "lib/esm/types/index.d.ts"
       ]
     }
   },
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
   "files": [
     "lib"
   ],

@@ -1,2 +1,2 @@
-export * from './AppConfigProvider';
-export * from './getAppConfig';
+export { AppConfigProvider } from './AppConfigProvider.js';
+export { getAppConfig } from './getAppConfig.js';

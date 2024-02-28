@@ -3,19 +3,19 @@
  *
  * @group unit/idempotency/makeHandlerIdempotent
  */
-import { makeHandlerIdempotent } from '../../src/middleware';
-import { helloworldContext as dummyContext } from '@aws-lambda-powertools/commons/lib/samples/resources/contexts';
-import { Custom as dummyEvent } from '@aws-lambda-powertools/commons/lib/samples/resources/events';
-import { IdempotencyRecord } from '../../src/persistence';
+import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import { IdempotencyRecord } from '../../src/persistence/index.js';
 import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
-} from '../../src/errors';
-import { IdempotencyConfig } from '../../src/';
+  IdempotencyConfig,
+  IdempotencyRecordStatus,
+} from '../../src/index.js';
 import middy from '@middy/core';
-import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants';
-import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils';
+import { MAX_RETRIES } from '../../src/constants.js';
+import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 import type { Context } from 'aws-lambda';
 
 const mockIdempotencyOptions = {
@@ -25,8 +25,10 @@ const remainingTImeInMillis = 1234;
 
 describe('Middleware: makeHandlerIdempotent', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext;
-  const event = dummyEvent.CustomEvent;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();

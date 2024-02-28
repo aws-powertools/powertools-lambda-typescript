@@ -1,12 +1,12 @@
-import { Context } from 'aws-lambda';
-import { SSMProvider } from '../../src/ssm';
+import type { Context } from 'aws-lambda';
+import { SSMProvider } from '../../src/ssm/SSMProvider.js';
 import {
   SSMGetOptions,
   SSMGetMultipleOptions,
   SSMGetParametersByNameOptions,
-} from '../../src/types/SSMProvider';
-import { TinyLogger } from '../helpers/tinyLogger';
-import { middleware } from '../helpers/sdkMiddlewareRequestCounter';
+} from '../../src/types/SSMProvider.js';
+import { TinyLogger } from '../helpers/tinyLogger.js';
+import { middleware } from '../helpers/sdkMiddlewareRequestCounter.js';
 import { SSMClient } from '@aws-sdk/client-ssm';
 
 // We use a custom logger to log pure JSON objects to stdout

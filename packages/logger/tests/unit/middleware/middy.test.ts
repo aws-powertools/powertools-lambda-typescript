@@ -1,31 +1,25 @@
 /**
  * Test Logger middleware
  *
- * @group unit/logger/all
+ * @group unit/logger/middleware
  */
-import {
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-} from '@aws-lambda-powertools/commons';
-import { cleanupMiddlewares } from '@aws-lambda-powertools/commons/lib/middleware';
-import {
-  ConfigServiceInterface,
-  EnvironmentVariablesService,
-} from '../../../src/config';
-import { injectLambdaContext } from '../../../src/middleware/middy';
-import { Logger } from './../../../src';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
-import { PowertoolLogFormatter } from '../../../src/formatter';
-import { Console } from 'console';
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
+import { injectLambdaContext } from '../../../src/middleware/middy.js';
+import { ConfigServiceInterface } from '../../../src/types/ConfigServiceInterface.js';
+import { Logger } from './../../../src/Logger.js';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
 describe('Middy middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext.helloworldContext;
-  const event = dummyEvent.Custom.CustomEvent;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
 
   beforeEach(() => {
     jest.resetModules();
@@ -55,12 +49,7 @@ describe('Middy middleware', () => {
         // Assess
         expect(logger).toEqual(
           expect.objectContaining({
-            logsSampled: false,
-            persistentLogAttributes: {},
-            powertoolLogData: {
-              sampleRateValue: undefined,
-              awsRegion: 'eu-west-1',
-              environment: '',
+            powertoolsLogData: expect.objectContaining({
               lambdaContext: {
                 awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
                 coldStart: true,
@@ -68,14 +57,9 @@ describe('Middy middleware', () => {
                 functionVersion: '$LATEST',
                 invokedFunctionArn:
                   'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-                memoryLimitInMB: 128,
+                memoryLimitInMB: '128',
               },
-              serviceName: 'hello-world',
-            },
-            envVarsService: expect.any(EnvironmentVariablesService),
-            customConfigService: undefined,
-            logLevel: 8,
-            logFormatter: expect.any(PowertoolLogFormatter),
+            }),
           })
         );
       });
@@ -94,12 +78,7 @@ describe('Middy middleware', () => {
 
         // Assess
         const expectation = expect.objectContaining({
-          logsSampled: false,
-          persistentLogAttributes: {},
-          powertoolLogData: {
-            sampleRateValue: undefined,
-            awsRegion: 'eu-west-1',
-            environment: '',
+          powertoolsLogData: expect.objectContaining({
             lambdaContext: {
               awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
               coldStart: true,
@@ -107,15 +86,9 @@ describe('Middy middleware', () => {
               functionVersion: '$LATEST',
               invokedFunctionArn:
                 'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-              memoryLimitInMB: 128,
+              memoryLimitInMB: '128',
             },
-            serviceName: 'hello-world',
-          },
-          envVarsService: expect.any(EnvironmentVariablesService),
-          customConfigService: undefined,
-          logLevel: 8,
-          logFormatter: expect.any(PowertoolLogFormatter),
-          console: expect.any(Console),
+          }),
         });
         expect(logger).toEqual(expectation);
         expect(anotherLogger).toEqual(expectation);
@@ -224,9 +197,7 @@ describe('Middy middleware', () => {
         };
       };
       const handler = middy(
-        (
-          event: typeof dummyEvent.Custom.CustomEvent & { idx: number }
-        ): void => {
+        (event: { foo: string; bar: string } & { idx: number }): void => {
           // Add a key only at the first invocation, so we can check that it's cleared
           if (event.idx === 0) {
             logger.appendKeys({
@@ -280,18 +251,18 @@ describe('Middy middleware', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );
@@ -320,6 +291,9 @@ describe('Middy middleware', () => {
         },
         getServiceName(): string {
           return 'my-backend-service';
+        },
+        getXrayTraceId(): string | undefined {
+          return undefined;
         },
         isDevMode(): boolean {
           return false;
@@ -350,18 +324,18 @@ describe('Middy middleware', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'my-backend-service',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );
@@ -389,18 +363,18 @@ describe('Middy middleware', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );
@@ -428,11 +402,12 @@ describe('Middy middleware', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'This is an INFO log',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',

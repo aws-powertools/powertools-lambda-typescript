@@ -1,39 +1,46 @@
 /**
  * Test Logger class
  *
- * @group unit/logger/all
+ * @group unit/logger/logger
  */
-import {
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-  LambdaInterface,
-} from '@aws-lambda-powertools/commons';
-import { createLogger, Logger } from '../../src';
-import { EnvironmentVariablesService } from '../../src/config';
-import { PowertoolLogFormatter } from '../../src/formatter';
-import {
-  ClassThatLogs,
-  LogJsonIndent,
+import context from '@aws-lambda-powertools/testing-utils/context';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import { Logger, LogFormatter } from '../../src/index.js';
+import { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
+import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
+import { LogLevelThresholds, LogLevel } from '../../src/types/Log.js';
+import type {
+  LogFunction,
   ConstructorOptions,
-  LogLevelThresholds,
-  LogLevel,
-} from '../../src/types';
+} from '../../src/types/Logger.js';
+import { LogJsonIndent } from '../../src/constants.js';
 import type { Context } from 'aws-lambda';
-import { Console } from 'console';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 const getConsoleMethod = (
   method: string
-): keyof Omit<ClassThatLogs, 'critical'> =>
+): keyof Omit<LogFunction, 'critical'> =>
   method === 'critical'
     ? 'error'
-    : (method.toLowerCase() as keyof Omit<ClassThatLogs, 'critical'>);
+    : (method.toLowerCase() as keyof Omit<LogFunction, 'critical'>);
+jest.mock('node:console', () => ({
+  ...jest.requireActual('node:console'),
+  Console: jest.fn().mockImplementation(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
 
 describe('Class: Logger', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext.helloworldContext;
-  const event = dummyEvent.Custom.CustomEvent;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
   const logLevelThresholds: LogLevelThresholds = {
     DEBUG: 8,
     INFO: 12,
@@ -46,6 +53,431 @@ describe('Class: Logger', () => {
   beforeEach(() => {
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
+  });
+
+  describe('Method: constructor', () => {
+    test('when no constructor parameters are set, returns a Logger instance with the options set in the environment variables', () => {
+      // Prepare
+      const loggerOptions = undefined;
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          defaultServiceName: 'service_undefined',
+          logLevel: 8,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('when no parameters are set, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        logLevel: 'WARN',
+        serviceName: 'my-lambda-service',
+        sampleRateValue: 1,
+        logFormatter: new PowertoolsLogFormatter(),
+        customConfigService: new EnvironmentVariablesService(),
+        persistentLogAttributes: {
+          awsAccountId: '123456789',
+        },
+        environment: 'prod',
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual({
+        coldStart: true,
+        defaultServiceName: 'service_undefined',
+        customConfigService: expect.any(EnvironmentVariablesService),
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logEvent: false,
+        logIndentation: 0,
+        logFormatter: expect.any(PowertoolsLogFormatter),
+        logLevel: 8, // 100% sample rate value changes log level to DEBUG
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
+        logLevelThresholds: {
+          ...logLevelThresholds,
+        },
+        persistentLogAttributes: {
+          awsAccountId: '123456789',
+        },
+        powertoolsLogData: {
+          awsRegion: 'eu-west-1',
+          environment: 'prod',
+          sampleRateValue: 1,
+          serviceName: 'my-lambda-service',
+        },
+      });
+    });
+
+    test('when no constructor parameters and no environment variables are set, returns a Logger instance with the default properties', () => {
+      // Prepare
+      const loggerOptions = undefined;
+      delete process.env.POWERTOOLS_SERVICE_NAME;
+      delete process.env.POWERTOOLS_LOG_LEVEL;
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual({
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logEvent: false,
+        logIndentation: 0,
+        logFormatter: expect.any(PowertoolsLogFormatter),
+        logLevel: 12,
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
+        logLevelThresholds: {
+          ...logLevelThresholds,
+        },
+        persistentLogAttributes: {},
+        powertoolsLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          sampleRateValue: 0,
+          serviceName: 'service_undefined',
+        },
+      });
+    });
+
+    test('when a custom logFormatter is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        logFormatter: expect.any(LogFormatter),
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 8,
+          logFormatter: expect.any(LogFormatter),
+        })
+      );
+    });
+
+    test('when a custom serviceName is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        serviceName: 'my-backend-service',
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'my-backend-service',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 8,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('when a custom uppercase logLevel is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        logLevel: 'ERROR',
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 20,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('when a custom lowercase logLevel is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        logLevel: 'warn',
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 16,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('when no log level is set, returns a Logger instance with INFO level', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {};
+      delete process.env.POWERTOOLS_LOG_LEVEL;
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual({
+        coldStart: true,
+        customConfigService: undefined,
+        defaultServiceName: 'service_undefined',
+        envVarsService: expect.any(EnvironmentVariablesService),
+        logEvent: false,
+        logIndentation: 0,
+        logFormatter: expect.any(PowertoolsLogFormatter),
+        logLevel: 12,
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
+        logLevelThresholds: {
+          ...logLevelThresholds,
+        },
+        persistentLogAttributes: {},
+        powertoolsLogData: {
+          awsRegion: 'eu-west-1',
+          environment: '',
+          sampleRateValue: 0,
+          serviceName: 'hello-world',
+        },
+      });
+    });
+
+    test('when a custom sampleRateValue is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        sampleRateValue: 1,
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 1,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 8,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('when a custom customConfigService is passed, returns a Logger instance with the correct properties', () => {
+      const configService: ConfigServiceInterface = {
+        get(name: string): string {
+          return `a-string-from-${name}`;
+        },
+        getAwsLogLevel() {
+          return 'INFO';
+        },
+        getCurrentEnvironment(): string {
+          return 'dev';
+        },
+        getLogEvent(): boolean {
+          return true;
+        },
+        getLogLevel(): string {
+          return 'INFO';
+        },
+        getSampleRateValue(): number | undefined {
+          return undefined;
+        },
+        getServiceName(): string {
+          return 'my-backend-service';
+        },
+        getXrayTraceId(): string | undefined {
+          return undefined;
+        },
+        isDevMode(): boolean {
+          return false;
+        },
+        isValueTrue(): boolean {
+          return true;
+        },
+      };
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        customConfigService: configService,
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: 'dev',
+            serviceName: 'my-backend-service',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: configService,
+          logLevel: 12,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('when custom persistentLogAttributes is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        persistentLogAttributes: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            aws_account_id: '123456789012',
+            aws_region: 'eu-west-1',
+            logger: {
+              name: 'aws-lambda-powertool-typescript',
+              version: '0.2.4',
+            },
+          },
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 8,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('when a custom environment is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        environment: 'dev',
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: 'dev',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 8,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
   });
 
   describe.each([
@@ -65,7 +497,7 @@ describe('Class: Logger', () => {
     ['error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true],
     ['critical', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true],
   ])(
-    'Method: %p',
+    'Method:',
     (
       method: string,
       debugAction,
@@ -77,18 +509,18 @@ describe('Class: Logger', () => {
       errorAction,
       errorPrints
     ) => {
-      const methodOfLogger = method as keyof ClassThatLogs;
+      const methodOfLogger = method as keyof LogFunction;
 
       describe('Feature: log level', () => {
         test(`when the level is DEBUG, it ${debugAction} print to stdout`, () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(method))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(method)
+          );
           // Act
           logger[methodOfLogger]('foo');
 
@@ -100,6 +532,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: methodOfLogger.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -110,13 +543,13 @@ describe('Class: Logger', () => {
 
         test(`when the log level is INFO, it ${infoAction} print to stdout`, () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'INFO',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           logger[methodOfLogger]('foo');
 
@@ -128,6 +561,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: methodOfLogger.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -138,13 +572,13 @@ describe('Class: Logger', () => {
 
         test(`when the log level is WARN, it ${warnAction} print to stdout`, () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'WARN',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           logger[methodOfLogger]('foo');
 
@@ -156,6 +590,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: methodOfLogger.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -166,13 +601,13 @@ describe('Class: Logger', () => {
 
         test(`when the log level is ERROR, it ${errorAction} print to stdout`, () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'ERROR',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           logger[methodOfLogger]('foo');
 
@@ -184,6 +619,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: methodOfLogger.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -194,13 +630,13 @@ describe('Class: Logger', () => {
 
         test('when the log level is SILENT, it DOES NOT print to stdout', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'SILENT',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           logger[methodOfLogger]('foo');
 
@@ -212,10 +648,10 @@ describe('Class: Logger', () => {
           // Prepare
           process.env.POWERTOOLS_LOG_LEVEL = methodOfLogger.toUpperCase();
           const logger = new Logger();
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           logger[methodOfLogger]('foo');
 
@@ -226,6 +662,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: 'foo',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -234,45 +671,49 @@ describe('Class: Logger', () => {
         });
       });
 
-      describe('Feature: sample rate', () => {
+      describe('Feature: sampling debug logs', () => {
         test('when the log level is higher and the current Lambda invocation IS NOT sampled for logging, it DOES NOT print to stdout', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'SILENT',
             sampleRateValue: 0,
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           if (logger[methodOfLogger]) {
             logger[methodOfLogger]('foo');
           }
 
           // Assess
+          expect(logger.level).toBe(28);
+          expect(logger.getLevelName()).toBe('SILENT');
           expect(consoleSpy).toBeCalledTimes(0);
         });
 
-        test('when the log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout', () => {
+        test('when the log level is higher and the current Lambda invocation IS sampled for logging, it DOES print to stdout and changes log level to DEBUG', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'SILENT',
             sampleRateValue: 1,
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           if (logger[methodOfLogger]) {
             logger[methodOfLogger]('foo');
           }
 
           // Assess
-          expect(consoleSpy).toBeCalledTimes(1);
+          expect(logger.level).toBe(8);
+          expect(logger.getLevelName()).toBe('DEBUG');
+          expect(consoleSpy).toBeCalledTimes(method === 'debug' ? 2 : 1);
           expect(consoleSpy).toHaveBeenNthCalledWith(
-            1,
+            method === 'debug' ? 2 : 1,
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'foo',
@@ -292,11 +733,11 @@ describe('Class: Logger', () => {
             ' log',
           () => {
             // Prepare
-            const logger: Logger = createLogger();
-            const consoleSpy = jest
-              .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-              .mockImplementation();
-
+            const logger = new Logger();
+            const consoleSpy = jest.spyOn(
+              logger['console'],
+              getConsoleMethod(methodOfLogger)
+            );
             // Act
             if (logger[methodOfLogger]) {
               logger[methodOfLogger]('foo');
@@ -309,6 +750,7 @@ describe('Class: Logger', () => {
               JSON.stringify({
                 level: method.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -323,15 +765,14 @@ describe('Class: Logger', () => {
             ' log',
           () => {
             // Prepare
-            const logger: Logger & { addContext: (context: Context) => void } =
-              createLogger({
-                logLevel: 'DEBUG',
-              });
+            const logger = new Logger({
+              logLevel: 'DEBUG',
+            });
             logger.addContext(context);
-            const consoleSpy = jest
-              .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-              .mockImplementation();
-
+            const consoleSpy = jest.spyOn(
+              logger['console'],
+              getConsoleMethod(methodOfLogger)
+            );
             // Act
             if (logger[methodOfLogger]) {
               logger[methodOfLogger]('foo');
@@ -345,11 +786,12 @@ describe('Class: Logger', () => {
                 cold_start: true,
                 function_arn:
                   'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-                function_memory_size: 128,
+                function_memory_size: '128',
                 function_name: 'foo-bar-function',
                 function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
                 level: method.toUpperCase(),
                 message: 'foo',
+                sampling_rate: 0,
                 service: 'hello-world',
                 timestamp: '2016-06-20T12:08:10.000Z',
                 xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -362,13 +804,13 @@ describe('Class: Logger', () => {
       describe('Feature: ephemeral log attributes', () => {
         test('when added, they should appear in that log item only', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           interface NestedObject {
             bool: boolean;
             str: string;
@@ -434,6 +876,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'A log item without extra parameters',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -445,6 +888,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an object as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -457,6 +901,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and objects as other parameters',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -469,6 +914,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'A log item with an object as first parameters',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -481,6 +927,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an error as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -500,6 +947,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an error with custom key as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -517,6 +965,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and a string as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -529,6 +978,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an inline object as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -541,6 +991,7 @@ describe('Class: Logger', () => {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an arbitrary object as second parameter',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -568,17 +1019,17 @@ describe('Class: Logger', () => {
       describe('Feature: persistent log attributes', () => {
         test('when persistent log attributes are added to the Logger instance, they should appear in all logs printed by the instance', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
             persistentLogAttributes: {
               aws_account_id: '123456789012',
               aws_region: 'eu-west-1',
             },
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           if (logger[methodOfLogger]) {
             logger[methodOfLogger]('foo');
@@ -591,6 +1042,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'foo',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -604,13 +1056,13 @@ describe('Class: Logger', () => {
       describe('Feature: X-Ray Trace ID injection', () => {
         test('when the `_X_AMZN_TRACE_ID` environment variable is set it parses it correctly and adds the Trace ID to the log', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           if (logger[methodOfLogger]) {
             logger[methodOfLogger]('foo');
@@ -623,6 +1075,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'foo',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -633,13 +1086,13 @@ describe('Class: Logger', () => {
         test('when the `_X_AMZN_TRACE_ID` environment variable is NOT set it parses it correctly and adds the Trace ID to the log', () => {
           // Prepare
           delete process.env._X_AMZN_TRACE_ID;
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
-
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           // Act
           if (logger[methodOfLogger]) {
             logger[methodOfLogger]('foo');
@@ -652,6 +1105,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'foo',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
             })
@@ -662,12 +1116,13 @@ describe('Class: Logger', () => {
       describe('Feature: handle safely unexpected errors', () => {
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
           // Prepare
-          const logger: Logger = createLogger({
+          const logger = new Logger({
             logLevel: 'DEBUG',
           });
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           const circularObject = {
             foo: 'bar',
             self: {},
@@ -693,6 +1148,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: method.toUpperCase(),
               message: 'A log with a circular reference',
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -706,9 +1162,7 @@ describe('Class: Logger', () => {
         test('when a logged item has BigInt value, it does not throw TypeError', () => {
           // Prepare
           const logger = new Logger();
-          jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
+          jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger));
           const message = `This is an ${methodOfLogger} log with BigInt value`;
           const logItem = { value: BigInt(42) };
           const errorMessage = 'Do not know how to serialize a BigInt';
@@ -722,9 +1176,10 @@ describe('Class: Logger', () => {
         test('when a logged item has a BigInt value, it prints the log with value as a string', () => {
           // Prepare
           const logger = new Logger();
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           const message = `This is an ${methodOfLogger} log with BigInt value`;
           const logItem = { value: BigInt(42) };
 
@@ -738,6 +1193,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: message,
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -749,9 +1205,10 @@ describe('Class: Logger', () => {
         test('when a logged item has empty string, null, or undefined values, it removes it', () => {
           // Prepare
           const logger = new Logger();
-          const consoleSpy = jest
-            .spyOn(logger['console'], getConsoleMethod(methodOfLogger))
-            .mockImplementation();
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           const message = `This is an ${methodOfLogger} log with empty, null, and undefined values`;
           const logItem = {
             value: 42,
@@ -770,6 +1227,7 @@ describe('Class: Logger', () => {
             JSON.stringify({
               level: methodOfLogger.toUpperCase(),
               message: message,
+              sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -782,7 +1240,7 @@ describe('Class: Logger', () => {
   );
 
   describe('Method: addContext', () => {
-    test('when called during a cold start invocation, it populates the logger PowertoolLogData object with coldStart set to TRUE', () => {
+    test('when called during a cold start invocation, it populates the logger powertoolsLogData object with coldStart set to TRUE', () => {
       // Prepare
       const logger = new Logger();
 
@@ -790,37 +1248,18 @@ describe('Class: Logger', () => {
       logger.addContext(context);
 
       // Assess
-      expect(logger).toEqual({
-        console: expect.any(Console),
-        coldStart: false, // This is now false because the `coldStart` attribute has been already accessed once by the `addContext` method
-        customConfigService: undefined,
-        defaultServiceName: 'service_undefined',
-        envVarsService: expect.any(EnvironmentVariablesService),
-        logEvent: false,
-        logIndentation: 0,
-        logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 8,
-        logLevelThresholds: {
-          ...logLevelThresholds,
-        },
-        logsSampled: false,
-        persistentLogAttributes: {},
-        powertoolLogData: {
-          awsRegion: 'eu-west-1',
-          environment: '',
-          lambdaContext: {
-            awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-            coldStart: true,
-            functionName: 'foo-bar-function',
-            functionVersion: '$LATEST',
-            invokedFunctionArn:
-              'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-            memoryLimitInMB: 128,
-          },
-          sampleRateValue: undefined,
-          serviceName: 'hello-world',
-        },
-      });
+      expect(logger).toEqual(
+        expect.objectContaining({
+          coldStart: false, // This is now false because the `coldStart` attribute has been already accessed once by the `addContext` method
+          powertoolsLogData: expect.objectContaining({
+            lambdaContext: expect.objectContaining({
+              coldStart: true,
+            }),
+            sampleRateValue: 0,
+            serviceName: 'hello-world',
+          }),
+        })
+      );
     });
 
     test('when called with a context object, the object is not mutated', () => {
@@ -867,7 +1306,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(logger).toEqual(
         expect.objectContaining({
-          powertoolLogData: expect.objectContaining({
+          powertoolsLogData: expect.objectContaining({
             lambdaContext: expect.objectContaining({
               awsRequestId: context2.awsRequestId,
             }),
@@ -1045,9 +1484,7 @@ describe('Class: Logger', () => {
       // Prepare
 
       const logger = new Logger();
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -1075,11 +1512,12 @@ describe('Class: Logger', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'This is an INFO log with some context',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1090,9 +1528,7 @@ describe('Class: Logger', () => {
     test('it captures Lambda context information and adds it in the printed logs', async () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -1117,6 +1553,7 @@ describe('Class: Logger', () => {
         JSON.stringify({
           level: 'INFO',
           message: 'An INFO log without context!',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1128,11 +1565,12 @@ describe('Class: Logger', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'This is an INFO log with some context',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1144,9 +1582,7 @@ describe('Class: Logger', () => {
       // Prepare
       const expectedReturnValue = 'Lambda invoked!';
       const logger = new Logger();
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -1174,6 +1610,7 @@ describe('Class: Logger', () => {
         JSON.stringify({
           level: 'INFO',
           message: 'An INFO log without context!',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1185,11 +1622,12 @@ describe('Class: Logger', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'This is an INFO log with some context',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1206,7 +1644,6 @@ describe('Class: Logger', () => {
           biz: 'baz',
         },
       });
-      jest.spyOn(logger['console'], 'debug').mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
         public async handler<TEvent>(
@@ -1252,7 +1689,6 @@ describe('Class: Logger', () => {
           biz: 'baz',
         },
       });
-      jest.spyOn(logger['console'], 'debug').mockImplementation();
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
         public async handler<TEvent>(
@@ -1294,9 +1730,7 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ logEvent: true })
         public async handler<TEvent>(
@@ -1320,18 +1754,18 @@ describe('Class: Logger', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );
@@ -1343,10 +1777,7 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
-
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -1370,18 +1801,18 @@ describe('Class: Logger', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           event: {
-            key1: 'value1',
-            key2: 'value2',
-            key3: 'value3',
+            foo: 'bar',
+            bar: 'baz',
           },
         })
       );
@@ -1392,10 +1823,7 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
-
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         private readonly memberVariable: string;
 
@@ -1431,11 +1859,12 @@ describe('Class: Logger', () => {
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-          function_memory_size: 128,
+          function_memory_size: '128',
           function_name: 'foo-bar-function',
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
           level: 'INFO',
           message: 'memberVariable:someValue',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -1452,9 +1881,7 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler(
@@ -1494,9 +1921,7 @@ describe('Class: Logger', () => {
           version: '1.0.0',
         },
       });
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true, logEvent: true })
         public async handler(
@@ -1548,29 +1973,6 @@ describe('Class: Logger', () => {
     });
   });
 
-  describe('Method: refreshSampleRateCalculation', () => {
-    test('it recalculates whether the current Lambda invocation logs will be printed or not', () => {
-      // Prepare
-      const logger = new Logger({
-        logLevel: 'ERROR',
-        sampleRateValue: 0.1, // 10% probability
-      });
-      let logsSampledCount = 0;
-
-      // Act
-      for (let i = 0; i < 1000; i++) {
-        logger.refreshSampleRateCalculation();
-        if (logger.getLogsSampled() === true) {
-          logsSampledCount++;
-        }
-      }
-
-      // Assess
-      expect(logsSampledCount > 50).toBe(true);
-      expect(logsSampledCount < 150).toBe(true);
-    });
-  });
-
   describe('Method: createChild', () => {
     test('child and grandchild loggers should have all the options of its ancestor', () => {
       // Prepare
@@ -1594,44 +1996,52 @@ describe('Class: Logger', () => {
       expect(parentLogger === grandchildLogger).toBe(false);
 
       expect(parentLogger).toEqual({
-        console: expect.any(Console),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
         coldStart: true,
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
-        powertoolLogData: {
+        powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'parent-service-name',
         },
       });
 
       expect(childLogger).toEqual({
-        console: expect.any(Console),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
         coldStart: true,
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: true,
         persistentLogAttributes: {},
-        powertoolLogData: {
+        powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: 1,
@@ -1640,21 +2050,25 @@ describe('Class: Logger', () => {
       });
 
       expect(grandchildLogger).toEqual({
-        console: expect.any(Console),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
         coldStart: true,
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: true,
         persistentLogAttributes: {},
-        powertoolLogData: {
+        powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: 1,
@@ -1682,7 +2096,7 @@ describe('Class: Logger', () => {
       );
 
       const optionsWithSampleRateEnabled = {
-        sampleRateValue: 1, // 100% probability to make sure that the logs are sampled
+        sampleRateValue: 1,
       };
       const childLoggerWithSampleRateEnabled = parentLogger.createChild(
         optionsWithSampleRateEnabled
@@ -1699,77 +2113,94 @@ describe('Class: Logger', () => {
       expect(parentLogger === childLogger).toBe(false);
       expect(childLogger).toEqual({
         ...parentLogger,
-        console: expect.any(Console),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
       });
       expect(parentLogger === childLoggerWithPermanentAttributes).toBe(false);
       expect(parentLogger === childLoggerWithSampleRateEnabled).toBe(false);
       expect(parentLogger === childLoggerWithErrorLogLevel).toBe(false);
 
       expect(parentLogger).toEqual({
-        console: expect.any(Console),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
         coldStart: true,
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
-        powertoolLogData: {
+        powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
 
       expect(childLoggerWithPermanentAttributes).toEqual({
-        console: expect.any(Console),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
         coldStart: true,
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {
           extra:
             'This is an attribute that will be logged only by the child logger',
         },
-        powertoolLogData: {
+        powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
 
       expect(childLoggerWithSampleRateEnabled).toEqual({
-        console: expect.any(Console),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
         coldStart: true,
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 8,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: true,
         persistentLogAttributes: {},
-        powertoolLogData: {
+        powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
           sampleRateValue: 1,
@@ -1778,24 +2209,28 @@ describe('Class: Logger', () => {
       });
 
       expect(childLoggerWithErrorLogLevel).toEqual({
-        console: expect.any(Console),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
         coldStart: true,
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
         logEvent: false,
         logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
+        logFormatter: expect.any(PowertoolsLogFormatter),
         logLevel: 20,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
-        logsSampled: false,
         persistentLogAttributes: {},
-        powertoolLogData: {
+        powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
-          sampleRateValue: undefined,
+          sampleRateValue: 0,
           serviceName: 'hello-world',
         },
       });
@@ -1803,7 +2238,6 @@ describe('Class: Logger', () => {
 
     test('child logger should have same keys in persistentLogAttributes as its parent', () => {
       // Prepare
-      const INDENTATION = LogJsonIndent.COMPACT;
       const parentLogger = new Logger();
       const childLogger = parentLogger.createChild();
 
@@ -1821,88 +2255,25 @@ describe('Class: Logger', () => {
       childLoggerWithKeys.removeKeys(['test_key']);
 
       // Assess
-      expect(childLogger).toEqual({
-        console: expect.any(Console),
-        coldStart: true,
-        customConfigService: undefined,
-        defaultServiceName: 'service_undefined',
-        envVarsService: expect.any(EnvironmentVariablesService),
-        logEvent: false,
-        logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 8,
-        logLevelThresholds: {
-          ...logLevelThresholds,
-        },
-        logsSampled: false,
-        persistentLogAttributes: {},
-        powertoolLogData: {
-          awsRegion: 'eu-west-1',
-          environment: '',
-          sampleRateValue: undefined,
-          serviceName: 'hello-world',
+      expect(childLogger.getPersistentLogAttributes()).toEqual({});
+
+      expect(childLoggerWithKeys.getPersistentLogAttributes()).toEqual({
+        aws_account_id: '123456789012',
+        aws_region: 'eu-west-1',
+        logger: {
+          name: 'aws-lambda-powertool-typescript',
+          version: '0.2.4',
         },
       });
 
-      expect(childLoggerWithKeys).toEqual({
-        console: expect.any(Console),
-        coldStart: true,
-        customConfigService: undefined,
-        defaultServiceName: 'service_undefined',
-        envVarsService: expect.any(EnvironmentVariablesService),
-        logEvent: false,
-        logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 8,
-        logLevelThresholds: {
-          ...logLevelThresholds,
+      expect(parentLogger.getPersistentLogAttributes()).toEqual({
+        aws_account_id: '123456789012',
+        aws_region: 'eu-west-1',
+        logger: {
+          name: 'aws-lambda-powertool-typescript',
+          version: '0.2.4',
         },
-        logsSampled: false,
-        persistentLogAttributes: {
-          aws_account_id: '123456789012',
-          aws_region: 'eu-west-1',
-          logger: {
-            name: 'aws-lambda-powertool-typescript',
-            version: '0.2.4',
-          },
-        },
-        powertoolLogData: {
-          awsRegion: 'eu-west-1',
-          environment: '',
-          sampleRateValue: undefined,
-          serviceName: 'hello-world',
-        },
-      });
-
-      expect(parentLogger).toEqual({
-        console: expect.any(Console),
-        coldStart: true,
-        customConfigService: undefined,
-        defaultServiceName: 'service_undefined',
-        envVarsService: expect.any(EnvironmentVariablesService),
-        logEvent: false,
-        logIndentation: INDENTATION,
-        logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 8,
-        logLevelThresholds: {
-          ...logLevelThresholds,
-        },
-        logsSampled: false,
-        persistentLogAttributes: {
-          aws_account_id: '123456789012',
-          aws_region: 'eu-west-1',
-          logger: {
-            name: 'aws-lambda-powertool-typescript',
-            version: '0.2.4',
-          },
-          test_key: 'key-for-test',
-        },
-        powertoolLogData: {
-          awsRegion: 'eu-west-1',
-          environment: '',
-          sampleRateValue: undefined,
-          serviceName: 'hello-world',
-        },
+        test_key: 'key-for-test',
       });
     });
 
@@ -1915,42 +2286,31 @@ describe('Class: Logger', () => {
       const childLoggerWithContext = parentLogger.createChild();
 
       // Assess
-      expect(childLoggerWithContext).toEqual({
-        console: expect.any(Console),
-        coldStart: false, // This is now false because the `coldStart` attribute has been already accessed once by the `addContext` method
-        customConfigService: undefined,
-        defaultServiceName: 'service_undefined',
-        envVarsService: expect.any(EnvironmentVariablesService),
-        logEvent: false,
-        logIndentation: 0,
-        logFormatter: expect.any(PowertoolLogFormatter),
-        logLevel: 8,
-        logLevelThresholds: {
-          ...logLevelThresholds,
-        },
-        logsSampled: false,
-        persistentLogAttributes: {},
-        powertoolLogData: {
-          awsRegion: 'eu-west-1',
-          environment: '',
-          lambdaContext: {
-            awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-            coldStart: true,
-            functionName: 'foo-bar-function',
-            functionVersion: '$LATEST',
-            invokedFunctionArn:
-              'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-            memoryLimitInMB: 128,
+      expect(childLoggerWithContext).toEqual(
+        expect.objectContaining({
+          coldStart: false, // This is now false because the `coldStart` attribute has been already accessed once by the `addContext` method
+          powertoolsLogData: {
+            awsRegion: 'eu-west-1',
+            environment: '',
+            lambdaContext: {
+              awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+              coldStart: true,
+              functionName: 'foo-bar-function',
+              functionVersion: '$LATEST',
+              invokedFunctionArn:
+                'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+              memoryLimitInMB: '128',
+            },
+            sampleRateValue: 0,
+            serviceName: 'hello-world',
           },
-          sampleRateValue: undefined,
-          serviceName: 'hello-world',
-        },
-      });
+        })
+      );
     });
 
     test('child logger should have the same logFormatter as its parent', () => {
       // Prepare
-      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      class MyCustomLogFormatter extends PowertoolsLogFormatter {}
       const parentLogger = new Logger({
         logFormatter: new MyCustomLogFormatter(),
       });
@@ -1968,7 +2328,7 @@ describe('Class: Logger', () => {
 
     test('child logger with custom logFormatter in options should have provided logFormatter', () => {
       // Prepare
-      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      class MyCustomLogFormatter extends PowertoolsLogFormatter {}
       const parentLogger = new Logger();
 
       // Act
@@ -1979,7 +2339,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(parentLogger).toEqual(
         expect.objectContaining({
-          logFormatter: expect.any(PowertoolLogFormatter),
+          logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
 
@@ -1992,13 +2352,13 @@ describe('Class: Logger', () => {
 
     test('child logger should have exact same attributes as the parent logger created with all non-default options', () => {
       // Prepare
-      class MyCustomLogFormatter extends PowertoolLogFormatter {}
+      class MyCustomLogFormatter extends PowertoolsLogFormatter {}
       class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {}
 
       const options: ConstructorOptions = {
         logLevel: 'ERROR',
         serviceName: 'test-service-name',
-        sampleRateValue: 0.77,
+        sampleRateValue: 1,
         logFormatter: new MyCustomLogFormatter(),
         customConfigService: new MyCustomEnvironmentVariablesService(),
         persistentLogAttributes: {
@@ -2015,8 +2375,12 @@ describe('Class: Logger', () => {
       // Assess
       expect(childLogger).toEqual({
         ...parentLogger,
-        console: expect.any(Console),
-        logsSampled: expect.any(Boolean),
+        console: expect.objectContaining({
+          debug: expect.any(Function),
+          error: expect.any(Function),
+          info: expect.any(Function),
+          warn: expect.any(Function),
+        }),
       });
 
       expect(childLogger).toEqual(
@@ -2037,10 +2401,7 @@ describe('Class: Logger', () => {
     test('When the feature is disabled, it DOES NOT log the event', () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
-
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       // Act
       logger.logEventIfEnabled(event);
 
@@ -2054,10 +2415,7 @@ describe('Class: Logger', () => {
         something: 'happened!',
       };
       const logger = new Logger();
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
-
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       // Act
       logger.logEventIfEnabled(event, true);
 
@@ -2068,6 +2426,7 @@ describe('Class: Logger', () => {
         JSON.stringify({
           level: 'INFO',
           message: 'Lambda invocation event',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -2085,9 +2444,7 @@ describe('Class: Logger', () => {
       process.env.POWERTOOLS_DEV = 'true';
       const INDENTATION = LogJsonIndent.PRETTY;
       const logger = new Logger();
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
       // Act
       logger.info('Message with pretty identation');
@@ -2100,6 +2457,7 @@ describe('Class: Logger', () => {
           {
             level: 'INFO',
             message: 'Message with pretty identation',
+            sampling_rate: 0,
             service: 'hello-world',
             timestamp: '2016-06-20T12:08:10.000Z',
             xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -2113,10 +2471,7 @@ describe('Class: Logger', () => {
     test('when the `POWERTOOLS_DEV` env var is NOT SET it makes log output as one-liner', () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
-        .mockImplementation();
-
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
       // Act
       logger.info('Message without pretty identation');
 
@@ -2127,6 +2482,7 @@ describe('Class: Logger', () => {
         JSON.stringify({
           level: 'INFO',
           message: 'Message without pretty identation',
+          sampling_rate: 0,
           service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
@@ -2197,6 +2553,335 @@ describe('Class: Logger', () => {
       expect(warningSpy).toHaveBeenCalledWith(
         'Current log level (WARN) does not match AWS Lambda Advanced Logging Controls minimum log level (ERROR). This can lead to data loss, consider adjusting them.'
       );
+    });
+  });
+
+  describe('Feature: Sampling debug logs', () => {
+    test('when sample rate is set in constructor, it DOES change log level to DEBUG', () => {
+      // Prepare & Act
+      const logger: Logger = new Logger({
+        logLevel: 'ERROR',
+        sampleRateValue: 1,
+      });
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+    });
+
+    test('when sample rate is set in custom config service, it DOES change log level to DEBUG', () => {
+      // Prepare & Act
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 1;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+
+      const loggerOptions: ConstructorOptions = {
+        logLevel: 'ERROR',
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+      const logger: Logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+    });
+
+    test('when sample rate is set in environmental variable, it DOES change log level to DEBUG', () => {
+      // Prepare & Act
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
+
+      const logger: Logger = new Logger({
+        logLevel: 'ERROR',
+      });
+
+      // Assess
+      expect(logger.level).toBe(8);
+      expect(logger.getLevelName()).toBe('DEBUG');
+    });
+
+    test('when sample rate is disabled it DOES NOT changes log level to DEBUG', () => {
+      // Prepare & Act
+      const logger: Logger = new Logger({
+        logLevel: 'ERROR',
+        sampleRateValue: 0,
+      });
+
+      // Assess
+      expect(logger.level).toBe(20);
+      expect(logger.getLevelName()).toBe('ERROR');
+    });
+
+    test('when sample rate is set in constructor, custom config, and environmental variable, it should prioritize constructor value', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '0.5';
+
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 0.75;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        sampleRateValue: 1,
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+      const logger: Logger = new Logger(loggerOptions);
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate is set in custom config and environmental variable, it should prioritize custom config value', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '0.75';
+
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 1;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+      const logger: Logger = new Logger(loggerOptions);
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate is set in environmental variable, it should use POWERTOOLS_LOGGER_SAMPLE_RATE value', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
+      const logger: Logger = new Logger();
+      const consoleSpy = jest.spyOn(logger['console'], 'debug');
+      // Act
+      logger.debug('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(2);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'DEBUG',
+          message: 'Setting log level to DEBUG due to sampling rate',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        2,
+        JSON.stringify({
+          level: 'DEBUG',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate is set in custom config service, it should use custom config service value', () => {
+      // Prepare
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 1;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+
+      const logger: Logger = new Logger(loggerOptions);
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 1,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate in constructor is out of expected range, it should be ignored', () => {
+      // Prepare
+      const logger: Logger = new Logger({
+        logLevel: 'INFO',
+        sampleRateValue: 42,
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate in custom config service is out of expected range, it should be ignored', () => {
+      // Prepare
+      class MyCustomEnvironmentVariablesService extends EnvironmentVariablesService {
+        private sampleRateValue = 42;
+        public getSampleRateValue(): number {
+          return this.sampleRateValue;
+        }
+      }
+      const loggerOptions: ConstructorOptions = {
+        logLevel: 'INFO',
+        customConfigService: new MyCustomEnvironmentVariablesService(),
+      };
+
+      const logger: Logger = new Logger(loggerOptions);
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when sample rate in environmental variable is out of expected range, it should be ignored', () => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '42';
+      const logger: Logger = new Logger({
+        logLevel: 'INFO',
+      });
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      // Act
+      logger.info('foo');
+
+      // Assess
+      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'foo',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    describe('Method: refreshSampleRateCalculation', () => {
+      test('when sample rate calculation is refreshed, it DOES NOT overwrite the sample rate value', () => {
+        // Prepare
+        const logger = new Logger({
+          logLevel: 'INFO',
+          sampleRateValue: 1,
+        });
+        const consoleSpy = jest.spyOn(logger['console'], 'info');
+        // Act
+        logger.refreshSampleRateCalculation();
+        logger.info('foo');
+
+        // Assess
+        expect(consoleSpy).toBeCalledTimes(1);
+        expect(consoleSpy).toHaveBeenNthCalledWith(
+          1,
+          JSON.stringify({
+            level: 'INFO',
+            message: 'foo',
+            sampling_rate: 1,
+            service: 'hello-world',
+            timestamp: '2016-06-20T12:08:10.000Z',
+            xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          })
+        );
+      });
+
+      test('when sample rate calculation is refreshed, it respects probability sampling and change log level to DEBUG ', () => {
+        // Prepare
+        const logger = new Logger({
+          logLevel: 'ERROR',
+          sampleRateValue: 0.1, // 10% probability
+        });
+
+        let logLevelChangedToDebug = 0;
+        const numOfIterations = 1000;
+        const minExpected = numOfIterations * 0.05; // Min expected based on 5% probability
+        const maxExpected = numOfIterations * 0.15; // Max expected based on 15% probability
+
+        // Act
+        for (let i = 0; i < numOfIterations; i++) {
+          logger.refreshSampleRateCalculation();
+          if (logger.getLevelName() === 'DEBUG') {
+            logLevelChangedToDebug++;
+            logger.setLogLevel('ERROR');
+          }
+        }
+
+        // Assess
+        expect(logLevelChangedToDebug).toBeGreaterThanOrEqual(minExpected);
+        expect(logLevelChangedToDebug).toBeLessThanOrEqual(maxExpected);
+      });
     });
   });
 });

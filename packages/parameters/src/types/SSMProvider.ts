@@ -1,4 +1,4 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type {
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
@@ -9,7 +9,7 @@ import type {
   GetMultipleOptionsInterface,
   GetOptionsInterface,
   TransformOptions,
-} from './BaseProvider';
+} from './BaseProvider.js';
 
 /**
  * Interface for SSMProvider with clientConfig property.

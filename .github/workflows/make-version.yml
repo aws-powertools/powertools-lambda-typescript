@@ -30,9 +30,13 @@ jobs:
         uses: ./.github/actions/cached-node-modules
       - name: Version
         id: bump-version
+        run: npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes
+      - name: Update user agent version
         run: |
-          npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes
-          git add .
+          VERSION=$(cat lerna.json | jq .version -r)
+          echo -e "// this file is auto generated, do not modify\nexport const VERSION = '$VERSION';" > packages/commons/src/version.ts
+      - name: Stage changes
+        run: git add .
       - name: Set release version
         id: set-release-version
         run: |

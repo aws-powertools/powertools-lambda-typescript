@@ -3,19 +3,17 @@
  *
  * @group unit/tracer/all
  */
-import {
-  ContextExamples as dummyContext,
-  Events as dummyEvent,
-  LambdaInterface,
-} from '@aws-lambda-powertools/commons';
-import { Tracer } from './../../src';
-import type { Callback, Context } from 'aws-lambda/handler';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import { Tracer } from './../../src/index.js';
+import type { Callback, Context } from 'aws-lambda';
 import {
   Segment,
   setContextMissingStrategy,
   Subsegment,
 } from 'aws-xray-sdk-core';
-import { ProviderServiceInterface } from '../../src/provider';
+import type { ProviderServiceInterface } from '../../src/types/ProviderServiceInterface.js';
+import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 
 type CaptureAsyncFuncMock = jest.SpyInstance<
   unknown,
@@ -47,8 +45,10 @@ jest.spyOn(console, 'error').mockImplementation(() => null);
 
 describe('Class: Tracer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
-  const context = dummyContext.helloworldContext;
-  const event = dummyEvent.Custom.CustomEvent;
+  const event = {
+    foo: 'bar',
+    bar: 'baz',
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -58,6 +58,321 @@ describe('Class: Tracer', () => {
 
   afterAll(() => {
     process.env = ENVIRONMENT_VARIABLES;
+  });
+
+  describe('Method: constructor', () => {
+    it('instantiates with default settings when no option is passed', () => {
+      // Prepare & Act
+      const tracer = new Tracer(undefined);
+
+      // Assess
+      expect(tracer).toBeInstanceOf(Tracer);
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+          serviceName: 'hello-world',
+          captureHTTPsRequests: true,
+        })
+      );
+    });
+
+    it('uses the provided options when passed ', () => {
+      // Prepare
+      const tracerOptions = {
+        enabled: false,
+        serviceName: 'my-lambda-service',
+        captureHTTPsRequests: false,
+      };
+
+      // Act
+      const tracer = new Tracer(tracerOptions);
+
+      // Assess
+      expect(tracer).toBeInstanceOf(Tracer);
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+          serviceName: 'my-lambda-service',
+          captureHTTPsRequests: false,
+        })
+      );
+    });
+
+    it('uses the default service name when an invalid one is passed', () => {
+      // Prepare
+      const tracerOptions = {
+        serviceName: '',
+      };
+
+      // Act
+      const tracer = new Tracer(tracerOptions);
+
+      // Assess
+      expect(tracer).toBeInstanceOf(Tracer);
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+          serviceName: 'hello-world',
+          captureHTTPsRequests: true,
+        })
+      );
+    });
+
+    it('uses the custom config service when one is passed', () => {
+      // Prepare
+      const configService: ConfigServiceInterface = {
+        get(name: string): string {
+          return `a-string-from-${name}`;
+        },
+        getCaptureHTTPsRequests(): string {
+          return 'false';
+        },
+        getTracingEnabled(): string {
+          return 'false';
+        },
+        getTracingCaptureResponse(): string {
+          return 'false';
+        },
+        getTracingCaptureError(): string {
+          return 'false';
+        },
+        getServiceName(): string {
+          return 'my-backend-service';
+        },
+        getSamLocal() {
+          return 'false';
+        },
+        getAwsExecutionEnv() {
+          return 'AWS_Lambda_nodejs12.x';
+        },
+        isDevMode(): boolean {
+          return false;
+        },
+        isValueTrue(value: string): boolean {
+          return value === 'true';
+        },
+        getXrayTraceId() {
+          return '1-abcdef12-3456abcdef123456abcdef12';
+        },
+      };
+
+      // Act
+      const tracer = new Tracer({
+        customConfigService: configService,
+      });
+
+      // Assess
+      expect(tracer).toBeInstanceOf(Tracer);
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          customConfigService: configService,
+          tracingEnabled: false,
+          serviceName: 'my-backend-service',
+          captureHTTPsRequests: false,
+        })
+      );
+    });
+
+    it('sets captureHTTPsGlobal to true by default when tracing is enabled', () => {
+      // Prepare
+      const tracerOptions = {
+        enabled: true,
+      };
+
+      // Act
+      const tracer = new Tracer(tracerOptions);
+
+      // Assess
+      expect(tracer).toBeInstanceOf(Tracer);
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+          captureHTTPsRequests: true,
+        })
+      );
+    });
+  });
+
+  describe('Environment Variables configs', () => {
+    test('when AWS_EXECUTION_ENV environment variable is equal to AWS_Lambda_amplify-mock, tracing is disabled', () => {
+      // Prepare
+      process.env.AWS_EXECUTION_ENV = 'AWS_Lambda_amplify-mock';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+        })
+      );
+    });
+
+    test('when AWS_SAM_LOCAL environment variable is set, tracing is disabled', () => {
+      // Prepare
+      process.env.AWS_SAM_LOCAL = 'true';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+        })
+      );
+    });
+
+    test('when AWS_EXECUTION_ENV environment variable is set, tracing is enabled', () => {
+      // Prepare
+      process.env.AWS_EXECUTION_ENV = 'nodejs16.x';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: true,
+        })
+      );
+    });
+
+    test('when AWS_EXECUTION_ENV environment variable is NOT set, tracing is disabled', () => {
+      // Prepare
+      delete process.env.AWS_EXECUTION_ENV;
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+        })
+      );
+    });
+
+    test('when POWERTOOLS_TRACE_ENABLED environment variable is set, a tracer with tracing disabled is returned', () => {
+      // Prepare
+      process.env.POWERTOOLS_TRACE_ENABLED = 'false';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          tracingEnabled: false,
+        })
+      );
+    });
+
+    test('when POWERTOOLS_SERVICE_NAME environment variable is set, a tracer with the correct serviceName is returned', () => {
+      // Prepare
+      process.env.POWERTOOLS_SERVICE_NAME = 'my-backend-service';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          serviceName: 'my-backend-service',
+        })
+      );
+    });
+
+    test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set, a tracer with captureResponse disabled is returned', () => {
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureResponse: false,
+        })
+      );
+    });
+
+    test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set to invalid value, a tracer with captureResponse enabled is returned', () => {
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = '';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureResponse: true,
+        })
+      );
+    });
+
+    test('when POWERTOOLS_TRACER_CAPTURE_ERROR environment variable is set, a tracer with captureError disabled is returned', () => {
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureError: false,
+        })
+      );
+    });
+
+    test('when POWERTOOLS_TRACER_CAPTURE_ERROR environment variable is set to invalid value, a tracer with captureError enabled is returned', () => {
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = '';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureError: true,
+        })
+      );
+    });
+
+    test('when POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable is set, captureHTTPsGlobal is called', () => {
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS = 'false';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureHTTPsRequests: false,
+        })
+      );
+    });
+
+    test('when POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable is set to invalid value, captureHTTPsGlobal is called', () => {
+      // Prepare
+      process.env.POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS = '';
+
+      // Act
+      const tracer = new Tracer();
+
+      // Assess
+      expect(tracer).toEqual(
+        expect.objectContaining({
+          captureHTTPsRequests: true,
+        })
+      );
+    });
   });
 
   describe('Method: annotateColdStart', () => {

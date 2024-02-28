@@ -1,7 +1,7 @@
-import { Logger } from '../../src';
-import { Context } from 'aws-lambda';
-import { LogLevel } from '../../src/types';
-import { TestEvent, TestOutput } from '../helpers/types';
+import { Logger } from '../../src/index.js';
+import type { Context } from 'aws-lambda';
+import type { LogLevel } from '../../src/types/index.js';
+import { TestEvent, TestOutput } from '../helpers/types.js';
 
 const PERSISTENT_KEY = process.env.PERSISTENT_KEY || 'persistentKey';
 const PERSISTENT_VALUE = process.env.ERSISTENT_VALUE || 'persistentValue';

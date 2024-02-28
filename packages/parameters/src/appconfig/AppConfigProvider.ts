@@ -1,4 +1,4 @@
-import { BaseProvider, DEFAULT_PROVIDERS } from '../base';
+import { BaseProvider } from '../base/BaseProvider.js';
 import {
   AppConfigDataClient,
   StartConfigurationSessionCommand,
@@ -9,8 +9,8 @@ import type {
   AppConfigProviderOptions,
   AppConfigGetOptions,
   AppConfigGetOutput,
-} from '../types/AppConfigProvider';
-import { APPCONFIG_TOKEN_EXPIRATION } from '../constants';
+} from '../types/AppConfigProvider.js';
+import { APPCONFIG_TOKEN_EXPIRATION } from '../constants.js';
 
 /**
  * ## Intro
@@ -182,7 +182,7 @@ import { APPCONFIG_TOKEN_EXPIRATION } from '../constants';
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class AppConfigProvider extends BaseProvider {
-  public client!: AppConfigDataClient;
+  public declare client: AppConfigDataClient;
   protected configurationTokenStore = new Map<
     string,
     { value: string; expiration: number }
@@ -361,4 +361,4 @@ class AppConfigProvider extends BaseProvider {
   }
 }
 
-export { AppConfigProvider, DEFAULT_PROVIDERS };
+export { AppConfigProvider };

@@ -1,5 +1,13 @@
-export * from './IdempotencyRecord';
-export * from './BasePersistenceLayer';
-export * from './IdempotencyOptions';
-export * from './DynamoDBPersistence';
-export * from './LRUCache';
+export type {
+  IdempotencyRecordOptions,
+  IdempotencyRecordStatusValue,
+} from './IdempotencyRecord.js';
+export type {
+  BasePersistenceLayerInterface,
+  BasePersistenceLayerOptions,
+} from './BasePersistenceLayer.js';
+export type {
+  IdempotencyConfigOptions,
+  IdempotencyLambdaHandlerOptions,
+  IdempotencyHandlerOptions,
+} from './IdempotencyOptions.js';

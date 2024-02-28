@@ -1,11 +1,11 @@
-import { TRACER_KEY } from '@aws-lambda-powertools/commons/lib/middleware';
-import type { Tracer } from '../Tracer';
+import { TRACER_KEY } from '@aws-lambda-powertools/commons';
+import type { Tracer } from '../Tracer.js';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
-import type { CaptureLambdaHandlerOptions } from '../types';
+import type { CaptureLambdaHandlerOptions } from '../types/Tracer.js';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
-} from '@aws-lambda-powertools/commons';
+} from '@aws-lambda-powertools/commons/types';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
@@ -18,7 +18,8 @@ import type {
  *
  * @example
  * ```typescript
- * import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+ * import { Tracer } from '@aws-lambda-powertools/tracer';
+ * import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
  * import middy from '@middy/core';
  *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });

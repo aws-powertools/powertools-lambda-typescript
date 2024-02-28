@@ -1,4 +1,4 @@
-import type { BaseProviderInterface } from '../types/BaseProvider';
+import type { BaseProviderInterface } from '../types/BaseProvider.js';
 
 // These providers are dinamycally intialized on first use of the helper functions
 const DEFAULT_PROVIDERS: Record<string, BaseProviderInterface> = {};

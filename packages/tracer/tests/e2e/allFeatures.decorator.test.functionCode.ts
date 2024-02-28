@@ -1,4 +1,4 @@
-import { Tracer } from '../../src';
+import { Tracer } from '../../src/Tracer.js';
 import type { Callback, Context } from 'aws-lambda';
 import AWS from 'aws-sdk';
 import axios from 'axios';
@@ -79,8 +79,6 @@ export class MyFunctionBase {
 
 class MyFunctionWithDecorator extends MyFunctionBase {
   @tracer.captureLambdaHandler()
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public handler(
     event: CustomEvent,
     _context: Context,
@@ -90,8 +88,6 @@ class MyFunctionWithDecorator extends MyFunctionBase {
   }
 
   @tracer.captureMethod()
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public myMethod(): string {
     return super.myMethod();
   }
@@ -102,8 +98,6 @@ export const handler = handlerClass.handler.bind(handlerClass);
 
 class MyFunctionWithDecoratorCaptureResponseFalse extends MyFunctionBase {
   @tracer.captureLambdaHandler({ captureResponse: false })
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public handler(
     event: CustomEvent,
     _context: Context,
@@ -113,8 +107,6 @@ class MyFunctionWithDecoratorCaptureResponseFalse extends MyFunctionBase {
   }
 
   @tracer.captureMethod({ captureResponse: false })
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public myMethod(): string {
     return super.myMethod();
   }

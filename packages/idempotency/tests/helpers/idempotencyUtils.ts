@@ -1,4 +1,4 @@
-import { BasePersistenceLayer } from '../../src/persistence';
+import { BasePersistenceLayer } from '../../src/persistence/BasePersistenceLayer.js';
 
 /**
  * Dummy class to test the abstract class BasePersistenceLayer.

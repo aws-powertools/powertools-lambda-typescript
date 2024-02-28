@@ -4,6 +4,9 @@ inputs:
   nodeVersion: # id of input
     description: 'Node.js version to use in the cache key'
     default: '20'
+  build:
+    description: 'Whether to build the packages or not'
+    default: 'true'
 outputs:
   cache-hit:
     description: "Whether the cache was hit or not"
@@ -17,7 +20,7 @@ runs:
       shell: bash
     - name: Cache node modules
       id: cache-node-modules
-      uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: '**/node_modules'
         # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
@@ -29,8 +32,8 @@ runs:
       run: npm ci
       shell: bash
     - name: Build packages
-      # Regardless of whether the cache was hit or not, we need to build the packages.
-      #
+      # Regardless of whether the cache was hit or not, we need to build the packages, unless the caller says otherwise
+      if: inputs.build == 'true'
       # We build the shared package first, then the others in parallel to speed up the process
       # even though we could just run `npm run build` in the root folder and build them in
       # sequence, but still in the correct order.

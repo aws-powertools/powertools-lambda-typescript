@@ -5,6 +5,8 @@ import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
 const appConfigClient = new AppConfigDataClient({ region: 'us-east-1' });
 // pass the client to the provider
 const configsProvider = new AppConfigProvider({
+  application: 'my-app',
+  environment: 'my-env',
   awsSdkV3Client: appConfigClient,
 });
 

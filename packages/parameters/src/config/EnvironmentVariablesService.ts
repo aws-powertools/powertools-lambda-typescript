@@ -1,5 +1,5 @@
-import { ConfigServiceInterface } from './ConfigServiceInterface';
-import { DEFAULT_MAX_AGE_SECS } from '../constants';
+import { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
+import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 
 class EnvironmentVariablesService
@@ -10,6 +10,11 @@ class EnvironmentVariablesService
   private parametersMaxAgeVariable = 'POWERTOOLS_PARAMETERS_MAX_AGE';
   private ssmDecryptVariable = 'POWERTOOLS_PARAMETERS_SSM_DECRYPT';
 
+  /**
+   * It returns the value of the POWERTOOLS_PARAMETERS_MAX_AGE environment variable.
+   *
+   * @returns {number|undefined}
+   */
   public getParametersMaxAge(): number | undefined {
     const maxAge = this.get(this.parametersMaxAgeVariable);
 
@@ -25,6 +30,11 @@ class EnvironmentVariablesService
     }
   }
 
+  /**
+   * It returns the value of the POWERTOOLS_PARAMETERS_SSM_DECRYPT environment variable.
+   *
+   * @returns {string}
+   */
   public getSSMDecrypt(): string {
     return this.get(this.ssmDecryptVariable);
   }

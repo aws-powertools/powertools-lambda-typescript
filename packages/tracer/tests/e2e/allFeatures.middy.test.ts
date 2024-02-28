@@ -3,30 +3,28 @@
  *
  * @group e2e/tracer/middy
  */
-import {
-  TestStack,
-  TestDynamodbTable,
-} from '@aws-lambda-powertools/testing-utils';
+import { TestStack } from '@aws-lambda-powertools/testing-utils';
+import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import { join } from 'node:path';
-import { TracerTestNodejsFunction } from '../helpers/resources';
+import { TracerTestNodejsFunction } from '../helpers/resources.js';
 import {
   assertAnnotation,
   assertErrorAndFault,
-} from '../helpers/traceAssertions';
+} from '../helpers/traceAssertions.js';
 import {
   getFirstSubsegment,
   getInvocationSubsegment,
   getTraces,
   invokeAllTestCases,
   splitSegmentsByName,
-} from '../helpers/tracesUtils';
+} from '../helpers/tracesUtils.js';
 import {
   commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 /**
  * The test includes one stack with 4 Lambda functions that correspond to the following test cases:

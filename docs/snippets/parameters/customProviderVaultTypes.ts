@@ -1,5 +1,5 @@
 import { GetOptionsInterface } from '@aws-lambda-powertools/parameters/base/types';
-import type Vault from 'hashi-vault-js';
+import Vault from 'hashi-vault-js';
 
 /**
  * Base interface for HashiCorpVaultProviderOptions.
@@ -26,7 +26,7 @@ interface HashiCorpVaultProviderOptionsWithClientConfig
   /**
    * Optional configuration to pass during client initialization to customize the `hashi-vault-js` client.
    */
-  clientConfig?: Omit<Vault.VaultConfig, 'baseUrl'>;
+  clientConfig?: unknown;
   /**
    * This property should never be passed.
    */
@@ -82,16 +82,5 @@ interface HashiCorpVaultGetOptions extends GetOptionsInterface {
   transform?: never;
   sdkOptions?: HashiCorpVaultReadKVSecretOptions;
 }
-
-/**
- * Typeguard that discriminates the type of the response and excludes the ErrorResponse type.
- *
- * @param object The response object to discriminate
- */
-export const isErrorResponse = (
-  object: Vault.ReadKVSecretResponse
-): object is Vault.ErrorResponse => {
-  return 'isVaultError' in object;
-};
 
 export type { HashiCorpVaultProviderOptions, HashiCorpVaultGetOptions };

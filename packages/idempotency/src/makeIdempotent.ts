@@ -3,9 +3,9 @@ import type {
   AnyFunction,
   ItempotentFunctionOptions,
   IdempotencyLambdaHandlerOptions,
-} from './types';
-import { IdempotencyHandler } from './IdempotencyHandler';
-import { IdempotencyConfig } from './IdempotencyConfig';
+} from './types/IdempotencyOptions.js';
+import { IdempotencyHandler } from './IdempotencyHandler.js';
+import { IdempotencyConfig } from './IdempotencyConfig.js';
 
 const isContext = (arg: unknown): arg is Context => {
   return (

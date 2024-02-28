@@ -12,8 +12,8 @@ import {
   GetMetricStatisticsCommand,
 } from '@aws-sdk/client-cloudwatch';
 import { join } from 'node:path';
-import { getMetrics, sortDimensions } from '../helpers/metricsUtils';
-import { MetricsTestNodejsFunction } from '../helpers/resources';
+import { getMetrics, sortDimensions } from '../helpers/metricsUtils.js';
+import { MetricsTestNodejsFunction } from '../helpers/resources.js';
 import {
   commonEnvironmentVars,
   ONE_MINUTE,
@@ -21,7 +21,7 @@ import {
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-} from './constants';
+} from './constants.js';
 
 describe(`Metrics E2E tests, basic features decorator usage`, () => {
   const testStack = new TestStack({

@@ -1,9 +1,9 @@
-import { DEFAULT_PROVIDERS } from '../base';
-import { SecretsProvider } from './SecretsProvider';
+import { DEFAULT_PROVIDERS } from '../base/DefaultProviders.js';
+import { SecretsProvider } from './SecretsProvider.js';
 import type {
   SecretsGetOptions,
   SecretsGetOutput,
-} from '../types/SecretsProvider';
+} from '../types/SecretsProvider.js';
 
 /**
  * ## Intro

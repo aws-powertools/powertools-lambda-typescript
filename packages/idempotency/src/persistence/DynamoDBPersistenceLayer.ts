@@ -1,9 +1,9 @@
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
-} from '../errors';
-import { IdempotencyRecordStatus } from '../constants';
-import type { DynamoDBPersistenceOptions } from '../types';
+} from '../errors.js';
+import { IdempotencyRecordStatus } from '../constants.js';
+import type { DynamoDBPersistenceOptions } from '../types/DynamoDBPersistence.js';
 import {
   AttributeValue,
   ConditionalCheckFailedException,
@@ -15,8 +15,8 @@ import {
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { IdempotencyRecord } from './IdempotencyRecord';
-import { BasePersistenceLayer } from './BasePersistenceLayer';
+import { IdempotencyRecord } from './IdempotencyRecord.js';
+import { BasePersistenceLayer } from './BasePersistenceLayer.js';
 import {
   addUserAgentMiddleware,
   isSdkClient,

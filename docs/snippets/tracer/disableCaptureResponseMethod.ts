@@ -1,4 +1,4 @@
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });

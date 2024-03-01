@@ -13,6 +13,7 @@ import { JMESPathTypeError } from './errors.js';
 import type {
   FunctionSignatureDecorator,
   FunctionSignatureOptions,
+  JSONObject as JSONObjectType,
 } from './types.js';
 import { arityCheck, typeCheck } from './utils.js';
 
@@ -176,8 +177,11 @@ class Functions {
   @Functions.signature({
     argumentsSpecs: [['any'], ['array']],
   })
-  public funcMap(expression: Expression, args: JSONArray): JSONArray {
-    return args.map((arg: JSONValue) => {
+  public funcMap(
+    expression: Expression,
+    args: JSONArray
+  ): JSONArray | Array<unknown> {
+    return args.map((arg: JSONObjectType) => {
       return expression.visit(arg) || null;
     });
   }

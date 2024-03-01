@@ -1,4 +1,3 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { TreeInterpreter } from './TreeInterpreter.js';
 import {
   ArityError,
@@ -6,7 +5,7 @@ import {
   UnknownFunctionError,
   VariadicArityError,
 } from './errors.js';
-import type { Node, ParsingOptions } from './types.js';
+import type { Node, ParsingOptions, JSONObject } from './types.js';
 
 class ParsedResult {
   public expression: string;
@@ -23,7 +22,7 @@ class ParsedResult {
    * @param value The JSON value to search
    * @param options The parsing options to use
    */
-  public search(value: JSONValue, options?: ParsingOptions): unknown {
+  public search(value: JSONObject, options?: ParsingOptions): unknown {
     const interpreter = new TreeInterpreter(options);
 
     try {

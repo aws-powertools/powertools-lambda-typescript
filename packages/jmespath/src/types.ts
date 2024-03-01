@@ -1,4 +1,7 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type {
+  JSONValue,
+  JSONArray,
+} from '@aws-lambda-powertools/commons/types';
 import type { Functions } from './Functions.js';
 import { BINDING_POWER } from './constants.js';
 
@@ -91,6 +94,8 @@ type FunctionSignatureOptions = {
   variadic?: boolean;
 };
 
+type JSONObject = JSONArray | JSONValue | object;
+
 export type {
   FunctionSignatureDecorator,
   FunctionSignatureOptions,
@@ -98,4 +103,5 @@ export type {
   ParsingOptions,
   Token,
   TreeInterpreterOptions,
+  JSONObject,
 };

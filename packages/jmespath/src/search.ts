@@ -1,6 +1,5 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { Parser } from './Parser.js';
-import type { ParsingOptions } from './types.js';
+import type { ParsingOptions, JSONObject } from './types.js';
 
 const parser = new Parser();
 
@@ -52,7 +51,7 @@ const parser = new Parser();
  */
 const search = (
   expression: string,
-  data: JSONValue,
+  data: JSONObject,
   options?: ParsingOptions
 ): unknown => {
   return parser.parse(expression).search(data, options);

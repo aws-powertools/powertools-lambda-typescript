@@ -1,4 +1,3 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import {
   isIntegerNumber,
   isRecord,
@@ -13,7 +12,7 @@ import {
 } from './errors.js';
 import { Expression } from './Expression.js';
 import { Functions } from './Functions.js';
-import type { Node, TreeInterpreterOptions } from './types.js';
+import type { Node, TreeInterpreterOptions, JSONObject } from './types.js';
 import { isTruthy, sliceArray } from './utils.js';
 
 /**
@@ -47,7 +46,7 @@ class TreeInterpreter {
    * @param node The node to visit.
    * @param value The current value to visit.
    */
-  public visit(node: Node, value: JSONValue): JSONValue | undefined {
+  public visit(node: Node, value: JSONObject): JSONObject | null {
     const nodeType = node.type;
     if (nodeType === 'subexpression') {
       return this.#visitSubexpression(node, value);
@@ -116,7 +115,7 @@ class TreeInterpreter {
    * @param node The subexpression node to visit.
    * @param value The current value to visit.
    */
-  #visitSubexpression(node: Node, value: JSONValue): JSONValue {
+  #visitSubexpression(node: Node, value: JSONObject): JSONObject {
     let result = value;
     for (const child of node.children) {
       result = this.visit(child, result);
@@ -131,14 +130,14 @@ class TreeInterpreter {
    * @param node The field node to visit.
    * @param value The current value to visit.
    */
-  #visitField(node: Node, value: JSONValue): JSONValue {
+  #visitField(node: Node, value: JSONObject): JSONObject {
     if (!node.value) return null;
     if (
       isRecord(value) &&
       typeof node.value === 'string' &&
       node.value in value
     ) {
-      return value[node.value];
+      return value[node.value] as JSONObject;
     } else {
       return null;
     }
@@ -150,7 +149,7 @@ class TreeInterpreter {
    * @param node The comparator node to visit.
    * @param value The current value to visit.
    */
-  #visitComparator(node: Node, value: JSONValue): JSONValue {
+  #visitComparator(node: Node, value: JSONObject): JSONObject {
     const comparator = node.value;
     const left = this.visit(node.children[0], value);
     const right = this.visit(node.children[1], value);
@@ -187,7 +186,7 @@ class TreeInterpreter {
    * @param node The current node to visit.
    * @param value The current value to visit.
    */
-  #visitCurrent(_node: Node, value: JSONValue): JSONValue {
+  #visitCurrent(_node: Node, value: JSONObject): JSONObject {
     return value;
   }
 
@@ -197,7 +196,7 @@ class TreeInterpreter {
    * @param node The expref node to visit.
    * @param value The current value to visit.
    */
-  #visitExpref(node: Node, _value: JSONValue): Expression {
+  #visitExpref(node: Node, _value: JSONObject): Expression {
     return new Expression(node.children[0], this);
   }
 
@@ -207,7 +206,7 @@ class TreeInterpreter {
    * @param node The function expression node to visit.
    * @param value The current value to visit.
    */
-  #visitFunctionExpression(node: Node, value: JSONValue): JSONValue {
+  #visitFunctionExpression(node: Node, value: JSONObject): JSONObject {
     const args = [];
     for (const child of node.children) {
       args.push(this.visit(child, value));
@@ -271,7 +270,7 @@ class TreeInterpreter {
    * @param node The filter projection node to visit.
    * @param value The current value to visit.
    */
-  #visitFilterProjection(node: Node, value: JSONValue): JSONValue {
+  #visitFilterProjection(node: Node, value: JSONObject): JSONObject {
     const base = this.visit(node.children[0], value);
     if (!Array.isArray(base)) {
       return null;
@@ -296,7 +295,7 @@ class TreeInterpreter {
    * @param node The flatten node to visit.
    * @param value The current value to visit.
    */
-  #visitFlatten(node: Node, value: JSONValue): JSONValue {
+  #visitFlatten(node: Node, value: JSONObject): JSONObject {
     const base = this.visit(node.children[0], value);
     if (!Array.isArray(base)) {
       return null;
@@ -319,7 +318,7 @@ class TreeInterpreter {
    * @param node The identity node to visit.
    * @param value The current value to visit.
    */
-  #visitIdentity(_node: Node, value: JSONValue): JSONValue {
+  #visitIdentity(_node: Node, value: JSONObject): JSONObject {
     return value;
   }
 
@@ -329,7 +328,7 @@ class TreeInterpreter {
    * @param node The index node to visit.
    * @param value The current value to visit.
    */
-  #visitIndex(node: Node, value: JSONValue): JSONValue {
+  #visitIndex(node: Node, value: JSONObject): JSONObject {
     if (!Array.isArray(value)) {
       return null;
     }
@@ -353,7 +352,7 @@ class TreeInterpreter {
    * @param node The index expression node to visit.
    * @param value The current value to visit.
    */
-  #visitIndexExpression(node: Node, value: JSONValue): JSONValue {
+  #visitIndexExpression(node: Node, value: JSONObject): JSONObject {
     let result = value;
     for (const child of node.children) {
       result = this.visit(child, result);
@@ -368,7 +367,7 @@ class TreeInterpreter {
    * @param node The slice node to visit.
    * @param value The current value to visit.
    */
-  #visitSlice(node: Node, value: JSONValue): JSONValue {
+  #visitSlice(node: Node, value: JSONObject): JSONObject {
     const step = isIntegerNumber(node.children[2]) ? node.children[2] : 1;
     if (step === 0) {
       throw new Error('Invalid slice, step cannot be 0');
@@ -394,7 +393,7 @@ class TreeInterpreter {
    * @param node The key-value pair node to visit.
    * @param value The current value to visit.
    */
-  #visitKeyValPair(node: Node, value: JSONValue): JSONValue {
+  #visitKeyValPair(node: Node, value: JSONObject): JSONObject {
     return this.visit(node.children[0], value);
   }
 
@@ -404,7 +403,7 @@ class TreeInterpreter {
    * @param node The literal node to visit.
    * @param value The current value to visit.
    */
-  #visitLiteral(node: Node, _value: JSONValue): JSONValue {
+  #visitLiteral(node: Node, _value: JSONObject): JSONObject {
     return node.value;
   }
 
@@ -414,11 +413,11 @@ class TreeInterpreter {
    * @param node The multi-select object node to visit.
    * @param value The current value to visit.
    */
-  #visitMultiSelectObject(node: Node, value: JSONValue): JSONValue {
+  #visitMultiSelectObject(node: Node, value: JSONObject): JSONObject {
     if (Object.is(value, null)) {
       return null;
     }
-    const collected: JSONValue = {};
+    const collected: Record<string, JSONObject> = {};
     for (const child of node.children) {
       if (typeof child.value === 'string') {
         collected[child.value] = this.visit(child, value);
@@ -434,7 +433,7 @@ class TreeInterpreter {
    * @param node The multi-select list node to visit.
    * @param value The current value to visit.
    */
-  #visitMultiSelectList(node: Node, value: JSONValue): JSONValue {
+  #visitMultiSelectList(node: Node, value: JSONObject): JSONObject {
     if (Object.is(value, null)) {
       return null;
     }
@@ -452,7 +451,7 @@ class TreeInterpreter {
    * @param node The or expression node to visit.
    * @param value The current value to visit.
    */
-  #visitOrExpression(node: Node, value: JSONValue): JSONValue {
+  #visitOrExpression(node: Node, value: JSONObject): JSONObject {
     const matched = this.visit(node.children[0], value);
     if (!isTruthy(matched)) {
       return this.visit(node.children[1], value);
@@ -467,7 +466,7 @@ class TreeInterpreter {
    * @param node The and expression node to visit.
    * @param value The current value to visit.
    */
-  #visitAndExpression(node: Node, value: JSONValue): JSONValue {
+  #visitAndExpression(node: Node, value: JSONObject): JSONObject {
     const matched = this.visit(node.children[0], value);
     if (!isTruthy(matched)) {
       return matched;
@@ -482,7 +481,7 @@ class TreeInterpreter {
    * @param node The not expression node to visit.
    * @param value The current value to visit.
    */
-  #visitNotExpression(node: Node, value: JSONValue): JSONValue {
+  #visitNotExpression(node: Node, value: JSONObject): JSONObject {
     const originalResult = this.visit(node.children[0], value);
     if (typeof originalResult === 'number' && originalResult === 0) {
       // Special case for 0, !0 should be false, not true.
@@ -499,7 +498,7 @@ class TreeInterpreter {
    * @param node The pipe node to visit.
    * @param value The current value to visit.
    */
-  #visitPipe(node: Node, value: JSONValue): JSONValue {
+  #visitPipe(node: Node, value: JSONObject): JSONObject {
     let result = value;
     for (const child of node.children) {
       result = this.visit(child, result);
@@ -514,7 +513,7 @@ class TreeInterpreter {
    * @param node The projection node to visit.
    * @param value The current value to visit.
    */
-  #visitProjection(node: Node, value: JSONValue): JSONValue {
+  #visitProjection(node: Node, value: JSONObject): JSONObject {
     const base = this.visit(node.children[0], value);
     if (!Array.isArray(base)) {
       return null;
@@ -536,12 +535,12 @@ class TreeInterpreter {
    * @param node The value projection node to visit.
    * @param value The current value to visit.
    */
-  #visitValueProjection(node: Node, value: JSONValue): JSONValue {
+  #visitValueProjection(node: Node, value: JSONObject): JSONObject {
     const base = this.visit(node.children[0], value);
     if (!isRecord(base)) {
       return null;
     }
-    const values = Object.values(base);
+    const values = Object.values(base) as JSONObject[];
     const collected = [];
     for (const item of values) {
       const current = this.visit(node.children[1], item);

@@ -1,6 +1,5 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { TreeInterpreter } from './TreeInterpreter.js';
-import type { Node } from './types.js';
+import type { JSONObject, Node } from './types.js';
 
 /**
  * Apply a JMESPath expression to a JSON value.
@@ -21,7 +20,7 @@ class Expression {
    * @param node The node to visit.
    * @returns The result of applying the expression to the value.
    */
-  public visit(value: JSONValue, node?: Node): JSONValue {
+  public visit(value: JSONObject, node?: Node): JSONObject {
     return this.#interpreter.visit(node ?? this.#expression, value);
   }
 }

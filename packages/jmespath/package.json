@@ -39,6 +39,10 @@
         "default": "./lib/esm/index.js"
       }
     },
+    "./envelopes": {
+      "import": "./lib/esm/envelopes.js",
+      "require": "./lib/cjs/envelopes.js"
+    },
     "./types": {
       "import": "./lib/esm/types.js",
       "require": "./lib/cjs/types.js"
@@ -49,6 +53,10 @@
       "types": [
         "lib/cjs/types.d.ts",
         "lib/esm/types.d.ts"
+      ],
+      "envelopes": [
+        "lib/cjs/envelopes.d.ts",
+        "lib/esm/envelopes.d.ts"
       ]
     }
   },

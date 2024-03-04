@@ -1,11 +1,12 @@
 {
   "name": "docs",
-  "version": "1.14.0",
+  "version": "2.0.1",
   "description": "A collection code snippets for the Powertools for AWS Lambda (TypeScript) docs",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
+  "private": true,
   "scripts": {
     "test": "echo 'Not Applicable'",
     "test:e2e": "echo 'Not Applicable'",

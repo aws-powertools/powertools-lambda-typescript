@@ -34,7 +34,7 @@ jobs:
       - name: Update user agent version
         run: |
           VERSION=$(cat lerna.json | jq .version -r)
-          echo -e "// this file is auto generated, do not modify\nexport const VERSION = '$VERSION';" > packages/commons/src/version.ts
+          echo -e "// this file is auto generated, do not modify\nexport const PT_VERSION = '$VERSION';" > packages/commons/src/version.ts
       - name: Stage changes
         run: git add .
       - name: Set release version

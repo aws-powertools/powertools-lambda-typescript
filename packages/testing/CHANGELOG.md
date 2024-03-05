@@ -5,10 +5,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## 2.0.2 (2024-03-05)
 
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
 
-### Bug Fixes
-
-* **tracer:** modify aws-xray-sdk-core import for js ([#2164](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2164)) ([29630b5](https://github.com/aws-powertools/powertools-lambda-typescript/commit/29630b5b68915ccca1324f3e7ce3e95b85a616be))
 
 
 

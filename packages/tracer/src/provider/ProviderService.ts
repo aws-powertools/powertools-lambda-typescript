@@ -3,7 +3,9 @@ import type {
   ProviderServiceInterface,
   ContextMissingStrategy,
 } from '../types/ProviderServiceInterface.js';
-import {
+import type { Segment, Subsegment, Logger } from 'aws-xray-sdk-core';
+import xraySdk from 'aws-xray-sdk-core';
+const {
   captureAWS,
   captureAWSClient,
   captureAWSv3Client,
@@ -13,13 +15,11 @@ import {
   getNamespace,
   getSegment,
   setSegment,
-  Segment,
-  Subsegment,
+  Segment: XraySegment,
   setContextMissingStrategy,
   setDaemonAddress,
   setLogger,
-  Logger,
-} from 'aws-xray-sdk-core';
+} = xraySdk;
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 class ProviderService implements ProviderServiceInterface {
@@ -79,7 +79,7 @@ class ProviderService implements ProviderServiceInterface {
 
       return;
     }
-    if (segment instanceof Segment) {
+    if (segment instanceof XraySegment) {
       console.warn(
         'You cannot annotate the main segment in a Lambda execution environment'
       );
@@ -98,7 +98,7 @@ class ProviderService implements ProviderServiceInterface {
 
       return;
     }
-    if (segment instanceof Segment) {
+    if (segment instanceof XraySegment) {
       console.warn(
         'You cannot add metadata to the main segment in a Lambda execution environment'
       );

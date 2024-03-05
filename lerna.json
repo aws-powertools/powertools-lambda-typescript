@@ -13,7 +13,7 @@
     "layers",
     "docs/snippets"
   ],
-  "version": "2.0.1",
+  "version": "2.0.2",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

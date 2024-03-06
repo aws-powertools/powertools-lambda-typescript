@@ -4,7 +4,6 @@ import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
 } from '../schemas/kafka.js';
-import { type KafkaRecord } from '../types/schema.js';
 
 /**
  * Kafka event envelope to extract data within body key
@@ -32,7 +31,7 @@ export const kafkaEnvelope = <T extends ZodSchema>(
       : KafkaSelfManagedEventSchema.parse(data);
 
   return Object.values(parsedEnvelope.records).map((topicRecord) => {
-    return topicRecord.map((record: KafkaRecord) => {
+    return topicRecord.map((record) => {
       return parse(record.value, schema);
     });
   });

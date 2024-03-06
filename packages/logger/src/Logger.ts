@@ -640,8 +640,8 @@ class Logger extends Utility implements LoggerInterface {
         item instanceof Error
           ? { error: item }
           : typeof item === 'string'
-          ? { extra: item }
-          : item;
+            ? { extra: item }
+            : item;
 
       additionalLogAttributes = merge(additionalLogAttributes, attributes);
     });

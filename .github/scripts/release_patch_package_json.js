@@ -18,9 +18,7 @@ if (process.argv.length < 3) {
 const basePath = resolve(process.argv[2]);
 const packageJsonPath = join(basePath, 'package.json');
 const alphaPackages = [];
-const betaPackages = [
-  '@aws-lambda-powertools/jmespath',
-];
+const betaPackages = [];
 
 (() => {
   try {

@@ -1,6 +1,6 @@
 {
   "name": "sam-example",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -21,12 +21,12 @@
     "*.js": "npm run lint-fix"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.523.0",
-    "@aws-sdk/client-ssm": "^3.523.0",
-    "@aws-sdk/lib-dynamodb": "^3.523.0",
+    "@aws-sdk/client-dynamodb": "^3.525.0",
+    "@aws-sdk/client-ssm": "^3.525.0",
+    "@aws-sdk/lib-dynamodb": "^3.525.0",
     "@types/aws-lambda": "^8.10.134",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.22",
+    "@types/node": "^20.11.24",
     "esbuild": "^0.20.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
@@ -34,10 +34,10 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.0.1",
-    "@aws-lambda-powertools/metrics": "^2.0.1",
-    "@aws-lambda-powertools/parameters": "^2.0.1",
-    "@aws-lambda-powertools/tracer": "^2.0.1",
+    "@aws-lambda-powertools/logger": "^2.0.2",
+    "@aws-lambda-powertools/metrics": "^2.0.2",
+    "@aws-lambda-powertools/parameters": "^2.0.2",
+    "@aws-lambda-powertools/tracer": "^2.0.2",
     "@middy/core": "^4.7.0",
     "phin": "^3.7.0"
   }

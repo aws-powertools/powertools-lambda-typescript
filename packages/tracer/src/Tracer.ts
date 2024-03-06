@@ -17,7 +17,9 @@ import type {
 } from './types/Tracer.js';
 import { ProviderService } from './provider/ProviderService.js';
 import type { ProviderServiceInterface } from './types/ProviderServiceInterface.js';
-import { type Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import xraySdk from 'aws-xray-sdk-core';
+const { Subsegment: XraySubsegment } = xraySdk;
 
 /**
  * ## Intro
@@ -578,7 +580,7 @@ class Tracer extends Utility implements TracerInterface {
    */
   public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {
-      return new Subsegment('## Dummy segment');
+      return new XraySubsegment('## Dummy segment');
     }
     const segment = this.provider.getSegment();
     if (segment === undefined) {

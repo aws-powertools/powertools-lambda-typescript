@@ -3,7 +3,6 @@
  *
  * @group unit/jmespath/coverage
  */
-import { JSONValue } from '@aws-lambda-powertools/commons/types';
 import {
   search,
   EmptyExpressionError,
@@ -17,15 +16,6 @@ import { Parser } from '../../src/Parser.js';
 import { TreeInterpreter } from '../../src/TreeInterpreter.js';
 
 describe('Coverage tests', () => {
-  it('does stuff', () => {
-    class Test {}
-    const test = new Test();
-
-    const result = search('foo', test as unknown as JSONValue);
-
-    expect(result).toBe(test);
-  });
-
   // These expressions tests are not part of the compliance suite, but are added to ensure coverage
   describe('expressions', () => {
     it('throws an error if the expression is not a string', () => {

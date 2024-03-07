@@ -36,6 +36,7 @@ class TreeInterpreter {
     } else {
       this.#functions = new Functions();
     }
+    this.#functions.introspectMethods();
   }
 
   /**
@@ -217,22 +218,6 @@ class TreeInterpreter {
         `Function name must be a string, got ${node.value}`
       );
     }
-    if (this.#functions.methods.size === 0) {
-      this.#functions.introspectMethods();
-    }
-    /* // get all methods of the functions object
-    const functionsProto = Object.getPrototypeOf(this.#functions);
-    const methods = [
-      ...Object.getOwnPropertyNames(functionsProto),
-      // If the functions object's prototype is the Functions class, then it
-      // must be a custom functions object, so we'll also include the methods
-      // from the Functions class itself.
-      ...(functionsProto.__proto__.constructor.name === 'Functions'
-        ? Object.getOwnPropertyNames(
-            Object.getPrototypeOf(this.#functions).__proto__
-          )
-        : []),
-    ]; */
     // convert snake_case to camelCase
     const normalizedFunctionName = node.value.replace(/_([a-z])/g, (g) =>
       g[1].toUpperCase()
@@ -242,10 +227,6 @@ class TreeInterpreter {
       normalizedFunctionName.charAt(0).toUpperCase() +
       normalizedFunctionName.slice(1)
     }`;
-    /* const methodName = methods.find((method) => method === funcName);
-    if (!methodName) {
-      throw new UnknownFunctionError(node.value);
-    } */
     if (!this.#functions.methods.has(funcName)) {
       throw new UnknownFunctionError(node.value);
     }

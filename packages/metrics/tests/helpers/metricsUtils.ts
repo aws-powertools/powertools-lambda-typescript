@@ -5,7 +5,10 @@ import {
   CloudWatchClient,
   ListMetricsCommand,
 } from '@aws-sdk/client-cloudwatch';
-import type { ListMetricsCommandOutput } from '@aws-sdk/client-cloudwatch';
+import type {
+  Dimension,
+  ListMetricsCommandOutput,
+} from '@aws-sdk/client-cloudwatch';
 import type { Context, Handler } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
@@ -64,4 +67,7 @@ const setupDecoratorLambdaHandler = (
   return handler;
 };
 
-export { getMetrics, setupDecoratorLambdaHandler };
+const sortDimensions = (dimensions?: Dimension[]): Dimension[] | undefined =>
+  dimensions?.sort((a, b) => (a.Name || '').localeCompare(b?.Name || ''));
+
+export { getMetrics, setupDecoratorLambdaHandler, sortDimensions };

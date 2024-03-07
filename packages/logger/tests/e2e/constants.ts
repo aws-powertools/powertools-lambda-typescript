@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 const RESOURCE_NAME_PREFIX = 'Logger';
 const ONE_MINUTE = 60 * 1000;
 const TEST_CASE_TIMEOUT = ONE_MINUTE;
-const SETUP_TIMEOUT = 5 * ONE_MINUTE;
+const SETUP_TIMEOUT = 7 * ONE_MINUTE;
 const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;
 const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 const XRAY_TRACE_ID_REGEX = /^1-[0-9a-f]{8}-[0-9a-f]{24}$/;
@@ -23,7 +23,7 @@ const commonEnvironmentVars = {
   CHILD_LOG_MSG: 'child-only-log-msg',
   CHILD_LOG_LEVEL: 'ERROR',
   POWERTOOLS_SERVICE_NAME: 'logger-e2e-testing',
-  LOG_LEVEL: 'INFO',
+  POWERTOOLS_LOG_LEVEL: 'INFO',
 };
 
 export {

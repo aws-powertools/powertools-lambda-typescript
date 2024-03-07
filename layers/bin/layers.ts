@@ -11,7 +11,7 @@ const app = new App();
 new LayerPublisherStack(app, 'LayerPublisherStack', {
   powertoolsPackageVersion: app.node.tryGetContext('PowertoolsPackageVersion'),
   buildFromLocal: app.node.tryGetContext('BuildFromLocal') || false,
-  layerName: 'AWSLambdaPowertoolsTypeScript',
+  layerName: 'AWSLambdaPowertoolsTypeScriptV2',
   ssmParameterLayerArn: SSM_PARAM_LAYER_ARN,
 });
 

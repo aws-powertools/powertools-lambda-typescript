@@ -3,7 +3,8 @@ import {
   EventType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
-import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer';
+import { Tracer } from '@aws-lambda-powertools/tracer';
+import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
 import middy from '@middy/core';
 import type {
   SQSEvent,

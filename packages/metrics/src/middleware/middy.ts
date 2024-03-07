@@ -17,7 +17,8 @@ import type {
  *
  * @example
  * ```typescript
- * import { Metrics, logMetrics } from '@aws-lambda-powertools/metrics';
+ * import { Metrics } from '@aws-lambda-powertools/metrics';
+ * import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
  * import middy from '@middy/core';
  *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });

@@ -6,27 +6,28 @@ edit_uri: edit/main/docs
 
 nav:
   - Homepage:
-    - index.md
-    - Changelog: changelog.md
-    - API reference: api/" target="_blank
-    - Upgrade guide: upgrade.md
-    - We Made This (Community): we_made_this.md
-    - Roadmap: roadmap.md
-    - Features:
-      - core/tracer.md
-      - core/logger.md
-      - core/metrics.md
-      - utilities/parameters.md
-      - utilities/idempotency.md
-      - utilities/batch.md
+      - index.md
+      - Changelog: changelog.md
+      - API reference: api/" target="_blank
+      - Upgrade guide: upgrade.md
+      - We Made This (Community): we_made_this.md
+      - Roadmap: roadmap.md
+      - Features:
+          - core/tracer.md
+          - core/logger.md
+          - core/metrics.md
+          - utilities/parameters.md
+          - utilities/idempotency.md
+          - utilities/batch.md
   - Processes:
-    - Roadmap: roadmap.md
-    - Maintainers: maintainers.md
-    - Contributing:
-      - Development environment: contributing/setup.md
-      - Your first contribution: contributing/getting_started.md
-      - Conventions: contributing/conventions.md
-      - Testing: contributing/testing.md
+      - Roadmap: roadmap.md
+      - Versioning policy: versioning.md
+      - Maintainers: maintainers.md
+      - Contributing:
+          - Development environment: contributing/setup.md
+          - Your first contribution: contributing/getting_started.md
+          - Conventions: contributing/conventions.md
+          - Testing: contributing/testing.md
 
 theme:
   name: material

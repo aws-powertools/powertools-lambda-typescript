@@ -1,11 +1,13 @@
-import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 import {
   BatchProcessor,
   EventType,
-  FailureResponse,
-  EventSourceType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
+import type {
+  FailureResponse,
+  EventSourceDataClassTypes,
+} from '@aws-lambda-powertools/batch/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
   SQSEvent,
@@ -23,10 +25,10 @@ class MyProcessor extends BatchProcessor {
   }
 
   public failureHandler(
-    record: EventSourceType,
+    record: EventSourceDataClassTypes,
     error: Error
   ): FailureResponse {
-    this.#metrics.addMetric('BatchRecordFailures', MetricUnits.Count, 1);
+    this.#metrics.addMetric('BatchRecordFailures', MetricUnit.Count, 1);
 
     return super.failureHandler(record, error);
   }

@@ -2,6 +2,7 @@ import { Utility } from '@aws-lambda-powertools/commons';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
+import { format } from 'node:util';
 import { Console } from 'node:console';
 import { randomInt } from 'node:crypto';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
@@ -57,7 +58,8 @@ import type {
  *
  * @example
  * ```typescript
- * import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
+ * import { Logger } from '@aws-lambda-powertools/logger';
+ * import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
  * import middy from '@middy/core';
  *
  * const logger = new Logger();
@@ -76,7 +78,7 @@ import type {
  * @example
  * ```typescript
  * import { Logger } from '@aws-lambda-powertools/logger';
- * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
  * const logger = new Logger();
  *
@@ -345,7 +347,7 @@ class Logger extends Utility implements LoggerInterface {
    * @example
    * ```typescript
    * import { Logger } from '@aws-lambda-powertools/logger';
-   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+   * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
    *
    * const logger = new Logger();
    *
@@ -430,8 +432,8 @@ class Logger extends Utility implements LoggerInterface {
     logger.addContext(context);
 
     let shouldLogEvent = undefined;
-    if (Object.hasOwn(options || {}, 'logEvent')) {
-      shouldLogEvent = options!.logEvent;
+    if (options && options.hasOwnProperty('logEvent')) {
+      shouldLogEvent = options.logEvent;
     }
     logger.logEventIfEnabled(event, shouldLogEvent);
   }
@@ -477,7 +479,7 @@ class Logger extends Utility implements LoggerInterface {
    */
   public removePersistentLogAttributes(keys: string[]): void {
     for (const key of keys) {
-      if (Object.hasOwn(this.persistentLogAttributes, key)) {
+      if (this.persistentLogAttributes && key in this.persistentLogAttributes) {
         delete this.persistentLogAttributes[key];
       }
     }
@@ -486,9 +488,13 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Set the log level for this Logger instance.
    *
+   * If the log level is set using AWS Lambda Advanced Logging Controls, it sets it
+   * instead of the given log level to avoid data loss.
+   *
    * @param logLevel The log level to set, i.e. `error`, `warn`, `info`, `debug`, etc.
    */
   public setLogLevel(logLevel: LogLevel): void {
+    if (this.awsLogLevelShortCircuit(logLevel)) return;
     if (this.isValidLogLevel(logLevel)) {
       this.logLevel = this.logLevelThresholds[logLevel];
     } else {
@@ -570,6 +576,30 @@ class Logger extends Utility implements LoggerInterface {
     merge(this.powertoolsLogData, attributes);
   }
 
+  private awsLogLevelShortCircuit(selectedLogLevel?: string): boolean {
+    const awsLogLevel = this.getEnvVarsService().getAwsLogLevel();
+    if (this.isValidLogLevel(awsLogLevel)) {
+      this.logLevel = this.logLevelThresholds[awsLogLevel];
+
+      if (
+        this.isValidLogLevel(selectedLogLevel) &&
+        this.logLevel > this.logLevelThresholds[selectedLogLevel]
+      ) {
+        this.warn(
+          format(
+            `Current log level (%s) does not match AWS Lambda Advanced Logging Controls minimum log level (%s). This can lead to data loss, consider adjusting them.`,
+            selectedLogLevel,
+            awsLogLevel
+          )
+        );
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
   /**
    * It processes a particular log item so that it can be printed to stdout:
    * - Merges ephemeral log attributes with persistent log attributes (printed for all logs) and additional info;
@@ -610,8 +640,8 @@ class Logger extends Utility implements LoggerInterface {
         item instanceof Error
           ? { error: item }
           : typeof item === 'string'
-          ? { extra: item }
-          : item;
+            ? { extra: item }
+            : item;
 
       additionalLogAttributes = merge(additionalLogAttributes, attributes);
     });
@@ -845,17 +875,21 @@ class Logger extends Utility implements LoggerInterface {
 
   /**
    * Sets the initial Logger log level based on the following order:
-   * 1. If a log level is passed to the constructor, it sets it.
-   * 2. If a log level is set via custom config service, it sets it.
-   * 3. If a log level is set via env variables, it sets it.
+   * 1. If a log level is set using AWS Lambda Advanced Logging Controls, it sets it.
+   * 2. If a log level is passed to the constructor, it sets it.
+   * 3. If a log level is set via custom config service, it sets it.
+   * 4. If a log level is set via env variables, it sets it.
    *
-   * If none of the above is true, the default log level applies (INFO).
+   * If none of the above is true, the default log level applies (`INFO`).
    *
    * @private
    * @param {LogLevel} [logLevel] - Log level passed to the constructor
    */
   private setInitialLogLevel(logLevel?: LogLevel): void {
     const constructorLogLevel = logLevel?.toUpperCase();
+
+    if (this.awsLogLevelShortCircuit(constructorLogLevel)) return;
+
     if (this.isValidLogLevel(constructorLogLevel)) {
       this.logLevel = this.logLevelThresholds[constructorLogLevel];
 

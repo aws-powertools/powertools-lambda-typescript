@@ -31,7 +31,7 @@ Parameters:
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
 Globals:
   Function:
-    Runtime: nodejs18.x
+    Runtime: nodejs20.x
     Architectures:
       - x86_64
     MemorySize: 128
@@ -64,7 +64,7 @@ Resources:
           SAMPLE_TABLE: !Ref SampleTable
           POWERTOOLS_SERVICE_NAME: items-store
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
-          LOG_LEVEL: Debug
+          POWERTOOLS_LOG_LEVEL: debug
       Events:
         Api:
           Type: Api
@@ -104,7 +104,7 @@ Resources:
           SAMPLE_TABLE: !Ref SampleTable
           POWERTOOLS_SERVICE_NAME: items-store
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
-          LOG_LEVEL: Debug
+          POWERTOOLS_LOG_LEVEL: debug
       Events:
         Api:
           Type: Api
@@ -134,7 +134,7 @@ Resources:
         Variables:
           POWERTOOLS_SERVICE_NAME: items-store
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
-          LOG_LEVEL: Debug
+          POWERTOOLS_LOG_LEVEL: debug
       # add ssm:getParameter permission to the function
       Policies:
         - SSMParameterWithSlashPrefixReadPolicy:
@@ -186,7 +186,7 @@ Resources:
           SAMPLE_TABLE: !Ref SampleTable
           POWERTOOLS_SERVICE_NAME: items-store
           POWERTOOLS_METRICS_NAMESPACE: PowertoolsSAMExample
-          LOG_LEVEL: Debug
+          POWERTOOLS_LOG_LEVEL: debug
       Events:
         Api:
           Type: Api

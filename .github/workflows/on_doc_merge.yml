@@ -8,14 +8,16 @@ on:
       - "docs/**"
       - "mkdocs.yml"
 
+permissions:
+  contents: read
+
 jobs:
   release-docs:
     permissions:
-      contents: write
-      pages: write
-      id-token: write
+      id-token: write  # trade JWT token for AWS credentials in AWS Docs account
+      contents: read  # read from this repo to publish docs
     secrets: inherit
-    uses: ./.github/workflows/reusable-publish-docs.yml
+    uses: ./.github/workflows/reusable_publish_docs.yml
     with:
       version: main
       alias: stage

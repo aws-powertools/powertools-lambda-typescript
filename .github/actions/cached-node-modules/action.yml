@@ -1,9 +1,9 @@
 name: 'Cached Node Modules'
 description: 'A simple action to cache node_modules or install them if they are not cached'
 inputs:
-  nodeVersion:  # id of input
+  nodeVersion: # id of input
     description: 'Node.js version to use in the cache key'
-    default: '18'
+    default: '20'
   build:
     description: 'Whether to build the packages or not'
     default: 'true'
@@ -15,11 +15,12 @@ runs:
   using: "composite"
   steps:
     - name: Install npm
+      # We need to keep this npm version until we drop Node.js 16 support because Node.js 16 doesn't support npm 10
       run: npm i -g npm@next-9
       shell: bash
     - name: Cache node modules
       id: cache-node-modules
-      uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: '**/node_modules'
         # Use the combo between node version, name, and SHA-256 hash of the lock file as cache key so that
@@ -44,6 +45,5 @@ runs:
         npm run build -w packages/parameters & \
         npm run build -w packages/idempotency & \
         npm run build -w packages/batch & \
-        npm run build -w packages/parser & \
         npm run build -w packages/testing
       shell: bash

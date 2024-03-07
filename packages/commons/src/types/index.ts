@@ -16,3 +16,4 @@ export type {
   LambdaInterface,
   HandlerMethodDecorator,
 } from './LambdaInterface.js';
+export type { ConfigServiceInterface } from './ConfigServiceInterface.js';

@@ -1,4 +1,5 @@
 import type { Callback, Context, Handler } from 'aws-lambda';
+import { Console } from 'node:console';
 import { Utility } from '@aws-lambda-powertools/commons';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
@@ -48,7 +49,8 @@ import {
  *
  * @example
  * ```typescript
- * import { Metrics, logMetrics } from '@aws-lambda-powertools/metrics';
+ * import { Metrics } from '@aws-lambda-powertools/metrics';
+ * import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
  * import middy from '@middy/core';
  *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
@@ -70,8 +72,8 @@ import {
  * @example
  *
  * ```typescript
- * import { Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
- * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+ * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
  * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
  *
@@ -108,6 +110,18 @@ import {
  * ```
  */
 class Metrics extends Utility implements MetricsInterface {
+  /**
+   * Console instance used to print logs.
+   *
+   * In AWS Lambda, we create a new instance of the Console class so that we can have
+   * full control over the output of the logs. In testing environments, we use the
+   * default console instance.
+   *
+   * This property is initialized in the constructor in setOptions().
+   *
+   * @private
+   */
+  private console!: Console;
   private customConfigService?: ConfigServiceInterface;
   private defaultDimensions: Dimensions = {};
   private dimensions: Dimensions = {};
@@ -295,15 +309,14 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * ```typescript
    * import { Metrics } from '@aws-lambda-powertools/metrics';
-   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+   * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
    *
    * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
    *
    * class Lambda implements LambdaInterface {
-   *
    *   @metrics.logMetrics({ captureColdStartMetric: true })
    *   public handler(_event: unknown, __context: unknown): Promise<void> {
-   *    // ...
+   *     // ...
    *   }
    * }
    *
@@ -387,7 +400,7 @@ class Metrics extends Utility implements MetricsInterface {
       );
     }
     const target = this.serializeMetrics();
-    console.log(JSON.stringify(target));
+    this.console.log(JSON.stringify(target));
     this.clearMetrics();
     this.clearDimensions();
     this.clearMetadata();
@@ -439,8 +452,10 @@ class Metrics extends Utility implements MetricsInterface {
     );
 
     const dimensionNames = [
-      ...Object.keys(this.defaultDimensions),
-      ...Object.keys(this.dimensions),
+      ...new Set([
+        ...Object.keys(this.defaultDimensions),
+        ...Object.keys(this.dimensions),
+      ]),
     ];
 
     return {
@@ -589,6 +604,24 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * It initializes console property as an instance of the internal version of Console() class (PR #748)
+   * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
+   *
+   * @private
+   * @returns {void}
+   */
+  private setConsole(): void {
+    if (!this.getEnvVarsService().isDevMode()) {
+      this.console = new Console({
+        stdout: process.stdout,
+        stderr: process.stderr,
+      });
+    } else {
+      this.console = console;
+    }
+  }
+
+  /**
    * Sets the custom config service to be used.
    *
    * @param customConfigService The custom config service to be used
@@ -637,6 +670,7 @@ class Metrics extends Utility implements MetricsInterface {
     } = options;
 
     this.setEnvVarsService();
+    this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setNamespace(namespace);
     this.setService(serviceName);

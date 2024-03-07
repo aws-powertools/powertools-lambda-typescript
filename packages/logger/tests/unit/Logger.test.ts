@@ -136,7 +136,7 @@ describe('Class: Logger', () => {
       // Prepare
       const loggerOptions = undefined;
       delete process.env.POWERTOOLS_SERVICE_NAME;
-      delete process.env.LOG_LEVEL;
+      delete process.env.POWERTOOLS_LOG_LEVEL;
 
       // Act
       const logger = new Logger(loggerOptions);
@@ -286,7 +286,7 @@ describe('Class: Logger', () => {
     test('when no log level is set, returns a Logger instance with INFO level', () => {
       // Prepare
       const loggerOptions: ConstructorOptions = {};
-      delete process.env.LOG_LEVEL;
+      delete process.env.POWERTOOLS_LOG_LEVEL;
 
       // Act
       const logger = new Logger(loggerOptions);
@@ -354,6 +354,9 @@ describe('Class: Logger', () => {
         get(name: string): string {
           return `a-string-from-${name}`;
         },
+        getAwsLogLevel() {
+          return 'INFO';
+        },
         getCurrentEnvironment(): string {
           return 'dev';
         },
@@ -368,6 +371,9 @@ describe('Class: Logger', () => {
         },
         getServiceName(): string {
           return 'my-backend-service';
+        },
+        getXrayTraceId(): string | undefined {
+          return undefined;
         },
         isDevMode(): boolean {
           return false;
@@ -638,9 +644,9 @@ describe('Class: Logger', () => {
           expect(consoleSpy).toBeCalledTimes(0);
         });
 
-        test('when the log level is set through LOG_LEVEL env variable, it DOES print to stdout', () => {
+        test('when the log level is set through POWERTOOLS_LOG_LEVEL env variable, it DOES print to stdout', () => {
           // Prepare
-          process.env.LOG_LEVEL = methodOfLogger.toUpperCase();
+          process.env.POWERTOOLS_LOG_LEVEL = methodOfLogger.toUpperCase();
           const logger = new Logger();
           const consoleSpy = jest.spyOn(
             logger['console'],
@@ -2526,6 +2532,26 @@ describe('Class: Logger', () => {
       // Act & Assess
       expect(() => logger.setLogLevel('INVALID' as LogLevel)).toThrow(
         'Invalid log level: INVALID'
+      );
+    });
+
+    it('uses log level set by ALC & emits a warning when setting a higher log level than ALC', () => {
+      // Prepare
+      process.env.AWS_LAMBDA_LOG_LEVEL = 'ERROR';
+      process.env.LOG_LEVEL = undefined;
+      process.env.POWERTOOLS_LOG_LEVEL = undefined;
+      const logger = new Logger();
+      const warningSpy = jest.spyOn(logger, 'warn');
+
+      // Act
+      logger.setLogLevel('WARN');
+
+      // Assess
+      expect(logger.level).toBe(20);
+      expect(logger.getLevelName()).toBe('ERROR');
+      expect(warningSpy).toHaveBeenCalledTimes(1);
+      expect(warningSpy).toHaveBeenCalledWith(
+        'Current log level (WARN) does not match AWS Lambda Advanced Logging Controls minimum log level (ERROR). This can lead to data loss, consider adjusting them.'
       );
     });
   });

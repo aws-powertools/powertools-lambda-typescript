@@ -12,7 +12,7 @@ import {
   GetMetricStatisticsCommand,
 } from '@aws-sdk/client-cloudwatch';
 import { join } from 'node:path';
-import { getMetrics } from '../helpers/metricsUtils.js';
+import { getMetrics, sortDimensions } from '../helpers/metricsUtils.js';
 import { MetricsTestNodejsFunction } from '../helpers/resources.js';
 import {
   commonEnvironmentVars,
@@ -98,7 +98,9 @@ describe(`Metrics E2E tests, basic features decorator usage`, () => {
 
         expect(coldStartMetrics.Metrics?.length).toBe(1);
         const coldStartMetric = coldStartMetrics.Metrics?.[0];
-        expect(coldStartMetric?.Dimensions).toStrictEqual(expectedDimensions);
+        expect(sortDimensions(coldStartMetric?.Dimensions)).toStrictEqual(
+          sortDimensions(expectedDimensions)
+        );
 
         // Check coldstart metric value
         const adjustedStartTime = new Date(startTime.getTime() - ONE_MINUTE);
@@ -167,7 +169,9 @@ describe(`Metrics E2E tests, basic features decorator usage`, () => {
             Value: expectedExtraDimension.MyExtraDimension,
           },
         ];
-        expect(metric?.Dimensions).toStrictEqual(expectedDimensions);
+        expect(sortDimensions(metric?.Dimensions)).toStrictEqual(
+          sortDimensions(expectedDimensions)
+        );
 
         // Check coldstart metric value
         const adjustedStartTime = new Date(

@@ -3,6 +3,9 @@ name: Run unit tests
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   run-linting-check-and-unit-tests-on-utilities:
     runs-on: ubuntu-latest
@@ -10,43 +13,43 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [16, 18]
+        version: [16, 18, 20]
       fail-fast: false
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       - name: Setup NodeJS
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: ${{ matrix.version }}
-          cache: 'npm'
+          cache: "npm"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
         with:
           nodeVersion: ${{ matrix.version }}
       - name: Run linting
-        run: npm run lint -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics -w packages/parameters -w packages/idempotency -w packages/batch -w packages/parser
+        run: npm run lint -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics -w packages/parameters -w packages/idempotency -w packages/batch
       - name: Run unit tests
-        run: npm t -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics -w packages/parameters -w packages/idempotency -w packages/batch -w packages/parser
+        run: npm t -w packages/commons -w packages/logger -w packages/tracer -w packages/metrics -w packages/parameters -w packages/idempotency -w packages/batch
   check-examples:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
     strategy:
       matrix:
-        example: ['sam', 'cdk']
+        example: ["sam", "cdk"]
       fail-fast: false
     defaults:
       run:
         working-directory: examples/${{ matrix.example }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       - name: Setup NodeJS
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: 18
-          cache: 'npm'
+          node-version: 20
+          cache: "npm"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Run linting
@@ -59,12 +62,12 @@ jobs:
       NODE_ENV: dev
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       - name: Setup NodeJS
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: 18
-          cache: 'npm'
+          node-version: 20
+          cache: "npm"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Run linting
@@ -77,12 +80,12 @@ jobs:
       NODE_ENV: dev
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       - name: Setup NodeJS
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: 18
-          cache: 'npm'
+          node-version: 20
+          cache: "npm"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Run linting

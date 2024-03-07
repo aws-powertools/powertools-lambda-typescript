@@ -36,14 +36,18 @@ export class LayerPublisherStack extends Stack {
     this.lambdaLayerVersion = new LayerVersion(this, 'LambdaPowertoolsLayer', {
       layerVersionName: props?.layerName,
       description: `Powertools for AWS Lambda (TypeScript) version ${powertoolsPackageVersion}`,
-      compatibleRuntimes: [Runtime.NODEJS_16_X, Runtime.NODEJS_18_X],
+      compatibleRuntimes: [
+        Runtime.NODEJS_16_X,
+        Runtime.NODEJS_18_X,
+        Runtime.NODEJS_20_X,
+      ],
       license: 'MIT-0',
       // This is needed because the following regions do not support the compatibleArchitectures property #1400
       // ...(![ 'eu-south-2', 'eu-central-2', 'ap-southeast-4' ].includes(Stack.of(this).region) ? { compatibleArchitectures: [Architecture.X86_64] } : {}),
       code: Code.fromAsset(resolve(__dirname), {
         bundling: {
           // This is here only because is required by CDK, however it is not used since the bundling is done locally
-          image: Runtime.NODEJS_18_X.bundlingImage,
+          image: Runtime.NODEJS_20_X.bundlingImage,
           // We need to run a command to generate a random UUID to force the bundling to run every time
           command: [`echo "${randomUUID()}"`],
           local: {
@@ -104,7 +108,7 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/@aws-sdk/**/README.md ',
               ];
               const buildCommands: string[] = [];
-              // We need these modules because they are not included in the nodejs14x and nodejs16x runtimes
+              // We need these modules because they are not included in the nodejs16x runtimes
               const modulesToInstall: string[] = [
                 '@aws-sdk/client-dynamodb',
                 '@aws-sdk/util-dynamodb',

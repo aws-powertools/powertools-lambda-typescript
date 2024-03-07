@@ -13,6 +13,7 @@ import type {
   GetParametersByPathCommandInput,
   GetParametersCommandInput,
   GetParametersCommandOutput,
+  SSMPaginationConfiguration,
 } from '@aws-sdk/client-ssm';
 import type {
   SSMProviderOptions,
@@ -26,7 +27,6 @@ import type {
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
 } from '../types/SSMProvider.js';
-import type { PaginationConfiguration } from '@aws-sdk/types';
 
 /**
  * ## Intro
@@ -259,7 +259,7 @@ import type { PaginationConfiguration } from '@aws-sdk/types';
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript SSM client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/ssmclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  */
 class SSMProvider extends BaseProvider {
   public declare client: SSMClient;
@@ -304,7 +304,7 @@ class SSMProvider extends BaseProvider {
    *
    * @param {string} name - The name of the value to retrieve (i.e. the partition key)
    * @param {SSMGetOptions} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,
@@ -349,7 +349,7 @@ class SSMProvider extends BaseProvider {
    *
    * @param {string} path - The path of the parameters to retrieve
    * @param {SSMGetMultipleOptions} options - Options to configure the retrieval
-   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
    */
   public async getMultiple<
     ExplicitUserProvidedType = undefined,
@@ -417,7 +417,7 @@ class SSMProvider extends BaseProvider {
    *
    * @param {Record<string, SSMGetParametersByNameOptions>} parameters - Object containing parameter names and any optional overrides
    * @param {SSMGetParametersByNameOptions} options - Options to configure the retrieval
-   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
    */
   public async getParametersByName<ExplicitUserProvidedType = undefined>(
     parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -524,7 +524,7 @@ class SSMProvider extends BaseProvider {
       ...(options?.sdkOptions || {}),
       Path: path,
     };
-    const paginationOptions: PaginationConfiguration = {
+    const paginationOptions: SSMPaginationConfiguration = {
       client: this.client,
     };
     sdkOptions.WithDecryption = this.resolveDecryptionConfigValue(

@@ -30,6 +30,8 @@ scopes:
   - tests
   - internal
   - maintenance
+  - deps
+  - deps-dev
 
 # Always validate the PR title
 # and ignore the commits to lower the entry bar for contribution

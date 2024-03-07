@@ -1,6 +1,3 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
 npm t \
   -w packages/commons \
   -w packages/logger \

@@ -139,6 +139,21 @@ describe('Class: Tracer', () => {
         getServiceName(): string {
           return 'my-backend-service';
         },
+        getSamLocal() {
+          return 'false';
+        },
+        getAwsExecutionEnv() {
+          return 'AWS_Lambda_nodejs12.x';
+        },
+        isDevMode(): boolean {
+          return false;
+        },
+        isValueTrue(value: string): boolean {
+          return value === 'true';
+        },
+        getXrayTraceId() {
+          return '1-abcdef12-3456abcdef123456abcdef12';
+        },
       };
 
       // Act

@@ -6,10 +6,10 @@ import { IdempotencyRecordStatus } from '../constants.js';
 import type { DynamoDBPersistenceOptions } from '../types/DynamoDBPersistence.js';
 import {
   AttributeValue,
+  ConditionalCheckFailedException,
   DeleteItemCommand,
   DynamoDBClient,
   DynamoDBClientConfig,
-  DynamoDBServiceException,
   GetItemCommand,
   PutItemCommand,
   UpdateItemCommand,
@@ -198,15 +198,26 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
             ':inprogress': IdempotencyRecordStatus.INPROGRESS,
           }),
           ConditionExpression: conditionExpression,
+          ReturnValuesOnConditionCheckFailure: 'ALL_OLD',
         })
       );
     } catch (error) {
-      if (error instanceof DynamoDBServiceException) {
-        if (error.name === 'ConditionalCheckFailedException') {
-          throw new IdempotencyItemAlreadyExistsError(
-            `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`
-          );
-        }
+      if (error instanceof ConditionalCheckFailedException) {
+        const item = error.Item && unmarshall(error.Item);
+        const idempotencyRecord =
+          item &&
+          new IdempotencyRecord({
+            idempotencyKey: item[this.keyAttr],
+            status: item[this.statusAttr],
+            expiryTimestamp: item[this.expiryAttr],
+            inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
+            responseData: item[this.dataAttr],
+            payloadHash: item[this.validationKeyAttr],
+          });
+        throw new IdempotencyItemAlreadyExistsError(
+          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
+          idempotencyRecord
+        );
       }
 
       throw error;

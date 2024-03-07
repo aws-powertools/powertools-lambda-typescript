@@ -23,6 +23,13 @@ import {
 import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils.js';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
+jest.mock('node:console', () => ({
+  ...jest.requireActual('node:console'),
+  Console: jest.fn().mockImplementation(() => ({
+    log: jest.fn(),
+  })),
+}));
+jest.spyOn(console, 'warn').mockImplementation(() => ({}));
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 jest.spyOn(console, 'log').mockImplementation();
@@ -234,6 +241,15 @@ describe('Class: Metrics', () => {
         },
         getServiceName(): string {
           return 'test-service';
+        },
+        getXrayTraceId(): string | undefined {
+          return 'test-trace-id';
+        },
+        isDevMode(): boolean {
+          return false;
+        },
+        isValueTrue(value: string): boolean {
+          return value === 'true';
         },
       };
       const metricsOptions: MetricsOptions = {
@@ -467,9 +483,7 @@ describe('Class: Metrics', () => {
       }
 
       // Act & Assess
-      expect(() =>
-        metrics.addDimensions(dimensionsToBeAdded)
-      ).not.toThrowError();
+      metrics.addDimensions(dimensionsToBeAdded);
       expect(Object.keys(metrics['dimensions']).length).toBe(
         MAX_DIMENSION_COUNT
       );
@@ -701,7 +715,7 @@ describe('Class: Metrics', () => {
     test('it should publish metrics when the array of values reaches the maximum size', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
-      const consoleSpy = jest.spyOn(console, 'log');
+      const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const metricName = 'test-metric';
 
       // Act
@@ -1244,7 +1258,9 @@ describe('Class: Metrics', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
       metrics.addMetric('test-metric', MetricUnit.Count, 10);
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleLogSpy = jest
+        .spyOn(metrics['console'], 'log')
+        .mockImplementation();
       const mockData: EmfOutput = {
         _aws: {
           Timestamp: mockDate.getTime(),
@@ -1498,6 +1514,53 @@ describe('Class: Metrics', () => {
         [testMetric]: 10,
         env: 'dev',
         foo: 'bar',
+      });
+    });
+
+    test('it should log dimensions once when default dimensions are set and addDimension is called', () => {
+      // Prepare
+      const additionalDimensions = {
+        foo: 'bar',
+        env: 'dev',
+      };
+      const testMetric = 'test-metric';
+      const metrics: Metrics = new Metrics({
+        defaultDimensions: additionalDimensions,
+        namespace: TEST_NAMESPACE,
+      });
+
+      // Act
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
+      metrics.addDimension('foo', 'baz');
+      const loggedData = metrics.serializeMetrics();
+
+      // Assess
+      expect(loggedData._aws.CloudWatchMetrics[0].Dimensions[0].length).toEqual(
+        3
+      );
+      expect(loggedData.service).toEqual(defaultServiceName);
+      expect(loggedData.foo).toEqual('baz');
+      expect(loggedData.env).toEqual(additionalDimensions.env);
+      expect(loggedData).toEqual({
+        _aws: {
+          CloudWatchMetrics: [
+            {
+              Dimensions: [['service', 'foo', 'env']],
+              Metrics: [
+                {
+                  Name: testMetric,
+                  Unit: MetricUnit.Count,
+                },
+              ],
+              Namespace: TEST_NAMESPACE,
+            },
+          ],
+          Timestamp: mockDate.getTime(),
+        },
+        service: 'service_undefined',
+        [testMetric]: 10,
+        env: 'dev',
+        foo: 'baz',
       });
     });
 
@@ -2132,6 +2195,17 @@ describe('Class: Metrics', () => {
           shouldThrowOnEmptyMetrics: true,
         })
       );
+    });
+  });
+
+  describe('Feature: POWERTOOLS_DEV', () => {
+    it('uses the global console object when the environment variable is set', () => {
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'true';
+      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+
+      // Act & Assess
+      expect(metrics['console']).toEqual(console);
     });
   });
 });

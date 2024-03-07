@@ -28,7 +28,7 @@ const recordHandler = async (record: SQSRecord): Promise<void> => {
     logger.info('Processed item', { item });
   } else {
     // prettier-ignore
-    throw new InvalidPayload('Payload does not contain minumum required fields'); // (1)!
+    throw new InvalidPayload('Payload does not contain minimum required fields'); // (1)!
   }
 };
 

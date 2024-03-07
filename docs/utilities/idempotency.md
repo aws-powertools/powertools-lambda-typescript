@@ -56,11 +56,11 @@ Install the library in your project
 npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
 ```
 
-While we support Amazon DynamoDB as a persistance layer out of the box, you need to bring your own AWS SDK for JavaScript v3 DynamoDB client.
+While we support Amazon DynamoDB as a persistence layer out of the box, you need to bring your own AWS SDK for JavaScript v3 DynamoDB client.
 
 
 ???+ note
-    This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="_blank"} only**. If you are using the `nodejs18.x` runtime, the AWS SDK for JavaScript v3 is already installed and you can install only the utility.
+    This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="_blank"} only**. If you are using the `nodejs18.x` runtime or newer, the AWS SDK for JavaScript v3 is already installed and you can install only the utility.
 
 
 ### IAM Permissions
@@ -109,10 +109,11 @@ If you're not [changing the default configuration for the DynamoDB persistence l
     Larger items cannot be written to DynamoDB and will cause exceptions.
 
 ???+ info "Info: DynamoDB"
-    Each function invocation will generally make 2 requests to DynamoDB. If the
-    result returned by your Lambda is less than 1kb, you can expect 2 WCUs per invocation. For retried invocations, you will
-    see 1WCU and 1RCU. Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to
-    estimate the cost.
+    Each function invocation will make only 1 request to DynamoDB by using DynamoDB's [conditional expressions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html){target="_blank"} to ensure that we don't overwrite existing records, 
+    and [ReturnValuesOnConditionCheckFailure](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html#DDB-PutItem-request-ReturnValuesOnConditionCheckFailure){target="_blank"} to return the record if it exists.
+    See [AWS Blog post on handling conditional write errors](https://aws.amazon.com/blogs/database/handle-conditional-write-errors-in-high-concurrency-scenarios-with-amazon-dynamodb/) for more details. 
+    For retried invocations, you will see 1WCU and 1RCU. 
+    Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to estimate the cost.
 
 ### MakeIdempotent function wrapper
 
@@ -164,6 +165,10 @@ The function this example has two arguments, note that while wrapping it with th
 
 You can also use the `@idempotent` decorator to make your Lambda handler idempotent, similar to the `makeIdempotent` function wrapper.
 
+!!! info
+    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+    If this is not the desired behavior, you can use one of the other patterns to make your logic idempotent.
+
 === "index.ts"
 
     ```typescript hl_lines="17"
@@ -183,8 +188,8 @@ The configuration options for the `@idempotent` decorator are the same as the on
 ### MakeHandlerIdempotent Middy middleware
 
 !!! tip "A note about Middy"
-        Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
-        Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
+    Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
+    Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
 If you are using [Middy](https://middy.js.org){target="_blank"} as your middleware engine, you can use the `makeHandlerIdempotent` middleware to make your Lambda handler idempotent. Similar to the `makeIdempotent` function wrapper, you can quickly make your Lambda handler idempotent by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeHandlerIdempotent` middleware.
 

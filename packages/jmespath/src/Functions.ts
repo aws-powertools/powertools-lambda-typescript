@@ -48,6 +48,7 @@ import { arityCheck, typeCheck } from './utils.js';
  * ```
  */
 class Functions {
+  public methods: Set<string> = new Set();
   /**
    * Get the absolute value of the provided number.
    *
@@ -538,6 +539,35 @@ class Functions {
   })
   public funcValues(arg: JSONObject): JSONValue[] {
     return Object.values(arg);
+  }
+
+  public introspectMethods(scope?: Functions): Set<string> {
+    const prototype = Object.getPrototypeOf(this);
+    const ownName = prototype.constructor.name;
+    const methods = new Set<string>();
+    if (ownName !== 'Functions') {
+      for (const method of prototype.introspectMethods(scope)) {
+        methods.add(method);
+      }
+    }
+
+    // This block is executed for every class in the inheritance chain
+    for (const method of Object.getOwnPropertyNames(
+      Object.getPrototypeOf(this)
+    )) {
+      method !== 'constructor' &&
+        method.startsWith('func') &&
+        methods.add(method);
+    }
+
+    // This block will be executed only if the scope is the outermost class
+    if (this.methods) {
+      for (const method of methods) {
+        this.methods.add(method);
+      }
+    }
+
+    return methods;
   }
 
   /**

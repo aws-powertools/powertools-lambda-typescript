@@ -43,6 +43,10 @@
       "import": "./lib/esm/envelopes.js",
       "require": "./lib/cjs/envelopes.js"
     },
+    "./functions": {
+      "import": "./lib/esm/PowertoolsFunctions.js",
+      "require": "./lib/cjs/PowertoolsFunctions.js"
+    },
     "./types": {
       "import": "./lib/esm/types.js",
       "require": "./lib/cjs/types.js"
@@ -50,13 +54,17 @@
   },
   "typesVersions": {
     "*": {
-      "types": [
-        "lib/cjs/types.d.ts",
-        "lib/esm/types.d.ts"
-      ],
       "envelopes": [
         "lib/cjs/envelopes.d.ts",
         "lib/esm/envelopes.d.ts"
+      ],
+      "functions": [
+        "lib/cjs/PowertoolsFunctions.d.ts",
+        "lib/esm/PowertoolsFunctions.d.ts"
+      ],
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
       ]
     }
   },

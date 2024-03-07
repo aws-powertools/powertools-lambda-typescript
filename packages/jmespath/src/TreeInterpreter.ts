@@ -217,7 +217,10 @@ class TreeInterpreter {
         `Function name must be a string, got ${node.value}`
       );
     }
-    // get all methods of the functions object
+    if (this.#functions.methods.size === 0) {
+      this.#functions.introspectMethods();
+    }
+    /* // get all methods of the functions object
     const functionsProto = Object.getPrototypeOf(this.#functions);
     const methods = [
       ...Object.getOwnPropertyNames(functionsProto),
@@ -229,7 +232,7 @@ class TreeInterpreter {
             Object.getPrototypeOf(this.#functions).__proto__
           )
         : []),
-    ];
+    ]; */
     // convert snake_case to camelCase
     const normalizedFunctionName = node.value.replace(/_([a-z])/g, (g) =>
       g[1].toUpperCase()
@@ -239,8 +242,11 @@ class TreeInterpreter {
       normalizedFunctionName.charAt(0).toUpperCase() +
       normalizedFunctionName.slice(1)
     }`;
-    const methodName = methods.find((method) => method === funcName);
+    /* const methodName = methods.find((method) => method === funcName);
     if (!methodName) {
+      throw new UnknownFunctionError(node.value);
+    } */
+    if (!this.#functions.methods.has(funcName)) {
       throw new UnknownFunctionError(node.value);
     }
 
@@ -251,7 +257,7 @@ class TreeInterpreter {
       // we also want to keep the args generic, so for now we'll just ignore it.
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore-next-line
-      return this.#functions[methodName](args);
+      return this.#functions[funcName](args);
     } catch (error) {
       if (
         error instanceof JMESPathTypeError ||

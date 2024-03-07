@@ -31,7 +31,7 @@ You can use the `extractDataFromEnvelope` function with any [JMESPath expression
 	Another common use case is to fetch deeply nested data, filter, flatten, and more.
 
 === "extractDataFromBuiltinEnvelope.ts"
-    ```typescript hl_lines="1 13 20"
+    ```typescript hl_lines="1 13 17 20 22"
     --8<-- "docs/snippets/jmespath/extractDataFromEnvelope.ts"
     ```
 
@@ -91,16 +91,16 @@ Use `powertools_json` function to decode any JSON string anywhere a JMESPath exp
 
 This sample will deserialize the JSON string within the `body` key before [Idempotency](./idempotency.md){target="_blank"} processes it.
 
-=== "powertools_json_idempotency_jmespath.py"
+=== "powertoolsJsonIdempotencyJmespath.ts"
 
-    ```python hl_lines="16"
-    --8<-- "examples/jmespath_functions/src/powertools_json_idempotency_jmespath.py"
+    ```ts hl_lines="31"
+    --8<-- "docs/snippets/jmespath/powertoolsJsonIdempotencyJmespath.ts"
     ```
 
-=== "powertools_json_idempotency_jmespath.json"
+=== "powertoolsJsonIdempotencyJmespath.json"
 
     ```json hl_lines="28"
-    --8<-- "examples/jmespath_functions/src/powertools_json_idempotency_jmespath.json"
+    --8<-- "docs/snippets/jmespath/powertoolsJsonIdempotencyJmespath.json"
     ```
 
 #### powertools_base64 function
@@ -109,22 +109,16 @@ Use `powertools_base64` function to decode any base64 data.
 
 This sample will decode the base64 value within the `data` key, and deserialize the JSON string before processing.
 
-=== "powertools_base64_jmespath_function.py"
+=== "powertoolsBase64Jmespath.ts"
 
-    ```python hl_lines="7 10 37 49 53 55 57"
-    --8<-- "examples/jmespath_functions/src/powertools_base64_jmespath_function.py"
+    ```ts hl_lines="9"
+    --8<-- "docs/snippets/jmespath/powertoolsBase64Jmespath.ts"
     ```
 
-=== "powertools_base64_jmespath_schema.py"
-
-    ```python hl_lines="7 8 10 12 17 19 24 26 31 33 38 40"
-    --8<-- "examples/jmespath_functions/src/powertools_base64_jmespath_schema.py"
-    ```
-
-=== "powertools_base64_jmespath_payload.json"
+=== "powertoolsBase64JmespathPayload.json"
 
     ```json
-    --8<-- "examples/jmespath_functions/src/powertools_base64_jmespath_payload.json"
+    --8<-- "docs/snippets/jmespath/powertoolsBase64JmespathPayload.json"
     ```
 
 #### powertools_base64_gzip function
@@ -133,22 +127,16 @@ Use `powertools_base64_gzip` function to decompress and decode base64 data.
 
 This sample will decompress and decode base64 data from Cloudwatch Logs, then use JMESPath pipeline expression to pass the result for decoding its JSON string.
 
-=== "powertools_base64_gzip_jmespath_function.py"
+=== "powertoolsBase64GzipJmespath.ts"
 
-    ```python hl_lines="6 10 15 29 31 33 35"
-    --8<-- "examples/jmespath_functions/src/powertools_base64_gzip_jmespath_function.py"
+    ```ts hl_lines="9"
+    --8<-- "docs/snippets/jmespath/powertoolsBase64GzipJmespath.ts"
     ```
 
-=== "powertools_base64_gzip_jmespath_schema.py"
-
-    ```python hl_lines="7-15 17 19 24 26 31 33 38 40"
-    --8<-- "examples/jmespath_functions/src/powertools_base64_gzip_jmespath_schema.py"
-    ```
-
-=== "powertools_base64_gzip_jmespath_payload.json"
+=== "powertoolsBase64GzipJmespathPayload.json"
 
     ```json
-    --8<-- "examples/jmespath_functions/src/powertools_base64_gzip_jmespath_payload.json"
+    --8<-- "docs/snippets/jmespath/powertoolsBase64GzipJmespathPayload.json"
     ```
 
 ### Bring your own JMESPath function
@@ -156,18 +144,25 @@ This sample will decompress and decode base64 data from Cloudwatch Logs, then us
 ???+ warning
     This should only be used for advanced use cases where you have special formats not covered by the built-in functions.
 
-For special binary formats that you want to decode before processing, you can bring your own [JMESPath function](https://github.com/jmespath/jmespath.py#custom-functions){target="_blank" rel="nofollow"} and any additional option via `jmespath_options` param. To keep Powertools for AWS Lambda (TypeScript) built-in functions, you can extend the `PowertoolsFunctions` class.
+For special binary formats that you want to decode before processing, you can bring your own JMESPath function by extending the `PowertoolsFunctions` class.
 
-Here is an example of how to decompress messages using [zlib](https://docs.python.org/3/library/zlib.html){target="_blank" rel="nofollow"}:
+Here is an example of how to decompress messages compressed using the [Brotli compression algorithm](https://nodejs.org/api/zlib.html#zlibbrotlidecompressbuffer-options-callback){target="_blank" rel="nofollow"}:
 
-=== "powertools_custom_jmespath_function.py"
+=== "PowertoolsCustomFunction.ts"
 
-    ```python hl_lines="9 14 17-18 23 34 39 41 43"
-	--8<-- "examples/jmespath_functions/src/powertools_custom_jmespath_function.py"
+    ```ts hl_lines="3 9 25-26"
+    --8<--
+     docs/snippets/jmespath/powertoolsCustomFunction.ts::8
+     docs/snippets/jmespath/powertoolsCustomFunction.ts:10:
+
+    --8<--
     ```
 
-=== "powertools_custom_jmespath_function.json"
+    1.  The function signature can be enforced at runtime by using the `@Functions.signature` decorator.
+    2.  The name of the function must start with the `func` prefix.
+
+=== "powertoolsCustomFunction.json"
 
     ```json
-    --8<-- "examples/jmespath_functions/src/powertools_custom_jmespath_function.json"
+    --8<-- "docs/snippets/jmespath/powertoolsCustomFunction.json"
     ```

@@ -1,10 +1,15 @@
-import zlib from 'node:zlib';
+import { gunzipSync } from 'node:zlib';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import { Functions } from './Functions.js';
 
 const decoder = new TextDecoder('utf-8');
 
+/**
+ * Custom functions for the Powertools for AWS Lambda JMESPath module.
+ *
+ * Built-in JMESPath functions include: `powertools_json`, `powertools_base64`, `powertools_base64_gzip`
+ */
 class PowertoolsFunctions extends Functions {
   @Functions.signature({
     argumentsSpecs: [['string']],
@@ -18,7 +23,7 @@ class PowertoolsFunctions extends Functions {
   })
   public funcPowertoolsBase64Gzip(value: string): string {
     const encoded = fromBase64(value, 'base64');
-    const uncompressed = zlib.gunzipSync(encoded);
+    const uncompressed = gunzipSync(encoded);
 
     return uncompressed.toString();
   }

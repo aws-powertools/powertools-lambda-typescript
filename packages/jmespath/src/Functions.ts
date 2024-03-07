@@ -53,7 +53,6 @@ class Functions {
    * Get the absolute value of the provided number.
    *
    * @param args The number to get the absolute value of
-   * @returns The absolute value of the number
    */
   @Functions.signature({ argumentsSpecs: [['number']] })
   public funcAbs(args: number): number {
@@ -64,7 +63,6 @@ class Functions {
    * Calculate the average of the numbers in the provided array.
    *
    * @param args The numbers to average
-   * @returns The average of the numbers
    */
   @Functions.signature({
     argumentsSpecs: [['array-number']],
@@ -77,7 +75,6 @@ class Functions {
    * Get the ceiling of the provided number.
    *
    * @param args The number to get the ceiling of
-   * @returns The ceiling of the number
    */
   @Functions.signature({ argumentsSpecs: [['number']] })
   public funcCeil(args: number): number {
@@ -89,7 +86,6 @@ class Functions {
    *
    * @param haystack The array or string to check
    * @param needle The value to check for
-   * @returns True if the value is in the array or string, false otherwise
    */
   @Functions.signature({
     argumentsSpecs: [['array', 'string'], ['any']],
@@ -101,8 +97,8 @@ class Functions {
   /**
    * Determines if the provided string ends with the provided suffix.
    *
-   * @param args The string to check
-   * @returns True if the string ends with the suffix, false otherwise
+   * @param str The string to check
+   * @param suffix The suffix to check for
    */
   @Functions.signature({
     argumentsSpecs: [['string'], ['string']],
@@ -115,7 +111,6 @@ class Functions {
    * Get the floor of the provided number.
    *
    * @param args The number to get the floor of
-   * @returns The floor of the number
    */
   @Functions.signature({ argumentsSpecs: [['number']] })
   public funcFloor(args: number): number {
@@ -127,7 +122,6 @@ class Functions {
    *
    * @param separator The separator to use
    * @param items The array of itmes to join
-   * @returns The joined array
    */
   @Functions.signature({
     argumentsSpecs: [['string'], ['array-string']],
@@ -139,8 +133,7 @@ class Functions {
   /**
    * Get the keys of the provided object.
    *
-   * @param args The object to get the keys of
-   * @returns The keys of the object
+   * @param arg The object to get the keys of
    */
   @Functions.signature({
     argumentsSpecs: [['object']],
@@ -152,8 +145,7 @@ class Functions {
   /**
    * Get the number of items in the provided item.
    *
-   * @param args The array to get the length of
-   * @returns The length of the array
+   * @param arg The array to get the length of
    */
   @Functions.signature({
     argumentsSpecs: [['array', 'string', 'object']],
@@ -173,7 +165,6 @@ class Functions {
    *
    * @param expression The expression to map over the array
    * @param args The array to map the expression over
-   * @returns The result of mapping the expression over the array
    */
   @Functions.signature({
     argumentsSpecs: [['any'], ['array']],
@@ -190,8 +181,7 @@ class Functions {
   /**
    * Get the maximum value in the provided array.
    *
-   * @param args The array to get the maximum value of
-   * @returns The maximum value in the array
+   * @param arg The array to get the maximum value of
    */
   @Functions.signature({
     argumentsSpecs: [['array-number', 'array-string']],
@@ -213,7 +203,6 @@ class Functions {
    *
    * @param args The array of items to get the maximum value of
    * @param expression The expression to evaluate for each item in the array
-   * @returns The item in the array that has the maximum value when the expression is evaluated
    */
   @Functions.signature({
     argumentsSpecs: [['array'], ['expression']],
@@ -262,7 +251,6 @@ class Functions {
    * Note that this is a shallow merge and will not merge nested objects.
    *
    * @param args The objects to merge
-   * @returns The merged object
    */
   @Functions.signature({
     argumentsSpecs: [['object']],
@@ -275,8 +263,7 @@ class Functions {
   /**
    * Get the minimum value in the provided array.
    *
-   * @param args The array to get the minimum value of
-   * @returns The minimum value in the array
+   * @param arg The array to get the minimum value of
    */
   @Functions.signature({
     argumentsSpecs: [['array-number', 'array-string']],
@@ -297,7 +284,6 @@ class Functions {
    *
    * @param args The array of items to get the minimum value of
    * @param expression The expression to evaluate for each item in the array
-   * @returns The item in the array that has the minimum value when the expression is evaluated
    */
   @Functions.signature({
     argumentsSpecs: [['array'], ['expression']],
@@ -345,7 +331,6 @@ class Functions {
    * If all arguments evaluate to null, then null is returned.
    *
    * @param args The keys of the items to check
-   * @returns The first key that is not null or null if all keys are null
    */
   @Functions.signature({
     argumentsSpecs: [[]],
@@ -358,8 +343,7 @@ class Functions {
   /**
    * Reverses the provided string or array.
    *
-   * @param args The string or array to reverse
-   * @returns The reversed string or array
+   * @param arg The string or array to reverse
    */
   @Functions.signature({
     argumentsSpecs: [['string', 'array']],
@@ -374,7 +358,6 @@ class Functions {
    * Sort the provided array.
    *
    * @param arg The array to sort
-   * @returns The sorted array
    */
   @Functions.signature({
     argumentsSpecs: [['array-number', 'array-string']],
@@ -386,9 +369,8 @@ class Functions {
   /**
    * Sort the provided array by the provided expression.
    *
-   * @param arg The array to sort
+   * @param args The array to sort
    * @param expression The expression to sort by
-   * @returns The sorted array
    */
   @Functions.signature({
     argumentsSpecs: [['array'], ['expression']],
@@ -430,23 +412,22 @@ class Functions {
   }
 
   /**
-   * Determines if the provided string starts with the provided suffix.
+   * Determines if the provided string starts with the provided prefix.
    *
-   * @param args The string to check
-   * @returns True if the string ends with the suffix, false otherwise
+   * @param str The string to check
+   * @param prefix The prefix to check for
    */
   @Functions.signature({
     argumentsSpecs: [['string'], ['string']],
   })
-  public funcStartsWith(str: string, suffix: string): boolean {
-    return str.startsWith(suffix);
+  public funcStartsWith(str: string, prefix: string): boolean {
+    return str.startsWith(prefix);
   }
 
   /**
    * Sum the provided numbers.
    *
    * @param args The numbers to sum
-   * @returns The sum of the numbers
    */
   @Functions.signature({
     argumentsSpecs: [['array-number']],
@@ -461,8 +442,7 @@ class Functions {
    * If the provided value is an array, then it is returned.
    * Otherwise, the value is wrapped in an array and returned.
    *
-   * @param args The items to convert to an array
-   * @returns The items as an array
+   * @param arg The items to convert to an array
    */
   @Functions.signature({
     argumentsSpecs: [['any']],
@@ -482,7 +462,6 @@ class Functions {
    * If the value cannot be converted to a number, then null is returned.
    *
    * @param arg The value to convert to a number
-   * @returns The value as a number or null if the value cannot be converted to a number
    */
   @Functions.signature({
     argumentsSpecs: [['any']],
@@ -506,7 +485,6 @@ class Functions {
    * Otherwise, the value is converted to a string and returned.
    *
    * @param arg The value to convert to a string
-   * @returns The value as a string
    */
   @Functions.signature({
     argumentsSpecs: [['any']],
@@ -519,7 +497,6 @@ class Functions {
    * Get the type of the provided value.
    *
    * @param arg The value to check the type of
-   * @returns The type of the value
    */
   @Functions.signature({
     argumentsSpecs: [['any']],
@@ -531,8 +508,7 @@ class Functions {
   /**
    * Get the values of the provided object.
    *
-   * @param args The object to get the values of
-   * @returns The values of the object
+   * @param arg The object to get the values of
    */
   @Functions.signature({
     argumentsSpecs: [['object']],

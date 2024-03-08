@@ -94,6 +94,9 @@ type FunctionSignatureOptions = {
   variadic?: boolean;
 };
 
+/**
+ * A JSON parseable object.
+ */
 type JSONObject = JSONArray | JSONValue | object;
 
 export type {

@@ -5,6 +5,7 @@
   "entryPoints": [
     "./src/index.ts",
     "./src/types.ts",
+    "./src/errors.ts",
     "./src/envelopes.ts",
     "./src/PowertoolsFunctions.ts",
   ],

@@ -8,9 +8,9 @@ import middy from '@middy/core';
 import { Context } from 'aws-lambda';
 import { parser } from '../../src/middleware/parser.js';
 import { generateMock } from '@anatine/zod-mock';
-import { SqsSchema } from '../../src/schemas/sqs.js';
+import { SqsSchema } from '../../src/schemas/index.js';
 import { z, type ZodSchema } from 'zod';
-import { sqsEnvelope } from '../../src/envelopes/sqs';
+import { sqsEnvelope } from '../../src/envelopes/index.js';
 import { TestSchema } from './schema/utils';
 
 describe('Middleware: parser', () => {

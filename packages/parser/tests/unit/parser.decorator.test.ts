@@ -6,11 +6,11 @@
 
 import { LambdaInterface } from '@aws-lambda-powertools/commons/lib/esm/types';
 import { Context, EventBridgeEvent } from 'aws-lambda';
-import { parser } from '../../src/parser';
+import { parser } from '../../src/index.js';
 import { TestSchema, TestEvents } from './schema/utils';
 import { generateMock } from '@anatine/zod-mock';
-import { eventBridgeEnvelope } from '../../src/envelopes/event-bridge';
-import { EventBridgeSchema } from '../../src/schemas/eventbridge';
+import { eventBridgeEnvelope } from '../../src/envelopes/index.js';
+import { EventBridgeSchema } from '../../src/schemas/index.js';
 import { z } from 'zod';
 
 describe('Parser Decorator', () => {

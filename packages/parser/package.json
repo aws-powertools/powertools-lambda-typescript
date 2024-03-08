@@ -30,12 +30,12 @@
   "exports": {
     ".": {
       "require": {
-        "types": "./lib/cjs/parser.d.ts",
-        "default": "./lib/cjs/parser.js"
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
       },
       "import": {
-        "types": "./lib/esm/parser.d.ts",
-        "default": "./lib/esm/parser.js"
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
       }
     },
     "./middleware": {

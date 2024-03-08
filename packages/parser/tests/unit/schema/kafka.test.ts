@@ -7,7 +7,7 @@
 import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
-} from '../../../src/schemas/kafka.js';
+} from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('Kafka ', () => {

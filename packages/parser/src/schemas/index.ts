@@ -1,8 +1,7 @@
 export { AlbSchema, AlbMultiValueHeadersSchema } from './alb.js';
-export { APIGatewayCert, APIGatewayProxyEventSchema } from './apigw.js';
+export { APIGatewayProxyEventSchema } from './apigw.js';
 export { APIGatewayProxyEventV2Schema } from './apigwv2.js';
 export {
-  CloudFormationCustomResourceBaseSchema,
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
@@ -11,25 +10,11 @@ export {
   CloudWatchLogEventSchema,
   CloudWatchLogsDecodeSchema,
   CloudWatchLogsSchema,
-  decompressRecordToJSON,
 } from './cloudwatch.js';
-export {
-  DynamoDBStreamChangeRecord,
-  DynamoDBStreamRecord,
-  DynamoDBStreamSchema,
-  UserIdentity,
-} from './dynamodb.js';
+export { DynamoDBStreamSchema } from './dynamodb.js';
 export { EventBridgeSchema } from './eventbridge.js';
-export {
-  KafkaMskEventSchema,
-  KafkaRecordSchema,
-  KafkaSelfManagedEventSchema,
-} from './kafka.js';
-export {
-  KinesisDataStreamRecord,
-  KinesisDataStreamRecordPayload,
-  KinesisDataStreamSchema,
-} from './kinesis.js';
+export { KafkaMskEventSchema, KafkaSelfManagedEventSchema } from './kafka.js';
+export { KinesisDataStreamSchema } from './kinesis.js';
 export {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
@@ -41,19 +26,8 @@ export {
   S3ObjectLambdaEventSchema,
   S3Schema,
 } from './s3.js';
-export { SesRecordSchema, SesSchema } from './ses.js';
-export {
-  SnsMsgAttribute,
-  SnsNotificationSchema,
-  SnsRecordSchema,
-  SnsSchema,
-  SnsSqsNotificationSchema,
-} from './sns.js';
-export {
-  SqsAttributesSchema,
-  SqsMsgAttributeSchema,
-  SqsRecordSchema,
-  SqsSchema,
-} from './sqs.js';
+export { SesSchema } from './ses.js';
+export { SnsSchema } from './sns.js';
+export { SqsSchema } from './sqs.js';
 export { VpcLatticeSchema } from './vpc-lattice.js';
 export { VpcLatticeV2Schema } from './vpc-latticev2.js';

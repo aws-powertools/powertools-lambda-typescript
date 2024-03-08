@@ -7,7 +7,7 @@
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { generateMock } from '@anatine/zod-mock';
 import { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { lambdaFunctionUrlEnvelope } from '../../../src/envelopes/lambda';
+import { lambdaFunctionUrlEnvelope } from '../../../src/envelopes/';
 
 describe('Lambda Functions Url ', () => {
   it('should parse custom schema in envelope', () => {

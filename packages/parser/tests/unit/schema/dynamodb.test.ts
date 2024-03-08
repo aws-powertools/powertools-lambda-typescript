@@ -4,7 +4,7 @@
  * @group unit/parser/schema/
  */
 
-import { DynamoDBStreamSchema } from '../../../src/schemas/dynamodb.js';
+import { DynamoDBStreamSchema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('DynamoDB ', () => {

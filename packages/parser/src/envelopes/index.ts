@@ -2,7 +2,6 @@ export { apiGatewayEnvelope } from './apigw.js';
 export { apiGatewayV2Envelope } from './apigwv2.js';
 export { cloudWatchEnvelope } from './cloudwatch.js';
 export { dynamoDDStreamEnvelope } from './dynamodb.js';
-export { parse } from './envelope.js';
 export { eventBridgeEnvelope } from './event-bridge.js';
 export { kafkaEnvelope } from './kafka.js';
 export { kinesisEnvelope } from './kinesis.js';

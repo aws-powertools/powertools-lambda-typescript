@@ -4,7 +4,7 @@
  * @group unit/parser/schema/
  */
 
-import { SnsSchema } from '../../../src/schemas/sns.js';
+import { SnsSchema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('Schema:', () => {

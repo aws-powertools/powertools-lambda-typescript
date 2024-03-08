@@ -7,7 +7,7 @@
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { generateMock } from '@anatine/zod-mock';
 import { EventBridgeEvent } from 'aws-lambda';
-import { eventBridgeEnvelope } from '../../../src/envelopes/event-bridge.js';
+import { eventBridgeEnvelope } from '../../../src/envelopes/';
 
 describe('EventBridgeEnvelope ', () => {
   it('should parse eventbridge event', () => {

@@ -9,9 +9,9 @@ import { gzipSync } from 'node:zlib';
 import {
   CloudWatchLogEventSchema,
   CloudWatchLogsDecodeSchema,
-} from '../../../src/schemas/cloudwatch.js';
+} from '../../../src/schemas/';
 import { TestSchema } from '../schema/utils.js';
-import { cloudWatchEnvelope } from '../../../src/envelopes/cloudwatch';
+import { cloudWatchEnvelope } from '../../../src/envelopes/';
 
 describe('CloudWatch', () => {
   it('should parse custom schema in envelope', () => {

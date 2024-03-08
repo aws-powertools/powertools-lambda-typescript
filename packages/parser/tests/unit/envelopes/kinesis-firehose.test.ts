@@ -6,9 +6,9 @@
 
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { generateMock } from '@anatine/zod-mock';
-import { KinesisFirehoseSchema } from '../../../src/schemas/kinesis-firehose.js';
+import { KinesisFirehoseSchema } from '../../../src/schemas/';
 import { z } from 'zod';
-import { kinesisFirehoseEnvelope } from '../../../src/envelopes/kinesis-firehose';
+import { kinesisFirehoseEnvelope } from '../../../src/envelopes/';
 
 describe('Kinesis Firehose Envelope', () => {
   it('should parse records for PutEvent', () => {

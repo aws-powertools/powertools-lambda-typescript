@@ -52,7 +52,7 @@ class TreeInterpreter {
     const visitMethods: {
       [key: string]: (node: Node, value: JSONObject) => JSONObject | null;
     } = {
-      subexpression: this.#visitSubexpressionOrIndexExpression,
+      subexpression: this.#visitSubexpressionOrIndexExpressionOrPipe,
       field: this.#visitField,
       comparator: this.#visitComparator,
       current: this.#visitCurrent,
@@ -62,7 +62,7 @@ class TreeInterpreter {
       flatten: this.#visitFlatten,
       identity: this.#visitIdentity,
       index: this.#visitIndex,
-      index_expression: this.#visitSubexpressionOrIndexExpression,
+      index_expression: this.#visitSubexpressionOrIndexExpressionOrPipe,
       slice: this.#visitSlice,
       key_val_pair: this.#visitKeyValPair,
       literal: this.#visitLiteral,
@@ -71,7 +71,7 @@ class TreeInterpreter {
       or_expression: this.#visitOrExpression,
       and_expression: this.#visitAndExpression,
       not_expression: this.#visitNotExpression,
-      pipe: this.#visitPipe,
+      pipe: this.#visitSubexpressionOrIndexExpressionOrPipe,
       projection: this.#visitProjection,
       value_projection: this.#visitValueProjection,
     };
@@ -87,14 +87,17 @@ class TreeInterpreter {
   }
 
   /**
-   * Visit a subexpression or index expression node.
+   * Visit a subexpression, index expression, or pipe node.
    *
-   * This method is shared between subexpression and index expression nodes.
+   * This method is shared between subexpression, index expression, and pipe
+   * since they all behave the same way in the context of an expression.
    *
-   * @param node The subexpression node to visit.
+   * They all visit their children and return the result of the last child.
+   *
+   * @param node The node to visit.
    * @param value The current value to visit.
    */
-  #visitSubexpressionOrIndexExpression(
+  #visitSubexpressionOrIndexExpressionOrPipe(
     node: Node,
     value: JSONObject
   ): JSONObject {
@@ -442,21 +445,6 @@ class TreeInterpreter {
     }
 
     return !isTruthy(originalResult);
-  }
-
-  /**
-   * Visit a pipe node.
-   *
-   * @param node The pipe node to visit.
-   * @param value The current value to visit.
-   */
-  #visitPipe(node: Node, value: JSONObject): JSONObject {
-    let result = value;
-    for (const child of node.children) {
-      result = this.visit(child, result);
-    }
-
-    return result;
   }
 
   /**

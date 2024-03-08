@@ -86,18 +86,16 @@ const sliceArray = <T>({
 }): T[] | null => {
   const isStepNegative = step < 0;
   const length = array.length;
+  const defaultStart = isStepNegative ? length - 1 : 0;
+  const defaultEnd = isStepNegative ? -1 : length;
 
   start = isIntegerNumber(start)
     ? capSliceRange(length, start, isStepNegative)
-    : isStepNegative
-      ? length - 1
-      : 0;
+    : defaultStart;
 
   end = isIntegerNumber(end)
     ? capSliceRange(length, end, isStepNegative)
-    : isStepNegative
-      ? -1
-      : length;
+    : defaultEnd;
 
   const result: T[] = [];
   if (step > 0) {
@@ -214,42 +212,41 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
         }
       }
       break;
-    } else {
-      if (type === 'expression') {
-        if (!(arg instanceof Expression)) {
-          if (!hasMoreTypesToCheck) {
-            throw new JMESPathTypeError({
-              currentValue: arg,
-              expectedTypes: argumentSpec,
-              actualType: getType(arg),
-            });
-          }
+    }
+    if (type === 'expression') {
+      if (!(arg instanceof Expression)) {
+        if (!hasMoreTypesToCheck) {
+          throw new JMESPathTypeError({
+            currentValue: arg,
+            expectedTypes: argumentSpec,
+            actualType: getType(arg),
+          });
         }
-        break;
-      } else if (type === 'string' || type === 'number' || type === 'boolean') {
-        if (typeof arg !== type) {
-          if (!hasMoreTypesToCheck) {
-            throw new JMESPathTypeError({
-              currentValue: arg,
-              expectedTypes: argumentSpec,
-              actualType: getType(arg),
-            });
-          }
-          continue;
-        }
-        break;
-      } else if (type === 'object') {
-        if (!isRecord(arg)) {
-          if (index === entryCount - 1) {
-            throw new JMESPathTypeError({
-              currentValue: arg,
-              expectedTypes: argumentSpec,
-              actualType: getType(arg),
-            });
-          }
-        }
-        break;
       }
+      break;
+    } else if (type === 'string' || type === 'number' || type === 'boolean') {
+      if (typeof arg !== type) {
+        if (!hasMoreTypesToCheck) {
+          throw new JMESPathTypeError({
+            currentValue: arg,
+            expectedTypes: argumentSpec,
+            actualType: getType(arg),
+          });
+        }
+        continue;
+      }
+      break;
+    } else if (type === 'object') {
+      if (!isRecord(arg)) {
+        if (index === entryCount - 1) {
+          throw new JMESPathTypeError({
+            currentValue: arg,
+            expectedTypes: argumentSpec,
+            actualType: getType(arg),
+          });
+        }
+      }
+      break;
     }
   }
 };

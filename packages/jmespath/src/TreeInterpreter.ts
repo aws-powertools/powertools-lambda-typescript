@@ -49,60 +49,36 @@ class TreeInterpreter {
    */
   public visit(node: Node, value: JSONObject): JSONObject | null {
     const nodeType = node.type;
-    if (nodeType === 'subexpression') {
-      return this.#visitSubexpression(node, value);
-    } else if (nodeType === 'field') {
-      return this.#visitField(node, value);
-    } else if (nodeType === 'comparator') {
-      return this.#visitComparator(node, value);
-    } else if (nodeType === 'current') {
-      return this.#visitCurrent(node, value);
-    } else if (nodeType === 'expref') {
-      // This is a special case where we return an instance of the Expression
-      // class instead of the result of visiting the node. This is because the
-      // expref node represents a reference to another expression, so we want
-      // to return an instance of the Expression class so that we can evaluate
-      // the referenced expression later. Adding `Expression` to the return
-      // type of the `visit` method would mean having to type-check the return
-      // type of every call to `visit` in the interpreter even though we only
-      // return an instance of `Expression` in this one case.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore-next-line
-      return this.#visitExpref(node, value);
-    } else if (nodeType === 'function_expression') {
-      return this.#visitFunctionExpression(node, value);
-    } else if (nodeType === 'filter_projection') {
-      return this.#visitFilterProjection(node, value);
-    } else if (nodeType === 'flatten') {
-      return this.#visitFlatten(node, value);
-    } else if (nodeType === 'identity') {
-      return this.#visitIdentity(node, value);
-    } else if (nodeType === 'index') {
-      return this.#visitIndex(node, value);
-    } else if (nodeType === 'index_expression') {
-      return this.#visitIndexExpression(node, value);
-    } else if (nodeType === 'slice') {
-      return this.#visitSlice(node, value);
-    } else if (nodeType === 'key_val_pair') {
-      return this.#visitKeyValPair(node, value);
-    } else if (nodeType === 'literal') {
-      return this.#visitLiteral(node, value);
-    } else if (nodeType === 'multi_select_object') {
-      return this.#visitMultiSelectObject(node, value);
-    } else if (nodeType === 'multi_select_list') {
-      return this.#visitMultiSelectList(node, value);
-    } else if (nodeType === 'or_expression') {
-      return this.#visitOrExpression(node, value);
-    } else if (nodeType === 'and_expression') {
-      return this.#visitAndExpression(node, value);
-    } else if (nodeType === 'not_expression') {
-      return this.#visitNotExpression(node, value);
-    } else if (nodeType === 'pipe') {
-      return this.#visitPipe(node, value);
-    } else if (nodeType === 'projection') {
-      return this.#visitProjection(node, value);
-    } else if (nodeType === 'value_projection') {
-      return this.#visitValueProjection(node, value);
+    const visitMethods: {
+      [key: string]: (node: Node, value: JSONObject) => JSONObject | null;
+    } = {
+      subexpression: this.#visitSubexpressionOrIndexExpression,
+      field: this.#visitField,
+      comparator: this.#visitComparator,
+      current: this.#visitCurrent,
+      expref: this.#visitExpref,
+      function_expression: this.#visitFunctionExpression,
+      filter_projection: this.#visitFilterProjection,
+      flatten: this.#visitFlatten,
+      identity: this.#visitIdentity,
+      index: this.#visitIndex,
+      index_expression: this.#visitSubexpressionOrIndexExpression,
+      slice: this.#visitSlice,
+      key_val_pair: this.#visitKeyValPair,
+      literal: this.#visitLiteral,
+      multi_select_object: this.#visitMultiSelectObject,
+      multi_select_list: this.#visitMultiSelectList,
+      or_expression: this.#visitOrExpression,
+      and_expression: this.#visitAndExpression,
+      not_expression: this.#visitNotExpression,
+      pipe: this.#visitPipe,
+      projection: this.#visitProjection,
+      value_projection: this.#visitValueProjection,
+    };
+
+    const visitMethod = visitMethods[nodeType];
+    if (visitMethod) {
+      return visitMethod.call(this, node, value);
     } else {
       throw new JMESPathError(
         `Not Implemented: Invalid node type: ${node.type}`
@@ -111,12 +87,17 @@ class TreeInterpreter {
   }
 
   /**
-   * Visit a subexpression node.
+   * Visit a subexpression or index expression node.
+   *
+   * This method is shared between subexpression and index expression nodes.
    *
    * @param node The subexpression node to visit.
    * @param value The current value to visit.
    */
-  #visitSubexpression(node: Node, value: JSONObject): JSONObject {
+  #visitSubexpressionOrIndexExpression(
+    node: Node,
+    value: JSONObject
+  ): JSONObject {
     let result = value;
     for (const child of node.children) {
       result = this.visit(child, result);
@@ -124,7 +105,6 @@ class TreeInterpreter {
 
     return result;
   }
-
   /**
    * Visit a field node.
    *
@@ -334,21 +314,6 @@ class TreeInterpreter {
   }
 
   /**
-   * Visit an index expression node.
-   *
-   * @param node The index expression node to visit.
-   * @param value The current value to visit.
-   */
-  #visitIndexExpression(node: Node, value: JSONObject): JSONObject {
-    let result = value;
-    for (const child of node.children) {
-      result = this.visit(child, result);
-    }
-
-    return result;
-  }
-
-  /**
    * Visit a slice node.
    *
    * @param node The slice node to visit.
@@ -527,10 +492,10 @@ class TreeInterpreter {
     if (!isRecord(base)) {
       return null;
     }
-    const values = Object.values(base) as JSONObject[];
+    const values = Object.values(base);
     const collected = [];
     for (const item of values) {
-      const current = this.visit(node.children[1], item);
+      const current = this.visit(node.children[1], item as JSONObject[]);
       if (current !== null) {
         collected.push(current);
       }

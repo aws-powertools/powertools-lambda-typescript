@@ -22,6 +22,14 @@ import { extractDataFromEnvelope, SQS } from '../../src/envelopes.js';
 describe('Coverage tests', () => {
   // These expressions tests are not part of the compliance suite, but are added to ensure coverage
   describe('expressions', () => {
+    it('throws an error if the index is an invalid value', () => {
+      // Prepare
+      const invalidIndexExpression = 'foo.*.notbaz[-a]';
+
+      // Act & Assess
+      expect(() => search(invalidIndexExpression, {})).toThrow(LexerError);
+    });
+
     it('throws an error if the expression is not a string', () => {
       // Prepare
       const notAStringExpression = 3;

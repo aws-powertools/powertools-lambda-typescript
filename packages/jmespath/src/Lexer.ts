@@ -89,12 +89,17 @@ class Lexer {
         // Negative number.
         const start = this.#position;
         const buff = this.#consumeNumber();
-        yield {
-          type: 'number',
-          value: parseInt(buff),
-          start: start,
-          end: start + buff.length,
-        };
+        if (buff.length > 1) {
+          yield {
+            type: 'number',
+            value: parseInt(buff),
+            start: start,
+            end: start + buff.length,
+          };
+        } else {
+          // If the negative sign is not followed by a number, it is an error.
+          throw new LexerError(start, 'Unknown token after "-"');
+        }
       } else if (this.#current === '"') {
         yield this.#consumeQuotedIdentifier();
       } else if (this.#current === '<') {

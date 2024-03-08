@@ -1,0 +1,93 @@
+{
+  "name": "@aws-lambda-powertools/jmespath",
+  "version": "2.0.2",
+  "description": "A type safe and modern jmespath module to parse and extract data from JSON documents using JMESPath",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "private": true,
+  "scripts": {
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage",
+    "jest": "jest --detectOpenHandles --verbose",
+    "test:e2e": "echo 'Not applicable for this package'",
+    "watch": "jest --watch --group=unit",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
+  "lint-staged": {
+    "*.{js,ts}": "npm run lint-fix"
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript",
+  "license": "MIT-0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    },
+    "./envelopes": {
+      "import": "./lib/esm/envelopes.js",
+      "require": "./lib/cjs/envelopes.js"
+    },
+    "./functions": {
+      "import": "./lib/esm/PowertoolsFunctions.js",
+      "require": "./lib/cjs/PowertoolsFunctions.js"
+    },
+    "./types": {
+      "import": "./lib/esm/types.js",
+      "require": "./lib/cjs/types.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "envelopes": [
+        "lib/cjs/envelopes.d.ts",
+        "lib/esm/envelopes.d.ts"
+      ],
+      "functions": [
+        "lib/cjs/PowertoolsFunctions.d.ts",
+        "lib/esm/PowertoolsFunctions.d.ts"
+      ],
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
+      ]
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "files": [
+    "lib"
+  ],
+  "dependencies": {
+    "@aws-lambda-powertools/commons": "^2.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "jmespath",
+    "serverless",
+    "typescript",
+    "nodejs"
+  ]
+}

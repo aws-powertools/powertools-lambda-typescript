@@ -225,7 +225,7 @@ class TreeInterpreter {
         error instanceof VariadicArityError ||
         error instanceof ArityError
       ) {
-        error.setFunctionName(node.value);
+        error.setEvaluatedFunctionName(node.value);
         throw error;
       }
     }

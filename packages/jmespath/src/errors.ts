@@ -92,11 +92,14 @@ class ParseError extends JMESPathError {
     this.reason = options.reason;
 
     // Set the message to include the lexer position and token info.
-    const issue = this.reason
-      ? this.reason
-      : this.tokenType === 'eof'
-        ? 'found unexpected end of expression (EOF)'
-        : `found unexpected token "${this.tokenValue}" (${this.tokenType})`;
+    let issue: string;
+    if (this.reason) {
+      issue = this.reason;
+    } else if (this.tokenType === 'eof') {
+      issue = 'found unexpected end of expression (EOF)';
+    } else {
+      issue = `found unexpected token "${this.tokenValue}" (${this.tokenType})`;
+    }
     this.message = `${this.message}: parse error at column ${this.lexPosition}, ${issue}`;
   }
 }
@@ -169,7 +172,7 @@ class FunctionError extends JMESPathError {
    *
    * @param functionName The function that was being validated or executed when the error occurred.
    */
-  public setFunctionName(functionName: string): void {
+  public setEvaluatedFunctionName(functionName: string): void {
     this.message = this.message.replace(
       'for function undefined',
       `for function ${functionName}()`
@@ -267,9 +270,12 @@ class JMESPathTypeError extends FunctionError {
   }
 
   protected serializeExpectedTypes(): string {
-    return this.expectedTypes.length === 1
-      ? `"${this.expectedTypes[0]}"`
-      : `one of ${this.expectedTypes.map((type) => `"${type}"`).join(', ')}`;
+    const types: string[] = [];
+    for (const type of this.expectedTypes) {
+      types.push(`"${type}"`);
+    }
+
+    return types.length === 1 ? types[0] : `one of ${types.join(', ')}`;
   }
 }
 

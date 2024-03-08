@@ -47,8 +47,12 @@
       "import": "./lib/esm/schemas/index.js"
     },
     "./envelopes": {
-      "require": "./lib/cjs/index.js",
-      "import": "./lib/esm/index.js"
+      "require": "./lib/cjs/envelopes/index.js",
+      "import": "./lib/esm/envelopes/index.js"
+    },
+    "./types": {
+      "require": "./lib/cjs/types/index.js",
+      "import": "./lib/esm/types/index.js"
     }
   },
   "typesVersions": {

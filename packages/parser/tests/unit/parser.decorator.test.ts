@@ -4,7 +4,7 @@
  * @group unit/parser
  */
 
-import { LambdaInterface } from '@aws-lambda-powertools/commons/lib/esm/types';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/lib/esm/types';
 import { Context, EventBridgeEvent } from 'aws-lambda';
 import { parser } from '../../src/index.js';
 import { TestSchema, TestEvents } from './schema/utils';

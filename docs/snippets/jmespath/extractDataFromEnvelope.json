@@ -1,0 +1,8 @@
+{
+  "body": "{\"customerId\":\"dd4649e6-2484-4993-acb8-0f9123103394\"}",
+  "deeplyNested": [
+    {
+      "someData": [1, 2, 3]
+    }
+  ]
+}

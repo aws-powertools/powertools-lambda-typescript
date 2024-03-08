@@ -126,12 +126,7 @@ class Parser {
     this.#index = 0;
     const parsed = this.#expression(0);
     if (this.#currentToken() !== 'eof') {
-      const token = this.#lookaheadToken(0);
-      throw new ParseError({
-        lexPosition: token.start,
-        tokenValue: token.value,
-        tokenType: token.type,
-      });
+      this.#throwParseError();
     }
 
     return new ParsedResult(expression, parsed);
@@ -162,186 +157,356 @@ class Parser {
    */
   #getNudFunction(token: Token): Node {
     const { type: tokenType } = token;
-    if (tokenType === 'literal') {
-      return literal(token.value);
-    } else if (tokenType === 'unquoted_identifier') {
-      return field(token.value);
-    } else if (tokenType === 'quoted_identifier') {
-      const fieldValue = field(token.value);
-      // You can't have a quoted identifier as a function name
-      if (this.#currentToken() === 'lparen') {
-        const token = this.#lookaheadToken(0);
-        throw new ParseError({
-          lexPosition: 0,
-          tokenValue: token.value,
-          tokenType: token.type,
-          reason: 'quoted identifiers cannot be used as a function name',
-        });
-      }
-
-      return fieldValue;
-    } else if (tokenType === 'star') {
-      const left = identity();
-      let right;
-      if (this.#currentToken() === 'rbracket') {
-        right = identity();
-      } else {
-        right = this.#parseProjectionRhs(BINDING_POWER['star']);
-      }
-
-      return valueProjection(left, right);
-    } else if (tokenType === 'filter') {
-      return this.#getLedFunction(tokenType, identity());
-    } else if (tokenType === 'lbrace') {
-      return this.#parseMultiSelectHash();
-    } else if (tokenType === 'lparen') {
-      const expression = this.#expression();
-      this.#match('rparen');
-
-      return expression;
-    } else if (tokenType === 'flatten') {
-      const left = flatten(identity());
-      const right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
-
-      return projection(left, right);
-    } else if (tokenType === 'not') {
-      const expression = this.#expression(BINDING_POWER['not']);
-
-      return notExpression(expression);
-    } else if (tokenType === 'lbracket') {
-      if (['number', 'colon'].includes(this.#currentToken())) {
-        const right = this.#parseIndexExpression();
-        // We could optimize this and remove the identity() node
-        // We don't really need an indexExpression node, we can
-        // just emit an index node here if we're not dealing
-        // with a slice.
-
-        return this.#projectIfSlice(identity(), right);
-      } else if (
-        this.#currentToken() === 'star' &&
-        this.#lookahead(1) === 'rbracket'
-      ) {
-        this.#advance();
-        this.#advance();
-        const right = this.#parseProjectionRhs(BINDING_POWER['star']);
-
-        return projection(identity(), right);
-      } else {
-        return this.#parseMultiSelectList();
-      }
-    } else if (tokenType === 'current') {
-      return currentNode();
-    } else if (tokenType === 'expref') {
-      return expref(this.#expression(BINDING_POWER['expref']));
-    } else {
-      if (tokenType === 'eof') {
-        throw new IncompleteExpressionError({
-          lexPosition: token.start,
-          tokenValue: token.value,
-          tokenType: token.type,
-        });
-      }
-
-      throw new ParseError({
-        lexPosition: token.start,
-        tokenValue: token.value,
-        tokenType: token.type,
-      });
+    switch (tokenType) {
+      case 'literal':
+        return literal(token.value);
+      case 'unquoted_identifier':
+        return field(token.value);
+      case 'quoted_identifier':
+        return this.#processQuotedIdentifier(token);
+      case 'star':
+        return this.#processStarToken();
+      case 'filter':
+        return this.#getLedFunction(tokenType, identity());
+      case 'lbrace':
+        return this.#parseMultiSelectHash();
+      case 'lparen':
+        return this.#processLParenTokenNud();
+      case 'flatten':
+        return this.#processFlattenTokenNud();
+      case 'not':
+        return notExpression(this.#expression(BINDING_POWER['not']));
+      case 'lbracket':
+        return this.#processLBracketTokenNud();
+      case 'current':
+        return currentNode();
+      case 'expref':
+        return expref(this.#expression(BINDING_POWER['expref']));
+      default:
+        return this.#processDefaultToken(token);
     }
   }
 
-  #getLedFunction(tokenType: Token['type'], leftNode: Node): Node {
-    if (tokenType === 'dot') {
-      if (this.#currentToken() !== 'star') {
-        const right = this.#parseDotRhs(BINDING_POWER[tokenType]);
-        if (leftNode.type === 'subexpression') {
-          leftNode.children.push(right);
+  /**
+   * Process a quoted identifier.
+   *
+   * A quoted identifier is a string that is enclosed in double quotes.
+   *
+   * @example s."foo"
+   *
+   * @param token The token to process
+   */
+  #processQuotedIdentifier(token: Token): Node {
+    const fieldValue = field(token.value);
+    if (this.#currentToken() === 'lparen') {
+      this.#throwParseError({
+        lexPosition: 0,
+        reason: 'quoted identifiers cannot be used as a function name',
+      });
+    }
 
-          return leftNode;
-        } else {
-          return subexpression([leftNode, right]);
-        }
-      } else {
-        // We are creating a value projection
-        this.#advance();
-        const right = this.#parseProjectionRhs(BINDING_POWER[tokenType]);
+    return fieldValue;
+  }
 
-        return valueProjection(leftNode, right);
-      }
-    } else if (tokenType === 'pipe') {
-      const right = this.#expression(BINDING_POWER[tokenType]);
-
-      return pipe(leftNode, right);
-    } else if (tokenType === 'or') {
-      const right = this.#expression(BINDING_POWER[tokenType]);
-
-      return orExpression(leftNode, right);
-    } else if (tokenType === 'and') {
-      const right = this.#expression(BINDING_POWER[tokenType]);
-
-      return andExpression(leftNode, right);
-    } else if (tokenType === 'lparen') {
-      const name = leftNode.value as string;
-      const args = [];
-      while (this.#currentToken() !== 'rparen') {
-        const expression = this.#expression();
-        if (this.#currentToken() === 'comma') {
-          this.#match('comma');
-        }
-        args.push(expression);
-      }
-      this.#match('rparen');
-
-      return functionExpression(name, args);
-    } else if (tokenType === 'filter') {
-      // Filters are projections
-      const condition = this.#expression(0);
-      this.#match('rbracket');
-      let right: Node;
-      if (this.#currentToken() === 'flatten') {
-        right = identity();
-      } else {
-        right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
-      }
-
-      return filterProjection(leftNode, right, condition);
-    } else if (['eq', 'ne', 'gt', 'gte', 'lt', 'lte'].includes(tokenType)) {
-      return this.#parseComparator(leftNode, tokenType);
-    } else if (tokenType === 'flatten') {
-      const left = flatten(leftNode);
-      const right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
-
-      return projection(left, right);
-    } else if (tokenType === 'lbracket') {
-      const token = this.#lookaheadToken(0);
-      if (['number', 'colon'].includes(token.type)) {
-        const right = this.#parseIndexExpression();
-        if (leftNode.type === 'index_expression') {
-          // Optimization: if the left node is an index expression
-          // we can avoid creating another node and instead just
-          // add the right node as a child of the left node.
-          leftNode.children.push(right);
-
-          return leftNode;
-        } else {
-          return this.#projectIfSlice(leftNode, right);
-        }
-      } else {
-        // We have a projection
-        this.#match('star');
-        this.#match('rbracket');
-        const right = this.#parseProjectionRhs(BINDING_POWER['star']);
-
-        return projection(leftNode, right);
-      }
+  /**
+   * Process a star token.
+   *
+   * A star token is a syntax that allows you to project all the
+   * elements in a list or dictionary.
+   *
+   * @example foo[*]
+   */
+  #processStarToken(): Node {
+    const left = identity();
+    let right;
+    if (this.#currentToken() === 'rbracket') {
+      right = identity();
     } else {
-      const token = this.#lookaheadToken(0);
-      throw new ParseError({
+      right = this.#parseProjectionRhs(BINDING_POWER['star']);
+    }
+
+    return valueProjection(left, right);
+  }
+
+  /**
+   * Process a left parenthesis token.
+   *
+   * A left parenthesis token is a syntax that allows you to group
+   * expressions together.
+   *
+   * @example (foo.bar)
+   */
+  #processLParenTokenNud(): Node {
+    const expression = this.#expression();
+    this.#match('rparen');
+
+    return expression;
+  }
+
+  /**
+   * Process a flatten token.
+   *
+   * A flatten token is a syntax that allows you to flatten the
+   * results of a subexpression.
+   *
+   * @example foo[].bar
+   */
+  #processFlattenTokenNud(): Node {
+    const left = flatten(identity());
+    const right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
+
+    return projection(left, right);
+  }
+
+  /**
+   * Process a left bracket token.
+   *
+   * A left bracket token is a syntax that allows you to access
+   * elements in a list or dictionary.
+   *
+   * @example foo[0]
+   */
+  #processLBracketTokenNud(): Node {
+    if (['number', 'colon'].includes(this.#currentToken())) {
+      const right = this.#parseIndexExpression();
+
+      return this.#projectIfSlice(identity(), right);
+    } else if (
+      this.#currentToken() === 'star' &&
+      this.#lookahead(1) === 'rbracket'
+    ) {
+      this.#advance();
+      this.#advance();
+      const right = this.#parseProjectionRhs(BINDING_POWER['star']);
+
+      return projection(identity(), right);
+    } else {
+      return this.#parseMultiSelectList();
+    }
+  }
+
+  /**
+   * Process a default token.
+   *
+   * A default token is a syntax that allows you to access
+   * elements in a list or dictionary.
+   *
+   * @param token The token to process
+   */
+  #processDefaultToken(token: Token): Node {
+    if (token.type === 'eof') {
+      throw new IncompleteExpressionError({
         lexPosition: token.start,
         tokenValue: token.value,
         tokenType: token.type,
       });
     }
+    throw new ParseError({
+      lexPosition: token.start,
+      tokenValue: token.value,
+      tokenType: token.type,
+    });
+  }
+
+  /**
+   * Get the led function for a token. This is the function that
+   * is called when a token is found in the middle of an expression.
+   *
+   * @param tokenType The type of token to get the led function for.
+   * @param leftNode The left hand side of the expression.
+   */
+  #getLedFunction(tokenType: Token['type'], leftNode: Node): Node {
+    switch (tokenType) {
+      case 'dot':
+        return this.#processDotToken(leftNode);
+      case 'pipe':
+        return this.#processPipeToken(leftNode);
+      case 'or':
+        return this.#processOrToken(leftNode);
+      case 'and':
+        return this.#processAndToken(leftNode);
+      case 'lparen':
+        return this.#processLParenToken(leftNode);
+      case 'filter':
+        return this.#processFilterToken(leftNode);
+      case 'eq':
+      case 'ne':
+      case 'gt':
+      case 'gte':
+      case 'lt':
+      case 'lte':
+        return this.#parseComparator(leftNode, tokenType);
+      case 'flatten':
+        return this.#processFlattenToken(leftNode);
+      case 'lbracket':
+        return this.#processLBracketToken(leftNode);
+      default:
+        return this.#throwParseError();
+    }
+  }
+
+  /**
+   * Process a dot token.
+   *
+   * A dot token is a syntax that allows you to access
+   * fields in a dictionary or elements in a list.
+   *
+   * @example foo.bar
+   *
+   * @param leftNode The left hand side of the expression.
+   */
+  #processDotToken(leftNode: Node): Node {
+    if (this.#currentToken() !== 'star') {
+      const right = this.#parseDotRhs(BINDING_POWER['dot']);
+      if (leftNode.type === 'subexpression') {
+        leftNode.children.push(right);
+
+        return leftNode;
+      } else {
+        return subexpression([leftNode, right]);
+      }
+    } else {
+      // We are creating a value projection
+      this.#advance();
+      const right = this.#parseProjectionRhs(BINDING_POWER['dot']);
+
+      return valueProjection(leftNode, right);
+    }
+  }
+
+  /**
+   * Process a pipe token.
+   *
+   * A pipe token is a syntax that allows you to combine two
+   * expressions using the pipe operator.
+   *
+   * @example foo | bar
+   *
+   * @param leftNode The left hand side of the expression.
+   */
+  #processPipeToken(leftNode: Node): Node {
+    const right = this.#expression(BINDING_POWER['pipe']);
+
+    return pipe(leftNode, right);
+  }
+
+  /**
+   * Process an or token.
+   *
+   * An or token is a syntax that allows you to combine two
+   * expressions using the logical or operator.
+   *
+   * @example foo || bar
+   *
+   * @param leftNode The left hand side of the expression.
+   */
+  #processOrToken(leftNode: Node): Node {
+    const right = this.#expression(BINDING_POWER['or']);
+
+    return orExpression(leftNode, right);
+  }
+
+  /**
+   * Process an and token.
+   *
+   * An and token is a syntax that allows you to combine two
+   * expressions using the logical and operator.
+   *
+   * @example foo && bar
+   *
+   * @param leftNode The left hand side of the expression.
+   */
+  #processAndToken(leftNode: Node): Node {
+    const right = this.#expression(BINDING_POWER['and']);
+
+    return andExpression(leftNode, right);
+  }
+
+  #processLParenToken(leftNode: Node): Node {
+    const name = leftNode.value as string;
+    const args = [];
+    while (this.#currentToken() !== 'rparen') {
+      const expression = this.#expression();
+      if (this.#currentToken() === 'comma') {
+        this.#match('comma');
+      }
+      args.push(expression);
+    }
+    this.#match('rparen');
+
+    return functionExpression(name, args);
+  }
+
+  #processFilterToken(leftNode: Node): Node {
+    // Filters are projections
+    const condition = this.#expression(0);
+    this.#match('rbracket');
+    let right: Node;
+    if (this.#currentToken() === 'flatten') {
+      right = identity();
+    } else {
+      right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
+    }
+
+    return filterProjection(leftNode, right, condition);
+  }
+
+  #processFlattenToken(leftNode: Node): Node {
+    const left = flatten(leftNode);
+    const right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
+
+    return projection(left, right);
+  }
+
+  #processLBracketToken(leftNode: Node): Node {
+    const token = this.#lookaheadToken(0);
+    if (['number', 'colon'].includes(token.type)) {
+      const right = this.#parseIndexExpression();
+      if (leftNode.type === 'index_expression') {
+        // Optimization: if the left node is an index expression
+        // we can avoid creating another node and instead just
+        // add the right node as a child of the left node.
+        leftNode.children.push(right);
+
+        return leftNode;
+      } else {
+        return this.#projectIfSlice(leftNode, right);
+      }
+    } else {
+      // We have a projection
+      this.#match('star');
+      this.#match('rbracket');
+      const right = this.#parseProjectionRhs(BINDING_POWER['star']);
+
+      return projection(leftNode, right);
+    }
+  }
+
+  /**
+   * Throw a parse error.
+   *
+   * This type of error indicates that the parser encountered
+   * a syntax error while processing the expression.
+   *
+   * The error includes the position in the expression where
+   * the error occurred, the value of the token that caused
+   * the error, the type of the token, and an optional reason.
+   *
+   * @param options The options to use when throwing the error.
+   */
+  #throwParseError(options?: {
+    lexPosition?: number;
+    tokenValue?: Token['value'];
+    tokenType?: Token['type'];
+    reason?: string;
+  }): never {
+    const token = this.#lookaheadToken(0);
+    throw new ParseError({
+      lexPosition: options?.lexPosition ?? token.start,
+      tokenValue: options?.tokenValue ?? token.value,
+      tokenType: options?.tokenType ?? token.type,
+      reason: options?.reason,
+    });
   }
 
   /**
@@ -398,24 +563,14 @@ class Parser {
       if (currentToken === 'colon') {
         index += 1;
         if (index === 3) {
-          const token = this.#lookaheadToken(0);
-          throw new ParseError({
-            lexPosition: token.start,
-            tokenValue: token.value,
-            tokenType: token.type,
-          });
+          this.#throwParseError();
         }
         this.#advance();
       } else if (currentToken === 'number') {
         parts[index] = this.#lookaheadToken(0).value;
         this.#advance();
       } else {
-        const token = this.#lookaheadToken(0);
-        throw new ParseError({
-          lexPosition: token.start,
-          tokenValue: token.value,
-          tokenType: token.type,
-        });
+        this.#throwParseError();
       }
       currentToken = this.#currentToken();
     }
@@ -534,12 +689,7 @@ class Parser {
       this.#match('dot');
       right = this.#parseDotRhs(bindingPower);
     } else {
-      const token = this.#lookaheadToken(0);
-      throw new ParseError({
-        lexPosition: token.start,
-        tokenValue: token.value,
-        tokenType: token.type,
-      });
+      this.#throwParseError();
     }
 
     return right;
@@ -574,12 +724,7 @@ class Parser {
 
       return this.#parseMultiSelectHash();
     } else {
-      const token = this.#lookaheadToken(0);
-      throw new ParseError({
-        lexPosition: token.start,
-        tokenValue: token.value,
-        tokenType: token.type,
-      });
+      this.#throwParseError();
     }
   }
 

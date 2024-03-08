@@ -100,6 +100,40 @@ const getType = (value: unknown): string => {
 };
 
 /**
+ * Compare two arrays for strict equality.
+ *
+ * @param left The left array to compare
+ * @param right The right array to compare
+ */
+const areArraysEqual = (left: unknown[], right: unknown[]): boolean => {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((value, i) => isStrictEqual(value, right[i]));
+};
+
+/**
+ * Compare two records for strict equality.
+ *
+ * @param left The left record to compare
+ * @param right The right record to compare
+ */
+const areRecordsEqual = (
+  left: Record<string, unknown>,
+  right: Record<string, unknown>
+): boolean => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+
+  return leftKeys.every((key) => isStrictEqual(left[key], right[key]));
+};
+
+/**
  * Check if two unknown values are strictly equal.
  *
  * If the values are arrays, then each element is compared, regardless of
@@ -113,38 +147,21 @@ const getType = (value: unknown): string => {
 const isStrictEqual = (left: unknown, right: unknown): boolean => {
   if (left === right) {
     return true;
-  } else if (typeof left !== typeof right) {
-    return false;
-  } else if (Array.isArray(left) && Array.isArray(right)) {
-    if (left.length !== right.length) {
-      return false;
-    }
-    for (const [i, value] of left.entries()) {
-      if (!isStrictEqual(value, right[i])) {
-        return false;
-      }
-    }
+  }
 
-    return true;
-  } else if (isRecord(left) && isRecord(right)) {
-    const leftKeys = Object.keys(left);
-    const leftValues = Object.values(left);
-    const rightKeys = Object.keys(right);
-    const rightValues = Object.values(right);
-    if (
-      leftKeys.length !== rightKeys.length ||
-      leftValues.length !== rightValues.length
-    ) {
-      return false;
-    }
-
-    return (
-      isStrictEqual(leftKeys, rightKeys) &&
-      isStrictEqual(leftValues, rightValues)
-    );
-  } else {
+  if (typeof left !== typeof right) {
     return false;
   }
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return areArraysEqual(left, right);
+  }
+
+  if (isRecord(left) && isRecord(right)) {
+    return areRecordsEqual(left, right);
+  }
+
+  return false;
 };
 
 export {

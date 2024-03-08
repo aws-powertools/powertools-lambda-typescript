@@ -31,7 +31,7 @@ import { type ParserOptions } from './types/ParserOptions.js';
  *
  * @param options
  */
-const parser = <S extends ZodSchema>(
+export const parser = <S extends ZodSchema>(
   options: ParserOptions<S>
 ): HandlerMethodDecorator => {
   return (_target, _propertyKey, descriptor) => {
@@ -55,5 +55,3 @@ const parser = <S extends ZodSchema>(
     return descriptor;
   };
 };
-
-export { parser };

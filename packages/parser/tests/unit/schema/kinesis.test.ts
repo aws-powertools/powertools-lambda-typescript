@@ -4,10 +4,10 @@
  * @group unit/parser/schema/
  */
 
-import { KinesisDataStreamSchema } from '../../../src/schemas/';
 import {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
+  KinesisDataStreamSchema,
 } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 

@@ -4,11 +4,11 @@
  * @group unit/parser/schema/
  */
 
-import { KinesisDataStreamSchema } from '../../../src/schemas/kinesis.js';
 import {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
-} from '../../../src/schemas/kinesis-firehose.js';
+  KinesisDataStreamSchema,
+} from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('Kinesis ', () => {

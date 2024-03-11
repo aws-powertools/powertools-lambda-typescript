@@ -8,7 +8,7 @@ import { generateMock } from '@anatine/zod-mock';
 import { TestEvents } from '../schema/utils.js';
 import { DynamoDBStreamEvent } from 'aws-lambda';
 import { z } from 'zod';
-import { dynamoDDStreamEnvelope } from '../../../src/envelopes/dynamodb';
+import { dynamoDDStreamEnvelope } from '../../../src/envelopes/';
 
 describe('DynamoDB', () => {
   const schema = z.object({

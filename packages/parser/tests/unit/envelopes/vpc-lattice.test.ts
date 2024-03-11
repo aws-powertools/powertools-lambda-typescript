@@ -6,9 +6,9 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import { TestEvents, TestSchema } from '../schema/utils.js';
-import { VpcLatticeSchema } from '../../../src/schemas/vpc-lattice.js';
+import { VpcLatticeSchema } from '../../../src/schemas/';
 import { z } from 'zod';
-import { vpcLatticeEnvelope } from '../../../src/envelopes/vpc-lattice';
+import { vpcLatticeEnvelope } from '../../../src/envelopes/';
 
 describe('VPC Lattice envelope', () => {
   it('should parse VPC Lattice event', () => {

@@ -7,7 +7,7 @@
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { generateMock } from '@anatine/zod-mock';
 import { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { apiGatewayV2Envelope } from '../../../src/envelopes/apigwv2';
+import { apiGatewayV2Envelope } from '../../../src/envelopes/';
 
 describe('ApiGwV2Envelope ', () => {
   it('should parse custom schema in envelope', () => {

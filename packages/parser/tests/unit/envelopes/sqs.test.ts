@@ -7,7 +7,7 @@
 import { generateMock } from '@anatine/zod-mock';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { SQSEvent } from 'aws-lambda';
-import { sqsEnvelope } from '../../../src/envelopes/sqs';
+import { sqsEnvelope } from '../../../src/envelopes/';
 
 describe('SqsEnvelope ', () => {
   it('should parse custom schema in envelope', () => {

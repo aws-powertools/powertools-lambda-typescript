@@ -4,7 +4,7 @@
  * @group unit/parser/schema/
  */
 
-import { SqsSchema } from '../../../src/schemas/sqs.js';
+import { SqsSchema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('SQS ', () => {

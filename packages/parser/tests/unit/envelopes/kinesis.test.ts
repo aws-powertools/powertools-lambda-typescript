@@ -7,7 +7,7 @@
 import { generateMock } from '@anatine/zod-mock';
 import { KinesisStreamEvent } from 'aws-lambda';
 import { TestEvents, TestSchema } from '../schema/utils.js';
-import { kinesisEnvelope } from '../../../src/envelopes/kinesis';
+import { kinesisEnvelope } from '../../../src/envelopes/';
 
 describe('Kinesis', () => {
   it('should parse Kinesis Stream event', () => {

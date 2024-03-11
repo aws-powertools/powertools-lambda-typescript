@@ -95,7 +95,7 @@ abstract class LogFormatter implements LogFormatterInterface {
     }
 
     const stackLines = stack.split('\n');
-    const regex = /\(([^)]*?):(\d+):(\d+)\)\\?$/;
+    const regex = /\(([^)]*?):(\d+?):(\d+?)\)\\?$/;
 
     let i;
     for (i = 0; i < stackLines.length; i++) {

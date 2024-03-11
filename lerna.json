@@ -8,6 +8,7 @@
     "packages/idempotency",
     "packages/batch",
     "packages/testing",
+    "packages/jmespath",
     "examples/cdk",
     "examples/sam",
     "layers",

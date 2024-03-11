@@ -11,6 +11,7 @@
     "packages/idempotency",
     "packages/batch",
     "packages/testing",
+    "packages/jmespath",
     "docs/snippets",
     "layers",
     "examples/cdk",

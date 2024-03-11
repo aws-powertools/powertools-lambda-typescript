@@ -5,6 +5,5 @@
   "entryPoints": [
     "./src/types.ts",
     "./src/errors.ts"
-  ],
-  "readme": "README.md"
+  ]
 }

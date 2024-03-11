@@ -40,6 +40,10 @@
         "default": "./lib/esm/index.js"
       }
     },
+    "./utils/base64": {
+      "import": "./lib/esm/fromBase64.js",
+      "require": "./lib/cjs/fromBase64.js"
+    },
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
@@ -47,6 +51,10 @@
   },
   "typesVersions": {
     "*": {
+      "utils/base64": [
+        "lib/cjs/fromBase64.d.ts",
+        "lib/esm/fromBase64.d.ts"
+      ],
       "types": [
         "lib/cjs/types/index.d.ts",
         "lib/esm/types/index.d.ts"

@@ -57,17 +57,7 @@ class Lexer {
       } else if (WHITESPACE.has(this.#current)) {
         this.#next();
       } else if (this.#current === '[') {
-        const start = this.#position;
-        const nextChar = this.#next();
-        if (nextChar == ']') {
-          this.#next();
-          yield { type: 'flatten', value: '[]', start: start, end: start + 2 };
-        } else if (nextChar == '?') {
-          this.#next();
-          yield { type: 'filter', value: '[?', start: start, end: start + 2 };
-        } else {
-          yield { type: 'lbracket', value: '[', start: start, end: start + 1 };
-        }
+        yield this.#consumeSquareBracket();
       } else if (this.#current === `'`) {
         yield this.#consumeRawStringLiteral();
       } else if (this.#current === '|') {
@@ -126,6 +116,12 @@ class Lexer {
     }
   }
 
+  /**
+   * Consume a negative number.
+   *
+   * This method is called when the lexer encounters a negative sign.
+   * It checks if the next character is a number and returns the corresponding token.
+   */
   #consumeNegativeNumber(): Token {
     const start = this.#position;
     const buff = this.#consumeNumber();
@@ -156,6 +152,29 @@ class Lexer {
     }
 
     return buff;
+  }
+
+  /**
+   * Consume a square bracket.
+   *
+   * This method is called when the lexer encounters a square bracket.
+   * It checks if the next character is a question mark or a closing
+   * square bracket and returns the corresponding token.
+   */
+  #consumeSquareBracket(): Token {
+    const start = this.#position;
+    const nextChar = this.#next();
+    if (nextChar == ']') {
+      this.#next();
+
+      return { type: 'flatten', value: '[]', start: start, end: start + 2 };
+    } else if (nextChar == '?') {
+      this.#next();
+
+      return { type: 'filter', value: '[?', start: start, end: start + 2 };
+    } else {
+      return { type: 'lbracket', value: '[', start: start, end: start + 1 };
+    }
   }
 
   /**

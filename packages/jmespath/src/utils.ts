@@ -27,6 +27,7 @@ const isTruthy = (value: unknown): boolean => {
 };
 
 /**
+ * @internal
  * Cap a slice range value to the length of an array, taking into account
  * negative values and whether the step is negative.
  *
@@ -159,6 +160,15 @@ const typeCheck = (
 };
 
 /**
+ * Predicate function that checks if a type check is needed for an argument.
+ *
+ * @param argumentSpec The expected types for an argument
+ */
+const needsTypeCheck = (argumentSpec: Array<string>): boolean => {
+  return argumentSpec.length > 0 && argumentSpec[0] !== 'any';
+};
+
+/**
  * Type checks an argument against a list of types.
  *
  * Type checking at runtime involves checking the top level type,
@@ -174,11 +184,11 @@ const typeCheck = (
  * passes. If the argument does not match any of the types, then
  * a JMESPathTypeError is thrown.
  *
- * @param arg
- * @param argumentSpec
+ * @param arg The argument to type check
+ * @param argumentSpec The expected types for the argument
  */
 const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
-  if (argumentSpec.length === 0 || argumentSpec[0] === 'any') {
+  if (!needsTypeCheck(argumentSpec)) {
     return;
   }
   const entryCount = argumentSpec.length;
@@ -199,7 +209,7 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
       if (type.includes('-')) {
         const arrayItemsType = type.slice(6);
         let actualType: string | undefined;
-        for (const element of arg) {
+        for (const element of arg as Array<unknown>) {
           try {
             typeCheckArgument(element, [arrayItemsType]);
             actualType = arrayItemsType;

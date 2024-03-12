@@ -203,18 +203,17 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
     if (type === 'expression') {
       checkExpressionType(arg, argumentSpec, hasMoreTypesToCheck);
       break;
-    } else if (type === 'string' || type === 'number' || type === 'boolean') {
-      if (typeof arg !== type) {
-        if (!hasMoreTypesToCheck) {
-          throw new JMESPathTypeError({
-            currentValue: arg,
-            expectedTypes: argumentSpec,
-            actualType: getType(arg),
-          });
-        }
-        continue;
+    } else if (['string', 'number', 'boolean'].includes(type)) {
+      if (typeof arg !== type && !hasMoreTypesToCheck) {
+        throw new JMESPathTypeError({
+          currentValue: arg,
+          expectedTypes: argumentSpec,
+          actualType: getType(arg),
+        });
       }
-      break;
+      if (typeof arg === type) {
+        break;
+      }
     } else if (type === 'object') {
       checkObjectType(arg, argumentSpec, hasMoreTypesToCheck);
       break;
@@ -240,10 +239,6 @@ const checkComplexArrayType = (
     }
   }
 };
-
-/* const checkBaseType = (arg: unknown, type: string, hasMoreTypesToCheck: boolean): void => {
-  
-} */
 
 const checkExpressionType = (
   arg: unknown,

@@ -204,7 +204,8 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
       checkExpressionType(arg, argumentSpec, hasMoreTypesToCheck);
       break;
     } else if (['string', 'number', 'boolean'].includes(type)) {
-      if (typeof arg !== type && !hasMoreTypesToCheck) {
+      const should = typeof arg !== type && !hasMoreTypesToCheck;
+      if (should) {
         throw new JMESPathTypeError({
           currentValue: arg,
           expectedTypes: argumentSpec,

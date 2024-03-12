@@ -211,37 +211,19 @@ const check = (
         actualType: getType(arg),
       });
     }
-    checkComplexArrayType(arg, type, !hasMoreTypesToCheck);
+    checkComplexArrayType(arg, type, hasMoreTypesToCheck);
 
     return true;
   }
   if (type === 'expression') {
-    try {
-      checkExpressionType(arg, argumentSpec);
-    } catch (error) {
-      if (!hasMoreTypesToCheck) {
-        throw error;
-      }
-    }
+    checkExpressionType(arg, argumentSpec, hasMoreTypesToCheck);
 
     return true;
   } else if (['string', 'number', 'boolean'].includes(type)) {
-    try {
-      typeCheckType(arg, type, argumentSpec);
-    } catch (error) {
-      if (!hasMoreTypesToCheck) {
-        throw error;
-      }
-    }
+    typeCheckType(arg, type, argumentSpec, hasMoreTypesToCheck);
     if (typeof arg === type) return true;
   } else if (type === 'object') {
-    try {
-      typeCheckObjectType(arg, argumentSpec);
-    } catch (error) {
-      if (!hasMoreTypesToCheck) {
-        throw error;
-      }
-    }
+    checkObjectType(arg, argumentSpec, hasMoreTypesToCheck);
 
     return true;
   }
@@ -249,13 +231,21 @@ const check = (
   return false;
 };
 
+/**
+ * Check if the argument is of the expected type.
+ *
+ * @param arg The argument to check
+ * @param type The type to check against
+ * @param argumentSpec The list of types to check against
+ * @param hasMoreTypesToCheck Whether there are more types to check
+ */
 const typeCheckType = (
   arg: unknown,
   type: string,
-  argumentSpec: string[]
-  // hasMoreTypesToCheck: boolean
+  argumentSpec: string[],
+  hasMoreTypesToCheck: boolean
 ): void => {
-  if (typeof arg !== type) {
+  if (typeof arg !== type && !hasMoreTypesToCheck) {
     throw new JMESPathTypeError({
       currentValue: arg,
       expectedTypes: argumentSpec,
@@ -267,16 +257,14 @@ const typeCheckType = (
 /**
  * Check if the argument is an array of complex types.
  *
- * For each element in the array, check if the type of the element matches the type of the array.
- *
  * @param arg The argument to check
  * @param type The type to check against
- * @param shouldThrow Whether there are more types to check
+ * @param hasMoreTypesToCheck Whether there are more types to check
  */
 const checkComplexArrayType = (
   arg: unknown[],
   type: string,
-  shouldThrow: boolean
+  hasMoreTypesToCheck: boolean
 ): void => {
   if (!type.includes('-')) return;
   const arrayItemsType = type.slice(6);
@@ -286,7 +274,7 @@ const checkComplexArrayType = (
       typeCheckArgument(element, [arrayItemsType]);
       actualType = arrayItemsType;
     } catch (error) {
-      if (shouldThrow || actualType !== undefined) {
+      if (!hasMoreTypesToCheck || actualType !== undefined) {
         throw error;
       }
     }
@@ -298,9 +286,14 @@ const checkComplexArrayType = (
  *
  * @param arg The argument to check
  * @param type The type to check against
+ * @param hasMoreTypesToCheck Whether there are more types to check
  */
-const checkExpressionType = (arg: unknown, type: string[]): void => {
-  if (!(arg instanceof Expression)) {
+const checkExpressionType = (
+  arg: unknown,
+  type: string[],
+  hasMoreTypesToCheck: boolean
+): void => {
+  if (!(arg instanceof Expression) && !hasMoreTypesToCheck) {
     throw new JMESPathTypeError({
       currentValue: arg,
       expectedTypes: type,
@@ -314,9 +307,14 @@ const checkExpressionType = (arg: unknown, type: string[]): void => {
  *
  * @param arg The argument to check
  * @param type The type to check against
+ * @param hasMoreTypesToCheck Whether there are more types to check
  */
-const typeCheckObjectType = (arg: unknown, type: string[]): void => {
-  if (!isRecord(arg)) {
+const checkObjectType = (
+  arg: unknown,
+  type: string[],
+  hasMoreTypesToCheck: boolean
+): void => {
+  if (!isRecord(arg) && !hasMoreTypesToCheck) {
     throw new JMESPathTypeError({
       currentValue: arg,
       expectedTypes: type,

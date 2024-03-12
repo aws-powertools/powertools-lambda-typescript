@@ -43,17 +43,7 @@ class Lexer {
 
         this.#next();
       } else if (START_IDENTIFIER.has(this.#current)) {
-        const start = this.#position;
-        let buff = this.#current;
-        while (VALID_IDENTIFIER.has(this.#next())) {
-          buff += this.#current;
-        }
-        yield {
-          type: 'unquoted_identifier',
-          value: buff,
-          start,
-          end: start + buff.length,
-        };
+        yield this.#consumeIdentifier();
       } else if (WHITESPACE.has(this.#current)) {
         this.#next();
       } else if (this.#current === '[') {
@@ -114,6 +104,28 @@ class Lexer {
     } else {
       throw new LexerError(this.#position - 1, '=');
     }
+  }
+
+  /**
+   * Consume an unquoted identifier.
+   *
+   * This method is called when the lexer encounters a character that is a valid
+   * identifier. It advances the lexer until it finds a character that is not a
+   * valid identifier and returns the corresponding token.
+   */
+  #consumeIdentifier(): Token {
+    const start = this.#position;
+    let buff = this.#current;
+    while (VALID_IDENTIFIER.has(this.#next())) {
+      buff += this.#current;
+    }
+
+    return {
+      type: 'unquoted_identifier',
+      value: buff,
+      start,
+      end: start + buff.length,
+    };
   }
 
   /**

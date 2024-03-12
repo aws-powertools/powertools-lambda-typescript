@@ -10,12 +10,13 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 ### Quick summary
 
 | Area                  | Change                                                                                                                         | Code change required |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
+| --------------------- |--------------------------------------------------------------------------------------------------------------------------------| -------------------- |
 | **ESM support**       | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                             | -                    |
 | **Middy.js**          | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.    | Yes                  |
 | **Types imports**     | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.             | Yes                  |
 | **Logger**            | Changed [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
 | **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                          | Yes                  |
+| **Logger**            | Removed `ContextExamples` from `@aws-lambda-powertools/commons` package.                                                       | Yes                  |
 | **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                        | Yes                  |
 
 
@@ -279,6 +280,56 @@ In v2, you have more control over **standard** (`attributes`) and [**custom keys
     1. This new argument contains all [your custom keys](./core/logger.md#appending-persistent-additional-log-keys-and-values).
     2. `LogItem` is the new return object instead of a plain object.
     3. If you prefer adding at the initialization, use: <br/><br/> **`LogItem({persistentAttributes: additionalLogAttributes, attributes: baseAttributes})`**
+
+### ContextExamples for testing
+
+In v1, we have provided a `ContextExamples` object to help you with testing.
+
+In v2, we have removed the `ContextExamples` from the `@aws-lambda-powertools/commons` package, so you need to create it in your tests: 
+
+=== "Before"
+
+    ```typescript
+    import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
+    
+    describe('MyUnitTest', () => {
+      test('Lambda invoked successfully', async () => {
+        const testEvent = { test: 'test' };
+        await handler(testEvent, dummyContext);
+      });
+    });
+    ```
+
+=== "After"
+
+    ```typescript
+    declare const handler: (event: unknown, context: unknown) => Promise<void>;
+    
+    const context = {
+      callbackWaitsForEmptyEventLoop: true,
+      functionVersion: '$LATEST',
+      functionName: 'foo-bar-function',
+      memoryLimitInMB: '128',
+      logGroupName: '/aws/lambda/foo-bar-function-123456abcdef',
+      logStreamName: '2021/03/09/[$LATEST]abcdef123456abcdef123456abcdef123456',
+      invokedFunctionArn:
+      'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+      awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+      getRemainingTimeInMillis: () => 1234,
+      done: () => console.log('Done!'),
+      fail: () => console.log('Failed!'),
+      succeed: () => console.log('Succeeded!'),
+    };
+    
+    describe('MyUnitTest', () => {
+      test('Lambda invoked successfully', async () => {
+        const testEvent = { test: 'test' };
+        await handler(testEvent, context);
+      });
+    });
+    ```
+
+
 
 ## Helper functions
 

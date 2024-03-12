@@ -3,7 +3,9 @@
  *
  * @param value The value to check
  */
-const isRecord = (value: unknown): value is Record<string, unknown> => {
+const isRecord = (
+  value: unknown
+): value is Record<string | number, unknown> => {
   return (
     Object.prototype.toString.call(value) === '[object Object]' &&
     !Object.is(value, null)

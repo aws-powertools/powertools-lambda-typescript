@@ -61,7 +61,7 @@ describe('Functions: typeUtils', () => {
     );
 
     it.each(['', 0, false, [], {}, Symbol])(
-      'returns true when the passed value is falsy',
+      'returns false when the passed value is falsy',
       (testValue) => {
         // Prepare
         const value = testValue;

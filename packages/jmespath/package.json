@@ -6,9 +6,7 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage",

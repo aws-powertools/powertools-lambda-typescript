@@ -11,6 +11,7 @@
     "packages/idempotency",
     "packages/batch",
     "packages/testing",
+    "packages/jmespath",
     "docs/snippets",
     "layers",
     "examples/cdk",
@@ -49,9 +50,9 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
     "@middy/core": "^4.7.0",
-    "@types/aws-lambda": "^8.10.134",
+    "@types/aws-lambda": "^8.10.136",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.24",
+    "@types/node": "^20.11.26",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.0",
@@ -68,9 +69,9 @@
     "prettier": "^3.2.5",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.25.8",
+    "typedoc": "^0.25.12",
     "typedoc-plugin-missing-exports": "^2.2.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   },
   "engines": {
     "node": ">=16"

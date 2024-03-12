@@ -40,13 +40,13 @@
         "default": "./lib/esm/index.js"
       }
     },
-    "./utils/base64": {
-      "import": "./lib/esm/fromBase64.js",
-      "require": "./lib/cjs/fromBase64.js"
-    },
     "./typeutils": {
       "import": "./lib/esm/typeUtils.js",
       "require": "./lib/cjs/typeUtils.js"
+    },
+    "./utils/base64": {
+      "import": "./lib/esm/fromBase64.js",
+      "require": "./lib/cjs/fromBase64.js"
     },
     "./types": {
       "import": "./lib/esm/types/index.js",
@@ -55,13 +55,13 @@
   },
   "typesVersions": {
     "*": {
-      "utils/base64": [
-        "lib/cjs/fromBase64.d.ts",
-        "lib/esm/fromBase64.d.ts"
-      ],
       "typeutils": [
         "lib/cjs/typeUtils.d.ts",
         "lib/esm/typeUtils.d.ts"
+      ],
+      "utils/base64": [
+        "lib/cjs/fromBase64.d.ts",
+        "lib/esm/fromBase64.d.ts"
       ],
       "types": [
         "lib/cjs/types/index.d.ts",

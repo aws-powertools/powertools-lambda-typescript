@@ -189,11 +189,19 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
   let valid = false;
   argumentSpec.forEach((type, index) => {
     if (valid) return;
-    valid = check(arg, type, index, argumentSpec);
+    valid = checkIfArgumentTypeIsValid(arg, type, index, argumentSpec);
   });
 };
 
-const check = (
+/**
+ * Check if the argument is of the expected type.
+ *
+ * @param arg The argument to check
+ * @param type The expected type
+ * @param index The index of the type we are checking
+ * @param argumentSpec The list of types to check against
+ */
+const checkIfArgumentTypeIsValid = (
   arg: unknown,
   type: string,
   index: number,

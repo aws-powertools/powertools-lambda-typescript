@@ -180,8 +180,14 @@ const typeCheck = (
  * @param argumentSpec
  */
 const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
-  const entryCount = argumentSpec.length;
-  let hasMoreTypesToCheck = argumentSpec.length > 1;
+  /* const entryCount = argumentSpec.length;
+  let hasMoreTypesToCheck = argumentSpec.length > 1; */
+  let broken = false;
+  argumentSpec.forEach((type, index) => {
+    if (broken) return;
+    broken = check(arg, type, index, argumentSpec);
+  });
+  /* 
   for (const [index, type] of argumentSpec.entries()) {
     hasMoreTypesToCheck = index < entryCount - 1;
     if (type.startsWith('array')) {
@@ -211,6 +217,45 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
       break;
     }
   }
+  */
+};
+
+const check = (
+  arg: unknown,
+  type: string,
+  index: number,
+  argumentSpec: string[]
+): boolean => {
+  const hasMoreTypesToCheck = index < argumentSpec.length - 1;
+  if (type.startsWith('array')) {
+    if (!Array.isArray(arg)) {
+      if (hasMoreTypesToCheck) {
+        return false;
+      }
+      throw new JMESPathTypeError({
+        currentValue: arg,
+        expectedTypes: argumentSpec,
+        actualType: getType(arg),
+      });
+    }
+    checkComplexArrayType(arg, type, hasMoreTypesToCheck);
+
+    return true;
+  }
+  if (type === 'expression') {
+    checkExpressionType(arg, argumentSpec, hasMoreTypesToCheck);
+
+    return true;
+  } else if (['string', 'number', 'boolean'].includes(type)) {
+    typeCheckType(arg, type, argumentSpec, hasMoreTypesToCheck);
+    if (typeof arg === type) return true;
+  } else if (type === 'object') {
+    checkObjectType(arg, argumentSpec, hasMoreTypesToCheck);
+
+    return true;
+  }
+
+  return false;
 };
 
 const typeCheckType = (

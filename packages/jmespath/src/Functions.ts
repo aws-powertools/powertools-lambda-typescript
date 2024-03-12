@@ -362,8 +362,19 @@ class Functions {
   @Functions.signature({
     argumentsSpecs: [['array-number', 'array-string']],
   })
-  public funcSort(arg: Array<unknown>): Array<unknown> {
-    return arg.sort();
+  public funcSort(arg: Array<string> | Array<number>): Array<unknown> {
+    return arg.sort((a: string | number, b: string | number): number => {
+      if (typeof a === 'string') {
+        // We can safely cast a and b to string here because the signature decorator
+        // already enforces that all elements are of the same type
+        return a.localeCompare(b as string);
+      }
+
+      // We can safely cast a and b to number here because the signature decorator
+      // already enforces that all elements are of the same type, so if they're not strings
+      // then they must be numbers
+      return (a as number) - (b as number);
+    });
   }
 
   /**

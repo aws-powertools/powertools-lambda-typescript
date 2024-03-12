@@ -195,9 +195,7 @@ const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
           actualType: getType(arg),
         });
       }
-      if (type.includes('-')) {
-        checkComplexArrayType(arg, type, hasMoreTypesToCheck);
-      }
+      checkComplexArrayType(arg, type, hasMoreTypesToCheck);
       break;
     }
     if (type === 'expression') {
@@ -235,6 +233,7 @@ const checkComplexArrayType = (
   type: string,
   hasMoreTypesToCheck: boolean
 ): void => {
+  if (!type.includes('-')) return;
   const arrayItemsType = type.slice(6);
   let actualType: string | undefined;
   for (const element of arg) {

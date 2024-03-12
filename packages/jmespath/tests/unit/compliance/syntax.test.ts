@@ -730,12 +730,12 @@ describe('Syntax tests', () => {
     {
       expression: 'foo[?==]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "==" (eq) in expression: foo[?==]',
+        'Invalid jmespath expression: parse error at column 6, found unexpected token "==" (eq) in expression: foo[?==]',
     },
     {
       expression: 'foo[?==bar]',
       error:
-        'Invalid jmespath expression: parse error at column 5, found unexpected token "==" (eq) in expression: foo[?==bar]',
+        'Invalid jmespath expression: parse error at column 6, found unexpected token "==" (eq) in expression: foo[?==bar]',
     },
     {
       expression: 'foo[?bar==baz?]',

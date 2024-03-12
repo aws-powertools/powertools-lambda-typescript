@@ -109,22 +109,34 @@ class Lexer {
       } else if (this.#current === '!') {
         yield this.#matchOrElse('=', 'ne', 'not');
       } else if (this.#current === '=') {
-        if (this.#next() === '=') {
-          yield {
-            type: 'eq',
-            value: '==',
-            start: this.#position - 1,
-            end: this.#position,
-          };
-          this.#next();
-        } else {
-          throw new LexerError(this.#position - 1, '=');
-        }
+        yield this.#consumeEqualSign();
       } else {
         throw new LexerError(this.#position, this.#current);
       }
     }
     yield { type: 'eof', value: '', start: this.#length, end: this.#length };
+  }
+
+  /**
+   * Consume an equal sign.
+   *
+   * This method is called when the lexer encounters an equal sign.
+   * It checks if the next character is also an equal sign and returns
+   * the corresponding token.
+   */
+  #consumeEqualSign(): Token {
+    if (this.#next() === '=') {
+      this.#next();
+
+      return {
+        type: 'eq',
+        value: '==',
+        start: this.#position - 1,
+        end: this.#position,
+      };
+    } else {
+      throw new LexerError(this.#position - 1, '=');
+    }
   }
 
   /**

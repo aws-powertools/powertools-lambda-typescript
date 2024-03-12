@@ -27,7 +27,6 @@ const isTruthy = (value: unknown): boolean => {
 };
 
 /**
- * @internal
  * Cap a slice range value to the length of an array, taking into account
  * negative values and whether the step is negative.
  *

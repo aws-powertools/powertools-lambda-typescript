@@ -50,10 +50,6 @@ class Lexer {
         yield this.#consumeSquareBracket();
       } else if (this.#current === `'`) {
         yield this.#consumeRawStringLiteral();
-      } else if (this.#current === '|') {
-        yield this.#matchOrElse('|', 'or', 'pipe');
-      } else if (this.#current === '&') {
-        yield this.#matchOrElse('&', 'and', 'expref');
       } else if (this.#current === '`') {
         yield this.#consumeLiteral();
       } else if (VALID_NUMBER.has(this.#current)) {
@@ -69,20 +65,42 @@ class Lexer {
         yield this.#consumeNegativeNumber();
       } else if (this.#current === '"') {
         yield this.#consumeQuotedIdentifier();
-      } else if (this.#current === '<') {
-        yield this.#matchOrElse('=', 'lte', 'lt');
-      } else if (this.#current === '>') {
-        yield this.#matchOrElse('=', 'gte', 'gt');
-      } else if (this.#current === '!') {
-        yield this.#matchOrElse('=', 'ne', 'not');
-      } else if (this.#current === '=') {
-        yield this.#consumeEqualSign();
+      } else if (['<', '>', '!', '=', '|', '&'].includes(this.#current)) {
+        yield this.#consumeComparatorSigns(
+          this.#current as '<' | '>' | '!' | '=' | '|' | '&'
+        );
       } else {
         throw new LexerError(this.#position, this.#current);
       }
     }
     yield { type: 'eof', value: '', start: this.#length, end: this.#length };
   }
+
+  /**
+   * Consume a comparator sign.
+   *
+   * This method is called when the lexer encounters a comparator sign.
+   *
+   * @param current The current character
+   */
+  #consumeComparatorSigns = (
+    current: '<' | '>' | '!' | '=' | '|' | '&'
+  ): Token => {
+    switch (current) {
+      case '<':
+        return this.#matchOrElse('=', 'lte', 'lt');
+      case '>':
+        return this.#matchOrElse('=', 'gte', 'gt');
+      case '!':
+        return this.#matchOrElse('=', 'ne', 'not');
+      case '|':
+        return this.#matchOrElse('|', 'or', 'pipe');
+      case '&':
+        return this.#matchOrElse('&', 'and', 'expref');
+      default:
+        return this.#consumeEqualSign();
+    }
+  };
 
   /**
    * Consume an equal sign.

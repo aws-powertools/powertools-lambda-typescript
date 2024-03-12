@@ -43,37 +43,13 @@ class Lexer {
 
         this.#next();
       } else if (START_IDENTIFIER.has(this.#current)) {
-        const start = this.#position;
-        let buff = this.#current;
-        while (VALID_IDENTIFIER.has(this.#next())) {
-          buff += this.#current;
-        }
-        yield {
-          type: 'unquoted_identifier',
-          value: buff,
-          start,
-          end: start + buff.length,
-        };
+        yield this.#consumeIdentifier();
       } else if (WHITESPACE.has(this.#current)) {
         this.#next();
       } else if (this.#current === '[') {
-        const start = this.#position;
-        const nextChar = this.#next();
-        if (nextChar == ']') {
-          this.#next();
-          yield { type: 'flatten', value: '[]', start: start, end: start + 2 };
-        } else if (nextChar == '?') {
-          this.#next();
-          yield { type: 'filter', value: '[?', start: start, end: start + 2 };
-        } else {
-          yield { type: 'lbracket', value: '[', start: start, end: start + 1 };
-        }
+        yield this.#consumeSquareBracket();
       } else if (this.#current === `'`) {
         yield this.#consumeRawStringLiteral();
-      } else if (this.#current === '|') {
-        yield this.#matchOrElse('|', 'or', 'pipe');
-      } else if (this.#current === '&') {
-        yield this.#matchOrElse('&', 'and', 'expref');
       } else if (this.#current === '`') {
         yield this.#consumeLiteral();
       } else if (VALID_NUMBER.has(this.#current)) {
@@ -86,45 +62,110 @@ class Lexer {
           end: start + buff.length,
         };
       } else if (this.#current === '-') {
-        // Negative number.
-        const start = this.#position;
-        const buff = this.#consumeNumber();
-        if (buff.length > 1) {
-          yield {
-            type: 'number',
-            value: parseInt(buff),
-            start: start,
-            end: start + buff.length,
-          };
-        } else {
-          // If the negative sign is not followed by a number, it is an error.
-          throw new LexerError(start, 'Unknown token after "-"');
-        }
+        yield this.#consumeNegativeNumber();
       } else if (this.#current === '"') {
         yield this.#consumeQuotedIdentifier();
-      } else if (this.#current === '<') {
-        yield this.#matchOrElse('=', 'lte', 'lt');
-      } else if (this.#current === '>') {
-        yield this.#matchOrElse('=', 'gte', 'gt');
-      } else if (this.#current === '!') {
-        yield this.#matchOrElse('=', 'ne', 'not');
-      } else if (this.#current === '=') {
-        if (this.#next() === '=') {
-          yield {
-            type: 'eq',
-            value: '==',
-            start: this.#position - 1,
-            end: this.#position,
-          };
-          this.#next();
-        } else {
-          throw new LexerError(this.#position - 1, '=');
-        }
+      } else if (['<', '>', '!', '=', '|', '&'].includes(this.#current)) {
+        yield this.#consumeComparatorSigns(
+          this.#current as '<' | '>' | '!' | '=' | '|' | '&'
+        );
       } else {
         throw new LexerError(this.#position, this.#current);
       }
     }
     yield { type: 'eof', value: '', start: this.#length, end: this.#length };
+  }
+
+  /**
+   * Consume a comparator sign.
+   *
+   * This method is called when the lexer encounters a comparator sign.
+   *
+   * @param current The current character
+   */
+  #consumeComparatorSigns = (
+    current: '<' | '>' | '!' | '=' | '|' | '&'
+  ): Token => {
+    switch (current) {
+      case '<':
+        return this.#matchOrElse('=', 'lte', 'lt');
+      case '>':
+        return this.#matchOrElse('=', 'gte', 'gt');
+      case '!':
+        return this.#matchOrElse('=', 'ne', 'not');
+      case '|':
+        return this.#matchOrElse('|', 'or', 'pipe');
+      case '&':
+        return this.#matchOrElse('&', 'and', 'expref');
+      default:
+        return this.#consumeEqualSign();
+    }
+  };
+
+  /**
+   * Consume an equal sign.
+   *
+   * This method is called when the lexer encounters an equal sign.
+   * It checks if the next character is also an equal sign and returns
+   * the corresponding token.
+   */
+  #consumeEqualSign(): Token {
+    if (this.#next() === '=') {
+      this.#next();
+
+      return {
+        type: 'eq',
+        value: '==',
+        start: this.#position - 1,
+        end: this.#position,
+      };
+    } else {
+      throw new LexerError(this.#position - 1, '=');
+    }
+  }
+
+  /**
+   * Consume an unquoted identifier.
+   *
+   * This method is called when the lexer encounters a character that is a valid
+   * identifier. It advances the lexer until it finds a character that is not a
+   * valid identifier and returns the corresponding token.
+   */
+  #consumeIdentifier(): Token {
+    const start = this.#position;
+    let buff = this.#current;
+    while (VALID_IDENTIFIER.has(this.#next())) {
+      buff += this.#current;
+    }
+
+    return {
+      type: 'unquoted_identifier',
+      value: buff,
+      start,
+      end: start + buff.length,
+    };
+  }
+
+  /**
+   * Consume a negative number.
+   *
+   * This method is called when the lexer encounters a negative sign.
+   * It checks if the next character is a number and returns the corresponding token.
+   */
+  #consumeNegativeNumber(): Token {
+    const start = this.#position;
+    const buff = this.#consumeNumber();
+    if (buff.length > 1) {
+      return {
+        type: 'number',
+        value: parseInt(buff),
+        start: start,
+        end: start + buff.length,
+      };
+    } else {
+      // If the negative sign is not followed by a number, it is an error.
+      throw new LexerError(start, 'Unknown token after "-"');
+    }
   }
 
   /**
@@ -141,6 +182,29 @@ class Lexer {
     }
 
     return buff;
+  }
+
+  /**
+   * Consume a square bracket.
+   *
+   * This method is called when the lexer encounters a square bracket.
+   * It checks if the next character is a question mark or a closing
+   * square bracket and returns the corresponding token.
+   */
+  #consumeSquareBracket(): Token {
+    const start = this.#position;
+    const nextChar = this.#next();
+    if (nextChar == ']') {
+      this.#next();
+
+      return { type: 'flatten', value: '[]', start: start, end: start + 2 };
+    } else if (nextChar == '?') {
+      this.#next();
+
+      return { type: 'filter', value: '[?', start: start, end: start + 2 };
+    } else {
+      return { type: 'lbracket', value: '[', start: start, end: start + 1 };
+    }
   }
 
   /**

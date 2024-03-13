@@ -1,4 +1,9 @@
-export type { ParserOptions } from './ParserOptions.js';
+export type {
+  ParserOptions,
+  ParsedResult,
+  ParsedResultSuccess,
+  ParsedResultError,
+} from '../types/parser.js';
 export type { Envelope } from './envelope.js';
 
 export type {

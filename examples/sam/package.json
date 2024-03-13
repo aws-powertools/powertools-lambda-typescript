@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.529.1",
-    "@aws-sdk/client-ssm": "^3.529.1",
+    "@aws-sdk/client-ssm": "^3.532.0",
     "@aws-sdk/lib-dynamodb": "^3.529.1",
     "@types/aws-lambda": "^8.10.136",
     "@types/jest": "^29.5.12",

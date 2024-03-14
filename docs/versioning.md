@@ -59,5 +59,7 @@ To see the list of available major versions of Powertools for AWS Lambda and whe
 
 | SDK                                  | Major version | Current Phase            | General Availability Date | Notes                                                                                                   |
 | ------------------------------------ | ------------- | ------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Powertools for AWS Lambda TypeScript | 1.x           | Maintenance Announcement | 07/15/2022                | See [v2 RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1714)                |
+| Powertools for AWS Lambda TypeScript | 1.x           | End-of-life              | 09/01/2024                | See [announcement](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2224)          |
+| Powertools for AWS Lambda TypeScript | 1.x           | Maintenance Announcement | 03/13/2024                | See [announcement](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2224)          |
+| Powertools for AWS Lambda TypeScript | 2.x           | General Availability     | 03/05/2024                | See [Release Notes](https://github.com/aws-powertools/powertools-lambda-typescript/releases/tag/v2.0.0) |
 | Powertools for AWS Lambda TypeScript | 1.x           | General Availability     | 07/15/2022                | See [Release Notes](https://github.com/aws-powertools/powertools-lambda-typescript/releases/tag/v1.0.0) |

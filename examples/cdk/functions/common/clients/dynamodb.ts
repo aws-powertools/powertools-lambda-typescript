@@ -1,6 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { tracer } from './powertools';
+import { tracer } from '#powertools';
 
 // Create DynamoDB Client and patch it for tracing
 const ddbClient = tracer.captureAWSv3Client(new DynamoDBClient({}));
@@ -24,4 +24,4 @@ const translateConfig = { marshallOptions, unmarshallOptions };
 // Create the DynamoDB Document client.
 const docClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
 
-export { docClient };
+export { ddbClient, docClient };

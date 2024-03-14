@@ -8,10 +8,9 @@ import {
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
-import { tableName } from './common/constants';
-import { docClient } from './common/dynamodb-client';
-import { getUuid } from './common/getUuid';
-import { logger, metrics, tracer } from './common/powertools';
+import { tableName } from '#constants';
+import { docClient } from '#clients/dynamodb';
+import { logger, metrics, tracer } from '#powertools';
 
 /*
  *
@@ -27,7 +26,7 @@ import { logger, metrics, tracer } from './common/powertools';
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
-const getAllItemsHandler = async (
+const functionHandler = async (
   event: APIGatewayProxyEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
@@ -45,25 +44,21 @@ const getAllItemsHandler = async (
     awsRequestId: context.awsRequestId,
   });
 
-  const uuid = await getUuid();
+  // const uuid = await getUuid();
 
   // Logger: Append uuid to each log statement
-  logger.appendKeys({ uuid });
+  // logger.appendKeys({ uuid });
 
   // Tracer: Add uuid as annotation
-  tracer.putAnnotation('uuid', uuid);
+  // tracer.putAnnotation('uuid', uuid);
 
   // Metrics: Add uuid as metadata
-  metrics.addMetadata('uuid', uuid);
+  // metrics.addMetadata('uuid', uuid);
 
   // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
   // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
   try {
-    if (!tableName) {
-      throw new Error('SAMPLE_TABLE environment variable is not set');
-    }
-
     const data = await docClient.send(
       new ScanCommand({
         TableName: tableName,
@@ -95,7 +90,7 @@ const getAllItemsHandler = async (
 };
 
 // Wrap the handler with middy
-export const handler = middy(getAllItemsHandler)
+export const handler = middy(functionHandler)
   // Use the middleware by passing the Metrics instance as a parameter
   .use(logMetrics(metrics))
   // Use the middleware by passing the Logger instance as a parameter

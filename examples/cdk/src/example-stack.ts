@@ -5,12 +5,14 @@ import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import {
   NodejsFunction,
   NodejsFunctionProps,
+  OutputFormat,
 } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+// import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
 const commonProps: Partial<NodejsFunctionProps> = {
+  handler: 'handler',
   runtime: Runtime.NODEJS_20_X,
   tracing: Tracing.ACTIVE,
   timeout: Duration.seconds(30),
@@ -21,23 +23,11 @@ const commonProps: Partial<NodejsFunctionProps> = {
     POWERTOOLS_METRICS_NAMESPACE: 'PowertoolsCDKExample',
     POWERTOOLS_LOG_LEVEL: 'DEBUG',
   },
-  bundling: {
-    externalModules: [
-      '@aws-lambda-powertools/commons',
-      '@aws-lambda-powertools/logger',
-      '@aws-lambda-powertools/tracer',
-      '@aws-lambda-powertools/metrics',
-      '@aws-lambda-powertools/parameters',
-    ],
-  },
-  layers: [],
 };
 
 export class CdkAppStack extends Stack {
   public constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
-
-    const uuidApi = new UuidApi(this, 'uuid-api');
 
     const table = new Table(this, 'Table', {
       billingMode: BillingMode.PAY_PER_REQUEST,
@@ -46,29 +36,67 @@ export class CdkAppStack extends Stack {
         name: 'id',
       },
     });
+    commonProps.environment!.SAMPLE_TABLE = table.tableName;
 
-    commonProps.layers?.push(
-      LayerVersion.fromLayerVersionArn(
-        this,
-        'powertools-layer',
-        `arn:aws:lambda:${
-          Stack.of(this).region
-        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:24`
-      )
+    const powertoolsLayer = LayerVersion.fromLayerVersionArn(
+      this,
+      'powertools-layer',
+      `arn:aws:lambda:${
+        Stack.of(this).region
+        //}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:2`
+      }:536254204126:layer:Layers-E2E-20-x86-2a176-layerStack:1`
     );
 
+    /**
+     * In this example, we use ESM and bundle all the dependencies
+     * including the AWS SDK.
+     *
+     * Because we are using ESM and tree shake, we create an optimized bundle.
+     */
     const putItemFn = new NodejsFunction(this, 'put-item-fn', {
       ...commonProps,
       entry: './functions/put-item.ts',
-      handler: 'handler',
+      bundling: {
+        minify: true,
+        sourceMap: true,
+        keepNames: true,
+        format: OutputFormat.ESM, // we use create an ESM bundle
+        sourcesContent: true,
+        externalModules: [], // we bundle all the dependencies
+        esbuildArgs: {
+          '--tree-shaking': 'true',
+        },
+        // We include this polyfill to support `require` in ESM due to AWS X-Ray SDK for Node.js not being ESM compatible
+        banner:
+          'import { createRequire } from "module";const require = createRequire(import.meta.url);',
+      },
     });
     putItemFn.addEnvironment('SAMPLE_TABLE', table.tableName);
     table.grantWriteData(putItemFn);
 
+    /**
+     * In this example, we instead use the Powertools layer to include Powertools
+     * as well as the AWS SDK, this is a convenient way to use Powertools
+     * in a centralized way across all your functions.
+     */
     const getAllItemsFn = new NodejsFunction(this, 'get-all-items-fn', {
       ...commonProps,
       entry: './functions/get-all-items.ts',
-      handler: 'handler',
+      layers: [powertoolsLayer],
+      bundling: {
+        minify: true,
+        sourceMap: true,
+        keepNames: true,
+        format: OutputFormat.ESM, // we use create an ESM bundle
+        sourcesContent: true,
+        externalModules: ['@aws-sdk/*', '@aws-lambda-powertools/*'], // the dependencies are included in the layer
+        esbuildArgs: {
+          '--tree-shaking': 'true',
+        },
+        // We include this polyfill to support `require` in ESM due to AWS X-Ray SDK for Node.js not being ESM compatible
+        banner:
+          'import { createRequire } from "module";const require = createRequire(import.meta.url);',
+      },
     });
     getAllItemsFn.addEnvironment('SAMPLE_TABLE', table.tableName);
     table.grantReadData(getAllItemsFn);
@@ -76,16 +104,20 @@ export class CdkAppStack extends Stack {
     const getByIdFn = new NodejsFunction(this, 'get-by-id-fn', {
       ...commonProps,
       entry: './functions/get-by-id.ts',
-      handler: 'handler',
+      bundling: {
+        minify: true,
+        sourceMap: true,
+        keepNames: true,
+        format: OutputFormat.CJS, // we use create an CJS bundle
+        sourcesContent: true,
+        externalModules: [], // we bundle all the dependencies
+      },
     });
-
-    uuidApi.apiUrlParam.grantRead(getByIdFn);
-    uuidApi.apiUrlParam.grantRead(putItemFn);
-    uuidApi.apiUrlParam.grantRead(getAllItemsFn);
 
     getByIdFn.addEnvironment('SAMPLE_TABLE', table.tableName);
     table.grantReadData(getByIdFn);
 
+    // Create an API Gateway for the items service
     const api = new RestApi(this, 'items-api', {
       restApiName: 'Items Service',
       description: 'This service serves items.',
@@ -103,34 +135,5 @@ export class CdkAppStack extends Stack {
     const item = api.root.addResource('{id}');
     const itemIntegration = new LambdaIntegration(getByIdFn);
     item.addMethod('GET', itemIntegration);
-  }
-}
-
-class UuidApi extends Construct {
-  public readonly apiUrlParam: StringParameter;
-  public constructor(scope: Construct, id: string) {
-    super(scope, id);
-
-    const uuidFn = new NodejsFunction(this, 'UuidFn', {
-      runtime: Runtime.NODEJS_20_X,
-      entry: './functions/uuid.ts',
-    });
-
-    const api = new RestApi(this, 'uuid-api', {
-      restApiName: 'UUID Service',
-      description: 'This service serves UUIDs.',
-      deployOptions: {
-        tracingEnabled: true,
-      },
-    });
-
-    const uuidIntegration = new LambdaIntegration(uuidFn);
-    const uuid = api.root.addResource('uuid');
-    uuid.addMethod('GET', uuidIntegration);
-
-    this.apiUrlParam = new StringParameter(this, 'uuid-api-url', {
-      parameterName: '/app/uuid-api-url',
-      stringValue: `${api.url}/uuid`,
-    });
   }
 }

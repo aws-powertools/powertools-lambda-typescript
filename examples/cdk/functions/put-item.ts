@@ -1,18 +1,20 @@
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
-import {
+import type {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
 import type { Subsegment } from 'aws-xray-sdk-core';
-import { tableName } from './common/constants';
-import { docClient } from './common/dynamodb-client';
-import { getUuid } from './common/getUuid';
-import { logger, metrics, tracer } from './common/powertools';
+import { tableName } from '#constants';
+import { docClient } from '#clients/dynamodb';
+import { logger, metrics, tracer } from '#powertools';
 
 /**
  *
  * This example uses the manual instrumentation.
+ *
+ * This instrumentation, although more verbose, is the best choice if you want to have full control over how the tracing, logging, and metrics are added to your code
+ * or if you don't want to use decorators (see `get-by-id.ts`) or Middy.js middlewares (`get-all-items.ts`).
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
  * @param {APIGatewayProxyEvent} event - API Gateway Lambda Proxy Input Format
@@ -30,9 +32,15 @@ export const handler = async (
       `putItem only accepts POST method, you tried: ${event.httpMethod}`
     );
   }
+  if (!tableName) {
+    throw new Error('SAMPLE_TABLE environment variable is not set');
+  }
+  if (!event.body) {
+    throw new Error('Event does not contain body');
+  }
 
   // Logger: Log the incoming event
-  logger.info('Lambda invocation event', { event });
+  logger.debug('event', { event });
 
   // Tracer: Get facade segment created by AWS Lambda
   const segment = tracer.getSegment();
@@ -59,27 +67,12 @@ export const handler = async (
     awsRequestId: context.awsRequestId,
   });
 
-  const uuid = await getUuid();
-
-  // Logger: Append uuid to each log statement
-  logger.appendKeys({ uuid });
-
-  // Tracer: Add uuid as annotation
-  tracer.putAnnotation('uuid', uuid);
-
   // Metrics: Add uuid as metadata
-  metrics.addMetadata('uuid', uuid);
+  // metrics.addMetadata('uuid', uuid);
 
   // Creates a new item, or replaces an old item with a new item
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
   try {
-    if (!tableName) {
-      throw new Error('SAMPLE_TABLE environment variable is not set');
-    }
-    if (!event.body) {
-      throw new Error('Event does not contain body');
-    }
-
     // Get id and name from the body of the request
     const body = JSON.parse(event.body);
     const { id, name } = body;

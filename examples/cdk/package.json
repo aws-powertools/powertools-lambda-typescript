@@ -24,6 +24,12 @@
     "*.ts": "npm run lint-fix",
     "*.js": "npm run lint-fix"
   },
+  "type": "module",
+  "imports": {
+    "#constants": "./functions/common/constants.js",
+    "#powertools": "./functions/common/powertools.js",
+    "#clients/*": "./functions/common/clients/*.js"
+  },
   "devDependencies": {
     "@aws-lambda-powertools/commons": "^2.0.3",
     "@aws-lambda-powertools/logger": "^2.0.3",
@@ -33,14 +39,11 @@
     "@aws-sdk/client-ssm": "^3.533.0",
     "@aws-sdk/lib-dynamodb": "^3.533.0",
     "@types/aws-lambda": "^8.10.136",
-    "@types/jest": "^29.5.12",
     "@types/node": "20.11.28",
     "aws-cdk": "^2.133.0",
     "constructs": "^10.3.0",
     "esbuild": "^0.20.2",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.7.1",
     "typescript": "^5.4.2"
   },
   "dependencies": {

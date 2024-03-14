@@ -1,39 +1,42 @@
 {
+    "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "noImplicitAny": true,
-        "target": "ES2020",
-        "module": "commonjs",
-        "declaration": true,
-        "outDir": "lib",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "target": "es2022",
+        "moduleDetection": "force",
+        "isolatedModules": true,
         "strict": true,
-        "inlineSourceMap": true,
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
+        "noUncheckedIndexedAccess": true,
+        "moduleResolution": "NodeNext",
+        "module": "NodeNext",
+        "outDir": "lib/esm",
+        "sourceMap": true,
+        "experimentalDecorators": true,
+        "declaration": true,
+        "declarationMap": true,
+        "removeComments": false,
         "pretty": true,
-        "baseUrl": "src/",
-        "rootDirs": [
-            "src/"
+        "lib": [
+            "ES2022"
         ],
-        "esModuleInterop": true
+        "rootDir": "."
     },
     "include": [
-        "src/**/*"
+        "functions/**/*",
+        "src/**/*",
+        "test/**/*",
+        "bin/**/*",
     ],
     "exclude": [
-        "./node_modules",
-        "cdk.out"
+        "./node_modules"
     ],
     "watchOptions": {
         "watchFile": "useFsEvents",
         "watchDirectory": "useFsEvents",
         "fallbackPolling": "dynamicPriority"
     },
-    "lib": [
-        "ES2020"
-    ],
     "types": [
-        "jest",
         "node"
     ]
 }

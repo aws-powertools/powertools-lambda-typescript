@@ -5,11 +5,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## 2.0.3 (2024-03-15)
 
-**Note:** Version bump only for package @aws-lambda-powertools/commons
-
-
-
-
+**improv:**: expand type utils functions ([#2191](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2191)) ([9208393](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9208393fe07d33cb35ea479b3c0866c8a7b91a21))
+**feat:** add fromBase64 helper function ([#2188](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2188)) ([133159b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/133159ba4cca41a61c14d62f9356bb89a7f0a08f))
 
 ## 2.0.2 (2024-03-05)
 

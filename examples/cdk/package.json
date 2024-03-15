@@ -26,9 +26,13 @@
   },
   "type": "module",
   "imports": {
-    "#constants": "./functions/common/constants.js",
-    "#powertools": "./functions/common/powertools.js",
-    "#clients/*": "./functions/common/clients/*.js"
+    "#types": "./functions/commons/types.js",
+    "#constants": "./functions/commons/constants.js",
+    "#powertools": "./functions/commons/powertools/index.js",
+    "#powertools/*": "./functions/commons/powertools/*.js",
+    "#clients/*": "./functions/commons/clients/*.js",
+    "#helpers/*": "./functions/commons/helpers/*.js",
+    "#errors": "./functions/commons/errors.js"
   },
   "devDependencies": {
     "@aws-lambda-powertools/commons": "^2.0.3",
@@ -47,6 +51,8 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
+    "@aws-lambda-powertools/batch": "^2.0.2",
+    "@aws-lambda-powertools/idempotency": "^2.0.2",
     "@middy/core": "^4.7.0",
     "aws-cdk-lib": "^2.133.0",
     "construct": "^1.0.0",

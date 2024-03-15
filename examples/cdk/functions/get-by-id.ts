@@ -1,14 +1,13 @@
+import { ItemNotFound } from '#errors';
+import { getItemDynamoDB } from '#helpers/get-item';
+import { assertIsError } from '#helpers/utils';
+import { logger, metrics, tracer } from '#powertools';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { GetCommand } from '@aws-sdk/lib-dynamodb';
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
-import { tableName, uuidApiUrl } from '#constants';
-import { docClient } from '#clients/dynamodb';
-import { default as request } from 'phin';
-import { logger, metrics, tracer } from '#powertools';
 
 /*
  *
@@ -28,20 +27,23 @@ import { logger, metrics, tracer } from '#powertools';
  */
 class Lambda implements LambdaInterface {
   @tracer.captureMethod()
-  public async getUuid(): Promise<string> {
-    const res = await request<{ uuid: string }>({
-      url: uuidApiUrl,
-      parse: 'json',
-    });
+  public async getItem(itemId: string): Promise<{ id: string; name: string }> {
+    const item = (await getItemDynamoDB(itemId, logger)) as {
+      id: string;
+      name: string;
+    };
 
-    return res.body.uuid;
+    if (!item) {
+      throw new ItemNotFound('item not found');
+    }
+
+    return item;
   }
 
-  @tracer.captureLambdaHandler({ captureResponse: false }) // by default the tracer would add the response as metadata on the segment, but there is a chance to hit the 64kb segment size limit. Therefore set captureResponse: false
-  @logger.injectLambdaContext({ logEvent: true })
+  @tracer.captureLambdaHandler()
+  @logger.injectLambdaContext({ logEvent: true, clearState: true })
   @metrics.logMetrics({
     throwOnEmptyMetrics: false,
-    captureColdStartMetric: true,
   })
   public async handler(
     event: APIGatewayProxyEvent,
@@ -58,56 +60,40 @@ class Lambda implements LambdaInterface {
     if (!event.pathParameters.id) {
       throw new Error('PathParameter id is missing');
     }
+    const { id: itemId } = event.pathParameters;
 
     // Tracer: Add awsRequestId as annotation
     tracer.putAnnotation('awsRequestId', context.awsRequestId);
 
-    // Logger: Append awsRequestId to each log statement
-    logger.appendKeys({
-      awsRequestId: context.awsRequestId,
-    });
+    // Logger: Append itemId to each log statement
+    logger.appendKeys({ itemId });
 
-    // Call the getUuid function
-    const uuid = await this.getUuid();
+    // Tracer: Add itemId as annotation, so you can search traces by itemId
+    tracer.putAnnotation('itemId', itemId);
 
-    // Logger: Append uuid to each log statement
-    logger.appendKeys({ uuid, event: event.path });
-
-    // Tracer: Add uuid as annotation
-    tracer.putAnnotation('uuid', uuid);
-
-    // Metrics: Add uuid as metadata
-    metrics.addMetadata('uuid', uuid);
-
-    // Get the item from the table
-    // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
     try {
-      const data = await docClient.send(
-        new GetCommand({
-          TableName: tableName,
-          Key: {
-            id: event.pathParameters.id,
-          },
-        })
-      );
-      const item = data.Item;
-
-      logger.debug('request completed', {
-        statusCode: 200,
-        body: item,
-      });
+      const item = await this.getItem(itemId);
 
       return {
         statusCode: 200,
-        body: JSON.stringify(item),
+        body: JSON.stringify({ message: 'success', item }),
       };
     } catch (err) {
-      tracer.addErrorAsMetadata(err as Error);
+      assertIsError(err);
+
+      let statusCode = 500;
+      let message = 'unable to get item from table';
+
+      if (err instanceof ItemNotFound) {
+        statusCode = 404;
+        message = err.message;
+      }
+
       logger.error('error reading from table', { err });
 
       return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'error reading from table.' }),
+        statusCode,
+        body: JSON.stringify({ message, itemId }),
       };
     }
   }

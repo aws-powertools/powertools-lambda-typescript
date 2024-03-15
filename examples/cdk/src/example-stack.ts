@@ -1,50 +1,76 @@
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import {
-  NodejsFunction,
-  NodejsFunctionProps,
-  OutputFormat,
-} from 'aws-cdk-lib/aws-lambda-nodejs';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-// import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+  AttributeType,
+  BillingMode,
+  StreamViewType,
+  Table,
+  TableClass,
+} from 'aws-cdk-lib/aws-dynamodb';
+import {
+  FilterCriteria,
+  FilterRule,
+  LayerVersion,
+  StartingPosition,
+} from 'aws-cdk-lib/aws-lambda';
+import { SqsDestination } from 'aws-cdk-lib/aws-lambda-destinations';
+import { DynamoEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import { OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-
-const commonProps: Partial<NodejsFunctionProps> = {
-  handler: 'handler',
-  runtime: Runtime.NODEJS_20_X,
-  tracing: Tracing.ACTIVE,
-  timeout: Duration.seconds(30),
-  logRetention: RetentionDays.ONE_DAY,
-  environment: {
-    NODE_OPTIONS: '--enable-source-maps', // see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
-    POWERTOOLS_SERVICE_NAME: 'items-store',
-    POWERTOOLS_METRICS_NAMESPACE: 'PowertoolsCDKExample',
-    POWERTOOLS_LOG_LEVEL: 'DEBUG',
-  },
-};
+import { FunctionWithLogGroup } from './function-with-logstream-construct.js';
 
 export class CdkAppStack extends Stack {
   public constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const table = new Table(this, 'Table', {
-      billingMode: BillingMode.PAY_PER_REQUEST,
-      partitionKey: {
-        type: AttributeType.STRING,
-        name: 'id',
-      },
-    });
-    commonProps.environment!.SAMPLE_TABLE = table.tableName;
-
+    // Import Powertools layer to be used in some of the functions
     const powertoolsLayer = LayerVersion.fromLayerVersionArn(
       this,
       'powertools-layer',
       `arn:aws:lambda:${
         Stack.of(this).region
-        //}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:2`
-      }:536254204126:layer:Layers-E2E-20-x86-2a176-layerStack:1`
+        //}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:2` // doesn't work with ESM see
+      }:536254204126:layer:Layers-E2E-20-x86-1f6e3-layerStack:1`
+    );
+
+    // Items table
+    const itemsTable = new Table(this, 'items-table', {
+      tableName: 'powertools-example-items',
+      tableClass: TableClass.STANDARD_INFREQUENT_ACCESS,
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      partitionKey: {
+        type: AttributeType.STRING,
+        name: 'id',
+      },
+      removalPolicy: RemovalPolicy.DESTROY,
+      stream: StreamViewType.NEW_IMAGE, // we use the stream to trigger the processItemsStreamFn
+    });
+
+    // Idempotency table
+    const idempotencyTable = new Table(this, 'idempotencyTable', {
+      tableName: 'powertools-example-idempotency-table',
+      partitionKey: {
+        name: 'id',
+        type: AttributeType.STRING,
+      },
+      timeToLiveAttribute: 'expiration',
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY, // for demo only, change to RETAIN in production
+    });
+    /**
+     * We will store the idempotency table name in a SSM parameter to simulate a potential
+     * cross-stack reference. This is not necessary in this example, but it's a good way of showing
+     * how to use SSM parameters to store and retrieve it from the function.
+     */
+    const idempotencyTableNameParam = new StringParameter(
+      this,
+      'idempotency-table-name',
+      {
+        parameterName: '/items-store/idempotency-table-name',
+        stringValue: idempotencyTable.tableName,
+      }
     );
 
     /**
@@ -53,14 +79,14 @@ export class CdkAppStack extends Stack {
      *
      * Because we are using ESM and tree shake, we create an optimized bundle.
      */
-    const putItemFn = new NodejsFunction(this, 'put-item-fn', {
-      ...commonProps,
+    const putItemFn = new FunctionWithLogGroup(this, 'put-item-fn', {
       entry: './functions/put-item.ts',
+      functionName: 'powertools-example-put-item',
       bundling: {
         minify: true,
         sourceMap: true,
         keepNames: true,
-        format: OutputFormat.ESM, // we use create an ESM bundle
+        format: OutputFormat.ESM,
         sourcesContent: true,
         externalModules: [], // we bundle all the dependencies
         esbuildArgs: {
@@ -71,23 +97,40 @@ export class CdkAppStack extends Stack {
           'import { createRequire } from "module";const require = createRequire(import.meta.url);',
       },
     });
-    putItemFn.addEnvironment('SAMPLE_TABLE', table.tableName);
-    table.grantWriteData(putItemFn);
+    putItemFn.bindTable({ table: itemsTable, accessMode: 'RW' });
+    /**
+     * Allow the function to read and write to the idempotency table so it
+     * can persist idempotency data
+     */
+    putItemFn.bindTable({
+      table: idempotencyTable,
+      accessOnly: true,
+      accessMode: 'RW',
+    });
+    /**
+     * Also allow the function to fetch the SSM parameter
+     * that contains the idempotency table name
+     */
+    idempotencyTableNameParam.grantRead(putItemFn);
+    putItemFn.addEnvironment(
+      'SSM_PARAMETER_NAME',
+      idempotencyTableNameParam.parameterName
+    );
 
     /**
      * In this example, we instead use the Powertools layer to include Powertools
      * as well as the AWS SDK, this is a convenient way to use Powertools
      * in a centralized way across all your functions.
      */
-    const getAllItemsFn = new NodejsFunction(this, 'get-all-items-fn', {
-      ...commonProps,
+    const getAllItemsFn = new FunctionWithLogGroup(this, 'get-all-items-fn', {
       entry: './functions/get-all-items.ts',
-      layers: [powertoolsLayer],
+      functionName: 'powertools-example-get-all-items',
+      layers: [powertoolsLayer], // we use the powertools layer
       bundling: {
         minify: true,
         sourceMap: true,
         keepNames: true,
-        format: OutputFormat.ESM, // we use create an ESM bundle
+        format: OutputFormat.ESM,
         sourcesContent: true,
         externalModules: ['@aws-sdk/*', '@aws-lambda-powertools/*'], // the dependencies are included in the layer
         esbuildArgs: {
@@ -98,26 +141,79 @@ export class CdkAppStack extends Stack {
           'import { createRequire } from "module";const require = createRequire(import.meta.url);',
       },
     });
-    getAllItemsFn.addEnvironment('SAMPLE_TABLE', table.tableName);
-    table.grantReadData(getAllItemsFn);
+    getAllItemsFn.bindTable({ table: itemsTable });
 
-    const getByIdFn = new NodejsFunction(this, 'get-by-id-fn', {
-      ...commonProps,
+    /**
+     * In this examle, we emit a CommonJS (CJS) bundle and include all the
+     * dependencies in the bundle.
+     */
+    const getByIdFn = new FunctionWithLogGroup(this, 'get-by-id-fn', {
       entry: './functions/get-by-id.ts',
+      functionName: 'powertools-example-get-by-id',
       bundling: {
         minify: true,
         sourceMap: true,
         keepNames: true,
-        format: OutputFormat.CJS, // we use create an CJS bundle
+        format: OutputFormat.CJS,
         sourcesContent: true,
         externalModules: [], // we bundle all the dependencies
       },
     });
+    getByIdFn.bindTable({ table: itemsTable });
 
-    getByIdFn.addEnvironment('SAMPLE_TABLE', table.tableName);
-    table.grantReadData(getByIdFn);
+    /**
+     * In this example, we use the Powertools layer to include Powertools
+     * but we also bundle the function as CommonJS (CJS).
+     */
+    const processItemsStreamFn = new FunctionWithLogGroup(
+      this,
+      'process-items-stream-fn',
+      {
+        entry: './functions/process-items-stream.ts',
+        functionName: 'powertools-example-process-items-stream',
+        layers: [powertoolsLayer],
+        bundling: {
+          minify: true,
+          sourceMap: true,
+          keepNames: true,
+          format: OutputFormat.CJS,
+          sourcesContent: true,
+          externalModules: ['@aws-sdk/*', '@aws-lambda-powertools/*'], // the dependencies are included in the layer
+        },
+      }
+    );
+    // Dead letter queue for the items that fail to be processed after the retry attempts
+    const dlq = new Queue(this, 'dead-letter-queue', {
+      queueName: 'powertools-example-dead-letter-queue',
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+    // Add the DynamoDB event source to the function
+    processItemsStreamFn.addEventSource(
+      new DynamoEventSource(itemsTable, {
+        startingPosition: StartingPosition.LATEST,
+        reportBatchItemFailures: true, // Enable batch failure reporting
+        onFailure: new SqsDestination(dlq),
+        batchSize: 100,
+        retryAttempts: 3,
+        filters: [
+          FilterCriteria.filter({
+            eventName: FilterRule.isEqual('INSERT'),
+            dynamodb: {
+              NewImage: {
+                id: {
+                  S: FilterRule.exists(),
+                },
+                name: {
+                  S: FilterRule.exists(),
+                },
+              },
+            },
+          }),
+        ],
+      })
+    );
 
-    // Create an API Gateway for the items service
+    // Create an API Gateway to expose the items service
     const api = new RestApi(this, 'items-api', {
       restApiName: 'Items Service',
       description: 'This service serves items.',

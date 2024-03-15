@@ -1,13 +1,43 @@
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
+import { ssmParameterName } from '#constants';
+import { getSSMStringParameter } from '#helpers/get-string-param';
+import { putItemInDynamoDB } from '#helpers/put-item';
+import { assertIsError } from '#helpers/utils';
+import { logger, metrics, tracer } from '#powertools';
+import {
+  IdempotencyConfig,
+  makeIdempotent,
+} from '@aws-lambda-powertools/idempotency';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import { MetricUnit } from '@aws-lambda-powertools/metrics';
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
 import type { Subsegment } from 'aws-xray-sdk-core';
-import { tableName } from '#constants';
-import { docClient } from '#clients/dynamodb';
-import { logger, metrics, tracer } from '#powertools';
+
+// Initialize the persistence store for idempotency
+const persistenceStore = new DynamoDBPersistenceLayer({
+  tableName: await getSSMStringParameter(ssmParameterName),
+});
+// Define the idempotency configuration
+const idempotencyConfig = new IdempotencyConfig({
+  useLocalCache: true,
+  maxLocalCacheSize: 500,
+  expiresAfterSeconds: 60 * 60 * 24,
+});
+
+/**
+ * Make the `putItemInDynamoDB` function idempotent by wrapping it with the `makeIdempotent` function.
+ *
+ * The function will now return the same result for the same input, even if the function is called multiple times.
+ *
+ * In this case, it won't write a new item to the DynamoDB table if the name was already processed.
+ */
+const idempotentPutItem = makeIdempotent(putItemInDynamoDB, {
+  persistenceStore,
+  config: idempotencyConfig,
+});
 
 /**
  *
@@ -27,82 +57,65 @@ export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
+  // Logger: Log the incoming event
+  logger.debug('event', { event });
+
   if (event.httpMethod !== 'POST') {
     throw new Error(
       `putItem only accepts POST method, you tried: ${event.httpMethod}`
     );
   }
-  if (!tableName) {
-    throw new Error('SAMPLE_TABLE environment variable is not set');
-  }
   if (!event.body) {
     throw new Error('Event does not contain body');
   }
 
-  // Logger: Log the incoming event
-  logger.debug('event', { event });
+  // Register the Lambda context with the idempotency configuration so that it can handle function timeouts
+  idempotencyConfig.registerLambdaContext(context);
+  // And do the same with the Logger so that all logs have contextual information
+  logger.addContext(context);
 
-  // Tracer: Get facade segment created by AWS Lambda
+  // Get facade segment created by AWS Lambda, create subsegment for the function, and set it as active
   const segment = tracer.getSegment();
-
-  // Tracer: Create subsegment for the function & set it as active
   let handlerSegment: Subsegment | undefined;
   if (segment) {
     handlerSegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
     tracer.setSegment(handlerSegment);
   }
 
-  // Tracer: Annotate the subsegment with the cold start & serviceName
+  // Annotate the subsegment with the cold start & serviceName
   tracer.annotateColdStart();
   tracer.addServiceNameAnnotation();
 
-  // Tracer: Add awsRequestId as annotation
-  tracer.putAnnotation('awsRequestId', context.awsRequestId);
-
-  // Metrics: Capture cold start metrics
+  // Capture cold start metric
   metrics.captureColdStartMetric();
 
-  // Logger: Append awsRequestId to each log statement
-  logger.appendKeys({
-    awsRequestId: context.awsRequestId,
-  });
-
-  // Metrics: Add uuid as metadata
-  // metrics.addMetadata('uuid', uuid);
-
-  // Creates a new item, or replaces an old item with a new item
-  // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
   try {
-    // Get id and name from the body of the request
+    // Get the name from the body of the request
     const body = JSON.parse(event.body);
-    const { id, name } = body;
+    const { name } = body;
 
-    await docClient.send(
-      new PutCommand({
-        TableName: tableName,
-        Item: {
-          id,
-          name,
-        },
-      })
-    );
+    const item = await idempotentPutItem(name, logger);
 
-    logger.info(`Response ${event.path}`, {
-      statusCode: 200,
-      body,
-    });
+    // Create a custom metric to count the number of items added
+    metrics.addMetric('itemsAdded', MetricUnit.Count, 1);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(body),
+      body: JSON.stringify({ message: 'success', item }),
     };
   } catch (err) {
-    tracer.addErrorAsMetadata(err as Error);
-    logger.error('Error writing data to table. ' + err);
+    assertIsError(err);
+
+    // Add the error to the subsegment so it shows up in the trace
+    tracer.addErrorAsMetadata(err);
+    // Create a custom metric to count the number of errors
+    metrics.addMetric('itemsInsertErrors', MetricUnit.Count, 1);
+
+    logger.error('error storing item', err);
 
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Error writing data to table.' }),
+      body: JSON.stringify({ message: 'error writing data to table' }),
     };
   } finally {
     if (segment && handlerSegment) {

@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "NodeNext",
-    "moduleResolution": "NodeNext", // TODO: experiment with bundler & esnext
-    "noEmitHelpers": true /* Disable generating custom helper functions like '__extends' in compiled output. */
+    "moduleResolution": "NodeNext"
   }
 }

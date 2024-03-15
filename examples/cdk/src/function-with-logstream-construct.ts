@@ -1,6 +1,6 @@
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import type { Table } from 'aws-cdk-lib/aws-dynamodb';
-import { Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
+import { Architecture, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import {
   NodejsFunction,
   type NodejsFunctionProps,
@@ -41,6 +41,7 @@ export class FunctionWithLogGroup extends NodejsFunction {
       handler: 'handler',
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
+      architecture: Architecture.ARM_64,
       timeout: Duration.seconds(30),
       environment: {
         NODE_OPTIONS: '--enable-source-maps', // see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html

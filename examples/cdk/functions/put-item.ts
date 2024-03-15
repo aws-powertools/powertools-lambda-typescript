@@ -1,7 +1,7 @@
-import { ssmParameterName } from '#constants';
+import { ddbClient } from '#clients/dynamodb';
 import { getSSMStringParameter } from '#helpers/get-string-param';
 import { putItemInDynamoDB } from '#helpers/put-item';
-import { assertIsError } from '#helpers/utils';
+import { assertIsError, getStringFromEnv } from '#helpers/utils';
 import { logger, metrics, tracer } from '#powertools';
 import {
   IdempotencyConfig,
@@ -17,12 +17,15 @@ import type {
 import type { Subsegment } from 'aws-xray-sdk-core';
 
 // Initialize the persistence store for idempotency
+const ssmParameterName = getStringFromEnv('SSM_PARAMETER_NAME');
 const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: await getSSMStringParameter(ssmParameterName),
+  // Pass DynamoDB client, so we can trace the calls
+  awsSdkV3Client: ddbClient,
 });
 // Define the idempotency configuration
 const idempotencyConfig = new IdempotencyConfig({
-  useLocalCache: true,
+  useLocalCache: false,
   maxLocalCacheSize: 500,
   expiresAfterSeconds: 60 * 60 * 24,
 });

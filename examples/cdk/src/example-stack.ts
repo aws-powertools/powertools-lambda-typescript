@@ -31,8 +31,7 @@ export class CdkAppStack extends Stack {
       'powertools-layer',
       `arn:aws:lambda:${
         Stack.of(this).region
-        //}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:2` // doesn't work with ESM see
-      }:536254204126:layer:Layers-E2E-20-x86-1f6e3-layerStack:1`
+      }:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3`
     );
 
     // Items table
@@ -88,6 +87,7 @@ export class CdkAppStack extends Stack {
         keepNames: true,
         format: OutputFormat.ESM,
         sourcesContent: true,
+        mainFields: ['module', 'main'],
         externalModules: [], // we bundle all the dependencies
         esbuildArgs: {
           '--tree-shaking': 'true',
@@ -131,6 +131,7 @@ export class CdkAppStack extends Stack {
         sourceMap: true,
         keepNames: true,
         format: OutputFormat.ESM,
+        mainFields: ['module', 'main'],
         sourcesContent: true,
         externalModules: ['@aws-sdk/*', '@aws-lambda-powertools/*'], // the dependencies are included in the layer
         esbuildArgs: {
@@ -155,6 +156,7 @@ export class CdkAppStack extends Stack {
         sourceMap: true,
         keepNames: true,
         format: OutputFormat.CJS,
+        mainFields: ['main'],
         sourcesContent: true,
         externalModules: [], // we bundle all the dependencies
       },
@@ -177,6 +179,7 @@ export class CdkAppStack extends Stack {
           sourceMap: true,
           keepNames: true,
           format: OutputFormat.CJS,
+          mainFields: ['main'],
           sourcesContent: true,
           externalModules: ['@aws-sdk/*', '@aws-lambda-powertools/*'], // the dependencies are included in the layer
         },
@@ -196,6 +199,7 @@ export class CdkAppStack extends Stack {
         batchSize: 100,
         retryAttempts: 3,
         filters: [
+          // Filter by the INSERT event type and the presence of the id and name attributes
           FilterCriteria.filter({
             eventName: FilterRule.isEqual('INSERT'),
             dynamodb: {

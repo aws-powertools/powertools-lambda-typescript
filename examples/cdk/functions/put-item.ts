@@ -25,8 +25,6 @@ const persistenceStore = new DynamoDBPersistenceLayer({
 });
 // Define the idempotency configuration
 const idempotencyConfig = new IdempotencyConfig({
-  useLocalCache: false,
-  maxLocalCacheSize: 500,
   expiresAfterSeconds: 60 * 60 * 24,
 });
 

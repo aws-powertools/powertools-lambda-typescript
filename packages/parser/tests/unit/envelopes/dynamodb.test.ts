@@ -8,7 +8,7 @@ import { generateMock } from '@anatine/zod-mock';
 import { TestEvents } from '../schema/utils.js';
 import { DynamoDBStreamEvent } from 'aws-lambda';
 import { z, ZodError } from 'zod';
-import { DynamoDBStreamEnvelope } from '../../../src/envelopes/dynamodb.js';
+import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
 
 describe('DynamoDB', () => {
   const schema = z.object({
@@ -70,12 +70,44 @@ describe('DynamoDB', () => {
         ],
       });
     });
-    it('safeParse should return error if image is invalid', () => {
+    it('safeParse should return error if NewImage is invalid', () => {
       const invalidDDBEvent =
         TestEvents.dynamoStreamEvent as DynamoDBStreamEvent;
-      (
-        invalidDDBEvent.Records[0].dynamodb!.NewImage as typeof mockNewImage
-      ).Id = { N: 101 };
+
+      (invalidDDBEvent.Records[0].dynamodb!.NewImage as typeof mockNewImage) = {
+        Id: { N: 101 },
+        Message: { S: 'foo' },
+      };
+      (invalidDDBEvent.Records[1].dynamodb!.NewImage as typeof mockNewImage) =
+        mockNewImage;
+      (invalidDDBEvent.Records[0].dynamodb!.OldImage as typeof mockOldImage) =
+        mockOldImage;
+      (invalidDDBEvent.Records[1].dynamodb!.OldImage as typeof mockOldImage) =
+        mockOldImage;
+
+      const parsed = DynamoDBStreamEnvelope.safeParse(invalidDDBEvent, schema);
+      expect(parsed).toEqual({
+        success: false,
+        error: expect.any(ZodError),
+        originalEvent: invalidDDBEvent,
+      });
+    });
+
+    it('safeParse should return error if OldImage is invalid', () => {
+      const invalidDDBEvent =
+        TestEvents.dynamoStreamEvent as DynamoDBStreamEvent;
+
+      (invalidDDBEvent.Records[0].dynamodb!.OldImage as typeof mockNewImage) = {
+        Id: { N: 101 },
+        Message: { S: 'foo' },
+      };
+      (invalidDDBEvent.Records[1].dynamodb!.NewImage as typeof mockNewImage) =
+        mockNewImage;
+      (invalidDDBEvent.Records[0].dynamodb!.OldImage as typeof mockOldImage) =
+        mockOldImage;
+      (invalidDDBEvent.Records[0].dynamodb!.NewImage as typeof mockNewImage) =
+        mockNewImage;
+
       const parsed = DynamoDBStreamEnvelope.safeParse(invalidDDBEvent, schema);
       expect(parsed).toEqual({
         success: false,

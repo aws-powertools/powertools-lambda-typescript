@@ -7,7 +7,7 @@
 import { generateMock } from '@anatine/zod-mock';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { APIGatewayProxyEvent } from '../../../src/types/';
-import { ApiGatewayEnvelope } from '../../../src/envelopes/apigw.js';
+import { ApiGatewayEnvelope } from '../../../src/envelopes/index.js';
 import { ZodError } from 'zod';
 
 describe('ApigwEnvelope ', () => {

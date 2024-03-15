@@ -7,7 +7,7 @@
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { generateMock } from '@anatine/zod-mock';
 import { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { ApiGatewayV2Envelope } from '../../../src/envelopes/apigwv2.js';
+import { ApiGatewayV2Envelope } from '../../../src/envelopes/index.js';
 
 describe('ApiGwV2Envelope ', () => {
   describe('parse', () => {

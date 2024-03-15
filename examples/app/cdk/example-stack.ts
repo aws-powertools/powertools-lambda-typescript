@@ -21,7 +21,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { FunctionWithLogGroup } from './function-with-logstream-construct.js';
 
-export class CdkAppStack extends Stack {
+export class PowertoolsExampleStack extends Stack {
   public constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -49,7 +49,7 @@ export class CdkAppStack extends Stack {
 
     // Idempotency table
     const idempotencyTable = new Table(this, 'idempotencyTable', {
-      tableName: 'powertools-example-idempotency-table',
+      tableName: 'powertools-example-idempotency',
       partitionKey: {
         name: 'id',
         type: AttributeType.STRING,
@@ -58,10 +58,11 @@ export class CdkAppStack extends Stack {
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY, // for demo only, change to RETAIN in production
     });
+
     /**
      * We will store the idempotency table name in a SSM parameter to simulate a potential
-     * cross-stack reference. This is not necessary in this example, but it's a good way of showing
-     * how to use SSM parameters to store and retrieve it from the function.
+     * cross-stack reference. This is not strictly necessary in this example, but it's a good way of showing
+     * how to use SSM parameters and retrieve them using Powertools.
      */
     const idempotencyTableNameParam = new StringParameter(
       this,
@@ -146,7 +147,7 @@ export class CdkAppStack extends Stack {
 
     /**
      * In this examle, we emit a CommonJS (CJS) bundle and include all the
-     * dependencies in the bundle.
+     * dependencies in it.
      */
     const getByIdFn = new FunctionWithLogGroup(this, 'get-by-id-fn', {
       entry: './functions/get-by-id.ts',

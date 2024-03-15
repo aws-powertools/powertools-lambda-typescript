@@ -24,7 +24,7 @@
     },
     "include": [
         "functions/**/*",
-        "src/**/*",
+        "cdk/**/*",
         "test/**/*",
         "bin/**/*",
     ],

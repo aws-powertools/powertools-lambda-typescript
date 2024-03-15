@@ -1,9 +1,9 @@
-import * as cdk from 'aws-cdk-lib';
+import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
-import * as CdkApp from '../src/example-stack';
+import { PowertoolsExampleStack } from '../cdk/example-stack.js';
 
 test('CDK code synthesize', () => {
-  const app = new cdk.App();
-  const stack = new CdkApp.CdkAppStack(app, 'MyTestStack');
-  Template.fromStack(stack).resourceCountIs('AWS::Lambda::Function', 5); // The stack has 4 functions: 3 for the example, and 1 for the log retention that is deployed by CDK
+  const app = new App();
+  const stack = new PowertoolsExampleStack(app, 'MyTestStack');
+  Template.fromStack(stack).resourceCountIs('AWS::Lambda::Function', 4);
 });

@@ -1,4 +1,4 @@
-import { ZodSchema, ZodError, z } from 'zod';
+import { ZodSchema, ZodError } from 'zod';
 import { Envelope } from './envelope.js';
 
 export type ParserOptions<S extends ZodSchema> = {
@@ -7,17 +7,17 @@ export type ParserOptions<S extends ZodSchema> = {
   safeParse?: boolean;
 };
 
-export type ParsedResultSuccess<S extends ZodSchema> = {
+export type ParsedResultSuccess<Output> = {
   success: true;
-  data: z.infer<S>;
+  data: Output;
 };
 
-export type ParsedResultError = {
+export type ParsedResultError<Input> = {
   success: false;
   error: ZodError | Error;
-  originalEvent: unknown;
+  originalEvent: Input;
 };
 
-export type ParsedResult<S extends ZodSchema> =
-  | ParsedResultSuccess<S>
-  | ParsedResultError;
+export type ParsedResult<Input = unknown, Output = unknown> =
+  | ParsedResultSuccess<Output>
+  | ParsedResultError<Input>;

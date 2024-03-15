@@ -1,32 +1,45 @@
-import { parse, parseSafe } from './envelope.js';
-import { ZodSchema } from 'zod';
+import { Envelope } from './envelope.js';
+import { z, type ZodSchema } from 'zod';
 import { APIGatewayProxyEventSchema } from '../schemas/apigw.js';
-import { ParsedResult } from 'src/types/parser.js';
+import type { ParsedResult } from '../types/parser.js';
 
 /**
  * API Gateway envelope to extract data within body key
  */
-export const apiGatewayEnvelope = <T extends ZodSchema>(
-  data: unknown,
-  schema: T,
-  safeParse?: boolean
-): ParsedResult<T> => {
-  if (safeParse) {
+export class ApiGatewayEnvelope extends Envelope {
+  public static parse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): z.infer<T> {
+    const parsedEnvelope = APIGatewayProxyEventSchema.parse(data);
+    if (!parsedEnvelope.body) {
+      throw new Error('Body field of API Gateway event is undefined');
+    }
+
+    return super.parse(parsedEnvelope.body, schema);
+  }
+
+  public static safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>> {
     const parsedEnvelope = APIGatewayProxyEventSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
-        success: false,
-        error: parsedEnvelope.error,
+        ...parsedEnvelope,
         originalEvent: data,
       };
     }
 
-    return parseSafe(parsedEnvelope.data.body, schema);
-  }
-  const parsedEnvelope = APIGatewayProxyEventSchema.parse(data);
-  if (!parsedEnvelope.body) {
-    throw new Error('Body field of API Gateway event is undefined');
-  }
+    const parsedBody = super.safeParse(parsedEnvelope.data.body, schema);
 
-  return parse(parsedEnvelope.body, schema);
-};
+    if (!parsedBody.success) {
+      return {
+        ...parsedBody,
+        originalEvent: data,
+      };
+    }
+
+    return parsedBody;
+  }
+}

@@ -1,18 +1,35 @@
-import { ZodType } from 'zod';
-import { Envelope } from 'src/types/index.js';
-import { ParsedResult } from 'src/types/parser.js';
+import type { ParsedResult, Envelope } from './types/index.js';
+import { z, type ZodSchema } from 'zod';
 
-export const parse = <T extends ZodType, E extends Envelope>(
-  data: unknown,
+/**
+ * Parse the data using the provided schema, envelope and safeParse flag
+ * @param data the data to parse
+ * @param envelope the envelope to use, can be undefined
+ * @param schema the schema to use
+ * @param safeParse whether to use safeParse or not, if true it will return a ParsedResult with the original event if the parsing fails
+ */
+export const parse = <T extends ZodSchema, E extends Envelope>(
+  data: z.infer<T>,
   envelope: E | undefined,
   schema: T,
   safeParse?: boolean
-): ParsedResult<T> => {
+): ParsedResult => {
   return safeParse
     ? envelope
-      ? envelope(data, schema, safeParse)
-      : schema.safeParse(data)
+      ? envelope.safeParse(data, schema)
+      : safeParseSchema(data, schema)
     : envelope
-      ? envelope(data, schema)
+      ? envelope.parse(data, schema)
       : schema.parse(data);
+};
+
+const safeParseSchema = <T extends ZodSchema>(
+  data: z.infer<T>,
+  schema: T
+): ParsedResult => {
+  const result = schema.safeParse(data);
+
+  return result.success
+    ? result
+    : { success: false, error: result.error, originalEvent: data };
 };

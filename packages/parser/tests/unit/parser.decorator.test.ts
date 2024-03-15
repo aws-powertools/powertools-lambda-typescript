@@ -5,13 +5,14 @@
  */
 
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/lib/esm/types';
-import { Context, EventBridgeEvent } from 'aws-lambda';
+import { Context } from 'aws-lambda';
 import { parser } from '../../src/index.js';
 import { TestSchema, TestEvents } from './schema/utils';
 import { generateMock } from '@anatine/zod-mock';
-import { eventBridgeEnvelope } from '../../src/envelopes/index.js';
 import { EventBridgeSchema } from '../../src/schemas/index.js';
-import { z, SafeParseReturnType } from 'zod';
+import { z, ZodError } from 'zod';
+import { ParsedResult, EventBridgeEvent } from '../../src/types';
+import { EventBridgeEnvelope } from '../../src/envelopes/index.js';
 
 describe('Parser Decorator', () => {
   const customEventBridgeSchema = EventBridgeSchema.extend({
@@ -37,7 +38,7 @@ describe('Parser Decorator', () => {
       return event;
     }
 
-    @parser({ schema: TestSchema, envelope: eventBridgeEnvelope })
+    @parser({ schema: TestSchema, envelope: EventBridgeEnvelope })
     public async handlerWithParserCallsAnotherMethod(
       event: TestEvent,
       _context: Context
@@ -45,7 +46,7 @@ describe('Parser Decorator', () => {
       return this.anotherMethod(event as TestEvent);
     }
 
-    @parser({ envelope: eventBridgeEnvelope, schema: TestSchema })
+    @parser({ schema: TestSchema, envelope: EventBridgeEnvelope })
     public async handlerWithSchemaAndEnvelope(
       event: TestEvent,
       _context: Context
@@ -58,14 +59,22 @@ describe('Parser Decorator', () => {
       safeParse: true,
     })
     public async handlerWithSchemaAndSafeParse(
-      event: SafeParseReturnType<unknown, TestEvent>,
+      event: ParsedResult<TestEvent, TestEvent>,
       _context: Context
-    ): Promise<unknown> {
-      if (!event.success) {
-        return event.error;
-      } else {
-        return event.data;
-      }
+    ): Promise<ParsedResult> {
+      return event;
+    }
+
+    @parser({
+      schema: TestSchema,
+      envelope: EventBridgeEnvelope,
+      safeParse: true,
+    })
+    public async harndlerWithEnvelopeAndSafeParse(
+      event: ParsedResult<TestEvent, TestEvent>,
+      _context: Context
+    ): Promise<ParsedResult> {
+      return event;
     }
 
     private async anotherMethod(event: TestEvent): Promise<TestEvent> {
@@ -85,10 +94,7 @@ describe('Parser Decorator', () => {
 
   it('should parse custom schema with envelope event', async () => {
     const customPayload = generateMock(TestSchema);
-    const testEvent = TestEvents.eventBridgeEvent as EventBridgeEvent<
-      string,
-      unknown
-    >;
+    const testEvent = TestEvents.eventBridgeEvent as EventBridgeEvent;
     testEvent.detail = customPayload;
 
     const resp = await lambda.handlerWithSchemaAndEnvelope(
@@ -119,10 +125,7 @@ describe('Parser Decorator', () => {
 
   it('should parse and call private async method', async () => {
     const customPayload = generateMock(TestSchema);
-    const testEvent = TestEvents.eventBridgeEvent as EventBridgeEvent<
-      string,
-      unknown
-    >;
+    const testEvent = TestEvents.eventBridgeEvent as EventBridgeEvent;
     testEvent.detail = customPayload;
 
     const resp = await lambda.handlerWithParserCallsAnotherMethod(
@@ -140,11 +143,59 @@ describe('Parser Decorator', () => {
 
     const resp = await lambda.handlerWithSchemaAndSafeParse(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
+      // @ts-ignore
       testEvent,
       {} as Context
     );
 
-    expect(resp).toEqual(testEvent);
+    expect(resp).toEqual({
+      success: true,
+      data: testEvent,
+    });
+  });
+
+  it('should parse event with schema and safeParse and return error', async () => {
+    expect(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      await lambda.handlerWithSchemaAndSafeParse({ foo: 'bar' }, {} as Context)
+    ).toEqual({
+      error: expect.any(ZodError),
+      success: false,
+      originalEvent: { foo: 'bar' },
+    });
+  });
+
+  it('should parse event with envelope and safeParse', async () => {
+    const testEvent = generateMock(TestSchema);
+    const event = TestEvents.eventBridgeEvent as EventBridgeEvent;
+    event.detail = testEvent;
+
+    const resp = await lambda.harndlerWithEnvelopeAndSafeParse(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      event,
+      {} as Context
+    );
+
+    expect(resp).toEqual({
+      success: true,
+      data: testEvent,
+    });
+  });
+
+  it('should parse event with envelope and safeParse and return error', async () => {
+    expect(
+      await lambda.harndlerWithEnvelopeAndSafeParse(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        { foo: 'bar' },
+        {} as Context
+      )
+    ).toEqual({
+      error: expect.any(ZodError),
+      success: false,
+      originalEvent: { foo: 'bar' },
+    });
   });
 });

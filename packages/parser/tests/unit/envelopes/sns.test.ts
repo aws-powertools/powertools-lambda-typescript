@@ -37,9 +37,10 @@ describe('Sns and SQS Envelope', () => {
 
         snsSqsTestEvent.Records[0].body = JSON.stringify(snsEvent);
 
-        expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual([
-          data,
-        ]);
+        expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual({
+          success: true,
+          data: [data],
+        });
       });
       it('should return error when envelope is not valid', () => {
         expect(SnsSqsEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({

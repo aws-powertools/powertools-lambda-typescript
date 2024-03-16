@@ -25,6 +25,7 @@ import type {
   LogItemMessage,
   LoggerInterface,
   PowertoolsLogData,
+  OutputFormatter,
 } from './types/Logger.js';
 
 /**
@@ -161,6 +162,10 @@ class Logger extends Utility implements LoggerInterface {
   private persistentLogAttributes: LogAttributes = {};
 
   private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{};
+
+  private outputFormatter: OutputFormatter = (str: string): string => {
+    return str;
+  };
 
   /**
    * Log level used by the current instance of Logger.
@@ -798,13 +803,21 @@ class Logger extends Utility implements LoggerInterface {
             'critical'
           >);
 
-    this.console[consoleMethod](
-      JSON.stringify(
-        log.getAttributes(),
-        this.getReplacer(),
-        this.logIndentation
-      )
+    let result = JSON.stringify(
+      log.getAttributes(),
+      this.getReplacer(),
+      this.logIndentation
     );
+
+    const formatted = this.outputFormatter(result);
+    try {
+      JSON.parse(formatted);
+      result = formatted;
+    } catch (e) {
+      // console.warn('Incorrect formatted JSON. Use original data.');
+    }
+
+    this.console[consoleMethod](result);
   }
 
   /**
@@ -999,6 +1012,7 @@ class Logger extends Utility implements LoggerInterface {
       customConfigService,
       persistentLogAttributes,
       environment,
+      outputFormatter,
     } = options;
 
     // order is important, EnvVarsService() is used by other methods
@@ -1012,6 +1026,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setLogEvent();
     this.setLogIndentation();
     this.addPersistentLogAttributes(persistentLogAttributes);
+    this.setOutputFormatter(outputFormatter);
 
     return this;
   }
@@ -1043,6 +1058,12 @@ class Logger extends Utility implements LoggerInterface {
         this.getDefaultServiceName(),
     });
     this.addPersistentLogAttributes(persistentLogAttributes);
+  }
+
+  private setOutputFormatter(formatter?: OutputFormatter): void {
+    if (formatter) {
+      this.outputFormatter = formatter;
+    }
   }
 }
 

@@ -21,6 +21,8 @@ type InjectLambdaContextOptions = {
   clearState?: boolean;
 };
 
+type OutputFormatter = (jsonString: string) => string;
+
 type ConstructorOptions = {
   logLevel?: LogLevel;
   serviceName?: string;
@@ -29,6 +31,7 @@ type ConstructorOptions = {
   customConfigService?: ConfigServiceInterface;
   persistentLogAttributes?: LogAttributes;
   environment?: Environment;
+  outputFormatter?: OutputFormatter;
 };
 
 type LambdaFunctionContext = Pick<
@@ -96,4 +99,5 @@ export type {
   PowertoolsLogData,
   ConstructorOptions,
   InjectLambdaContextOptions,
+  OutputFormatter,
 };

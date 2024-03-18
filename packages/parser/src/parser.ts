@@ -13,14 +13,18 @@ export const parse = <T extends ZodSchema, E extends Envelope>(
   envelope: E | undefined,
   schema: T,
   safeParse?: boolean
-): ParsedResult => {
-  return safeParse
-    ? envelope
-      ? envelope.safeParse(data, schema)
-      : safeParseSchema(data, schema)
-    : envelope
-      ? envelope.parse(data, schema)
-      : schema.parse(data);
+): ParsedResult | z.infer<T> => {
+  if (envelope && safeParse) {
+    return envelope.safeParse(data, schema);
+  }
+  if (envelope) {
+    return envelope.parse(data, schema);
+  }
+  if (safeParse) {
+    return safeParseSchema(data, schema);
+  }
+
+  return schema.parse(data);
 };
 
 const safeParseSchema = <T extends ZodSchema>(

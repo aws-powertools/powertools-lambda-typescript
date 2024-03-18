@@ -3,6 +3,12 @@ title: Upgrade guide
 description: Guide to update between major Powertools for AWS Lambda (TypeScript) versions
 ---
 
+## End of support v1
+
+!!! warning "On March 13th, 2024, Powertools for AWS Lambda (TypeScript) v1 entered maintenance mode, and will reach end-of-life on September 1st, 2024. If you are still using v1, we strongly recommend you to read our upgrade guide and update to the latest version."
+
+Given our commitment to all of our customers using Powertools for AWS Lambda (TypeScript), we will keep npm v1 releases and documentation 1.x versions to prevent any disruption.
+
 ## Migrate from v1 to v2
 
 V2 is focused on official support for ESM (ECMAScript modules). We've made other minimal breaking changes to make your transition to v2 as smooth as possible.
@@ -10,7 +16,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 ### Quick summary
 
 | Area                  | Change                                                                                                                         | Code change required |
-| --------------------- |--------------------------------------------------------------------------------------------------------------------------------| -------------------- |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
 | **ESM support**       | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                             | -                    |
 | **Middy.js**          | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.    | Yes                  |
 | **Types imports**     | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.             | Yes                  |

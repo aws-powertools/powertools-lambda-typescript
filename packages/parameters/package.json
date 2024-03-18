@@ -168,7 +168,7 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^2.0.3",
-    "@aws-sdk/util-base64-node": "^3.209.0"
+    "@smithy/util-base64": "^2.3.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-appconfigdata": ">=3.x",

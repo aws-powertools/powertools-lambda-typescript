@@ -1,6 +1,6 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { isString } from '@aws-lambda-powertools/commons';
-import { fromBase64 } from '@aws-sdk/util-base64-node';
+import { fromBase64 } from '@smithy/util-base64';
 import {
   TRANSFORM_METHOD_BINARY,
   TRANSFORM_METHOD_JSON,
@@ -19,7 +19,7 @@ import type { TransformOptions } from '../types/BaseProvider.js';
  * the value will be parsed as JSON using the `JSON.parse` function.
  *
  * When the transform is `binary` or `auto` and the key ends with `.binary`, the value will be decoded from base64 using the `fromBase64` function
- * from the `@aws-sdk/util-base64-node` package.
+ * from the `@smithy/util-base64` package.
  *
  * If the transformation fails, the function will return the value as-is unless `throwOnTransformError` is set to `true`.
  *

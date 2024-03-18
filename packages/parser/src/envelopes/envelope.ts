@@ -36,9 +36,13 @@ export class Envelope {
   ): ParsedResult<unknown, z.infer<T>> => {
     try {
       if (typeof input !== 'object' && typeof input !== 'string') {
-        new Error(
-          `Invalid data type for envelope. Expected string or object, got ${typeof input}`
-        );
+        return {
+          success: false,
+          error: new Error(
+            `Invalid data type for envelope. Expected string or object, got ${typeof input}`
+          ),
+          originalEvent: input,
+        };
       }
 
       const parsed = schema.safeParse(

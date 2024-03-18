@@ -11,12 +11,7 @@ export class ApiGatewayEnvelope extends Envelope {
     data: unknown,
     schema: T
   ): z.infer<T> {
-    const parsedEnvelope = APIGatewayProxyEventSchema.parse(data);
-    if (!parsedEnvelope.body) {
-      throw new Error('Body field of API Gateway event is undefined');
-    }
-
-    return super.parse(parsedEnvelope.body, schema);
+    return super.parse(APIGatewayProxyEventSchema.parse(data).body, schema);
   }
 
   public static safeParse<T extends ZodSchema>(

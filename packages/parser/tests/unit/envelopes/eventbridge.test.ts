@@ -106,7 +106,7 @@ describe('EventBridgeEnvelope ', () => {
         EventBridgeEnvelope.safeParse(eventBridgeEvent, TestSchema)
       ).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(Error),
         originalEvent: eventBridgeEvent,
       });
     });

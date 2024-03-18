@@ -57,7 +57,7 @@ describe('ApigwEnvelope ', () => {
       const resp = ApiGatewayEnvelope.safeParse(testEvent, TestSchema);
       expect(resp).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(Error),
         originalEvent: testEvent,
       });
     });

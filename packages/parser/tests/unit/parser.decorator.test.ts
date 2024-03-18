@@ -43,7 +43,7 @@ describe('Parser Decorator', () => {
       event: TestEvent,
       _context: Context
     ): Promise<unknown> {
-      return this.anotherMethod(event as TestEvent);
+      return this.anotherMethod(event);
     }
 
     @parser({ schema: TestSchema, envelope: EventBridgeEnvelope })

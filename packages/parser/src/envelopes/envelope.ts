@@ -10,7 +10,7 @@ export class Envelope {
    * @param data data to parse
    * @param schema schema
    */
-  public static parse = <T extends ZodSchema>(
+  public static readonly parse = <T extends ZodSchema>(
     data: unknown,
     schema: T
   ): z.infer<T> => {
@@ -30,7 +30,7 @@ export class Envelope {
    * @param input
    * @param schema
    */
-  public static safeParse = <T extends ZodSchema>(
+  public static readonly safeParse = <T extends ZodSchema>(
     input: unknown,
     schema: T
   ): ParsedResult<unknown, z.infer<T>> => {

@@ -174,10 +174,24 @@ export class LayerPublisherStack extends Stack {
                   .join(' ')}`
               );
 
-              // Phase 5: Copy files from tmp folder to cdk.out asset folder (the folder is created by CDK)
+              // Phase 5: patch require keyword in ESM Tracer package due to AWS X-Ray SDK for Node.js not being ESM compatible
+              const esmTracerPath = join(
+                tmpBuildDir,
+                'node_modules',
+                '@aws-lambda-powertools/tracer',
+                'lib',
+                'esm',
+                'provider',
+                'ProviderService.js'
+              );
+              execSync(
+                `echo "import { createRequire } from 'module'; const require = createRequire(import.meta.url);$(cat ${esmTracerPath})" > ${esmTracerPath}`
+              );
+
+              // Phase 6: Copy files from tmp folder to cdk.out asset folder (the folder is created by CDK)
               execSync(`cp -R ${tmpBuildPath}${sep}* ${outputDir}`);
 
-              // Phase 6: (Optional) Restore changes to the project root made by the build
+              // Phase 7: (Optional) Restore changes to the project root made by the build
               buildFromLocal &&
                 execSync('git restore packages/*/package.json', {
                   cwd: projectRoot,

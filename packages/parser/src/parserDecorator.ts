@@ -9,7 +9,7 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  *
  * @example
  * ```typescript
- *
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  * import type { SqSEvent } from '@aws-lambda-powertools/parser/types;
  * import { parser } from '@aws-lambda-powertools/parser';
  * import { z } from 'zod';
@@ -21,7 +21,7 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  *   description: z.string(),
  * }
  *
- * class Lambda extends LambdaInterface {
+ * class Lambda implements LambdaInterface {
  *
  *   ⁣@parser({ envelope: SqsEnvelope, schema: OrderSchema })
  *   public async handler(event: Order, _context: Context): Promise<unknown> {
@@ -52,7 +52,7 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  *   description: z.string(),
  * }
  *
- * class Lambda extends LambdaInterface {
+ * class Lambda implements LambdaInterface {
  *
  *   ⁣git@parser({ envelope: SqsEnvelope, schema: OrderSchema,  safeParse: true })
  *   public async handler(event: ParsedResult<Order>, _context: Context): Promise<unknown> {

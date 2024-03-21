@@ -22,7 +22,7 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  *
  * class Lambda extends LambdaInterface {
  *
- *   @parser({ envelope: SqsEnvelope, schema: OrderSchema })
+ *   ⁣@parser({ envelope: SqsEnvelope, schema: OrderSchema })
  *   public async handler(event: Order, _context: Context): Promise<unknown> {
  *   // sqs event is parsed and the payload is extracted and parsed
  *   // apply business logic to your Order event

@@ -3,6 +3,24 @@ import { z, type ZodSchema } from 'zod';
 
 /**
  * Parse the data using the provided schema, envelope and safeParse flag
+ *
+ * @example
+ * ```typescript
+ * import { z } from 'zod';
+ * import type { SqsEvent, ParsedResult } from '@aws-lambda-powertools/parser/types';
+ * import { SqsEnvelope } from '@aws-lambda-powertools/parser/types/envelopes';
+ * import { parse } from '@aws-lambda-powertools/parser';
+ *
+ * const Order = z.object({
+ *   orderId: z.string(),
+ *   description: z.string(),
+ * });
+ *
+ * const handler = async (event: SqsEvent, context: unknown): Promise<unknown> => {
+ *   const parsedEvent = parse(event, SqsEnvelope, Order);
+ *
+ *   const parsedSafe: ParsedResult<SqsEnvelope> = parse(event, SqsEnvelope, Order, true)
+ * }
  * @param data the data to parse
  * @param envelope the envelope to use, can be undefined
  * @param schema the schema to use

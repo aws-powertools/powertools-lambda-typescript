@@ -9,17 +9,16 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  *
  * @example
  * ```typescript
+ * import { z } from 'zod';
  * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  * import type { SqSEvent } from '@aws-lambda-powertools/parser/types;
  * import { parser } from '@aws-lambda-powertools/parser';
- * import { z } from 'zod';
  * import { SqsEnvelope } from '@aws-lambda-powertools/parser/envelopes';
- *
  *
  * const Order = z.object({
  *   orderId: z.string(),
  *   description: z.string(),
- * }
+ * });
  *
  * class Lambda implements LambdaInterface {
  *

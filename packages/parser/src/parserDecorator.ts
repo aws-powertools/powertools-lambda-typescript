@@ -1,5 +1,5 @@
-import { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
-import { Context, Handler } from 'aws-lambda';
+import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type { Context, Handler } from 'aws-lambda';
 import { ZodSchema, z } from 'zod';
 import { parse } from './parser.js';
 import type { ParserOptions, ParsedResult } from './types/index.js';
@@ -10,14 +10,15 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  * @example
  * ```typescript
  *
+ * import type { SqSEvent } from '@aws-lambda-powertools/parser/types;
  * import { parser } from '@aws-lambda-powertools/parser';
- * import { SqsEnvelope } from '@aws-lambda-powertools/parser/envelopes/';
- * import types { SqSEvent } from '@aws-lambda-powertools/parser/types;
+ * import { z } from 'zod';
+ * import { SqsEnvelope } from '@aws-lambda-powertools/parser/envelopes';
  *
  *
  * const Order = z.object({
- *  orderId: z.string(),
- *  description: z.string(),
+ *   orderId: z.string(),
+ *   description: z.string(),
  * }
  *
  * class Lambda extends LambdaInterface {
@@ -39,14 +40,16 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  * @example
  * ```typescript
  *
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+ * import type { SqSEvent, ParsedResult } from '@aws-lambda-powertools/parser/types;
+ * import { z } from 'zod';
  * import { parser } from '@aws-lambda-powertools/parser';
- * import { SqsEnvelope } from '@aws-lambda-powertools/parser/envelopes/';
- * import types { SqSEvent, ParsedResult } from '@aws-lambda-powertools/parser/types;
+ * import { SqsEnvelope } from '@aws-lambda-powertools/parser/envelopes';
  *
  *
  * const Order = z.object({
- *  orderId: z.string(),
- *  description: z.string(),
+ *   orderId: z.string(),
+ *   description: z.string(),
  * }
  *
  * class Lambda extends LambdaInterface {

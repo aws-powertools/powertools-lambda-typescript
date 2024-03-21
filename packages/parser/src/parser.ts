@@ -45,4 +45,4 @@ const safeParseSchema = <T extends ZodSchema>(
     : { success: false, error: result.error, originalEvent: data };
 };
 
-export { parse, safeParseSchema };
+export { parse };

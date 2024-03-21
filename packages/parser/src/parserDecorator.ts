@@ -55,7 +55,7 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  * class Lambda implements LambdaInterface {
  *
  *   ⁣git@parser({ envelope: SqsEnvelope, schema: OrderSchema,  safeParse: true })
- *   public async handler(event: ParsedResult<Order>, _context: Context): Promise<unknown> {
+ *   public async handler(event: ParsedResult<Order>, _context: unknown): Promise<unknown> {
  *     if (event.success) {
  *      // event.data is the parsed event object of type Order
  *     } else {

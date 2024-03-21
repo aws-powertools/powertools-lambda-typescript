@@ -6,6 +6,7 @@
     "./src/index.ts",
     "./src/types.ts",
     "./src/envelopes.ts",
+    "./src/Functions.ts",
     "./src/PowertoolsFunctions.ts",
   ],
   "readme": "README.md"

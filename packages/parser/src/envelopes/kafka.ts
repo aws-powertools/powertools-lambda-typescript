@@ -1,9 +1,10 @@
-import { z, ZodSchema } from 'zod';
-import { parse } from './envelope.js';
+import { z, type ZodSchema } from 'zod';
+import { Envelope } from './envelope.js';
 import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
 } from '../schemas/kafka.js';
+import { ParsedResult, KafkaMskEvent } from '../types/index.js';
 
 /**
  * Kafka event envelope to extract data within body key
@@ -13,26 +14,66 @@ import {
  * Note: Records will be parsed the same way so if model is str,
  * all items in the list will be parsed as str and not as JSON (and vice versa)
  */
-export const kafkaEnvelope = <T extends ZodSchema>(
-  data: unknown,
-  schema: T
-): z.infer<T> => {
-  // manually fetch event source to deside between Msk or SelfManaged
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const eventSource = data['eventSource'];
+export class KafkaEnvelope extends Envelope {
+  public static parse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): z.infer<T> {
+    // manually fetch event source to deside between Msk or SelfManaged
+    const eventSource = (data as KafkaMskEvent)['eventSource'];
 
-  const parsedEnvelope:
-    | z.infer<typeof KafkaMskEventSchema>
-    | z.infer<typeof KafkaSelfManagedEventSchema> =
-    eventSource === 'aws:kafka'
-      ? KafkaMskEventSchema.parse(data)
-      : KafkaSelfManagedEventSchema.parse(data);
+    const parsedEnvelope:
+      | z.infer<typeof KafkaMskEventSchema>
+      | z.infer<typeof KafkaSelfManagedEventSchema> =
+      eventSource === 'aws:kafka'
+        ? KafkaMskEventSchema.parse(data)
+        : KafkaSelfManagedEventSchema.parse(data);
 
-  return Object.values(parsedEnvelope.records).map((topicRecord) => {
-    return topicRecord.map((record) => {
-      return parse(record.value, schema);
+    return Object.values(parsedEnvelope.records).map((topicRecord) => {
+      return topicRecord.map((record) => {
+        return super.parse(record.value, schema);
+      });
     });
-  });
-};
+  }
+
+  public static safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult {
+    // manually fetch event source to deside between Msk or SelfManaged
+    const eventSource = (data as KafkaMskEvent)['eventSource'];
+
+    const parsedEnvelope =
+      eventSource === 'aws:kafka'
+        ? KafkaMskEventSchema.safeParse(data)
+        : KafkaSelfManagedEventSchema.safeParse(data);
+
+    if (!parsedEnvelope.success) {
+      return {
+        ...parsedEnvelope,
+        originalEvent: data,
+      };
+    }
+    const parsedRecords: z.infer<T>[] = [];
+
+    for (const topicRecord of Object.values(parsedEnvelope.data.records)) {
+      for (const record of topicRecord) {
+        const parsedRecord = super.safeParse(record.value, schema);
+        if (!parsedRecord.success) {
+          return {
+            success: false,
+            error: parsedRecord.error,
+            originalEvent: data,
+          };
+        }
+        parsedRecords.push(parsedRecord.data);
+      }
+    }
+
+    return {
+      success: true,
+      data: parsedRecords,
+    };
+  }
+}

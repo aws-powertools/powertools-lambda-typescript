@@ -1,1 +1,1 @@
-export { parser } from './parser.js';
+export { parser } from './parserDecorator.js';

@@ -66,7 +66,7 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  * }
  * ```
  *
- * @param options
+ * @param options Configure the parser with the `schema`, `envelope` and whether to `safeParse` or not
  */
 export const parser = <S extends ZodSchema>(
   options: ParserOptions<S>

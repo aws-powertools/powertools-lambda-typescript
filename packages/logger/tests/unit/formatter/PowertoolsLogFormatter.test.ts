@@ -312,43 +312,89 @@ describe('Class: PowertoolsLogFormatter', () => {
   });
 
   describe('Method: getCodeLocation', () => {
-    test('when the stack IS present, it returns a datetime value ISO 8601 compliant', () => {
-      // Prepare
-      const formatter = new PowertoolsLogFormatter();
-      const stack =
-        'Error: Things keep happening!\n' +
-        '   at /home/foo/bar/file-that-threw-the-error.ts:22:5\n' +
-        '   at SomeOther.function (/home/foo/bar/some-file.ts:154:19)';
+    test.each([
+      {
+        condition: 'stack IS present',
+        returnExpection:
+          'it returns a location for a stackframe with absolute file path',
+        stack:
+          'Error: Things keep happening!\n' +
+          '   at /home/foo/bar/file-that-threw-the-error.ts:22:5\n' +
+          '   at SomeOther.function (/home/foo/bar/some-file.ts:154:19)',
+        expectedLocation: '/home/foo/bar/some-file.ts:154',
+      },
+      {
+        condition: 'stack IS present',
+        returnExpection:
+          'it returns a location for a stackframe ending with an optional backslash',
+        stack:
+          'Error: Reference Error!\n' +
+          '   at /home/foo/bar/file-that-threw-the-error.ts:22:5\n' +
+          '   at SomeOther.function (/home/foo/bar/some-frame-with-ending-backslash.ts:154:19)\\',
+        expectedLocation:
+          '/home/foo/bar/some-frame-with-ending-backslash.ts:154',
+      },
+      {
+        condition: 'stack IS present',
+        returnExpection:
+          'it returns a location for a path containing multiple colons',
+        stack:
+          'Error: The message failed to send\n' +
+          'at REPL2:1:17\n' +
+          'at Script.runInThisContext (node:vm:130:12)\n' +
+          '... 7 lines matching cause stack trace ...\n' +
+          'at [_line] [as _line] (node:internal/readline/interface:886:18) {\n' +
+          '[cause]: Error: The remote HTTP server responded with a 500 status\n' +
+          '  at REPL1:1:15\n' +
+          '  at Script.runInThisContext (node:vm:130:12)\n' +
+          '  at REPLServer.defaultEval (node:repl:574:29)\n' +
+          '  at bound (node:domain:426:15)\n' +
+          '  at REPLServer.runBound [as eval] (node:domain:437:12)\n' +
+          '  at REPLServer.onLine (node:repl:902:10)\n' +
+          '  at REPLServer.emit (node:events:549:35)\n' +
+          '  at REPLServer.emit (node:domain:482:12)\n' +
+          '  at [_onLine] [as _onLine] (node:internal/readline/interface:425:12)\n' +
+          '  at [_line] [as _line] (node:internal/readline/interface:886:18)  \n',
+        expectedLocation: 'node:vm:130',
+      },
+      {
+        condition: 'stack IS present',
+        returnExpection: 'it returns a location for a nested path',
+        stack:
+          'Error: unknown\n' +
+          'at eval (eval at <anonymous> (file:///home/foo/bar/some-file.ts:1:35), <anonymous>:1:7)\n' +
+          'at <anonymous> (/home/foo/bar/file-that-threw-the-error.ts:52:3)\n' +
+          'at ModuleJob.run (node:internal/modules/esm/module_job:218:25)\n' +
+          'at async ModuleLoader.import (node:internal/modules/esm/loader:329:24)\n' +
+          'at async loadESM (node:internal/process/esm_loader:28:7)\n' +
+          'at async handleMainPromise (node:internal/modules/run_main:113:12)\n',
+        expectedLocation: '/home/foo/bar/file-that-threw-the-error.ts:52',
+      },
+      {
+        condition: 'stack IS NOT present',
+        returnExpection: 'it returns an empty location',
+        stack: undefined,
+        expectedLocation: '',
+      },
+      {
+        condition: 'stack IS present',
+        returnExpection:
+          'if a stackframe does not have a location, it returns an empty location',
+        stack: 'A weird stack trace...',
+        expectedLocation: '',
+      },
+    ])(
+      'when the $condition, $returnExpection',
+      ({ stack, expectedLocation }) => {
+        // Prepare
+        const formatter = new PowertoolsLogFormatter();
 
-      // Act
-      const errorLocation = formatter.getCodeLocation(stack);
+        // Act
+        const errorLocation = formatter.getCodeLocation(stack);
 
-      // Assess
-      expect(errorLocation).toEqual('/home/foo/bar/some-file.ts:154');
-    });
-
-    test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
-      // Prepare
-      const formatter = new PowertoolsLogFormatter();
-      const stack = undefined;
-
-      // Act
-      const errorLocation = formatter.getCodeLocation(stack);
-
-      // Assess
-      expect(errorLocation).toEqual('');
-    });
-
-    test('when the stack IS NOT present, it returns a datetime value ISO 8601 compliant', () => {
-      // Prepare
-      const formatter = new PowertoolsLogFormatter();
-      const stack = 'A weird stack trace...';
-
-      // Act
-      const errorLocation = formatter.getCodeLocation(stack);
-
-      // Assess
-      expect(errorLocation).toEqual('');
-    });
+        // Assess
+        expect(errorLocation).toEqual(expectedLocation);
+      }
+    );
   });
 });

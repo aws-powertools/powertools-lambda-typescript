@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2.0.3 (2024-03-15)
+
+**feat(logger):** improve regex in stack trace parsing ([#2121](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2121)) ([ebe5eef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ebe5eef3319fc95070c2c33c0ac64b8e42443b38))
+**fix(idempotency):** transform private class fields ([#2230](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2230)) ([aa6e6e0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aa6e6e0c25bbc93151cc5cddc584400575604f05))
+**improv(commons):**: expand type utils functions ([#2191](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2191)) ([9208393](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9208393fe07d33cb35ea479b3c0866c8a7b91a21))
+**feat(commons):** add fromBase64 helper function ([#2188](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2188)) ([133159b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/133159ba4cca41a61c14d62f9356bb89a7f0a08f))
+**fix(layers):**: add createRequire banner in esm build ([#2231](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2231)) ([730bcc9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/730bcc93c027f4d60788badb6c5c01a09b3c70be))
+
 ## 2.0.2 (2024-03-05)
 
 

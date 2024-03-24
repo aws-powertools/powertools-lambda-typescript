@@ -6,20 +6,17 @@ description: Utility
 ???+ warning
     This is an unreleased feature that is currently under active development and will be released soon. Please check back later for updates.
 
-???+ tip
-    JMESPath is a query language for JSON used by tools like the AWS CLI and Powertools for AWS Lambda (TypeScript).
-
-Built-in [JMESPath](https://jmespath.org/){target="_blank" rel="nofollow"} Functions to easily deserialize common encoded JSON payloads in Lambda functions.
+Built-in [JMESPath](https://jmespath.org/){target="_blank" rel="nofollow"} functions to easily deserialize common encoded JSON payloads in Lambda functions.
 
 ## Key features
 
 * Deserialize JSON from JSON strings, base64, and compressed data
 * Use JMESPath to extract and combine data recursively
-* Provides commonly used JMESPath expression with popular event sources
+* Provides commonly used JMESPath expressions with popular event sources
 
 ## Getting started
 
-You might have events that contains encoded JSON payloads as string, base64, or even in compressed format. It is a common use case to decode and extract them partially or fully as part of your Lambda function invocation.
+You might have events that contain encoded JSON payloads as string, base64, or even in compressed format. It is a common use case to decode and extract them partially or fully as part of your Lambda function invocation.
 
 Powertools for AWS Lambda (TypeScript) also have utilities like [idempotency](idempotency.md){target="_blank"} where you might need to extract a portion of your data before using them.
 
@@ -86,7 +83,7 @@ These are all built-in envelopes you can use along with their expression as a re
 
 You can use our built-in JMESPath functions within your envelope expression. They handle deserialization for common data formats found in AWS Lambda event sources such as JSON strings, base64, and uncompress gzip data.
 
-#### powertools_json function
+#### `powertools_json` function
 
 Use `powertools_json` function to decode any JSON string anywhere a JMESPath expression is allowed.
 
@@ -106,7 +103,7 @@ This sample will deserialize the JSON string within the `body` key before [Idemp
     --8<-- "docs/snippets/jmespath/powertoolsJsonIdempotencyJmespath.json"
     ```
 
-#### powertools_base64 function
+#### `powertools_base64` function
 
 Use `powertools_base64` function to decode any base64 data.
 
@@ -118,13 +115,24 @@ This sample will decode the base64 value within the `data` key, and deserialize 
     --8<-- "docs/snippets/jmespath/powertoolsBase64Jmespath.ts"
     ```
 
+    1. The `data` variable contains the decoded object that looks like this:
+    ```json
+    {
+        user_id: 123,
+        product_id: 1,
+        quantity: 2,
+        price: 10.4,
+        currency: 'USD',
+    }
+    ```
+
 === "powertoolsBase64JmespathPayload.json"
 
     ```json
     --8<-- "docs/snippets/jmespath/powertoolsBase64JmespathPayload.json"
     ```
 
-#### powertools_base64_gzip function
+#### `powertools_base64_gzip` function
 
 Use `powertools_base64_gzip` function to decompress and decode base64 data.
 
@@ -135,6 +143,36 @@ This sample will decompress and decode base64 data from Cloudwatch Logs, then us
     ```ts hl_lines="9"
     --8<-- "docs/snippets/jmespath/powertoolsBase64GzipJmespath.ts"
     ```
+
+    1. The `payload` key contains a JSON object that once decompressed and decoded looks like this:
+    ```json
+    {
+        "owner": "123456789012",
+        "logGroup": "/aws/lambda/powertools-example",
+        "logStream": "2020/09/02/[$LATEST]d3a8dcaffc7f4de2b8db132e3e106660",
+        "subscriptionFilters": ["Destination"],
+        "messageType": "DATA_MESSAGE",
+        "logEvents": [
+            {
+                "id": "eventId1",
+                "message": {
+                    "username": "lessa",
+                    "message": "hello world"
+                },
+                "timestamp": 1440442987000
+            },
+            {
+                "id": "eventId2",
+                "message": {
+                    "username": "dummy",
+                    "message": "hello world"
+                },
+                "timestamp": 1440442987001
+            }
+        ]
+    }
+    ```
+    2. The `logGroup` variable contains the string `"/aws/lambda/powertools-example"`.
 
 === "powertoolsBase64GzipJmespathPayload.json"
 

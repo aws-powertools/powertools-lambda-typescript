@@ -9,5 +9,5 @@ export const handler = async (event: { payload: string }): Promise<void> => {
     'powertools_json(powertools_base64(payload))'
   );
 
-  logger.info('Decoded payload', { data });
+  logger.info('Decoded payload', { data }); // (1)!
 };

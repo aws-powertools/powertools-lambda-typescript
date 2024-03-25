@@ -134,7 +134,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Environment variables service instance used to fetch environment variables.
    */
-  private envVarsService!: EnvironmentVariablesService;
+  private envVarsService = new EnvironmentVariablesService();
   /**
    * Whether to print the Lambda invocation event in the logs.
    */
@@ -203,7 +203,6 @@ class Logger extends Utility implements LoggerInterface {
   public constructor(options: ConstructorOptions = {}) {
     super();
     const { customConfigService, ...rest } = options;
-    this.setEnvVarsService();
     this.setCustomConfigService(customConfigService);
     // all logs are buffered until the logger is initialized
     this.setOptions(rest);
@@ -903,17 +902,6 @@ class Logger extends Utility implements LoggerInterface {
     this.customConfigService = customConfigService
       ? customConfigService
       : undefined;
-  }
-
-  /**
-   * Sets the Logger's custom config service instance, which will be used
-   * to fetch environment variables.
-   *
-   * @private
-   * @returns {void}
-   */
-  private setEnvVarsService(): void {
-    this.envVarsService = new EnvironmentVariablesService();
   }
 
   /**

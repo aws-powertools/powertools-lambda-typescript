@@ -91,7 +91,7 @@ export class FunctionWithLogGroup extends NodejsFunction {
     envVarName,
   }: BindTableProps): void {
     if (accessOnly !== true) {
-      this.addEnvironment(envVarName || 'TABLE_NAME', table.tableName);
+      this.addEnvironment(envVarName ?? 'TABLE_NAME', table.tableName);
     }
     if (accessMode === 'RW') {
       table.grantReadWriteData(this);

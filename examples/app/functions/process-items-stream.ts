@@ -32,7 +32,7 @@ const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
     .getSegment()
     ?.addNewSubsegment('#### recordHandler');
   try {
-    if (record.dynamodb && record.dynamodb.NewImage) {
+    if (record.dynamodb?.NewImage) {
       const payload = unmarshall(
         record.dynamodb.NewImage as { [key: string]: AttributeValue }
       );

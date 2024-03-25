@@ -3,7 +3,11 @@
     "../../typedoc.base.json"
   ],
   "entryPoints": [
+    "./src/index.ts",
     "./src/types.ts",
-    "./src/errors.ts"
-  ]
+    "./src/envelopes.ts",
+    "./src/Functions.ts",
+    "./src/PowertoolsFunctions.ts",
+  ],
+  "readme": "README.md"
 }

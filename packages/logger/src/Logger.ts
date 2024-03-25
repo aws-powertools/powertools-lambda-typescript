@@ -1022,7 +1022,7 @@ class Logger extends Utility implements LoggerInterface {
    */
   private setOptions(
     options: Omit<ConstructorOptions, 'customConfigService'>
-  ): Logger {
+  ): this {
     const {
       logLevel,
       serviceName,

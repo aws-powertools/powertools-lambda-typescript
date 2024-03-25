@@ -71,22 +71,7 @@ labelPRBasedOnFilePath:
     - docs/**/*
     - mkdocs.yml
     - typedoc.js
-    - examples/cdk/bin/*
-    - examples/cdk/functions/*
-    - examples/cdk/functions/**/*
-    - examples/cdk/src/*
-    - examples/cdk/src/**/*
-    - examples/cdk/tests/*
-    - examples/cdk/tests/**/*
-    - examples/cdk/README.md
-    - examples/cdk/cdk.json
-    - examples/sam/events/*
-    - examples/sam/src/*
-    - examples/sam/src/**/*
-    - examples/sam/tests/*
-    - examples/sam/tests/**/*
-    - examples/sam/README.md
-    - examples/sam/template.yaml
+    - examples/app/*
 
   area/automation:
     - .github/scripts/*
@@ -137,8 +122,7 @@ labelPRBasedOnFilePath:
     - packages/parser/README.md
     - layers/tsconfig*.json
     - layers/README.md
-    - examples/sam/tsconfig*.json
-    - examples/cdk/tsconfig*.json
+    - examples/app/tsconfig*.json
 
   type/dependencies:
     - package.json
@@ -153,8 +137,7 @@ labelPRBasedOnFilePath:
     - packages/validator/package.json
     - packages/batch/package.json
     - layers/package.json
-    - examples/cdk/package.json
-    - examples/sam/package.json
+    - examples/app/package.json
 
 ##### Greetings ########################################################################################################
 firstPRWelcomeComment: >

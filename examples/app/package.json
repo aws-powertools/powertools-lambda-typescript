@@ -1,0 +1,68 @@
+{
+  "name": "powertools-sample-app",
+  "version": "2.0.3",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "private": true,
+  "description": "This project contains source code and supporting files for a serverless application that you can deploy with CDK.",
+  "license": "MIT-0",
+  "scripts": {
+    "build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
+    "test": "npm run test:unit",
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --fix --no-error-on-unmatched-pattern .",
+    "test:unit": "export POWERTOOLS_DEV=true && jest --silent",
+    "test:e2e": "echo 'To be implemented ...'",
+    "cdk": "cdk"
+  },
+  "lint-staged": {
+    "*.ts": "npm run lint-fix",
+    "*.js": "npm run lint-fix"
+  },
+  "type": "module",
+  "imports": {
+    "#types": "./functions/commons/types.js",
+    "#constants": "./functions/commons/constants.js",
+    "#powertools": "./functions/commons/powertools/index.js",
+    "#powertools/*": "./functions/commons/powertools/*.js",
+    "#clients/*": "./functions/commons/clients/*.js",
+    "#helpers/*": "./functions/commons/helpers/*.js",
+    "#errors": "./functions/commons/errors.js"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.136",
+    "@types/jest": "^29.5.12",
+    "@types/node": "20.11.28",
+    "aws-cdk": "^2.133.0",
+    "aws-cdk-lib": "^2.133.0",
+    "constructs": "^10.3.0",
+    "jest": "^29.7.0",
+    "source-map-support": "^0.5.21",
+    "ts-jest": "^29.1.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/batch": "^2.0.3",
+    "@aws-lambda-powertools/idempotency": "^2.0.3",
+    "@aws-lambda-powertools/logger": "^2.0.3",
+    "@aws-lambda-powertools/metrics": "^2.0.3",
+    "@aws-lambda-powertools/parameters": "^2.0.3",
+    "@aws-lambda-powertools/tracer": "^2.0.3",
+    "@aws-sdk/client-ssm": "^3.535.0",
+    "@aws-sdk/lib-dynamodb": "^3.538.0",
+    "@middy/core": "^4.7.0",
+    "@types/aws-lambda": "^8.10.136",
+    "@types/jest": "^29.5.12",
+    "@types/node": "20.11.30",
+    "aws-cdk": "^2.133.0",
+    "constructs": "^10.3.0",
+    "esbuild": "^0.20.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  }
+}

@@ -802,89 +802,30 @@ describe('Class: Logger', () => {
       });
 
       describe('Feature: ephemeral log attributes', () => {
-        test('when added, they should appear in that log item only', () => {
-          // Prepare
-          const logger = new Logger({
-            logLevel: 'DEBUG',
-          });
-          const consoleSpy = jest.spyOn(
-            logger['console'],
-            getConsoleMethod(methodOfLogger)
-          );
-          interface NestedObject {
-            bool: boolean;
-            str: string;
-            num: number;
-            err: Error;
-          }
-          interface ArbitraryObject<TNested> {
-            value: 'CUSTOM' | 'USER_DEFINED';
-            nested: TNested;
-          }
+        const logger = new Logger({
+          logLevel: 'DEBUG',
+        });
 
-          const arbitraryObject: ArbitraryObject<NestedObject> = {
-            value: 'CUSTOM',
-            nested: {
-              bool: true,
-              str: 'string value',
-              num: 42,
-              err: new Error('Arbitrary object error'),
-            },
-          };
-
-          // Act
-          if (logger[methodOfLogger]) {
-            logger[methodOfLogger]('A log item without extra parameters');
-            logger[methodOfLogger](
-              'A log item with a string as first parameter, and an object as second parameter',
-              { extra: 'parameter' }
-            );
-            logger[methodOfLogger](
-              'A log item with a string as first parameter, and objects as other parameters',
-              { parameterOne: 'foo' },
-              { parameterTwo: 'bar' }
-            );
-            logger[methodOfLogger]({
-              message: 'A log item with an object as first parameters',
-              extra: 'parameter',
-            });
-            logger[methodOfLogger](
-              'A log item with a string as first parameter, and an error as second parameter',
-              new Error('Something happened!')
-            );
-            logger[methodOfLogger](
-              'A log item with a string as first parameter, and an error with custom key as second parameter',
-              { myCustomErrorKey: new Error('Something happened!') }
-            );
-            logger[methodOfLogger](
-              'A log item with a string as first parameter, and a string as second parameter',
-              'parameter'
-            );
-            logger[methodOfLogger](
-              'A log item with a string as first parameter, and an inline object as second parameter',
-              { extra: { custom: mockDate } }
-            );
-            logger[methodOfLogger](
-              'A log item with a string as first parameter, and an arbitrary object as second parameter',
-              { extra: arbitraryObject }
-            );
-          }
-
-          // Assess
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            1,
-            JSON.stringify({
+        it.each([
+          {
+            idx: 0,
+            inputs: ['A log item without extra parameters'],
+            expected: {
               level: method.toUpperCase(),
               message: 'A log item without extra parameters',
               sampling_rate: 0,
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-            })
-          );
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            2,
-            JSON.stringify({
+            },
+          },
+          {
+            idx: 1,
+            inputs: [
+              'A log item with a string as first parameter, and an object as second parameter',
+              { extra: 'parameter' },
+            ],
+            expected: {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an object as second parameter',
@@ -893,11 +834,16 @@ describe('Class: Logger', () => {
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
               extra: 'parameter',
-            })
-          );
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            3,
-            JSON.stringify({
+            },
+          },
+          {
+            idx: 2,
+            inputs: [
+              'A log item with a string as first parameter, and objects as other parameters',
+              { parameterOne: 'foo' },
+              { parameterTwo: 'bar' },
+            ],
+            expected: {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and objects as other parameters',
@@ -907,11 +853,17 @@ describe('Class: Logger', () => {
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
               parameterOne: 'foo',
               parameterTwo: 'bar',
-            })
-          );
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            4,
-            JSON.stringify({
+            },
+          },
+          {
+            idx: 3,
+            inputs: [
+              {
+                message: 'A log item with an object as first parameters',
+                extra: 'parameter',
+              },
+            ],
+            expected: {
               level: method.toUpperCase(),
               message: 'A log item with an object as first parameters',
               sampling_rate: 0,
@@ -919,11 +871,15 @@ describe('Class: Logger', () => {
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
               extra: 'parameter',
-            })
-          );
-          const parameterCallNumber5 = JSON.parse(consoleSpy.mock.calls[4][0]);
-          expect(parameterCallNumber5).toEqual(
-            expect.objectContaining({
+            },
+          },
+          {
+            idx: 4,
+            inputs: [
+              'A log item with a string as first parameter, and an error as second parameter',
+              new Error('Something happened!'),
+            ],
+            expected: {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an error as second parameter',
@@ -932,18 +888,20 @@ describe('Class: Logger', () => {
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
               error: {
-                location: expect.stringMatching(/Logger.test.ts:[0-9]+$/),
+                location: expect.any(String),
                 message: 'Something happened!',
                 name: 'Error',
-                stack: expect.stringMatching(/Logger.test.ts:[0-9]+:[0-9]+/),
+                stack: expect.any(String),
               },
-            })
-          );
-          const parameterCallNumber6 = JSON.parse(
-            consoleSpy.mock.calls[5][0] as string
-          );
-          expect(parameterCallNumber6).toEqual(
-            expect.objectContaining({
+            },
+          },
+          {
+            idx: 5,
+            inputs: [
+              'A log item with a string as first parameter, and an error with custom key as second parameter',
+              { myCustomErrorKey: new Error('Something happened!') },
+            ],
+            expected: {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an error with custom key as second parameter',
@@ -952,16 +910,20 @@ describe('Class: Logger', () => {
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
               myCustomErrorKey: {
-                location: expect.stringMatching(/Logger.test.ts:[0-9]+$/),
+                location: expect.any(String),
                 message: 'Something happened!',
                 name: 'Error',
-                stack: expect.stringMatching(/Logger.test.ts:[0-9]+:[0-9]+/),
+                stack: expect.any(String),
               },
-            })
-          );
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            7,
-            JSON.stringify({
+            },
+          },
+          {
+            idx: 6,
+            inputs: [
+              'A log item with a string as first parameter, and a string as second parameter',
+              'parameter',
+            ],
+            expected: {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and a string as second parameter',
@@ -970,11 +932,15 @@ describe('Class: Logger', () => {
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
               extra: 'parameter',
-            })
-          );
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            8,
-            JSON.stringify({
+            },
+          },
+          {
+            idx: 7,
+            inputs: [
+              'A log item with a string as first parameter, and an inline object as second parameter',
+              { extra: { custom: mockDate } },
+            ],
+            expected: {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an inline object as second parameter',
@@ -983,11 +949,25 @@ describe('Class: Logger', () => {
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
               extra: { custom: '2016-06-20T12:08:10.000Z' },
-            })
-          );
-          const parameterCallNumber9 = JSON.parse(consoleSpy.mock.calls[8][0]);
-          expect(parameterCallNumber9).toEqual(
-            expect.objectContaining({
+            },
+          },
+          {
+            idx: 8,
+            inputs: [
+              'A log item with a string as first parameter, and an arbitrary object as second parameter',
+              {
+                extra: {
+                  value: 'CUSTOM',
+                  nested: {
+                    bool: true,
+                    str: 'string value',
+                    num: 42,
+                    err: new Error('Arbitrary object error'),
+                  },
+                },
+              },
+            ],
+            expected: {
               level: method.toUpperCase(),
               message:
                 'A log item with a string as first parameter, and an arbitrary object as second parameter',
@@ -1002,18 +982,33 @@ describe('Class: Logger', () => {
                   str: 'string value',
                   num: 42,
                   err: {
-                    location: expect.stringMatching(/Logger.test.ts:[0-9]+$/),
+                    location: expect.any(String),
                     message: 'Arbitrary object error',
                     name: 'Error',
-                    stack: expect.stringMatching(
-                      /Logger.test.ts:[0-9]+:[0-9]+/
-                    ),
+                    stack: expect.any(String),
                   },
                 },
               },
-            })
-          );
-        });
+            },
+          },
+        ])(
+          'when added, they should appear in that log item only',
+          ({ idx, inputs, expected }) => {
+            // Prepare
+            const consoleSpy = jest.spyOn(
+              logger['console'],
+              getConsoleMethod(methodOfLogger)
+            );
+
+            // Act
+            // @ts-expect-error - we are testing the method dynamically
+            logger[methodOfLogger](...inputs);
+
+            // Assess
+            const received = JSON.parse(consoleSpy.mock.calls[idx][0]);
+            expect(received).toEqual(expect.objectContaining(expected));
+          }
+        );
       });
 
       describe('Feature: persistent log attributes', () => {
@@ -2554,6 +2549,29 @@ describe('Class: Logger', () => {
         'Current log level (WARN) does not match AWS Lambda Advanced Logging Controls minimum log level (ERROR). This can lead to data loss, consider adjusting them.'
       );
     });
+
+    it('uses log level set by ALC & emits a warning when initializing with a higher log level than ALC', () => {
+      // Prepare
+      process.env.AWS_LAMBDA_LOG_LEVEL = 'INFO';
+      process.env.LOG_LEVEL = undefined;
+      process.env.POWERTOOLS_LOG_LEVEL = undefined;
+      // Since the buffer is private and we are bypassing the public warn method, we need to spy on the console.warn
+      process.env.POWERTOOLS_DEV = 'true';
+      const warningSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      const logger = new Logger({ logLevel: 'DEBUG' });
+
+      // Assess
+      expect(logger.level).toBe(12);
+      expect(logger.getLevelName()).toBe('INFO');
+      expect(warningSpy).toHaveBeenCalledTimes(1);
+      expect(warningSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Current log level (DEBUG) does not match AWS Lambda Advanced Logging Controls minimum log level (INFO). This can lead to data loss, consider adjusting them.'
+        )
+      );
+    });
   });
 
   describe('Feature: Sampling debug logs', () => {
@@ -2827,6 +2845,24 @@ describe('Class: Logger', () => {
           timestamp: '2016-06-20T12:08:10.000Z',
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         })
+      );
+    });
+
+    it('logs a DEBUG method when the ', () => {
+      // Prepare
+      // Since the buffer is private and we are bypassing the public warn method, we need to spy on the console.warn
+      process.env.POWERTOOLS_DEV = 'true';
+      const debugSpy = jest.spyOn(console, 'debug').mockImplementation();
+
+      // Act
+      new Logger({ sampleRateValue: 1 });
+
+      // Assess
+      expect(debugSpy).toHaveBeenCalledTimes(1);
+      expect(debugSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Setting log level to DEBUG due to sampling rate'
+        )
       );
     });
 

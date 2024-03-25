@@ -11,7 +11,7 @@ import {
   LexerError,
   JMESPathError,
   VariadicArityError,
-} from '../../src';
+} from '../../src/index.js';
 import { Functions } from '../../src/Functions.js';
 import { Parser } from '../../src/Parser.js';
 import { TreeInterpreter } from '../../src/TreeInterpreter.js';

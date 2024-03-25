@@ -2848,7 +2848,7 @@ describe('Class: Logger', () => {
       );
     });
 
-    it('logs a DEBUG method when the ', () => {
+    it('logs a DEBUG log when the sample rate sets the level to DEBUG', () => {
       // Prepare
       // Since the buffer is private and we are bypassing the public warn method, we need to spy on the console.warn
       process.env.POWERTOOLS_DEV = 'true';

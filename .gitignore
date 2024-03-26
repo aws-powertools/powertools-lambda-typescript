@@ -41,10 +41,6 @@ site
 # Generated API documentation (from TypeDoc)
 /api
 
-# SAM Example copies files
-/examples/sam/src/handlers/*
-!/examples/sam/src/handlers/COPY_LAMBDA_FUNCTIONS_HERE
-
 # Layer temp files
 tmp
 

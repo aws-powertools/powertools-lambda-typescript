@@ -1,0 +1,20 @@
+*.js
+!.eslintrc.js
+!jest.config.js
+*.d.ts
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+lib
+# npm lock file - this is managed by the npm workspace
+package-lock.json
+
+**/.aws-sam
+
+# SAM
+samconfig.toml
+
+# npm lock file - this is managed by the npm workspace
+package-lock.json

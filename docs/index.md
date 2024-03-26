@@ -272,12 +272,9 @@ The examples in this documentation will feature all the approaches described abo
 
 ## Examples
 
-The project's repository includes examples of how to instrument your functions both in AWS CDK and AWS SAM:
+You can find examples of how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/app){target="_blank"} directory. The application is a simple REST API that can be deployed via either AWS CDK or AWS SAM.
 
-* [AWS CDK](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/cdk){target="_blank"}
-* [AWS SAM](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/sam){target="_blank"}
-
-If instead you want to see Powertools for AWS Lambda (TypeScript) in a slightly more complex use case, check the [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) or the [AWS Lambda performance tuning](https://github.com/aws-samples/optimizations-for-lambda-functions) repository. Both demos use Powertools for AWS Lambda (TypeScript) as well as demonstrating other common techniques for Lambda functions written in TypeScript.
+If instead you want to see Powertools for AWS Lambda (TypeScript) in slightly different use cases, check the [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) or the [AWS Lambda performance tuning](https://github.com/aws-samples/optimizations-for-lambda-functions) repository. Both demos use Powertools for AWS Lambda (TypeScript) as well as demonstrating other common techniques for Lambda functions written in TypeScript.
 
 
 ## Features

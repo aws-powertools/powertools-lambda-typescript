@@ -14,8 +14,7 @@
     "packages/jmespath",
     "docs/snippets",
     "layers",
-    "examples/cdk",
-    "examples/sam"
+    "examples/app"
   ],
   "scripts": {
     "test": "npm t -ws",

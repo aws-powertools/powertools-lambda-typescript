@@ -13,7 +13,7 @@ import {
 } from '@aws-sdk/client-appconfigdata';
 import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
-import { toBase64 } from '@aws-sdk/util-base64-node';
+import { toBase64 } from '@smithy/util-base64';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 

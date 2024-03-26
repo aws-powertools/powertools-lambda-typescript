@@ -1,0 +1,264 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  An example application with Powertools for AWS Lambda (TypeScript).
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform: AWS::Serverless-2016-10-31
+
+# Global configuration that all Functions inherit
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Tracing: Active
+    Architectures:
+      - arm64
+    MemorySize: 128
+    Timeout: 30
+    Environment:
+      Variables:
+        NODE_OPTIONS: '--enable-source-maps' # see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # Items table
+  itemsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: powertools-example-items
+      TableClass: STANDARD_INFREQUENT_ACCESS
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE # we use the stream to trigger the processItemsStreamFn function
+  
+  # Idempotency table
+  idempotencyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: powertools-example-idempotency
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiration
+        Enabled: true
+
+  # We store the idempotency table name in a SSM Parameter to simulate a potential cross-stack reference.
+  # This is not strictly necessary in this example, but it's a good way of showing how to use SSM parameters
+  # and retrieve them using Powertools.
+  idempotencyTableNameParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /items-store/idempotency-table-name
+      Type: String
+      Value: !Ref idempotencyTable
+
+  # In this example, we use ESM and bundle all the dependencies including the AWS SDK.
+  # Because we are using ESM and tree shaking, we create an optimized bundle.
+  putItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: powertools-example-put-item
+      Handler: functions/put-item.handler
+      Policies:
+        # Allow the function to read/write to the items table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref itemsTable
+        # Allow the function to read/write to the idempotency table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref idempotencyTable
+        # Allow the function to read the idempotency table name from SSM
+        - SSMParameterWithSlashPrefixReadPolicy:
+            ParameterName: !Ref idempotencyTableNameParam
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref itemsTable
+          SSM_PARAMETER_NAME: !Ref idempotencyTableNameParam
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /
+            Method: POST
+      LoggingConfig:
+        LogGroupName: !Sub "/aws/lambda/${putItemFunction}"
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: ES2022
+        Sourcemap: true
+        KeepNames: true
+        Format: esm
+        SourcesContent: true
+        MainFields: module,main
+        TreeShaking: true
+        Banner:
+          - js=import { createRequire } from "module";const require = createRequire(import.meta.url);
+        EntryPoints:
+          - functions/put-item.ts
+
+  # Log group for the putItemFunction with a retention of 1 day
+  putItemLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${putItemFunction}"
+      RetentionInDays: 1
+
+  # In this example, we use ESM with the Powertools Lambda Layer which includes Powertools
+  # as well as the AWS SDK, this is a convenient way to use Powertools in a centralized way across
+  # multiple functions.
+  getAllItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: functions/get-all-items.handler
+      Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
+      Policies:
+        # Allow the function to read to the items table
+        - DynamoDBReadPolicy:
+            TableName: !Ref itemsTable
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref itemsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+      LoggingConfig:
+        LogGroupName: !Sub "/aws/lambda/${getAllItemsFunction}"
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: ES2022
+        Sourcemap: true
+        KeepNames: true
+        Format: esm
+        SourcesContent: true
+        MainFields: module,main
+        TreeShaking: true
+        External:
+          - '@aws-sdk/*'
+          - '@aws-lambda-powertools/*'
+        Banner:
+          - js=import { createRequire } from "module";const require = createRequire(import.meta.url);
+        EntryPoints:
+          - functions/get-all-items.ts
+
+  # Log group for the getAllItemsFunction with a retention of 1 day
+  getAllItemsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${getAllItemsFunction}"
+      RetentionInDays: 1
+
+  # In this example we emit a CommonJS (CJS) bundle and include all the dependencies in it.
+  getByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: powertools-example-get-by-id
+      Handler: functions/get-by-id.handler
+      Policies:
+        # Allow the function to read to the items table
+        - DynamoDBReadPolicy:
+            TableName: !Ref itemsTable
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref itemsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /{id}
+            Method: GET
+      LoggingConfig:
+        LogGroupName: !Sub "/aws/lambda/${getByIdFunction}"
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: ES2022
+        Sourcemap: true
+        KeepNames: true
+        Format: cjs
+        SourcesContent: true
+        MainFields: main
+        EntryPoints:
+          - functions/get-by-id.ts
+    
+  # Log group for the getByIdFunction with a retention of 1 day
+  getByIdLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${getByIdFunction}"
+      RetentionInDays: 1
+
+  # In this example we use the AWS Lambda Powertools Layer to include Powertools but
+  # we use the CommonJS (CJS) format for the function code.
+  processItemsStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: powertools-example-get-by-id
+      Handler: functions/process-items-stream.handler
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt itemsTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 100
+            FilterCriteria:
+              Filters:
+                - Pattern: "{\"eventName\":[\"INSERT\"],\"dynamodb\":{\"NewImage\":{\"id\":{\"S\":[{\"exists\":true}]},\"name\":{\"S\":[{\"exists\":true}]}}}}"
+            MaximumRetryAttempts: 3
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+            DestinationConfig:
+              OnFailure:
+                Destination: !GetAtt processItemsDeadLetterQueue.Arn
+      LoggingConfig:
+        LogGroupName: !Sub "/aws/lambda/${processItemsStreamFunction}"
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: ES2022
+        Sourcemap: true
+        KeepNames: true
+        Format: cjs
+        SourcesContent: true
+        MainFields: main
+        External:
+          - '@aws-sdk/*'
+          - '@aws-lambda-powertools/*'
+        EntryPoints:
+          - functions/process-items-stream.ts
+
+  # Log group for the getByIdFunction with a retention of 1 day
+  processItemsStreamLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${processItemsStreamFunction}"
+      RetentionInDays: 1
+
+  # Dead letter queue for items that failed to be processed by the processItemsStreamFunction
+  processItemsDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: powertools-example-dead-letter-queue

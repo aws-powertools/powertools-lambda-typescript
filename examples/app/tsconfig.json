@@ -1,0 +1,42 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "target": "es2022",
+        "moduleDetection": "force",
+        "isolatedModules": true,
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "moduleResolution": "NodeNext",
+        "module": "NodeNext",
+        "outDir": "lib/esm",
+        "sourceMap": true,
+        "experimentalDecorators": true,
+        "declaration": true,
+        "declarationMap": true,
+        "removeComments": false,
+        "pretty": true,
+        "lib": [
+            "ES2022"
+        ],
+        "rootDir": "."
+    },
+    "include": [
+        "functions/**/*",
+        "cdk/**/*",
+        "test/**/*",
+        "bin/**/*",
+    ],
+    "exclude": [
+        "./node_modules"
+    ],
+    "watchOptions": {
+        "watchFile": "useFsEvents",
+        "watchDirectory": "useFsEvents",
+        "fallbackPolling": "dynamicPriority"
+    },
+    "types": [
+        "node"
+    ]
+}

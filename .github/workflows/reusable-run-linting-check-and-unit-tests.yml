@@ -37,7 +37,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        example: ["sam", "cdk"]
+        example: ["app"]
       fail-fast: false
     defaults:
       run:

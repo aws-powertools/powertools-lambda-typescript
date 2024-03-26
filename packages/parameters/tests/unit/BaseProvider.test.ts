@@ -17,7 +17,7 @@ import {
   TransformParameterError,
   clearCaches,
 } from '../../src/index.js';
-import { toBase64 } from '@aws-sdk/util-base64-node';
+import { toBase64 } from '@smithy/util-base64';
 
 const encoder = new TextEncoder();
 jest.mock('@aws-lambda-powertools/commons', () => ({

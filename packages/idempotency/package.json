@@ -101,7 +101,6 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^2.0.3",
-    "@aws-sdk/util-base64-node": "^3.209.0",
     "jmespath": "^0.16.0"
   },
   "peerDependencies": {

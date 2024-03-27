@@ -3,9 +3,6 @@ title: JMESPath Functions
 description: Utility
 ---
 
-???+ warning
-    This is an unreleased feature that is currently under active development and will be released soon. Please check back later for updates.
-
 Built-in [JMESPath](https://jmespath.org/){target="_blank" rel="nofollow"} functions to easily deserialize common encoded JSON payloads in Lambda functions.
 
 ## Key features

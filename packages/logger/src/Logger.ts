@@ -2,7 +2,6 @@ import { Utility } from '@aws-lambda-powertools/commons';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
-import { format } from 'node:util';
 import { Console } from 'node:console';
 import { randomInt } from 'node:crypto';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
@@ -586,11 +585,7 @@ class Logger extends Utility implements LoggerInterface {
         this.logLevel > this.logLevelThresholds[selectedLogLevel]
       ) {
         this.warn(
-          format(
-            `Current log level (%s) does not match AWS Lambda Advanced Logging Controls minimum log level (%s). This can lead to data loss, consider adjusting them.`,
-            selectedLogLevel,
-            awsLogLevel
-          )
+          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${awsLogLevel}). This can lead to data loss, consider adjusting them.`
         );
       }
 

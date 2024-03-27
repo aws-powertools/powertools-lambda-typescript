@@ -9,8 +9,7 @@
     "packages/batch",
     "packages/testing",
     "packages/jmespath",
-    "examples/cdk",
-    "examples/sam",
+    "examples/app",
     "layers",
     "docs/snippets"
   ],

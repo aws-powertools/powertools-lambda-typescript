@@ -21,7 +21,7 @@ import type {
   SSMGetParametersByNameOutputInterface,
 } from '../../src/types/SSMProvider.js';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
-import { toBase64 } from '@aws-sdk/util-base64-node';
+import { toBase64 } from '@smithy/util-base64';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 const encoder = new TextEncoder();

@@ -59,8 +59,8 @@
       "require": "./lib/cjs/middleware/makeHandlerIdempotent.js"
     },
     "./types": {
-      "import": "./lib/esm/types/index.d.ts",
-      "require": "./lib/cjs/types/index.d.ts"
+      "import": "./lib/esm/types/index.js",
+      "require": "./lib/cjs/types/index.js"
     }
   },
   "typesVersions": {
@@ -129,8 +129,8 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.538.0",
-    "@aws-sdk/lib-dynamodb": "^3.538.0",
+    "@aws-sdk/client-dynamodb": "^3.540.0",
+    "@aws-sdk/lib-dynamodb": "^3.540.0",
     "@types/jmespath": "^0.15.0",
     "aws-sdk-client-mock": "^4.0.0",
     "aws-sdk-client-mock-jest": "^4.0.0"

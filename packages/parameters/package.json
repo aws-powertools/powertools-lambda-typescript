@@ -43,40 +43,40 @@
       }
     },
     "./base/types": {
-      "import": "./lib/esm/types/BaseProvider.d.ts",
-      "require": "./lib/cjs/types/BaseProvider.d.ts"
+      "import": "./lib/esm/types/BaseProvider.js",
+      "require": "./lib/cjs/types/BaseProvider.js"
     },
     "./base": {
       "import": "./lib/esm/base/index.js",
       "require": "./lib/cjs/base/index.js"
     },
     "./ssm/types": {
-      "import": "./lib/esm/types/SSMProvider.d.ts",
-      "require": "./lib/cjs/types/SSMProvider.d.ts"
+      "import": "./lib/esm/types/SSMProvider.js",
+      "require": "./lib/cjs/types/SSMProvider.js"
     },
     "./ssm": {
       "import": "./lib/esm/ssm/index.js",
       "require": "./lib/cjs/ssm/index.js"
     },
     "./secrets/types": {
-      "import": "./lib/esm/types/SecretsProvider.d.ts",
-      "require": "./lib/cjs/types/SecretsProvider.d.ts"
+      "import": "./lib/esm/types/SecretsProvider.js",
+      "require": "./lib/cjs/types/SecretsProvider.js"
     },
     "./secrets": {
       "import": "./lib/esm/secrets/index.js",
       "require": "./lib/cjs/secrets/index.js"
     },
     "./dynamodb/types": {
-      "import": "./lib/esm/types/AppConfigProvider.d.ts",
-      "require": "./lib/cjs/types/AppConfigProvider.d.ts"
+      "import": "./lib/esm/types/DynamoDBProvider.js",
+      "require": "./lib/cjs/types/DynamoDBProvider.js"
     },
     "./dynamodb": {
       "import": "./lib/esm/dynamodb/index.js",
       "require": "./lib/cjs/dynamodb/index.js"
     },
     "./appconfig/types": {
-      "import": "./lib/esm/appconfig/index.js",
-      "require": "./lib/cjs/appconfig/index.js"
+      "import": "./lib/esm/types/AppConfigProvider.js",
+      "require": "./lib/cjs/types/AppConfigProvider.js"
     },
     "./appconfig": {
       "import": "./lib/esm/appconfig/index.js",

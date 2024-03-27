@@ -3,8 +3,7 @@
     "../../typedoc.base.json"
   ],
   "entryPoints": [
-    "./src/search.ts",
-    "./src/errors.ts",
+    "./src/index.ts",
     "./src/types.ts",
     "./src/envelopes.ts",
     "./src/Functions.ts",

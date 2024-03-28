@@ -1,8 +1,11 @@
-import { Namespace } from 'cls-hooked';
+import type { Namespace } from 'cls-hooked';
 import type {
   ProviderServiceInterface,
   ContextMissingStrategy,
-} from '../types/ProviderServiceInterface.js';
+  HttpSubsegment,
+  MessageOnRequestStart,
+  MessageOnResponse,
+} from '../types/ProviderService.js';
 import type { Segment, Subsegment, Logger } from 'aws-xray-sdk-core';
 import xraySdk from 'aws-xray-sdk-core';
 const {
@@ -22,59 +25,7 @@ const {
 } = xraySdk;
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { subscribe } from 'node:diagnostics_channel';
-
-const decoder = new TextDecoder();
-
-/**
- * The `fetch` implementation based on `undici` includes the headers as an array of encoded key-value pairs.
- * This function finds the header with the given key and decodes the value.
- *
- * The function walks through the array of encoded headers and decodes the key of each pair.
- * If the key matches the given key, the function returns the decoded value of the next element in the array.
- *
- * @param encodedHeaders - The array of encoded headers
- * @param key - The key to search for
- */
-const findHeaderAndDecode = (
-  encodedHeaders: Uint8Array[],
-  key: string
-): string | null => {
-  let foundIndex = -1;
-  for (let i = 0; i < encodedHeaders.length; i += 2) {
-    const header = decoder.decode(encodedHeaders[i]);
-    if (header.toLowerCase() === key) {
-      foundIndex = i;
-      break;
-    }
-  }
-
-  if (foundIndex === -1) {
-    return null;
-  }
-
-  return decoder.decode(encodedHeaders[foundIndex + 1]);
-};
-
-export interface HttpSubsegment extends Subsegment {
-  http: {
-    request?: {
-      url: string;
-      method: string;
-    };
-    response?: {
-      status: number;
-      content_length?: number;
-    };
-  };
-}
-
-const isHttpSubsegment = (
-  subsegment: Segment | Subsegment | undefined
-): subsegment is HttpSubsegment => {
-  return (
-    subsegment !== undefined && 'http' in subsegment && 'parent' in subsegment
-  );
-};
+import { findHeaderAndDecode, isHttpSubsegment } from './utilities.js';
 
 class ProviderService implements ProviderServiceInterface {
   public captureAWS<T>(awssdk: T): T {
@@ -116,16 +67,36 @@ class ProviderService implements ProviderServiceInterface {
     captureHTTPsGlobal(require('https'));
   }
 
+  public getNamespace(): Namespace {
+    return getNamespace();
+  }
+
+  public getSegment(): Segment | Subsegment | undefined {
+    return getSegment();
+  }
+
   /**
    * Instrument `fetch` requests with AWS X-Ray
+   *
+   * The instrumentation is done by subscribing to the `undici` events. When a request is created,
+   * a new subsegment is created with the hostname of the request.
+   *
+   * Then, when the headers are received, the subsegment is updated with the request and response details.
+   *
+   * Finally, when the request is completed, the subsegment is closed.
+   *
+   * @see {@link https://nodejs.org/api/diagnostics_channel.html#diagnostics_channel_channel_publish | Diagnostics Channel - Node.js Documentation}
    */
-  public captureNativeFetch(): void {
+  public instrumentFetch(): void {
+    /**
+     * Create a segment at the start of a request made with `undici` or `fetch`.
+     *
+     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     *
+     * @param message The message received from the `undici` channel
+     */
     const onRequestStart = (message: unknown): void => {
-      const { request } = message as {
-        request: {
-          origin: string;
-        };
-      };
+      const { request } = message as MessageOnRequestStart;
 
       const parentSubsegment = this.getSegment();
       if (parentSubsegment) {
@@ -138,17 +109,15 @@ class ProviderService implements ProviderServiceInterface {
       }
     };
 
+    /**
+     * Enrich the subsegment with the request and response details.
+     *
+     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     *
+     * @param message The message received from the `undici` channel
+     */
     const onResponse = (message: unknown): void => {
-      const { request, response } = message as {
-        request: {
-          origin: string;
-          method: string;
-        };
-        response: {
-          statusCode: number;
-          headers: Uint8Array[];
-        };
-      };
+      const { request, response } = message as MessageOnResponse;
 
       const subsegment = this.getSegment();
       if (isHttpSubsegment(subsegment)) {
@@ -185,6 +154,9 @@ class ProviderService implements ProviderServiceInterface {
       }
     };
 
+    /**
+     * Close the subsegment at the end of the request.
+     */
     const onRequestEnd = (): void => {
       const subsegment = this.getSegment();
       if (isHttpSubsegment(subsegment)) {
@@ -196,14 +168,6 @@ class ProviderService implements ProviderServiceInterface {
     subscribe('undici:request:create', onRequestStart);
     subscribe('undici:request:headers', onResponse);
     subscribe('undici:request:trailers', onRequestEnd);
-  }
-
-  public getNamespace(): Namespace {
-    return getNamespace();
-  }
-
-  public getSegment(): Segment | Subsegment | undefined {
-    return getSegment();
   }
 
   public putAnnotation(key: string, value: string | number | boolean): void {

@@ -16,7 +16,7 @@ import type {
   CaptureMethodOptions,
 } from './types/Tracer.js';
 import { ProviderService } from './provider/ProviderService.js';
-import type { ProviderServiceInterface } from './types/ProviderServiceInterface.js';
+import type { ProviderServiceInterface } from './types/ProviderService.js';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 import xraySdk from 'aws-xray-sdk-core';
 const { Subsegment: XraySubsegment } = xraySdk;
@@ -153,6 +153,7 @@ class Tracer extends Utility implements TracerInterface {
     this.provider = new ProviderService();
     if (this.isTracingEnabled() && this.captureHTTPsRequests) {
       this.provider.captureHTTPsGlobal();
+      this.provider.instrumentFetch();
     }
     if (!this.isTracingEnabled()) {
       // Tell x-ray-sdk to not throw an error if context is missing but tracing is disabled

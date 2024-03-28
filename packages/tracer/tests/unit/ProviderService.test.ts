@@ -3,7 +3,8 @@
  *
  * @group unit/tracer/providerservice
  */
-import { ProviderService } from '../../src/provider/ProviderService.js';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   captureAsyncFunc,
   captureAWS,
@@ -20,12 +21,12 @@ import {
   setSegment,
   Subsegment,
 } from 'aws-xray-sdk-core';
+import { channel } from 'node:diagnostics_channel';
 import http from 'node:http';
 import https from 'node:https';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
-import { channel } from 'node:diagnostics_channel';
-import type { HttpSubsegment } from '../../src/provider/ProviderService.js';
+import { ProviderService } from '../../src/provider/ProviderService.js';
+import type { HttpSubsegment } from '../../src/types/ProviderService.js';
+import { mockFetch } from '../helpers/mockRequests.js';
 
 jest.mock('aws-xray-sdk-core', () => ({
   ...jest.requireActual('aws-xray-sdk-core'),
@@ -361,59 +362,19 @@ describe('Class: ProviderService', () => {
     });
   });
 
-  describe('Method: captureNativeFetch', () => {
+  describe('Method: instrumentFetch', () => {
     it('subscribes to the diagnostics channel', async () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
       // Act
-      provider.captureNativeFetch();
+      provider.instrumentFetch();
 
       // Assess
       expect(channel('undici:request:create').hasSubscribers).toBe(true);
       expect(channel('undici:request:headers').hasSubscribers).toBe(true);
       expect(channel('undici:request:trailers').hasSubscribers).toBe(true);
     });
-
-    const mockFetch = ({
-      origin,
-      method,
-      statusCode,
-      headers,
-    }: {
-      origin: string;
-      method?: string;
-      statusCode?: number;
-      headers?: { [key: string]: string };
-    }): void => {
-      const requestStart = channel('undici:request:create');
-      const response = channel('undici:request:headers');
-      const requestEnd = channel('undici:request:trailers');
-
-      requestStart.publish({
-        request: {
-          origin,
-        },
-      });
-
-      const encoder = new TextEncoder();
-      const encodedHeaders = [];
-      for (const [key, value] of Object.entries(headers ?? {})) {
-        encodedHeaders.push(encoder.encode(key));
-        encodedHeaders.push(encoder.encode(value));
-      }
-      response.publish({
-        request: {
-          origin,
-          method: method ?? 'GET',
-        },
-        response: {
-          statusCode: statusCode ?? 200,
-          headers: encodedHeaders,
-        },
-      });
-      requestEnd.publish({});
-    };
 
     it('traces a successful request', async () => {
       // Prepare
@@ -431,7 +392,7 @@ describe('Class: ProviderService', () => {
       jest.spyOn(subsegment, 'close');
 
       // Act
-      provider.captureNativeFetch();
+      provider.instrumentFetch();
       mockFetch({
         origin: 'http://httpbin.org/get',
         headers: {
@@ -470,7 +431,7 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => subsegment);
 
       // Act
-      provider.captureNativeFetch();
+      provider.instrumentFetch();
       mockFetch({
         origin: 'http://httpbin.org/get',
         headers: {
@@ -506,7 +467,7 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => subsegment);
 
       // Act
-      provider.captureNativeFetch();
+      provider.instrumentFetch();
       mockFetch({
         origin: 'http://httpbin.org/get',
         statusCode: 429,
@@ -539,7 +500,7 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => subsegment);
 
       // Act
-      provider.captureNativeFetch();
+      provider.instrumentFetch();
       mockFetch({
         origin: 'http://httpbin.org/get',
         statusCode: 404,
@@ -572,7 +533,7 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => subsegment);
 
       // Act
-      provider.captureNativeFetch();
+      provider.instrumentFetch();
       mockFetch({
         origin: 'http://httpbin.org/get',
         statusCode: 500,

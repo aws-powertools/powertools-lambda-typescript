@@ -12,7 +12,7 @@ import {
   setContextMissingStrategy,
   Subsegment,
 } from 'aws-xray-sdk-core';
-import type { ProviderServiceInterface } from '../../src/types/ProviderServiceInterface.js';
+import type { ProviderServiceInterface } from '../../src/types/ProviderService.js';
 import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 
 type CaptureAsyncFuncMock = jest.SpyInstance<

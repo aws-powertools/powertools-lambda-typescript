@@ -380,7 +380,7 @@ describe('Class: ProviderService', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
-      const subsegment = segment.addNewSubsegment('httpbin.org');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
       jest
         .spyOn(segment, 'addNewSubsegment')
         .mockImplementationOnce(() => subsegment);
@@ -394,7 +394,7 @@ describe('Class: ProviderService', () => {
       // Act
       provider.instrumentFetch();
       mockFetch({
-        origin: 'http://httpbin.org/get',
+        origin: 'https://aws.amazon.com/blogs',
         headers: {
           'content-length': '100',
         },
@@ -402,10 +402,10 @@ describe('Class: ProviderService', () => {
 
       // Assess
       expect(segment.addNewSubsegment).toHaveBeenCalledTimes(1);
-      expect(segment.addNewSubsegment).toHaveBeenCalledWith('httpbin.org');
+      expect(segment.addNewSubsegment).toHaveBeenCalledWith('aws.amazon.com');
       expect((subsegment as HttpSubsegment).http).toEqual({
         request: {
-          url: 'httpbin.org',
+          url: 'aws.amazon.com',
           method: 'GET',
         },
         response: {
@@ -420,7 +420,7 @@ describe('Class: ProviderService', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
-      const subsegment = segment.addNewSubsegment('httpbin.org');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
       jest
         .spyOn(segment, 'addNewSubsegment')
         .mockImplementationOnce(() => subsegment);
@@ -433,7 +433,7 @@ describe('Class: ProviderService', () => {
       // Act
       provider.instrumentFetch();
       mockFetch({
-        origin: 'http://httpbin.org/get',
+        origin: 'https://aws.amazon.com/blogs',
         headers: {
           'content-type': 'application/json',
         },
@@ -442,7 +442,7 @@ describe('Class: ProviderService', () => {
       // Assess
       expect((subsegment as HttpSubsegment).http).toEqual({
         request: {
-          url: 'httpbin.org',
+          url: 'aws.amazon.com',
           method: 'GET',
         },
         response: {
@@ -455,7 +455,7 @@ describe('Class: ProviderService', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
-      const subsegment = segment.addNewSubsegment('httpbin.org');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
       jest.spyOn(subsegment, 'addThrottleFlag');
       jest
         .spyOn(segment, 'addNewSubsegment')
@@ -469,7 +469,7 @@ describe('Class: ProviderService', () => {
       // Act
       provider.instrumentFetch();
       mockFetch({
-        origin: 'http://httpbin.org/get',
+        origin: 'https://aws.amazon.com/blogs',
         statusCode: 429,
       });
 
@@ -488,7 +488,7 @@ describe('Class: ProviderService', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
-      const subsegment = segment.addNewSubsegment('httpbin.org');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
       jest.spyOn(subsegment, 'addErrorFlag');
       jest
         .spyOn(segment, 'addNewSubsegment')
@@ -502,7 +502,7 @@ describe('Class: ProviderService', () => {
       // Act
       provider.instrumentFetch();
       mockFetch({
-        origin: 'http://httpbin.org/get',
+        origin: 'https://aws.amazon.com/blogs',
         statusCode: 404,
       });
 
@@ -521,7 +521,7 @@ describe('Class: ProviderService', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
-      const subsegment = segment.addNewSubsegment('httpbin.org');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
       jest.spyOn(subsegment, 'addFaultFlag');
       jest
         .spyOn(segment, 'addNewSubsegment')
@@ -535,7 +535,7 @@ describe('Class: ProviderService', () => {
       // Act
       provider.instrumentFetch();
       mockFetch({
-        origin: 'http://httpbin.org/get',
+        origin: 'https://aws.amazon.com/blogs',
         statusCode: 500,
       });
 

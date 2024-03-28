@@ -24,6 +24,8 @@ import http from 'node:http';
 import https from 'node:https';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { channel } from 'node:diagnostics_channel';
+import type { HttpSubsegment } from '../../src/provider/ProviderService.js';
 
 jest.mock('aws-xray-sdk-core', () => ({
   ...jest.requireActual('aws-xray-sdk-core'),
@@ -356,6 +358,235 @@ describe('Class: ProviderService', () => {
       // Assess
       expect(segmentSpy).toHaveBeenCalledTimes(1);
       expect(segmentSpy).toHaveBeenCalledWith('foo', 'bar', 'baz');
+    });
+  });
+
+  describe('Method: captureNativeFetch', () => {
+    it('subscribes to the diagnostics channel', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.captureNativeFetch();
+
+      // Assess
+      expect(channel('undici:request:create').hasSubscribers).toBe(true);
+      expect(channel('undici:request:headers').hasSubscribers).toBe(true);
+      expect(channel('undici:request:trailers').hasSubscribers).toBe(true);
+    });
+
+    const mockFetch = ({
+      origin,
+      method,
+      statusCode,
+      headers,
+    }: {
+      origin: string;
+      method?: string;
+      statusCode?: number;
+      headers?: { [key: string]: string };
+    }): void => {
+      const requestStart = channel('undici:request:create');
+      const response = channel('undici:request:headers');
+      const requestEnd = channel('undici:request:trailers');
+
+      requestStart.publish({
+        request: {
+          origin,
+        },
+      });
+
+      const encoder = new TextEncoder();
+      const encodedHeaders = [];
+      for (const [key, value] of Object.entries(headers ?? {})) {
+        encodedHeaders.push(encoder.encode(key));
+        encodedHeaders.push(encoder.encode(value));
+      }
+      response.publish({
+        request: {
+          origin,
+          method: method ?? 'GET',
+        },
+        response: {
+          statusCode: statusCode ?? 200,
+          headers: encodedHeaders,
+        },
+      });
+      requestEnd.publish({});
+    };
+
+    it('traces a successful request', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('httpbin.org');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+
+      // Act
+      provider.captureNativeFetch();
+      mockFetch({
+        origin: 'http://httpbin.org/get',
+        headers: {
+          'content-length': '100',
+        },
+      });
+
+      // Assess
+      expect(segment.addNewSubsegment).toHaveBeenCalledTimes(1);
+      expect(segment.addNewSubsegment).toHaveBeenCalledWith('httpbin.org');
+      expect((subsegment as HttpSubsegment).http).toEqual({
+        request: {
+          url: 'httpbin.org',
+          method: 'GET',
+        },
+        response: {
+          status: 200,
+          content_length: 100,
+        },
+      });
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('excludes the content_length header when invalid or not found', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('httpbin.org');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+
+      // Act
+      provider.captureNativeFetch();
+      mockFetch({
+        origin: 'http://httpbin.org/get',
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual({
+        request: {
+          url: 'httpbin.org',
+          method: 'GET',
+        },
+        response: {
+          status: 200,
+        },
+      });
+    });
+
+    it('adds a throttle flag to the segment when the status code is 429', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('httpbin.org');
+      jest.spyOn(subsegment, 'addThrottleFlag');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+
+      // Act
+      provider.captureNativeFetch();
+      mockFetch({
+        origin: 'http://httpbin.org/get',
+        statusCode: 429,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 429,
+          },
+        })
+      );
+      expect(subsegment.addThrottleFlag).toHaveBeenCalledTimes(1);
+    });
+
+    it('adds an error flag to the segment when the status code is 4xx', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('httpbin.org');
+      jest.spyOn(subsegment, 'addErrorFlag');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+
+      // Act
+      provider.captureNativeFetch();
+      mockFetch({
+        origin: 'http://httpbin.org/get',
+        statusCode: 404,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 404,
+          },
+        })
+      );
+      expect(subsegment.addErrorFlag).toHaveBeenCalledTimes(1);
+    });
+
+    it('adds a fault flag to the segment when the status code is 5xx', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('httpbin.org');
+      jest.spyOn(subsegment, 'addFaultFlag');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+
+      // Act
+      provider.captureNativeFetch();
+      mockFetch({
+        origin: 'http://httpbin.org/get',
+        statusCode: 500,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 500,
+          },
+        })
+      );
+      expect(subsegment.addFaultFlag).toHaveBeenCalledTimes(1);
     });
   });
 });

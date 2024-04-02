@@ -113,7 +113,8 @@ class ProviderService implements ProviderServiceInterface {
     };
 
     /**
-     * Enrich the subsegment with the request and response details.
+     * Enrich the subsegment with the request and response details, and close it.
+     * Then, set the parent segment as the active segment.
      *
      * @note that `message` must be `unknown` because that's the type expected by `subscribe`
      *
@@ -155,15 +156,7 @@ class ProviderService implements ProviderServiceInterface {
         } else if (status >= 500 && status < 600) {
           subsegment.addFaultFlag();
         }
-      }
-    };
 
-    /**
-     * Close the subsegment at the end of the request.
-     */
-    const onRequestEnd = (): void => {
-      const subsegment = this.getSegment();
-      if (isHttpSubsegment(subsegment)) {
         subsegment.close();
         this.setSegment(subsegment.parent);
       }
@@ -171,7 +164,6 @@ class ProviderService implements ProviderServiceInterface {
 
     subscribe('undici:request:create', onRequestStart);
     subscribe('undici:request:headers', onResponse);
-    subscribe('undici:request:trailers', onRequestEnd);
   }
 
   public putAnnotation(key: string, value: string | number | boolean): void {

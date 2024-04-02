@@ -15,7 +15,7 @@ Zod is a TypeScript-first schema declaration and validation library.
 * Define data schema as zod schema, then parse, validate and extract only what you want
 * Built-in envelopes to unwrap and validate popular event sources payloads
 * Extend and customize envelopes to fit your needs
-* Available for middy middleware and TypeScript method decorators
+* Available for Middy.js middleware and TypeScript method decorators
 
 ## Getting started
 

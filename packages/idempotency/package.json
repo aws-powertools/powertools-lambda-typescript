@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/idempotency",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "The idempotency package for the Powertools for AWS Lambda (TypeScript) library. It provides options to make your Lambda functions idempotent and safe to retry.",
   "author": {
     "name": "Amazon Web Services",
@@ -59,8 +59,8 @@
       "require": "./lib/cjs/middleware/makeHandlerIdempotent.js"
     },
     "./types": {
-      "import": "./lib/esm/types/index.d.ts",
-      "require": "./lib/cjs/types/index.d.ts"
+      "import": "./lib/esm/types/index.js",
+      "require": "./lib/cjs/types/index.js"
     }
   },
   "typesVersions": {
@@ -100,8 +100,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.0.2",
-    "@aws-sdk/util-base64-node": "^3.209.0",
+    "@aws-lambda-powertools/commons": "^2.0.3",
     "jmespath": "^0.16.0"
   },
   "peerDependencies": {
@@ -130,10 +129,10 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.525.0",
-    "@aws-sdk/lib-dynamodb": "^3.525.0",
+    "@aws-sdk/client-dynamodb": "^3.540.0",
+    "@aws-sdk/lib-dynamodb": "^3.540.0",
     "@types/jmespath": "^0.15.0",
-    "aws-sdk-client-mock": "^3.0.1",
-    "aws-sdk-client-mock-jest": "^3.0.1"
+    "aws-sdk-client-mock": "^4.0.0",
+    "aws-sdk-client-mock-jest": "^4.0.0"
   }
 }

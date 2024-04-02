@@ -59,8 +59,7 @@ Or refer to the installation guide of each utility:
 
 ### Examples
 
-* [CDK](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/cdk)
-* [SAM](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/sam)
+You can find examples of how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/app) directory. The application is a simple REST API that can be deployed via either AWS CDK or AWS SAM.
 
 ### Demo applications
 

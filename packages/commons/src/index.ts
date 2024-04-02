@@ -1,4 +1,14 @@
-export { isRecord, isString, isTruthy, isNullOrUndefined } from './guards.js';
+export {
+  isRecord,
+  isString,
+  isNumber,
+  isIntegerNumber,
+  isTruthy,
+  isNull,
+  isNullOrUndefined,
+  getType,
+  isStrictEqual,
+} from './typeUtils.js';
 export { Utility } from './Utility.js';
 export { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 export { addUserAgentMiddleware, isSdkClient } from './awsSdkUtils.js';

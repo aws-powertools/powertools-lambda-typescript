@@ -19,6 +19,7 @@ nav:
           - utilities/parameters.md
           - utilities/idempotency.md
           - utilities/batch.md
+          - utilities/jmespath.md
           - utilities/parser.md
   - Processes:
       - Roadmap: roadmap.md
@@ -101,6 +102,7 @@ plugins:
       glob:
         - snippets/node_modules/*
         - snippets/package.json
+        - snippets/CHANGELOG.md
 
 extra_css:
   - stylesheets/extra.css

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2.0.3 (2024-03-15)
+
+**fix:**: add createRequire banner in esm build ([#2231](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2231)) ([730bcc9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/730bcc93c027f4d60788badb6c5c01a09b3c70be))
+
 ## 2.0.2 (2024-03-05)
 
 **Note:** Version bump only for package layers

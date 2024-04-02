@@ -2,7 +2,6 @@ import { Utility } from '@aws-lambda-powertools/commons';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
-import { format } from 'node:util';
 import { Console } from 'node:console';
 import { randomInt } from 'node:crypto';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
@@ -127,23 +126,31 @@ class Logger extends Utility implements LoggerInterface {
    * @private
    */
   private console!: Console;
-
+  /**
+   * Custom config service instance used to configure the logger.
+   */
   private customConfigService?: ConfigServiceInterface;
-
-  // envVarsService is always initialized in the constructor in setOptions()
-  private envVarsService!: EnvironmentVariablesService;
-
+  /**
+   * Environment variables service instance used to fetch environment variables.
+   */
+  private envVarsService = new EnvironmentVariablesService();
+  /**
+   * Whether to print the Lambda invocation event in the logs.
+   */
   private logEvent = false;
-
+  /**
+   * Formatter used to format the log items.
+   * @default new PowertoolsLogFormatter()
+   */
   private logFormatter?: LogFormatterInterface;
-
+  /**
+   * JSON indentation used to format the logs.
+   */
   private logIndentation: number = LogJsonIndent.COMPACT;
-
   /**
    * Log level used internally by the current instance of Logger.
    */
   private logLevel = 12;
-
   /**
    * Log level thresholds used internally by the current instance of Logger.
    *
@@ -157,10 +164,25 @@ class Logger extends Utility implements LoggerInterface {
     CRITICAL: 24,
     SILENT: 28,
   };
-
+  /**
+   * Persistent log attributes that will be logged in all log items.
+   */
   private persistentLogAttributes: LogAttributes = {};
-
+  /**
+   * Standard attributes managed by Powertools that will be logged in all log items.
+   */
   private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{};
+  /**
+   * Buffer used to store logs until the logger is initialized.
+   *
+   * Sometimes we need to log warnings before the logger is fully initialized, however we can't log them
+   * immediately because the logger is not ready yet. This buffer stores those logs until the logger is ready.
+   */
+  #buffer: [number, Parameters<Logger['createAndPopulateLogItem']>][] = [];
+  /**
+   * Flag used to determine if the logger is initialized.
+   */
+  #isInitialized = false;
 
   /**
    * Log level used by the current instance of Logger.
@@ -179,7 +201,16 @@ class Logger extends Utility implements LoggerInterface {
    */
   public constructor(options: ConstructorOptions = {}) {
     super();
-    this.setOptions(options);
+    const { customConfigService, ...rest } = options;
+    this.setCustomConfigService(customConfigService);
+    // all logs are buffered until the logger is initialized
+    this.setOptions(rest);
+    this.#isInitialized = true;
+    for (const [level, log] of this.#buffer) {
+      // we call the method directly and create the log item just in time
+      this.printLog(level, this.createAndPopulateLogItem(...log));
+    }
+    this.#buffer = [];
   }
 
   /**
@@ -586,11 +617,7 @@ class Logger extends Utility implements LoggerInterface {
         this.logLevel > this.logLevelThresholds[selectedLogLevel]
       ) {
         this.warn(
-          format(
-            `Current log level (%s) does not match AWS Lambda Advanced Logging Controls minimum log level (%s). This can lead to data loss, consider adjusting them.`,
-            selectedLogLevel,
-            awsLogLevel
-          )
+          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${awsLogLevel}). This can lead to data loss, consider adjusting them.`
         );
       }
 
@@ -601,41 +628,49 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * It processes a particular log item so that it can be printed to stdout:
-   * - Merges ephemeral log attributes with persistent log attributes (printed for all logs) and additional info;
-   * - Formats all the log attributes;
+   * Create a log item and populate it with the given log level, input, and extra input.
    *
-   * @private
-   * @param {number} logLevel
-   * @param {LogItemMessage} input
-   * @param {LogItemExtraInput} extraInput
-   * @returns {LogItem}
+   * We start with creating an object with base attributes managed by Powertools.
+   * Then we create a second object with persistent attributes provided by customers either
+   * directly to the log entry or through initial configuration and `appendKeys` method.
+   *
+   * Once we have the two objects, we pass them to the formatter that will apply the desired
+   * formatting to the log item.
+   *
+   * @param logLevel The log level of the log item to be printed
+   * @param input The main input of the log item, this can be a string or an object with additional attributes
+   * @param extraInput Additional attributes to be added to the log item
    */
   private createAndPopulateLogItem(
     logLevel: number,
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): LogItem {
-    // TODO: this method's logic is hard to understand, there is an opportunity here to simplify this logic.
-    const unformattedBaseAttributes = merge(
-      {
-        logLevel: this.getLogLevelNameFromNumber(logLevel),
-        timestamp: new Date(),
-        message: typeof input === 'string' ? input : input.message,
-        xRayTraceId: this.envVarsService.getXrayTraceId(),
-      },
-      this.getPowertoolsLogData()
-    );
-
-    let additionalLogAttributes: LogAttributes = {};
-    additionalLogAttributes = merge(
-      additionalLogAttributes,
-      this.getPersistentLogAttributes()
-    );
-    if (typeof input !== 'string') {
-      additionalLogAttributes = merge(additionalLogAttributes, input);
+    let message = '';
+    let otherInput: { [key: string]: unknown } = {};
+    if (typeof input === 'string') {
+      message = input;
+    } else {
+      const { message: inputMessage, ...rest } = input;
+      message = inputMessage;
+      otherInput = rest;
     }
-    extraInput.forEach((item: Error | LogAttributes | string) => {
+
+    // create base attributes
+    const unformattedBaseAttributes = {
+      logLevel: this.getLogLevelNameFromNumber(logLevel),
+      timestamp: new Date(),
+      message,
+      xRayTraceId: this.envVarsService.getXrayTraceId(),
+      ...this.getPowertoolsLogData(),
+    };
+
+    // gradually merge additional attributes starting from customer-provided persistent attributes
+    let additionalLogAttributes = { ...this.getPersistentLogAttributes() };
+    // if the main input is not a string, then it's an object with additional attributes, so we merge it
+    additionalLogAttributes = merge(additionalLogAttributes, otherInput);
+    // then we merge the extra input attributes (if any)
+    for (const item of extraInput) {
       const attributes: LogAttributes =
         item instanceof Error
           ? { error: item }
@@ -644,14 +679,12 @@ class Logger extends Utility implements LoggerInterface {
             : item;
 
       additionalLogAttributes = merge(additionalLogAttributes, attributes);
-    });
+    }
 
-    const logItem = this.getLogFormatter().formatAttributes(
+    return this.getLogFormatter().formatAttributes(
       unformattedBaseAttributes,
       additionalLogAttributes
     );
-
-    return logItem;
   }
 
   /**
@@ -821,10 +854,14 @@ class Logger extends Utility implements LoggerInterface {
     extraInput: LogItemExtraInput
   ): void {
     if (logLevel >= this.logLevel) {
-      this.printLog(
-        logLevel,
-        this.createAndPopulateLogItem(logLevel, input, extraInput)
-      );
+      if (this.#isInitialized) {
+        this.printLog(
+          logLevel,
+          this.createAndPopulateLogItem(logLevel, input, extraInput)
+        );
+      } else {
+        this.#buffer.push([logLevel, [logLevel, input, extraInput]]);
+      }
     }
   }
 
@@ -860,17 +897,6 @@ class Logger extends Utility implements LoggerInterface {
     this.customConfigService = customConfigService
       ? customConfigService
       : undefined;
-  }
-
-  /**
-   * Sets the Logger's custom config service instance, which will be used
-   * to fetch environment variables.
-   *
-   * @private
-   * @returns {void}
-   */
-  private setEnvVarsService(): void {
-    this.envVarsService = new EnvironmentVariablesService();
   }
 
   /**
@@ -970,7 +996,7 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * If the `POWERTOOLS_DEV' env variable is set,
+   * If the `POWERTOOLS_DEV` env variable is set,
    * it adds JSON indentation for pretty printing logs.
    *
    * @private
@@ -987,31 +1013,33 @@ class Logger extends Utility implements LoggerInterface {
    * and the content of all logs.
    *
    * @private
-   * @param {ConstructorOptions} options
-   * @returns {Logger}
+   * @param options Options to configure the Logger instance
    */
-  private setOptions(options: ConstructorOptions): Logger {
+  private setOptions(
+    options: Omit<ConstructorOptions, 'customConfigService'>
+  ): this {
     const {
       logLevel,
       serviceName,
       sampleRateValue,
       logFormatter,
-      customConfigService,
       persistentLogAttributes,
       environment,
     } = options;
 
-    // order is important, EnvVarsService() is used by other methods
-    this.setEnvVarsService();
-    this.setConsole();
-    this.setCustomConfigService(customConfigService);
-    this.setInitialLogLevel(logLevel);
-    this.setLogFormatter(logFormatter);
+    // configurations that affect log content
     this.setPowertoolsLogData(serviceName, environment);
-    this.setInitialSampleRate(sampleRateValue);
-    this.setLogEvent();
-    this.setLogIndentation();
     this.addPersistentLogAttributes(persistentLogAttributes);
+
+    // configurations that affect Logger behavior
+    this.setLogEvent();
+    this.setInitialLogLevel(logLevel);
+    this.setInitialSampleRate(sampleRateValue);
+
+    // configurations that affect how logs are printed
+    this.setLogFormatter(logFormatter);
+    this.setConsole();
+    this.setLogIndentation();
 
     return this;
   }

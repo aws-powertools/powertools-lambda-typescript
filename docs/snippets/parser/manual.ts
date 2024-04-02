@@ -1,30 +1,30 @@
-import { Context, EventBridgeEvent } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { z } from 'zod';
-import { eventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
+import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
 import { EventBridgeSchema } from '@aws-lambda-powertools/parser/schemas';
-
-const orderItemSchema = z.object({
-  id: z.number().positive(),
-  quantity: z.number(),
-  description: z.string(),
-});
+import type { EventBridgeEvent } from '@aws-lambda-powertools/parser/types';
 
 const orderSchema = z.object({
   id: z.number().positive(),
   description: z.string(),
-  items: z.array(orderItemSchema),
+  items: z.array(
+    z.object({
+      id: z.number().positive(),
+      quantity: z.number(),
+      description: z.string(),
+    })
+  ),
   optionalField: z.string().optional(),
 });
-
 type Order = z.infer<typeof orderSchema>;
 
 export const handler = async (
-  event: EventBridgeEvent<string, unknown>,
+  event: EventBridgeEvent,
   _context: Context
 ): Promise<void> => {
   const parsedEvent = EventBridgeSchema.parse(event); // (1)!
   console.log(parsedEvent);
 
-  const orders: Order = eventBridgeEnvelope(event, orderSchema); // (2)!
+  const orders: Order = EventBridgeEnvelope.parse(event, orderSchema); // (2)!
   console.log(orders);
 };

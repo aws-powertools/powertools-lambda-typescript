@@ -1,19 +1,19 @@
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { parser } from '@aws-lambda-powertools/parser/middleware';
 import { z } from 'zod';
 import middy from '@middy/core';
-import { eventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
-
-const orderItemSchema = z.object({
-  id: z.number().positive(),
-  quantity: z.number(),
-  description: z.string(),
-});
+import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
 
 const orderSchema = z.object({
   id: z.number().positive(),
   description: z.string(),
-  items: z.array(orderItemSchema),
+  items: z.array(
+    z.object({
+      id: z.number().positive(),
+      quantity: z.number(),
+      description: z.string(),
+    })
+  ),
   optionalField: z.string().optional(),
 });
 
@@ -30,5 +30,5 @@ const lambdaHandler = async (
 };
 
 export const handler = middy(lambdaHandler).use(
-  parser({ schema: orderSchema, envelope: eventBridgeEnvelope })
+  parser({ schema: orderSchema, envelope: EventBridgeEnvelope })
 );

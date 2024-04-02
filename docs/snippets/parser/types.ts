@@ -3,16 +3,16 @@ import { parser } from '@aws-lambda-powertools/parser/middleware';
 import { z } from 'zod';
 import middy from '@middy/core';
 
-const orderItemSchema = z.object({
-  id: z.number().positive(),
-  quantity: z.number(),
-  description: z.string(),
-});
-
 const orderSchema = z.object({
   id: z.number().positive(),
   description: z.string(),
-  items: z.array(orderItemSchema),
+  items: z.array(
+    z.object({
+      id: z.number().positive(),
+      quantity: z.number(),
+      description: z.string(),
+    })
+  ),
   optionalField: z.string().optional(),
 });
 

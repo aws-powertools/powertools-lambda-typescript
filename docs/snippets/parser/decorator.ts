@@ -1,24 +1,24 @@
-import { Context } from 'aws-lambda';
-import { LambdaInterface } from '@aws-lambda-powertools/commons';
+import type { Context } from 'aws-lambda';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { parser } from '@aws-lambda-powertools/parser';
 import { z } from 'zod';
-
-const orderItemSchema = z.object({
-  id: z.number().positive(),
-  quantity: z.number(),
-  description: z.string(),
-});
 
 const orderSchema = z.object({
   id: z.number().positive(),
   description: z.string(),
-  items: z.array(orderItemSchema),
+  items: z.array(
+    z.object({
+      id: z.number().positive(),
+      quantity: z.number(),
+      description: z.string(),
+    })
+  ),
   optionalField: z.string().optional(),
 });
 
 type Order = z.infer<typeof orderSchema>;
 
-class Lambda extends LambdaInterface {
+class Lambda implements LambdaInterface {
   @parser({ schema: orderSchema })
   public async handler(event: Order, _context: Context): Promise<void> {
     for (const item of event.items) {

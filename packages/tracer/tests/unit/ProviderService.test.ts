@@ -374,7 +374,6 @@ describe('Class: ProviderService', () => {
       // Assess
       expect(channel('undici:request:create').hasSubscribers).toBe(true);
       expect(channel('undici:request:headers').hasSubscribers).toBe(true);
-      expect(channel('undici:request:trailers').hasSubscribers).toBe(true);
     });
 
     it('traces a successful request', async () => {

@@ -1,5 +1,5 @@
 ---
-title: Parser (zod)
+title: Parser (Zod)
 descrition: Utility
 ---
 

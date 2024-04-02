@@ -1,7 +1,8 @@
 import { channel } from 'node:diagnostics_channel';
+import type { URL } from 'node:url';
 
 type MockFetchOptions = {
-  origin: string;
+  origin: string | URL;
   method?: string;
   statusCode?: number;
   headers?: { [key: string]: string };

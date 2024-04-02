@@ -27,6 +27,7 @@ import https from 'node:https';
 import { ProviderService } from '../../src/provider/ProviderService.js';
 import type { HttpSubsegment } from '../../src/types/ProviderService.js';
 import { mockFetch } from '../helpers/mockRequests.js';
+import { URL } from 'node:url';
 
 jest.mock('aws-xray-sdk-core', () => ({
   ...jest.requireActual('aws-xray-sdk-core'),
@@ -433,7 +434,7 @@ describe('Class: ProviderService', () => {
       // Act
       provider.instrumentFetch();
       mockFetch({
-        origin: 'https://aws.amazon.com/blogs',
+        origin: new URL('https://aws.amazon.com/blogs'),
         headers: {
           'content-type': 'application/json',
         },

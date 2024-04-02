@@ -3,8 +3,6 @@ import type {
   ProviderServiceInterface,
   ContextMissingStrategy,
   HttpSubsegment,
-  MessageOnRequestStart,
-  MessageOnResponse,
 } from '../types/ProviderService.js';
 import type { Segment, Subsegment, Logger } from 'aws-xray-sdk-core';
 import xraySdk from 'aws-xray-sdk-core';
@@ -25,7 +23,12 @@ const {
 } = xraySdk;
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { subscribe } from 'node:diagnostics_channel';
-import { findHeaderAndDecode, isHttpSubsegment } from './utilities.js';
+import {
+  findHeaderAndDecode,
+  getOriginURL,
+  isHttpSubsegment,
+} from './utilities.js';
+import type { DiagnosticsChannel } from 'undici-types';
 
 class ProviderService implements ProviderServiceInterface {
   public captureAWS<T>(awssdk: T): T {
@@ -96,11 +99,11 @@ class ProviderService implements ProviderServiceInterface {
      * @param message The message received from the `undici` channel
      */
     const onRequestStart = (message: unknown): void => {
-      const { request } = message as MessageOnRequestStart;
+      const { request } = message as DiagnosticsChannel.RequestCreateMessage;
 
       const parentSubsegment = this.getSegment();
-      if (parentSubsegment) {
-        const origin = new URL(request.origin);
+      if (parentSubsegment && request.origin) {
+        const origin = getOriginURL(request.origin);
         const subsegment = parentSubsegment.addNewSubsegment(origin.hostname);
         subsegment.addAttribute('namespace', 'remote');
         (subsegment as HttpSubsegment).http = {};
@@ -117,11 +120,12 @@ class ProviderService implements ProviderServiceInterface {
      * @param message The message received from the `undici` channel
      */
     const onResponse = (message: unknown): void => {
-      const { request, response } = message as MessageOnResponse;
+      const { request, response } =
+        message as DiagnosticsChannel.RequestHeadersMessage;
 
       const subsegment = this.getSegment();
-      if (isHttpSubsegment(subsegment)) {
-        const origin = new URL(request.origin);
+      if (isHttpSubsegment(subsegment) && request.origin) {
+        const origin = getOriginURL(request.origin);
         const method = request.method;
 
         const status = response.statusCode;

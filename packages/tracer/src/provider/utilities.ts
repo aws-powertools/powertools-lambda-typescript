@@ -1,5 +1,6 @@
 import type { HttpSubsegment } from '../types/ProviderService.js';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import { URL } from 'node:url';
 
 const decoder = new TextDecoder();
 
@@ -50,4 +51,13 @@ const isHttpSubsegment = (
   );
 };
 
-export { findHeaderAndDecode, isHttpSubsegment };
+/**
+ * Convert the origin url to a URL object when it is a string
+ *
+ * @param origin The origin url
+ */
+const getOriginURL = (origin: string | URL): URL => {
+  return origin instanceof URL ? origin : new URL(origin);
+};
+
+export { findHeaderAndDecode, isHttpSubsegment, getOriginURL };

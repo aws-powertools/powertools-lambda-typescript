@@ -58,7 +58,7 @@ interface HttpSubsegment extends Subsegment {
   http: {
     request?: {
       url: string;
-      method: string;
+      method?: string;
     };
     response?: {
       status: number;
@@ -67,30 +67,8 @@ interface HttpSubsegment extends Subsegment {
   };
 }
 
-/**
- * Partial shape of the message sent to the `undici:request:create` diagnostics channel
- */
-type MessageOnRequestStart = {
-  request: {
-    origin: string;
-    method: string;
-  };
-};
-
-/**
- * Partial shape of the message sent to the `undici:request:headers` diagnostics channel
- */
-type MessageOnResponse = MessageOnRequestStart & {
-  response: {
-    statusCode: number;
-    headers: Uint8Array[];
-  };
-};
-
 export type {
   ProviderServiceInterface,
   ContextMissingStrategy,
   HttpSubsegment,
-  MessageOnRequestStart,
-  MessageOnResponse,
 };

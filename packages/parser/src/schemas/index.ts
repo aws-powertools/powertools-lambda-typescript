@@ -7,9 +7,9 @@ export {
   CloudFormationCustomResourceUpdateSchema,
 } from './cloudformation-custom-resource.js';
 export {
-  CloudWatchLogsSchema,
   CloudWatchLogEventSchema,
   CloudWatchLogsDecodeSchema,
+  CloudWatchLogsSchema,
 } from './cloudwatch.js';
 export { DynamoDBStreamSchema } from './dynamodb.js';
 export { EventBridgeSchema } from './eventbridge.js';
@@ -21,13 +21,13 @@ export {
 } from './kinesis-firehose.js';
 export { LambdaFunctionUrlSchema } from './lambda.js';
 export {
-  S3Schema,
-  S3EventNotificationEventBridgeSchema,
   S3SqsEventNotificationSchema,
+  S3EventNotificationEventBridgeSchema,
   S3ObjectLambdaEventSchema,
+  S3Schema,
 } from './s3.js';
+export { SesSchema } from './ses.js';
 export { SnsSchema } from './sns.js';
 export { SqsSchema } from './sqs.js';
-export { SesSchema } from './ses.js';
 export { VpcLatticeSchema } from './vpc-lattice.js';
 export { VpcLatticeV2Schema } from './vpc-latticev2.js';

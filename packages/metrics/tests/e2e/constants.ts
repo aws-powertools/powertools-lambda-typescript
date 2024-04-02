@@ -4,7 +4,7 @@ import { MetricUnit } from '../../src/index.js';
 const RESOURCE_NAME_PREFIX = 'Metrics';
 const ONE_MINUTE = 60 * 1000;
 const TEST_CASE_TIMEOUT = 3 * ONE_MINUTE;
-const SETUP_TIMEOUT = 5 * ONE_MINUTE;
+const SETUP_TIMEOUT = 7 * ONE_MINUTE;
 const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;
 
 const commonEnvironmentVars = {

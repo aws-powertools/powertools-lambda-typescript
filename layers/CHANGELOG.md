@@ -3,6 +3,65 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2.0.2 (2024-03-05)
+
+**Note:** Version bump only for package layers
+
+
+
+
+
+## 2.0.1 (2024-03-04)
+
+**Note:** Version bump only for package layers
+
+
+
+
+
+# [2.0.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.18.1...v2.0.0) (2024-03-04)
+
+**Note:** Version bump only for package layers
+
+
+
+
+
+# 1.18.1 (2024-02-20)
+
+**Note:** Version bump only for package layers
+
+
+
+
+
+## [1.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.17.0...v1.18.0) (2024-01-26)
+
+**Note:** Version bump only for package layers
+
+## [1.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.17.0) (2023-11-24)
+
+**Note:** Version bump only for package layers
+
+# [1.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.15.0...v1.16.0) (2023-11-16)
+
+**Note:** Version bump only for package layers
+
+# [1.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.2...v1.15.0) (2023-11-14)
+
+### Features
+
+- **maintenance:** add support for nodejs20.x runtime ([#1790](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1790)) ([6b9b1bc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b9b1bcb9baf4b3d8e0e5ec6709594aca09bb033))
+- **metrics:** log directly to stdout ([#1786](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1786)) ([75dc5b1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/75dc5b1e16944416a287628c50ec4a0cf82c3023))
+
+## [1.14.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.1...v1.14.2) (2023-11-03)
+
+**Note:** Version bump only for package layers
+
+## [1.14.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.0...v1.14.1) (2023-10-31)
+
+**Note:** Version bump only for package layers
+
 # [1.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.1...v1.14.0) (2023-09-29)
 
 **Note:** Version bump only for package layers

@@ -47,6 +47,10 @@ Install the library in your project:
 npm install @aws-lambda-powertools/metrics
 ```
 
+!!! warning "Caution"
+    
+    Using the Lambda [Advanced Logging Controls](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced) feature requires you to update your version of Powertools for AWS Lambda (TypeScript) to at least v1.15.0 to ensure metrics are reported correctly to Amazon CloudWatch Metrics.
+
 ### Usage
 
 The `Metrics` utility must always be instantiated outside of the Lambda handler. In doing this, subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time. In addition, `Metrics` can track cold start and emit the appropriate metrics.
@@ -88,7 +92,7 @@ The `Metrics` utility is instantiated outside of the Lambda handler. In doing th
       HelloWorldFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs16.x
+          Runtime: nodejs20.x
           Environment:
           Variables:
             POWERTOOLS_SERVICE_NAME: orders
@@ -211,8 +215,9 @@ You can add default dimensions to your metrics by passing them as parameters in 
 
 === "with logMetrics decorator"
 
-    !!! info
-        Powertools decorators can only be attached to class methods and follow the experimetal decorators proposal implementation found in TypeScript 4.x. As such, you need to enable the `experimentalDecorators` compiler option in your `tsconfig.json` file to use them.
+    !!! note
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        If this is not the desired behavior, you can use the `logMetrics` middleware instead.
 
     ```typescript hl_lines="12"
     --8<-- "docs/snippets/metrics/defaultDimensionsDecorator.ts"
@@ -248,7 +253,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
 
 === "handler.ts"
 
-    ```typescript hl_lines="20"
+    ```typescript hl_lines="2 17"
     --8<-- "docs/snippets/metrics/middy.ts"
     ```
 
@@ -276,9 +281,9 @@ See below an example of how to automatically flush metrics with the Middy-compat
 
 #### Using the class decorator
 
-!!! info
-    Decorators can only be attached to a class declaration, method, accessor, property, or parameter. Therefore, if you prefer to write your handler as a standard function rather than a Class method, check the [middleware](#using-a-middleware) or [manual](#manually) method sections instead.  
-    See the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/decorators.html) for more details.
+!!! note
+    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+    If this is not the desired behavior, you can use the `logMetrics` middleware instead.
 
 The `logMetrics` decorator of the metrics utility can be used when your Lambda handler function is implemented as method of a Class.
 
@@ -363,7 +368,7 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="21"
+    ```typescript hl_lines="18"
     --8<-- "docs/snippets/metrics/captureColdStartMetricMiddy.ts"
     ```
 
@@ -393,7 +398,7 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
 
 === "handler.ts"
 
-    ```typescript hl_lines="18"
+    ```typescript hl_lines="15"
     --8<-- "docs/snippets/metrics/addMetadata.ts"
     ```
 

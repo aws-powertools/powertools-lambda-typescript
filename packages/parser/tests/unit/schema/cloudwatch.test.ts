@@ -4,7 +4,7 @@
  * @group unit/parser/schema/
  */
 
-import { CloudWatchLogsSchema } from '../../../src/schemas';
+import { CloudWatchLogsSchema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('CloudWatchLogs ', () => {

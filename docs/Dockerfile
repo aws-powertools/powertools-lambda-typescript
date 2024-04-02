@@ -1,2 +1,5 @@
-FROM squidfunk/mkdocs-material
-RUN pip install mkdocs-git-revision-date-plugin==0.3.2 mkdocs-exclude==1.0.2
+# version 9.5.2
+FROM squidfunk/mkdocs-material@sha256:3678304a65e17660953a30c0a0be0bc2fb8f55ac450216c14af6ba942badc4dc
+
+ADD requirements.txt /tmp/
+RUN pip install --require-hashes -r /tmp/requirements.txt

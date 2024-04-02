@@ -17,7 +17,9 @@ import type {
 } from './types/Tracer.js';
 import { ProviderService } from './provider/ProviderService.js';
 import type { ProviderServiceInterface } from './types/ProviderServiceInterface.js';
-import { type Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import xraySdk from 'aws-xray-sdk-core';
+const { Subsegment: XraySubsegment } = xraySdk;
 
 /**
  * ## Intro
@@ -46,7 +48,8 @@ import { type Segment, Subsegment } from 'aws-xray-sdk-core';
  *
  * @example
  * ```typescript
- * import { captureLambdaHandler, Tracer } from '@aws-lambda-powertools/tracer';
+ * import { Tracer } from '@aws-lambda-powertools/tracer';
+ * import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
  * import middy from '@middy/core';
  *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
@@ -69,7 +72,7 @@ import { type Segment, Subsegment } from 'aws-xray-sdk-core';
  * @example
  * ```typescript
  * import { Tracer } from '@aws-lambda-powertools/tracer';
- * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
  * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
  *
@@ -345,7 +348,7 @@ class Tracer extends Utility implements TracerInterface {
    * @example
    * ```typescript
    * import { Tracer } from '@aws-lambda-powertools/tracer';
-   * import { LambdaInterface } from '@aws-lambda-powertools/commons';
+   * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
    *
    * const tracer = new Tracer({ serviceName: 'serverlessAirline' });
    *
@@ -577,7 +580,7 @@ class Tracer extends Utility implements TracerInterface {
    */
   public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {
-      return new Subsegment('## Dummy segment');
+      return new XraySubsegment('## Dummy segment');
     }
     const segment = this.provider.getSegment();
     if (segment === undefined) {

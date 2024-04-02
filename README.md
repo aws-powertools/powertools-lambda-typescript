@@ -1,6 +1,11 @@
 # Powertools for AWS Lambda (TypeScript) <!-- omit in toc -->
 
-[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET)
+![NodeSupport](https://img.shields.io/static/v1?label=node&message=%2016|%2018|%2020&color=green?style=flat-square&logo=node)
+![GitHub Release](https://img.shields.io/github/v/release/aws-powertools/powertools-lambda-typescript?style=flat-square)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-typescript/badge)](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-typescript)
+[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET?style=flat-square)](https://discord.gg/B8zZKbbyET)
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
@@ -18,7 +23,7 @@ You can use the library in both TypeScript and JavaScript code bases.
     - [Lambda layers](#lambda-layers)
     - [NPM modules](#npm-modules)
   - [Examples](#examples)
-  - [Serverless TypeScript Demo application](#serverless-typescript-demo-application)
+  - [Demo applications](#demo-applications)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
@@ -82,10 +87,12 @@ Or refer to the installation guide of each utility:
 * [CDK](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/cdk)
 * [SAM](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/sam)
 
-### Serverless TypeScript Demo application
+### Demo applications
 
 The [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) shows how to use Powertools for AWS Lambda (TypeScript).  
 You can find instructions on how to deploy and load test this application in the [repository](https://github.com/aws-samples/serverless-typescript-demo).
+
+The [AWS Lambda performance tuning](https://github.com/aws-samples/optimizations-for-lambda-functions) repository also uses Powertools for AWS Lambda (TypeScript) as well as demonstrating other performance tuning techniques for Lambda functions written in TypeScript.
 
 ## Contribute
 
@@ -118,6 +125,8 @@ The following companies, among others, use Powertools:
 * [Sennder](https://sennder.com/)
 * [Certible](https://www.certible.com/)
 * [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
+* [AppYourself](https://appyourself.net)
+* [Alma Media](https://www.almamedia.fi)
 
 ### Sharing your work
 

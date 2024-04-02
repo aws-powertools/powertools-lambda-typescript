@@ -1,9 +1,7 @@
 name: Deploy layer to all regions
 
 permissions:
-  id-token: write
-  contents: write
-  pages: write
+  contents: read
 
 on:
   # Manual trigger
@@ -33,13 +31,13 @@ jobs:
     if: ${{ (github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch') }}
     steps:
       - name: checkout
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          fetch-depth: 0
+          ref: ${{ github.sha }}
       - name: Setup Node.js
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: "18"
+          node-version: "20"
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: CDK build
@@ -47,7 +45,7 @@ jobs:
       - name: Zip output
         run: zip -r cdk.out.zip layers/cdk.out
       - name: Archive CDK artifacts
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: cdk-layer-artifact
           path: cdk.out.zip
@@ -57,6 +55,9 @@ jobs:
     needs:
       - build-layer
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
+    permissions:
+      id-token: write
+      contents: read
     with:
       stage: "BETA"
       artifact-name: "cdk-layer-artifact"
@@ -69,6 +70,9 @@ jobs:
     needs:
       - deploy-beta
     uses: ./.github/workflows/reusable_deploy_layer_stack.yml
+    permissions:
+      id-token: write
+      contents: read
     with:
       stage: "PROD"
       artifact-name: "cdk-layer-artifact"
@@ -76,31 +80,37 @@ jobs:
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
 
-  prepare_docs_alias:
+  update_layer_arn_docs:
+    needs: [deploy-prod]
+    # Force Github action to run only a single job at a time (based on the group name)
+    # This is to prevent race-condition and inconsistencies with changelog push
+    concurrency:
+      group: changelog-build
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-    outputs:
-      DOCS_ALIAS: ${{ steps.set-alias.outputs.DOCS_ALIAS }}
-    steps:
-      - name: Set docs alias
-        id: set-alias
-        run: |
-          DOCS_ALIAS=latest
-          if [[ "${{ inputs.pre_release }}" == true ]] ; then
-            DOCS_ALIAS=alpha
-          fi
-          echo DOCS_ALIAS="$DOCS_ALIAS" >> "$GITHUB_OUTPUT"
-
-  release-docs:
-    needs: [ deploy-prod, prepare_docs_alias ]
-    permissions:
       contents: write
-      pages: write
-      id-token: write
-    secrets: inherit
-    uses: ./.github/workflows/reusable-publish-docs.yml
-    with:
-      version: ${{ inputs.latest_published_version }}
-      alias: ${{ needs.prepare_docs_alias.outputs.DOCS_ALIAS }}
-      detached_mode: true
+      pull-requests: write
+      id-token: none
+    steps:
+      - name: Checkout repository # reusable workflows start clean, so we need to checkout again
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ github.sha }}
+      - name: Download CDK layer artifacts
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          path: cdk-layer-stack
+          pattern: cdk-layer-stack-* # merge all Layer artifacts created per region earlier (reusable_deploy_layer_stack.yml; step "Save Layer ARN artifact")
+          merge-multiple: true
+      - name: Replace layer versions in documentation
+        run: |
+          ls -la cdk-layer-stack/
+          ./.github/scripts/update_layer_arn.sh cdk-layer-stack
+      - name: Create PR
+        id: create-pr
+        uses: ./.github/actions/create-pr
+        with: 
+          files: 'docs/index.md'
+          temp_branch_prefix: 'ci-layer-docs'
+          pull_request_title: 'chore(ci): update layer ARN on documentation'
+          github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -4,7 +4,7 @@
  * @group unit/parser/schema/
  */
 
-import { LambdaFunctionUrlSchema } from '../../../src/schemas';
+import { LambdaFunctionUrlSchema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('Lambda ', () => {

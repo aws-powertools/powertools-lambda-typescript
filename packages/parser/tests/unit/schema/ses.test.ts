@@ -4,7 +4,7 @@
  * @group unit/parser/schema/
  */
 
-import { SesSchema } from '../../../src/schemas';
+import { SesSchema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('Schema:', () => {

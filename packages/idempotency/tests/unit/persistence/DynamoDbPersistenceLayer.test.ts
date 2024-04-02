@@ -12,8 +12,8 @@ import {
   IdempotencyItemNotFoundError,
 } from '../../../src/index.js';
 import {
+  ConditionalCheckFailedException,
   DynamoDBClient,
-  DynamoDBServiceException,
   PutItemCommand,
   GetItemCommand,
   UpdateItemCommand,
@@ -395,19 +395,30 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         expiryTimestamp: 0,
       });
       client.on(PutItemCommand).rejects(
-        new DynamoDBServiceException({
-          $fault: 'client',
+        new ConditionalCheckFailedException({
           $metadata: {
             httpStatusCode: 400,
             requestId: 'someRequestId',
           },
-          name: 'ConditionalCheckFailedException',
+          message: 'Conditional check failed',
+          Item: {
+            id: { S: 'test-key' },
+            status: { S: 'INPROGRESS' },
+            expiration: { N: Date.now().toString() },
+          },
         })
       );
 
       // Act & Assess
       await expect(persistenceLayer._putRecord(record)).rejects.toThrowError(
-        IdempotencyItemAlreadyExistsError
+        new IdempotencyItemAlreadyExistsError(
+          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
+          new IdempotencyRecord({
+            idempotencyKey: record.idempotencyKey,
+            status: IdempotencyRecordStatus.EXPIRED,
+            expiryTimestamp: Date.now() / 1000 - 1,
+          })
+        )
       );
     });
 
@@ -675,5 +686,27 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         Key: marshall({ id: dummyKey }),
       });
     });
+  });
+
+  test('_putRecord throws Error when Item is undefined', async () => {
+    // Prepare
+    const persistenceLayer = new TestDynamoDBPersistenceLayer({
+      tableName: dummyTableName,
+    });
+    const mockRecord = new IdempotencyRecord({
+      idempotencyKey: 'test-key',
+      status: 'INPROGRESS',
+      expiryTimestamp: Date.now(),
+    });
+
+    DynamoDBClient.prototype.send = jest.fn().mockRejectedValueOnce(
+      new ConditionalCheckFailedException({
+        message: 'Conditional check failed',
+        $metadata: {},
+      })
+    );
+    await expect(
+      persistenceLayer._putRecord(mockRecord)
+    ).rejects.toThrowError();
   });
 });

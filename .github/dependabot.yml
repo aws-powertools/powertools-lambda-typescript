@@ -1,0 +1,50 @@
+version: 2
+updates:
+  - package-ecosystem: docker
+    directory: /.devcontainer
+    labels: [ ]
+    schedule:
+      interval: daily
+
+  - package-ecosystem: github-actions
+    directory: /
+    labels: [ ]
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /docs
+    labels: [ ]
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /docs
+    labels: [ ]
+    schedule:
+      interval: daily
+    ignore:
+      - dependency-name: "mike"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: npm
+    directory: /
+    labels: [ ]
+    schedule:
+      interval: daily
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: "@middy/core"
+        update-types: [ "version-update:semver-major" ]
+    groups:
+      aws-sdk:
+        patterns:
+        - "@aws-sdk/**"
+        - "@smithy/**"
+        - "aws-sdk-client-mock"
+        - "aws-sdk-client-mock-jest"
+      aws-cdk:
+        patterns:
+        - "@aws-cdk/**"
+        - "aws-cdk-lib"
+        - "aws-cdk"

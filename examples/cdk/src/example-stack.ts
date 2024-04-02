@@ -11,7 +11,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
 const commonProps: Partial<NodejsFunctionProps> = {
-  runtime: Runtime.NODEJS_18_X,
+  runtime: Runtime.NODEJS_20_X,
   tracing: Tracing.ACTIVE,
   timeout: Duration.seconds(30),
   logRetention: RetentionDays.ONE_DAY,
@@ -19,7 +19,7 @@ const commonProps: Partial<NodejsFunctionProps> = {
     NODE_OPTIONS: '--enable-source-maps', // see https://docs.aws.amazon.com/lambda/latest/dg/typescript-exceptions.html
     POWERTOOLS_SERVICE_NAME: 'items-store',
     POWERTOOLS_METRICS_NAMESPACE: 'PowertoolsCDKExample',
-    LOG_LEVEL: 'DEBUG',
+    POWERTOOLS_LOG_LEVEL: 'DEBUG',
   },
   bundling: {
     externalModules: [
@@ -53,7 +53,7 @@ export class CdkAppStack extends Stack {
         'powertools-layer',
         `arn:aws:lambda:${
           Stack.of(this).region
-        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:18`
+        }:094274105915:layer:AWSLambdaPowertoolsTypeScript:24`
       )
     );
 
@@ -112,7 +112,7 @@ class UuidApi extends Construct {
     super(scope, id);
 
     const uuidFn = new NodejsFunction(this, 'UuidFn', {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       entry: './functions/uuid.ts',
     });
 

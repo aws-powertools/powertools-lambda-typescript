@@ -7,20 +7,66 @@
 import { generateMock } from '@anatine/zod-mock';
 import { KinesisStreamEvent } from 'aws-lambda';
 import { TestEvents, TestSchema } from '../schema/utils.js';
-import { kinesisEnvelope } from '../../../src/envelopes';
+import { KinesisEnvelope } from '../../../src/envelopes/index.js';
+import { ZodError } from 'zod';
 
-describe('Kinesis', () => {
-  it('should parse Kinesis Stream event', () => {
-    const mock = generateMock(TestSchema);
-    const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
+describe('KinesisEnvelope', () => {
+  describe('parse', () => {
+    it('should parse Kinesis Stream event', () => {
+      const mock = generateMock(TestSchema);
+      const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
 
-    testEvent.Records.map((record) => {
-      record.kinesis.data = Buffer.from(JSON.stringify(mock)).toString(
-        'base64'
-      );
+      testEvent.Records.map((record) => {
+        record.kinesis.data = Buffer.from(JSON.stringify(mock)).toString(
+          'base64'
+        );
+      });
+
+      const resp = KinesisEnvelope.parse(testEvent, TestSchema);
+      expect(resp).toEqual([mock, mock]);
     });
+    it('should throw if envelope is invalid', () => {
+      expect(() => KinesisEnvelope.parse({ foo: 'bar' }, TestSchema)).toThrow();
+    });
+    it('should throw if record is invalid', () => {
+      const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
+      testEvent.Records[0].kinesis.data = 'invalid';
+      expect(() => KinesisEnvelope.parse(testEvent, TestSchema)).toThrow();
+    });
+  });
 
-    const resp = kinesisEnvelope(testEvent, TestSchema);
-    expect(resp).toEqual([mock, mock]);
+  describe('safeParse', () => {
+    it('should parse Kinesis Stream event', () => {
+      const mock = generateMock(TestSchema);
+      const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
+
+      testEvent.Records.map((record) => {
+        record.kinesis.data = Buffer.from(JSON.stringify(mock)).toString(
+          'base64'
+        );
+      });
+
+      const resp = KinesisEnvelope.safeParse(testEvent, TestSchema);
+      expect(resp).toEqual({ success: true, data: [mock, mock] });
+    });
+    it('should return original event if envelope is invalid', () => {
+      const testEvent = { foo: 'bar' };
+      const resp = KinesisEnvelope.safeParse(testEvent, TestSchema);
+      expect(resp).toEqual({
+        success: false,
+        error: expect.any(ZodError),
+        originalEvent: testEvent,
+      });
+    });
+    it('should return original event if record is invalid', () => {
+      const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
+      testEvent.Records[0].kinesis.data = 'invalid';
+      const resp = KinesisEnvelope.safeParse(testEvent, TestSchema);
+      expect(resp).toEqual({
+        success: false,
+        error: expect.any(SyntaxError),
+        originalEvent: testEvent,
+      });
+    });
   });
 });

@@ -43,9 +43,8 @@ const customUserAgentMiddleware = (feature: string) => {
   return <T extends MiddlewareArgsLike>(next: (arg0: T) => Promise<T>) =>
     async (args: T) => {
       const powertoolsUserAgent = `PT/${feature}/${PT_VERSION} PTEnv/${EXEC_ENV}`;
-      args.request.headers[
-        'user-agent'
-      ] = `${args.request.headers['user-agent']} ${powertoolsUserAgent}`;
+      args.request.headers['user-agent'] =
+        `${args.request.headers['user-agent']} ${powertoolsUserAgent}`;
 
       return await next(args);
     };

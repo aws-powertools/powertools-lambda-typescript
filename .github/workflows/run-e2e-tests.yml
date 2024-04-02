@@ -8,6 +8,9 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: read
+
 jobs:
   run-e2e-tests-on-utils:
     runs-on: ubuntu-latest
@@ -28,17 +31,17 @@ jobs:
             packages/parameters,
             packages/idempotency,
           ]
-        version: [16, 18]
+        version: [16, 18, 20]
         arch: [x86_64, arm64]
       fail-fast: false
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       # If we pass a PR Number when triggering the workflow we will retrieve the PR info and get its headSHA
       - name: Extract PR details
         id: extract_PR_details
         if: ${{ inputs.prNumber != '' }}
-        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const script = require('.github/scripts/get_pr_info.js');
@@ -47,19 +50,19 @@ jobs:
       # we checkout the PR at that point in time
       - name: Checkout PR code
         if: ${{ inputs.prNumber != '' }}
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ steps.extract_PR_details.outputs.headSHA }}
       - name: Setup NodeJS
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: ${{ matrix.version }}
+          node-version: '20'
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
         with:
-          nodeVersion: ${{ matrix.version }}
+          nodeVersion: '20'
       - name: Setup AWS credentials
-        uses: aws-actions/configure-aws-credentials@04b98b3f9e85f563fb061be8751a0352327246b0 # v3.0.1
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: eu-west-1

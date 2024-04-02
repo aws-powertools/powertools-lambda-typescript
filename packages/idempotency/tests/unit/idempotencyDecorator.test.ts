@@ -3,7 +3,6 @@
  *
  * @group unit/idempotency/decorator
  */
-
 import {
   BasePersistenceLayer,
   IdempotencyRecord,
@@ -46,7 +45,10 @@ class TestinClassWithLambdaHandler {
   @idempotent({
     persistenceStore: new PersistenceLayerTestClass(),
   })
-  public testing(record: Record<string, unknown>, _context: Context): string {
+  public async testing(
+    record: Record<string, unknown>,
+    _context: Context
+  ): Promise<string> {
     functionalityToDecorate(record);
 
     return 'Hi';
@@ -54,7 +56,10 @@ class TestinClassWithLambdaHandler {
 }
 
 class TestingClassWithFunctionDecorator {
-  public handler(record: Record<string, unknown>, context: Context): string {
+  public async handler(
+    record: Record<string, unknown>,
+    context: Context
+  ): Promise<string> {
     mockConfig.registerLambdaContext(context);
 
     return this.proccessRecord(record, 'bar');
@@ -65,7 +70,10 @@ class TestingClassWithFunctionDecorator {
     config: mockConfig,
     dataIndexArgument: 0,
   })
-  public proccessRecord(record: Record<string, unknown>, _foo: string): string {
+  public async proccessRecord(
+    record: Record<string, unknown>,
+    _foo: string
+  ): Promise<string> {
     functionalityToDecorate(record);
 
     return 'Processed Record';
@@ -86,18 +94,21 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
+      expect(mockSaveInProgress).toHaveBeenCalledWith(
         inputRecord,
         context.getRemainingTimeInMillis()
       );
     });
 
     test('Then it will call the function that was decorated', () => {
-      expect(functionalityToDecorate).toBeCalledWith(inputRecord);
+      expect(functionalityToDecorate).toHaveBeenCalledWith(inputRecord);
     });
 
     test('Then it will save the record to COMPLETED with function return value', () => {
-      expect(mockSaveSuccess).toBeCalledWith(inputRecord, 'Processed Record');
+      expect(mockSaveSuccess).toHaveBeenCalledWith(
+        inputRecord,
+        'Processed Record'
+      );
     });
   });
   describe('When wrapping a handler function with no previous executions', () => {
@@ -106,18 +117,18 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
+      expect(mockSaveInProgress).toHaveBeenCalledWith(
         inputRecord,
         context.getRemainingTimeInMillis()
       );
     });
 
     test('Then it will call the function that was decorated', () => {
-      expect(functionalityToDecorate).toBeCalledWith(inputRecord);
+      expect(functionalityToDecorate).toHaveBeenCalledWith(inputRecord);
     });
 
     test('Then it will save the record to COMPLETED with function return value', () => {
-      expect(mockSaveSuccess).toBeCalledWith(inputRecord, 'Hi');
+      expect(mockSaveSuccess).toHaveBeenCalledWith(inputRecord, 'Hi');
     });
   });
 
@@ -142,18 +153,18 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
+      expect(mockSaveInProgress).toHaveBeenCalledWith(
         inputRecord,
         context.getRemainingTimeInMillis()
       );
     });
 
     test('Then it will get the previous execution record', () => {
-      expect(mockGetRecord).toBeCalledWith(inputRecord);
+      expect(mockGetRecord).toHaveBeenCalledWith(inputRecord);
     });
 
     test('Then it will not call the function that was decorated', () => {
-      expect(functionalityToDecorate).not.toBeCalled();
+      expect(functionalityToDecorate).not.toHaveBeenCalled();
     });
 
     test('Then an IdempotencyAlreadyInProgressError is thrown', () => {
@@ -182,18 +193,18 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
+      expect(mockSaveInProgress).toHaveBeenCalledWith(
         inputRecord,
         context.getRemainingTimeInMillis()
       );
     });
 
     test('Then it will get the previous execution record', () => {
-      expect(mockGetRecord).toBeCalledWith(inputRecord);
+      expect(mockGetRecord).toHaveBeenCalledWith(inputRecord);
     });
 
     test('Then it will not call the function that was decorated', () => {
-      expect(functionalityToDecorate).not.toBeCalled();
+      expect(functionalityToDecorate).not.toHaveBeenCalled();
     });
 
     test('Then an IdempotencyInconsistentStateError is thrown', () => {
@@ -219,18 +230,18 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
+      expect(mockSaveInProgress).toHaveBeenCalledWith(
         inputRecord,
         context.getRemainingTimeInMillis()
       );
     });
 
     test('Then it will get the previous execution record', () => {
-      expect(mockGetRecord).toBeCalledWith(inputRecord);
+      expect(mockGetRecord).toHaveBeenCalledWith(inputRecord);
     });
 
     test('Then it will not call decorated functionality', () => {
-      expect(functionalityToDecorate).not.toBeCalledWith(inputRecord);
+      expect(functionalityToDecorate).not.toHaveBeenCalledWith(inputRecord);
     });
   });
 
@@ -260,7 +271,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will attempt to save the record to INPROGRESS', () => {
-      expect(mockSaveInProgress).toBeCalledWith(
+      expect(mockSaveInProgress).toHaveBeenCalledWith(
         inputRecord,
         context.getRemainingTimeInMillis()
       );
@@ -279,10 +290,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
           persistenceStore: new PersistenceLayerTestClass(),
           config: new IdempotencyConfig({ lambdaContext: context }),
         })
-        public testing(
+        public async testing(
           record: Record<string, unknown>,
           _context: Context
-        ): string {
+        ): Promise<string> {
           functionalityToDecorate(record);
 
           return 'Hi';
@@ -294,8 +305,8 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     test('Then it will skip ipdemotency', async () => {
-      expect(mockSaveInProgress).not.toBeCalled();
-      expect(mockSaveSuccess).not.toBeCalled();
+      expect(mockSaveInProgress).not.toHaveBeenCalled();
+      expect(mockSaveSuccess).not.toHaveBeenCalled();
     });
 
     afterAll(() => {

@@ -1,6 +1,7 @@
-import { parse } from './envelope.js';
-import { z, ZodSchema } from 'zod';
+import { Envelope } from './envelope.js';
+import { z, type ZodSchema } from 'zod';
 import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
+import type { ParsedResult } from '../types/index.js';
 
 /**
  * Kinesis Data Stream Envelope to extract array of Records
@@ -12,13 +13,46 @@ import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
  * Note: Records will be parsed the same way so if model is str,
  * all items in the list will be parsed as str and not as JSON (and vice versa)
  */
-export const kinesisEnvelope = <T extends ZodSchema>(
-  data: unknown,
-  schema: T
-): z.infer<T> => {
-  const parsedEnvelope = KinesisDataStreamSchema.parse(data);
+export class KinesisEnvelope extends Envelope {
+  public static parse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): z.infer<T> {
+    const parsedEnvelope = KinesisDataStreamSchema.parse(data);
 
-  return parsedEnvelope.Records.map((record) => {
-    return parse(record.kinesis.data, schema);
-  });
-};
+    return parsedEnvelope.Records.map((record) => {
+      return super.parse(record.kinesis.data, schema);
+    });
+  }
+
+  public static safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult {
+    const parsedEnvelope = KinesisDataStreamSchema.safeParse(data);
+    if (!parsedEnvelope.success) {
+      return {
+        ...parsedEnvelope,
+        originalEvent: data,
+      };
+    }
+
+    const parsedRecords: z.infer<T>[] = [];
+
+    for (const record of parsedEnvelope.data.Records) {
+      const parsedRecord = super.safeParse(record.kinesis.data, schema);
+      if (!parsedRecord.success) {
+        return {
+          ...parsedRecord,
+          originalEvent: data,
+        };
+      }
+      parsedRecords.push(parsedRecord.data);
+    }
+
+    return {
+      success: true,
+      data: parsedRecords,
+    };
+  }
+}

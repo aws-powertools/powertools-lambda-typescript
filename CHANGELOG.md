@@ -3,6 +3,74 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2.0.2 (2024-03-05)
+
+
+### Bug Fixes
+
+* **tracer:** modify aws-xray-sdk-core import for js ([#2164](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2164)) ([29630b5](https://github.com/aws-powertools/powertools-lambda-typescript/commit/29630b5b68915ccca1324f3e7ce3e95b85a616be))
+
+
+
+
+
+## 2.0.1 (2024-03-04)
+
+**Note:** Version bump only for package aws-lambda-powertools-typescript
+
+
+
+
+
+# [2.0.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.18.1...v2.0.0) (2024-03-04)
+
+**Note:** Version bump only for package aws-lambda-powertools-typescript
+
+
+
+
+
+## 1.18.1 (2024-02-20)
+
+**Note:** Version bump only for package aws-lambda-powertools-typescript
+
+
+
+
+
+## [1.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.17.0...v1.18.0) (2024-01-26)
+
+### Features
+
+**layers:** add `ca-west-1` region ([#1836](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1836)) ([55ff4df](https://github.com/aws-powertools/powertools-lambda-typescript/commit/55ff4df53773e949993c3f21718ea3d447c30f9e))
+
+## [1.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.17.0) (2023-11-24)
+
+**maintenance:** drop support for Node.js 14 ([#1664](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1664)) ([e2a0923](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e2a09232f86167b5208be2daf892aa1ea433ce0f))
+
+# [1.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.15.0...v1.16.0) (2023-11-16)
+
+### Features
+
+- **logger:** add support for `AWS_LAMBDA_LOG_LEVEL` and `POWERTOOLS_LOG_LEVEL` ([#1795](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1795)) ([e69abfb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e69abfb5f1b5d3bf993ac2fe66fae85a85af9905))
+
+# [1.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.2...v1.15.0) (2023-11-14)
+
+### Features
+
+- **maintenance:** add support for nodejs20.x runtime ([#1790](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1790)) ([6b9b1bc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b9b1bcb9baf4b3d8e0e5ec6709594aca09bb033))
+- **metrics:** log directly to stdout ([#1786](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1786)) ([75dc5b1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/75dc5b1e16944416a287628c50ec4a0cf82c3023))
+
+## [1.14.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.1...v1.14.2) (2023-11-03)
+
+### Bug Fixes
+
+- **metrics:** deduplicate dimensions when serialising ([#1780](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1780)) ([8181b48](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8181b481ba96fa7a91959ff2d40bdedfe80b451b))
+
+## [1.14.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.0...v1.14.1) (2023-10-31)
+
+**Note:** Version bump only for package aws-lambda-powertools-typescript
+
 # [1.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.1...v1.14.0) (2023-09-29)
 
 ### Features

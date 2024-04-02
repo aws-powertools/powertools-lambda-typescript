@@ -17,6 +17,20 @@ describe('Class: EnvironmentVariablesService', () => {
     process.env = ENVIRONMENT_VARIABLES;
   });
 
+  describe('Method: getAwsLogLevel', () => {
+    it('returns the value of the environment variable AWS_LAMBDA_LOG_LEVEL and aliases it as needed', () => {
+      // Prepare
+      process.env.AWS_LAMBDA_LOG_LEVEL = 'FATAL';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getAwsLogLevel();
+
+      // Assess
+      expect(value).toEqual('CRITICAL');
+    });
+  });
+
   describe('Method: getAwsRegion', () => {
     test('it returns the value of the environment variable AWS_REGION', () => {
       // Prepare
@@ -126,8 +140,9 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getLogLevel', () => {
-    test('it returns the value of the environment variable LOG_LEVEL', () => {
+    test('it returns the value of the environment variable LOG_LEVEL when POWERTOOLS_LOG_LEVEL is not set', () => {
       // Prepare
+      process.env.POWERTOOLS_LOG_LEVEL = undefined;
       process.env.LOG_LEVEL = 'ERROR';
       const service = new EnvironmentVariablesService();
 
@@ -136,6 +151,32 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('ERROR');
+    });
+
+    test('it returns the value of the environment variable POWERTOOLS_LOG_LEVEL when LOG_LEVEL one is also set', () => {
+      // Prepare
+      process.env.LOG_LEVEL = 'WARN';
+      process.env.POWERTOOLS_LOG_LEVEL = 'INFO';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogLevel();
+
+      // Assess
+      expect(value).toEqual('INFO');
+    });
+
+    test('it returns an empty value if neither POWERTOOLS_LOG_LEVEL nor LOG_LEVEL are set', () => {
+      // Prepare
+      process.env.LOG_LEVEL = undefined;
+      process.env.POWERTOOLS_LOG_LEVEL = undefined;
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getLogLevel();
+
+      // Assess
+      expect(value).toEqual('');
     });
   });
 
@@ -175,56 +216,6 @@ describe('Class: EnvironmentVariablesService', () => {
 
       // Assess
       expect(value).toEqual('UTC');
-    });
-  });
-
-  describe('Method: isDevMode', () => {
-    test('it returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
-      // Prepare
-      process.env.POWERTOOLS_DEV = 'true';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.isDevMode();
-
-      // Assess
-      expect(value).toEqual(true);
-    });
-
-    test('it returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
-      // Prepare
-      process.env.POWERTOOLS_DEV = 'false';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.isDevMode();
-
-      // Assess
-      expect(value).toEqual(false);
-    });
-
-    test('it returns false if the environment variable POWERTOOLS_DEV is NOT set', () => {
-      // Prepare
-      process.env.POWERTOOLS_DEV = 'somethingsilly';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.isDevMode();
-
-      // Assess
-      expect(value).toEqual(false);
-    });
-
-    test('it returns false if the environment variable POWERTOOLS_DEV is "somethingsilly"', () => {
-      // Prepare
-      process.env.POWERTOOLS_DEV = 'somethingsilly';
-      const service = new EnvironmentVariablesService();
-
-      // Act
-      const value = service.isDevMode();
-
-      // Assess
-      expect(value).toEqual(false);
     });
   });
 });

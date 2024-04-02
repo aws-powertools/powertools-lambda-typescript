@@ -162,4 +162,54 @@ describe('Class: EnvironmentVariablesService', () => {
       }
     );
   });
+
+  describe('Method: isDevMode', () => {
+    test('it returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'true';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.isDevMode();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    test('it returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'false';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.isDevMode();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    test('it returns false if the environment variable POWERTOOLS_DEV is NOT set', () => {
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'somethingsilly';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.isDevMode();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    test('it returns false if the environment variable POWERTOOLS_DEV is "somethingsilly"', () => {
+      // Prepare
+      process.env.POWERTOOLS_DEV = 'somethingsilly';
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.isDevMode();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+  });
 });

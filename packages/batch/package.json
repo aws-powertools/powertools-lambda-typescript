@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/batch",
-  "version": "1.14.0",
+  "version": "2.0.2",
   "description": "The batch processing package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -15,6 +15,7 @@
     "jest": "jest --detectOpenHandles --verbose",
     "test:e2e:nodejs16x": "echo 'Not Implemented'",
     "test:e2e:nodejs18x": "echo 'Not Implemented'",
+    "test:e2e:nodejs20x": "echo 'Not Implemented'",
     "test:e2e": "echo 'Not Implemented'",
     "watch": "jest --watch",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",

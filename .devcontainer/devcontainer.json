@@ -8,7 +8,7 @@
     // Append -bullseye or -buster to pin to an OS version.
     // Use -bullseye variants on local arm64/Apple Silicon.
     "args": {
-      "VARIANT": "18-bullseye"
+      "VARIANT": "20-bullseye"
     }
   },
   "customizations": {
@@ -16,8 +16,7 @@
     "extensions": [
       "dbaeumer.vscode-eslint",
       "esbenp.prettier-vscode",
-      "firsttris.vscode-jest-runner",
-      "amazonwebservices.aws-toolkit-vscode"
+      "firsttris.vscode-jest-runner"
     ],
     "vscode": {
       "git.enableCommitSigning": true

@@ -22,7 +22,7 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 
 ## Getting started
 
-!!! note "Tracer relies on AWS X-Ray SDK over [OpenTelememetry Distro (ADOT)](https://aws-otel.github.io/docs/getting-started/lambda){target="_blank"} for optimal cold start (lower latency)."
+!!! note "Tracer relies on AWS X-Ray SDK over [OpenTelemetry Distro (ADOT)](https://aws-otel.github.io/docs/getting-started/lambda){target="_blank"} for optimal cold start (lower latency)."
 
 ### Installation
 
@@ -74,7 +74,7 @@ The `Tracer` utility is instantiated outside of the Lambda handler. In doing thi
       HelloWorldFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs18.x
+          Runtime: nodejs20.x
           Tracing: Active
           Environment:
             Variables:
@@ -88,17 +88,18 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 === "Middy Middleware"
 
     !!! tip "A note about Middy"
-        Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
+        We guarantee support only for Middy.js `v4.x`, that you can install it by running `npm i @middy/core@~4`.
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
-    ```typescript hl_lines="1 14 16"
+    ```typescript hl_lines="2 15 17"
     --8<-- "docs/snippets/tracer/middy.ts"
     ```
 
 === "Decorator"
 
-    !!! info
-        Powertools decorators can only be attached to class methods and follow the experimetal decorators proposal implementation found in TypeScript 4.x. As such, you need to enable the `experimentalDecorators` compiler option in your `tsconfig.json` file to use them.
+    !!! note
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        If this is not the desired behavior, you can use one of the other patterns instead.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/tracer/decorator.ts"
@@ -152,9 +153,13 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
 
 ### Methods
 
-You can trace other Class methods using the `captureMethod` decorator or any arbitrary function using manual instrumentation.
+You can trace other class methods using the `captureMethod` decorator or any arbitrary asynchronous function using manual instrumentation.
 
 === "Decorator"
+
+    !!! note
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        If this is not the desired behavior, you can use manual instrumentation instead.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/tracer/captureMethodDecorator.ts"
@@ -181,7 +186,7 @@ You can patch any AWS SDK clients by calling the `captureAWSv3Client` method:
 
 === "index.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="6"
     --8<-- "docs/snippets/tracer/captureAWSv3.ts"
     ```
 
@@ -192,7 +197,7 @@ You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
 
 === "index.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="7"
     --8<-- "docs/snippets/tracer/captureAWSAll.ts"
     ```
 
@@ -200,7 +205,7 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
 
 === "index.ts"
 
-    ```typescript hl_lines="5"
+    ```typescript hl_lines="6"
     --8<-- "docs/snippets/tracer/captureAWS.ts"
     ```
 
@@ -263,7 +268,7 @@ Use **`POWERTOOLS_TRACER_CAPTURE_RESPONSE=false`** environment variable to instr
     2. You might manipulate **streaming objects that can be read only once**; this prevents subsequent calls from being empty
     3. You might return **more than 64K** of data _e.g., `message too long` error_
 
-Alternatively, use the `captureResponse: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators, or use the same option in the Middy `captureLambdaHander` middleware to instruct Tracer **not** to serialize function responses as metadata.
+Alternatively, use the `captureResponse: false` option in both `tracer.captureLambdaHandler()` and `tracer.captureMethod()` decorators, or use the same option in the Middy `captureLambdaHandler` middleware to instruct Tracer **not** to serialize function responses as metadata.
 
 === "method.ts"
 
@@ -279,7 +284,7 @@ Alternatively, use the `captureResponse: false` option in both `tracer.captureLa
 
 === "middy.ts"
 
-    ```typescript hl_lines="17"
+    ```typescript hl_lines="18"
     --8<-- "docs/snippets/tracer/disableCaptureResponseMiddy.ts"
     ```
 

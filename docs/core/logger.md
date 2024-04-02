@@ -41,17 +41,18 @@ The `Logger` utility must always be instantiated outside the Lambda handler. By 
     ```
 
 ### Utility settings
-
-The library requires two settings. You can set them as environment variables, or pass them in the constructor.
+The library has three optional settings, which can be set via environment variables or passed in the constructor.
 
 These settings will be used across all logs emitted:
 
-| Setting                | Description                                                                                                      | Environment variable            | Default Value       | Allowed Values                             | Example Value       | Constructor parameter |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- | ------------------------------------------ | ------------------- | --------------------- |
-| **Service name**       | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                 | `serverlessAirline` | `serviceName`         |
-| **Logging level**      | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `LOG_LEVEL`                     | `info`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `SILENT` | `ERROR`             | `logLevel`            |
-| **Log incoming event** | Whether to log or not the incoming event when using the decorator or middleware                                  | `POWERTOOLS_LOGGER_LOG_EVENT`   | `false`             | `true`, `false`                            | `false`             | `logEvent`            |
-| **Debug log sampling** | Probability that a Lambda invocation will print all the log items regardless of the log level setting            | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1`                               | `0.5`               | `sampleRateValue`     |
+| Setting           | Description                                                                                                      | Environment variable            | Default Value       | Allowed Values                                         | Example Value       | Constructor parameter |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- | ------------------------------------------------------ | ------------------- | --------------------- |
+| **Service name**  | Sets the name of service of which the Lambda function is part of, that will be present across all log statements | `POWERTOOLS_SERVICE_NAME`       | `service_undefined` | Any string                                             | `serverlessAirline` | `serviceName`         |
+| **Logging level** | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `POWERTOOLS_LOG_LEVEL`          | `INFO`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`, `SILENT` | `ERROR`             | `logLevel`            |
+| **Sample rate**   | Probability that a Lambda invocation will print all the log items regardless of the log level setting            | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1.0`                                         | `0.1`               | `sampleRateValue`     |
+
+See all environment variables in the [Environment variables](../index.md/#environment-variables) section.
+Check API docs to learn more about [Logger constructor options](https://docs.powertools.aws.dev/lambda/typescript/latest/api/types/_aws_lambda_powertools_logger.types.ConstructorOptions.html){target="_blank"}.
 
 #### Example using AWS Serverless Application Model (SAM)
 
@@ -68,10 +69,10 @@ These settings will be used across all logs emitted:
       ShoppingCartApiFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs18.x
+          Runtime: nodejs20.x
           Environment:
             Variables:
-              LOG_LEVEL: WARN
+              POWERTOOLS_LOG_LEVEL: WARN
               POWERTOOLS_SERVICE_NAME: serverlessAirline
     ```
 
@@ -109,17 +110,18 @@ This functionality will include the following keys in your structured logs:
 === "Middy Middleware"
 
     !!! tip "A note about Middy"
-        Currently we support only Middy `v3.x` that you can install it by running `npm i @middy/core@~3`.
+        We guarantee support only for Middy.js `v4.x`, that you can install it by running `npm i @middy/core@~4`.
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
-    ```typescript hl_lines="1 13"
+    ```typescript hl_lines="2 14"
     --8<-- "docs/snippets/logger/middy.ts"
     ```
 
 === "Decorator"
 
-    !!! info
-        Powertools decorators can only be attached to class methods and follow the experimetal decorators proposal implementation found in TypeScript 4.x. As such, you need to enable the `experimentalDecorators` compiler option in your `tsconfig.json` file to use them.
+    !!! note
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        If this is not the desired behavior, you can call the `logger.injectLambdaContext()` method directly in your handler.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/logger/decorator.ts"
@@ -129,7 +131,7 @@ This functionality will include the following keys in your structured logs:
 
 === "Manual"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="10"
     --8<-- "docs/snippets/logger/manual.ts"
     ```
 
@@ -152,16 +154,16 @@ In each case, the printed log will look like this:
     }
     ```
 
-#### Log incoming event
+### Log incoming event
 
-When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent` or via `POWERTOOLS_LOGGER_LOG_EVENT` env var set to `true`.
+When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent`.
 
 ???+ warning
 	This is disabled by default to prevent sensitive info being logged
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="10"
+    ```typescript hl_lines="15"
     --8<-- "docs/snippets/logger/eventMiddy.ts"
     ```
 
@@ -172,6 +174,8 @@ When debugging in non-production environments, you can instruct Logger to log th
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
+
+Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature.
 
 ### Appending persistent additional log keys and values
 
@@ -232,7 +236,7 @@ If you want to make sure that persistent attributes added **inside the handler f
 
 === "Middy Middleware"
 
-    ```typescript hl_lines="30"
+    ```typescript hl_lines="31"
     --8<-- "docs/snippets/logger/clearStateMiddy.ts"
     ```
 
@@ -388,14 +392,13 @@ The error will be logged with default key name `error`, but you can also pass yo
 !!! tip "Logging errors and log level"
     You can also log errors using the `warn`, `info`, and `debug` methods. Be aware of the log level though, you might miss those  errors when analyzing the log later depending on the log level configuration.
 
-
 ## Advanced
 
 ### Log levels
 
-The default log level is `INFO` and can be set using the `logLevel` constructor option or by using the `LOG_LEVEL` environment variable.
+The default log level is `INFO` and can be set using the `logLevel` constructor option or by using the `POWERTOOLS_LOG_LEVEL` environment variable.
 
-Logger supports the following log levels:
+We support the following log levels:
 
 | Level      | Numeric value |
 | ---------- | ------------- |
@@ -420,10 +423,47 @@ The `SILENT` log level provides a simple and efficient way to suppress all log m
 
 This feature is useful when you want to have your code instrumented to produce logs, but due to some requirement or business decision, you prefer to not emit them.
 
-By setting the log level to `SILENT`, which can be done either through the `logLevel` constructor option or by using the `LOG_LEVEL` environment variable, you can easily suppress all logs as needed.
+By setting the log level to `SILENT`, which can be done either through the `logLevel` constructor option or by using the `POWERTOOLS_LOG_LEVEL` environment variable, you can easily suppress all logs as needed.
 
 !!! note
     Use the `SILENT` log level with care, as it can make it more challenging to monitor and debug your application. Therefore, we advise using this log level judiciously.
+
+#### AWS Lambda Advanced Logging Controls (ALC)
+
+With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. Regardless of the output format setting in Lambda, we will always output JSON formatted logging messages.
+
+When you have this feature enabled, log messages that don’t meet the configured log level are discarded by Lambda. For example, if you set the minimum log level to `WARN`, you will only receive `WARN` and `ERROR` messages in your AWS CloudWatch Logs, all other log levels will be discarded by Lambda.
+
+```mermaid
+sequenceDiagram
+    title Lambda ALC allows WARN logs only
+    participant Lambda service
+    participant Lambda function
+    participant Application Logger
+
+    Note over Lambda service: AWS_LAMBDA_LOG_LEVEL="WARN"
+    Lambda service->>Lambda function: Invoke (event)
+    Lambda function->>Lambda function: Calls handler
+    Lambda function->>Application Logger: logger.warn("Something happened")
+    Lambda function-->>Application Logger: logger.debug("Something happened")
+    Lambda function-->>Application Logger: logger.info("Something happened")
+    
+    Lambda service->>Lambda service: DROP INFO and DEBUG logs
+
+    Lambda service->>CloudWatch Logs: Ingest error logs
+```
+
+**Priority of log level settings in Powertools for AWS Lambda**
+
+When the Advanced Logging Controls feature is enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see [AWS Lambda service documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-log-level) for more details.
+
+We prioritise log level settings in this order:
+
+1. `AWS_LAMBDA_LOG_LEVEL` environment variable
+2. Setting the log level in code using the `logLevel` constructor option, or by calling the `logger.setLogLevel()` method
+3. `POWERTOOLS_LOG_LEVEL` environment variable
+
+In the event you have set a log level in Powertools to a level that is lower than the ACL setting, we will output a warning log message informing you that your messages will be discarded by Lambda.
 
 ### Using multiple Logger instances across your code
 
@@ -469,23 +509,21 @@ The `createChild` method allows you to create a child instance of the Logger, wh
     }
     ```
 
-### Sampling logs
+### Sampling debug logs
 
-Use sampling when you want to print all the log items generated in your code, based on a **percentage of your concurrent/cold start invocations**.
+Use sampling when you want to dynamically change your log level to **DEBUG** based on a **percentage of your concurrent/cold start invocations**.
 
-You can do that by setting a "sample rate", a float value ranging from `0.0` (0%) to `1` (100%), by using a `POWERTOOLS_LOGGER_SAMPLE_RATE` env var or passing the `sampleRateValue` parameter in the Logger constructor.
-This number represents the probability that a Lambda invocation will print all the log items regardless of the log level setting.
-
-For example, by setting the "sample rate" to `0.5`, roughly 50% of your lambda invocations will print all the log items, including the `debug` ones.
+You can use values ranging from `0` to `1` (100%) when setting the `sampleRateValue` constructor option or `POWERTOOLS_LOGGER_SAMPLE_RATE` env var.
 
 !!! tip "When is this useful?"
-    In production, to avoid log data pollution and reduce CloudWatch costs, developers are encouraged to use the logger with `logLevel` equal to `ERROR` or `WARN`.
-    This means that only errors or warnings will be printed.
+    Let's imagine a sudden spike increase in concurrency triggered a transient issue downstream. When looking into the logs you might not have enough information, and while you can adjust log levels it might not happen again.
 
-    However, it might still be useful to print all the logs (including debug ones) of a very small percentage of invocations to have a better understanding of the behaviour of your code in production even when there are no errors.
-    
-    **Sampling decision happens at the Logger initialization**. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
-    If you want to reset the sampling decision and refresh it for each invocation, you can call the `logger.refreshSampleRateCalculation()` method at the beginning or end of your handler.
+    This feature takes into account transient issues where additional debugging information can be useful.
+
+Sampling decision happens at the Logger initialization. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
+
+!!! note
+    Open a [feature request](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type%2Ffeature-request%2Ctriage&projects=aws-powertools%2F7&template=feature_request.yml&title=Feature+request%3A+TITLE) if you want Logger to calculate sampling for every invocation
 
 === "handler.ts"
 
@@ -599,7 +637,7 @@ You can customize the structure (keys and values) of your log items by passing a
 
 === "handler.ts"
 
-    ```typescript hl_lines="2 5"
+    ```typescript hl_lines="2 6"
     --8<-- "docs/snippets/logger/bringYourOwnFormatterHandler.ts"
     ```
 
@@ -659,9 +697,6 @@ This is a Jest sample that provides the minimum information necessary for Logger
     ```typescript
     --8<-- "docs/snippets/logger/unitTesting.ts"
     ```
-
-!!! tip
-    If you don't want to declare your own dummy Lambda Context, you can use [`ContextExamples.helloworldContext`](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/packages/commons/src/samples/resources/contexts/hello-world.ts#L3-L16) from [`@aws-lambda-powertools/commons`](https://www.npmjs.com/package/@aws-lambda-powertools/commons).
 
 ### Suppress logs with Jest
 

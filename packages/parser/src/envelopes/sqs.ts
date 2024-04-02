@@ -1,6 +1,7 @@
-import { z, ZodSchema } from 'zod';
+import { z, type ZodSchema } from 'zod';
 import { SqsSchema } from '../schemas/sqs.js';
-import { parse } from './envelope.js';
+import { Envelope } from './envelope.js';
+import type { ParsedResult } from '../types/index.js';
 
 /**
  *  SQS Envelope to extract array of Records
@@ -11,13 +12,42 @@ import { parse } from './envelope.js';
  *  Note: Records will be parsed the same way so if model is str,
  *  all items in the list will be parsed as str and npt as JSON (and vice versa)
  */
-export const sqsEnvelope = <T extends ZodSchema>(
-  data: unknown,
-  schema: T
-): z.infer<T> => {
-  const parsedEnvelope = SqsSchema.parse(data);
+export class SqsEnvelope extends Envelope {
+  public static parse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): z.infer<T> {
+    const parsedEnvelope = SqsSchema.parse(data);
 
-  return parsedEnvelope.Records.map((record) => {
-    return parse(record.body, schema);
-  });
-};
+    return parsedEnvelope.Records.map((record) => {
+      return super.parse(record.body, schema);
+    });
+  }
+
+  public static safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult {
+    const parsedEnvelope = SqsSchema.safeParse(data);
+    if (!parsedEnvelope.success) {
+      return {
+        ...parsedEnvelope,
+        originalEvent: data,
+      };
+    }
+
+    const parsedRecords: z.infer<T>[] = [];
+    for (const record of parsedEnvelope.data.Records) {
+      const parsedRecord = super.safeParse(record.body, schema);
+      if (!parsedRecord.success) {
+        return {
+          ...parsedRecord,
+          originalEvent: data,
+        };
+      }
+      parsedRecords.push(parsedRecord.data);
+    }
+
+    return { success: true, data: parsedRecords };
+  }
+}

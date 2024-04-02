@@ -6,33 +6,92 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import { TestEvents, TestSchema } from '../schema/utils.js';
-import { VpcLatticeSchema } from '../../../src/schemas';
-import { z } from 'zod';
-import { vpcLatticeEnvelope } from '../../../src/envelopes';
+import { VpcLatticeEnvelope } from '../../../src/envelopes/index.js';
+import { VpcLatticeEvent } from '../../../src/types/index.js';
 
-describe('VPC Lattice envelope', () => {
-  it('should parse VPC Lattice event', () => {
-    const mock = generateMock(TestSchema);
-    const testEvent = TestEvents.vpcLatticeEvent as z.infer<
-      typeof VpcLatticeSchema
-    >;
+describe('VpcLatticeEnvelope', () => {
+  describe('parse', () => {
+    it('should parse VPC Lattice event', () => {
+      const mock = generateMock(TestSchema);
+      const testEvent = TestEvents.vpcLatticeEvent as VpcLatticeEvent;
 
-    testEvent.body = JSON.stringify(mock);
+      testEvent.body = JSON.stringify(mock);
 
-    const resp = vpcLatticeEnvelope(testEvent, TestSchema);
+      const resp = VpcLatticeEnvelope.parse(testEvent, TestSchema);
 
-    expect(resp).toEqual(mock);
+      expect(resp).toEqual(mock);
+    });
+
+    it('should parse VPC Lattice event with trailing slash', () => {
+      const mock = generateMock(TestSchema);
+      const testEvent =
+        TestEvents.vpcLatticeEventPathTrailingSlash as VpcLatticeEvent;
+
+      testEvent.body = JSON.stringify(mock);
+
+      const resp = VpcLatticeEnvelope.parse(testEvent, TestSchema);
+      expect(resp).toEqual(mock);
+    });
+
+    it('should throw if event is not a VPC Lattice event', () => {
+      expect(() =>
+        VpcLatticeEnvelope.parse({ foo: 'bar' }, TestSchema)
+      ).toThrow();
+    });
+
+    it('should throw if body does not match schema', () => {
+      const testEvent = TestEvents.vpcLatticeEvent as VpcLatticeEvent;
+
+      testEvent.body = JSON.stringify({ foo: 'bar' });
+
+      expect(() => VpcLatticeEnvelope.parse(testEvent, TestSchema)).toThrow();
+    });
   });
 
-  it('should parse VPC Lattice event with trailing slash', () => {
-    const mock = generateMock(TestSchema);
-    const testEvent = TestEvents.vpcLatticeEventPathTrailingSlash as z.infer<
-      typeof VpcLatticeSchema
-    >;
+  describe('safeParse', () => {
+    it('should parse VPC Lattice event', () => {
+      const mock = generateMock(TestSchema);
+      const testEvent = TestEvents.vpcLatticeEvent as VpcLatticeEvent;
 
-    testEvent.body = JSON.stringify(mock);
+      testEvent.body = JSON.stringify(mock);
 
-    const resp = vpcLatticeEnvelope(testEvent, TestSchema);
-    expect(resp).toEqual(mock);
+      const resp = VpcLatticeEnvelope.safeParse(testEvent, TestSchema);
+
+      expect(resp).toEqual({ success: true, data: mock });
+    });
+
+    it('should parse VPC Lattice event with trailing slash', () => {
+      const mock = generateMock(TestSchema);
+      const testEvent =
+        TestEvents.vpcLatticeEventPathTrailingSlash as VpcLatticeEvent;
+
+      testEvent.body = JSON.stringify(mock);
+
+      const resp = VpcLatticeEnvelope.safeParse(testEvent, TestSchema);
+      expect(resp).toEqual({ success: true, data: mock });
+    });
+
+    it('should return error if event is not a VPC Lattice event', () => {
+      const resp = VpcLatticeEnvelope.safeParse({ foo: 'bar' }, TestSchema);
+
+      expect(resp).toEqual({
+        success: false,
+        error: expect.any(Error),
+        originalEvent: { foo: 'bar' },
+      });
+    });
+
+    it('should return error if body does not match schema', () => {
+      const testEvent = TestEvents.vpcLatticeEvent as VpcLatticeEvent;
+
+      testEvent.body = JSON.stringify({ foo: 'bar' });
+
+      const resp = VpcLatticeEnvelope.safeParse(testEvent, TestSchema);
+      expect(resp).toEqual({
+        success: false,
+        error: expect.any(Error),
+        originalEvent: testEvent,
+      });
+    });
   });
 });

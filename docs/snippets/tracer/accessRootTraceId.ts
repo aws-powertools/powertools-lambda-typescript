@@ -5,7 +5,7 @@ const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 export const handler = async (
   _event: unknown,
   _context: unknown
-): Promise<void> => {
+): Promise<unknown> => {
   try {
   } catch (err) {
     const rootTraceId = tracer.getRootXrayTraceId();

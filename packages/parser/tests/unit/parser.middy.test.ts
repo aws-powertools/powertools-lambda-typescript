@@ -8,10 +8,11 @@ import middy from '@middy/core';
 import { Context } from 'aws-lambda';
 import { parser } from '../../src/middleware/parser.js';
 import { generateMock } from '@anatine/zod-mock';
-import { SqsSchema } from '../../src/schemas';
+import { SqsSchema } from '../../src/schemas/index.js';
 import { z, type ZodSchema } from 'zod';
-import { sqsEnvelope } from '../../src/envelopes';
-import { TestSchema } from './schema/utils';
+import { SqsEnvelope, EventBridgeEnvelope } from '../../src/envelopes/index.js';
+import { TestSchema, TestEvents } from './schema/utils';
+import { EventBridgeEvent } from '../../src/types/index.js';
 
 describe('Middleware: parser', () => {
   type schema = z.infer<typeof TestSchema>;
@@ -23,13 +24,13 @@ describe('Middleware: parser', () => {
   };
 
   describe(' when envelope is provided ', () => {
-    const middyfiedHandler = middy(handler).use(
-      parser({ schema: TestSchema, envelope: sqsEnvelope })
+    const middyfiedHandlerSchemaEnvelope = middy(handler).use(
+      parser({ schema: TestSchema, envelope: SqsEnvelope })
     );
 
     it('should parse request body with schema and envelope', async () => {
       const bodyMock = generateMock(TestSchema);
-      parser({ schema: TestSchema, envelope: sqsEnvelope });
+      parser({ schema: TestSchema, envelope: SqsEnvelope });
 
       const event = generateMock(SqsSchema, {
         stringMap: {
@@ -37,7 +38,10 @@ describe('Middleware: parser', () => {
         },
       });
 
-      const result = (await middyfiedHandler(event, {} as Context)) as schema[];
+      const result = (await middyfiedHandlerSchemaEnvelope(
+        event,
+        {} as Context
+      )) as schema[];
       result.forEach((item) => {
         expect(item).toEqual(bodyMock);
       });
@@ -45,8 +49,11 @@ describe('Middleware: parser', () => {
 
     it('should throw when envelope does not match', async () => {
       await expect(async () => {
-        await middyfiedHandler({ name: 'John', age: 18 }, {} as Context);
-      }).rejects.toThrowError();
+        await middyfiedHandlerSchemaEnvelope(
+          { name: 'John', age: 18 },
+          {} as Context
+        );
+      }).rejects.toThrow();
     });
 
     it('should throw when schema does not match', async () => {
@@ -56,14 +63,16 @@ describe('Middleware: parser', () => {
         },
       });
 
-      await expect(middyfiedHandler(event, {} as Context)).rejects.toThrow();
+      await expect(
+        middyfiedHandlerSchemaEnvelope(event, {} as Context)
+      ).rejects.toThrow();
     });
     it('should throw when provided schema is invalid', async () => {
       const middyfiedHandler = middy(handler).use(
-        parser({ schema: {} as ZodSchema, envelope: sqsEnvelope })
+        parser({ schema: {} as ZodSchema, envelope: SqsEnvelope })
       );
 
-      await expect(middyfiedHandler(42, {} as Context)).rejects.toThrowError();
+      await expect(middyfiedHandler(42, {} as Context)).rejects.toThrow();
     });
     it('should throw when envelope is correct but schema is invalid', async () => {
       const event = generateMock(SqsSchema, {
@@ -73,12 +82,10 @@ describe('Middleware: parser', () => {
       });
 
       const middyfiedHandler = middy(handler).use(
-        parser({ schema: {} as ZodSchema, envelope: sqsEnvelope })
+        parser({ schema: {} as ZodSchema, envelope: SqsEnvelope })
       );
 
-      await expect(
-        middyfiedHandler(event, {} as Context)
-      ).rejects.toThrowError();
+      await expect(middyfiedHandler(event, {} as Context)).rejects.toThrow();
     });
   });
 
@@ -117,7 +124,69 @@ describe('Middleware: parser', () => {
 
       await expect(
         middyfiedHandler({ foo: 'bar' }, {} as Context)
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
+    });
+
+    it('should return the event when safeParse is true', async () => {
+      const event = { name: 'John', age: 18 };
+      const middyfiedHandler = middy(handler).use(
+        parser({ schema: TestSchema, safeParse: true })
+      );
+
+      expect(await middyfiedHandler(event, {} as Context)).toEqual({
+        success: true,
+        data: event,
+      });
+    });
+
+    it('should return error when safeParse is true and schema does not match', async () => {
+      const middyfiedHandler = middy(handler).use(
+        parser({ schema: TestSchema, safeParse: true })
+      );
+
+      expect(await middyfiedHandler(42, {} as Context)).toEqual({
+        success: false,
+        error: expect.any(Error),
+        originalEvent: 42,
+      });
+    });
+
+    it('should return event when envelope and safeParse are true', async () => {
+      const detail = generateMock(TestSchema);
+      const event = TestEvents.eventBridgeEvent as EventBridgeEvent;
+
+      event.detail = detail;
+
+      const middyfiedHandler = middy(handler).use(
+        parser({
+          schema: TestSchema,
+          envelope: EventBridgeEnvelope,
+          safeParse: true,
+        })
+      );
+
+      expect(await middyfiedHandler(event, {} as Context)).toEqual({
+        success: true,
+        data: detail,
+      });
+    });
+
+    it('should return error when envelope and safeParse are true and schema does not match', async () => {
+      const event = TestEvents.eventBridgeEvent as EventBridgeEvent;
+
+      const middyfiedHandler = middy(handler).use(
+        parser({
+          schema: TestSchema,
+          envelope: EventBridgeEnvelope,
+          safeParse: true,
+        })
+      );
+
+      expect(await middyfiedHandler(event, {} as Context)).toEqual({
+        success: false,
+        error: expect.any(Error),
+        originalEvent: event,
+      });
     });
   });
 });

@@ -39,16 +39,40 @@
       }
     },
     "./middleware": {
-      "import": "./lib/esm/parser.js",
-        "require": "./lib/cjs/parser.js"
+      "require": "./lib/cjs/middleware/parser.js",
+      "import": "./lib/esm/middleware/parser.js"
     },
     "./schemas": {
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.js"
+      "require": "./lib/cjs/schemas/index.js",
+      "import": "./lib/esm/schemas/index.js"
     },
     "./envelopes": {
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.js"
+      "require": "./lib/cjs/envelopes/index.js",
+      "import": "./lib/esm/envelopes/index.js"
+    },
+    "./types": {
+      "require": "./lib/cjs/types/index.js",
+      "import": "./lib/esm/types/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "types": [
+        "./lib/cjs/types/index.d.ts",
+        "./lib/esm/types/index.d.ts"
+      ],
+      "middleware": [
+        "./lib/cjs/middleware/parser.d.ts",
+        "./lib/esm/middleware/parser.d.ts"
+      ],
+      "schemas": [
+        "./lib/cjs/schemas/index.d.ts",
+        "./lib/esm/schemas/index.d.ts"
+      ],
+      "envelopes": [
+        "./lib/cjs/envelopes/index.d.ts",
+        "./lib/esm/envelopes/index.d.ts"
+      ]
     }
   },
   "main": "./lib/cjs/index.js",

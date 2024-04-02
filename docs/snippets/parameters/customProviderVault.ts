@@ -1,7 +1,6 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import { BaseProvider } from '@aws-lambda-powertools/parameters/base';
 import Vault from 'hashi-vault-js';
-import { isErrorResponse } from './customProviderVaultTypes';
 import type {
   HashiCorpVaultProviderOptions,
   HashiCorpVaultGetOptions,
@@ -18,7 +17,9 @@ class HashiCorpVaultProvider extends BaseProvider {
    * @param {HashiCorpVaultProviderOptions} config - The configuration object.
    */
   public constructor(config: HashiCorpVaultProviderOptions) {
-    super();
+    super({
+      proto: Vault,
+    });
 
     const { url, token, clientConfig, vaultClient } = config;
     if (vaultClient) {
@@ -28,7 +29,7 @@ class HashiCorpVaultProvider extends BaseProvider {
         throw Error('Not a valid Vault client provided');
       }
     } else {
-      const config: Vault.VaultConfig = {
+      const config = {
         baseUrl: url,
         ...(clientConfig ?? {
           timeout: 10000,
@@ -90,7 +91,7 @@ class HashiCorpVaultProvider extends BaseProvider {
       mount
     );
 
-    if (isErrorResponse(response)) {
+    if (response.isVaultError) {
       this.#logger.error('An error occurred', {
         error: response.vaultHelpMessage,
       });

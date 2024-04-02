@@ -8,7 +8,7 @@ import {
   KinesisDataStreamSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
-} from '../../../src/schemas';
+} from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('Kinesis ', () => {

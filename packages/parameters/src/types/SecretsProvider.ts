@@ -94,12 +94,12 @@ type SecretsGetOutput<
   ? undefined extends InferredFromOptionsType
     ? string | Uint8Array
     : InferredFromOptionsType extends SecretsGetOptionsTransformNone
-    ? string | Uint8Array
-    : InferredFromOptionsType extends SecretsGetOptionsTransformBinary
-    ? string
-    : InferredFromOptionsType extends SecretsGetOptionsTransformJson
-    ? JSONValue
-    : never
+      ? string | Uint8Array
+      : InferredFromOptionsType extends SecretsGetOptionsTransformBinary
+        ? string
+        : InferredFromOptionsType extends SecretsGetOptionsTransformJson
+          ? JSONValue
+          : never
   : ExplicitUserProvidedType;
 
 export type { SecretsProviderOptions, SecretsGetOptions, SecretsGetOutput };

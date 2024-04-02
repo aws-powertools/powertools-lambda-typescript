@@ -8,7 +8,7 @@ import {
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceUpdateSchema,
   CloudFormationCustomResourceDeleteSchema,
-} from '../../../src/schemas';
+} from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('CloudFormationCustomResource ', () => {

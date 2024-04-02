@@ -14,7 +14,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 - [Getting started](#getting-started)
   - [Installation](#installation)
   - [Examples](#examples)
-  - [Serverless TypeScript Demo application](#serverless-typescript-demo-application)
+  - [Demo applications](#demo-applications)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
@@ -62,10 +62,12 @@ Or refer to the installation guide of each utility:
 * [CDK](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/cdk)
 * [SAM](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/sam)
 
-### Serverless TypeScript Demo application
+### Demo applications
 
 The [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) shows how to use Powertools for AWS Lambda (TypeScript).  
 You can find instructions on how to deploy and load test this application in the [repository](https://github.com/aws-samples/serverless-typescript-demo).
+
+The [AWS Lambda performance tuning](https://github.com/aws-samples/optimizations-for-lambda-functions) repository also uses Powertools for AWS Lambda (TypeScript) as well as demonstrating other performance tuning techniques for Lambda functions written in TypeScript.
 
 ## Contribute
 
@@ -98,6 +100,8 @@ The following companies, among others, use Powertools:
 * [Sennder](https://sennder.com/)
 * [Certible](https://www.certible.com/)
 * [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
+* [AppYourself](https://appyourself.net)
+* [Alma Media](https://www.almamedia.fi)
 
 ### Sharing your work
 

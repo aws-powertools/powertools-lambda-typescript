@@ -11,5 +11,5 @@ if (
 }
 
 // Powertools for AWS Lambda (TypeScript) variables
-process.env.LOG_LEVEL = 'DEBUG';
+process.env.POWERTOOLS_LOG_LEVEL = 'DEBUG';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';

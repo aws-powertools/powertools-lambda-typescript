@@ -9,7 +9,7 @@ import {
   S3SqsEventNotificationSchema,
   S3Schema,
   S3ObjectLambdaEventSchema,
-} from '../../../src/schemas';
+} from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('S3 ', () => {

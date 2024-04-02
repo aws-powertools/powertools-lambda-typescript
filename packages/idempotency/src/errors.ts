@@ -1,7 +1,16 @@
+import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
+
 /**
  * Item attempting to be inserted into persistence store already exists and is not expired
  */
-class IdempotencyItemAlreadyExistsError extends Error {}
+class IdempotencyItemAlreadyExistsError extends Error {
+  public existingRecord?: IdempotencyRecord;
+
+  public constructor(message?: string, existingRecord?: IdempotencyRecord) {
+    super(message);
+    this.existingRecord = existingRecord;
+  }
+}
 
 /**
  * Item does not exist in persistence store
@@ -21,7 +30,14 @@ class IdempotencyInvalidStatusError extends Error {}
 /**
  * Payload does not match stored idempotency record
  */
-class IdempotencyValidationError extends Error {}
+class IdempotencyValidationError extends Error {
+  public existingRecord?: IdempotencyRecord;
+
+  public constructor(message?: string, existingRecord?: IdempotencyRecord) {
+    super(message);
+    this.existingRecord = existingRecord;
+  }
+}
 
 /**
  * State is inconsistent across multiple requests to persistence store

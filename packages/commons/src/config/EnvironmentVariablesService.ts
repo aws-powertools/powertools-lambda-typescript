@@ -1,4 +1,4 @@
-import { ConfigService } from './ConfigService.js';
+import type { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
 
 /**
  * Class EnvironmentVariablesService
@@ -13,11 +13,12 @@ import { ConfigService } from './ConfigService.js';
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  */
-class EnvironmentVariablesService extends ConfigService {
+class EnvironmentVariablesService implements ConfigServiceInterface {
   /**
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
    * @protected
    */
+  protected devModeVariable = 'POWERTOOLS_DEV';
   protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
   // Reserved environment variables
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
@@ -69,6 +70,15 @@ class EnvironmentVariablesService extends ConfigService {
     const xRayTraceData = this.getXrayTraceData();
 
     return xRayTraceData?.Sampled === '1';
+  }
+
+  /**
+   * It returns true if the `POWERTOOLS_DEV` environment variable is set to truthy value.
+   *
+   * @returns {boolean}
+   */
+  public isDevMode(): boolean {
+    return this.isValueTrue(this.get(this.devModeVariable));
   }
 
   /**

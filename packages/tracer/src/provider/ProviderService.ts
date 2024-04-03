@@ -104,16 +104,24 @@ class ProviderService implements ProviderServiceInterface {
       const parentSubsegment = this.getSegment();
       if (parentSubsegment && request.origin) {
         const origin = getOriginURL(request.origin);
+        const method = request.method;
+
         const subsegment = parentSubsegment.addNewSubsegment(origin.hostname);
         subsegment.addAttribute('namespace', 'remote');
-        (subsegment as HttpSubsegment).http = {};
+
+        (subsegment as HttpSubsegment).http = {
+          request: {
+            url: origin.hostname,
+            method,
+          },
+        };
 
         this.setSegment(subsegment);
       }
     };
 
     /**
-     * Enrich the subsegment with the request and response details, and close it.
+     * Enrich the subsegment with the response details, and close it.
      * Then, set the parent segment as the active segment.
      *
      * @note that `message` must be `unknown` because that's the type expected by `subscribe`
@@ -121,14 +129,10 @@ class ProviderService implements ProviderServiceInterface {
      * @param message The message received from the `undici` channel
      */
     const onResponse = (message: unknown): void => {
-      const { request, response } =
-        message as DiagnosticsChannel.RequestHeadersMessage;
+      const { response } = message as DiagnosticsChannel.RequestHeadersMessage;
 
       const subsegment = this.getSegment();
-      if (isHttpSubsegment(subsegment) && request.origin) {
-        const origin = getOriginURL(request.origin);
-        const method = request.method;
-
+      if (isHttpSubsegment(subsegment)) {
         const status = response.statusCode;
         const contentLenght = findHeaderAndDecode(
           response.headers,
@@ -136,10 +140,7 @@ class ProviderService implements ProviderServiceInterface {
         );
 
         subsegment.http = {
-          request: {
-            url: origin.hostname,
-            method,
-          },
+          ...subsegment.http,
           response: {
             status,
             ...(contentLenght && {
@@ -162,8 +163,32 @@ class ProviderService implements ProviderServiceInterface {
       }
     };
 
+    /**
+     * Add an error to the subsegment when the request fails.
+     *
+     * This is used to handle the case when the request fails to establish a connection with the server or timeouts.
+     * In all other cases, for example, when the server returns a 4xx or 5xx status code, the error is added in the `onResponse` function.
+     *
+     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     *
+     * @param message The message received from the `undici` channel
+     */
+    const onError = (message: unknown): void => {
+      const { error } = message as DiagnosticsChannel.RequestErrorMessage;
+
+      const subsegment = this.getSegment();
+      if (isHttpSubsegment(subsegment)) {
+        subsegment.addErrorFlag();
+        error instanceof Error && subsegment.addError(error, true);
+
+        subsegment.close();
+        this.setSegment(subsegment.parent);
+      }
+    };
+
     subscribe('undici:request:create', onRequestStart);
     subscribe('undici:request:headers', onResponse);
+    subscribe('undici:request:error', onError);
   }
 
   public putAnnotation(key: string, value: string | number | boolean): void {

@@ -4,9 +4,17 @@ import type { URL } from 'node:url';
 type MockFetchOptions = {
   origin: string | URL;
   method?: string;
-  statusCode?: number;
   headers?: { [key: string]: string };
-};
+} & (
+  | {
+      statusCode?: never;
+      throwError?: boolean;
+    }
+  | {
+      statusCode: number;
+      throwError?: never;
+    }
+);
 
 /**
  * Simulates a fetch request by publishing messages to the undici channel
@@ -20,16 +28,31 @@ const mockFetch = ({
   method,
   statusCode,
   headers,
+  throwError,
 }: MockFetchOptions): void => {
-  const requestStart = channel('undici:request:create');
-  const response = channel('undici:request:headers');
-  const requestEnd = channel('undici:request:trailers');
+  const requestCreateChannel = channel('undici:request:create');
+  const responseHeadersChannel = channel('undici:request:headers');
+  const errorChannel = channel('undici:request:error');
 
-  requestStart.publish({
-    request: {
-      origin,
-    },
+  const request = {
+    origin,
+    method: method ?? 'GET',
+  };
+
+  requestCreateChannel.publish({
+    request,
   });
+
+  if (throwError) {
+    const error = new AggregateError('Mock fetch error');
+
+    errorChannel.publish({
+      request,
+      error,
+    });
+
+    throw error;
+  }
 
   const encoder = new TextEncoder();
   const encodedHeaders = [];
@@ -37,17 +60,13 @@ const mockFetch = ({
     encodedHeaders.push(encoder.encode(key));
     encodedHeaders.push(encoder.encode(value));
   }
-  response.publish({
-    request: {
-      origin,
-      method: method ?? 'GET',
-    },
+  responseHeadersChannel.publish({
+    request,
     response: {
       statusCode: statusCode ?? 200,
       headers: encodedHeaders,
     },
   });
-  requestEnd.publish({});
 };
 
 export { mockFetch };

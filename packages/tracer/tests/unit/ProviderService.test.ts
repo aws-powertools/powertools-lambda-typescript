@@ -374,6 +374,7 @@ describe('Class: ProviderService', () => {
       // Assess
       expect(channel('undici:request:create').hasSubscribers).toBe(true);
       expect(channel('undici:request:headers').hasSubscribers).toBe(true);
+      expect(channel('undici:request:error').hasSubscribers).toBe(true);
     });
 
     it('traces a successful request', async () => {
@@ -390,6 +391,7 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
       jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -414,6 +416,7 @@ describe('Class: ProviderService', () => {
         },
       });
       expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
     it('excludes the content_length header when invalid or not found', async () => {
@@ -429,6 +432,8 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -449,6 +454,8 @@ describe('Class: ProviderService', () => {
           status: 200,
         },
       });
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
     it('adds a throttle flag to the segment when the status code is 429', async () => {
@@ -465,6 +472,8 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -482,6 +491,8 @@ describe('Class: ProviderService', () => {
         })
       );
       expect(subsegment.addThrottleFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
     it('adds an error flag to the segment when the status code is 4xx', async () => {
@@ -498,6 +509,8 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -515,6 +528,8 @@ describe('Class: ProviderService', () => {
         })
       );
       expect(subsegment.addErrorFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
     it('adds a fault flag to the segment when the status code is 5xx', async () => {
@@ -531,6 +546,8 @@ describe('Class: ProviderService', () => {
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -548,6 +565,40 @@ describe('Class: ProviderService', () => {
         })
       );
       expect(subsegment.addFaultFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
+  });
+
+  it('closes the segment and adds a fault flag when the connection fails', async () => {
+    // Prepare
+    const provider: ProviderService = new ProviderService();
+    const segment = new Subsegment('## dummySegment');
+    const subsegment = segment.addNewSubsegment('aws.amazon.com');
+    jest.spyOn(subsegment, 'addError');
+    jest
+      .spyOn(segment, 'addNewSubsegment')
+      .mockImplementationOnce(() => subsegment);
+    jest
+      .spyOn(provider, 'getSegment')
+      .mockImplementationOnce(() => segment)
+      .mockImplementationOnce(() => subsegment)
+      .mockImplementationOnce(() => subsegment);
+    jest.spyOn(subsegment, 'close');
+    jest.spyOn(provider, 'setSegment');
+
+    // Act
+    provider.instrumentFetch();
+    try {
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        throwError: true,
+      });
+    } catch {}
+
+    // Assess
+    expect(subsegment.addError).toHaveBeenCalledTimes(1);
+    expect(subsegment.close).toHaveBeenCalledTimes(1);
+    expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
   });
 });

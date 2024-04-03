@@ -100,6 +100,7 @@ export const handlerLambda = makeIdempotent(
     persistenceStore: dynamoDBPersistenceLayer,
     config: new IdempotencyConfig({
       eventKeyJmesPath: 'foo',
+      useLocalCache: true,
     }),
   }
 );

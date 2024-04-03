@@ -399,4 +399,38 @@ describe('Function: makeIdempotent', () => {
     expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
     expect(saveSuccessSpy).toHaveBeenCalledWith('456', '123456');
   });
+  /* it('handles a cached execution', async () => {
+    // Prepare
+    const handler = makeIdempotent(
+      async (_event: unknown, context: Context) => context.awsRequestId,
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({
+          useLocalCache: true,
+        }),
+      }
+    );
+    const saveInProgressSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveInProgress'
+    );
+    const saveSuccessSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveSuccess'
+    );
+
+    // Act
+    const result = await handler(event, context);
+    const resultTwo = await handler(event, context);
+
+    // Assess
+    expect(result).toEqual(resultTwo);
+    expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
+    expect(saveInProgressSpy).toHaveBeenCalledWith(
+      event,
+      remainingTImeInMillis
+    );
+    expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
+    expect(saveSuccessSpy).toHaveBeenCalledWith(event, context.awsRequestId);
+  }); */
 });

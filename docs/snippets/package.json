@@ -34,7 +34,7 @@
     "@aws-sdk/client-secrets-manager": "^3.543.0",
     "@aws-sdk/client-ssm": "^3.540.0",
     "@aws-sdk/util-dynamodb": "^3.540.0",
-    "aws-sdk": "^2.1591.0",
+    "aws-sdk": "^2.1592.0",
     "aws-sdk-client-mock": "^4.0.0",
     "aws-sdk-client-mock-jest": "^4.0.0",
     "axios": "^1.6.8",

@@ -8,7 +8,7 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 You can use Powertools for AWS Lambda (TypeScript) in both TypeScript and JavaScript code bases.
 
 ???+ tip
-    Powertools for AWS Lambda is also available for [Python](https://docs.powertools.aws.dev/lambda/python/){target="_blank"}, [Java](https://docs.powertools.aws.dev/lambda/java/){target="_blank"}, and [.NET](https://docs.powertools.aws.dev/lambda/dotnet/){target="_blank"}
+Powertools for AWS Lambda is also available for [Python](https://docs.powertools.aws.dev/lambda/python/){target="_blank"}, [Java](https://docs.powertools.aws.dev/lambda/java/){target="_blank"}, and [.NET](https://docs.powertools.aws.dev/lambda/dotnet/){target="_blank"}
 
 ??? hint "Support this project by becoming a reference customer, sharing your work, or using Layers :heart:"
 
@@ -26,7 +26,7 @@ You can use Powertools for AWS Lambda (TypeScript) in both TypeScript and JavaSc
 
 You can install Powertools for AWS Lambda (TypeScript) using one of the following options:
 
-* **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:21**](#){: .copyMe}:clipboard:
+* **Lambda Layer**: [**arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3**](#){: .copyMe}:clipboard:
 * **npm**: [`npm install @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics @aws-lambda-powertools/logger`](#){: .copyMe}:clipboard:
 
 ### Lambda Layer
@@ -70,7 +70,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
     | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3](#){: .copyMe}:clipboard:   |
 
 ??? note "Click to expand and copy code snippets for popular frameworks"
-    
+
     === "SAM"
 
         ```yaml hl_lines="5"
@@ -252,7 +252,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
 !!! info "Using Powertools for AWS Lambda (TypeScript) via Lambda Layer? Simply add the Powertools for AWS Lambda (TypeScript) utilities you are using as a development dependency"
 
 ??? question "Want to inspect the contents of the Layer?"
-	Change {region} to your AWS region, e.g. `eu-west-1`
+Change {region} to your AWS region, e.g. `eu-west-1`
 
     ```bash title="AWS CLI"
     aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3 --region {region}
@@ -262,7 +262,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
 
 ## Instrumentation
 
-You can instrument your code with Powertools for AWS Lambda (TypeScript) in three different ways:  
+You can instrument your code with Powertools for AWS Lambda (TypeScript) in three different ways:
 
 * **Middy** middleware. It is the best choice if your existing code base relies on the [Middy 4.x](https://middy.js.org/docs/) middleware engine. Powertools for AWS Lambda (TypeScript) offers compatible Middy middleware to make this integration seamless.
 * **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html). If you aren’t using Classes, this requires the most significant refactoring.
@@ -293,7 +293,7 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 ## Environment variables
 
 ???+ info
-	Explicit parameters take precedence over environment variables
+Explicit parameters take precedence over environment variables
 
 | Environment variable                         | Description                                                                                                   | Utility                                 | Default             |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------- |

@@ -24,7 +24,7 @@ Zod is a TypeScript-first schema declaration and validation library.
 ### Install
 
 ```bash
-npm install @aws-lambda-powertools/parser zod~3
+npm install @aws-lambda-powertools/parser zod@~3
 ```
 
 This utility supports Zod v3.x and above.

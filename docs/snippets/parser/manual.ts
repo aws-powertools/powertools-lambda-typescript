@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
 import { EventBridgeSchema } from '@aws-lambda-powertools/parser/schemas';
 import type { EventBridgeEvent } from '@aws-lambda-powertools/parser/types';
+import { Logger } from '@aws-lambda-powertools/logger';
+
+const logger = new Logger();
 
 const orderSchema = z.object({
   id: z.number().positive(),
@@ -23,8 +26,8 @@ export const handler = async (
   _context: Context
 ): Promise<void> => {
   const parsedEvent = EventBridgeSchema.parse(event); // (1)!
-  console.log(parsedEvent);
+  logger.info('Parsed event', parsedEvent);
 
   const orders: Order = EventBridgeEnvelope.parse(event, orderSchema); // (2)!
-  console.log(orders);
+  logger.info('Parsed orders', orders);
 };

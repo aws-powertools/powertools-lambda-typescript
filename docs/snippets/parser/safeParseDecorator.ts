@@ -6,6 +6,9 @@ import type {
   ParsedResult,
   EventBridgeEvent,
 } from '@aws-lambda-powertools/parser/types';
+import { Logger } from '@aws-lambda-powertools/logger';
+
+const logger = new Logger();
 
 const orderSchema = z.object({
   id: z.number().positive(),
@@ -31,11 +34,11 @@ class Lambda implements LambdaInterface {
     if (event.success) {
       // (2)!
       for (const item of event.data.items) {
-        console.log(item.id); // (3)!
+        logger.info('Processing item', { item }); // (3)!
       }
     } else {
-      console.error(event.error); // (4)!
-      console.log(event.originalEvent); // (5)!
+      logger.error('Failed to parse event', event.error); // (4)!
+      logger.error('Original event is: ', event.originalEvent); // (5)!
     }
   }
 }

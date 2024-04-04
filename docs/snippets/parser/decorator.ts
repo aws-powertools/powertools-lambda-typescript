@@ -2,6 +2,9 @@ import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { parser } from '@aws-lambda-powertools/parser';
 import { z } from 'zod';
+import { Logger } from '@aws-lambda-powertools/logger';
+
+const logger = new Logger();
 
 const orderSchema = z.object({
   id: z.number().positive(),
@@ -23,7 +26,7 @@ class Lambda implements LambdaInterface {
   public async handler(event: Order, _context: Context): Promise<void> {
     // event is now typed as Order
     for (const item of event.items) {
-      console.log(item.id);
+      logger.info('Processing item', { item });
     }
   }
 }

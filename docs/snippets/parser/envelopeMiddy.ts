@@ -3,6 +3,9 @@ import { parser } from '@aws-lambda-powertools/parser/middleware';
 import { z } from 'zod';
 import middy from '@middy/core';
 import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
+import { Logger } from '@aws-lambda-powertools/logger';
+
+const logger = new Logger();
 
 const orderSchema = z.object({
   id: z.number().positive(),
@@ -25,7 +28,7 @@ const lambdaHandler = async (
 ): Promise<void> => {
   for (const item of event.items) {
     // item is parsed as OrderItem
-    console.log(item.id);
+    logger.info('Processing item', { item });
   }
 };
 

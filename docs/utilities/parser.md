@@ -47,15 +47,15 @@ Both are also able to parse either an object or JSON string as an input.
 
 ???+ warning
     The decorator and middleware will replace the event object with the parsed schema if successful. 
-    Be careful when using multiple decorators that expect event to have a specific structure, the order of evaluation for decorators is from bottom to top.
+    Be cautious when using multiple decorators that expect event to have a specific structure, the order of evaluation for decorators is from bottom to top.
 
 === "Middy middleware"
-    ```typescript hl_lines="32"
+    ```typescript hl_lines="34"
     --8<-- "docs/snippets/parser/middy.ts"
     ```    
 
 === "Decorator" 
-    ```typescript hl_lines="22"
+    ```typescript hl_lines="25"
     --8<-- "docs/snippets/parser/decorator.ts"
     ```
 
@@ -96,7 +96,7 @@ Parser comes with the following built-in schemas:
 You can extend every built-in schema to include your own schema, and yet have all other known fields parsed along the way.
 
 === "handler.ts"
-    ```typescript hl_lines="20-22 27 30"
+    ```typescript hl_lines="23-25 30 34"
     --8<-- "docs/snippets/parser/extend.ts"
     ```
 
@@ -124,12 +124,12 @@ Envelopes can be used via envelope parameter available in middy and decorator.
 Here's an example of parsing a custom schema in an event coming from EventBridge, where all you want is what's inside the detail key.
 
 === "Middy middleware"
-    ```typescript hl_lines="5 33"
+    ```typescript hl_lines="5 36"
     --8<-- "docs/snippets/parser/envelopeMiddy.ts"
     ```
 
 === "Decorator"
-    ```typescript hl_lines="5 23"
+    ```typescript hl_lines="5 26 30"
     --8<-- "docs/snippets/parser/envelopeDecorator.ts"
     ```
 
@@ -177,7 +177,7 @@ The `ParsedResult` object will have `success`, `data`,  or `error` and `original
 If the parsing is successful, the `data` field will contain the parsed event, otherwise you can access the `error` field and the `originalEvent` to handle the error and recover the original event.
 
 === "Middy middleware"
-    ```typescript hl_lines="29 32 35 36 41"
+    ```typescript hl_lines="32 35 38 39 44"
     --8<-- "docs/snippets/parser/safeParseMiddy.ts"
     ```
 
@@ -188,7 +188,7 @@ If the parsing is successful, the `data` field will contain the parsed event, ot
     5. Use `originalEvent` to get the original event and recover
 
 === "Decorator"
-    ```typescript hl_lines="26 31 34 37 38"
+    ```typescript hl_lines="29 35 37 40 41"
     --8<-- "docs/snippets/parser/safeParseDecorator.ts"
     ```
     
@@ -205,7 +205,7 @@ You can use built-in envelopes and schemas to parse the incoming events manually
 
 
 === "Manual parse"
-    ```typescript hl_lines="25 28"
+    ```typescript hl_lines="28 31"
     --8<-- "docs/snippets/parser/manual.ts"
     ```
 
@@ -213,7 +213,7 @@ You can use built-in envelopes and schemas to parse the incoming events manually
     2. Use `eventBridgeEnvelope` with a combination of `orderSchema` to get `Order` object from the `details` field.
 
 === "Manual safeParse"
-    ```typescript hl_lines="24 29"
+    ```typescript hl_lines="27 31"
     --8<-- "docs/snippets/parser/manualSafeParse.ts"
     ```
 
@@ -230,31 +230,29 @@ For example, you can use `refine` to validate a field or a combination of fields
     --8<-- "docs/snippets/parser/refine.ts"
     ```
 
+    1. validate a single field
+    2. validate an object with multiple fields
+
 Zod provides a lot of other features and customization, see [Zod documentation](https://zod.dev) for more details.
 
 
 ## Types
 
 ### Schema and Type inference
-Zod provides a way to extract the type of schema, so you can use it in your handler:
+Use `z.infer` to extract the type of the schema, so you can use types during development and avoid type errors.
 
 === "Types"
-    ```typescript hl_lines="19 22 27"
+    ```typescript hl_lines="22 25 30"
     --8<-- "docs/snippets/parser/types.ts"
     ```
     
-    1. Use `z.infer` to extract the type of the schema
-    2. `event` is typed as `Order` object
-    3. we can infer deeply nested types, here `Order` and `OrderItem` are inferred
+    1. Use `z.infer` to extract the type of the schema, also works for nested schemas
+    2. `event` is of type `Order`
+    3. infer types from deeply nested schemas 
 
 ### Compatibility with @types/aws-lambda
 
-The package `@types/aws-lambda` contains type definitions for AWS service event invocations. 
-Powertools parser utility also bring AWS Lambda event types based on the built-in schema definitions. 
-Both libraries try to provide types for the same event structure, but they might not be compatible with each other yet. 
-We are working on a sustainable solution to make them compatible and avoid any breaking changes in the future. 
+The package `@types/aws-lambda` is a popular project that contains type definitions for many AWS service event invocations. 
+Powertools parser utility also bring AWS Lambda event types based on the built-in schema definitions.
 
-We recommend to use the types provided by the parser utility. 
-
-## Error handling
-We don't have any error handling in the utility and propagate all errors from Zod, which are thrown as `ZodError`. 
+We recommend to use the types provided by the parser utilit. If you encounter any issues or have any feedback, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose). 

@@ -34,7 +34,8 @@
       "@aws-lambda-powertools/jmespath/envelopes": [
         "../../packages/jmespath/lib/envelopes"
       ],
-      "@aws-lambda-powertools/parser": ["../../packages/parser/lib"]
+      "@aws-lambda-powertools/parser": ["../../packages/parser/lib"],
+      "@aws-lambda-powertools/logger": ["../../packages/logger/lib"]
     }
   }
 }

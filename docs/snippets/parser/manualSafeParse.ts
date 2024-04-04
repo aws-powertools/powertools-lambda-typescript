@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
 import { EventBridgeSchema } from '@aws-lambda-powertools/parser/schemas';
 import type { EventBridgeEvent } from '@aws-lambda-powertools/parser/types';
+import { Logger } from '@aws-lambda-powertools/logger';
+
+const logger = new Logger();
 
 const orderSchema = z.object({
   id: z.number().positive(),
@@ -23,11 +26,10 @@ export const handler = async (
 ): Promise<void> => {
   const parsedEvent = EventBridgeSchema.safeParse(event); // (1)!
   parsedEvent.success
-    ? console.log(parsedEvent.data)
-    : console.log(parsedEvent.error.message);
-
+    ? logger.info('Event parsed successfully', parsedEvent.data)
+    : logger.error('Event parsing failed', parsedEvent.error);
   const parsedEvenlope = EventBridgeEnvelope.safeParse(event, orderSchema); // (2)!
   parsedEvenlope.success
-    ? console.log(parsedEvenlope.data)
-    : console.log(parsedEvenlope.error.message);
+    ? logger.info('Event envelope parsed successfully', parsedEvenlope.data)
+    : logger.error('Event envelope parsing failed', parsedEvenlope.error);
 };

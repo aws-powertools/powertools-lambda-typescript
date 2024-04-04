@@ -255,4 +255,4 @@ Use `z.infer` to extract the type of the schema, so you can use types during dev
 The package `@types/aws-lambda` is a popular project that contains type definitions for many AWS service event invocations. 
 Powertools parser utility also bring AWS Lambda event types based on the built-in schema definitions.
 
-We recommend to use the types provided by the parser utilit. If you encounter any issues or have any feedback, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose). 
+We recommend to use the types provided by the parser utility. If you encounter any issues or have any feedback, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose). 

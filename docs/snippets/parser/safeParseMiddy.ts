@@ -2,6 +2,10 @@ import type { Context } from 'aws-lambda';
 import { parser } from '@aws-lambda-powertools/parser/middleware';
 import { z } from 'zod';
 import middy from '@middy/core';
+import type {
+  ParsedResult,
+  EventBridgeEvent,
+} from '@aws-lambda-powertools/parser/types';
 
 const orderSchema = z.object({
   id: z.number().positive(),
@@ -16,18 +20,23 @@ const orderSchema = z.object({
   optionalField: z.string().optional(),
 });
 
-type Order = z.infer<typeof orderSchema>; // (1)!
+type Order = z.infer<typeof orderSchema>;
 
 const lambdaHandler = async (
-  event: Order, // (2)!
+  event: ParsedResult<EventBridgeEvent, Order>,
   _context: Context
 ): Promise<void> => {
-  for (const item of event.items) {
-    // item is parsed as OrderItem
-    console.log(item.id); // (3)!
+  if (event.success) {
+    // (2)!
+    for (const item of event.data.items) {
+      console.log(item.id); // (3)!
+    }
+  } else {
+    console.error(event.error); // (4)!
+    console.log(event.originalEvent); // (5)!
   }
 };
 
 export const handler = middy(lambdaHandler).use(
-  parser({ schema: orderSchema })
+  parser({ schema: orderSchema, safeParse: true }) // (1)!
 );

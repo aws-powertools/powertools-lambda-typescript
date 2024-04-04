@@ -1,20 +1,22 @@
 ---
 title: Parser (Zod)
 descrition: Utility
+status: new
 ---
 
 
 ???+ warning
     **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/16) we might introduce significant breaking changes and improvements in response to customers feedback.
 
-This utility provides data validation and parsing using [zod](https://zod.dev){target="_blank"}.
+This utility provides data validation and parsing using [Zod](https://zod.dev){target="_blank"}.
 Zod is a TypeScript-first schema declaration and validation library.  
 
 ## Key features
 
-* Define data schema as zod schema, then parse, validate and extract only what you want
-* Built-in envelopes to unwrap and validate popular event sources payloads
+* Define data schema as Zod schema, then parse, validate and extract only what you want
+* Built-in envelopes to unwrap and validate popular AWS event sources payloads
 * Extend and customize envelopes to fit your needs
+* Safe parsing option to avoid throwing errors and custom error handling
 * Available for Middy.js middleware and TypeScript method decorators
 
 ## Getting started
@@ -22,32 +24,33 @@ Zod is a TypeScript-first schema declaration and validation library.
 ### Install
 
 ```bash
-npm install @aws-lambda-powertools/parser zod
+npm install @aws-lambda-powertools/parser zod~3
 ```
 
-This utility supports zod v3.0.0 and above.
+This utility supports Zod v3.x and above.
 
 ## Define schema
 
-You can define your schema using zod:
+You can define your schema using Zod:
 
 ```typescript title="schema.ts"
 --8<-- "docs/snippets/parser/schema.ts"
 ```
 
-This is a schema for order and order items using zod. 
-You can create more complex schemas using zod, such as nested objects, arrays, unions, etc. see [zod documentation](https://zod.dev) for more details.
+This is a schema for `Order` object using Zod. 
+You can create complex schemas by using nested objects, arrays, unions, and other types, see [Zod documentation](https://zod.dev) for more details.
 
 ## Parse events
 
-You can parse inbound events using `parser` decorator or middy middleware. 
+You can parse inbound events using `parser` decorator or middy middleware, or [manually](#manual-parsing) using built-in envelopes and schemas.
 Both are also able to parse either an object or JSON string as an input.
 
-???+ note
-    The decorator and middleware will replace the event object with the parsed schema if successful. This means you might be careful when nesting other decorators that expect event to have a specific structure.
+???+ warning
+    The decorator and middleware will replace the event object with the parsed schema if successful. 
+    Be careful when using multiple decorators that expect event to have a specific structure, the order of evaluation for decorators is from bottom to top.
 
 === "Middy middleware"
-    ```typescript hl_lines="31"
+    ```typescript hl_lines="32"
     --8<-- "docs/snippets/parser/middy.ts"
     ```    
 
@@ -120,6 +123,11 @@ This can become difficult quite quickly. Parser simplifies the development throu
 Envelopes can be used via envelope parameter available in middy and decorator.
 Here's an example of parsing a custom schema in an event coming from EventBridge, where all you want is what's inside the detail key.
 
+=== "Middy middleware"
+    ```typescript hl_lines="5 33"
+    --8<-- "docs/snippets/parser/envelopeMiddy.ts"
+    ```
+
 === "Decorator"
     ```typescript hl_lines="5 23"
     --8<-- "docs/snippets/parser/envelopeDecorator.ts"
@@ -128,10 +136,7 @@ Here's an example of parsing a custom schema in an event coming from EventBridge
     1. Pass `eventBridgeEnvelope` to `parser` decorator
     2. `event` is parsed and replaced as `Order` object
 
-=== "Middy middleware"
-    ```typescript hl_lines="5 32"
-    --8<-- "docs/snippets/parser/envelopeMiddy.ts"
-    ```
+
 
 The envelopes are functions that take an event and the schema to parse, and return the result of the inner schema.
 Depending on the envelope it can be something simple like extracting a key. 
@@ -163,22 +168,61 @@ Parser comes with the following built-in envelopes:
 | **vpcLatticeV2Envelope**      | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
 
 
+## Safe parsing
+
+If you want to parse the event without throwing an error, use the `safeParse` option. 
+The handler `event` object will be replaced with `ParsedResult<Input?, Oputput?>`, for example `ParsedResult<SqsEvent, Order>`, where `SqsEvent` is the original event and `Order` is the parsed schema. 
+
+The `ParsedResult` object will have `success`, `data`,  or `error` and `originalEvent` fields, depending on the outcome. 
+If the parsing is successful, the `data` field will contain the parsed event, otherwise you can access the `error` field and the `originalEvent` to handle the error and recover the original event.
+
+=== "Middy middleware"
+    ```typescript hl_lines="29 32 35 36 41"
+    --8<-- "docs/snippets/parser/safeParseMiddy.ts"
+    ```
+
+    1. Use `safeParse` option to parse the event without throwing an error
+    2. Check if the result is successful or not and handle the error accordingly
+    3. Use `data` to access the parsed event
+    4. Use `error` to handle the error message
+    5. Use `originalEvent` to get the original event and recover
+
+=== "Decorator"
+    ```typescript hl_lines="26 31 34 37 38"
+    --8<-- "docs/snippets/parser/safeParseDecorator.ts"
+    ```
+    
+    1. Use `safeParse` option to parse the event without throwing an error
+    2. Check if the result is successful or not and handle the error accordingly
+    3. Use `data` to access the parsed event
+    4. Use `error` to handle the error message
+    5. Use `originalEvent` to get the original event and recover
+
+
 ## Manual parsing
 
-You can use built-in envelopes and schemas to parse the incoming events manually: 
+You can use built-in envelopes and schemas to parse the incoming events manually, without using middy or decorator.
 
-=== "Manual parsing"
+
+=== "Manual parse"
     ```typescript hl_lines="25 28"
     --8<-- "docs/snippets/parser/manual.ts"
     ```
-    
+
     1. Use `EventBridgeSchema` to parse the event, the `details` fields will be parsed as a generic record.
     2. Use `eventBridgeEnvelope` with a combination of `orderSchema` to get `Order` object from the `details` field.
 
+=== "Manual safeParse"
+    ```typescript hl_lines="24 29"
+    --8<-- "docs/snippets/parser/manualSafeParse.ts"
+    ```
+
+    1. Use `safeParse` option to parse the event without throwing an error
+    2. `safeParse` is also available for envelopes
 
 ## Custom validation
 
-Because Parser uses zod, you can use all the features of zod to validate your data.
+Because Parser uses Zod, you can use all the features of Zod to validate your data.
 For example, you can use `refine` to validate a field or a combination of fields:
 
 === "Custom validation"
@@ -186,7 +230,7 @@ For example, you can use `refine` to validate a field or a combination of fields
     --8<-- "docs/snippets/parser/refine.ts"
     ```
 
-Zod provides a lot of other features and customization, see [zod documentation](https://zod.dev) for more details.
+Zod provides a lot of other features and customization, see [Zod documentation](https://zod.dev) for more details.
 
 
 ## Types
@@ -213,4 +257,4 @@ We are working on a sustainable solution to make them compatible and avoid any b
 We recommend to use the types provided by the parser utility. 
 
 ## Error handling
-We don't have any error handling in the utility and propagate all errors from zod, which are thrown as `ZodError`. 
+We don't have any error handling in the utility and propagate all errors from Zod, which are thrown as `ZodError`. 

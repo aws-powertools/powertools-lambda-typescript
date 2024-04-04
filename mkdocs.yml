@@ -120,3 +120,5 @@ extra:
     - icon: fontawesome/brands/discord
       link: https://discord.gg/B8zZKbbyET
       name: Join our Discord Server!
+  status:
+    new: New Utility

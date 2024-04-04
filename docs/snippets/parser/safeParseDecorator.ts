@@ -2,7 +2,10 @@ import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { parser } from '@aws-lambda-powertools/parser';
 import { z } from 'zod';
-import { EventBridgeSchema } from '@aws-lambda-powertools/parser/schemas';
+import type {
+  ParsedResult,
+  EventBridgeEvent,
+} from '@aws-lambda-powertools/parser/types';
 
 const orderSchema = z.object({
   id: z.number().positive(),
@@ -17,18 +20,22 @@ const orderSchema = z.object({
   optionalField: z.string().optional(),
 });
 
-const orderEventSchema = EventBridgeSchema.extend({
-  detail: orderSchema, // (1)!
-});
-
-type OrderEvent = z.infer<typeof orderEventSchema>;
+type Order = z.infer<typeof orderSchema>;
 
 class Lambda implements LambdaInterface {
-  @parser({ schema: orderEventSchema }) // (2)!
-  public async handler(event: OrderEvent, _context: Context): Promise<void> {
-    for (const item of event.detail.items) {
-      // process OrderItem
-      console.log(item); // (3)!
+  @parser({ schema: orderSchema, safeParse: true }) // (1)!
+  public async handler(
+    event: ParsedResult<EventBridgeEvent, Order>,
+    _context: Context
+  ): Promise<void> {
+    if (event.success) {
+      // (2)!
+      for (const item of event.data.items) {
+        console.log(item.id); // (3)!
+      }
+    } else {
+      console.error(event.error); // (4)!
+      console.log(event.originalEvent); // (5)!
     }
   }
 }

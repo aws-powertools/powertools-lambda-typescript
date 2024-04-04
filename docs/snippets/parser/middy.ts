@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { parser } from '@aws-lambda-powertools/parser/middleware';
 import { z } from 'zod';
 import middy from '@middy/core';

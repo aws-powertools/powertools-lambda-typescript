@@ -33,7 +33,8 @@
       "@aws-lambda-powertools/jmespath": ["../../packages/jmespath/lib"],
       "@aws-lambda-powertools/jmespath/envelopes": [
         "../../packages/jmespath/lib/envelopes"
-      ]
+      ],
+      "@aws-lambda-powertools/parser": ["../../packages/parser/lib"]
     }
   }
 }

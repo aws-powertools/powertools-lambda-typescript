@@ -21,8 +21,8 @@ type Order = z.infer<typeof orderSchema>;
 class Lambda implements LambdaInterface {
   @parser({ schema: orderSchema })
   public async handler(event: Order, _context: Context): Promise<void> {
+    // event is now typed as Order
     for (const item of event.items) {
-      // item is parsed as OrderItem
       console.log(item.id);
     }
   }

@@ -70,7 +70,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
     | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3](#){: .copyMe}:clipboard:   |
 
 ??? note "Click to expand and copy code snippets for popular frameworks"
-    
+
     === "SAM"
 
         ```yaml hl_lines="5"
@@ -252,7 +252,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
 !!! info "Using Powertools for AWS Lambda (TypeScript) via Lambda Layer? Simply add the Powertools for AWS Lambda (TypeScript) utilities you are using as a development dependency"
 
 ??? question "Want to inspect the contents of the Layer?"
-	Change {region} to your AWS region, e.g. `eu-west-1`
+    Change {region} to your AWS region, e.g. `eu-west-1`
 
     ```bash title="AWS CLI"
     aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3 --region {region}
@@ -262,7 +262,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
 
 ## Instrumentation
 
-You can instrument your code with Powertools for AWS Lambda (TypeScript) in three different ways:  
+You can instrument your code with Powertools for AWS Lambda (TypeScript) in three different ways:
 
 * **Middy** middleware. It is the best choice if your existing code base relies on the [Middy 4.x](https://middy.js.org/docs/) middleware engine. Powertools for AWS Lambda (TypeScript) offers compatible Middy middleware to make this integration seamless.
 * **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html). If you aren’t using Classes, this requires the most significant refactoring.
@@ -289,11 +289,12 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 | [Parameters](./utilities/parameters.md)   | High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB                     |
 | [Idempotency](./utilities/idempotency.md) | Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content. |
 | [Batch Processing](./utilities/batch.md)  | Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.                             |
+| [Parser](./utilities/parser.md)           | Utility to parse and validate AWS Lambda event payloads using Zod, a TypeScript-first schema declaration and validation library.                                  |
 
 ## Environment variables
 
 ???+ info
-	Explicit parameters take precedence over environment variables
+    Explicit parameters take precedence over environment variables
 
 | Environment variable                         | Description                                                                                                   | Utility                                 | Default             |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------- |

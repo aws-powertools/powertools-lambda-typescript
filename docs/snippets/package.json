@@ -2,6 +2,7 @@
   "name": "docs",
   "version": "2.0.3",
   "description": "A collection code snippets for the Powertools for AWS Lambda (TypeScript) docs",
+  "type": "module",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -34,10 +35,12 @@
     "@aws-sdk/client-secrets-manager": "^3.543.0",
     "@aws-sdk/client-ssm": "^3.540.0",
     "@aws-sdk/util-dynamodb": "^3.540.0",
+    "@middy/core": "^4.7.0",
     "aws-sdk": "^2.1589.0",
     "aws-sdk-client-mock": "^4.0.0",
     "aws-sdk-client-mock-jest": "^4.0.0",
     "axios": "^1.6.8",
-    "hashi-vault-js": "^0.4.14"
+    "hashi-vault-js": "^0.4.14",
+    "zod": "^3.22.4"
   }
 }

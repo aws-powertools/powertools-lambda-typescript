@@ -20,6 +20,7 @@ nav:
           - utilities/idempotency.md
           - utilities/batch.md
           - utilities/jmespath.md
+          - utilities/parser.md
   - Processes:
       - Roadmap: roadmap.md
       - Versioning policy: versioning.md
@@ -119,3 +120,5 @@ extra:
     - icon: fontawesome/brands/discord
       link: https://discord.gg/B8zZKbbyET
       name: Join our Discord Server!
+  status:
+    new: New Utility

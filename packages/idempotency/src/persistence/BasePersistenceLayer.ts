@@ -178,10 +178,11 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       );
     }
 
-    if (this.getFromCache(idempotencyRecord.idempotencyKey)) {
+    const cachedRecord = this.getFromCache(idempotencyRecord.idempotencyKey);
+    if (cachedRecord) {
       throw new IdempotencyItemAlreadyExistsError(
         `Failed to put record for already existing idempotency key: ${idempotencyRecord.idempotencyKey}`,
-        idempotencyRecord
+        cachedRecord
       );
     }
 

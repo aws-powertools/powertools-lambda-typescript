@@ -160,7 +160,7 @@
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@aws-sdk/client-appconfigdata": "^3.540.0",
     "@aws-sdk/client-dynamodb": "^3.540.0",
-    "@aws-sdk/client-secrets-manager": "^3.540.0",
+    "@aws-sdk/client-secrets-manager": "^3.543.0",
     "@aws-sdk/client-ssm": "^3.540.0",
     "@aws-sdk/util-dynamodb": "^3.540.0",
     "@smithy/util-base64": "^2.3.0",

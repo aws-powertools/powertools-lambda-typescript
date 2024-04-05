@@ -294,7 +294,7 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 ## Environment variables
 
 ???+ info
-Explicit parameters take precedence over environment variables
+    Explicit parameters take precedence over environment variables
 
 | Environment variable                         | Description                                                                                                   | Utility                                 | Default             |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------- |

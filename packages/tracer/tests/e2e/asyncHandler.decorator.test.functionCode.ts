@@ -55,10 +55,13 @@ export class MyFunctionBase {
           Item: { id: `${serviceName}-${event.invocation}-sdkv3` },
         })
       );
-      await axios.get(
-        'https://docs.powertools.aws.dev/lambda/typescript/latest/',
-        { timeout: 5000 }
-      );
+      const url = 'https://docs.powertools.aws.dev/lambda/typescript/latest/';
+      // Add conditional behavior because fetch is not available in Node.js 16 - this can be removed once we drop support for Node.js 16
+      if (process.version.startsWith('v16')) {
+        await axios.get(url, { timeout: 5000 });
+      } else {
+        await fetch(url);
+      }
 
       const res = this.myMethod();
       if (event.throw) {

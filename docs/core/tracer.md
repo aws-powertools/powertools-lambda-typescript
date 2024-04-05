@@ -8,7 +8,7 @@ Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://gi
 ## Key features
 
 * Auto-capturing cold start and service name as annotations, and responses or full exceptions as metadata.
-* Automatically tracing HTTP(S) clients and generating segments for each request.
+* Automatically tracing HTTP(S) clients including `fetch` and generating segments for each request.
 * Supporting tracing functions via decorators, middleware, and manual instrumentation.
 * Supporting tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js.
 * Auto-disable tracing when not running in the Lambda environment.
@@ -211,12 +211,12 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
 
 ### Tracing HTTP requests
 
-When your function makes calls to HTTP APIs, Tracer automatically traces those calls and add the API to the service graph as a downstream service.
+When your function makes outgoing requests to APIs, Tracer automatically traces those calls and adds the API to the service graph as a downstream service.
 
 You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS=false`** environment variable or by passing the `captureHTTPSRequests: false` option to the `Tracer` constructor.
 
 !!! info
-    The following snippet shows how to trace [axios](https://www.npmjs.com/package/axios) requests, but you can use any HTTP client library built on top of [http](https://nodejs.org/api/http.html) or [https](https://nodejs.org/api/https.html).
+    The following snippet shows how to trace [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/fetch) requests, but you can use any HTTP client library built on top it, or on [http](https://nodejs.org/api/http.html), and [https](https://nodejs.org/api/https.html).
     Support to 3rd party HTTP clients is provided on a best effort basis.
 
 === "index.ts"
@@ -224,9 +224,6 @@ You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HT
     ```typescript hl_lines="2"
     --8<-- "docs/snippets/tracer/captureHTTP.ts"
     ```
-
-    1.  You can install the [axios](https://www.npmjs.com/package/axios) package using `npm i axios`
-=== "Example Raw X-Ray Trace excerpt"
 
     ```json hl_lines="6 9 12-21"
     {

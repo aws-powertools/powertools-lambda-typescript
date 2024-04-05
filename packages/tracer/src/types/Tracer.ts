@@ -22,6 +22,9 @@ import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 type TracerOptions = {
   enabled?: boolean;
   serviceName?: string;
+  /**
+   * Whether to trace outgoing HTTP requests made with the `http`, `https`, or `fetch` modules
+   */
   captureHTTPsRequests?: boolean;
   customConfigService?: ConfigServiceInterface;
 };

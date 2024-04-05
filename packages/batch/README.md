@@ -177,7 +177,6 @@ import {
   EventType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
-import axios from 'axios'; // axios is an external dependency
 import type {
   SQSEvent,
   SQSRecord,
@@ -188,8 +187,8 @@ import type {
 const processor = new BatchProcessor(EventType.SQS);
 
 const recordHandler = async (record: SQSRecord): Promise<number> => {
-  const res = await axios.post('https://httpbin.org/anything', {
-    message: record.body,
+  const res = await fetch('https://httpbin.org/anything', {
+    body: JSON.stringify({ message: record.body }),
   });
 
   return res.status;
@@ -206,8 +205,6 @@ export const handler = async (
 ```
 
 Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/) for more examples.
-
-
 
 ## Contribute
 
@@ -249,7 +246,7 @@ Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog po
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](#lambda-layers), you can add Powertools as a dev dependency (or as part of your virtual env) to not impact the development process.
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools as a dev dependency (or as part of your virtual env) to not impact the development process.
 
 ## Credits
 

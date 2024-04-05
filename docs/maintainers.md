@@ -287,6 +287,14 @@ Ensure the repo highlights features that should be elevated to the project roadm
 
 Add integration checks that validate pull requests and pushes to ease the burden on Pull Request reviewers. Continuously revisit areas of improvement to reduce operational burden in all parties involved.
 
+### Publish Lambda Layers to new AWS Regions
+
+When a new AWS region is available, make the Lambda Layers available in that region. Before doing so, ensure that the region supports AWS Lambda and that the Lambda Layers are compatible with the region.
+
+Then bootstrap the region both in the beta and prod accounts by running `npm run cdk bootstrap aws://<account-id>/<region>` for each account while in the `layers` directory. Next, run the [`layer-balancer` script](https://github.com/aws-powertools/powertools-lambda-python/tree/develop/layer/scripts/layer-balancer) to align the layer version in the new region with the existing regions.
+
+Finally, add the new region to the [`region` matrix](https://github.com/aws-powertools/powertools-lambda-typescript/blob/082b626c31f11138fb36d5724f922980d534c878/.github/workflows/reusable_deploy_layer_stack.yml#L33) in the `reusable_deploy_layer_stack.yml` workflow file, and add the corresponding ARN to the Lambda Layer ARN table in the [documentation](https://github.com/aws-powertools/powertools-lambda-typescript/blob/082b626c31f11138fb36d5724f922980d534c878/docs/index.md?plain=1#L42).
+
 ### Negative Impact on the Project
 
 Actions that negatively impact the project will be handled by the admins, in coordination with other maintainers, in balance with the urgency of the issue. Examples would be [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-typescript/blob/develop/CODE_OF_CONDUCT.md){target="_blank"} violations, deliberate harmful or malicious actions, spam, monopolization, and security risks.

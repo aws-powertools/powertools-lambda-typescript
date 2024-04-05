@@ -8,7 +8,7 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 You can use Powertools for AWS Lambda (TypeScript) in both TypeScript and JavaScript code bases.
 
 ???+ tip
-Powertools for AWS Lambda is also available for [Python](https://docs.powertools.aws.dev/lambda/python/){target="_blank"}, [Java](https://docs.powertools.aws.dev/lambda/java/){target="_blank"}, and [.NET](https://docs.powertools.aws.dev/lambda/dotnet/){target="_blank"}
+    Powertools for AWS Lambda is also available for [Python](https://docs.powertools.aws.dev/lambda/python/){target="_blank"}, [Java](https://docs.powertools.aws.dev/lambda/java/){target="_blank"}, and [.NET](https://docs.powertools.aws.dev/lambda/dotnet/){target="_blank"}
 
 ??? hint "Support this project by becoming a reference customer, sharing your work, or using Layers :heart:"
 
@@ -252,7 +252,7 @@ You can include Powertools for AWS Lambda (TypeScript) Lambda Layer using [AWS L
 !!! info "Using Powertools for AWS Lambda (TypeScript) via Lambda Layer? Simply add the Powertools for AWS Lambda (TypeScript) utilities you are using as a development dependency"
 
 ??? question "Want to inspect the contents of the Layer?"
-Change {region} to your AWS region, e.g. `eu-west-1`
+    Change {region} to your AWS region, e.g. `eu-west-1`
 
     ```bash title="AWS CLI"
     aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3 --region {region}

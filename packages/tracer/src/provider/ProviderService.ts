@@ -1,8 +1,9 @@
-import { Namespace } from 'cls-hooked';
+import type { Namespace } from 'cls-hooked';
 import type {
   ProviderServiceInterface,
   ContextMissingStrategy,
-} from '../types/ProviderServiceInterface.js';
+  HttpSubsegment,
+} from '../types/ProviderService.js';
 import type { Segment, Subsegment, Logger } from 'aws-xray-sdk-core';
 import xraySdk from 'aws-xray-sdk-core';
 const {
@@ -21,6 +22,13 @@ const {
   setLogger,
 } = xraySdk;
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { subscribe } from 'node:diagnostics_channel';
+import {
+  findHeaderAndDecode,
+  getOriginURL,
+  isHttpSubsegment,
+} from './utilities.js';
+import type { DiagnosticsChannel } from 'undici-types';
 
 class ProviderService implements ProviderServiceInterface {
   public captureAWS<T>(awssdk: T): T {
@@ -68,6 +76,119 @@ class ProviderService implements ProviderServiceInterface {
 
   public getSegment(): Segment | Subsegment | undefined {
     return getSegment();
+  }
+
+  /**
+   * Instrument `fetch` requests with AWS X-Ray
+   *
+   * The instrumentation is done by subscribing to the `undici` events. When a request is created,
+   * a new subsegment is created with the hostname of the request.
+   *
+   * Then, when the headers are received, the subsegment is updated with the request and response details.
+   *
+   * Finally, when the request is completed, the subsegment is closed.
+   *
+   * @see {@link https://nodejs.org/api/diagnostics_channel.html#diagnostics_channel_channel_publish | Diagnostics Channel - Node.js Documentation}
+   */
+  public instrumentFetch(): void {
+    /**
+     * Create a segment at the start of a request made with `undici` or `fetch`.
+     *
+     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     *
+     * @param message The message received from the `undici` channel
+     */
+    const onRequestStart = (message: unknown): void => {
+      const { request } = message as DiagnosticsChannel.RequestCreateMessage;
+
+      const parentSubsegment = this.getSegment();
+      if (parentSubsegment && request.origin) {
+        const origin = getOriginURL(request.origin);
+        const method = request.method;
+
+        const subsegment = parentSubsegment.addNewSubsegment(origin.hostname);
+        subsegment.addAttribute('namespace', 'remote');
+
+        (subsegment as HttpSubsegment).http = {
+          request: {
+            url: origin.hostname,
+            method,
+          },
+        };
+
+        this.setSegment(subsegment);
+      }
+    };
+
+    /**
+     * Enrich the subsegment with the response details, and close it.
+     * Then, set the parent segment as the active segment.
+     *
+     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     *
+     * @param message The message received from the `undici` channel
+     */
+    const onResponse = (message: unknown): void => {
+      const { response } = message as DiagnosticsChannel.RequestHeadersMessage;
+
+      const subsegment = this.getSegment();
+      if (isHttpSubsegment(subsegment)) {
+        const status = response.statusCode;
+        const contentLenght = findHeaderAndDecode(
+          response.headers,
+          'content-length'
+        );
+
+        subsegment.http = {
+          ...subsegment.http,
+          response: {
+            status,
+            ...(contentLenght && {
+              content_length: parseInt(contentLenght),
+            }),
+          },
+        };
+
+        if (status === 429) {
+          subsegment.addThrottleFlag();
+        }
+        if (status >= 400 && status < 500) {
+          subsegment.addErrorFlag();
+        } else if (status >= 500 && status < 600) {
+          subsegment.addFaultFlag();
+        }
+
+        subsegment.close();
+        this.setSegment(subsegment.parent);
+      }
+    };
+
+    /**
+     * Add an error to the subsegment when the request fails.
+     *
+     * This is used to handle the case when the request fails to establish a connection with the server or timeouts.
+     * In all other cases, for example, when the server returns a 4xx or 5xx status code, the error is added in the `onResponse` function.
+     *
+     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     *
+     * @param message The message received from the `undici` channel
+     */
+    const onError = (message: unknown): void => {
+      const { error } = message as DiagnosticsChannel.RequestErrorMessage;
+
+      const subsegment = this.getSegment();
+      if (isHttpSubsegment(subsegment)) {
+        subsegment.addErrorFlag();
+        error instanceof Error && subsegment.addError(error, true);
+
+        subsegment.close();
+        this.setSegment(subsegment.parent);
+      }
+    };
+
+    subscribe('undici:request:create', onRequestStart);
+    subscribe('undici:request:headers', onResponse);
+    subscribe('undici:request:error', onError);
   }
 
   public putAnnotation(key: string, value: string | number | boolean): void {

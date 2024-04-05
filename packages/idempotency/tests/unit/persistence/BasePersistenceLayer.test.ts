@@ -411,36 +411,20 @@ describe('Class: BasePersistenceLayer', () => {
       await persistenceLayer.saveSuccess({ foo: 'bar' }, { bar: 'baz' });
 
       // Act & Assess
-      await expect(
-        persistenceLayer.saveInProgress({ foo: 'bar' })
-      ).rejects.toThrow(IdempotencyItemAlreadyExistsError);
       expect(putRecordSpy).toHaveBeenCalledTimes(0);
-    });
-
-    test('when called and there is an in-progress record in the cache, it returns', async () => {
-      // Prepare
-      const persistenceLayer = new PersistenceLayerTestClass();
-      persistenceLayer.configure({
-        config: new IdempotencyConfig({
-          useLocalCache: true,
-        }),
-      });
-      jest.spyOn(persistenceLayer, '_getRecord').mockImplementationOnce(
-        () =>
-          new IdempotencyRecord({
-            idempotencyKey: 'my-lambda-function#mocked-hash',
-            status: IdempotencyRecordStatus.INPROGRESS,
-            payloadHash: 'different-hash',
-            expiryTimestamp: Date.now() / 1000 + 3600,
-            inProgressExpiryTimestamp: Date.now() + 2000,
-          })
-      );
-      await persistenceLayer.getRecord({ foo: 'bar' });
-
-      // Act & Assess
-      await expect(
-        persistenceLayer.saveInProgress({ foo: 'bar' })
-      ).resolves.toBeUndefined();
+      try {
+        await persistenceLayer.saveInProgress({ foo: 'bar' });
+      } catch (error) {
+        if (error instanceof IdempotencyItemAlreadyExistsError) {
+          expect(error.existingRecord).toEqual(
+            expect.objectContaining({
+              idempotencyKey: 'my-lambda-function#mocked-hash',
+              status: IdempotencyRecordStatus.COMPLETED,
+            })
+          );
+        }
+      }
+      expect.assertions(2);
     });
   });
 
@@ -500,6 +484,7 @@ describe('Class: BasePersistenceLayer', () => {
       persistenceLayer.configure({
         config: new IdempotencyConfig({
           payloadValidationJmesPath: 'foo',
+          useLocalCache: true,
         }),
       });
       const existingRecord = new IdempotencyRecord({

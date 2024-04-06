@@ -3,7 +3,8 @@
  *
  * @group unit/tracer/providerservice
  */
-import { ProviderService } from '../../src/provider/ProviderService.js';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   captureAsyncFunc,
   captureAWS,
@@ -20,10 +21,13 @@ import {
   setSegment,
   Subsegment,
 } from 'aws-xray-sdk-core';
+import { channel } from 'node:diagnostics_channel';
 import http from 'node:http';
 import https from 'node:https';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { ProviderService } from '../../src/provider/ProviderService.js';
+import type { HttpSubsegment } from '../../src/types/ProviderService.js';
+import { mockFetch } from '../helpers/mockRequests.js';
+import { URL } from 'node:url';
 
 jest.mock('aws-xray-sdk-core', () => ({
   ...jest.requireActual('aws-xray-sdk-core'),
@@ -357,5 +361,244 @@ describe('Class: ProviderService', () => {
       expect(segmentSpy).toHaveBeenCalledTimes(1);
       expect(segmentSpy).toHaveBeenCalledWith('foo', 'bar', 'baz');
     });
+  });
+
+  describe('Method: instrumentFetch', () => {
+    it('subscribes to the diagnostics channel', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.instrumentFetch();
+
+      // Assess
+      expect(channel('undici:request:create').hasSubscribers).toBe(true);
+      expect(channel('undici:request:headers').hasSubscribers).toBe(true);
+      expect(channel('undici:request:error').hasSubscribers).toBe(true);
+    });
+
+    it('traces a successful request', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        headers: {
+          'content-length': '100',
+        },
+      });
+
+      // Assess
+      expect(segment.addNewSubsegment).toHaveBeenCalledTimes(1);
+      expect(segment.addNewSubsegment).toHaveBeenCalledWith('aws.amazon.com');
+      expect((subsegment as HttpSubsegment).http).toEqual({
+        request: {
+          url: 'aws.amazon.com',
+          method: 'GET',
+        },
+        response: {
+          status: 200,
+          content_length: 100,
+        },
+      });
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
+    });
+
+    it('excludes the content_length header when invalid or not found', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: new URL('https://aws.amazon.com/blogs'),
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual({
+        request: {
+          url: 'aws.amazon.com',
+          method: 'GET',
+        },
+        response: {
+          status: 200,
+        },
+      });
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
+    });
+
+    it('adds a throttle flag to the segment when the status code is 429', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      jest.spyOn(subsegment, 'addThrottleFlag');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        statusCode: 429,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 429,
+          },
+        })
+      );
+      expect(subsegment.addThrottleFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
+    });
+
+    it('adds an error flag to the segment when the status code is 4xx', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      jest.spyOn(subsegment, 'addErrorFlag');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        statusCode: 404,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 404,
+          },
+        })
+      );
+      expect(subsegment.addErrorFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
+    });
+
+    it('adds a fault flag to the segment when the status code is 5xx', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      jest.spyOn(subsegment, 'addFaultFlag');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        statusCode: 500,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 500,
+          },
+        })
+      );
+      expect(subsegment.addFaultFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
+    });
+  });
+
+  it('closes the segment and adds a fault flag when the connection fails', async () => {
+    // Prepare
+    const provider: ProviderService = new ProviderService();
+    const segment = new Subsegment('## dummySegment');
+    const subsegment = segment.addNewSubsegment('aws.amazon.com');
+    jest.spyOn(subsegment, 'addError');
+    jest
+      .spyOn(segment, 'addNewSubsegment')
+      .mockImplementationOnce(() => subsegment);
+    jest
+      .spyOn(provider, 'getSegment')
+      .mockImplementationOnce(() => segment)
+      .mockImplementationOnce(() => subsegment)
+      .mockImplementationOnce(() => subsegment);
+    jest.spyOn(subsegment, 'close');
+    jest.spyOn(provider, 'setSegment');
+
+    // Act
+    provider.instrumentFetch();
+    try {
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        throwError: true,
+      });
+    } catch {}
+
+    // Assess
+    expect(subsegment.addError).toHaveBeenCalledTimes(1);
+    expect(subsegment.close).toHaveBeenCalledTimes(1);
+    expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
   });
 });

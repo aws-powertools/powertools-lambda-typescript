@@ -40,9 +40,35 @@ interface ProviderServiceInterface {
 
   captureHTTPsGlobal(): void;
 
+  /**
+   * Instrument `fetch` requests with AWS X-Ray
+   */
+  instrumentFetch(): void;
+
   putAnnotation(key: string, value: string | number | boolean): void;
 
   putMetadata(key: string, value: unknown, namespace?: string): void;
 }
 
-export type { ProviderServiceInterface, ContextMissingStrategy };
+/**
+ * Subsegment that contains information for a request made to a remote service
+ */
+interface HttpSubsegment extends Subsegment {
+  namespace: 'remote';
+  http: {
+    request?: {
+      url: string;
+      method?: string;
+    };
+    response?: {
+      status: number;
+      content_length?: number;
+    };
+  };
+}
+
+export type {
+  ProviderServiceInterface,
+  ContextMissingStrategy,
+  HttpSubsegment,
+};

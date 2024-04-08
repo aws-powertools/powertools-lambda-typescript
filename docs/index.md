@@ -24,7 +24,7 @@ You can use Powertools for AWS Lambda in both TypeScript and JavaScript code bas
 
     Become a public reference customer, share your work, contribute, use Lambda Layers, etc.
 
-    [:octicons-arrow-right-24: Support](#support-powertools-for-aws-lambda-python)
+    [:octicons-arrow-right-24: Support](#support-powertools-for-aws-lambda-typescript)
 
 - :material-file-code:{ .lg .middle } __Available languages__
 

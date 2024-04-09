@@ -8,7 +8,7 @@ import { generateMock } from '@anatine/zod-mock';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { SQSEvent } from 'aws-lambda';
 import { SqsEnvelope } from '../../../src/envelopes/sqs.js';
-import { ZodError } from 'zod';
+import { ParseError } from '../../../src/errors.js';
 
 describe('SqsEnvelope ', () => {
   describe('parse', () => {
@@ -54,7 +54,7 @@ describe('SqsEnvelope ', () => {
       sqsEvent.Records[0].body = JSON.stringify({ foo: 'bar' });
       expect(SqsEnvelope.safeParse(sqsEvent, TestSchema)).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: sqsEvent,
       });
     });
@@ -62,7 +62,7 @@ describe('SqsEnvelope ', () => {
     it('should return error if envelope is invalid', () => {
       expect(SqsEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: { foo: 'bar' },
       });
     });

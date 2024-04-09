@@ -1,5 +1,6 @@
-import { z, ZodError } from 'zod';
+import { z } from 'zod';
 import { Envelope } from '../../src/envelopes/envelope.js';
+import { ParseError } from '../../src/errors.js';
 
 describe('envelope: ', () => {
   describe('parseSafe', () => {
@@ -30,25 +31,19 @@ describe('envelope: ', () => {
       );
       expect(result).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: { name: 123 },
       });
     });
 
     it('returns error when input is invalid JSON string', () => {
-      let err: unknown;
-      try {
-        JSON.parse('{name: "John"}');
-      } catch (e) {
-        err = e;
-      }
       const result = Envelope.safeParse(
         '{name: "John"}',
         z.object({ name: z.string() })
       );
       expect(result).toEqual({
         success: false,
-        error: err,
+        error: expect.any(ParseError),
         originalEvent: '{name: "John"}',
       });
     });

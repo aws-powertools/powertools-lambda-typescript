@@ -8,7 +8,7 @@ import { generateMock } from '@anatine/zod-mock';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { APIGatewayProxyEvent } from '../../../src/types/';
 import { ApiGatewayEnvelope } from '../../../src/envelopes/index.js';
-import { ZodError } from 'zod';
+import { ParseError } from '../../../src/errors.js';
 
 describe('ApigwEnvelope ', () => {
   describe('parse', () => {
@@ -26,13 +26,17 @@ describe('ApigwEnvelope ', () => {
       const testEvent = TestEvents.apiGatewayProxyEvent as APIGatewayProxyEvent;
       testEvent.body = undefined;
 
-      expect(() => ApiGatewayEnvelope.parse(testEvent, TestSchema)).toThrow();
+      expect(() => ApiGatewayEnvelope.parse(testEvent, TestSchema)).toThrow(
+        ParseError
+      );
     });
     it('should throw invalid event provided', () => {
       const testEvent = TestEvents.apiGatewayProxyEvent as APIGatewayProxyEvent;
       testEvent.body = 'invalid';
 
-      expect(() => ApiGatewayEnvelope.parse(testEvent, TestSchema)).toThrow();
+      expect(() => ApiGatewayEnvelope.parse(testEvent, TestSchema)).toThrow(
+        ParseError
+      );
     });
   });
 
@@ -69,7 +73,7 @@ describe('ApigwEnvelope ', () => {
       const resp = ApiGatewayEnvelope.safeParse(testEvent, TestSchema);
       expect(resp).toEqual({
         success: false,
-        error: expect.any(SyntaxError),
+        error: expect.any(ParseError),
         originalEvent: testEvent,
       });
     });
@@ -80,7 +84,7 @@ describe('ApigwEnvelope ', () => {
       );
       expect(resp).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: 'invalid',
       });
     });

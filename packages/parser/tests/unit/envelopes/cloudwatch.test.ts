@@ -12,7 +12,7 @@ import {
 } from '../../../src/schemas/';
 import { TestSchema } from '../schema/utils.js';
 import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';
-import { ZodError } from 'zod';
+import { ParseError } from '../../../src';
 
 describe('CloudWatch', () => {
   describe('parse', () => {
@@ -123,7 +123,7 @@ describe('CloudWatch', () => {
     it('should return success false when envelope does not match', () => {
       expect(CloudWatchEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: { foo: 'bar' },
       });
     });

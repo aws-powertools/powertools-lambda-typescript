@@ -2,6 +2,7 @@ import { Envelope } from './envelope.js';
 import { z, type ZodSchema } from 'zod';
 import { LambdaFunctionUrlSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  * Lambda function URL envelope to extract data within body key
@@ -28,7 +29,8 @@ export class LambdaFunctionUrlEnvelope extends Envelope {
 
     if (!parsedEnvelope.success) {
       return {
-        ...parsedEnvelope,
+        success: false,
+        error: new ParseError('Failed to parse Lambda function URL envelope'),
         originalEvent: data,
       };
     }
@@ -36,7 +38,11 @@ export class LambdaFunctionUrlEnvelope extends Envelope {
     const parsedBody = super.safeParse(parsedEnvelope.data.body, schema);
     if (!parsedBody.success) {
       return {
-        ...parsedBody,
+        success: false,
+        error: new ParseError(
+          'Failed to parse Lambda function URL body',
+          parsedBody.error
+        ),
         originalEvent: data,
       };
     }

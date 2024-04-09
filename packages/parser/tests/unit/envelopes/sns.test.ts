@@ -4,11 +4,12 @@
  * @group unit/parser/envelopes
  */
 
-import { z, ZodError } from 'zod';
+import { z } from 'zod';
 import { generateMock } from '@anatine/zod-mock';
 import { SNSEvent, SQSEvent } from 'aws-lambda';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { SnsEnvelope, SnsSqsEnvelope } from '../../../src/envelopes/index.js';
+import { ParseError } from '../../../src/errors.js';
 
 describe('Sns and SQS Envelope', () => {
   describe('SnsSqsEnvelope parse', () => {
@@ -58,7 +59,7 @@ describe('Sns and SQS Envelope', () => {
 
       expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: snsSqsTestEvent,
       });
     });
@@ -71,7 +72,7 @@ describe('Sns and SQS Envelope', () => {
 
       expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: snsSqsTestEvent,
       });
     });
@@ -148,7 +149,7 @@ describe('SnsEnvelope', () => {
 
       expect(SnsEnvelope.safeParse(testEvent, TestSchema)).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: testEvent,
       });
     });

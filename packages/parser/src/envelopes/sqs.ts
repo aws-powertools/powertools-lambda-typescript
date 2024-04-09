@@ -2,6 +2,7 @@ import { z, type ZodSchema } from 'zod';
 import { SqsSchema } from '../schemas/sqs.js';
 import { Envelope } from './envelope.js';
 import type { ParsedResult } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  *  SQS Envelope to extract array of Records
@@ -31,7 +32,11 @@ export class SqsEnvelope extends Envelope {
     const parsedEnvelope = SqsSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
-        ...parsedEnvelope,
+        success: false,
+        error: new ParseError(
+          'Failed to parse Sqs Envelope',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -41,7 +46,11 @@ export class SqsEnvelope extends Envelope {
       const parsedRecord = super.safeParse(record.body, schema);
       if (!parsedRecord.success) {
         return {
-          ...parsedRecord,
+          success: false,
+          error: new ParseError(
+            'Failed to parse Sqs Record',
+            parsedRecord.error
+          ),
           originalEvent: data,
         };
       }

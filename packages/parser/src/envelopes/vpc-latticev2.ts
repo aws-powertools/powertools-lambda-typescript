@@ -2,6 +2,7 @@ import { Envelope } from './envelope.js';
 import { z, type ZodSchema } from 'zod';
 import { VpcLatticeV2Schema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  * Amazon VPC Lattice envelope to extract data within body key
@@ -23,7 +24,11 @@ export class VpcLatticeV2Envelope extends Envelope {
     const parsedEnvelope = VpcLatticeV2Schema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
-        ...parsedEnvelope,
+        success: false,
+        error: new ParseError(
+          'Failed to parse VpcLatticeV2 envelope.',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -32,7 +37,11 @@ export class VpcLatticeV2Envelope extends Envelope {
 
     if (!parsedBody.success) {
       return {
-        ...parsedBody,
+        success: false,
+        error: new ParseError(
+          'Failed to parse VpcLatticeV2 body.',
+          parsedBody.error
+        ),
         originalEvent: data,
       };
     }

@@ -2,6 +2,7 @@ import { Envelope } from './envelope.js';
 import { z, type ZodSchema } from 'zod';
 import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
 import type { ParsedResult } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  * Kinesis Data Stream Envelope to extract array of Records
@@ -32,7 +33,11 @@ export class KinesisEnvelope extends Envelope {
     const parsedEnvelope = KinesisDataStreamSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
-        ...parsedEnvelope,
+        success: false,
+        error: new ParseError(
+          'Failed to parse Kinesis Data Stream envelope',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -43,7 +48,11 @@ export class KinesisEnvelope extends Envelope {
       const parsedRecord = super.safeParse(record.kinesis.data, schema);
       if (!parsedRecord.success) {
         return {
-          ...parsedRecord,
+          success: false,
+          error: new ParseError(
+            'Failed to parse Kinesis Data Stream record',
+            parsedRecord.error
+          ),
           originalEvent: data,
         };
       }

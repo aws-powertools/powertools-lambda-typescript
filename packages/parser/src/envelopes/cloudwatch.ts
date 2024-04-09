@@ -2,6 +2,7 @@ import { z, type ZodSchema } from 'zod';
 import { Envelope } from './envelope.js';
 import { CloudWatchLogsSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  * CloudWatch Envelope to extract a List of log records.
@@ -33,7 +34,10 @@ export class CloudWatchEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: parsedEnvelope.error,
+        error: new ParseError(
+          'Failed to parse CloudWatch envelope',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -44,7 +48,10 @@ export class CloudWatchEnvelope extends Envelope {
       if (!parsedMessage.success) {
         return {
           success: false,
-          error: parsedMessage.error,
+          error: new ParseError(
+            'Failed to parse CloudWatch log event',
+            parsedMessage.error
+          ),
           originalEvent: data,
         };
       } else {

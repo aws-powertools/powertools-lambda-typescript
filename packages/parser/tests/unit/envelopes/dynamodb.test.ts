@@ -7,8 +7,9 @@
 import { generateMock } from '@anatine/zod-mock';
 import { TestEvents } from '../schema/utils.js';
 import { DynamoDBStreamEvent } from 'aws-lambda';
-import { z, ZodError } from 'zod';
+import { z } from 'zod';
 import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
+import { ParseError } from '../../../src/errors.js';
 
 describe('DynamoDB', () => {
   const schema = z.object({
@@ -88,7 +89,7 @@ describe('DynamoDB', () => {
       const parsed = DynamoDBStreamEnvelope.safeParse(invalidDDBEvent, schema);
       expect(parsed).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: invalidDDBEvent,
       });
     });
@@ -111,7 +112,7 @@ describe('DynamoDB', () => {
       const parsed = DynamoDBStreamEnvelope.safeParse(invalidDDBEvent, schema);
       expect(parsed).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: invalidDDBEvent,
       });
     });
@@ -120,7 +121,7 @@ describe('DynamoDB', () => {
       const parsed = DynamoDBStreamEnvelope.safeParse({ foo: 'bar' }, schema);
       expect(parsed).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: { foo: 'bar' },
       });
     });

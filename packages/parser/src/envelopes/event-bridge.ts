@@ -2,6 +2,7 @@ import { Envelope } from './envelope.js';
 import { z, type ZodSchema } from 'zod';
 import { EventBridgeSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  * Envelope for EventBridge schema that extracts and parses data from the `detail` key.
@@ -22,7 +23,11 @@ export class EventBridgeEnvelope extends Envelope {
 
     if (!parsedEnvelope.success) {
       return {
-        ...parsedEnvelope,
+        success: false,
+        error: new ParseError(
+          'Failed to parse EventBridge envelope',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -31,7 +36,11 @@ export class EventBridgeEnvelope extends Envelope {
 
     if (!parsedDetail.success) {
       return {
-        ...parsedDetail,
+        success: false,
+        error: new ParseError(
+          'Failed to parse EventBridge envelope detail',
+          parsedDetail.error
+        ),
         originalEvent: data,
       };
     }

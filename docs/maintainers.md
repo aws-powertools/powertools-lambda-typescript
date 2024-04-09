@@ -174,7 +174,7 @@ Once complete, you can start drafting the release notes to let customers know **
 
 #### Release process visualized
 
-Every release makes dozens of checks, linting, canaries and deployments - all of these are automated.
+Every release makes dozens of checks, linting, canaries and deployments - all of these are automated through a number of distinct workflows that together make up the release process.
 
 This is a close visual representation of the main steps (GitHub Actions UI should be the source of truth), along with the approximate time it takes for each key step to complete.
 
@@ -187,42 +187,51 @@ title      Release process
 dateFormat HH:mm
 axisFormat %H:%M
 
-Release start   : milestone, m1, 10:00,2m
+Release start   : milestone, m1, 10:00, 8s
+
+section Version
+    Bump package version              : active, 8s
+    Create commit (version bump)      : active, 8s
+    Open version PR                   : active, 8s
+
+Review and merge version PR : milestone, m2
 
 section QA
-    Quality checks                : active, 2.4m
+    Quality checks                    : active, 2.4m
 
 section Build
-    Bundle release artifact (CJS) : active, 39s
+    Bundle release artifact (CJS+ESM) : active, 39s
 
 section Git release
-    Bump package version          : active, 8s
-    Package release               : active, 8s
-    Git Tag                       : active, 8s
-    Push Tag                      : active, 8s
+    Git Tag                           : active, 8s
+    Push Tag                          : active, 8s
 
 section Release
-    Attest build                  : active, 8s
-    Sign attestation              : active, attestation, 10:06, 8s
-    Publish npm.js                : active, npm, after attestation, 29s
+    Attest build                      : active, 8s
+    Sign attestation                  : active, attestation, 10:04, 8s
+    Publish npm.js                    : active, npm, after attestation, 40s
 
-npmjs.com release : milestone, m2, 10:06,1s
+npmjs.com release : milestone, m3
 
 section Layer release
-    Build                         : active, layer_build, 10:08, 6m
-    Deploy Beta                   : active, layer_beta, after layer_build, 4.3m
-    Run Canary Test               : active, layer_canary, after layer_beta, 1.4m
-    Deploy Prod                   : active, layer_prod, after layer_canary, 4.3m
+    Build                             : active, layer_build, 10:05, 2.5m
+    Deploy Beta                       : active, layer_beta, after layer_build, 4m
+    Run Canary Test                   : active, layer_canary, after layer_beta, 2m
+    Deploy Prod                       : active, layer_prod, after layer_canary, 4m
 
-Layer release : milestone, m3, 10:24,1s
+Layer release : milestone, m4
 
 section Docs
-    Create commit (Layer ARN)     : active, 10:24, 8s
-    Release versioned docs        : active, 2.4m
+    Create commit (Layer ARN)         : active, 10:18, 8s
+    Open docs PR                      : active, 8s
 
-Documentation release : milestone, m4, 10:26,1m
+Review andmerge docs PR : milestone, m5
 
-Release complete : milestone, m5, 10:26, 2m
+    Publish updated docs              : active, 2m
+
+Documentation release : milestone, m6
+
+Release complete : milestone, m7
 ```
 
 #### Drafting release notes

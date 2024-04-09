@@ -2,6 +2,7 @@ import { z, type ZodSchema } from 'zod';
 import { DynamoDBStreamSchema } from '../schemas/index.js';
 import type { ParsedResult, ParsedResultError } from '../types/index.js';
 import { Envelope } from './envelope.js';
+import { ParseError } from '../errors.js';
 
 type DynamoDBStreamEnvelopeResponse<T extends ZodSchema> = {
   NewImage: z.infer<T>;
@@ -38,7 +39,10 @@ export class DynamoDBStreamEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: parsedEnvelope.error,
+        error: new ParseError(
+          'Failed to parse DynamoDB Stream envelope',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -51,8 +55,11 @@ export class DynamoDBStreamEnvelope extends Envelope {
         return {
           success: false,
           error: !parsedNewImage.success
-            ? parsedNewImage.error
-            : (parsedOldImage as ParsedResultError<unknown>).error,
+            ? new ParseError('Failed to parse NewImage', parsedNewImage.error)
+            : new ParseError(
+                'Failed to parse OldImage',
+                (parsedOldImage as ParsedResultError<unknown>).error
+              ),
           originalEvent: data,
         };
       } else {

@@ -1,5 +1,6 @@
 import { z, type ZodSchema } from 'zod';
 import type { ParsedResult } from '../types/parser.js';
+import { ParseError } from '../errors.js';
 
 export class Envelope {
   /**
@@ -14,14 +15,20 @@ export class Envelope {
     data: unknown,
     schema: T
   ): z.infer<T> => {
-    if (typeof data === 'string') {
-      return schema.parse(JSON.parse(data));
-    } else if (typeof data === 'object') {
-      return schema.parse(data);
-    } else
-      throw new Error(
+    if (typeof data !== 'object' && typeof data !== 'string') {
+      throw new ParseError(
         `Invalid data type for envelope. Expected string or object, got ${typeof data}`
       );
+    }
+    try {
+      if (typeof data === 'string') {
+        return schema.parse(JSON.parse(data));
+      } else if (typeof data === 'object') {
+        return schema.parse(data);
+      }
+    } catch (e) {
+      throw new ParseError(`Failed to parse envelope`, e as Error);
+    }
   };
 
   /**
@@ -38,7 +45,7 @@ export class Envelope {
       if (typeof input !== 'object' && typeof input !== 'string') {
         return {
           success: false,
-          error: new Error(
+          error: new ParseError(
             `Invalid data type for envelope. Expected string or object, got ${typeof input}`
           ),
           originalEvent: input,
@@ -56,13 +63,13 @@ export class Envelope {
           }
         : {
             success: false,
-            error: parsed.error,
+            error: new ParseError(`Failed to parse envelope`, parsed.error),
             originalEvent: input,
           };
     } catch (e) {
       return {
         success: false,
-        error: e as Error,
+        error: new ParseError(`Failed to parse envelope`, e as Error),
         originalEvent: input,
       };
     }

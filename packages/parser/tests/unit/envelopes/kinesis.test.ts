@@ -8,7 +8,7 @@ import { generateMock } from '@anatine/zod-mock';
 import { KinesisStreamEvent } from 'aws-lambda';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { KinesisEnvelope } from '../../../src/envelopes/index.js';
-import { ZodError } from 'zod';
+import { ParseError } from '../../../src/errors.js';
 
 describe('KinesisEnvelope', () => {
   describe('parse', () => {
@@ -54,7 +54,7 @@ describe('KinesisEnvelope', () => {
       const resp = KinesisEnvelope.safeParse(testEvent, TestSchema);
       expect(resp).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: testEvent,
       });
     });
@@ -64,7 +64,7 @@ describe('KinesisEnvelope', () => {
       const resp = KinesisEnvelope.safeParse(testEvent, TestSchema);
       expect(resp).toEqual({
         success: false,
-        error: expect.any(SyntaxError),
+        error: expect.any(ParseError),
         originalEvent: testEvent,
       });
     });

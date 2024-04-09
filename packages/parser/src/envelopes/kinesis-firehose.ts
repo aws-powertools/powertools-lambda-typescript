@@ -2,6 +2,7 @@ import { z, type ZodSchema } from 'zod';
 import { Envelope } from './envelope.js';
 import { KinesisFirehoseSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  * Kinesis Firehose Envelope to extract array of Records
@@ -35,7 +36,11 @@ export class KinesisFirehoseEnvelope extends Envelope {
 
     if (!parsedEnvelope.success) {
       return {
-        ...parsedEnvelope,
+        success: false,
+        error: new ParseError(
+          'Failed to parse Kinesis Firehose envelope',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -46,7 +51,10 @@ export class KinesisFirehoseEnvelope extends Envelope {
       if (!parsedData.success) {
         return {
           success: false,
-          error: parsedData.error,
+          error: new ParseError(
+            'Failed to parse Kinesis Firehose record',
+            parsedData.error
+          ),
           originalEvent: data,
         };
       }

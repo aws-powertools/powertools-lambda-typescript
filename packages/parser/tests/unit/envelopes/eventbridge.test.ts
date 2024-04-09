@@ -7,8 +7,8 @@
 import { TestEvents, TestSchema } from '../schema/utils.js';
 import { generateMock } from '@anatine/zod-mock';
 import { EventBridgeEvent } from 'aws-lambda';
-import { ZodError } from 'zod';
 import { EventBridgeEnvelope } from '../../../src/envelopes/index.js';
+import { ParseError } from '../../../src/errors.js';
 
 describe('EventBridgeEnvelope ', () => {
   describe('parse', () => {
@@ -89,7 +89,7 @@ describe('EventBridgeEnvelope ', () => {
         EventBridgeEnvelope.safeParse(eventBridgeEvent, TestSchema)
       ).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: eventBridgeEvent,
       });
     });
@@ -114,7 +114,7 @@ describe('EventBridgeEnvelope ', () => {
     it('should return original event and error envelope is invalid', () => {
       expect(EventBridgeEnvelope.safeParse(1, TestSchema)).toEqual({
         success: false,
-        error: expect.any(ZodError),
+        error: expect.any(ParseError),
         originalEvent: 1,
       });
     });

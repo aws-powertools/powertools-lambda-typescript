@@ -2,6 +2,7 @@ import { z, type ZodSchema } from 'zod';
 import { APIGatewayProxyEventV2Schema } from '../schemas/apigwv2.js';
 import { Envelope } from './envelope.js';
 import type { ParsedResult } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  * API Gateway V2 envelope to extract data within body key
@@ -21,7 +22,11 @@ export class ApiGatewayV2Envelope extends Envelope {
     const parsedEnvelope = APIGatewayProxyEventV2Schema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
-        ...parsedEnvelope,
+        success: false,
+        error: new ParseError(
+          'Failed to parse API Gateway V2 envelope',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -30,7 +35,11 @@ export class ApiGatewayV2Envelope extends Envelope {
 
     if (!parsedBody.success) {
       return {
-        ...parsedBody,
+        success: false,
+        error: new ParseError(
+          'Failed to parse API Gateway V2 envelope body',
+          parsedBody.error
+        ),
         originalEvent: data,
       };
     }

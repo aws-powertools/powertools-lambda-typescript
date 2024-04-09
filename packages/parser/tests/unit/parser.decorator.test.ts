@@ -10,9 +10,10 @@ import { parser } from '../../src/index.js';
 import { TestSchema, TestEvents } from './schema/utils';
 import { generateMock } from '@anatine/zod-mock';
 import { EventBridgeSchema } from '../../src/schemas/index.js';
-import { z, ZodError } from 'zod';
+import { z } from 'zod';
 import { ParsedResult, EventBridgeEvent } from '../../src/types';
 import { EventBridgeEnvelope } from '../../src/envelopes/index.js';
+import { ParseError } from '../../src/errors.js';
 
 describe('Parser Decorator', () => {
   const customEventBridgeSchema = EventBridgeSchema.extend({
@@ -160,7 +161,7 @@ describe('Parser Decorator', () => {
       // @ts-ignore
       await lambda.handlerWithSchemaAndSafeParse({ foo: 'bar' }, {} as Context)
     ).toEqual({
-      error: expect.any(ZodError),
+      error: expect.any(ParseError),
       success: false,
       originalEvent: { foo: 'bar' },
     });
@@ -193,7 +194,7 @@ describe('Parser Decorator', () => {
         {} as Context
       )
     ).toEqual({
-      error: expect.any(ZodError),
+      error: expect.any(ParseError),
       success: false,
       originalEvent: { foo: 'bar' },
     });

@@ -5,6 +5,7 @@ import {
   KafkaSelfManagedEventSchema,
 } from '../schemas/kafka.js';
 import { ParsedResult, KafkaMskEvent } from '../types/index.js';
+import { ParseError } from '../errors.js';
 
 /**
  * Kafka event envelope to extract data within body key
@@ -51,7 +52,11 @@ export class KafkaEnvelope extends Envelope {
 
     if (!parsedEnvelope.success) {
       return {
-        ...parsedEnvelope,
+        success: false,
+        error: new ParseError(
+          'Failed to parse Kafka envelope',
+          parsedEnvelope.error
+        ),
         originalEvent: data,
       };
     }
@@ -63,7 +68,10 @@ export class KafkaEnvelope extends Envelope {
         if (!parsedRecord.success) {
           return {
             success: false,
-            error: parsedRecord.error,
+            error: new ParseError(
+              'Failed to parse Kafka record',
+              parsedRecord.error
+            ),
             originalEvent: data,
           };
         }

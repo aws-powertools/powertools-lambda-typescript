@@ -1,5 +1,6 @@
 import type { ParsedResult, Envelope } from './types/index.js';
 import { z, type ZodSchema } from 'zod';
+import { ParseError } from './errors.js';
 
 /**
  * Parse the data using the provided schema, envelope and safeParse flag
@@ -41,8 +42,11 @@ const parse = <T extends ZodSchema, E extends Envelope>(
   if (safeParse) {
     return safeParseSchema(data, schema);
   }
-
-  return schema.parse(data);
+  try {
+    return schema.parse(data);
+  } catch (e) {
+    throw new ParseError('Failed to parse schema', e as Error);
+  }
 };
 
 /**
@@ -60,7 +64,11 @@ const safeParseSchema = <T extends ZodSchema>(
 
   return result.success
     ? result
-    : { success: false, error: result.error, originalEvent: data };
+    : {
+        success: false,
+        error: new ParseError('Failed to parse schema safely', result.error),
+        originalEvent: data,
+      };
 };
 
 export { parse };

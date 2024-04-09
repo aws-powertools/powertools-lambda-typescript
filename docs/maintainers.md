@@ -174,7 +174,7 @@ Once complete, you can start drafting the release notes to let customers know **
 
 #### Release process visualized
 
-Every release makes dozens of checks, linting, canaries and deployments - all of these are automated.
+Every release makes dozens of checks, linting, canaries and deployments - all of these are automated through a number of distinct workflows that together make up the release process.
 
 This is a close visual representation of the main steps (GitHub Actions UI should be the source of truth), along with the approximate time it takes for each key step to complete.
 
@@ -192,7 +192,9 @@ Release start   : milestone, m1, 10:00, 8s
 section Version
     Bump package version              : active, 8s
     Create commit (version bump)      : active, 8s
-    Review & merge PR                 : active, 8s
+    Open version PR                   : active, 8s
+
+Review and merge version PR : milestone, m2
 
 section QA
     Quality checks                    : active, 2.4m
@@ -209,7 +211,7 @@ section Release
     Sign attestation                  : active, attestation, 10:04, 8s
     Publish npm.js                    : active, npm, after attestation, 40s
 
-npmjs.com release : milestone, m2
+npmjs.com release : milestone, m3
 
 section Layer release
     Build                             : active, layer_build, 10:05, 2.5m
@@ -217,16 +219,19 @@ section Layer release
     Run Canary Test                   : active, layer_canary, after layer_beta, 2m
     Deploy Prod                       : active, layer_prod, after layer_canary, 4m
 
-Layer release : milestone, m3
+Layer release : milestone, m4
 
 section Docs
     Create commit (Layer ARN)         : active, 10:18, 8s
-    Review & merge PR                 : active, 8s
+    Open docs PR                      : active, 8s
+
+Review andmerge docs PR : milestone, m5
+
     Publish updated docs              : active, 2m
 
-Documentation release : milestone, m4
+Documentation release : milestone, m6
 
-Release complete : milestone, m5
+Release complete : milestone, m7
 ```
 
 #### Drafting release notes

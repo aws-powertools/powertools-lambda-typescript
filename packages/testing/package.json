@@ -97,7 +97,7 @@
     "@aws-cdk/cli-lib-alpha": "^2.121.1-alpha.0",
     "@aws-sdk/client-lambda": "^3.552.0",
     "@smithy/util-utf8": "^2.3.0",
-    "aws-cdk-lib": "^2.136.0",
+    "aws-cdk-lib": "^2.136.1",
     "esbuild": "^0.20.2"
   }
 }

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2.0.4 (2024-04-10)
+
+### Bug Fixes
+
+**idempotency:** return correct value from in-memory cache ([#2309](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2309)) ([5b4c103](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b908aa1111d332fcf3638a77f24a545b85b4c103))
+**logger:** buffer logs emitted during init ([#2269](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2269)) ([1439867](https://github.com/aws-powertools/powertools-lambda-typescript/commit/90d3b84b9297ba0d4755fd2608fd50dc91439867))
+
+### Features
+
+**tracer:** support tracing `fetch` requests ([#1619](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1619)) ([607548b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cc34400000f9dffe5190968f2af64e4ce607548b))
+**jmespath** public release of JMESPAth utility ([#1645](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1645)) ([233ff9b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/671a34d34ac80d3c1a7860ee8a6b41804233ff9b))
+
+### Minor Changes
+
+**logger:** use template literal instead of `node:util` format ([#2283](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2283)) ([961ace1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2383c1419d96bf980a044c7acbb4117b5961ace1))
+
 ## 2.0.3 (2024-03-15)
 
 **feat(logger):** improve regex in stack trace parsing ([#2121](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2121)) ([ebe5eef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ebe5eef3319fc95070c2c33c0ac64b8e42443b38))

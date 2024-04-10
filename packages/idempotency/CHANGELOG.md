@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2.0.4 (2024-04-10)
+
+### Bug Fixes
+
+**idempotency:** return correct value from in-memory cache ([#2309](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2309)) ([5b4c103](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b908aa1111d332fcf3638a77f24a545b85b4c103))
+
 ## 2.0.3 (2024-03-15)
 
 **fix:** transform private class fields ([#2230](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2230)) ([aa6e6e0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aa6e6e0c25bbc93151cc5cddc584400575604f05))

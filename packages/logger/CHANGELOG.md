@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2.0.4 (2024-04-10)
+
+### Bug Fixes
+
+**logger:** buffer logs emitted during init ([#2269](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2269)) ([1439867](https://github.com/aws-powertools/powertools-lambda-typescript/commit/90d3b84b9297ba0d4755fd2608fd50dc91439867))
+
+### Minor Changes
+
+**logger:** use template literal instead of `node:util` format ([#2283](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2283)) ([961ace1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2383c1419d96bf980a044c7acbb4117b5961ace1))
+
 ## 2.0.3 (2024-03-15)
 
 **feat:** improve regex in stack trace parsing ([#2121](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2121)) ([ebe5eef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ebe5eef3319fc95070c2c33c0ac64b8e42443b38))

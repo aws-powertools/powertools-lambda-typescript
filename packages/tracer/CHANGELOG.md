@@ -5,11 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## 2.0.4 (2024-04-10)
 
-**Note:** Version bump only for package @aws-lambda-powertools/tracer
+### Features
 
-
-
-
+**tracer:** support tracing `fetch` requests ([#1619](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1619)) ([607548b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cc34400000f9dffe5190968f2af64e4ce607548b))
 
 ## 2.0.3 (2024-03-15)
 

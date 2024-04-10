@@ -5,11 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## 2.0.4 (2024-04-10)
 
-**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+### Bug Fixes
 
-
-
-
+**idempotency:** return correct value from in-memory cache ([#2309](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2309)) ([5b4c103](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b908aa1111d332fcf3638a77f24a545b85b4c103))
 
 ## 2.0.3 (2024-03-15)
 

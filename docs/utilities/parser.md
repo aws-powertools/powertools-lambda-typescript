@@ -4,11 +4,8 @@ descrition: Utility
 status: new
 ---
 
-
-???+ warning
-    **This utility is currently released as beta developer preview** and is intended strictly for feedback and testing purposes **and not for production workloads**. The version and all future versions tagged with the `-beta` suffix should be treated as not stable. Up until before the [General Availability release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/16) we might introduce significant breaking changes and improvements in response to customers feedback.
-
 This utility provides data validation and parsing using [Zod](https://zod.dev){target="_blank"}.
+
 Zod is a TypeScript-first schema declaration and validation library.  
 
 ## Key features
@@ -42,7 +39,7 @@ You can create complex schemas by using nested objects, arrays, unions, and othe
 
 ## Parse events
 
-You can parse inbound events using `parser` decorator or middy middleware, or [manually](#manual-parsing) using built-in envelopes and schemas.
+You can parse inbound events using `parser` decorator, Middy.js middleware, or [manually](#manual-parsing) using built-in envelopes and schemas.
 Both are also able to parse either an object or JSON string as an input.
 
 ???+ warning
@@ -64,32 +61,32 @@ Both are also able to parse either an object or JSON string as an input.
 
 Parser comes with the following built-in schemas:
 
-| Model name                                    | Description                                                                           |
-|-----------------------------------------------| ------------------------------------------------------------------------------------- |
-| **AlbSchema**                                 | Lambda Event Source payload for Amazon Application Load Balancer                      |
-| **APIGatewayProxyEventSchema**                | Lambda Event Source payload for Amazon API Gateway                                    |
-| **APIGatewayProxyEventV2Schema**              | Lambda Event Source payload for Amazon API Gateway v2 payload                         |
-| **CloudFormationCustomResourceCreateSchema**  | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                 |
-| **CloudFormationCustomResourceUpdateSchema**  | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                 |
-| **CloudFormationCustomResourceDeleteSchema**  | Lambda Event Source payload for AWS CloudFormation `DELETE` operation                 |
-| **CloudwatchLogsSchema**                      | Lambda Event Source payload for Amazon CloudWatch Logs                                |
-| **DynamoDBStreamSchema**                      | Lambda Event Source payload for Amazon DynamoDB Streams                               |
-| **EventBridgeSchema**                         | Lambda Event Source payload for Amazon EventBridge                                    |
-| **KafkaMskEventSchema**                       | Lambda Event Source payload for AWS MSK payload                                       |
-| **KafkaSelfManagedEventSchema**               | Lambda Event Source payload for self managed Kafka payload                            |
-| **KinesisDataStreamSchema**                   | Lambda Event Source payload for Amazon Kinesis Data Streams                           |
-| **KinesisFirehoseSchema**                     | Lambda Event Source payload for Amazon Kinesis Firehose                               |
-| **KinesisFirehoseSqsSchema**                  | Lambda Event Source payload for SQS messages wrapped in Kinesis Firehose records      |
-| **LambdaFunctionUrlSchema**                   | Lambda Event Source payload for Lambda Function URL payload                           |
-| **S3EventNotificationEventBridgeSchema**      | Lambda Event Source payload for Amazon S3 Event Notification to EventBridge.          |
-| **S3Schema**                                  | Lambda Event Source payload for Amazon S3                                             |
-| **S3ObjectLambdaEvent**                       | Lambda Event Source payload for Amazon S3 Object Lambda                               |
-| **S3SqsEventNotificationSchema**              | Lambda Event Source payload for S3 event notifications wrapped in SQS event (S3->SQS) |
-| **SesSchema**                                 | Lambda Event Source payload for Amazon Simple Email Service                           |
-| **SnsSchema**                                 | Lambda Event Source payload for Amazon Simple Notification Service                    |
-| **SqsSchema**                                 | Lambda Event Source payload for Amazon SQS                                            |
-| **VpcLatticeSchema**                          | Lambda Event Source payload for Amazon VPC Lattice                                    |
-| **VpcLatticeV2Schema**                        | Lambda Event Source payload for Amazon VPC Lattice v2 payload                         |
+| Model name                                   | Description                                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **AlbSchema**                                | Lambda Event Source payload for Amazon Application Load Balancer                      |
+| **APIGatewayProxyEventSchema**               | Lambda Event Source payload for Amazon API Gateway                                    |
+| **APIGatewayProxyEventV2Schema**             | Lambda Event Source payload for Amazon API Gateway v2 payload                         |
+| **CloudFormationCustomResourceCreateSchema** | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                 |
+| **CloudFormationCustomResourceUpdateSchema** | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                 |
+| **CloudFormationCustomResourceDeleteSchema** | Lambda Event Source payload for AWS CloudFormation `DELETE` operation                 |
+| **CloudwatchLogsSchema**                     | Lambda Event Source payload for Amazon CloudWatch Logs                                |
+| **DynamoDBStreamSchema**                     | Lambda Event Source payload for Amazon DynamoDB Streams                               |
+| **EventBridgeSchema**                        | Lambda Event Source payload for Amazon EventBridge                                    |
+| **KafkaMskEventSchema**                      | Lambda Event Source payload for AWS MSK payload                                       |
+| **KafkaSelfManagedEventSchema**              | Lambda Event Source payload for self managed Kafka payload                            |
+| **KinesisDataStreamSchema**                  | Lambda Event Source payload for Amazon Kinesis Data Streams                           |
+| **KinesisFirehoseSchema**                    | Lambda Event Source payload for Amazon Kinesis Firehose                               |
+| **KinesisFirehoseSqsSchema**                 | Lambda Event Source payload for SQS messages wrapped in Kinesis Firehose records      |
+| **LambdaFunctionUrlSchema**                  | Lambda Event Source payload for Lambda Function URL payload                           |
+| **S3EventNotificationEventBridgeSchema**     | Lambda Event Source payload for Amazon S3 Event Notification to EventBridge.          |
+| **S3Schema**                                 | Lambda Event Source payload for Amazon S3                                             |
+| **S3ObjectLambdaEvent**                      | Lambda Event Source payload for Amazon S3 Object Lambda                               |
+| **S3SqsEventNotificationSchema**             | Lambda Event Source payload for S3 event notifications wrapped in SQS event (S3->SQS) |
+| **SesSchema**                                | Lambda Event Source payload for Amazon Simple Email Service                           |
+| **SnsSchema**                                | Lambda Event Source payload for Amazon Simple Notification Service                    |
+| **SqsSchema**                                | Lambda Event Source payload for Amazon SQS                                            |
+| **VpcLatticeSchema**                         | Lambda Event Source payload for Amazon VPC Lattice                                    |
+| **VpcLatticeV2Schema**                       | Lambda Event Source payload for Amazon VPC Lattice v2 payload                         |
 
 ### Extend built-in schemas
 
@@ -151,7 +148,7 @@ We have also complex envelopes that parse the payload from a string, decode base
 Parser comes with the following built-in envelopes:
 
 | Envelope name                 | Behaviour                                                                                                                                                                                                     |
-| ----------------------------- | -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **apiGatewayEnvelope**        | 1. Parses data using `APIGatewayProxyEventSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                               |
 | **apiGatewayV2Envelope**      | 1. Parses data using `APIGatewayProxyEventV2Schema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                             |
 | **cloudWatchEnvelope**        | 1. Parses data using `CloudwatchLogsSchema` which will base64 decode and decompress it. <br/> 2. Parses records in `message` key using your schema and return them in a list.                                 |

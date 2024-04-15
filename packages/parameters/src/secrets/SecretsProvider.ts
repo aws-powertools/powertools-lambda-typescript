@@ -138,11 +138,11 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript Secrets Manager client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/classes/secretsmanagerclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  *
  * @class
  * @implements {BaseProvider}
- * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 class SecretsProvider extends BaseProvider {
   public declare client: SecretsManagerClient;
@@ -186,7 +186,7 @@ class SecretsProvider extends BaseProvider {
    *
    * @param {string} name - The name of the secret
    * @param {SecretsGetOptions} options - Options to customize the retrieval of the secret
-   * @see https://docs.powertools.aws.dev/lambda-typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,

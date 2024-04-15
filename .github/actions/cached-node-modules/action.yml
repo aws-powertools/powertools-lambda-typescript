@@ -39,11 +39,11 @@ runs:
       # sequence, but still in the correct order.
       run: |
         npm run build -w packages/commons
+        npm run build -w packages/jmespath & \
         npm run build -w packages/logger & \
         npm run build -w packages/tracer & \
         npm run build -w packages/metrics & \
         npm run build -w packages/parameters & \
-        npm run build -w packages/jmespath & \
         npm run build -w packages/idempotency & \
         npm run build -w packages/batch & \
         npm run build -w packages/testing 

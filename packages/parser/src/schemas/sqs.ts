@@ -17,6 +17,7 @@ const SqsAttributesSchema = z.object({
   SentTimestamp: z.string(),
   SequenceNumber: z.string().optional(),
   AWSTraceHeader: z.string().optional(),
+  DeadLetterQueueSourceArn: z.string().optional(), // Undocumented, but used by AWS to support their re-drive functionality in the console
 });
 
 const SqsRecordSchema = z.object({

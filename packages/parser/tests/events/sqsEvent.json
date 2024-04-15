@@ -30,7 +30,8 @@
         "ApproximateReceiveCount": "1",
         "SentTimestamp": "1545082650636",
         "SenderId": "AIDAIENQZJOLO23YVJ4VO",
-        "ApproximateFirstReceiveTimestamp": "1545082650649"
+        "ApproximateFirstReceiveTimestamp": "1545082650649",
+        "DeadLetterQueueSourceArn": "arn:aws:sqs:us-east-2:123456789012:my-queue-dead"
       },
       "messageAttributes": {},
       "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",

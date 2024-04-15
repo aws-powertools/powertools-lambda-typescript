@@ -40,13 +40,13 @@ theme:
       primary: deep orange
       accent: deep orange
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/lightbulb
         name: Switch to dark mode
     - scheme: slate
       primary: deep orange
       accent: deep orange
       toggle:
-        icon: material/toggle-switch
+        icon: material/lightbulb-outline
         name: Switch to light mode
   features:
     - header.autohide
@@ -59,6 +59,7 @@ theme:
     - content.code.annotate
     - content.code.copy
     - announce.dismiss
+    - content.tabs.link
   icon:
     repo: fontawesome/brands/github
   logo: media/aws-logo-light.svg
@@ -67,8 +68,12 @@ theme:
 
 markdown_extensions:
   - admonition
+  - abbr
   - pymdownx.tabbed:
       alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - pymdownx.highlight:
       linenums: true
   - pymdownx.details
@@ -81,6 +86,7 @@ markdown_extensions:
       permalink: true
       toc_depth: 4
   - attr_list
+  - md_in_html
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg

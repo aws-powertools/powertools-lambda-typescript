@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2.0.4 (2024-04-10)
+
+**Note:** Version bump only for package @aws-lambda-powertools/commons
+
+
+
+
+
 ## 2.0.3 (2024-03-15)
 
 **improv:**: expand type utils functions ([#2191](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2191)) ([9208393](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9208393fe07d33cb35ea479b3c0866c8a7b91a21))

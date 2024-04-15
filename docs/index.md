@@ -61,7 +61,6 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
     | **[Parameters (AppConfig)](./utilities/parameters.md#install)**       | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata`**{.copyMe}:clipboard:                   |                     |
     | **[Parser](./utilities/parser.md#install)**                           | **`npm i @aws-lambda-powertools/parser zod@~3`**{.copyMe}:clipboard:                                              |                     |
 
-
 === "Lambda Layer"
 
     You can add our layer both in the [AWS Lambda Console _(under `Layers`)_](https://eu-west-1.console.aws.amazon.com/lambda/home#/add/layer){target="_blank"}, or via your favorite infrastructure as code framework with the ARN value.
@@ -325,11 +324,12 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 | [Parameters](./utilities/parameters.md)   | High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB                     |
 | [Idempotency](./utilities/idempotency.md) | Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content. |
 | [Batch Processing](./utilities/batch.md)  | Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.                             |
+| [Parser](./utilities/parser.md)           | Utility to parse and validate AWS Lambda event payloads using Zod, a TypeScript-first schema declaration and validation library.                                  |
 
 ## Environment variables
 
 ???+ info
-	Explicit parameters take precedence over environment variables
+    Explicit parameters take precedence over environment variables
 
 | Environment variable                         | Description                                                                                                   | Utility                                 | Default             |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------- |

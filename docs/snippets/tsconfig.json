@@ -4,6 +4,8 @@
     "rootDir": "./",
     "baseUrl": ".",
     "noEmit": true,
+    "noUnusedLocals": false,
+    "allowUnusedLabels": true,
     "paths": {
       "@aws-lambda-powertools/parameters/ssm": [
         "../../packages/parameters/lib/ssm"
@@ -31,7 +33,9 @@
       "@aws-lambda-powertools/jmespath": ["../../packages/jmespath/lib"],
       "@aws-lambda-powertools/jmespath/envelopes": [
         "../../packages/jmespath/lib/envelopes"
-      ]
+      ],
+      "@aws-lambda-powertools/parser": ["../../packages/parser/lib"],
+      "@aws-lambda-powertools/logger": ["../../packages/logger/lib"]
     }
   }
 }

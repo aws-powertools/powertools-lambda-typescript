@@ -12,6 +12,7 @@
     "packages/batch",
     "packages/testing",
     "packages/jmespath",
+    "packages/parser",
     "docs/snippets",
     "layers",
     "examples/app"

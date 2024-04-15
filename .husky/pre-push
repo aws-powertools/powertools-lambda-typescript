@@ -4,4 +4,5 @@ npm t \
   -w packages/metrics \
   -w packages/tracer \
   -w packages/idempotency \
-  -w packages/parameters
+  -w packages/parameters \
+  -w packages/parser

@@ -1,0 +1,106 @@
+{
+  "name": "@aws-lambda-powertools/parser",
+  "version": "0.0.0",
+  "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "scripts": {
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
+    "jest": "jest --detectOpenHandles --coverage --verbose",
+    "watch": "jest --watch",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
+  "lint-staged": {
+    "*.{js,ts}": "npm run lint-fix"
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parser#readme",
+  "license": "MIT-0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    },
+    "./middleware": {
+      "require": "./lib/cjs/middleware/parser.js",
+      "import": "./lib/esm/middleware/parser.js"
+    },
+    "./schemas": {
+      "require": "./lib/cjs/schemas/index.js",
+      "import": "./lib/esm/schemas/index.js"
+    },
+    "./envelopes": {
+      "require": "./lib/cjs/envelopes/index.js",
+      "import": "./lib/esm/envelopes/index.js"
+    },
+    "./types": {
+      "require": "./lib/cjs/types/index.js",
+      "import": "./lib/esm/types/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "types": [
+        "./lib/cjs/types/index.d.ts",
+        "./lib/esm/types/index.d.ts"
+      ],
+      "middleware": [
+        "./lib/cjs/middleware/parser.d.ts",
+        "./lib/esm/middleware/parser.d.ts"
+      ],
+      "schemas": [
+        "./lib/cjs/schemas/index.d.ts",
+        "./lib/esm/schemas/index.d.ts"
+      ],
+      "envelopes": [
+        "./lib/cjs/envelopes/index.d.ts",
+        "./lib/esm/envelopes/index.d.ts"
+      ]
+    }
+  },
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/cjs/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "batch",
+    "batch-processing",
+    "serverless",
+    "nodejs"
+  ],
+  "peerDependencies": {
+    "zod": ">=3.x"
+  },
+  "devDependencies": {
+    "@anatine/zod-mock": "^3.13.3",
+    "@faker-js/faker": "^8.3.1"
+  }
+}

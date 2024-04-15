@@ -1,5 +1,6 @@
 import { createHash, Hash } from 'node:crypto';
 import { search } from '@aws-lambda-powertools/jmespath';
+import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 import type {
   BasePersistenceLayerOptions,
   BasePersistenceLayerInterface,
@@ -279,7 +280,9 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   private getHashedIdempotencyKey(data: JSONValue): string {
     if (this.eventKeyJmesPath) {
-      data = search(this.eventKeyJmesPath, data) as JSONValue;
+      data = search(this.eventKeyJmesPath, data, {
+        customFunctions: new PowertoolsFunctions(),
+      }) as JSONValue;
     }
 
     if (BasePersistenceLayer.isMissingIdempotencyKey(data)) {
@@ -305,7 +308,9 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   private getHashedPayload(data: JSONValue): string {
     if (this.isPayloadValidationEnabled() && this.validationKeyJmesPath) {
-      data = search(this.validationKeyJmesPath, data) as JSONValue;
+      data = search(this.validationKeyJmesPath, data, {
+        customFunctions: new PowertoolsFunctions(),
+      }) as JSONValue;
 
       return this.generateHash(JSON.stringify(data));
     } else {

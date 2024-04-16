@@ -1,6 +1,8 @@
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import type { Context } from 'aws-lambda';
 import type { IdempotencyConfigOptions } from './types/IdempotencyOptions.js';
+import type { ParsingOptions } from '@aws-lambda-powertools/jmespath/types';
+import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 
 /**
  * Configuration for the idempotency feature.
@@ -22,6 +24,10 @@ class IdempotencyConfig {
    * @default 'md5'
    */
   public hashFunction: string;
+  /**
+   *
+   */
+  public jmesPathOptions: ParsingOptions;
   /**
    * The lambda context object.
    */
@@ -53,6 +59,7 @@ class IdempotencyConfig {
   public constructor(config: IdempotencyConfigOptions) {
     this.eventKeyJmesPath = config.eventKeyJmesPath ?? '';
     this.payloadValidationJmesPath = config.payloadValidationJmesPath;
+    this.jmesPathOptions = { customFunctions: new PowertoolsFunctions() };
     this.throwOnNoIdempotencyKey = config.throwOnNoIdempotencyKey ?? false;
     this.expiresAfterSeconds = config.expiresAfterSeconds ?? 3600; // 1 hour default
     this.useLocalCache = config.useLocalCache ?? false;

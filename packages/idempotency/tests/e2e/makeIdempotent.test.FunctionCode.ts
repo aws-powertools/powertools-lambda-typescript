@@ -90,16 +90,17 @@ export const handlerCustomized = async (
  * Test idempotent Lambda handler with JMESPath expression to extract event key.
  */
 export const handlerLambda = makeIdempotent(
-  async (event: { foo: string }, context: Context) => {
+  async (event: { body: string }, context: Context) => {
     logger.addContext(context);
-    logger.info(`foo`, { details: event.foo });
+    const body = JSON.parse(event.body);
+    logger.info('foo', { details: body.foo });
 
-    return event.foo;
+    return body.foo;
   },
   {
     persistenceStore: dynamoDBPersistenceLayer,
     config: new IdempotencyConfig({
-      eventKeyJmesPath: 'foo',
+      eventKeyJmesPath: 'powertools_json(body).foo',
       useLocalCache: true,
     }),
   }

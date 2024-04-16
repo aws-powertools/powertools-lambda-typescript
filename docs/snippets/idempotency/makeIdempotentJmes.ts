@@ -22,9 +22,9 @@ const createSubscriptionPayment = async (
   };
 };
 
-// Extract the idempotency key from the request headers
+// Deserialize JSON string under the "body" key, then extract the "user" and "productId" keys
 const config = new IdempotencyConfig({
-  eventKeyJmesPath: 'body',
+  eventKeyJmesPath: 'powertools_json(body).["user", "productId"]',
 });
 
 export const handler = makeIdempotent(

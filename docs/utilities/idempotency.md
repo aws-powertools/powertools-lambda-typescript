@@ -220,9 +220,11 @@ Imagine the function executes successfully, but the client never receives the re
 ???+ warning "Deserializing JSON strings in payloads for increased accuracy."
     The payload extracted by the `eventKeyJmesPath` is treated as a string by default. This means there could be differences in whitespace even when the JSON payload itself is identical.
 
+    To alter this behaviour, we can use the [JMESPath built-in function `powertools_json()`](jmespath.md#powertools_json-function) to treat the payload as a JSON object rather than a string.
+
 === "index.ts"
 
-    ```typescript hl_lines="4 26-28 49"
+    ```typescript hl_lines="4 27 49"
     --8<-- "docs/snippets/idempotency/makeIdempotentJmes.ts"
     ```
 

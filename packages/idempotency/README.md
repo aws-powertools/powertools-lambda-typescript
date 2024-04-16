@@ -18,7 +18,6 @@ You can use the package in both TypeScript and JavaScript code bases.
   - [Becoming a reference customer](#becoming-a-reference-customer)
   - [Sharing your work](#sharing-your-work)
   - [Using Lambda Layer](#using-lambda-layer)
-- [Credits](#credits)
 - [License](#license)
 
 ## Intro
@@ -158,7 +157,33 @@ export const handler = makeIdempotent(myHandler, {
   config: new IdempotencyConfig({
     eventKeyJmespath: 'requestContext.identity.user',
   }),
-});  
+});
+```
+
+Additionally, you can also use one of the [JMESPath built-in functions](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/#built-in-jmespath-functions) like `powertools_json()` to decode keys and use parts of the payload as the idempotency key.
+
+```ts
+import { makeIdempotent, IdempotencyConfig } from '@aws-lambda-powertools/idempotency';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import type { Context, APIGatewayProxyEvent } from 'aws-lambda';
+
+const persistenceStore = new DynamoDBPersistenceLayer({
+  tableName: 'idempotencyTableName',
+});
+
+const myHandler = async (
+  event: APIGatewayProxyEvent,
+  _context: Context
+): Promise<void> => {
+  // your code goes here here
+};
+
+export const handler = makeIdempotent(myHandler, {
+  persistenceStore,
+  config: new IdempotencyConfig({
+    eventKeyJmespath: 'powertools_json(body).["user", "productId"]',
+  }),
+});
 ```
 
 Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/) for more examples.
@@ -311,11 +336,7 @@ Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog po
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](#lambda-layers), you can add Powertools as a dev dependency (or as part of your virtual env) to not impact the development process.
-
-## Credits
-
-Credits for the Lambda Powertools for AWS Lambda (TypeScript) idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 

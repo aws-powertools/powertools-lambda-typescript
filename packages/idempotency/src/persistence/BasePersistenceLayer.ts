@@ -1,5 +1,6 @@
 import { createHash, Hash } from 'node:crypto';
-import { search } from 'jmespath';
+import { search } from '@aws-lambda-powertools/jmespath';
+import type { ParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import type {
   BasePersistenceLayerOptions,
   BasePersistenceLayerInterface,
@@ -36,6 +37,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private throwOnNoIdempotencyKey = false;
   private useLocalCache = false;
   private validationKeyJmesPath?: string;
+  #jmesPathOptions?: ParsingOptions;
 
   public constructor() {
     this.envVarsService = new EnvironmentVariablesService();
@@ -63,6 +65,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
     this.eventKeyJmesPath = idempotencyConfig?.eventKeyJmesPath;
     this.validationKeyJmesPath = idempotencyConfig?.payloadValidationJmesPath;
+    this.#jmesPathOptions = idempotencyConfig.jmesPathOptions;
     this.payloadValidationEnabled =
       this.validationKeyJmesPath !== undefined || false;
     this.throwOnNoIdempotencyKey =
@@ -279,7 +282,11 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   private getHashedIdempotencyKey(data: JSONValue): string {
     if (this.eventKeyJmesPath) {
-      data = search(data, this.eventKeyJmesPath);
+      data = search(
+        this.eventKeyJmesPath,
+        data,
+        this.#jmesPathOptions
+      ) as JSONValue;
     }
 
     if (BasePersistenceLayer.isMissingIdempotencyKey(data)) {
@@ -305,7 +312,11 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   private getHashedPayload(data: JSONValue): string {
     if (this.isPayloadValidationEnabled() && this.validationKeyJmesPath) {
-      data = search(data, this.validationKeyJmesPath);
+      data = search(
+        this.validationKeyJmesPath,
+        data,
+        this.#jmesPathOptions
+      ) as JSONValue;
 
       return this.generateHash(JSON.stringify(data));
     } else {

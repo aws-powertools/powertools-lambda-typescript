@@ -16,7 +16,7 @@ import { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
 import { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import { IdempotencyConfig } from './IdempotencyConfig.js';
 import { MAX_RETRIES, IdempotencyRecordStatus } from './constants.js';
-import { search } from 'jmespath';
+import { search } from '@aws-lambda-powertools/jmespath';
 
 /**
  * @internal
@@ -275,8 +275,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       !this.#idempotencyConfig.throwOnNoIdempotencyKey
     ) {
       const selection = search(
+        this.#idempotencyConfig.eventKeyJmesPath,
         this.#functionPayloadToBeHashed,
-        this.#idempotencyConfig.eventKeyJmesPath
+        this.#idempotencyConfig.jmesPathOptions
       );
 
       return selection === undefined || selection === null;

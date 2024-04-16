@@ -63,6 +63,7 @@ describe('Idempotency e2e test decorator, default settings', () => {
     },
     {
       nameSuffix: 'defaultParallel',
+      outputFormat: 'ESM',
     }
   );
 
@@ -79,6 +80,7 @@ describe('Idempotency e2e test decorator, default settings', () => {
     },
     {
       nameSuffix: 'timeout',
+      outputFormat: 'ESM',
     }
   );
 
@@ -95,6 +97,7 @@ describe('Idempotency e2e test decorator, default settings', () => {
     },
     {
       nameSuffix: 'expired',
+      outputFormat: 'ESM',
     }
   );
 
@@ -110,6 +113,7 @@ describe('Idempotency e2e test decorator, default settings', () => {
     },
     {
       nameSuffix: 'dataIndex',
+      outputFormat: 'ESM',
     }
   );
 
@@ -131,6 +135,7 @@ describe('Idempotency e2e test decorator, default settings', () => {
     },
     {
       nameSuffix: 'customConfig',
+      outputFormat: 'ESM',
     }
   );
 

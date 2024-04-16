@@ -38,7 +38,7 @@ runs:
       # even though we could just run `npm run build` in the root folder and build them in
       # sequence, but still in the correct order.
       run: |
-        npm run build -w packages/commons
+        npm run build -w packages/commons & \
         npm run build -w packages/logger & \
         npm run build -w packages/tracer & \
         npm run build -w packages/metrics & \

@@ -1,6 +1,6 @@
 import { createHash, Hash } from 'node:crypto';
 import { search } from '@aws-lambda-powertools/jmespath';
-import type { ParsingOptions } from '@aws-lambda-powertools/jmespath/types';
+import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import type {
   BasePersistenceLayerOptions,
   BasePersistenceLayerInterface,
@@ -37,7 +37,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private throwOnNoIdempotencyKey = false;
   private useLocalCache = false;
   private validationKeyJmesPath?: string;
-  #jmesPathOptions?: ParsingOptions;
+  #jmesPathOptions?: JMESPathParsingOptions;
 
   public constructor() {
     this.envVarsService = new EnvironmentVariablesService();

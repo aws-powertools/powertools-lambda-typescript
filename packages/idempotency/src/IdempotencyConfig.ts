@@ -1,7 +1,7 @@
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import type { Context } from 'aws-lambda';
 import type { IdempotencyConfigOptions } from './types/IdempotencyOptions.js';
-import type { ParsingOptions } from '@aws-lambda-powertools/jmespath/types';
+import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 
 /**
@@ -31,7 +31,7 @@ class IdempotencyConfig {
    * {@link https://docs.powertools.aws.dev/lambda/typescript/latest/api/classes/_aws_lambda_powertools_jmespath.PowertoolsFunctions.PowertoolsFunctions.html | custom functions provided}
    * by the `@aws-lambda-powertools/jmespath` package.
    */
-  public jmesPathOptions: ParsingOptions;
+  public jmesPathOptions: JMESPathParsingOptions;
   /**
    * The lambda context object.
    */

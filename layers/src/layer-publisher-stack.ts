@@ -62,13 +62,13 @@ export class LayerPublisherStack extends Stack {
               // the name is the same as the npm workspace name
               const utilities = [
                 'commons',
+                'jmespath',
                 'logger',
                 'metrics',
                 'tracer',
                 'parameters',
                 'idempotency',
                 'batch',
-                'jmespath',
               ];
 
               // These files are relative to the tmp folder
@@ -88,8 +88,6 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/async-hook-jl/test',
                 'node_modules/stack-chain/test',
                 'node_modules/shimmer/test',
-                'node_modules/jmespath/artifacts',
-                'node_modules/jmespath/bower.json',
                 'node_modules/obliterator/*.d.ts',
                 'node_modules/strnum/.vscode',
                 'node_modules/strnum/*.test.js',

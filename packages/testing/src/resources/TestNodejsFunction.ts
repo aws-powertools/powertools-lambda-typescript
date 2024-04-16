@@ -27,7 +27,7 @@ class TestNodejsFunction extends NodejsFunction {
     props: TestNodejsFunctionProps,
     extraProps: ExtraTestProps
   ) {
-    const isESM = extraProps.outputFormat === 'ESM' ? true : false;
+    const isESM = extraProps.outputFormat === 'ESM';
     const bundling: BundlingOptions = {
       minify: true,
       mainFields: isESM ? ['module', 'main'] : ['main', 'module'],

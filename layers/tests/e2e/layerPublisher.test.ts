@@ -107,7 +107,11 @@ describe(`Layers E2E tests`, () => {
             POWERTOOLS_SERVICE_NAME: 'LayerPublisherStack',
           },
           bundling: {
-            externalModules: ['@aws-lambda-powertools/*', 'aws-xray-sdk-node'],
+            externalModules: [
+              '@aws-lambda-powertools/*',
+              '@aws-sdk/*',
+              'aws-xray-sdk-node',
+            ],
           },
           layers: [layerVersion],
         },

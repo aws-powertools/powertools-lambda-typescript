@@ -1,5 +1,5 @@
 import { Parser } from './Parser.js';
-import type { ParsingOptions, JSONObject } from './types.js';
+import type { JMESPathParsingOptions, JSONObject } from './types.js';
 
 const parser = new Parser();
 
@@ -52,7 +52,7 @@ const parser = new Parser();
 const search = (
   expression: string,
   data: JSONObject,
-  options?: ParsingOptions
+  options?: JMESPathParsingOptions
 ): unknown => {
   return parser.parse(expression).search(data, options);
 };

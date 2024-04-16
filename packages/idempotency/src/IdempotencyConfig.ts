@@ -25,7 +25,11 @@ class IdempotencyConfig {
    */
   public hashFunction: string;
   /**
+   * Options for parsing JMESPath expressions.
    *
+   * By default, you can use any of the {@link https://jmespath.org/specification.html | JMESPath built-in functions} as well as the
+   * {@link https://docs.powertools.aws.dev/lambda/typescript/latest/api/classes/_aws_lambda_powertools_jmespath.PowertoolsFunctions.PowertoolsFunctions.html | custom functions provided}
+   * by the `@aws-lambda-powertools/jmespath` package.
    */
   public jmesPathOptions: ParsingOptions;
   /**

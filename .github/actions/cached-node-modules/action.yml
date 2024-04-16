@@ -46,5 +46,6 @@ runs:
         npm run build -w packages/idempotency & \
         npm run build -w packages/batch & \
         npm run build -w packages/testing & \
-        npm run build -w packages/jmespath
+        npm run build -w packages/jmespath & \
+        npm run build -w packages/parser
       shell: bash

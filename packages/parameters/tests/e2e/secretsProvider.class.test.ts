@@ -60,6 +60,7 @@ describe(`Parameters E2E tests, Secrets Manager provider`, () => {
       },
       {
         nameSuffix: 'secretsProvider',
+        outputFormat: 'ESM',
       }
     );
 

@@ -17,7 +17,6 @@ import { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import { IdempotencyConfig } from './IdempotencyConfig.js';
 import { MAX_RETRIES, IdempotencyRecordStatus } from './constants.js';
 import { search } from '@aws-lambda-powertools/jmespath';
-import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 
 /**
  * @internal
@@ -278,7 +277,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       const selection = search(
         this.#idempotencyConfig.eventKeyJmesPath,
         this.#functionPayloadToBeHashed,
-        { customFunctions: new PowertoolsFunctions() }
+        this.#idempotencyConfig.jmesPathOptions
       );
 
       return selection === undefined || selection === null;

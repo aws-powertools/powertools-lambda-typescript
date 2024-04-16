@@ -17,21 +17,29 @@ import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
 } from './constants';
 import { join } from 'node:path';
 import packageJson from '../../package.json';
 
 jest.spyOn(console, 'log').mockImplementation();
 
+// eslint-disable-next-line func-style -- type assertions can't be arrow functions
+function assertLogs(
+  logs: TestInvocationLogs | undefined
+): asserts logs is TestInvocationLogs {
+  if (!logs) {
+    throw new Error('Function logs are not available');
+  }
+}
+
 /**
  * This test has two stacks:
  * 1. LayerPublisherStack - publishes a layer version using the LayerPublisher construct and containing the Powertools utilities from the repo
- * 2. TestStack - uses the layer published in the first stack and contains a lambda function that uses the Powertools utilities from the layer
+ * 2. TestStack - uses the layer published in the first stack and contains two lambda functions that use the Powertools utilities from the layer
  *
  * The lambda function is invoked once and the logs are collected. The goal of the test is to verify that the layer creation and usage works as expected.
  */
-describe(`Layers E2E tests, publisher stack`, () => {
+describe(`Layers E2E tests`, () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
@@ -39,7 +47,9 @@ describe(`Layers E2E tests, publisher stack`, () => {
     },
   });
 
-  let invocationLogs: TestInvocationLogs;
+  const cases = ['CJS', 'ESM'] as const;
+  const invocationLogsMap: Map<(typeof cases)[number], TestInvocationLogs> =
+    new Map();
 
   const ssmParameterLayerName = generateTestUniqueName({
     testPrefix: `${RESOURCE_NAME_PREFIX}`,
@@ -75,76 +85,79 @@ describe(`Layers E2E tests, publisher stack`, () => {
   });
 
   beforeAll(async () => {
+    // Deploy the stack that publishes the layer
     await testLayerStack.deploy();
 
+    // Import the layer version from the stack outputs into the test stack
     const layerVersion = LayerVersion.fromLayerVersionArn(
       testStack.stack,
       'LayerVersionArnReference',
       testLayerStack.findAndGetStackOutputValue('LatestLayerArn')
     );
-    new TestNodejsFunction(
-      testStack,
-      {
-        entry: lambdaFunctionCodeFilePath,
-        environment: {
-          LAYERS_PATH: '/opt/nodejs/node_modules',
-          POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
-          POWERTOOLS_SERVICE_NAME: 'LayerPublisherStack',
-        },
-        bundling: {
-          externalModules: [
-            '@aws-lambda-powertools/commons',
-            '@aws-lambda-powertools/logger',
-            '@aws-lambda-powertools/metrics',
-            '@aws-lambda-powertools/tracer',
-            '@aws-lambda-powertools/parameter',
-            '@aws-lambda-powertools/idempotency',
-            '@aws-lambda-powertools/batch',
-          ],
-        },
-        layers: [layerVersion],
-      },
-      {
-        nameSuffix: 'testFn',
-      }
-    );
 
+    // Add a lambda function for each output format to the test stack
+    cases.forEach((outputFormat) => {
+      new TestNodejsFunction(
+        testStack,
+        {
+          entry: lambdaFunctionCodeFilePath,
+          environment: {
+            LAYERS_PATH: '/opt/nodejs/node_modules',
+            POWERTOOLS_PACKAGE_VERSION: powerToolsPackageVersion,
+            POWERTOOLS_SERVICE_NAME: 'LayerPublisherStack',
+          },
+          bundling: {
+            externalModules: ['@aws-lambda-powertools/*', 'aws-xray-sdk-node'],
+          },
+          layers: [layerVersion],
+        },
+        {
+          nameSuffix: `test${outputFormat}Fn`,
+          ...(outputFormat === 'ESM' && { outputFormat: 'ESM' }),
+        }
+      );
+    });
+
+    // Deploy the test stack
     await testStack.deploy();
 
-    const functionName = testStack.findAndGetStackOutputValue('testFn');
-
-    invocationLogs = await invokeFunctionOnce({
-      functionName,
-    });
+    // Invoke the lambda function once for each output format and collect the logs
+    for await (const outputFormat of cases) {
+      invocationLogsMap.set(
+        outputFormat,
+        await invokeFunctionOnce({
+          functionName: testStack.findAndGetStackOutputValue(
+            `test${outputFormat}Fn`
+          ),
+        })
+      );
+    }
   }, SETUP_TIMEOUT);
 
-  describe('package version and path check', () => {
-    it(
-      'should have no errors in the logs, which indicates the pacakges version matches the expected one',
-      () => {
+  describe.each(cases)(
+    'utilities tests for %s output format',
+    (outputFormat) => {
+      let invocationLogs: TestInvocationLogs;
+      beforeAll(() => {
+        const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
+        assertLogs(maybeInvocationLogs);
+        invocationLogs = maybeInvocationLogs;
+      });
+
+      it('should have no errors in the logs, which indicates the pacakges version matches the expected one', () => {
         const logs = invocationLogs.getFunctionLogs('ERROR');
 
         expect(logs.length).toBe(0);
-      },
-      TEST_CASE_TIMEOUT
-    );
-  });
+      });
 
-  describe('utilities usage', () => {
-    it(
-      'should have one warning related to missing Metrics namespace',
-      () => {
+      it('should have one warning related to missing Metrics namespace', () => {
         const logs = invocationLogs.getFunctionLogs('WARN');
 
         expect(logs.length).toBe(1);
         expect(logs[0]).toContain('Namespace should be defined, default used');
-      },
-      TEST_CASE_TIMEOUT
-    );
+      });
 
-    it(
-      'should have one info log related to coldstart metric',
-      () => {
+      it('should have one info log related to coldstart metric', () => {
         const logs = invocationLogs.getFunctionLogs();
         const emfLogEntry = logs.find((log) =>
           log.match(
@@ -153,13 +166,9 @@ describe(`Layers E2E tests, publisher stack`, () => {
         );
 
         expect(emfLogEntry).toBeDefined();
-      },
-      TEST_CASE_TIMEOUT
-    );
+      });
 
-    it(
-      'should have one debug log with tracer subsegment info',
-      () => {
+      it('should have one debug log with tracer subsegment info', () => {
         const logs = invocationLogs.getFunctionLogs('DEBUG');
 
         expect(logs.length).toBe(1);
@@ -182,10 +191,9 @@ describe(`Layers E2E tests, publisher stack`, () => {
             trace_id: traceIdFromLog,
           })
         );
-      },
-      TEST_CASE_TIMEOUT
-    );
-  });
+      });
+    }
+  );
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {

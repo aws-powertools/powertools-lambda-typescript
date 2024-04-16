@@ -4,6 +4,7 @@
   "description": "A suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.",
   "workspaces": [
     "packages/commons",
+    "packages/jmespath",
     "packages/logger",
     "packages/metrics",
     "packages/tracer",
@@ -11,7 +12,6 @@
     "packages/idempotency",
     "packages/batch",
     "packages/testing",
-    "packages/jmespath",
     "packages/parser",
     "docs/snippets",
     "layers",

@@ -48,7 +48,11 @@ import { arityCheck, typeCheck } from './utils.js';
  * ```
  */
 class Functions {
+  /**
+   * A set of all the custom functions available in this and all child classes.
+   */
   public methods: Set<string> = new Set();
+
   /**
    * Get the absolute value of the provided number.
    *
@@ -528,14 +532,32 @@ class Functions {
     return Object.values(arg);
   }
 
+  /**
+   * Lazily introspects the methods of the class instance and all child classes
+   * to get the names of the methods that correspond to JMESPath functions.
+   *
+   * This method is used to get the names of the custom functions that are available
+   * in the class instance and all child classes. The names of the functions are used
+   * to create the custom function map that is passed to the JMESPath search function.
+   *
+   * The method traverses the inheritance chain going from the leaf class to the root class
+   * and stops when it reaches the `Functions` class, which is the root class.
+   *
+   * In doing so, it collects the names of the methods that start with `func` and adds them
+   * to the `methods` set. Finally, when the recursion collects back to the current instance,
+   * it adds the collected methods to the `this.methods` set so that they can be accessed later.
+   *
+   * @param scope The scope of the class instance to introspect
+   */
   public introspectMethods(scope?: Functions): Set<string> {
     const prototype = Object.getPrototypeOf(this);
-    const ownName = prototype.constructor.name;
     const methods = new Set<string>();
-    if (ownName !== 'Functions') {
+    if (this instanceof Functions) {
       for (const method of prototype.introspectMethods(scope)) {
         methods.add(method);
       }
+    } else {
+      return methods;
     }
 
     // This block is executed for every class in the inheritance chain

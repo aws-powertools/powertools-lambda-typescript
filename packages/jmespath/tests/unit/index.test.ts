@@ -389,7 +389,7 @@ describe('Coverage tests', () => {
           argumentsSpecs: [['string']],
         })
         public funcPassThrough(value: string): string {
-          return value
+          return value;
         }
       }
 

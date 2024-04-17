@@ -28,7 +28,10 @@ class TestNodejsFunction extends NodejsFunction {
     extraProps: ExtraTestProps
   ) {
     const isESM = extraProps.outputFormat === 'ESM';
-    const bundling: BundlingOptions = {
+    const { bundling, ...restProps } = props;
+
+    const customBundling: BundlingOptions = {
+      ...bundling,
       minify: true,
       mainFields: isESM ? ['module', 'main'] : ['main', 'module'],
       sourceMap: true,
@@ -42,7 +45,7 @@ class TestNodejsFunction extends NodejsFunction {
       timeout: Duration.seconds(30),
       memorySize: 256,
       tracing: Tracing.ACTIVE,
-      ...props,
+      ...restProps,
       functionName: concatenateResourceName({
         testName: stack.testName,
         resourceName: extraProps.nameSuffix,
@@ -50,7 +53,7 @@ class TestNodejsFunction extends NodejsFunction {
       runtime: TEST_RUNTIMES[getRuntimeKey()],
       architecture: TEST_ARCHITECTURES[getArchitectureKey()],
       logRetention: RetentionDays.ONE_DAY,
-      bundling,
+      bundling: customBundling,
     });
 
     new CfnOutput(this, extraProps.nameSuffix, {

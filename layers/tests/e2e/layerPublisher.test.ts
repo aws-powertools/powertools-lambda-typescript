@@ -11,6 +11,7 @@ import {
   TestInvocationLogs,
   invokeFunctionOnce,
   generateTestUniqueName,
+  getRuntimeKey,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import {
@@ -47,7 +48,13 @@ describe(`Layers E2E tests`, () => {
     },
   });
 
-  const cases = ['CJS', 'ESM'] as const;
+  /**
+   * Node.js 16.x does not support importing ESM modules from Lambda Layers reliably.
+   *
+   * The feature is available in Node.js 18.x and later.
+   * @see https://aws.amazon.com/blogs/compute/node-js-18-x-runtime-now-available-in-aws-lambda/
+   */
+  const cases = getRuntimeKey() === 'nodejs16x' ? ['CJS'] : ['CJS', 'ESM'];
   const invocationLogsMap: Map<(typeof cases)[number], TestInvocationLogs> =
     new Map();
 

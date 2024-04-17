@@ -1,10 +1,6 @@
 import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
-import {
-  NodejsFunction,
-  BundlingOptions,
-  OutputFormat,
-} from 'aws-cdk-lib/aws-lambda-nodejs';
+import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { randomUUID } from 'node:crypto';
 import { TEST_RUNTIMES, TEST_ARCHITECTURES } from '../constants.js';
@@ -30,21 +26,20 @@ class TestNodejsFunction extends NodejsFunction {
     const isESM = extraProps.outputFormat === 'ESM';
     const { bundling, ...restProps } = props;
 
-    const customBundling: BundlingOptions = {
-      ...bundling,
-      minify: true,
-      mainFields: isESM ? ['module', 'main'] : ['main', 'module'],
-      sourceMap: true,
-      format: isESM ? OutputFormat.ESM : OutputFormat.CJS,
-      banner: isESM
-        ? `import { createRequire } from 'module';const require = createRequire(import.meta.url);`
-        : '',
-    };
-
     super(stack.stack, `fn-${randomUUID().substring(0, 5)}`, {
       timeout: Duration.seconds(30),
-      memorySize: 256,
+      memorySize: 512,
       tracing: Tracing.ACTIVE,
+      bundling: {
+        ...bundling,
+        minify: true,
+        mainFields: isESM ? ['module', 'main'] : ['main', 'module'],
+        sourceMap: false,
+        format: isESM ? OutputFormat.ESM : OutputFormat.CJS,
+        banner: isESM
+          ? `import { createRequire } from 'module';const require = createRequire(import.meta.url);`
+          : '',
+      },
       ...restProps,
       functionName: concatenateResourceName({
         testName: stack.testName,
@@ -53,7 +48,6 @@ class TestNodejsFunction extends NodejsFunction {
       runtime: TEST_RUNTIMES[getRuntimeKey()],
       architecture: TEST_ARCHITECTURES[getArchitectureKey()],
       logRetention: RetentionDays.ONE_DAY,
-      bundling: customBundling,
     });
 
     new CfnOutput(this, extraProps.nameSuffix, {

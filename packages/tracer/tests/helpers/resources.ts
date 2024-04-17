@@ -1,5 +1,4 @@
 import {
-  TEST_RUNTIMES,
   getRuntimeKey,
   type TestStack,
 } from '@aws-lambda-powertools/testing-utils';
@@ -16,6 +15,9 @@ class TracerTestNodejsFunction extends TestNodejsFunction {
     props: TestNodejsFunctionProps,
     extraProps: ExtraTestProps
   ) {
+    const isEsm = extraProps.outputFormat === 'ESM';
+    const isNodejs16x = getRuntimeKey() === 'nodejs16x';
+
     super(
       scope,
       {
@@ -31,16 +33,17 @@ class TracerTestNodejsFunction extends TestNodejsFunction {
           ),
           ...props.environment,
         },
+        /**
+         * For Node.js 16.x, we need to set `externalModules` to an empty array
+         * so that the `aws-sdk` is bundled with the function.
+         *
+         * @see https://github.com/aws/aws-sdk-js-v3/issues/3230#issuecomment-1561973247
+         */
         bundling: {
-          /**
-           * For Node.js 16.x, we need to set `externalModules` to an empty array
-           * so that the `aws-sdk` is bundled with the function.
-           *
-           * @see https://github.com/aws/aws-sdk-js-v3/issues/3230#issuecomment-1561973247
-           */
-          ...(TEST_RUNTIMES[getRuntimeKey()] === TEST_RUNTIMES.nodejs16x && {
-            externalModules: [],
-          }),
+          ...(isEsm &&
+            isNodejs16x && {
+              externalModules: [],
+            }),
         },
       },
       extraProps

@@ -451,6 +451,70 @@ describe('Class: Logger', () => {
       );
     });
 
+    test('when custom persistentKeys is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        persistentKeys: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            aws_account_id: '123456789012',
+            aws_region: 'eu-west-1',
+            logger: {
+              name: 'aws-lambda-powertool-typescript',
+              version: '0.2.4',
+            },
+          },
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 8,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('it throws when both persistentKeys and persistentLogAttributes are used in the constructor', () => {
+      // Prepare
+      type TestConstructorOptions = {
+        persistentLogAttributes?: Record<string, string>;
+        persistentKeys?: Record<string, string>;
+      };
+
+      const loggerOptions: TestConstructorOptions = {
+        persistentKeys: {
+          foo: 'bar',
+        },
+        persistentLogAttributes: {
+          foo: 'bar',
+        },
+      };
+
+      // Act & Assess
+      expect(() => new Logger(loggerOptions as ConstructorOptions)).toThrow(
+        'Both persistentLogAttributes and persistentKeys options are provided. Use only persistentKeys as persistentLogAttributes is deprecated.'
+      );
+    });
+
     test('when a custom environment is passed, returns a Logger instance with the correct properties', () => {
       // Prepare
       const loggerOptions: ConstructorOptions = {

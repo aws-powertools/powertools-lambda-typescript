@@ -165,12 +165,6 @@ class Logger extends Utility implements LoggerInterface {
     SILENT: 28,
   };
   /**
-   * Constructor option to specify keys that will be persisted in all log items.
-   */
-  private persistentKeys: LogAttributes = {};
-  /**
-   * @deprecated Use `persistentKeys` instead.
-   *
    * Persistent log attributes that will be logged in all log items.
    */
   private persistentLogAttributes: LogAttributes = {};
@@ -1031,13 +1025,20 @@ class Logger extends Utility implements LoggerInterface {
       serviceName,
       sampleRateValue,
       logFormatter,
-      persistentLogAttributes,
+      persistentKeys,
+      persistentLogAttributes, // deprecated in favor of persistentKeys
       environment,
     } = options;
 
+    if (persistentLogAttributes && persistentKeys) {
+      throw new Error(
+        `Both persistentLogAttributes and persistentKeys options are provided. Use only persistentKeys as persistentLogAttributes is deprecated.`
+      );
+    }
+
     // configurations that affect log content
     this.setPowertoolsLogData(serviceName, environment);
-    this.addPersistentLogAttributes(persistentLogAttributes);
+    this.addPersistentLogAttributes(persistentKeys || persistentLogAttributes);
 
     // configurations that affect Logger behavior
     this.setLogEvent();

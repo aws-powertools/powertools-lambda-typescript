@@ -9,6 +9,7 @@
     "packages/batch",
     "packages/testing",
     "packages/jmespath",
+    "packages/parser",
     "examples/app",
     "layers",
     "docs/snippets"

@@ -395,7 +395,7 @@ describe('Coverage tests', () => {
 
       // Act
       const customFunctions = new CustomFunctions();
-      search('pass_through(foo)', { foo: 1 }, { customFunctions });
+      search('pass_through(foo)', { foo: 'bar' }, { customFunctions });
 
       // Assess
       expect(customFunctions.methods.size).toBeGreaterThan(

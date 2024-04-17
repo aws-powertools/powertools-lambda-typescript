@@ -75,6 +75,7 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
     },
     {
       nameSuffix: 'AllFlagsOn',
+      outputFormat: 'ESM',
     }
   );
   testTable.grantWriteData(fnAllFlagsEnabled);
@@ -95,6 +96,7 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
     },
     {
       nameSuffix: 'NoCaptureErrOrResp',
+      outputFormat: 'ESM',
     }
   );
   testTable.grantWriteData(fnNoCaptureErrorOrResponse);
@@ -114,6 +116,7 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
     },
     {
       nameSuffix: 'TracerDisabled',
+      outputFormat: 'ESM',
     }
   );
   testTable.grantWriteData(fnTracerDisabled);
@@ -133,6 +136,7 @@ describe(`Tracer E2E tests, all features with middy instantiation`, () => {
     },
     {
       nameSuffix: 'CaptureResponseOff',
+      outputFormat: 'ESM',
     }
   );
   testTable.grantWriteData(fnCaptureResponseOff);

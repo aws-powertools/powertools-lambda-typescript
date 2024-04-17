@@ -100,9 +100,7 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/@aws-lambda-powertools/*/lib/**/*.d.ts',
                 'node_modules/@aws-lambda-powertools/*/lib/**/*.d.ts.map',
                 'node_modules/@aws-sdk/*/dist-types',
-                'node_modules/@aws-sdk/*/dist-es',
                 'node_modules/@smithy/*/dist-types',
-                'node_modules/@smithy/*/dist-es',
                 'node_modules/@smithy/**/README.md ',
                 'node_modules/@aws-sdk/**/README.md ',
               ];

@@ -48,6 +48,7 @@ describe(`Logger E2E tests, basic functionalities middy usage`, () => {
       {
         logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
         nameSuffix: 'BasicFeatures',
+        outputFormat: 'ESM',
       }
     );
 

@@ -52,6 +52,7 @@ describe(`Logger E2E tests, sample rate and injectLambdaContext()`, () => {
       {
         logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
         nameSuffix: 'BasicFeatures',
+        outputFormat: 'ESM',
       }
     );
 

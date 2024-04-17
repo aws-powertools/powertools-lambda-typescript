@@ -5,7 +5,7 @@ import {
   UnknownFunctionError,
   VariadicArityError,
 } from './errors.js';
-import type { Node, ParsingOptions, JSONObject } from './types.js';
+import type { Node, JMESPathParsingOptions, JSONObject } from './types.js';
 
 class ParsedResult {
   public expression: string;
@@ -22,7 +22,7 @@ class ParsedResult {
    * @param value The JSON value to search
    * @param options The parsing options to use
    */
-  public search(value: JSONObject, options?: ParsingOptions): unknown {
+  public search(value: JSONObject, options?: JMESPathParsingOptions): unknown {
     const interpreter = new TreeInterpreter(options);
 
     try {

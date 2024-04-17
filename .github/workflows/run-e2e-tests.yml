@@ -21,8 +21,8 @@ jobs:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
     strategy:
+      max-parallel: 30
       matrix:
-        max-parallel: 30
         package:
           [
             layers,

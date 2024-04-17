@@ -532,6 +532,23 @@ class Functions {
     return Object.values(arg);
   }
 
+  /**
+   * Lazily introspects the methods of the class instance and all child classes
+   * to get the names of the methods that correspond to JMESPath functions.
+   *
+   * This method is used to get the names of the custom functions that are available
+   * in the class instance and all child classes. The names of the functions are used
+   * to create the custom function map that is passed to the JMESPath search function.
+   *
+   * The method traverses the inheritance chain going from the leaf class to the root class
+   * and stops when it reaches the `Functions` class, which is the root class.
+   *
+   * In doing so, it collects the names of the methods that start with `func` and adds them
+   * to the `methods` set. Finally, when the recursion collects back to the current instance,
+   * it adds the collected methods to the `this.methods` set so that they can be accessed later.
+   *
+   * @param scope The scope of the class instance to introspect
+   */
   public introspectMethods(scope?: Functions): Set<string> {
     const prototype = Object.getPrototypeOf(this);
     const methods = new Set<string>();

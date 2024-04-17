@@ -3,13 +3,11 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## 2.0.5 (2024-04-17)
+## 2.1.0 (2024-04-17)
 
-**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+### Features
 
-
-
-
+**idempotency** add custom JMESPath functions ([#1298](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1298)) ([9721e7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9721e7c01fc010944eb477bdbc24b9e06a5c4571))
 
 ## 2.0.4 (2024-04-10)
 

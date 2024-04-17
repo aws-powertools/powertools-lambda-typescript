@@ -3,13 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## 2.0.5 (2024-04-17)
+## 2.1.0 (2024-04-17)
 
-**Note:** Version bump only for package aws-lambda-powertools-typescript
+### Bug Fixes
 
+**jmespath** refactor custom function introspection to work with minification ([#2383](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2383)) ([21ecc4f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/21ecc4f736ccba85c276889163860a98613174cc))
 
+### Features
 
+**idempotency** add custom JMESPath functions ([#1298](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1298)) ([9721e7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9721e7c01fc010944eb477bdbc24b9e06a5c4571))
+**parser** release utility beta ([#2366](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2366)) ([8145bc1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8145bc10d6e34098938771cbdcc9d4981e26cd2d))
 
+### Minor Changes
+
+**jmespath** rename jmespath parsing options type ([#2369](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2369)) ([48bb9a7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/48bb9a71f8be950bb25468be6495bb2d1e7f87e2))
 
 ## 2.0.4 (2024-04-10)
 

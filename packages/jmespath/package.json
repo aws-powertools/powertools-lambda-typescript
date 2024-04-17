@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/jmespath",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "A type safe and modern jmespath module to parse and extract data from JSON documents using JMESPath",
   "author": {
     "name": "Amazon Web Services",

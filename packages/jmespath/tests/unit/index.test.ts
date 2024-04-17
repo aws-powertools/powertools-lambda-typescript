@@ -388,17 +388,14 @@ describe('Coverage tests', () => {
         @PowertoolsFunctions.signature({
           argumentsSpecs: [['string']],
         })
-        public funcDecodeBrotliCompression(value: string): string {
-          const encoded = fromBase64(value, 'base64');
-          const uncompressed = brotliDecompressSync(encoded);
-
-          return uncompressed.toString();
+        public funcPassThrough(value: string): string {
+          return value
         }
       }
 
       // Act
       const customFunctions = new CustomFunctions();
-      search('foo', {}, { customFunctions });
+      search('pass_through(foo)', { foo: 1 }, { customFunctions });
 
       // Assess
       expect(customFunctions.methods.size).toBeGreaterThan(

@@ -351,9 +351,6 @@ describe('Coverage tests', () => {
     it('uses the custom function extending the powertools custom functions', () => {
       // Prepare
       class CustomFunctions extends PowertoolsFunctions {
-        public constructor() {
-          super();
-        }
         @PowertoolsFunctions.signature({
           argumentsSpecs: [['string']],
         })
@@ -383,6 +380,30 @@ describe('Coverage tests', () => {
 
       // Assess
       expect(messages).toStrictEqual(['hello world']);
+    });
+
+    it('correctly registers all the custom functions', () => {
+      // Prepare
+      class CustomFunctions extends PowertoolsFunctions {
+        @PowertoolsFunctions.signature({
+          argumentsSpecs: [['string']],
+        })
+        public funcDecodeBrotliCompression(value: string): string {
+          const encoded = fromBase64(value, 'base64');
+          const uncompressed = brotliDecompressSync(encoded);
+
+          return uncompressed.toString();
+        }
+      }
+
+      // Act
+      const customFunctions = new CustomFunctions();
+      search('foo', {}, { customFunctions });
+
+      // Assess
+      expect(customFunctions.methods.size).toBeGreaterThan(
+        new PowertoolsFunctions().methods.size
+      );
     });
   });
 });

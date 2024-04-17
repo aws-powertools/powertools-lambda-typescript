@@ -48,7 +48,11 @@ import { arityCheck, typeCheck } from './utils.js';
  * ```
  */
 class Functions {
+  /**
+   * A set of all the custom functions available in this and all child classes.
+   */
   public methods: Set<string> = new Set();
+
   /**
    * Get the absolute value of the provided number.
    *
@@ -530,12 +534,13 @@ class Functions {
 
   public introspectMethods(scope?: Functions): Set<string> {
     const prototype = Object.getPrototypeOf(this);
-    const ownName = prototype.constructor.name;
     const methods = new Set<string>();
-    if (ownName !== 'Functions') {
+    if (this instanceof Functions) {
       for (const method of prototype.introspectMethods(scope)) {
         methods.add(method);
       }
+    } else {
+      return methods;
     }
 
     // This block is executed for every class in the inheritance chain

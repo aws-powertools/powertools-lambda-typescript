@@ -268,10 +268,12 @@ describe(`Idempotency E2E tests, wrapper function usage`, () => {
     async () => {
       // Prepare
       const payload = {
-        foo: 'bar',
+        body: JSON.stringify({
+          foo: 'bar',
+        }),
       };
       const payloadHash = createHash('md5')
-        .update(JSON.stringify(payload.foo))
+        .update(JSON.stringify('bar'))
         .digest('base64');
 
       // Act

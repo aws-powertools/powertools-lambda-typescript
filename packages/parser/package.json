@@ -7,7 +7,7 @@
     "url": "https://aws.amazon.com"
   },
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "scripts": {
     "test": "npm run test:unit",
@@ -91,9 +91,16 @@
     "aws",
     "lambda",
     "powertools",
-    "batch",
-    "batch-processing",
+    "parser",
+    "zod",
+    "parse",
+    "events",
+    "payloads",
+    "inputs",
+    "validate",
+    "validation",
     "serverless",
+    "typescript",
     "nodejs"
   ],
   "peerDependencies": {

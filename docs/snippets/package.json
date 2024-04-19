@@ -35,7 +35,7 @@
     "@aws-sdk/client-ssm": "^3.556.0",
     "@aws-sdk/util-dynamodb": "^3.556.0",
     "@middy/core": "^4.7.0",
-    "aws-sdk": "^2.1601.0",
+    "aws-sdk": "^2.1602.0",
     "aws-sdk-client-mock": "^4.0.0",
     "aws-sdk-client-mock-jest": "^4.0.0",
     "axios": "^1.6.8",

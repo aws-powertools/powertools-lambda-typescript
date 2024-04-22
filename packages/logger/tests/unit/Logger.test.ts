@@ -123,6 +123,7 @@ describe('Class: Logger', () => {
         persistentLogAttributes: {
           awsAccountId: '123456789',
         },
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: 'prod',
@@ -162,6 +163,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -312,6 +314,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -1376,7 +1379,7 @@ describe('Class: Logger', () => {
   });
 
   describe('Method: appendKeys', () => {
-    test('when called, it populates the logger persistentLogAttributes property', () => {
+    test('when called, it populates the logger temporaryLogAttributes property', () => {
       // Prepare
       const logger = new Logger();
 
@@ -1393,7 +1396,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(logger).toEqual(
         expect.objectContaining({
-          persistentLogAttributes: {
+          temporaryLogAttributes: {
             aws_account_id: '123456789012',
             aws_region: 'eu-west-1',
             logger: {
@@ -1435,9 +1438,42 @@ describe('Class: Logger', () => {
       // Assess
       expect(logger).toEqual(
         expect.objectContaining({
-          persistentLogAttributes: {
+          temporaryLogAttributes: {
             duplicateKey: 'two',
           },
+        })
+      );
+    });
+
+    test('when called with the same key as in persistentKeys container option, persistent keys will be overwritten', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentKeys: {
+          aws_account_id: '1234567890',
+        },
+      });
+
+      logger.appendKeys({
+        aws_account_id: '0987654321',
+      });
+
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
+
+      // Act
+      logger.info('This is an INFO log with some log attributes');
+
+      // Assess
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        JSON.stringify({
+          level: 'INFO',
+          message: 'This is an INFO log with some log attributes',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          aws_account_id: '0987654321',
         })
       );
     });
@@ -1446,15 +1482,17 @@ describe('Class: Logger', () => {
   describe('Method: removeKeys', () => {
     test('when called, it removes keys from the logger persistentLogAttributes property', () => {
       // Prepare
-      const logger = new Logger();
-      logger.appendKeys({
-        aws_account_id: '123456789012',
-        aws_region: 'eu-west-1',
-        logger: {
-          name: 'aws-lambda-powertool-typescript',
-          version: '0.2.4',
+      const loggerOptions: ConstructorOptions = {
+        persistentKeys: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
         },
-      });
+      };
+      const logger = new Logger(loggerOptions);
 
       // Act
       logger.removeKeys(['aws_account_id', 'aws_region']);
@@ -1492,7 +1530,7 @@ describe('Class: Logger', () => {
       expect(logger).toEqual(loggerBeforeKeysAreRemoved);
       expect(logger).toEqual(
         expect.objectContaining({
-          persistentLogAttributes: {
+          temporaryLogAttributes: {
             aws_account_id: '123456789012',
             aws_region: 'eu-west-1',
             logger: {
@@ -1523,7 +1561,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(logger).toEqual(
         expect.objectContaining({
-          persistentLogAttributes: {
+          temporaryLogAttributes: {
             logger: {
               name: 'aws-lambda-powertool-typescript',
               version: '0.2.4',
@@ -1694,7 +1732,52 @@ describe('Class: Logger', () => {
       );
     });
 
-    test('when clearState is enabled, the persistent log attributes added in the handler are cleared when the method returns', async () => {
+    test('when enabled, it clears all the log attributes added with appendKeys() inside and outside of the handler function', async () => {
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+      });
+      logger.appendKeys({
+        foo: 'bar',
+        biz: 'baz',
+      });
+
+      class LambdaFunction implements LambdaInterface {
+        @logger.injectLambdaContext({ clearState: true })
+        public async handler<TEvent>(
+          _event: TEvent,
+          _context: Context
+        ): Promise<void> {
+          // Only add these persistent for the scope of this lambda handler
+          logger.appendKeys({
+            details: { user_id: '1234' },
+          });
+          logger.debug('This is a DEBUG log with the user_id');
+          logger.debug('This is another DEBUG log with the user_id');
+        }
+      }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+
+      const temporaryAttribsBeforeInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+
+      // Act
+      await handler(event, context);
+
+      // Assess
+      expect(temporaryAttribsBeforeInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+      });
+      const temporaryAttribsAfterInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+      expect(temporaryAttribsAfterInvocation).toEqual({});
+    });
+
+    test('when clearState is enabled, the persistent log attributes added in the handler ARE NOT cleared when the method returns', async () => {
       // Prepare
       const logger = new Logger({
         logLevel: 'DEBUG',
@@ -1709,8 +1792,8 @@ describe('Class: Logger', () => {
           _event: TEvent,
           _context: Context
         ): Promise<void> {
-          // Only add these persistent for the scope of this lambda handler
-          logger.appendKeys({
+          // These persistent attributes stay persistent
+          logger.addPersistentLogAttributes({
             details: { user_id: '1234' },
           });
           logger.debug('This is a DEBUG log with the user_id');
@@ -1734,12 +1817,79 @@ describe('Class: Logger', () => {
         foo: 'bar',
         biz: 'baz',
       });
-      expect(persistentAttribsAfterInvocation).toEqual(
-        persistentAttribsBeforeInvocation
-      );
+      expect(persistentAttribsAfterInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+        details: { user_id: '1234' },
+      });
     });
 
-    test('when clearState is enabled, the persistent log attributes added in the handler are cleared when the method throws', async () => {
+    test('when clearState is enabled, persistent log attributes added in the handler stay persistent, but temporary added in the handler are cleared when the method returns', async () => {
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+        persistentKeys: {
+          foo: 'bar',
+          biz: 'baz',
+        },
+      });
+      logger.appendKeys({
+        type: 'temporary',
+      });
+
+      class LambdaFunction implements LambdaInterface {
+        @logger.injectLambdaContext({ clearState: true })
+        public async handler<TEvent>(
+          _event: TEvent,
+          _context: Context
+        ): Promise<void> {
+          // These persistent attributes stay persistent
+          logger.addPersistentLogAttributes({
+            type: 'persistent',
+          });
+          logger.debug(
+            'This is a DEBUG log with both pesistent and temporary keys'
+          );
+          logger.debug(
+            'This is another DEBUG log with both pesistent and temporary keys'
+          );
+        }
+      }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+      const persistentAttribsBeforeInvocation = {
+        ...logger.getPersistentLogAttributes(),
+      };
+      const temporaryAttribsBeforeInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+
+      // Act
+      await handler(event, context);
+      const persistentAttribsAfterInvocation = {
+        ...logger.getPersistentLogAttributes(),
+      };
+      const temporaryAttribsAfterInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+
+      // Assess
+      expect(persistentAttribsBeforeInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+      });
+      expect(persistentAttribsAfterInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+        type: 'persistent',
+      });
+      expect(temporaryAttribsBeforeInvocation).toEqual({
+        type: 'temporary',
+      });
+      expect(temporaryAttribsAfterInvocation).toEqual({});
+    });
+
+    test('when clearState is enabled, the temporary log attributes added in the handler are cleared when the method throws', async () => {
       // Prepare
       const logger = new Logger({
         logLevel: 'DEBUG',
@@ -1748,14 +1898,17 @@ describe('Class: Logger', () => {
           biz: 'baz',
         },
       });
+      logger.appendKeys({
+        type: 'temporary',
+      });
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
         ): Promise<string> {
-          // Only add these persistent for the scope of this lambda handler
-          logger.appendKeys({
+          // These persistent attributes stay persistent
+          logger.addPersistentLogAttributes({
             details: { user_id: '1234' },
           });
           logger.debug('This is a DEBUG log with the user_id');
@@ -1769,6 +1922,9 @@ describe('Class: Logger', () => {
       const persistentAttribsBeforeInvocation = {
         ...logger.getPersistentLogAttributes(),
       };
+      const temporaryAttribsBeforeInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
 
       // Act & Assess
       await expect(handler(event, context)).rejects.toThrow();
@@ -1779,9 +1935,16 @@ describe('Class: Logger', () => {
         foo: 'bar',
         biz: 'baz',
       });
-      expect(persistentAttribsAfterInvocation).toEqual(
-        persistentAttribsBeforeInvocation
-      );
+      expect(persistentAttribsAfterInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+        details: { user_id: '1234' },
+      });
+      const temporaryAttribsAfterInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+      expect(temporaryAttribsBeforeInvocation).toEqual({ type: 'temporary' });
+      expect(temporaryAttribsAfterInvocation).toEqual({});
     });
 
     test('when logEvent is enabled, it logs the event in the first log', async () => {
@@ -1973,10 +2136,10 @@ describe('Class: Logger', () => {
       );
     });
 
-    test('when logEvent and clearState are both TRUE, and the logger has persistent attributes, any key added in the handler is cleared properly', async () => {
+    test('when logEvent and clearState are both TRUE, and the logger has persistent attributes, any key added with appendKeys() in the handler is cleared properly', async () => {
       // Prepare
       const logger = new Logger({
-        persistentLogAttributes: {
+        persistentKeys: {
           version: '1.0.0',
         },
       });
@@ -2073,6 +2236,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2100,6 +2264,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2127,6 +2292,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2202,6 +2368,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2232,6 +2399,7 @@ describe('Class: Logger', () => {
           extra:
             'This is an attribute that will be logged only by the child logger',
         },
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2259,6 +2427,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2286,6 +2455,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2301,7 +2471,7 @@ describe('Class: Logger', () => {
       const childLogger = parentLogger.createChild();
 
       // Act
-      parentLogger.appendKeys({
+      parentLogger.addPersistentLogAttributes({
         aws_account_id: '123456789012',
         aws_region: 'eu-west-1',
         logger: {

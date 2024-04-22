@@ -97,7 +97,93 @@ describe('Middy middleware', () => {
   });
 
   describe('Feature: clear state', () => {
-    test('when enabled, the persistent log attributes added within the handler scope are removed after the invocation ends', async () => {
+    test('when enabled, it clears all the log attributes added with appendKeys() inside and outside of the handler function', async () => {
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+      });
+      logger.appendKeys({
+        foo: 'bar',
+        biz: 'baz',
+      });
+
+      const handler = middy((): void => {
+        // Only add these persistent for the scope of this lambda handler
+        logger.appendKeys({
+          details: { user_id: '1234' },
+        });
+        logger.debug('This is a DEBUG log with the user_id');
+        logger.debug('This is another DEBUG log with the user_id');
+      }).use(injectLambdaContext(logger, { clearState: true }));
+
+      const temporaryAttribsBeforeInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+
+      // Act
+      await handler(event, context);
+
+      // Assess
+      expect(temporaryAttribsBeforeInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+      });
+      const temporaryAttribsAfterInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+      expect(temporaryAttribsAfterInvocation).toEqual({});
+    });
+
+    test('when enabled, the temporary log attributes added within the handler scope are removed after the invocation ends', async () => {
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+        persistentLogAttributes: {
+          foo: 'bar',
+          biz: 'baz',
+        },
+      });
+      logger.appendKeys({
+        type: 'temporary',
+      });
+
+      const handler = middy((): void => {
+        // These keys stay only in the scope of this lambda handler
+        logger.appendKeys({
+          details: { user_id: '1234' },
+        });
+        logger.debug('This is a DEBUG log with the user_id');
+        logger.debug('This is another DEBUG log with the user_id');
+      }).use(injectLambdaContext(logger, { clearState: true }));
+      const persistentAttribsBeforeInvocation = {
+        ...logger.getPersistentLogAttributes(),
+      };
+      const temporaryAttribsBeforeInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+
+      // Act
+      await handler(event, context);
+
+      // Assess
+      const persistentAttribsAfterInvocation = {
+        ...logger.getPersistentLogAttributes(),
+      };
+      expect(persistentAttribsBeforeInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+      });
+      expect(persistentAttribsAfterInvocation).toEqual(
+        persistentAttribsBeforeInvocation
+      );
+      expect(temporaryAttribsBeforeInvocation).toEqual({ type: 'temporary' });
+      const temporaryAttribsAfterInvocation = {
+        ...logger.getTemporaryLogAttributes(),
+      };
+      expect(temporaryAttribsAfterInvocation).toEqual({});
+    });
+
+    test('when enabled, the persistent log attributes added within the handler scope ARE NOT removed after the invocation ends', async () => {
       // Prepare
       const logger = new Logger({
         logLevel: 'DEBUG',
@@ -108,8 +194,8 @@ describe('Middy middleware', () => {
       });
 
       const handler = middy((): void => {
-        // Only add these persistent for the scope of this lambda handler
-        logger.appendKeys({
+        // These persistent attributes stay persistent
+        logger.addPersistentLogAttributes({
           details: { user_id: '1234' },
         });
         logger.debug('This is a DEBUG log with the user_id');
@@ -130,12 +216,14 @@ describe('Middy middleware', () => {
         foo: 'bar',
         biz: 'baz',
       });
-      expect(persistentAttribsAfterInvocation).toEqual(
-        persistentAttribsBeforeInvocation
-      );
+      expect(persistentAttribsAfterInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+        details: { user_id: '1234' },
+      });
     });
 
-    test('when enabled, the persistent log attributes added within the handler scope are removed after the invocation ends even if an error is thrown', async () => {
+    test('when enabled, the persistent log attributes added within the handler scope ARE NOT removed after the invocation ends even if an error is thrown', async () => {
       // Prepare
       const logger = new Logger({
         logLevel: 'DEBUG',
@@ -145,8 +233,8 @@ describe('Middy middleware', () => {
         },
       });
       const handler = middy((): void => {
-        // Only add these persistent for the scope of this lambda handler
-        logger.appendKeys({
+        // These persistent attributes stay persistent
+        logger.addPersistentLogAttributes({
           details: { user_id: '1234' },
         });
         logger.debug('This is a DEBUG log with the user_id');
@@ -167,9 +255,11 @@ describe('Middy middleware', () => {
         foo: 'bar',
         biz: 'baz',
       });
-      expect(persistentAttribsAfterInvocation).toEqual(
-        persistentAttribsBeforeInvocation
-      );
+      expect(persistentAttribsAfterInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+        details: { user_id: '1234' },
+      });
     });
 
     test('when enabled, and another middleware returns early, it still clears the state', async () => {

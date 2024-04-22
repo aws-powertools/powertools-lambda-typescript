@@ -18,7 +18,7 @@ jobs:
       RELEASE_VERSION: ${{ steps.set-release-version.outputs.RELEASE_VERSION }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
+        uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f  # v4.1.3
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0 # fetch all history, commits and tags, lerna scans it to the last tag and looks at commits, we need all of it to determine the next version

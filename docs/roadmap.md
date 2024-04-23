@@ -105,6 +105,18 @@ A: For existing features, you can directly comment on issues. For anything else,
 
 ## Launched
 
+### Parser (Zod)
+
+> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser/)
+
+Feature parity on Parser feature
+
+- [x] Support for defining your own Zod schema
+- [x] Support for popular Lambda Event Sources as built-in schemas
+- [x] Support for envelope (wrapping before schema validation)
+- [x] Support for user-defined envelopes
+- [x] Docs
+
 ### Idempotency
 
 > [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)
@@ -159,4 +171,3 @@ Over the past year, we have gathered a number of feature requests and improvemen
 You can find the full list of changes in the [v2 RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1714) and follow the progress in the [v2 milestone](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/12).
 
 Just like for the feature parity, if you have any feedback or would like to contribute to the discussion, please leave a comment in the RFC or join the discussion in our [Discord community](https://discord.gg/B8zZKbbyET){target="_blank"}.
-

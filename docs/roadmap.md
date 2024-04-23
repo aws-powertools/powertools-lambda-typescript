@@ -105,6 +105,19 @@ A: For existing features, you can directly comment on issues. For anything else,
 
 ## Launched
 
+### JMESPath Functions
+
+> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/)
+
+Feature parity on JMESPath Powertools Functions feature
+
+- [x] Support for extracting data
+- [x] Support for envelopes (unwrap before data extraction)
+- [x] Support for built-in `powertools_json` JMESPath function
+- [x] Support for built-in `powertools_base64` JMESPath function
+- [x] Support for built-in `powertools_base64_gzip` JMESPath function
+- [x] Support for Bring Your Own JMESPath function
+
 ### Parser (Zod)
 
 > [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser/)

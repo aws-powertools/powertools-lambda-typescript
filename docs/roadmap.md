@@ -132,6 +132,20 @@ Feature parity on Parameters feature
 - [x] Support for AWS SDK v3 escape hatch
 - [x] Docs
 
+### Batch processing
+
+> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)
+
+- [x] Support for standard SQS Queues
+- [x] Support for FIFO SQS Queues
+- [x] Support for Kinesis Streams
+- [x] Support for DynamoDB Streams
+- [x] Support for async processing
+- [x] Support for sync (I/O blocking) processing
+- [x] Support for Bring Your Own batch processor
+- [x] Support for Lambda Context injection
+- [x] Docs
+
 ### Version 2 release
 
 > [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/upgrade/)

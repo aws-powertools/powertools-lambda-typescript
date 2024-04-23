@@ -19,13 +19,13 @@ jobs:
           stale-issue-message: "This issue has not received a response in 2 weeks. If you still think there is a problem, please leave a comment to avoid the issue from automatically closing."
           close-issue-message: "Greetings! We are closing this issue because it has been open a long time and hasn’t been updated in a while and may not be getting the attention it deserves. We encourage you to check if this is still an issue in the latest release and if you find that this is still a problem, please feel free to comment or reopen the issue."
           # Label applied or removed when an issue becomes stale
-          stale-issue-label: status/pending-close-response-required
+          stale-issue-label: pending-close-response-required
           remove-stale-when-updated: true
           # Label and close type when a stale issue is finally closed
-          close-issue-label: status/rejected
+          close-issue-label: rejected
           close-issue-reason: not_planned
           # Exempt any issue that hasn't been triaged yet, or that is clearly labeled
-          exempt-issue-labels: triage,status/confirmed,status/blocked,status/on-hold,status/completed
+          exempt-issue-labels: triage,confirmed,blocked,on-hold,completed
           # Include only issues that were labeled as `need-response` (aka only issues that need a response from the customer)
           only-issue-labels: need-response
           # Settings specific to issues

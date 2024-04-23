@@ -25,10 +25,10 @@ module.exports = Object.freeze({
   "LABEL_BLOCK_REASON": "need-issue",
 
   /** @type {string} */
-  "LABEL_PENDING_RELEASE": "status/pending-release",
+  "LABEL_PENDING_RELEASE": "pending-release",
   
   /** @type {string} */
-  "LABEL_RELEASED": "status/completed",
+  "LABEL_RELEASED": "completed",
 
   /** @type {string} */
   "HANDLE_MAINTAINERS_TEAM": "@aws-powertools/lambda-typescript",

@@ -1,7 +1,7 @@
 name: Request for Comments (RFC)
 description: Feature design and detailed proposals
 title: "RFC: TITLE"
-labels: ["type/RFC", "triage"]
+labels: ["RFC", "triage"]
 projects: ["aws-powertools/7"]
 body:
   - type: markdown

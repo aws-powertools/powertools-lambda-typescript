@@ -1,4 +1,4 @@
-const { PR_NUMBER, PR_TITLE } = require("./constants");
+const { PR_NUMBER, PR_TITLE } = require('./constants');
 
 module.exports = async ({ github, context, core }) => {
   const BUG_REGEX = /(fix|bug)(\((.+)\))?(:.+)/;
@@ -7,10 +7,10 @@ module.exports = async ({ github, context, core }) => {
   const DEPRECATED_REGEX = /(deprecated)(\((.+)\))?(:.+)/;
 
   const labels = {
-    "type/feature": FEAT_REFACTOR_REGEX,
-    "type/bug": BUG_REGEX,
-    "type/deprecation": DEPRECATED_REGEX,
-    "type/enhancement": ENHANCEMENT_REGEX,
+    feature: FEAT_REFACTOR_REGEX,
+    bug: BUG_REGEX,
+    deprecation: DEPRECATED_REGEX,
+    enhancement: ENHANCEMENT_REGEX,
   };
 
   // Maintenance: We should keep track of modified PRs in case their titles change

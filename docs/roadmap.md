@@ -105,6 +105,20 @@ A: For existing features, you can directly comment on issues. For anything else,
 
 ## Launched
 
+### Parameters
+
+> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)
+
+Feature parity on Parameters feature
+
+- [x] Support for SSM Parameter Store
+- [x] Support for Secrets Manager
+- [x] Support for DynamoDB
+- [x] Support for AppConfig
+- [x] Support for Bring Your Own provider
+- [x] Support for AWS SDK v3 escape hatch
+- [x] Docs
+
 ### Version 2 release
 
 > [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/upgrade/)

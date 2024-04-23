@@ -30,6 +30,25 @@ Over the next quarter, we are considering implementing one or more of the follow
 
 If any of these utilities are important to you, please let us know by upvoting the issue, leaving a comment under the RFCs, or by joining the discussion in our [Discord community](https://discord.gg/B8zZKbbyET){target="_blank"}.
 
+### Event Handler REST
+
+- [ ] [RFC to discuss initial thoughts and feasibility for TS/JS ecosystem](https://github.com/aws-powertools/powertools-lambda-typescript/issues/413)
+- [ ] Explore pros & cons of whether to build atop lean frameworks (e.g., Hono) or from scratch
+- [ ] Support for API Gateway REST API resolver
+- [ ] Support for API Gateway HTTP API resolver
+- [ ] Support for Lambda Function URL resolver
+- [ ] Support for Application Load Balancer resolver
+- [ ] Support for VPC Lattice resolver
+- [ ] Support for Data Validation _(e.g., `Zod`)_
+- [ ] Support for OpenAPI generation
+- [ ] Support for Middlewares
+- [ ] Support for Compression
+- [ ] Support for Binary responses
+- [ ] Support for custom serializer
+- [ ] Support for injecting request details _(consider not doing globals like Python legacy)_
+- [ ] Support for Router _(multi-file routes)_
+- [ ] Docs
+
 ### Improve operational excellence
 
 We continue to work on increasing operational excellence to remove as much undifferentiated heavy lifting for maintainers, so that we can focus on delivering features that help you.

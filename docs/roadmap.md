@@ -1,34 +1,18 @@
-## Overview
+# Overview
 
-Our public roadmap outlines the high level direction we are working towards, namely [Themes](#themes). We update this document when our priorities change: security and stability is our top priority.
+Our public roadmap outlines the high level direction we are working towards. We update this document when our priorities change: security and stability are our top priority.
 
 !!! info "For most up-to-date information, see our [board of activities](https://github.com/orgs/aws-powertools/projects/7/views/3?query=is%3Aopen+sort%3Aupdated-desc){target="_blank"}."
 
-## Themes
+## Key areas
 
-Operational Excellence is priority number 1. This means bug fixing, stability, security, customer's support, and governance will take precedence above all else.
+Security and operational excellence take precedence above all else. This means bug fixing, stability, customer's support, and internal compliance may delay one or more key areas below.
 
-**What are themes?**
+**Missing something or want us to prioritize an existing area?**
 
-They are key activities maintainers are focusing on. These are updated periodically and you can find the latest [under Themes in our GitHub Milestones](https://github.com/aws-powertools/powertools-lambda-typescript/milestones){target="_blank"}.
+You can help us prioritize by [upvoting existing feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc++label%3Atype%2Ffeature-request+), leaving a comment on what use cases it could unblock for you, and by joining our discussions on Discord.
 
-### Feature Parity
-
-We want to close the gap between this version of Powertools for AWS Lambda and the [Python version](https://github.com/aws-powertools/powertools-lambda-python). This means that in the fullness of time, we want to have the same or equivalent features in both versions.
-
-In 2023 we have released three the utilities, first as public betas and then as generally available:
-
-- [x] [Parameters](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)
-- [x] [Idempotency](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)
-- [x] [Batch Processing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)
-
-Over the next quarter, we are considering implementing one or more of the following utilities (in no particular order):
-
-- [ ] Parser (Status: [RFC Finalized](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1334) - Implementation: [In Progress](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/15))
-- [ ] Validation (Status: [RFC In Progress](https://github.com/aws-powertools/powertools-lambda-typescript/issues/508))
-- [ ] Event Handler (Status: [RFC In Progress](https://github.com/aws-powertools/powertools-lambda-typescript/issues/413))
-
-If any of these utilities are important to you, please let us know by upvoting the issue, leaving a comment under the RFCs, or by joining the discussion in our [Discord community](https://discord.gg/B8zZKbbyET){target="_blank"}.
+[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET){target="_blank"}
 
 ### Event Handler REST
 

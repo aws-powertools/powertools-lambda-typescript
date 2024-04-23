@@ -105,6 +105,19 @@ A: For existing features, you can directly comment on issues. For anything else,
 
 ## Launched
 
+### Idempotency
+
+> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)
+
+Feature parity on Idempotency feature
+
+- [x] Support for Lambda handler idempotency (simple functions)
+- [x] Support for any JS/TS function idempotency (complex functions)
+- [x] Support for Lambda Timeouts
+- [x] Support for JMESPath
+- [x] Support for Bring Your Own provider
+- [x] Docs
+
 ### Parameters
 
 > [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)

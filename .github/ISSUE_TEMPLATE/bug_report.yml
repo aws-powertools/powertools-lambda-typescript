@@ -1,7 +1,7 @@
 name: Bug report
 description: Report a reproducible bug to help us improve
 title: "Bug: TITLE"
-labels: ["type/bug", "triage"]
+labels: ["bug", "triage"]
 projects: ["aws-powertools/7"]
 body:
   - type: markdown

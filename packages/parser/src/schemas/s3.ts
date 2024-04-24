@@ -72,8 +72,8 @@ const S3EventNotificationEventBridgeDetailSchema = z.object({
   }),
   object: z.object({
     key: z.string(),
-    size: z.number().nonnegative().optional(),
-    etag: z.string().optional(),
+    size: z.number().nonnegative().optional(), // not present in DeleteObject events
+    etag: z.string().optional(), // not present in DeleteObject events
     'version-id': z.string().optional(),
     sequencer: z.string().optional(),
   }),

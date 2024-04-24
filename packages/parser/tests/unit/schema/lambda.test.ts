@@ -15,4 +15,10 @@ describe('Lambda ', () => {
       lambdaFunctionUrlEvent
     );
   });
+
+  it('should parse url IAM event', () => {
+    const urlIAMEvent = TestEvents.lambdaFunctionUrlIAMEvent;
+
+    expect(LambdaFunctionUrlSchema.parse(urlIAMEvent)).toEqual(urlIAMEvent);
+  });
 });

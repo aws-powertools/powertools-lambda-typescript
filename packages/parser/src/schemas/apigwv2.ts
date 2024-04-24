@@ -13,14 +13,16 @@ const RequestContextV2Authorizer = z.object({
       accessKey: z.string().optional(),
       accountId: z.string().optional(),
       callerId: z.string().optional(),
-      principalOrgId: z.string().optional(),
+      principalOrgId: z.string().nullable(),
       userArn: z.string().optional(),
       userId: z.string().optional(),
-      cognitoIdentity: z.object({
-        amr: z.array(z.string()),
-        identityId: z.string(),
-        identityPoolId: z.string(),
-      }),
+      cognitoIdentity: z
+        .object({
+          amr: z.array(z.string()),
+          identityId: z.string(),
+          identityPoolId: z.string(),
+        })
+        .nullable(),
     })
     .optional(),
   lambda: z.record(z.string(), z.any()).optional(),
@@ -42,7 +44,7 @@ const RequestContextV2 = z.object({
     .object({
       clientCert: APIGatewayCert.optional(),
     })
-    .optional(),
+    .nullable(),
   domainName: z.string(),
   domainPrefix: z.string(),
   http: RequestContextV2Http,

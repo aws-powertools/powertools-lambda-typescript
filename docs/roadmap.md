@@ -133,47 +133,6 @@ Feature parity on Parser feature
 - [x] Support for user-defined envelopes
 - [x] Docs
 
-### Idempotency
-
-> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)
-
-Feature parity on Idempotency feature
-
-- [x] Support for Lambda handler idempotency (simple functions)
-- [x] Support for any JS/TS function idempotency (complex functions)
-- [x] Support for Lambda Timeouts
-- [x] Support for JMESPath
-- [x] Support for Bring Your Own provider
-- [x] Docs
-
-### Parameters
-
-> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)
-
-Feature parity on Parameters feature
-
-- [x] Support for SSM Parameter Store
-- [x] Support for Secrets Manager
-- [x] Support for DynamoDB
-- [x] Support for AppConfig
-- [x] Support for Bring Your Own provider
-- [x] Support for AWS SDK v3 escape hatch
-- [x] Docs
-
-### Batch processing
-
-> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)
-
-- [x] Support for standard SQS Queues
-- [x] Support for FIFO SQS Queues
-- [x] Support for Kinesis Streams
-- [x] Support for DynamoDB Streams
-- [x] Support for async processing
-- [x] Support for sync (I/O blocking) processing
-- [x] Support for Bring Your Own batch processor
-- [x] Support for Lambda Context injection
-- [x] Docs
-
 ### Version 2 release
 
 > [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/upgrade/)

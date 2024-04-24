@@ -31,7 +31,6 @@ You can help us prioritize by [upvoting existing feature requests](https://githu
 - [ ] Support for custom serializer
 - [ ] Support for injecting request details _(consider not doing globals like Python legacy)_
 - [ ] Support for Router _(multi-file routes)_
-- [ ] Docs
 
 ### Improve operational excellence
 
@@ -131,7 +130,6 @@ Feature parity on Parser feature
 - [x] Support for popular Lambda Event Sources as built-in schemas
 - [x] Support for envelope (wrapping before schema validation)
 - [x] Support for user-defined envelopes
-- [x] Docs
 
 ### Version 2 release
 

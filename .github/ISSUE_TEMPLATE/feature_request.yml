@@ -1,7 +1,7 @@
 name: Feature request
 description: Suggest an idea for Lambda Powertools
 title: "Feature request: TITLE"
-labels: ["type/feature-request", "triage"]
+labels: ["feature-request", "triage"]
 projects: ["aws-powertools/7"]
 body:
   - type: markdown

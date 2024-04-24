@@ -1,79 +1,78 @@
 ##### Labeler ##########################################################################################################
 labelPRBasedOnFilePath:
-  area/logger:
+  logger:
     - packages/logger/src/*
     - packages/logger/src/**/*
-  area/tracer:
+  tracer:
     - packages/tracer/src/*
     - packages/tracer/src/**/*
-  area/metrics:
+  metrics:
     - packages/metrics/src/*
     - packages/metrics/src/**/*
-  area/idempotency:
+  idempotency:
     - packages/idempotency/src/*
     - packages/idempotency/src/**/*
-  area/parameters:
+  parameters:
     - packages/parameters/src/*
     - packages/parameters/src/**/*
-  area/parser:
+  parser:
     - packages/parser/src/*
     - packages/parser/src/**/*
-  area/validator:
+  validator:
     - packages/validator/src/*
     - packages/validator/src/**/*
-  area/batch:
+  batch:
     - packages/batch/src/*
     - packages/batch/src/**/*
-  area/commons:
+  commons:
     - packages/commons/src/*
     - packages/commons/src/**/*
 
-  area/layers:
+  layers:
     - layers/src/*
     - layers/src/**/*
     - layers/bin/*
     - layers/cdk.json
 
-  type/tests:
+  tests:
     - packages/logger/tests/*
     - packages/logger/tests/**/*
-    - packages/logger/jest.config.js
+    - packages/logger/jest.config.cjs
     - packages/tracer/tests/*
     - packages/tracer/tests/**/*
-    - packages/tracer/jest.config.js
+    - packages/tracer/jest.config.cjs
     - packages/metrics/tests/*
     - packages/metrics/tests/**/*
-    - packages/metrics/jest.config.js
+    - packages/metrics/jest.config.cjs
     - packages/idempotency/tests/*
     - packages/idempotency/tests/**/*
-    - packages/idempotency/jest.config.js
+    - packages/idempotency/jest.config.cjs
     - packages/parameters/tests/*
     - packages/parameters/tests/**/*
-    - packages/parameters/jest.config.js
+    - packages/parameters/jest.config.cjs
     - packages/parser/tests/*
     - packages/parser/tests/**/*
-    - packages/parser/jest.config.js
+    - packages/parser/jest.config.cjs
     - packages/validator/tests/*
     - packages/validator/tests/**/*
-    - packages/validator/jest.config.js
+    - packages/validator/jest.config.cjs
     - packages/batch/tests/*
     - packages/batch/tests/**/*
-    - packages/batch/jest.config.js
+    - packages/batch/jest.config.cjs
     - packages/commons/tests/*
     - packages/commons/tests/**/*
-    - packages/commons/jest.config.js
-    - layers/jest.config.js
+    - packages/commons/jest.config.cjs
+    - layers/jest.config.cjs
     - layers/tests/*
     - layers/tests/**/*
 
-  area/documentation:
+  documentation:
     - docs/*
     - docs/**/*
     - mkdocs.yml
-    - typedoc.js
     - examples/app/*
 
-  area/automation:
+  automation:
     - .github/scripts/*
     - .github/scripts/**/*
     - .github/workflows/*
@@ -84,7 +83,7 @@ labelPRBasedOnFilePath:
     - .github/boring-cyborg.yml
     - .github/semantic.yml
 
-  type/internal:
+  internal:
     - .github/CODEOWNERS
     - .github/PULL_REQUEST_TEMPLATE.md
     - .github/ISSUE_TEMPLATE/*
@@ -96,7 +95,7 @@ labelPRBasedOnFilePath:
     - LICENSE-THIRD-PARTY
     - lerna.json
     - .nvmrc
-    - .eslintrc.js
+    - .eslintrc.cjs
     - .eslintignore
     - .npmignore
     - .gitpod.yml
@@ -124,7 +123,7 @@ labelPRBasedOnFilePath:
     - layers/README.md
     - examples/app/tsconfig*.json
 
-  type/dependencies:
+  dependencies:
     - package.json
     - package-lock.json
     - packages/tracer/package.json

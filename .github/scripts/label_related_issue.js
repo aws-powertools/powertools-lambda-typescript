@@ -59,11 +59,11 @@ module.exports = async ({ github, context, core }) => {
   }
 
   /**
-   * Keep all labels except those that start with 'status/' or 'need-' or equal to 'help-wanted'
+   * Keep all labels except any of the `status` ones, or 'need-' or equal to 'help-wanted'
    * as those are contextual to issues still in progress.
    *
-   * If the issue was already marked with the 'status/completed' label, then we'll keep that, otherwise
-   * we'll add the 'status/pending-release' label.
+   * If the issue was already marked with the 'completed' label, then we'll keep that, otherwise
+   * we'll add the 'pending-release' label.
    */
   let hasCompletedLabel = false;
   const newLabels = currentLabels.data
@@ -72,13 +72,22 @@ module.exports = async ({ github, context, core }) => {
         hasCompletedLabel = true;
       }
       return (
-        !label.name.startsWith('status/') &&
+        ![
+          'blocked',
+          'confirmed',
+          'discussing',
+          'on-hold',
+          'completed',
+          'rejected',
+          'pending-release',
+          'pending-close-response-required',
+        ].includes(label.name) &&
         !label.name.startsWith('need-') &&
         label.name !== 'help-wanted'
       );
     })
     .map((label) => label.name);
-  // Add the status/pending-release or status/completed label
+  // Add the pending-release or completed label
   newLabels.push(hasCompletedLabel ? LABEL_RELEASED : LABEL_PENDING_RELEASE);
 
   try {

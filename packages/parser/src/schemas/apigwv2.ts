@@ -13,7 +13,7 @@ const RequestContextV2Authorizer = z.object({
       accessKey: z.string().optional(),
       accountId: z.string().optional(),
       callerId: z.string().optional(),
-      principalOrgId: z.string().nullable(),
+      principalOrgId: z.string().nullish(),
       userArn: z.string().optional(),
       userId: z.string().optional(),
       cognitoIdentity: z
@@ -22,7 +22,7 @@ const RequestContextV2Authorizer = z.object({
           identityId: z.string(),
           identityPoolId: z.string(),
         })
-        .nullable(),
+        .nullish(),
     })
     .optional(),
   lambda: z.record(z.string(), z.any()).optional(),

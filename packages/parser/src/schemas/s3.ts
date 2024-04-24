@@ -73,7 +73,7 @@ const S3EventNotificationEventBridgeDetailSchema = z.object({
   object: z.object({
     key: z.string(),
     size: z.number().nonnegative().optional(),
-    etag: z.string(),
+    etag: z.string().optional(),
     'version-id': z.string().optional(),
     sequencer: z.string().optional(),
   }),

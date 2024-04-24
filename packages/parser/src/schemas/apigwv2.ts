@@ -44,7 +44,7 @@ const RequestContextV2 = z.object({
     .object({
       clientCert: APIGatewayCert.optional(),
     })
-    .nullable(),
+    .nullish(),
   domainName: z.string(),
   domainPrefix: z.string(),
   http: RequestContextV2Http,

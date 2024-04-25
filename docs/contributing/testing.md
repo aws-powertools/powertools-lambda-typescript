@@ -3,6 +3,8 @@ title: Testing
 description: How to write tests for Powertools for AWS Lambda (TypeScript)
 ---
 
+<!-- markdownlint-disable MD043 -->
+
 ## General practices
 
 As discussed in the [conventions](./conventions.md) page, we have different types of tests that aim to verify different aspects of the code.
@@ -67,7 +69,6 @@ To run unit tests, you can use of the following commands from the root folder:
 * `npm test -w packages/metrics` to run all the unit tests for the `metrics` module
 * `npm run jest -w packages/metrics -- --group=unit/metrics/middleware` to run all the unit tests for the `metrics` module that are tagged with the `unit/metrics/middleware` group
 
-
 We enforce 100% code coverage for unit tests. The test command will fail if the coverage is not 100% both on your local machine and in CI.
 
 ## Integration tests
@@ -77,14 +78,14 @@ Integration tests are used to verify that the code works as expected when deploy
 When writing integration tests, you should follow the same conventions used for existing tests. For example, each test file should correspond to an utility and a specific usage type. For example, the test for the middleware usage for the `@aws-lambda-powertools/logger` module has a single test file named `basicFeatures.middy.test.ts`.
 
 !!! warning "A word of caution"
-    Running integration tests will deploy AWS resources in your AWS account, which might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but not all of them. We recommend you to use a dedicated AWS account for testing purposes, and when in doubt, let the CI on our repository run the tests for you.
+    Running integration tests will deploy AWS resources in your AWS account, which might incur costs. The cost from **some services** are covered by the [AWS Free Tier](https://aws.amazon.com/free/) but not all of them. We recommend you to use a dedicated AWS account for testing purposes, and when in doubt, let the CI on our repository run the tests for you.
 
 To run integration tests you'll need to set up an AWS account and obtain credentials as described in the [prerequisites](./setup.md#requirements). Once ready, you can use of the following commands from the root folder:
 
 * `npm test:e2e -ws` to run all the integration tests for all the modules sequentially
 * `test:e2e:parallel` to run all the integration tests for all the modules in parallel
 * `npm test:e2e -w packages/metrics` to run all the integration tests for the `metrics` module
-* `npm run test:e2e:nodejs20x -w packages/metrics` to run all the integration tests for the `metrics` module using the `nodejs20x` runtime 
+* `npm run test:e2e:nodejs20x -w packages/metrics` to run all the integration tests for the `metrics` module using the `nodejs20x` runtime
 
 The tests will deploy the necessary AWS resources using AWS CDK, and will run the Lambda functions using the AWS SDK. After that, the tests will verify the Lambda functions behave as expected by checking logs, metrics, traces, and other resources as needed. Finally, the tests will destroy all the AWS resources created at the beginning.
 

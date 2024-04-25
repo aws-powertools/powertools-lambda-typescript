@@ -41,6 +41,7 @@ The `Logger` utility must always be instantiated outside the Lambda handler. By 
     ```
 
 ### Utility settings
+
 The library has three optional settings, which can be set via environment variables or passed in the constructor.
 
 These settings will be used across all logs emitted:
@@ -120,7 +121,10 @@ This functionality will include the following keys in your structured logs:
 === "Decorator"
 
     !!! note
-        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+        Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
+
         If this is not the desired behavior, you can call the `logger.injectLambdaContext()` method directly in your handler.
 
     ```typescript hl_lines="8"
@@ -186,7 +190,6 @@ You can append additional persistent keys and values in the logs generated durin
 
 To remove the keys you added, you can use the `removeKeys` method.
 
-
 === "handler.ts"
 
     ```typescript hl_lines="5-13 17-25 32"
@@ -222,7 +225,6 @@ To remove the keys you added, you can use the `removeKeys` method.
         }
     }
     ```
-
 
 !!! tip "Logger will automatically ignore any key with an `undefined` value"
 
@@ -289,7 +291,6 @@ In each case, the printed log will look like this:
         "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
     }
     ```
-
 
 ### Appending additional data to a single log item
 
@@ -359,7 +360,7 @@ The error will be logged with default key name `error`, but you can also pass yo
     ```
 
 === "Example CloudWatch Logs excerpt"
-
+    <!-- markdownlint-disable MD013 -->
     ```json hl_lines="7-12 20-25"
     {
         "level": "ERROR",
@@ -374,7 +375,7 @@ The error will be logged with default key name `error`, but you can also pass yo
             "stack": "Error: Unexpected error #1    at lambdaHandler (/path/to/my/source-code/my-service/handler.ts:18:11)    at Object.<anonymous> (/path/to/my/source-code/my-service/handler.ts:35:1)    at Module._compile (node:internal/modules/cjs/loader:1108:14)    at Module.m._compile (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1371:23)    at Module._extensions..js (node:internal/modules/cjs/loader:1137:10)    at Object.require.extensions.<computed> [as .ts] (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1374:12)    at Module.load (node:internal/modules/cjs/loader:973:32)    at Function.Module._load (node:internal/modules/cjs/loader:813:14)    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)    at main (/path/to/my/source-code/node_modules/ts-node/src/bin.ts:331:12)"
         }
     }
-    {   
+    {
         "level": "ERROR",
         "message": "This is the second error",
         "service": "serverlessAirline",
@@ -388,6 +389,7 @@ The error will be logged with default key name `error`, but you can also pass yo
         }
     }
     ```
+    <!-- markdownlint-enable MD013 -->
 
 !!! tip "Logging errors and log level"
     You can also log errors using the `warn`, `info`, and `debug` methods. Be aware of the log level though, you might miss those  errors when analyzing the log later depending on the log level configuration.
@@ -430,7 +432,9 @@ By setting the log level to `SILENT`, which can be done either through the `logL
 
 #### AWS Lambda Advanced Logging Controls (ALC)
 
-With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. Regardless of the output format setting in Lambda, we will always output JSON formatted logging messages.
+With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application.
+
+Regardless of the output format setting in Lambda, we will always output JSON formatted logging messages.
 
 When you have this feature enabled, log messages that don’t meet the configured log level are discarded by Lambda. For example, if you set the minimum log level to `WARN`, you will only receive `WARN` and `ERROR` messages in your AWS CloudWatch Logs, all other log levels will be discarded by Lambda.
 
@@ -467,7 +471,9 @@ In the event you have set a log level in Powertools to a level that is lower tha
 
 ### Using multiple Logger instances across your code
 
-The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [persistent attributes](#appending-persistent-additional-log-keys-and-values), and [the log formatter](#custom-log-formatter-bring-your-own-formatter). Once a child logger is created, the logger and its parent will act as separate instances of the Logger class, and as such any change to one won't be applied to the other. 
+The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [persistent attributes](#appending-persistent-additional-log-keys-and-values), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).
+
+Once a child logger is created, the logger and its parent will act as separate instances of the Logger class, and as such any change to one won't be applied to the other.
 
  The following example shows how to create multiple Loggers that share service name and persistent attributes while specifying different logging levels within a single Lambda invocation. As the result, only ERROR logs with all the inherited attributes will be displayed in CloudWatch Logs from the child logger, but all logs emitted will have the same service name and persistent attributes.
 

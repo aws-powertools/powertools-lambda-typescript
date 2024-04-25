@@ -31,7 +31,8 @@
     "docs-api-build-run": "npm run docs-generateApiDoc && npx live-server api",
     "docs-generateApiDoc": "typedoc .",
     "docs-runLocalApiDoc": "npx live-server api",
-    "postpublish": "git restore ."
+    "postpublish": "git restore .",
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#packages/batch/README.md' '#packages/commons/README.md' '#packages/idempotency/README.md' '#packages/jmespath/README.md' '#packages/logger/README.md' '#packages/metrics/README.md' '#packages/parameters/README.md' '#packages/parser/README.md' '#packages/tracer/README.md'"
   },
   "repository": {
     "type": "git",
@@ -65,12 +66,16 @@
     "jest-runner-groups": "^2.2.0",
     "lerna": "^8.1.2",
     "lint-staged": "^15.2.2",
+    "markdownlint-cli2": "^0.13.0",
     "prettier": "^3.2.5",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typedoc": "^0.25.13",
     "typedoc-plugin-missing-exports": "^2.2.0",
     "typescript": "^5.4.5"
+  },
+  "lint-staged": {
+    "*.md": "markdownlint-cli2 --fix"
   },
   "engines": {
     "node": ">=16"

@@ -3,6 +3,8 @@ title: Homepage
 description: Powertools for AWS Lambda (TypeScript)
 ---
 
+<!-- markdownlint-disable MD043 MD013 -->
+
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless best practices and increase developer velocity.
 
 You can use Powertools for AWS Lambda in both TypeScript and JavaScript code bases.
@@ -248,8 +250,6 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
             ? Do you want to edit the local lambda function now? No
             ```
 
-
-
 ### Lambda Layer
 
 [Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html){target="_blank"} is a `.zip` file archive that can contain additional code, pre-packaged dependencies, data, or configuration files. We compile and optimize [all dependencies](#install) to achieve an optimal build.
@@ -287,7 +287,6 @@ You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for
     | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:5](#){: .copyMe}:clipboard:     |
     | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:5](#){: .copyMe}:clipboard:   |
 
-
 **Want to inspect the contents of the Layer?**
 
 The pre-signed URL to download this Lambda Layer will be within `Location` key in the CLI output. The CLI output will also contain the Powertools for AWS Lambda version it contains.
@@ -302,9 +301,9 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
 
 Many of the utilities provided by Powertools for AWS Lambda (TypeScript) can be used with different programming paradigms:
 
-* **Middy** middleware. It is the best choice if your existing code base relies on the [Middy 4.x](https://middy.js.org/docs/) middleware engine. Powertools for AWS Lambda (TypeScript) offers compatible Middy middleware to make this integration seamless.
-* **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html). If you aren’t using Classes, this requires the most significant refactoring.
-* **Manually**. It provides the most granular control. It’s the most verbose approach, with the added benefit of no additional dependency and no refactoring to TypeScript Classes.
+- **Middy** middleware. It is the best choice if your existing code base relies on the [Middy 4.x](https://middy.js.org/docs/) middleware engine. Powertools for AWS Lambda (TypeScript) offers compatible Middy middleware to make this integration seamless.
+- **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html). If you aren’t using Classes, this requires the most significant refactoring.
+- **Manually**. It provides the most granular control. It’s the most verbose approach, with the added benefit of no additional dependency and no refactoring to TypeScript Classes.
 
 The examples in this documentation will feature all the approaches described above wherever applicable.
 
@@ -352,7 +351,6 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 Each Utility page provides information on example values and allowed values.
 
 ## Support Powertools for AWS Lambda (TypeScript)
-
 
 There are many ways you can help us gain future investments to improve everyone's experience:
 

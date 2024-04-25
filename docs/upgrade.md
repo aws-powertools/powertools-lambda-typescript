@@ -3,6 +3,8 @@ title: Upgrade guide
 description: Guide to update between major Powertools for AWS Lambda (TypeScript) versions
 ---
 
+<!-- markdownlint-disable MD043 -->
+
 ## End of support v1
 
 !!! warning "On March 13th, 2024, Powertools for AWS Lambda (TypeScript) v1 entered maintenance mode, and will reach end-of-life on September 1st, 2024. If you are still using v1, we strongly recommend you to read our upgrade guide and update to the latest version."
@@ -24,7 +26,6 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 | **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                          | Yes                  |
 | **Logger**            | Removed `ContextExamples` from `@aws-lambda-powertools/commons` package.                                                       | Yes                  |
 | **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                        | Yes                  |
-
 
 ### First steps
 
@@ -61,7 +62,7 @@ If you're unable to use ESM, you can still use the `require` syntax to import th
 
 You might still need the `require` syntax when using a dependency or a transitive dependency that doesn't support ESM. For example, Tracer _(`@aws-lambda-powertools/tracer`)_ relies on the AWS X-Ray SDK for Node.js which uses `require`.
 
-When that happens, you can instruct your bundler to use the `require` syntax for specific dependencies while using ESM for everything else. This is commonly known as [polyfill](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill){target="_blank"}. 
+When that happens, you can instruct your bundler to use the `require` syntax for specific dependencies while using ESM for everything else. This is commonly known as [polyfill](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill){target="_blank"}.
 Here is an example using `esbuild` bundler.
 
 === "With AWS CDK"
@@ -178,7 +179,7 @@ In v2, you can now directly import from the `types` subpath export, e.g., `@aws-
 
 !!! note "Disregard if you are not using the [log sampling feature](./core/logger.md#sampling-logs)."
 
-In v1, log sampling implementation was inconsistent from other Powertools for AWS Lambda languages _(Python, .NET, and Java)_. 
+In v1, log sampling implementation was inconsistent from other Powertools for AWS Lambda languages _(Python, .NET, and Java)_.
 
 In v2, we changed these behaviors for consistency across languages:
 
@@ -291,7 +292,7 @@ In v2, you have more control over **standard** (`attributes`) and [**custom keys
 
 In v1, we have provided a `ContextExamples` object to help you with testing.
 
-In v2, we have removed the `ContextExamples` from the `@aws-lambda-powertools/commons` package, so you need to create it in your tests: 
+In v2, we have removed the `ContextExamples` from the `@aws-lambda-powertools/commons` package, so you need to create it in your tests:
 
 === "Before"
 
@@ -334,8 +335,6 @@ In v2, we have removed the `ContextExamples` from the `@aws-lambda-powertools/co
       });
     });
     ```
-
-
 
 ## Helper functions
 

@@ -90,3 +90,19 @@ jobs:
         uses: ./.github/actions/cached-node-modules
       - name: Run linting
         run: npm run lint -w docs/snippets
+  check-docs:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f  # v4.1.3
+      - name: Setup NodeJS
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 20
+          cache: "npm"
+      - name: Setup dependencies
+        uses: ./.github/actions/cached-node-modules
+      - name: Run linting
+        run: npm run lint:markdown

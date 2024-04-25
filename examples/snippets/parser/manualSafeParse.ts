@@ -30,6 +30,6 @@ export const handler = async (
     : logger.error('Event parsing failed', parsedEvent.error);
   const parsedEvenlope = EventBridgeEnvelope.safeParse(event, orderSchema); // (2)!
   parsedEvenlope.success
-    ? logger.info('Event envelope parsed successfully', parsedEvenlope.data)
+    ? logger.info('Event envelope parsed successfully')
     : logger.error('Event envelope parsing failed', parsedEvenlope.error);
 };

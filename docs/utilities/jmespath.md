@@ -3,6 +3,8 @@ title: JMESPath Functions
 description: Utility
 ---
 
+<!-- markdownlint-disable MD043 -->
+
 Built-in [JMESPath](https://jmespath.org/){target="_blank" rel="nofollow"} functions to easily deserialize common encoded JSON payloads in Lambda functions.
 
 ## Key features
@@ -12,6 +14,14 @@ Built-in [JMESPath](https://jmespath.org/){target="_blank" rel="nofollow"} funct
 * Provides commonly used JMESPath expressions with popular event sources
 
 ## Getting started
+
+### Installation
+
+Install the utility in your project:
+
+```sh
+npm install @aws-lambda-powertools/jmespath
+```
 
 You might have events that contain encoded JSON payloads as string, base64, or even in compressed format. It is a common use case to decode and extract them partially or fully as part of your Lambda function invocation.
 
@@ -55,6 +65,7 @@ We provide built-in envelopes for popular AWS Lambda event sources to easily dec
 
 These are all built-in envelopes you can use along with their expression as a reference:
 
+<!-- markdownlint-disable MD056 -->
 | Envelope                          | JMESPath expression                                                                       |
 | --------------------------------- | ----------------------------------------------------------------------------------------- |
 | **`API_GATEWAY_HTTP`**            | `powertools_json(body)`                                                                   |
@@ -70,6 +81,7 @@ These are all built-in envelopes you can use along with their expression as a re
 | **`S3_SQS`**                      | `Records[*].powertools_json(body).Records[0]`                                             |
 | **`SNS`**                         | `Records[0].Sns.Message                                                                   | powertools_json(@)`              |
 | **`SQS`**                         | `Records[*].powertools_json(body)`                                                        |
+<!-- markdownlint-enable MD056 -->
 
 ???+ tip "Using SNS?"
     If you don't require SNS metadata, enable [raw message delivery](https://docs.aws.amazon.com/sns/latest/dg/sns-large-payload-raw-message-delivery.html). It will reduce multiple payload layers and size, when using SNS in combination with other services (_e.g., SQS, S3, etc_).

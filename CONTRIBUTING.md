@@ -1,24 +1,26 @@
+# Contributing Guidelines <!-- omit in toc -->
+
 ## Table of contents <!-- omit in toc -->
 
 - [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
 - [Contributing via Pull Requests](#contributing-via-pull-requests)
-  - [Dev setup](#dev-setup)
-    - [Gitpod](#gitpod)
-    - [GitHub Codespaces](#github-codespaces)
-    - [Local environment](#local-environment)
-  - [Sending a pull request](#sending-a-pull-request)
-  - [Local documentation](#local-documentation)
+    - [Dev setup](#dev-setup)
+        - [Gitpod](#gitpod)
+        - [GitHub Codespaces](#github-codespaces)
+        - [Local environment](#local-environment)
+    - [Sending a pull request](#sending-a-pull-request)
+    - [Local documentation](#local-documentation)
 - [Conventions](#conventions)
-  - [General terminology and practices](#general-terminology-and-practices)
-  - [Testing definition](#testing-definition)
+    - [General terminology and practices](#general-terminology-and-practices)
+    - [Testing definition](#testing-definition)
 - [Finding contributions to work on](#finding-contributions-to-work-on)
 - [Code of Conduct](#code-of-conduct)
 - [Security issue notifications](#security-issue-notifications)
 - [Licensing](#licensing)
 
-# Contributing Guidelines <!-- omit in toc -->
-
+<!-- markdownlint-disable MD013 -->
 Thank you for your interest in contributing to our project. Whether it's a [bug report](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type%2Fbug%2Ctriage&projects=aws-powertools%2F7&template=bug_report.yml&title=Bug%3A+TITLE), [new feature](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type%2Ffeature-request%2Ctriage&projects=aws-powertools%2F7&template=feature_request.yml&title=Feature+request%3A+TITLE), [correction](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), or [additional documentation](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=area%2Fdocumentation%2Ctriage&projects=aws-powertools%2F7&template=documentation_improvements.yml&title=Docs%3A+TITLE), we greatly value feedback and contributions from our community.
+<!-- markdownlint-enable MD013 -->
 
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary information to effectively respond to your bug report or contribution.
 
@@ -26,7 +28,9 @@ Please read through this document before submitting any issues or pull requests 
 
 We welcome you to use the GitHub issue tracker to report bugs, suggest features, or documentation improvements.
 
+<!-- markdownlint-disable MD013 -->
 [When filing an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), please check [existing open](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc), or [recently closed](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+sort%3Aupdated-desc+is%3Aclosed), issues to make sure somebody else hasn't already reported the issue. Please try to include as much information as you can.
+<!-- markdownlint-enable MD013 -->
 
 ## Contributing via Pull Requests
 
@@ -34,7 +38,7 @@ Contributions via pull requests are much appreciated. Before sending us a pull r
 
 1. You are working against the latest source on the **main** branch, unless instructed otherwise.
 2. You check existing open, and recently merged pull requests to make sure someone else hasn't addressed the problem already.
-3. You discuss and agree your proposed changes under [an existing issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aopen+is%3Aupdated-desc) or a [new issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank" rel="nofollow"} before you begin any implementation. We value your time and bandwidth. As such, any pull requests created on non-triaged issues might not be successful.
+3. You discuss and agree the proposed changes under [an existing issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aopen+is%3Aupdated-desc) or a new one before you begin any implementation. We value your time and bandwidth. As such, any pull requests created on non-triaged issues might not be successful.
 
 At a high level, these are the steps to get code merged in the repository - don't worry, nearly all of them are automated.
 
@@ -49,6 +53,7 @@ timeline
                                     : Local tests
 
     Pre-commit checks <br> (git commit)   : Code linting (standards)
+                                          : Markdown linting
 
     Pre-Pull Request <br> (git push)   : Tests (unit)
 
@@ -111,7 +116,7 @@ GitHub provides additional document on [forking a repository](https://help.githu
 You might find useful to run both the documentation website and the API reference locally while contributing:
 
 - **Docs website**: `npm run docs-runLocalDocker`
-    * If this is your first time running the docs, you need to build the image: `npm run docs-buildDockerImage`
+    - If this is your first time running the docs, you need to build the image: `npm run docs-buildDockerImage`
 - **API reference**: `npm run docs-api-build-run`
 
 ## Conventions

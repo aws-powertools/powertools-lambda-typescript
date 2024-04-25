@@ -3,7 +3,9 @@ title: Parameters
 description: Utility
 ---
 
+<!-- markdownlint-disable MD013 -->
 The Parameters utility provides high-level functions to retrieve one or multiple parameter values from [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html){target="_blank"}, [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html){target="_blank"}, [AWS AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html){target="_blank"}, [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html){target="_blank"}, or your own parameter store.
+<!-- markdownlint-enable MD013 -->
 
 ## Key features
 
@@ -135,7 +137,7 @@ You can adjust how long values should be kept in cache by using the param `maxAg
 --8<-- "docs/snippets/parameters/adjustingCacheTTL.ts"
 ```
 
-1.  Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_MAX_AGE` environment variable.
+1. Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_MAX_AGE` environment variable.
 
 ???+ info
 	The `maxAge` parameter is also available in high level functions like `getParameter`, `getSecret`, etc.
@@ -175,7 +177,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 --8<-- "docs/snippets/parameters/ssmProviderDecryptAndRecursive.ts"
 ```
 
-1.  Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_SSM_DECRYPT` environment variable.
+1. Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_SSM_DECRYPT` environment variable.
 
 #### SecretsProvider
 
@@ -263,7 +265,7 @@ DynamoDB provider can be customized at initialization to match your table struct
 
 | Parameter     | Mandatory | Default | Description                                                                                               |
 | ------------- | --------- | ------- | --------------------------------------------------------------------------------------------------------- |
-| **tableName** | **Yes**   | *(N/A)* | Name of the DynamoDB table containing the parameter values.                                               |
+| **tableName** | **Yes**   | _(N/A)_ | Name of the DynamoDB table containing the parameter values.                                               |
 | **keyAttr**   | No        | `id`    | Hash key for the DynamoDB table.                                                                          |
 | **sortAttr**  | No        | `sk`    | Range key for the DynamoDB table. You don't need to set this if you don't use the `getMultiple()` method. |
 | **valueAttr** | No        | `value` | Name of the attribute containing the parameter value.                                                     |
@@ -318,7 +320,7 @@ If you use `transform` with `getMultiple()`, you can have a single malformed par
 
 You can override this by setting the `throwOnTransformError` argument to `true`. If you do so, a single transform error will throw a **`TransformParameterError`** error.
 
-For example, if you have three parameters, */param/a*, */param/b* and */param/c*, but */param/c* is malformed:
+For example, if you have three parameters, _/param/a_, _/param/b_ and _/param/c_, but _/param/c_ is malformed:
 
 ```typescript hl_lines="23" title="Throwing TransformParameterError at first malformed parameter"
 --8<-- "docs/snippets/parameters/transformPartialFailures.ts"
@@ -423,7 +425,6 @@ The **`clientConfig`** parameter enables you to pass in a custom [config object]
 
 	When using VPC private endpoints, you can pass a custom client altogether. It's also useful for testing when injecting fake instances.
 
-
 ```typescript hl_lines="2 4-5"
 --8<-- "docs/snippets/parameters/clientConfig.ts"
 ```
@@ -458,7 +459,7 @@ A similar pattern can be applied also to any of the built-in provider classes - 
 	--8<-- "docs/snippets/parameters/testingYourCodeProvidersHandler.ts"
 	```
 
-In some other cases, you might want to mock the AWS SDK v3 client itself, in these cases we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-jest`](https://www.npmjs.com/package/aws-sdk-client-mock-jest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
+For when you want to mock the AWS SDK v3 client directly, we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-jest`](https://www.npmjs.com/package/aws-sdk-client-mock-jest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
 
 === "handler.test.ts"
 	```typescript hl_lines="2-8 11 14 18 23-30"

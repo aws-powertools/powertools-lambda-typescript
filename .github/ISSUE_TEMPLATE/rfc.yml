@@ -18,6 +18,12 @@ body:
     attributes:
       label: Which Powertools for AWS Lambda (TypeScript) utility does this relate to?
       options:
+        - Automation
+        - Governance
+        - Tests
+        - Batch
+        - Commons
+        - Event Handler
         - Tracer
         - Logger
         - Metrics

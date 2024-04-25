@@ -31,6 +31,9 @@ body:
         - Automation
         - Governance
         - Tests
+        - Commons
+        - Event Handler
+        - Parser
         - Tracer
         - Logger
         - Metrics
@@ -39,7 +42,6 @@ body:
         - JMESPath
         - Batch Processing
         - Validation
-        - Parser
         - Other
   - type: textarea
     id: suggestion

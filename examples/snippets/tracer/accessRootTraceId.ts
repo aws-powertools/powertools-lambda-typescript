@@ -2,11 +2,9 @@ import { Tracer } from '@aws-lambda-powertools/tracer';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
-export const handler = async (
-  _event: unknown,
-  _context: unknown
-): Promise<unknown> => {
+export const handler = async (): Promise<unknown> => {
   try {
+    throw new Error('Something went wrong');
   } catch (err) {
     const rootTraceId = tracer.getRootXrayTraceId();
 

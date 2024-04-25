@@ -223,7 +223,7 @@ You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HT
 
 === "index.ts"
 
-    ```typescript hl_lines="2"
+    ```typescript
     --8<-- "examples/snippets/tracer/captureHTTP.ts"
     ```
 
@@ -306,7 +306,7 @@ Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [
 
 === "index.ts"
 
-    ```typescript hl_lines="11"
+    ```typescript hl_lines="9"
     --8<-- "examples/snippets/tracer/accessRootTraceId.ts"
     ```
 

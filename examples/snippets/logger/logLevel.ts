@@ -4,4 +4,3 @@ const logger = new Logger();
 
 logger.getLevelName(); // returns "INFO"
 logger.setLogLevel('DEBUG');
-logger.level; // returns 8

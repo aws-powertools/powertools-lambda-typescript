@@ -98,8 +98,9 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 === "Decorator"
 
     !!! note
-        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
-        If this is not the desired behavior, you can use one of the other patterns instead.
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+        Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/tracer/decorator.ts"
@@ -112,7 +113,6 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
     ```typescript hl_lines="9-15 18-19 23 26 29-34"
     --8<-- "docs/snippets/tracer/manual.ts"
     ```
-
 
 When using the `captureLambdaHandler` decorator or middleware, Tracer performs these additional tasks to ease operations:
 
@@ -134,7 +134,8 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
     --8<-- "docs/snippets/tracer/putAnnotation.ts"
     ```
 
-    1. When Lambda starts an invocation [the X-Ray SDk creates a segment called `facade`](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda). This segment cannot be annotated or modified by your code, so you need to create a new subsegment. This is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler)
+    1. When Lambda starts an invocation [the X-Ray SDk creates a segment called `facade`](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda).
+    This segment cannot be annotated or modified by your code, so you need to create a new subsegment. This is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler)
     2. To correctly trace the current and subsequent invocations you need to restore the original segment, this is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler).
 === "Metadata"
     You can add metadata using `putMetadata` method.
@@ -143,7 +144,8 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
     --8<-- "docs/snippets/tracer/putMetadata.ts"
     ```
 
-    1. When Lambda starts an invocation [the X-Ray SDk creates a segment called `facade`](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda). This segment cannot be modified by your code, so you need to create a new subsegment. This is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler)
+    1. When Lambda starts an invocation [the X-Ray SDk creates a segment called `facade`](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda).
+    This segment cannot be modified by your code, so you need to create a new subsegment. This is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler)
     2. To correctly trace the current and subsequent invocations you need to restore the original segment, this is done automatically by Tracer when using the [decorator or middleware patterns](./tracer.md/#lambda-handler).
 
 <figure>
@@ -158,8 +160,9 @@ You can trace other class methods using the `captureMethod` decorator or any arb
 === "Decorator"
 
     !!! note
-        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
-        If this is not the desired behavior, you can use manual instrumentation instead.
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+        Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
 
     ```typescript hl_lines="8"
     --8<-- "docs/snippets/tracer/captureMethodDecorator.ts"
@@ -173,7 +176,6 @@ You can trace other class methods using the `captureMethod` decorator or any arb
     ```typescript hl_lines="6-12 18 21 25-30"
     --8<-- "docs/snippets/tracer/captureMethodManual.ts"
     ```
-
 
 ### Patching AWS SDK clients
 

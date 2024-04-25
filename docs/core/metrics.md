@@ -3,6 +3,8 @@ title: Metrics
 description: Core utility
 ---
 
+<!-- markdownlint-disable MD043 -->
+
 Metrics creates custom metrics asynchronously by logging metrics to standard output following [Amazon CloudWatch Embedded Metric Format (EMF)](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html).
 
 These metrics can be visualized through [Amazon CloudWatch Console](https://console.aws.amazon.com/cloudwatch/).
@@ -32,10 +34,9 @@ If you're new to Amazon CloudWatch, there are two terminologies you must be awar
 * **Resolution**. It's a value representing the storage resolution for the corresponding metric. Metrics can be either Standard or High resolution. Read more [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition).
 
 <figure>
-  <img src="../../media/metrics_terminology.png" />
+  <img src="../../media/metrics_terminology.png" alt="metrics terminology diagram" />
   <figcaption>Metric terminology, visually explained</figcaption>
 </figure>
-
 
 ## Getting started
 
@@ -48,8 +49,8 @@ npm install @aws-lambda-powertools/metrics
 ```
 
 !!! warning "Caution"
-    
-    Using the Lambda [Advanced Logging Controls](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced) feature requires you to update your version of Powertools for AWS Lambda (TypeScript) to at least v1.15.0 to ensure metrics are reported correctly to Amazon CloudWatch Metrics.
+
+    When using the Lambda [Advanced Logging Controls](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced) feature you must install version of Powertools for AWS Lambda (TypeScript) v1.15.0 or newer.
 
 ### Usage
 
@@ -128,7 +129,7 @@ You can create metrics using the `addMetric` method, and you can create dimensio
 
 ### Adding high-resolution metrics
 
-You can create [high-resolution metrics](https://aws.amazon.com/about-aws/whats-new/2023/02/amazon-cloudwatch-high-resolution-metric-extraction-structured-logs/) passing `resolution` as parameter to `addMetric`. 
+You can create [high-resolution metrics](https://aws.amazon.com/about-aws/whats-new/2023/02/amazon-cloudwatch-high-resolution-metric-extraction-structured-logs/) passing `resolution` as parameter to `addMetric`.
 
 !!! tip "When is it useful?"
     High-resolution metrics are data with a granularity of one second and are very useful in several situations such as telemetry, time series, real-time incident management, and others.
@@ -216,7 +217,10 @@ You can add default dimensions to your metrics by passing them as parameters in 
 === "with logMetrics decorator"
 
     !!! note
-        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+        Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
+
         If this is not the desired behavior, you can use the `logMetrics` middleware instead.
 
     ```typescript hl_lines="12"
@@ -282,7 +286,10 @@ See below an example of how to automatically flush metrics with the Middy-compat
 #### Using the class decorator
 
 !!! note
-    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+    Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
+
     If this is not the desired behavior, you can use the `logMetrics` middleware instead.
 
 The `logMetrics` decorator of the metrics utility can be used when your Lambda handler function is implemented as method of a Class.

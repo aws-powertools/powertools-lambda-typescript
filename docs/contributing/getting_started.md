@@ -3,6 +3,8 @@ title: Your first contribution
 description: All you need to know for your first contribution to Powertools for AWS Lambda (TypeScript)
 ---
 
+<!-- markdownlint-disable MD043 -->
+
 Thank you for your interest in contributing to our project - we couldn't be more excited!
 
 <center>
@@ -61,7 +63,7 @@ Before sending us a pull request, please ensure that:
 
 * You are working against the latest source on the **main** branch, unless instructed otherwise.
 * You check existing [open, and recently merged](https://github.com/aws-powertools/powertools-lambda-typescript/pulls?q=is%3Apr+is%3Aopen%2Cmerged+sort%3Aupdated-desc){target="_blank" rel="nofollow"} pull requests to make sure someone else hasn't addressed the problem already.
-* You discuss and agree your proposed changes under [an existing issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aopen+is%3Aupdated-desc) or a [new issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank" rel="nofollow"} before you begin any implementation. We value your time and bandwidth. As such, any pull requests created on non-triaged issues might not be successful.
+* You discuss and agree the proposed changes under [an existing issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aopen+is%3Aupdated-desc) or a new one before you begin any implementation. We value your time and bandwidth. As such, any pull requests created on non-triaged issues might not be successful.
 * Create a new branch named after the change you are contributing _e.g._ `feat/logger-debug-sampling`
 
 **Ready?**

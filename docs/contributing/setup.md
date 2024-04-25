@@ -3,6 +3,8 @@ title: Development environment
 description: Setting up your development environment for contribution
 ---
 
+<!-- markdownlint-disable MD043 -->
+
 [![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET){target="_blank" rel="nofollow"}
 
 This page describes how to setup your development environment (Cloud or locally) to contribute to Powertools for AWS Lambda (TypeScript).
@@ -36,7 +38,7 @@ Unless you're using the pre-configured Cloud environment, you'll need the follow
 ## Cloud environment
 
 !!! warning "A word of caution"
-    Before using a Cloud environment, be mindful of the pricing structure. You can find more information about each service pricing respectively on [Gitpod](https://www.gitpod.io/pricing){target="_blank" rel="nofollow"} and [GitHub Codespaces](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces){target="_blank" rel="nofollow"} pages. When in doubt, use the local environment below.
+    Before using one of the services below check out their pricing. You can find more information about each service pricing respectively on [Gitpod](https://www.gitpod.io/pricing){target="_blank" rel="nofollow"} and [GitHub Codespaces](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces){target="_blank" rel="nofollow"} pages.
 
 Once provisioned, each Cloud environment will come with all development dependencies and tools you'll need to contribute already installed.
 

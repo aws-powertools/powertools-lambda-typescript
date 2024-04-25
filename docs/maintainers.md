@@ -3,6 +3,8 @@ title: Maintainers playbook
 description: Playbook for active maintainers in Powertools for AWS Lambda (TypeScript)
 ---
 
+<!--  markdownlint-disable MD043 -->
+
 ## Overview
 
 !!! note "Please treat this content as a living document."
@@ -307,7 +309,9 @@ Finally, add the new region to the [`region` matrix](https://github.com/aws-powe
 
 ### Negative Impact on the Project
 
+<!-- markdownlint-disable MD013 -->
 Actions that negatively impact the project will be handled by the admins, in coordination with other maintainers, in balance with the urgency of the issue. Examples would be [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-typescript/blob/develop/CODE_OF_CONDUCT.md){target="_blank"} violations, deliberate harmful or malicious actions, spam, monopolization, and security risks.
+<!-- markdownlint-enable MD013 -->
 
 ### Becoming a maintainer
 

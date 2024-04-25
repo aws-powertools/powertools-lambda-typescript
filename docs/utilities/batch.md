@@ -67,6 +67,7 @@ This behavior changes when you enable [ReportBatchItemFailures feature](https://
 ### Installation
 
 Install the library in your project
+
 ```shell
 npm i @aws-lambda-powertools/batch
 ```
@@ -141,15 +142,15 @@ Processing batches from SQS works in three stages:
 #### FIFO queues
 
 When using [SQS FIFO queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html){target="_blank"}, we will stop processing messages after the first failure, and return all failed and unprocessed messages in `batchItemFailures`.
-This helps preserve the ordering of messages in your queue. 
+This helps preserve the ordering of messages in your queue.
 
 ```typescript hl_lines="1-4 13 28-30"
 --8<-- "docs/snippets/batch/gettingStartedSQSFifo.ts"
 ```
 
-1.  **Step 1**. Creates a partial failure batch processor for SQS FIFO queues. See [partial failure mechanics for details](#partial-failure-mechanics)
+1. **Step 1**. Creates a partial failure batch processor for SQS FIFO queues. See [partial failure mechanics for details](#partial-failure-mechanics)
 
-!!! Note 
+!!! Note
     Note that SqsFifoPartialProcessor is synchronous using `processPartialResponseSync`.
     This is because we need to preserve the order of messages in the queue. See [Async or sync processing section](#async-or-sync-processing) for more details.
 
@@ -373,16 +374,16 @@ There are two processors you can use with this utility:
 
 In most cases your function will be `async` returning a `Promise`. Therefore, the `BatchProcessor` is the default processor handling your batch records asynchronously.
 There are use cases where you need to process the batch records synchronously. For example, when you need to process multiple records at the same time without conflicting with one another.
-For such cases we recommend to use the `BatchProcessorSync` and `processPartialResponseSync` functions. 
+For such cases we recommend to use the `BatchProcessorSync` and `processPartialResponseSync` functions.
 
 !!! info "Note that you need match your processing function with the right batch processor"
-    * If your function is `async` returning a `Promise`, use `BatchProcessor` and `processPartialResponse`
+    *If your function is `async` returning a `Promise`, use `BatchProcessor` and `processPartialResponse`
     * If your function is not `async`, use `BatchProcessorSync` and `processPartialResponseSync`
 
-The difference between the two processors in implementation is that `BatchProcessor` uses `Promise.all()` while `BatchProcessorSync` loops through each record to preserve the order. 
+The difference between the two processors in implementation is that `BatchProcessor` uses `Promise.all()` while `BatchProcessorSync` loops through each record to preserve the order.
 
 ???+ question "When is this useful?"
-    
+
     For example, imagine you need to process multiple loyalty points and incrementally save in a database. While you await the database to confirm your records are saved, you could start processing another request concurrently.
 
     The reason this is not the default behaviour is that not all use cases can handle concurrency safely (e.g., loyalty points must be updated in order).
@@ -396,13 +397,12 @@ Use the `BatchProcessor` directly in your function to access a list of all retur
 * **When successful**. We will include a tuple with `success`, the result of `recordHandler`, and the batch record
 * **When failed**. We will include a tuple with `fail`, exception as a string, and the batch record
 
-
 ```typescript hl_lines="25 27-28 30-33 38" title="Accessing processed messages"
 --8<-- "docs/snippets/batch/accessProcessedMessages.ts"
 ```
 
-1.  The processor requires the records array. This is typically handled by `processPartialResponse`.
-2.  You need to register the `batch`, the `recordHandler` function, and optionally the `context` to access the Lambda context.
+1. The processor requires the records array. This is typically handled by `processPartialResponse`.
+2. You need to register the `batch`, the `recordHandler` function, and optionally the `context` to access the Lambda context.
 
 ### Accessing Lambda Context
 
@@ -461,14 +461,14 @@ classDiagram
 * **`processRecordSync()`** – handles all processing logic for each individual message of a batch, including calling the `recordHandler` (`this.handler`)
 
 You can then use this class as a context manager, or pass it to `processPartialResponseSync` to process the records in your Lambda handler function.
-    
+
 ```typescript hl_lines="21 35 56 61 73 86" title="Creating a custom batch processor"
 --8<-- "docs/snippets/batch/customPartialProcessor.ts"
 ```
 
 ## Tracing with AWS X-Ray
 
-You can use Tracer to create subsegments for each batch record processed. To do so, you can open a new subsegment for each record, and close it when you're done processing it. When adding annotations and metadata to the subsegment, you can do so directly without calling `tracer.setSegment(subsegment)`. This allows you to work with the subsegment directly and avoid having to either pass the parent subsegment around or have to restore the parent subsegment at the end of the record processing. 
+You can use Tracer to create subsegments for each batch record processed. To do so, you can open a new subsegment for each record, and close it when you're done processing it. When adding annotations and metadata to the subsegment, you can do so directly without calling `tracer.setSegment(subsegment)`. This allows you to work with the subsegment directly and avoid having to either pass the parent subsegment around or have to restore the parent subsegment at the end of the record processing.
 
 ```typescript
 --8<-- "docs/snippets/batch/advancedTracingRecordHandler.ts"

@@ -3,6 +3,8 @@ title: Idempotency
 description: Utility
 ---
 
+<!-- markdownlint-disable MD043 -->
+
 The idempotency utility provides a simple solution to convert your Lambda functions into idempotent operations which are safe to retry.
 
 ## Key features
@@ -52,16 +54,15 @@ classDiagram
 ### Installation
 
 Install the library in your project
+
 ```shell
 npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
 ```
 
 While we support Amazon DynamoDB as a persistence layer out of the box, you need to bring your own AWS SDK for JavaScript v3 DynamoDB client.
 
-
 ???+ note
     This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="_blank"} only**. If you are using the `nodejs18.x` runtime or newer, the AWS SDK for JavaScript v3 is already installed and you can install only the utility.
-
 
 ### IAM Permissions
 
@@ -109,10 +110,10 @@ If you're not [changing the default configuration for the DynamoDB persistence l
     Larger items cannot be written to DynamoDB and will cause exceptions.
 
 ???+ info "Info: DynamoDB"
-    Each function invocation will make only 1 request to DynamoDB by using DynamoDB's [conditional expressions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html){target="_blank"} to ensure that we don't overwrite existing records, 
+    Each function invocation will make only 1 request to DynamoDB by using DynamoDB's [conditional expressions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html){target="_blank"} to ensure that we don't overwrite existing records,
     and [ReturnValuesOnConditionCheckFailure](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html#DDB-PutItem-request-ReturnValuesOnConditionCheckFailure){target="_blank"} to return the record if it exists.
-    See [AWS Blog post on handling conditional write errors](https://aws.amazon.com/blogs/database/handle-conditional-write-errors-in-high-concurrency-scenarios-with-amazon-dynamodb/) for more details. 
-    For retried invocations, you will see 1WCU and 1RCU. 
+    See [AWS Blog post on handling conditional write errors](https://aws.amazon.com/blogs/database/handle-conditional-write-errors-in-high-concurrency-scenarios-with-amazon-dynamodb/) for more details.
+    For retried invocations, you will see 1WCU and 1RCU.
     Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to estimate the cost.
 
 ### MakeIdempotent function wrapper
@@ -133,12 +134,10 @@ You can quickly start by initializing the `DynamoDBPersistenceLayer` class and u
 
 After processing this request successfully, a second request containing the exact same payload above will now return the same response, ensuring our customer isn't charged twice.
 
-
 ???+ note
     In this example, the entire Lambda handler is treated as a single idempotent operation. If your Lambda handler can cause multiple side effects, or you're only interested in making a specific logic idempotent, use the `makeIdempotent` high-order function only on the function that needs to be idempotent.
-    
-    See [Choosing a payload subset for idempotency](#choosing-a-payload-subset-for-idempotency) for more elaborate use cases.
 
+    See [Choosing a payload subset for idempotency](#choosing-a-payload-subset-for-idempotency) for more elaborate use cases.
 
 You can also use the `makeIdempotent` function wrapper on any method that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
 
@@ -159,14 +158,17 @@ When using `makeIdempotent` on arbitrary functions, you can tell us which argume
     --8<-- "docs/snippets/idempotency/types.ts:3:16"
     ```
 
-The function this example has two arguments, note that while wrapping it with the `makeIdempotent` high-order function, we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one that contains the data we should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the second is `1`, and so on.
+The function this example has two arguments, note that while wrapping it with the `makeIdempotent` high-order function, we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one with the data we should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the second is `1`, etc.
 
 ### Idempotent Decorator
 
 You can also use the `@idempotent` decorator to make your Lambda handler idempotent, similar to the `makeIdempotent` function wrapper.
 
 !!! info
-    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+    Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
+
     If this is not the desired behavior, you can use one of the other patterns to make your logic idempotent.
 
 === "index.ts"
@@ -181,7 +183,6 @@ You can also use the `@idempotent` decorator to make your Lambda handler idempot
     --8<-- "docs/snippets/idempotency/types.ts"
     ```
 
-
 You can use the decorator on your Lambda handler or on any function that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
 The configuration options for the `@idempotent` decorator are the same as the ones for the `makeIdempotent` function wrapper.
 
@@ -191,7 +192,9 @@ The configuration options for the `@idempotent` decorator are the same as the on
     Currently we support Middy up to `v4.x` that you can install it by running `npm i @middy/core@~4`.
     Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
-If you are using [Middy](https://middy.js.org){target="_blank"} as your middleware engine, you can use the `makeHandlerIdempotent` middleware to make your Lambda handler idempotent. Similar to the `makeIdempotent` function wrapper, you can quickly make your Lambda handler idempotent by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeHandlerIdempotent` middleware.
+If you are using [Middy.js](https://middy.js.org){target="_blank"} as your middleware engine, you can use the `makeHandlerIdempotent` middleware to make your Lambda handler idempotent.
+
+Similar to the `makeIdempotent` function wrapper, you can quickly make your Lambda handler idempotent by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeHandlerIdempotent` middleware.
 
 === "index.ts"
 
@@ -242,10 +245,8 @@ Imagine the function executes successfully, but the client never receives the re
 
 ### Lambda timeouts
 
-
-
 To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools for AWS Lambda calculates and includes the remaining invocation available time as part of the idempotency record.
-This is automatically done when you wrap your Lambda handler with the [makeIdempotent](#makeIdempotent-function-wrapper) function wrapper, or use the [`makeHandlerIdempotent`](#makeHandlerIdempotent-middy-middleware) Middy middleware.
+This is automatically done when you wrap your Lambda handler with the [makeIdempotent](#makeidempotent-function-wrapper) function wrapper, or use the [`makeHandlerIdempotent`](#makehandleridempotent-middy-middleware) Middy middleware.
 
 ???+ example
     If a second invocation happens **after** this timestamp, and the record is marked as `INPROGRESS`, we will execute the invocation again as if it was in the `EXPIRED` state (e.g, `expire_seconds` field elapsed).
@@ -253,7 +254,7 @@ This is automatically done when you wrap your Lambda handler with the [makeIdemp
     This means that if an invocation expired during execution, it will be quickly executed again on the next retry.
 
 ???+ important
-    If you are only using the [makeIdempotent function wrapper](#makeIdempotent-function-wrapper) to guard isolated parts of your code outside of your handler, you must use `registerLambdaContext` available in the [idempotency config object](#customizing-the-default-behavior) to benefit from this protection.
+    If you are only using the [makeIdempotent function wrapper](#makeidempotent-function-wrapper) to guard isolated parts of your code outside of your handler, you must use `registerLambdaContext` available in the [idempotency config object](#customizing-the-default-behavior) to benefit from this protection.
 
 Here is an example on how you register the Lambda context in your handler:
 
@@ -653,11 +654,9 @@ This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`
 You can easily integrate with [Batch](batch.md) utility by using idempotency wrapper around your processing function.
 This ensures that you process each record in an idempotent manner, and guard against a [Lambda timeout](#lambda-timeouts) idempotent situation.
 
-???+ "Choosing a unique batch record attribute" 
+???+ "Choosing a unique batch record attribute"
     In this example, we choose `messageId` as our idempotency key since we know it'll be unique.
     Depending on your use case, it might be more accurate [to choose another field](#choosing-a-payload-subset-for-idempotency) your producer intentionally set to define uniqueness.
-
-
 
 === "Integration with batch processor"
 
@@ -742,7 +741,7 @@ Below an example implementation of a custom persistence layer backed by a generi
 
 ???+ danger
     Pay attention to the documentation for each - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
-    
+
     For example, the `_putRecord()` method needs to throw an error if a non-expired record already exists in the data store with a matching key.
 
 ## Extra resources

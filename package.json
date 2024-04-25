@@ -75,7 +75,7 @@
     "typescript": "^5.4.5"
   },
   "lint-staged": {
-    "*.{md}": "markdownlint-cli2 --fix"
+    "*.md": "markdownlint-cli2 --fix"
   },
   "engines": {
     "node": ">=16"

@@ -11,7 +11,6 @@ LICENSE
 .github/**
 **node_modules/** */
 # these will be removed from the ignore and linted in future PRs
-packages/examples/README.md
 packages/batch/README.md
 packages/commons/README.md
 packages/idempotency/README.md
@@ -20,5 +19,4 @@ packages/logger/README.md
 packages/metrics/README.md
 packages/parameters/README.md
 packages/parser/README.md
-packages/testing/README.md
 packages/tracer/README.md

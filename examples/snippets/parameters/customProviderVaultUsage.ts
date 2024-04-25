@@ -1,4 +1,4 @@
-import { HashiCorpVaultProvider } from './customProviderVault';
+import { HashiCorpVaultProvider } from './customProviderVault.js';
 
 const secretsProvider = new HashiCorpVaultProvider({
   url: 'https://vault.example.com:8200/v1',

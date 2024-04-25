@@ -85,19 +85,19 @@ The remaining sections of the documentation will rely on these samples. For comp
 === "SQS"
 
     ```yaml title="template.yaml" hl_lines="30-31"
-    --8<-- "docs/snippets/batch/templates/sam/sqs.yaml"
+    --8<-- "examples/snippets/batch/templates/sam/sqs.yaml"
     ```
 
 === "Kinesis Data Streams"
 
     ```yaml title="template.yaml" hl_lines="44-45"
-    --8<-- "docs/snippets/batch/templates/sam/kinesis.yaml"
+    --8<-- "examples/snippets/batch/templates/sam/kinesis.yaml"
     ```
 
 === "DynamoDB Streams"
 
     ```yaml title="template.yaml" hl_lines="43-44"
-    --8<-- "docs/snippets/batch/templates/sam/dynamodb.yaml"
+    --8<-- "examples/snippets/batch/templates/sam/dynamodb.yaml"
     ```
 
 ### Processing messages from SQS
@@ -115,9 +115,9 @@ Processing batches from SQS works in three stages:
 
     ```typescript hl_lines="1-5 14 17 29-31"
     --8<--
-     docs/snippets/batch/gettingStartedSQS.ts::16
-     docs/snippets/batch/gettingStartedSQS.ts:18:29
-     docs/snippets/batch/gettingStartedSQS.ts:31:34
+     examples/snippets/batch/gettingStartedSQS.ts::16
+     examples/snippets/batch/gettingStartedSQS.ts:18:29
+     examples/snippets/batch/gettingStartedSQS.ts:31:34
     --8<--
     ```
 
@@ -130,13 +130,13 @@ Processing batches from SQS works in three stages:
     The second record failed to be processed, therefore the processor added its message ID in the response.
 
     ```json
-    --8<-- "docs/snippets/batch/samples/sampleSQSResponse.json"
+    --8<-- "examples/snippets/batch/samples/sampleSQSResponse.json"
     ```
 
 === "Sample event"
 
     ```json
-    --8<-- "docs/snippets/batch/samples/sampleSQSEvent.json"
+    --8<-- "examples/snippets/batch/samples/sampleSQSEvent.json"
     ```
 
 #### FIFO queues
@@ -145,7 +145,7 @@ When using [SQS FIFO queues](https://docs.aws.amazon.com/AWSSimpleQueueService/l
 This helps preserve the ordering of messages in your queue.
 
 ```typescript hl_lines="1-4 13 28-30"
---8<-- "docs/snippets/batch/gettingStartedSQSFifo.ts"
+--8<-- "examples/snippets/batch/gettingStartedSQSFifo.ts"
 ```
 
 1. **Step 1**. Creates a partial failure batch processor for SQS FIFO queues. See [partial failure mechanics for details](#partial-failure-mechanics)
@@ -168,7 +168,7 @@ Processing batches from Kinesis works in three stages:
 === "index.ts"
 
     ```typescript hl_lines="1-5 14 17 27-29"
-    --8<-- "docs/snippets/batch/gettingStartedKinesis.ts"
+    --8<-- "examples/snippets/batch/gettingStartedKinesis.ts"
     ```
 
     1.  **Step 1**. Creates a partial failure batch processor for Kinesis Data Streams. See [partial failure mechanics for details](#partial-failure-mechanics)
@@ -178,13 +178,13 @@ Processing batches from Kinesis works in three stages:
     The second record failed to be processed, therefore the processor added its sequence number in the response.
 
     ```json
-    --8<-- "docs/snippets/batch/samples/sampleKinesisEvent.json"
+    --8<-- "examples/snippets/batch/samples/sampleKinesisEvent.json"
     ```
 
 === "Sample event"
 
     ```json
-    --8<-- "docs/snippets/batch/samples/sampleKinesisResponse.json"
+    --8<-- "examples/snippets/batch/samples/sampleKinesisResponse.json"
     ```
 
 ### Processing messages from DynamoDB
@@ -201,7 +201,7 @@ Processing batches from DynamoDB Streams works in three stages:
 === "index.ts"
 
     ```typescript hl_lines="1-5 14 17 32-34"
-    --8<-- "docs/snippets/batch/gettingStartedDynamoDBStreams.ts"
+    --8<-- "examples/snippets/batch/gettingStartedDynamoDBStreams.ts"
     ```
 
     1.  **Step 1**. Creates a partial failure batch processor for DynamoDB Streams. See [partial failure mechanics for details](#partial-failure-mechanics)
@@ -211,13 +211,13 @@ Processing batches from DynamoDB Streams works in three stages:
     The second record failed to be processed, therefore the processor added its sequence number in the response.
 
     ```json
-    --8<-- "docs/snippets/batch/samples/sampleDynamoDBStreamsResponse.json"
+    --8<-- "examples/snippets/batch/samples/sampleDynamoDBStreamsResponse.json"
     ```
 
 === "Sample event"
 
     ```json
-    --8<-- "docs/snippets/batch/samples/sampleDynamoDBStreamsEvent.json"
+    --8<-- "examples/snippets/batch/samples/sampleDynamoDBStreamsEvent.json"
     ```
 
 ### Error handling
@@ -228,9 +228,9 @@ By default, we catch any exception raised by your record handler function. This 
 
     ```typescript hl_lines="30"
     --8<--
-     docs/snippets/batch/gettingStartedErrorHandling.ts::29
-     docs/snippets/batch/gettingStartedErrorHandling.ts:31:38
-     docs/snippets/batch/gettingStartedErrorHandling.ts:40:43
+     examples/snippets/batch/gettingStartedErrorHandling.ts::29
+     examples/snippets/batch/gettingStartedErrorHandling.ts:31:38
+     examples/snippets/batch/gettingStartedErrorHandling.ts:40:43
     --8<--
     ```
 
@@ -241,7 +241,7 @@ By default, we catch any exception raised by your record handler function. This 
 === "Sample response"
 
     ```json
-    --8<-- "docs/snippets/batch/samples/sampleSQSResponse.json"
+    --8<-- "examples/snippets/batch/samples/sampleSQSResponse.json"
     ```
 
 ### Partial failure mechanics
@@ -398,7 +398,7 @@ Use the `BatchProcessor` directly in your function to access a list of all retur
 * **When failed**. We will include a tuple with `fail`, exception as a string, and the batch record
 
 ```typescript hl_lines="25 27-28 30-33 38" title="Accessing processed messages"
---8<-- "docs/snippets/batch/accessProcessedMessages.ts"
+--8<-- "examples/snippets/batch/accessProcessedMessages.ts"
 ```
 
 1. The processor requires the records array. This is typically handled by `processPartialResponse`.
@@ -411,7 +411,7 @@ Within your `recordHandler` function, you might need access to the Lambda contex
 We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lambda/latest/dg/typescript-context.html){target="_blank"} into your `recordHandler` as optional second argument if you register it when using `BatchProcessorSync` or the `processPartialResponseSync` function.
 
 ```typescript hl_lines="17 35"
---8<-- "docs/snippets/batch/accessLambdaContext.ts"
+--8<-- "examples/snippets/batch/accessLambdaContext.ts"
 ```
 
 ### Extending BatchProcessor
@@ -426,7 +426,7 @@ For these scenarios, you can subclass `BatchProcessor` and quickly override `suc
 Let's suppose you'd like to add a metric named `BatchRecordFailures` for each batch record that failed processing
 
 ```typescript hl_lines="3 20 24 31 37" title="Extending failure handling mechanism in BatchProcessor"
---8<-- "docs/snippets/batch/extendingFailure.ts"
+--8<-- "examples/snippets/batch/extendingFailure.ts"
 ```
 
 ### Create your own partial processor
@@ -463,7 +463,7 @@ classDiagram
 You can then use this class as a context manager, or pass it to `processPartialResponseSync` to process the records in your Lambda handler function.
 
 ```typescript hl_lines="21 35 56 61 73 86" title="Creating a custom batch processor"
---8<-- "docs/snippets/batch/customPartialProcessor.ts"
+--8<-- "examples/snippets/batch/customPartialProcessor.ts"
 ```
 
 ## Tracing with AWS X-Ray
@@ -471,7 +471,7 @@ You can then use this class as a context manager, or pass it to `processPartialR
 You can use Tracer to create subsegments for each batch record processed. To do so, you can open a new subsegment for each record, and close it when you're done processing it. When adding annotations and metadata to the subsegment, you can do so directly without calling `tracer.setSegment(subsegment)`. This allows you to work with the subsegment directly and avoid having to either pass the parent subsegment around or have to restore the parent subsegment at the end of the record processing.
 
 ```typescript
---8<-- "docs/snippets/batch/advancedTracingRecordHandler.ts"
+--8<-- "examples/snippets/batch/advancedTracingRecordHandler.ts"
 ```
 
 1. Retrieve the current segment, then create a subsegment for the record being processed
@@ -489,17 +489,17 @@ Given a SQS batch where the first batch record succeeds and the second fails pro
 === "index.test.ts"
 
     ```typescript
-    --8<-- "docs/snippets/batch/testingYourCode.ts"
+    --8<-- "examples/snippets/batch/testingYourCode.ts"
     ```
 
 === "index.ts"
 
     ```typescript
-    --8<-- "docs/snippets/batch/gettingStartedSQS.ts"
+    --8<-- "examples/snippets/batch/gettingStartedSQS.ts"
     ```
 
 === "Sample SQS event"
 
     ```json title="events/sqs_event.json"
-    --8<-- "docs/snippets/batch/samples/sampleSQSEvent.json"
+    --8<-- "examples/snippets/batch/samples/sampleSQSEvent.json"
     ```

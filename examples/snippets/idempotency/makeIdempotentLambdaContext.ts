@@ -5,26 +5,21 @@ import {
 } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { Context } from 'aws-lambda';
-import type { Request, Response, SubscriptionResult } from './types';
+import type { Request, Response, SubscriptionResult } from './types.js';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: 'idempotencyTableName',
 });
-const config = new IdempotencyConfig({
-  eventKeyJmesPath: '["userId", "productId"]',
-  payloadValidationJmesPath: 'amount',
-});
-
-const fetchProductAmount = async (_transactionId: string): Promise<number> => {
-  // ... fetch product amount
-  return 42;
-};
+const config = new IdempotencyConfig({});
 
 const createSubscriptionPayment = makeIdempotent(
-  async (event: Request & { amount: number }): Promise<SubscriptionResult> => {
+  async (
+    transactionId: string,
+    event: Request
+  ): Promise<SubscriptionResult> => {
     // ... create payment
     return {
-      id: randomUUID(),
+      id: transactionId,
       productId: event.productId,
     };
   },
@@ -39,13 +34,11 @@ export const handler = async (
   event: Request,
   context: Context
 ): Promise<Response> => {
+  // Register the Lambda context to the IdempotencyConfig instance
   config.registerLambdaContext(context);
   try {
-    const productAmount = await fetchProductAmount(event.productId);
-    const payment = await createSubscriptionPayment({
-      ...event,
-      amount: productAmount,
-    });
+    const transactionId = randomUUID();
+    const payment = await createSubscriptionPayment(transactionId, event);
 
     return {
       paymentId: payment.id,

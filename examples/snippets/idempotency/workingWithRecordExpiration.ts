@@ -1,13 +1,17 @@
-import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
+import {
+  makeIdempotent,
+  IdempotencyConfig,
+} from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { Context } from 'aws-lambda';
-import type { Request, Response } from './types';
+import type { Request, Response } from './types.js';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: 'idempotencyTableName',
-  clientConfig: {
-    region: 'us-east-1',
-  },
+});
+
+const config = new IdempotencyConfig({
+  expiresAfterSeconds: 300,
 });
 
 export const handler = makeIdempotent(
@@ -26,5 +30,6 @@ export const handler = makeIdempotent(
   },
   {
     persistenceStore,
+    config,
   }
 );

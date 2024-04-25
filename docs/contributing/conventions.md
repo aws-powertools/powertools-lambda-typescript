@@ -34,7 +34,7 @@ Additionally, we try to share common runtime code between utilities to reduce ma
 
 There are also a few other workspaces that are not utilities published to npm, but that still share dependencies and/or runtime code with the utilities. These workspaces are:
 
-* `docs/snippets`: contains the documentation code snippets
+* `examples/snippets`: contains the documentation code snippets
 * `examples/app`: contains an example project that can be deployed via AWS CDK or AWS SAM
 * `layers`: contains the code used to build and publish the [Lambda layers](../index.md#lambda-layer)
 

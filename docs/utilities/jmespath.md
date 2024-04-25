@@ -39,13 +39,13 @@ You can use the `extractDataFromEnvelope` function with any [JMESPath expression
 
 === "extractDataFromBuiltinEnvelope.ts"
     ```typescript hl_lines="1 13 17 20 22"
-    --8<-- "docs/snippets/jmespath/extractDataFromEnvelope.ts"
+    --8<-- "examples/snippets/jmespath/extractDataFromEnvelope.ts"
     ```
 
 === "extractDataFromEnvelope.json"
 
     ```json
-    --8<-- "docs/snippets/jmespath/extractDataFromEnvelope.json"
+    --8<-- "examples/snippets/jmespath/extractDataFromEnvelope.json"
     ```
 
 ### Built-in envelopes
@@ -54,13 +54,13 @@ We provide built-in envelopes for popular AWS Lambda event sources to easily dec
 
 === "extractDataFromBuiltinEnvelope.ts"
     ```typescript hl_lines="2-3 15"
-    --8<-- "docs/snippets/jmespath/extractDataFromBuiltinEnvelope.ts"
+    --8<-- "examples/snippets/jmespath/extractDataFromBuiltinEnvelope.ts"
     ```
 
 === "extractDataFromBuiltinEnvelope.json"
 
     ```json hl_lines="6 15"
-    --8<-- "docs/snippets/jmespath/extractDataFromBuiltinEnvelope.json"
+    --8<-- "examples/snippets/jmespath/extractDataFromBuiltinEnvelope.json"
     ```
 
 These are all built-in envelopes you can use along with their expression as a reference:
@@ -103,13 +103,13 @@ This sample will deserialize the JSON string within the `body` key before [Idemp
 === "powertoolsJsonIdempotencyJmespath.ts"
 
     ```ts hl_lines="31"
-    --8<-- "docs/snippets/jmespath/powertoolsJsonIdempotencyJmespath.ts"
+    --8<-- "examples/snippets/jmespath/powertoolsJsonIdempotencyJmespath.ts"
     ```
 
 === "powertoolsJsonIdempotencyJmespath.json"
 
     ```json hl_lines="28"
-    --8<-- "docs/snippets/jmespath/powertoolsJsonIdempotencyJmespath.json"
+    --8<-- "examples/snippets/jmespath/powertoolsJsonIdempotencyJmespath.json"
     ```
 
 #### `powertools_base64` function
@@ -121,7 +121,7 @@ This sample will decode the base64 value within the `data` key, and deserialize 
 === "powertoolsBase64Jmespath.ts"
 
     ```ts hl_lines="9"
-    --8<-- "docs/snippets/jmespath/powertoolsBase64Jmespath.ts"
+    --8<-- "examples/snippets/jmespath/powertoolsBase64Jmespath.ts"
     ```
 
     1. The `data` variable contains the decoded object that looks like this:
@@ -138,7 +138,7 @@ This sample will decode the base64 value within the `data` key, and deserialize 
 === "powertoolsBase64JmespathPayload.json"
 
     ```json
-    --8<-- "docs/snippets/jmespath/powertoolsBase64JmespathPayload.json"
+    --8<-- "examples/snippets/jmespath/powertoolsBase64JmespathPayload.json"
     ```
 
 #### `powertools_base64_gzip` function
@@ -150,7 +150,7 @@ This sample will decompress and decode base64 data from Cloudwatch Logs, then us
 === "powertoolsBase64GzipJmespath.ts"
 
     ```ts hl_lines="9"
-    --8<-- "docs/snippets/jmespath/powertoolsBase64GzipJmespath.ts"
+    --8<-- "examples/snippets/jmespath/powertoolsBase64GzipJmespath.ts"
     ```
 
     1. The `payload` key contains a JSON object that once decompressed and decoded looks like this:
@@ -186,7 +186,7 @@ This sample will decompress and decode base64 data from Cloudwatch Logs, then us
 === "powertoolsBase64GzipJmespathPayload.json"
 
     ```json
-    --8<-- "docs/snippets/jmespath/powertoolsBase64GzipJmespathPayload.json"
+    --8<-- "examples/snippets/jmespath/powertoolsBase64GzipJmespathPayload.json"
     ```
 
 ### Bring your own JMESPath function
@@ -202,8 +202,8 @@ Here is an example of how to decompress messages compressed using the [Brotli co
 
     ```ts hl_lines="3 9 25-26"
     --8<--
-     docs/snippets/jmespath/powertoolsCustomFunction.ts::8
-     docs/snippets/jmespath/powertoolsCustomFunction.ts:10:
+     examples/snippets/jmespath/powertoolsCustomFunction.ts::8
+     examples/snippets/jmespath/powertoolsCustomFunction.ts:10:
 
     --8<--
     ```
@@ -214,5 +214,5 @@ Here is an example of how to decompress messages compressed using the [Brotli co
 === "powertoolsCustomFunction.json"
 
     ```json
-    --8<-- "docs/snippets/jmespath/powertoolsCustomFunction.json"
+    --8<-- "examples/snippets/jmespath/powertoolsCustomFunction.json"
     ```

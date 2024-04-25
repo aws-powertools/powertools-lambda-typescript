@@ -6,9 +6,7 @@ status: new
 
 <!-- markdownlint-disable MD043 --->
 
-This utility provides data validation and parsing using [Zod](https://zod.dev){target="_blank"}.
-
-Zod is a TypeScript-first schema declaration and validation library.  
+This utility provides data validation and parsing using [Zod](https://zod.dev){target="_blank"}, a TypeScript-first schema declaration and validation library.  
 
 ## Key features
 
@@ -33,7 +31,7 @@ This utility supports Zod v3.x and above.
 You can define your schema using Zod:
 
 ```typescript title="schema.ts"
---8<-- "docs/snippets/parser/schema.ts"
+--8<-- "examples/snippets/parser/schema.ts"
 ```
 
 This is a schema for `Order` object using Zod.
@@ -50,12 +48,12 @@ Both are also able to parse either an object or JSON string as an input.
 
 === "Middy middleware"
     ```typescript hl_lines="34"
-    --8<-- "docs/snippets/parser/middy.ts"
+    --8<-- "examples/snippets/parser/middy.ts"
     ```
 
 === "Decorator"
     ```typescript hl_lines="25"
-    --8<-- "docs/snippets/parser/decorator.ts"
+    --8<-- "examples/snippets/parser/decorator.ts"
     ```
 
 ## Built-in schemas
@@ -95,7 +93,7 @@ You can extend every built-in schema to include your own schema, and yet have al
 
 === "handler.ts"
     ```typescript hl_lines="23-25 30 34"
-    --8<-- "docs/snippets/parser/extend.ts"
+    --8<-- "examples/snippets/parser/extend.ts"
     ```
 
     1. Extend built-in `EventBridgeSchema` with your own detail schema
@@ -105,7 +103,7 @@ You can extend every built-in schema to include your own schema, and yet have al
 === "Example payload"
 
     ```json
-    --8<-- "docs/snippets/parser/examplePayload.json"
+    --8<-- "examples/snippets/parser/examplePayload.json"
     ```
 
 ## Envelopes
@@ -122,12 +120,12 @@ Here's an example of parsing a custom schema in an event coming from EventBridge
 
 === "Middy middleware"
     ```typescript hl_lines="5 36"
-    --8<-- "docs/snippets/parser/envelopeMiddy.ts"
+    --8<-- "examples/snippets/parser/envelopeMiddy.ts"
     ```
 
 === "Decorator"
     ```typescript hl_lines="5 26 30"
-    --8<-- "docs/snippets/parser/envelopeDecorator.ts"
+    --8<-- "examples/snippets/parser/envelopeDecorator.ts"
     ```
 
     1. Pass `eventBridgeEnvelope` to `parser` decorator
@@ -172,7 +170,7 @@ If the parsing is successful, the `data` field will contain the parsed event, ot
 
 === "Middy middleware"
     ```typescript hl_lines="32 35 38 39 44"
-    --8<-- "docs/snippets/parser/safeParseMiddy.ts"
+    --8<-- "examples/snippets/parser/safeParseMiddy.ts"
     ```
 
     1. Use `safeParse` option to parse the event without throwing an error
@@ -183,7 +181,7 @@ If the parsing is successful, the `data` field will contain the parsed event, ot
 
 === "Decorator"
     ```typescript hl_lines="29 35 37 40 41"
-    --8<-- "docs/snippets/parser/safeParseDecorator.ts"
+    --8<-- "examples/snippets/parser/safeParseDecorator.ts"
     ```
 
     1. Use `safeParse` option to parse the event without throwing an error
@@ -198,7 +196,7 @@ You can use built-in envelopes and schemas to parse the incoming events manually
 
 === "Manual parse"
     ```typescript hl_lines="28 31"
-    --8<-- "docs/snippets/parser/manual.ts"
+    --8<-- "examples/snippets/parser/manual.ts"
     ```
 
     1. Use `EventBridgeSchema` to parse the event, the `details` fields will be parsed as a generic record.
@@ -206,7 +204,7 @@ You can use built-in envelopes and schemas to parse the incoming events manually
 
 === "Manual safeParse"
     ```typescript hl_lines="27 31"
-    --8<-- "docs/snippets/parser/manualSafeParse.ts"
+    --8<-- "examples/snippets/parser/manualSafeParse.ts"
     ```
 
     1. Use `safeParse` option to parse the event without throwing an error
@@ -219,7 +217,7 @@ For example, you can use `refine` to validate a field or a combination of fields
 
 === "Custom validation"
     ```typescript hl_lines="13 18"
-    --8<-- "docs/snippets/parser/refine.ts"
+    --8<-- "examples/snippets/parser/refine.ts"
     ```
 
     1. validate a single field
@@ -235,7 +233,7 @@ Use `z.infer` to extract the type of the schema, so you can use types during dev
 
 === "Types"
     ```typescript hl_lines="22 25 30"
-    --8<-- "docs/snippets/parser/types.ts"
+    --8<-- "examples/snippets/parser/types.ts"
     ```
 
     1. Use `z.infer` to extract the type of the schema, also works for nested schemas

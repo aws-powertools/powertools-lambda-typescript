@@ -13,17 +13,6 @@ const logger = new Logger({
   },
 });
 
-// OR add persistent log keys to an existing Logger instance with the appendKeys method:
-// logger.appendKeys({
-//     aws_account_id: '123456789012',
-//     aws_region: 'eu-west-1',
-//     logger: {
-//         name: '@aws-lambda-powertools/logger',
-//         version: '0.0.1',
-//     },
-//     extra_key: "some-value"
-// });
-
 export const handler = async (
   _event: unknown,
   _context: unknown

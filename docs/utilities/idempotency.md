@@ -88,20 +88,20 @@ If you're not [changing the default configuration for the DynamoDB persistence l
 
 === "AWS Cloud Development Kit (CDK) example"
 
-    ```typescript title="template.tf" hl_lines="11-18 26"
-    --8<-- "docs/snippets/idempotency/templates/tableCdk.ts"
+    ```typescript title="template.ts" hl_lines="11-18 25"
+    --8<-- "examples/snippets/idempotency/templates/tableCdk.ts"
     ```
 
 === "AWS Serverless Application Model (SAM) example"
 
-    ```yaml title="template.yaml" hl_lines="6-14 24-31"
-    --8<-- "docs/snippets/idempotency/templates/tableSam.yaml"
+    ```yaml title="template.yaml" hl_lines="6-14"
+    --8<-- "examples/snippets/idempotency/templates/tableSam.yaml"
     ```
 
 === "Terraform example"
 
     ```terraform title="template.tf" hl_lines="14-26 64-70"
-    --8<-- "docs/snippets/idempotency/templates/tableTerraform.tf"
+    --8<-- "examples/snippets/idempotency/templates/tableTerraform.tf"
     ```
 
 ???+ warning "Warning: Large responses with DynamoDB persistence layer"
@@ -123,13 +123,13 @@ You can quickly start by initializing the `DynamoDBPersistenceLayer` class and u
 === "index.ts"
 
     ```typescript hl_lines="2-3 21 35-38"
-    --8<-- "docs/snippets/idempotency/makeIdempotentBase.ts"
+    --8<-- "examples/snippets/idempotency/makeIdempotentBase.ts"
     ```
 
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts:3:16"
+    --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
 After processing this request successfully, a second request containing the exact same payload above will now return the same response, ensuring our customer isn't charged twice.
@@ -149,13 +149,13 @@ When using `makeIdempotent` on arbitrary functions, you can tell us which argume
 === "index.ts"
 
     ```typescript hl_lines="22 34-38"
-    --8<-- "docs/snippets/idempotency/makeIdempotentAnyFunction.ts"
+    --8<-- "examples/snippets/idempotency/makeIdempotentAnyFunction.ts"
     ```
 
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts:3:16"
+    --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
 The function this example has two arguments, note that while wrapping it with the `makeIdempotent` high-order function, we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one with the data we should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the second is `1`, etc.
@@ -174,13 +174,13 @@ You can also use the `@idempotent` decorator to make your Lambda handler idempot
 === "index.ts"
 
     ```typescript hl_lines="17"
-    --8<-- "docs/snippets/idempotency/idempotentDecoratorBase.ts"
+    --8<-- "examples/snippets/idempotency/idempotentDecoratorBase.ts"
     ```
 
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts"
+    --8<-- "examples/snippets/idempotency/types.ts"
     ```
 
 You can use the decorator on your Lambda handler or on any function that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
@@ -199,13 +199,13 @@ Similar to the `makeIdempotent` function wrapper, you can quickly make your Lamb
 === "index.ts"
 
     ```typescript hl_lines="22 36-40"
-    --8<-- "docs/snippets/idempotency/makeHandlerIdempotent.ts"
+    --8<-- "examples/snippets/idempotency/makeHandlerIdempotent.ts"
     ```
 
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts:3:16"
+    --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
 ### Choosing a payload subset for idempotency
@@ -228,19 +228,19 @@ Imagine the function executes successfully, but the client never receives the re
 === "index.ts"
 
     ```typescript hl_lines="4 27 49"
-    --8<-- "docs/snippets/idempotency/makeIdempotentJmes.ts"
+    --8<-- "examples/snippets/idempotency/makeIdempotentJmes.ts"
     ```
 
 === "Example event"
 
     ```json hl_lines="28"
-    --8<-- "docs/snippets/idempotency/samples/makeIdempotentJmes.json"
+    --8<-- "examples/snippets/idempotency/samples/makeIdempotentJmes.json"
     ```
 
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts:3:16"
+    --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
 ### Lambda timeouts
@@ -261,7 +261,7 @@ Here is an example on how you register the Lambda context in your handler:
 === "Registering Lambda Context"
 
     ```typescript hl_lines="13 38"
-    --8<-- "docs/snippets/idempotency/makeIdempotentLambdaContext.ts"
+    --8<-- "examples/snippets/idempotency/makeIdempotentLambdaContext.ts"
     ```
 
 ### Handling exceptions
@@ -295,7 +295,7 @@ If an error is thrown _outside_ the scope of the decorated function and after yo
 === "Handling exceptions"
 
     ```typescript hl_lines="39-40 47-48"
-    --8<-- "docs/snippets/idempotency/workingWithExceptions.ts"
+    --8<-- "examples/snippets/idempotency/workingWithExceptions.ts"
     ```
 
 ???+ warning
@@ -514,7 +514,7 @@ This persistence layer is built-in, and you can either use an existing DynamoDB 
 === "Customizing DynamoDBPersistenceLayer to suit your table structure"
 
     ```typescript hl_lines="7-15"
-    --8<-- "docs/snippets/idempotency/customizePersistenceLayer.ts"
+    --8<-- "examples/snippets/idempotency/customizePersistenceLayer.ts"
     ```
 
 When using DynamoDB as a persistence layer, you can alter the attribute names by passing these parameters when initializing the persistence layer:
@@ -566,7 +566,7 @@ You can enable in-memory caching with the **`useLocalCache`** parameter:
 === "Caching idempotent transactions in-memory to prevent multiple calls to storage"
 
     ```typescript hl_lines="12-13"
-    --8<-- "docs/snippets/idempotency/workingWithLocalCache.ts"
+    --8<-- "examples/snippets/idempotency/workingWithLocalCache.ts"
     ```
 
 When enabled, the default is to cache a maximum of 256 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
@@ -582,7 +582,7 @@ You can change this window with the **`expiresAfterSeconds`** parameter:
 === "Adjusting idempotency record expiration"
 
     ```typescript hl_lines="14"
-    --8<-- "docs/snippets/idempotency/workingWithRecordExpiration.ts"
+    --8<-- "examples/snippets/idempotency/workingWithRecordExpiration.ts"
     ```
 
 This will mark any records older than 5 minutes as expired, and [your function will be executed as normal if it is invoked with a matching payload](#expired-idempotency-records).
@@ -610,7 +610,7 @@ With **`payloadValidationJmesPath`**, you can provide an additional JMESPath exp
 === "Payload validation"
 
     ```typescript hl_lines="14-15"
-    --8<-- "docs/snippets/idempotency/workingWithPayloadValidation.ts"
+    --8<-- "examples/snippets/idempotency/workingWithPayloadValidation.ts"
     ```
 
 In this example, the **`userId`** and **`productId`** keys are used as the payload to generate the idempotency key, as per **`eventKeyJmespath`** parameter.
@@ -634,19 +634,19 @@ This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`
 === "Idempotency key required"
 
     ```typescript hl_lines="14-15"
-    --8<-- "docs/snippets/idempotency/workingWithIdempotencyRequiredKey.ts"
+    --8<-- "examples/snippets/idempotency/workingWithIdempotencyRequiredKey.ts"
     ```
 
 === "Success Event"
 
     ```json hl_lines="3 6"
-    --8<-- "docs/snippets/idempotency/samples/workingWIthIdempotencyRequiredKeySuccess.json"
+    --8<-- "examples/snippets/idempotency/samples/workingWIthIdempotencyRequiredKeySuccess.json"
     ```
 
 === "Failure Event"
 
     ```json hl_lines="3 5"
-    --8<-- "docs/snippets/idempotency/samples/workingWIthIdempotencyRequiredKeyError.json"
+    --8<-- "examples/snippets/idempotency/samples/workingWIthIdempotencyRequiredKeyError.json"
     ```
 
 ### Batch integration
@@ -661,13 +661,13 @@ This ensures that you process each record in an idempotent manner, and guard aga
 === "Integration with batch processor"
 
     ```typescript hl_lines="27 31-34 41"
-    --8<-- "docs/snippets/idempotency/workingWithBatch.ts"
+    --8<-- "examples/snippets/idempotency/workingWithBatch.ts"
     ```
 
 === "Sample event"
 
     ```json hl_lines="4"
-    --8<-- "docs/snippets/idempotency/samples/workingWithBatch.json"
+    --8<-- "examples/snippets/idempotency/samples/workingWithBatch.json"
     ```
 
 ### Customizing AWS SDK configuration
@@ -677,13 +677,13 @@ The **`clientConfig`** and **`awsSdkV3Client`** parameters enable you to pass in
 === "Passing specific configuration"
 
     ```typescript hl_lines="8-10"
-    --8<-- "docs/snippets/idempotency/workingWithCustomConfig.ts"
+    --8<-- "examples/snippets/idempotency/workingWithCustomConfig.ts"
     ```
 
 === "Passing custom DynamoDBClient"
 
     ```typescript hl_lines="7-9 12"
-    --8<-- "docs/snippets/idempotency/workingWithCustomClient.ts"
+    --8<-- "examples/snippets/idempotency/workingWithCustomClient.ts"
     ```
 
 ### Using a DynamoDB table with a composite primary key
@@ -697,7 +697,7 @@ You can optionally set a static value for the partition key using the `staticPkV
 === "Reusing a DynamoDB table that uses a composite primary key"
 
     ```typescript hl_lines="9"
-    --8<-- "docs/snippets/idempotency/workingWithCompositeKey.ts"
+    --8<-- "examples/snippets/idempotency/workingWithCompositeKey.ts"
     ```
 
 The example function above would cause data to be stored in DynamoDB like this:
@@ -724,19 +724,19 @@ Below an example implementation of a custom persistence layer backed by a generi
 === "CustomPersistenceLayer"
 
     ```typescript hl_lines="9 19 28 34 50 90"
-    --8<-- "docs/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
+    --8<-- "examples/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
     ```
 
 === "index.ts"
 
     ```typescript hl_lines="10"
-    --8<-- "docs/snippets/idempotency/advancedBringYourOwnPersistenceLayerUsage.ts"
+    --8<-- "examples/snippets/idempotency/advancedBringYourOwnPersistenceLayerUsage.ts"
     ```
 
 === "types.ts"
 
     ```typescript
-    --8<-- "docs/snippets/idempotency/types.ts"
+    --8<-- "examples/snippets/idempotency/types.ts"
     ```
 
 ???+ danger

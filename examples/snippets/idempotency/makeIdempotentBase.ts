@@ -1,24 +1,30 @@
+import { randomUUID } from 'node:crypto';
 import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { Context } from 'aws-lambda';
-import type { Request, Response } from './types';
+import type { Request, Response, SubscriptionResult } from './types.js';
 
-const customDynamoDBClient = new DynamoDBClient({
-  endpoint: 'http://localhost:8000',
-});
 const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: 'idempotencyTableName',
-  awsSdkV3Client: customDynamoDBClient,
 });
 
+const createSubscriptionPayment = async (
+  event: Request
+): Promise<SubscriptionResult> => {
+  // ... create payment
+  return {
+    id: randomUUID(),
+    productId: event.productId,
+  };
+};
+
 export const handler = makeIdempotent(
-  async (_event: Request, _context: Context): Promise<Response> => {
+  async (event: Request, _context: Context): Promise<Response> => {
     try {
-      // ... create payment
+      const payment = await createSubscriptionPayment(event);
 
       return {
-        paymentId: '12345',
+        paymentId: payment.id,
         message: 'success',
         statusCode: 200,
       };

@@ -39,7 +39,7 @@ The `Tracer` utility must always be instantiated outside of the Lambda handler. 
 === "handler.ts"
 
     ```typescript hl_lines="1 3"
-    --8<-- "docs/snippets/tracer/basicUsage.ts"
+    --8<-- "examples/snippets/tracer/basicUsage.ts"
     ```
 
 ### Utility settings
@@ -64,7 +64,7 @@ The `Tracer` utility is instantiated outside of the Lambda handler. In doing thi
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
-    --8<-- "docs/snippets/tracer/sam.ts"
+    --8<-- "examples/snippets/tracer/sam.ts"
     ```
 
 === "template.yml"
@@ -92,7 +92,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="2 15 17"
-    --8<-- "docs/snippets/tracer/middy.ts"
+    --8<-- "examples/snippets/tracer/middy.ts"
     ```
 
 === "Decorator"
@@ -103,7 +103,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
         Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
 
     ```typescript hl_lines="8"
-    --8<-- "docs/snippets/tracer/decorator.ts"
+    --8<-- "examples/snippets/tracer/decorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this`.
@@ -111,7 +111,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 === "Manual"
 
     ```typescript hl_lines="9-15 18-19 23 26 29-34"
-    --8<-- "docs/snippets/tracer/manual.ts"
+    --8<-- "examples/snippets/tracer/manual.ts"
     ```
 
 When using the `captureLambdaHandler` decorator or middleware, Tracer performs these additional tasks to ease operations:
@@ -131,7 +131,7 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
     You can add annotations using `putAnnotation` method.
 
     ```typescript hl_lines="12"
-    --8<-- "docs/snippets/tracer/putAnnotation.ts"
+    --8<-- "examples/snippets/tracer/putAnnotation.ts"
     ```
 
     1. When Lambda starts an invocation [the X-Ray SDk creates a segment called `facade`](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda).
@@ -141,7 +141,7 @@ When using the `captureLambdaHandler` decorator or middleware, Tracer performs t
     You can add metadata using `putMetadata` method.
 
     ```typescript hl_lines="12-14"
-    --8<-- "docs/snippets/tracer/putMetadata.ts"
+    --8<-- "examples/snippets/tracer/putMetadata.ts"
     ```
 
     1. When Lambda starts an invocation [the X-Ray SDk creates a segment called `facade`](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html#xray-sdk-nodejs-subsegments-lambda).
@@ -165,7 +165,7 @@ You can trace other class methods using the `captureMethod` decorator or any arb
         Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
 
     ```typescript hl_lines="8"
-    --8<-- "docs/snippets/tracer/captureMethodDecorator.ts"
+    --8<-- "examples/snippets/tracer/captureMethodDecorator.ts"
     ```
 
     1. You can set a custom name for the subsegment by passing `subSegmentName` to the decorator, like: `@tracer.captureMethod({ subSegmentName: '### myCustomMethod' })`.
@@ -174,7 +174,7 @@ You can trace other class methods using the `captureMethod` decorator or any arb
 === "Manual"
 
     ```typescript hl_lines="6-12 18 21 25-30"
-    --8<-- "docs/snippets/tracer/captureMethodManual.ts"
+    --8<-- "examples/snippets/tracer/captureMethodManual.ts"
     ```
 
 ### Patching AWS SDK clients
@@ -189,7 +189,7 @@ You can patch any AWS SDK clients by calling the `captureAWSv3Client` method:
 === "index.ts"
 
     ```typescript hl_lines="6"
-    --8<-- "docs/snippets/tracer/captureAWSv3.ts"
+    --8<-- "examples/snippets/tracer/captureAWSv3.ts"
     ```
 
 !!! info
@@ -200,7 +200,7 @@ You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
 === "index.ts"
 
     ```typescript hl_lines="7"
-    --8<-- "docs/snippets/tracer/captureAWSAll.ts"
+    --8<-- "examples/snippets/tracer/captureAWSAll.ts"
     ```
 
 If you're looking to shave a few microseconds, or milliseconds depending on your function memory configuration, you can patch only specific AWS SDK v2 clients using `captureAWSClient`:
@@ -208,7 +208,7 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
 === "index.ts"
 
     ```typescript hl_lines="6"
-    --8<-- "docs/snippets/tracer/captureAWS.ts"
+    --8<-- "examples/snippets/tracer/captureAWS.ts"
     ```
 
 ### Tracing HTTP requests
@@ -224,7 +224,7 @@ You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HT
 === "index.ts"
 
     ```typescript hl_lines="2"
-    --8<-- "docs/snippets/tracer/captureHTTP.ts"
+    --8<-- "examples/snippets/tracer/captureHTTP.ts"
     ```
 
     ```json hl_lines="6 9 12-21"
@@ -272,19 +272,19 @@ Alternatively, use the `captureResponse: false` option in both `tracer.captureLa
 === "method.ts"
 
     ```typescript hl_lines="7"
-    --8<-- "docs/snippets/tracer/disableCaptureResponseMethod.ts"
+    --8<-- "examples/snippets/tracer/disableCaptureResponseMethod.ts"
     ```
 
 === "handler.ts"
 
     ```typescript hl_lines="7"
-    --8<-- "docs/snippets/tracer/disableCaptureResponseHandler.ts"
+    --8<-- "examples/snippets/tracer/disableCaptureResponseHandler.ts"
     ```
 
 === "middy.ts"
 
     ```typescript hl_lines="18"
-    --8<-- "docs/snippets/tracer/disableCaptureResponseMiddy.ts"
+    --8<-- "examples/snippets/tracer/disableCaptureResponseMiddy.ts"
     ```
 
 ### Disabling errors auto-capture
@@ -307,7 +307,7 @@ Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [
 === "index.ts"
 
     ```typescript hl_lines="11"
-    --8<-- "docs/snippets/tracer/accessRootTraceId.ts"
+    --8<-- "examples/snippets/tracer/accessRootTraceId.ts"
     ```
 
 ### Escape hatch mechanism
@@ -319,7 +319,7 @@ This is useful when you need a feature available in X-Ray that is not available 
 === "index.ts"
 
     ```typescript hl_lines="7"
-    --8<-- "docs/snippets/tracer/escapeHatch.ts"
+    --8<-- "examples/snippets/tracer/escapeHatch.ts"
     ```
 
 ## Testing your code

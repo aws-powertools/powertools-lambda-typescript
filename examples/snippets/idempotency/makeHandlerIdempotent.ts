@@ -1,26 +1,31 @@
+import { randomUUID } from 'node:crypto';
 import { makeHandlerIdempotent } from '@aws-lambda-powertools/idempotency/middleware';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-import type { Request, Response } from './types';
+import type { Request, Response, SubscriptionResult } from './types.js';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: 'idempotencyTableName',
-  keyAttr: 'idempotencyKey',
-  expiryAttr: 'expiresAt',
-  inProgressExpiryAttr: 'inProgressExpiresAt',
-  statusAttr: 'currentStatus',
-  dataAttr: 'resultData',
-  validationKeyAttr: 'validationKey',
 });
 
+const createSubscriptionPayment = async (
+  event: Request
+): Promise<SubscriptionResult> => {
+  // ... create payment
+  return {
+    id: randomUUID(),
+    productId: event.productId,
+  };
+};
+
 export const handler = middy(
-  async (_event: Request, _context: Context): Promise<Response> => {
+  async (event: Request, _context: Context): Promise<Response> => {
     try {
-      // ... create payment
+      const payment = await createSubscriptionPayment(event);
 
       return {
-        paymentId: '1234567890',
+        paymentId: payment.id,
         message: 'success',
         statusCode: 200,
       };

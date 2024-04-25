@@ -5,12 +5,19 @@ import {
 } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { Context } from 'aws-lambda';
-import type { Request, Response, SubscriptionResult } from './types';
+import type { Request, Response, SubscriptionResult } from './types.js';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: 'idempotencyTableName',
 });
 const config = new IdempotencyConfig({});
+
+const reportSubscriptionMetrics = async (
+  _transactionId: string,
+  _user: string
+): Promise<void> => {
+  // ... send notification
+};
 
 const createSubscriptionPayment = makeIdempotent(
   async (
@@ -35,18 +42,11 @@ export const handler = async (
   context: Context
 ): Promise<Response> => {
   config.registerLambdaContext(context);
-  /**
-   * If an exception is thrown before the wrapped function is called,
-   * no idempotency record is created.
-   */
   try {
     const transactionId = randomUUID();
     const payment = await createSubscriptionPayment(transactionId, event);
 
-    /**
-     * If an exception is thrown after the wrapped function is called,
-     * the idempotency record won't be affected so it's safe to retry.
-     */
+    await reportSubscriptionMetrics(transactionId, event.user);
 
     return {
       paymentId: payment.id,

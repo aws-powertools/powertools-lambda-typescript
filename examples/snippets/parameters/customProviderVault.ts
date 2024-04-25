@@ -4,7 +4,7 @@ import Vault from 'hashi-vault-js';
 import type {
   HashiCorpVaultProviderOptions,
   HashiCorpVaultGetOptions,
-} from './customProviderVaultTypes';
+} from './customProviderVaultTypes.js';
 
 class HashiCorpVaultProvider extends BaseProvider {
   public client: Vault;

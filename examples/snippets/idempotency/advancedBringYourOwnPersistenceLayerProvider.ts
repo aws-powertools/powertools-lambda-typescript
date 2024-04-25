@@ -1,4 +1,4 @@
-import type { ProviderItem } from './types';
+import type { ProviderItem } from './types.js';
 
 /**
  * This is a mock implementation of an SDK client for a generic key-value store.

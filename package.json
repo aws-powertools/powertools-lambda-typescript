@@ -13,7 +13,7 @@
     "packages/batch",
     "packages/testing",
     "packages/parser",
-    "docs/snippets",
+    "examples/snippets",
     "layers",
     "examples/app"
   ],

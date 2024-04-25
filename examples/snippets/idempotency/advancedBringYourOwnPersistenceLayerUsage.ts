@@ -5,7 +5,7 @@ import {
   IdempotencyConfig,
   makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
-import type { Request, Response, SubscriptionResult } from './types';
+import type { Request, Response, SubscriptionResult } from './types.js';
 
 const persistenceStore = new CustomPersistenceLayer({
   collectionName: 'powertools',

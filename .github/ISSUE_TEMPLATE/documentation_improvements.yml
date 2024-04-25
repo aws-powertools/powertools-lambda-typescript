@@ -27,7 +27,6 @@ body:
     attributes:
       label: How can we improve?
       description: Please share your thoughts on how we can improve this experience
-      render: Markdown
     validations:
       required: true
   - type: textarea

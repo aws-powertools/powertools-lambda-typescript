@@ -31,6 +31,9 @@ body:
         - Automation
         - Governance
         - Tests
+        - Batch
+        - Commons
+        - Event Handler
         - Tracer
         - Logger
         - Metrics

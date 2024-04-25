@@ -89,7 +89,7 @@ jobs:
       - name: Setup dependencies
         uses: ./.github/actions/cached-node-modules
       - name: Run linting
-        run: npm run lint -w docs/snippets
+        run: npm run lint -w examples/snippets
   check-docs:
     runs-on: ubuntu-latest
     env:

@@ -6,6 +6,6 @@
     "**/node_modules/**",
     "**/*.test.ts",
     "**/*.json",
-    "docs/snippets"
+    "examples/snippets"
   ]
 }

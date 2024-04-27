@@ -37,7 +37,7 @@ The `Logger` utility must always be instantiated outside the Lambda handler. By 
 === "handler.ts"
 
     ```typescript hl_lines="1 3"
-    --8<-- "docs/snippets/logger/basicUsage.ts"
+    --8<-- "examples/snippets/logger/basicUsage.ts"
     ```
 
 ### Utility settings
@@ -60,7 +60,7 @@ Check API docs to learn more about [Logger constructor options](https://docs.pow
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
-    --8<-- "docs/snippets/logger/sam.ts"
+    --8<-- "examples/snippets/logger/sam.ts"
     ```
 
 === "template.yaml"
@@ -115,7 +115,7 @@ This functionality will include the following keys in your structured logs:
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="2 14"
-    --8<-- "docs/snippets/logger/middy.ts"
+    --8<-- "examples/snippets/logger/middy.ts"
     ```
 
 === "Decorator"
@@ -128,7 +128,7 @@ This functionality will include the following keys in your structured logs:
         If this is not the desired behavior, you can call the `logger.injectLambdaContext()` method directly in your handler.
 
     ```typescript hl_lines="8"
-    --8<-- "docs/snippets/logger/decorator.ts"
+    --8<-- "examples/snippets/logger/decorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -136,7 +136,7 @@ This functionality will include the following keys in your structured logs:
 === "Manual"
 
     ```typescript hl_lines="10"
-    --8<-- "docs/snippets/logger/manual.ts"
+    --8<-- "examples/snippets/logger/manual.ts"
     ```
 
 In each case, the printed log will look like this:
@@ -168,13 +168,13 @@ When debugging in non-production environments, you can instruct Logger to log th
 === "Middy Middleware"
 
     ```typescript hl_lines="15"
-    --8<-- "docs/snippets/logger/eventMiddy.ts"
+    --8<-- "examples/snippets/logger/eventMiddy.ts"
     ```
 
 === "Decorator"
 
     ```typescript hl_lines="8"
-    --8<-- "docs/snippets/logger/eventDecorator.ts"
+    --8<-- "examples/snippets/logger/eventDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -193,7 +193,7 @@ To remove the keys you added, you can use the `removeKeys` method.
 === "handler.ts"
 
     ```typescript hl_lines="5-13 17-25 32"
-    --8<-- "docs/snippets/logger/appendKeys.ts"
+    --8<-- "examples/snippets/logger/appendKeys.ts"
     ```
 === "Example CloudWatch Logs excerpt"
 
@@ -239,13 +239,13 @@ If you want to make sure that persistent attributes added **inside the handler f
 === "Middy Middleware"
 
     ```typescript hl_lines="31"
-    --8<-- "docs/snippets/logger/clearStateMiddy.ts"
+    --8<-- "examples/snippets/logger/clearStateMiddy.ts"
     ```
 
 === "Decorator"
 
     ```typescript hl_lines="16"
-    --8<-- "docs/snippets/logger/clearStateDecorator.ts"
+    --8<-- "examples/snippets/logger/clearStateDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -303,7 +303,7 @@ You can append additional data to a single log item by passing objects as additi
 === "handler.ts"
 
     ```typescript hl_lines="16-18 23-25 37"
-    --8<-- "docs/snippets/logger/extraData.ts"
+    --8<-- "examples/snippets/logger/extraData.ts"
     ```
 === "Example CloudWatch Logs excerpt"
 
@@ -356,7 +356,7 @@ The error will be logged with default key name `error`, but you can also pass yo
 === "handler.ts"
 
     ```typescript hl_lines="13 20-22"
-    --8<-- "docs/snippets/logger/logError.ts"
+    --8<-- "examples/snippets/logger/logError.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -414,7 +414,7 @@ We support the following log levels:
 You can access the current log level by using the `getLevelName()` method. This method returns the name of the current log level as a string. If you want to change the log level at runtime, you can use the `setLogLevel()` method. This method accepts a string value that represents the log level you want to set, both lower and upper case values are supported.
 
 ```typescript
---8<-- "docs/snippets/logger/logLevel.ts"
+--8<-- "examples/snippets/logger/logLevel.ts"
 ```
 
 If you want to access the numeric value of the current log level, you can use the `level` property. For example, if the current log level is `INFO`, `logger.level` property will return `12`.
@@ -480,7 +480,7 @@ Once a child logger is created, the logger and its parent will act as separate i
 === "handler.ts"
 
     ```typescript hl_lines="16-18"
-    --8<-- "docs/snippets/logger/createChild.ts"
+    --8<-- "examples/snippets/logger/createChild.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -534,7 +534,7 @@ Sampling decision happens at the Logger initialization. This means sampling may 
 === "handler.ts"
 
     ```typescript hl_lines="6"
-    --8<-- "docs/snippets/logger/logSampling.ts"
+    --8<-- "examples/snippets/logger/logSampling.ts"
     ```
 
 === "Example CloudWatch Logs excerpt - Invocation #1"
@@ -644,7 +644,7 @@ You can customize the structure (keys and values) of your log items by passing a
 === "handler.ts"
 
     ```typescript hl_lines="2 6"
-    --8<-- "docs/snippets/logger/bringYourOwnFormatterHandler.ts"
+    --8<-- "examples/snippets/logger/bringYourOwnFormatterHandler.ts"
     ```
 
 This is how the `MyCompanyLogFormatter` (dummy name) would look like:
@@ -652,7 +652,7 @@ This is how the `MyCompanyLogFormatter` (dummy name) would look like:
 === "utils/formatters/MyCompanyLogFormatter.ts"
 
     ```typescript
-    --8<-- "docs/snippets/logger/bringYourOwnFormatterClass.ts"
+    --8<-- "examples/snippets/logger/bringYourOwnFormatterClass.ts"
     ```
 
 This is how the printed log would look:
@@ -701,7 +701,7 @@ This is a Jest sample that provides the minimum information necessary for Logger
 === "handler.test.ts"
 
     ```typescript
-    --8<-- "docs/snippets/logger/unitTesting.ts"
+    --8<-- "examples/snippets/logger/unitTesting.ts"
     ```
 
 ### Suppress logs with Jest

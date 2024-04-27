@@ -59,7 +59,7 @@ The `Metrics` utility must always be instantiated outside of the Lambda handler.
 === "handler.ts"
 
     ```typescript hl_lines="1 3-6"
-    --8<-- "docs/snippets/metrics/basicUsage.ts"
+    --8<-- "examples/snippets/metrics/basicUsage.ts"
     ```
 
 ### Utility settings
@@ -83,7 +83,7 @@ The `Metrics` utility is instantiated outside of the Lambda handler. In doing th
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
-    --8<-- "docs/snippets/metrics/sam.ts"
+    --8<-- "examples/snippets/metrics/sam.ts"
     ```
 
 === "template.yml"
@@ -109,13 +109,13 @@ You can create metrics using the `addMetric` method, and you can create dimensio
 === "Metrics"
 
     ```typescript hl_lines="12"
-    --8<-- "docs/snippets/metrics/createMetrics.ts"
+    --8<-- "examples/snippets/metrics/createMetrics.ts"
     ```
 
 === "Metrics with custom dimensions"
 
     ```typescript hl_lines="12-13"
-    --8<-- "docs/snippets/metrics/customDimensions.ts"
+    --8<-- "examples/snippets/metrics/customDimensions.ts"
     ```
 
 !!! tip "Autocomplete Metric Units"
@@ -137,7 +137,7 @@ You can create [high-resolution metrics](https://aws.amazon.com/about-aws/whats-
 === "Metrics with high resolution"
 
     ```typescript hl_lines="4 20"
-    --8<-- "docs/snippets/metrics/addHighResolutionMetric.ts"
+    --8<-- "examples/snippets/metrics/addHighResolutionMetric.ts"
     ```
 
 !!! tip "Autocomplete Metric Resolutions"
@@ -150,7 +150,7 @@ You can call `addMetric()` with the same name multiple times. The values will be
 === "addMetric() with the same name"
 
     ```typescript hl_lines="12 14"
-    --8<-- "docs/snippets/metrics/multiValueMetrics.ts"
+    --8<-- "examples/snippets/metrics/multiValueMetrics.ts"
     ```
 === "Example CloudWatch Logs excerpt"
 
@@ -195,7 +195,7 @@ You can add default dimensions to your metrics by passing them as parameters in 
 === "constructor"
 
     ```typescript hl_lines="6"
-    --8<-- "docs/snippets/metrics/defaultDimensions.ts"
+    --8<-- "examples/snippets/metrics/defaultDimensions.ts"
     ```
 
 === "Middy middleware"
@@ -205,13 +205,13 @@ You can add default dimensions to your metrics by passing them as parameters in 
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="24-26"
-    --8<-- "docs/snippets/metrics/defaultDimensionsMiddy.ts"
+    --8<-- "examples/snippets/metrics/defaultDimensionsMiddy.ts"
     ```
 
 === "setDefaultDimensions method"
 
     ```typescript hl_lines="7"
-    --8<-- "docs/snippets/metrics/setDefaultDimensions.ts"
+    --8<-- "examples/snippets/metrics/setDefaultDimensions.ts"
     ```
 
 === "with logMetrics decorator"
@@ -224,7 +224,7 @@ You can add default dimensions to your metrics by passing them as parameters in 
         If this is not the desired behavior, you can use the `logMetrics` middleware instead.
 
     ```typescript hl_lines="12"
-    --8<-- "docs/snippets/metrics/defaultDimensionsDecorator.ts"
+    --8<-- "examples/snippets/metrics/defaultDimensionsDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -258,7 +258,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
 === "handler.ts"
 
     ```typescript hl_lines="2 17"
-    --8<-- "docs/snippets/metrics/middy.ts"
+    --8<-- "examples/snippets/metrics/middy.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -297,7 +297,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 === "handler.ts"
 
     ```typescript hl_lines="10"
-    --8<-- "docs/snippets/metrics/decorator.ts"
+    --8<-- "examples/snippets/metrics/decorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -334,7 +334,7 @@ You can manually flush the metrics with `publishStoredMetrics` as follows:
 === "handler.ts"
 
     ```typescript hl_lines="13"
-    --8<-- "docs/snippets/metrics/manual.ts"
+    --8<-- "examples/snippets/metrics/manual.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -366,7 +366,7 @@ If you want to ensure that at least one metric is emitted before you flush them,
 === "handler.ts"
 
     ```typescript hl_lines="21"
-    --8<-- "docs/snippets/metrics/throwOnEmptyMetrics.ts"
+    --8<-- "examples/snippets/metrics/throwOnEmptyMetrics.ts"
     ```
 
 ### Capturing a cold start invocation as metric
@@ -376,13 +376,13 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 === "Middy Middleware"
 
     ```typescript hl_lines="18"
-    --8<-- "docs/snippets/metrics/captureColdStartMetricMiddy.ts"
+    --8<-- "examples/snippets/metrics/captureColdStartMetricMiddy.ts"
     ```
 
 === "logMetrics decorator"
 
     ```typescript hl_lines="10"
-    --8<-- "docs/snippets/metrics/captureColdStartMetricDecorator.ts"
+    --8<-- "examples/snippets/metrics/captureColdStartMetricDecorator.ts"
     ```
 
 If it's a cold start invocation, this feature will:
@@ -406,7 +406,7 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
 === "handler.ts"
 
     ```typescript hl_lines="15"
-    --8<-- "docs/snippets/metrics/addMetadata.ts"
+    --8<-- "examples/snippets/metrics/addMetadata.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -450,13 +450,13 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 === "Middy Middleware"
 
     ```typescript hl_lines="21 23-24"
-    --8<-- "docs/snippets/metrics/singleMetricDifferentDimsMiddy.ts"
+    --8<-- "examples/snippets/metrics/singleMetricDifferentDimsMiddy.ts"
     ```
 
 === "logMetrics decorator"
 
     ```typescript hl_lines="16 18-19"
-    --8<-- "docs/snippets/metrics/singleMetricDifferentDimsDecorator.ts"
+    --8<-- "examples/snippets/metrics/singleMetricDifferentDimsDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.

@@ -441,10 +441,6 @@ class Logger extends Utility implements LoggerInterface {
         context,
         callback
       ) {
-        if (options && options.clearState === true) {
-          loggerRef.clearState();
-        }
-
         Logger.injectLambdaContextBefore(loggerRef, event, context, options);
 
         let result: unknown;

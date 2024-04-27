@@ -70,11 +70,6 @@ const injectLambdaContext = (
     if (isClearState) {
       loggers.forEach((logger: Logger) => {
         logger.clearState();
-        Logger.injectLambdaContextAfterOrOnError(
-          logger,
-          logger.getPersistentLogAttributes(),
-          options
-        );
       });
     }
   };

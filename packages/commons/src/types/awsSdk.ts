@@ -1,6 +1,7 @@
 /**
+ * Minimal interface for an AWS SDK v3 client.
+ *
  * @internal
- * Minimal interface for an AWS SDK v3 client
  */
 interface SdkClient {
   send: (args: unknown) => Promise<unknown>;
@@ -14,8 +15,9 @@ interface SdkClient {
 }
 
 /**
- * @internal
  * Minimal type for the arguments passed to a middleware function
+ *
+ * @internal
  */
 type MiddlewareArgsLike = { request: { headers: { [key: string]: string } } };
 

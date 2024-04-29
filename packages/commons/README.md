@@ -4,73 +4,96 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 
 You can use the library in both TypeScript and JavaScript code bases.
 
-> Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [Java](https://github.com/aws-powertools/powertools-lambda-java), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet).
+## Intro
 
-**[Documentation](https://docs.powertools.aws.dev/lambda/typescript/)** | **[npm](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://docs.powertools.aws.dev/lambda/typescript/latest/roadmap)** | **[Examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples)**
+The Commons package contains a set of utilities that are shared across one or more Powertools for AWS Lambda (TypeScript) utilities. Some of these utilities can also be used independently in your AWS Lambda functions.
 
-## Table of contents <!--- omit in toc -->
+## Usage
 
-- [Table of contents ](#table-of-contents-)
-- [Features](#features)
-- [Getting started](#getting-started)
-  - [Installation](#installation)
-  - [Examples](#examples)
-  - [Demo applications](#demo-applications)
-- [Contribute](#contribute)
-- [Roadmap](#roadmap)
-- [Connect](#connect)
-- [How to support Powertools for AWS Lambda (TypeScript)?](#how-to-support-powertools-for-aws-lambda-typescript)
-  - [Becoming a reference customer](#becoming-a-reference-customer)
-  - [Sharing your work](#sharing-your-work)
-  - [Using Lambda Layer](#using-lambda-layer)
-- [Credits](#credits)
-- [License](#license)
+To get started, install the utility by running:
 
-## Features
-
-* **[Tracer](https://docs.powertools.aws.dev/lambda/typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
-* **[Logger](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
-* **[Metrics](https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
-* **[Parameters](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM, Secrets Manager, AppConfig, and DynamoDB
-* **[Idempotency](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
-* **[Batch processing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
-
-## Getting started
-
-Find the complete project's [documentation here](https://docs.powertools.aws.dev/lambda/typescript).
-
-### Installation
-
-The Powertools for AWS Lambda (TypeScript) utilities follow a modular approach, similar to the official [AWS SDK v3 for JavaScript](https://github.com/aws/aws-sdk-js-v3).  
-
-Each TypeScript utility is installed as standalone npm package.
-
-Install all three core utilities at once with this single command:
-
-```shell
-npm install @aws-lambda-powertools/logger @aws-lambda-powertools/tracer @aws-lambda-powertools/metrics
+```sh
+npm i @aws-lambda-powertools/commons
 ```
 
-Or refer to the installation guide of each utility:
+### Type utils
 
-👉 [Installation guide for the **Tracer** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/core/tracer#getting-started)
+When working with different objects and values, you may want to do runtime type checks. The utility comes with a set of type utilities that you can use to check the type of an object or value.
 
-👉 [Installation guide for the **Logger** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger#getting-started)
+```typescript
+import { isRecord } from '@aws-lambda-powertools/commons/typeUtils';
+import { isString } from '@aws-lambda-powertools/commons/typeUtils';
+import { isTruthy } from '@aws-lambda-powertools/commons/typeUtils';
 
-👉 [Installation guide for the **Metrics** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics#getting-started)
 
-👉 [Installation guide for the **Parameters** utility](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#getting-started)
+const value = { key: 'value' };
+if (isRecord(value)) {
+  // value is a record
+}
 
-### Examples
+const stringValue = 'string';
+if (isString(stringValue)) {
+  // stringValue is a string
+}
 
-You can find examples of how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/app) directory. The application is a simple REST API that can be deployed via either AWS CDK or AWS SAM.
+const truthyValue = 'true';
+if (isTruthy(truthyValue)) {
+  // truthyValue is truthy
+}
+```
 
-### Demo applications
+Here's a full list of type utilities available in the package:
 
-The [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) shows how to use Powertools for AWS Lambda (TypeScript).  
-You can find instructions on how to deploy and load test this application in the [repository](https://github.com/aws-samples/serverless-typescript-demo).
+- [`isInteger`](https://docs.powertools.aws.dev/lambda/typescript/latest/api/functions/_aws_lambda_powertools_commons.isIntegerNumber.html)
+- [`isNull`](https://docs.powertools.aws.dev/lambda/typescript/latest/api/functions/_aws_lambda_powertools_commons.isNull.html)
+- [`isNullOrUndefined`](https://docs.powertools.aws.dev/lambda/typescript/latest/api/functions/_aws_lambda_powertools_commons.isNullOrUndefined.html)
+- [`isNumber`](https://docs.powertools.aws.dev/lambda/typescript/latest/api/functions/_aws_lambda_powertools_commons.isNumber.html)
+- [`isRecord`](https://docs.powertools.aws.dev/lambda/typescript/latest/api/functions/_aws_lambda_powertools_commons.isRecord.html)
+- [`isStrictEqual`](https://docs.powertools.aws.dev/lambda/typescript/latest/api/functions/_aws_lambda_powertools_commons.isStrictEqual.html)
+- [`isString`](https://docs.powertools.aws.dev/lambda/typescript/latest/api/functions/_aws_lambda_powertools_commons.isString.html)
+- [`isTruthy`](https://docs.powertools.aws.dev/lambda/typescript/latest/api/functions/_aws_lambda_powertools_commons.isTruthy.html)
 
-The [AWS Lambda performance tuning](https://github.com/aws-samples/optimizations-for-lambda-functions) repository also uses Powertools for AWS Lambda (TypeScript) as well as demonstrating other performance tuning techniques for Lambda functions written in TypeScript.
+Many of these utilities also double as type guards, which you can use to narrow down the type of an object or value.
+
+### Base64 utils
+
+When working with Base64-encoded data, you can use the `fromBase64` utilities to quickly decode data and convert it to a `Uint8Array`.
+
+```typescript
+
+import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
+
+const encodedValue = 'aGVsbG8gd29ybGQ=';
+
+const decoded = fromBase64(encodedValue);
+// new Uint8Array([ 97, 71, 86, 115, 98, 71, 56, 103, 100, 50, 57, 121, 98, 71, 81, 61 ]); 
+```
+
+### JSON type utils
+
+In some cases, you may want to define a type for a JSON object or value. The utility comes with a set of types that you can use to define your JSON objects.
+
+```typescript
+import type { JSONValue, JSONObject, JSONArray } from '@aws-lambda-powertools/commons';
+```
+
+### Lambda interface
+
+When using object-oriented patterns to define your Lambda handlers, you can use the `LambdaHandler` interface to define the shape of your handler methods.
+
+```typescript
+import type { Context } from 'aws-lambda';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+
+class Lambda implements LambdaInterface {
+  public handler = async (event: unknown, context: Context) => {
+    // Your handler code here
+  }
+}
+
+const handlerClass = new Lambda();
+export const handler = lambda.handler.bind(lambda);
+```
 
 ## Contribute
 
@@ -83,8 +106,8 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-* **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
-* **Email**: aws-lambda-powertools-feedback@amazon.com
+- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Email**: <aws-lambda-powertools-feedback@amazon.com>
 
 ## How to support Powertools for AWS Lambda (TypeScript)?
 
@@ -94,17 +117,17 @@ Knowing which companies are using this library is important to help prioritize t
 
 The following companies, among others, use Powertools:
 
-* [Hashnode](https://hashnode.com/)
-* [Trek10](https://www.trek10.com/)
-* [Elva](https://elva-group.com)
-* [globaldatanet](https://globaldatanet.com/)
-* [Bailey Nelson](https://www.baileynelson.com.au)
-* [Perfect Post](https://www.perfectpost.fr)
-* [Sennder](https://sennder.com/)
-* [Certible](https://www.certible.com/)
-* [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
-* [AppYourself](https://appyourself.net)
-* [Alma Media](https://www.almamedia.fi)
+- [Hashnode](https://hashnode.com/)
+- [Trek10](https://www.trek10.com/)
+- [Elva](https://elva-group.com)
+- [globaldatanet](https://globaldatanet.com/)
+- [Bailey Nelson](https://www.baileynelson.com.au)
+- [Perfect Post](https://www.perfectpost.fr)
+- [Sennder](https://sennder.com/)
+- [Certible](https://www.certible.com/)
+- [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
+- [AppYourself](https://appyourself.net)
+- [Alma Media](https://www.almamedia.fi)
 
 ### Sharing your work
 
@@ -112,11 +135,7 @@ Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog po
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](#lambda-layers), you can add Powertools for AWS Lambda (TypeScript) as a dev dependency (or as part of your virtual env) to not impact the development process.
-
-## Credits
-
-Credits for the Lambda Powertools for AWS Lambda (TypeScript) idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 

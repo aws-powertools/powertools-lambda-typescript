@@ -6,7 +6,11 @@ import {
 } from './constants.js';
 import type { MiddyLikeRequest, CleanupFunction } from '../types/middy.js';
 
-// Typeguard to assert that an object is of Function type
+/**
+ * Typeguard to assert that an object is of Function type.
+ *
+ * @param obj The object to check
+ */
 const isFunction = (obj: unknown): obj is CleanupFunction => {
   return typeof obj === 'function';
 };
@@ -54,8 +58,8 @@ const isFunction = (obj: unknown): obj is CleanupFunction => {
  * };
  * ```
  *
- * @param request - The Middy request object
- * @param options - An optional object that can be used to pass options to the function
+ * @param request The Middy request object
+ * @param options An optional object that can be used to pass options to the function
  */
 const cleanupMiddlewares = async (request: MiddyLikeRequest): Promise<void> => {
   const cleanupFunctionNames = [

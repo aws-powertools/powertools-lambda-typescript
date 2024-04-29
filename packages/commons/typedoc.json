@@ -1,7 +1,10 @@
 {
-  "extends": ["../../typedoc.base.json"],
-  "entryPoints": [
-    "./src/index.ts"
+  "extends": [
+    "../../typedoc.base.json"
   ],
-  "readme": "README.md"
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/types/index.ts"
+  ],
+  "readme": "./README.md"
 }

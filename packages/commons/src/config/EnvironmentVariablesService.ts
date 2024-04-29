@@ -1,56 +1,62 @@
 import type { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
 
 /**
- * Class EnvironmentVariablesService
+ * This class is used to fetch environment variables that are available in the execution environment.
  *
- * This class is used to return environment variables that are available in the runtime of
- * the current Lambda invocation.
  * These variables can be a mix of runtime environment variables set by AWS and
- * variables that can be set by the developer additionally.
+ * other environment variables that are set by the developer to configure Powertools for AWS Lambda.
+ *
+ * @example
+ * ```typescript
+ * import { EnvironmentVariablesService } from '@aws-lambda-powertools/commons/';
+ *
+ * const config = new EnvironmentVariablesService();
+ * const serviceName = config.getServiceName();
+ * ```
+ *
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  *
  * @class
- * @extends {ConfigService}
- * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
- * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
+ * @implements {ConfigServiceInterface}
  */
 class EnvironmentVariablesService implements ConfigServiceInterface {
   /**
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
-   * @protected
+   * Increase JSON indentation for Logger to ease debugging when running functions locally or in a non-production environment
    */
   protected devModeVariable = 'POWERTOOLS_DEV';
+  /**
+   * Set service name used for tracing namespace, metrics dimension and structured logging
+   */
   protected serviceNameVariable = 'POWERTOOLS_SERVICE_NAME';
-  // Reserved environment variables
+  /**
+   * AWS X-Ray Trace ID environment variable
+   * @private
+   */
   private xRayTraceIdVariable = '_X_AMZN_TRACE_ID';
 
   /**
-   * It returns the value of an environment variable that has given name.
+   * Get the value of an environment variable by name.
    *
-   * @param {string} name
-   * @returns {string}
+   * @param {string} name The name of the environment variable to fetch.
    */
   public get(name: string): string {
     return process.env[name]?.trim() || '';
   }
 
   /**
-   * It returns the value of the POWERTOOLS_SERVICE_NAME environment variable.
-   *
-   * @returns {string}
+   * Get the value of the `POWERTOOLS_SERVICE_NAME` environment variable.
    */
   public getServiceName(): string {
     return this.get(this.serviceNameVariable);
   }
 
   /**
-   * It returns the value of the _X_AMZN_TRACE_ID environment variable.
+   * Get the value of the `_X_AMZN_TRACE_ID` environment variable.
    *
    * The AWS X-Ray Trace data available in the environment variable has this format:
    * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
    *
    * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
-   *
-   * @returns {string}
    */
   public getXrayTraceId(): string | undefined {
     const xRayTraceData = this.getXrayTraceData();
@@ -59,12 +65,10 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
   }
 
   /**
-   * It returns true if the Sampled flag is set in the _X_AMZN_TRACE_ID environment variable.
+   * Determine if the current invocation is part of a sampled X-Ray trace.
    *
    * The AWS X-Ray Trace data available in the environment variable has this format:
    * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
-   *
-   * @returns {boolean}
    */
   public getXrayTraceSampled(): boolean {
     const xRayTraceData = this.getXrayTraceData();
@@ -73,19 +77,16 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
   }
 
   /**
-   * It returns true if the `POWERTOOLS_DEV` environment variable is set to truthy value.
-   *
-   * @returns {boolean}
+   * Determine if the current invocation is running in a development environment.
    */
   public isDevMode(): boolean {
     return this.isValueTrue(this.get(this.devModeVariable));
   }
 
   /**
-   * It returns true if the string value represents a boolean true value.
+   * Helper function to determine if a value is considered thruthy.
    *
-   * @param {string} value
-   * @returns boolean
+   * @param value The value to check for truthiness.
    */
   public isValueTrue(value: string): boolean {
     const truthyValues: string[] = ['1', 'y', 'yes', 't', 'true', 'on'];
@@ -94,8 +95,9 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
   }
 
   /**
-   * It parses the key/value data present in the _X_AMZN_TRACE_ID environment variable
-   * and returns it as an object when available.
+   * Get the AWS X-Ray Trace data from the environment variable.
+   *
+   * The method parses the environment variable `_X_AMZN_TRACE_ID` and returns an object with the key-value pairs.
    */
   private getXrayTraceData(): Record<string, string> | undefined {
     const xRayTraceEnv = this.get(this.xRayTraceIdVariable);

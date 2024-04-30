@@ -375,6 +375,9 @@ describe('Class: Logger', () => {
         getXrayTraceId(): string | undefined {
           return undefined;
         },
+        getXrayTraceSampled() {
+          return true;
+        },
         isDevMode(): boolean {
           return false;
         },

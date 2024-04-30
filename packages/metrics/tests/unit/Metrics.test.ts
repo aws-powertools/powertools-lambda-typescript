@@ -245,6 +245,9 @@ describe('Class: Metrics', () => {
         getXrayTraceId(): string | undefined {
           return 'test-trace-id';
         },
+        getXrayTraceSampled(): boolean {
+          return true;
+        },
         isDevMode(): boolean {
           return false;
         },

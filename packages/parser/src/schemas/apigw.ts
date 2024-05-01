@@ -97,14 +97,14 @@ const APIGatewayProxyEventSchema = z.object({
     'OPTIONS',
   ]),
   headers: z.record(z.string()).optional(),
-  queryStringParameters: z.record(z.string()).optional(),
+  queryStringParameters: z.record(z.string()).nullable(),
   multiValueHeaders: z.record(z.array(z.string())).optional(),
-  multiValueQueryStringParameters: z.record(z.array(z.string())).optional(),
+  multiValueQueryStringParameters: z.record(z.array(z.string())).nullable(),
   requestContext: APIGatewayEventRequestContext,
   pathParameters: z.record(z.string()).optional().nullish(),
   stageVariables: z.record(z.string()).optional().nullish(),
   isBase64Encoded: z.boolean().optional(),
-  body: z.string().optional(),
+  body: z.string().nullable(),
 });
 
 export { APIGatewayProxyEventSchema, APIGatewayCert };

@@ -154,6 +154,9 @@ describe('Class: Tracer', () => {
         getXrayTraceId() {
           return '1-abcdef12-3456abcdef123456abcdef12';
         },
+        getXrayTraceSampled() {
+          return false;
+        },
       };
 
       // Act

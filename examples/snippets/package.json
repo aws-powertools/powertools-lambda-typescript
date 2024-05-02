@@ -47,6 +47,6 @@
     "aws-sdk-client-mock": "^4.0.0",
     "aws-sdk-client-mock-jest": "^4.0.0",
     "hashi-vault-js": "^0.4.14",
-    "zod": "^3.23.4"
+    "zod": "^3.23.5"
   }
 }

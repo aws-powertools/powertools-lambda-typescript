@@ -24,7 +24,7 @@ describe('ApigwEnvelope ', () => {
 
     it('should throw no body provided', () => {
       const testEvent = TestEvents.apiGatewayProxyEvent as APIGatewayProxyEvent;
-      testEvent.body = undefined;
+      testEvent.body = null;
 
       expect(() => ApiGatewayEnvelope.parse(testEvent, TestSchema)).toThrow(
         ParseError
@@ -56,7 +56,7 @@ describe('ApigwEnvelope ', () => {
 
     it('should return success false with original body if no body provided', () => {
       const testEvent = TestEvents.apiGatewayProxyEvent as APIGatewayProxyEvent;
-      testEvent.body = undefined;
+      testEvent.body = null;
 
       const resp = ApiGatewayEnvelope.safeParse(testEvent, TestSchema);
       expect(resp).toEqual({

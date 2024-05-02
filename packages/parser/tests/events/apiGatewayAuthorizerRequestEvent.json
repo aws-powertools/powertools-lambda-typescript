@@ -20,6 +20,9 @@
   "queryStringParameters": {
     "QueryString1": "queryValue1"
   },
+  "multiValueQueryStringParameters": {
+    "QueryString1": ["queryValue1"]
+  },
   "pathParameters": {},
   "stageVariables": {
     "StageVar1": "stageValue1"
@@ -64,5 +67,6 @@
     "resourceId": "ANY /request",
     "resourcePath": "/request",
     "stage": "test"
-  }
+  },
+  "body": null
 }

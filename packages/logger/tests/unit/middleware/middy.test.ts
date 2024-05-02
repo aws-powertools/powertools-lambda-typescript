@@ -295,6 +295,9 @@ describe('Middy middleware', () => {
         getXrayTraceId(): string | undefined {
           return undefined;
         },
+        getXrayTraceSampled(): boolean {
+          return false;
+        },
         isDevMode(): boolean {
           return false;
         },

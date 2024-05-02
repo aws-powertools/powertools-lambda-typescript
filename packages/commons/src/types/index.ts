@@ -1,6 +1,8 @@
 export type {
+  Request,
   MiddlewareLikeObj,
   MiddyLikeRequest,
+  MiddlewareFn,
   CleanupFunction,
 } from './middy.js';
 export type { SdkClient, MiddlewareArgsLike } from './awsSdk.js';

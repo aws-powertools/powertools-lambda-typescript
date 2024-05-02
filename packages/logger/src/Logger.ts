@@ -1067,8 +1067,8 @@ class Logger extends Utility implements LoggerInterface {
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
-      throw new Error(
-        `Both persistentLogAttributes and persistentKeys options are provided. Use only persistentKeys as persistentLogAttributes is deprecated.`
+      this.warn(
+        'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases'
       );
     }
 

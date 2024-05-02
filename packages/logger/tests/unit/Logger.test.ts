@@ -496,8 +496,12 @@ describe('Class: Logger', () => {
       );
     });
 
-    test('it throws when both persistentKeys and persistentLogAttributes are used in the constructor', () => {
+    test('it emits a warning when both persistentKeys and persistentLogAttributes are used in the constructor', () => {
       // Prepare
+      // Since the buffer is private and we are bypassing the public warn method, we need to spy on the console.warn
+      process.env.POWERTOOLS_DEV = 'true';
+      const warningSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       type TestConstructorOptions = {
         persistentLogAttributes?: Record<string, string>;
         persistentKeys?: Record<string, string>;
@@ -512,10 +516,18 @@ describe('Class: Logger', () => {
         },
       };
 
-      // Act & Assess
-      expect(() => new Logger(loggerOptions as ConstructorOptions)).toThrow(
-        'Both persistentLogAttributes and persistentKeys options are provided. Use only persistentKeys as persistentLogAttributes is deprecated.'
+      // Act
+      new Logger(loggerOptions as ConstructorOptions);
+
+      // Assess
+      expect(warningSpy).toHaveBeenCalledTimes(1);
+      expect(warningSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases'
+        )
       );
+      // Cleanup
+      warningSpy.mockRestore();
     });
 
     test('when a custom environment is passed, returns a Logger instance with the correct properties', () => {
@@ -2764,7 +2776,7 @@ describe('Class: Logger', () => {
       );
     });
 
-    it('uses log level set by ALC & emits a warning when setting a higher log level than ALC', () => {
+    test('it uses log level set by ALC & emits a warning when setting a higher log level than ALC', () => {
       // Prepare
       process.env.AWS_LAMBDA_LOG_LEVEL = 'ERROR';
       process.env.LOG_LEVEL = undefined;
@@ -2784,7 +2796,7 @@ describe('Class: Logger', () => {
       );
     });
 
-    it('uses log level set by ALC & emits a warning when initializing with a higher log level than ALC', () => {
+    test('it uses log level set by ALC & emits a warning when initializing with a higher log level than ALC', () => {
       // Prepare
       process.env.AWS_LAMBDA_LOG_LEVEL = 'INFO';
       process.env.LOG_LEVEL = undefined;
@@ -3082,7 +3094,7 @@ describe('Class: Logger', () => {
       );
     });
 
-    it('logs a DEBUG log when the sample rate sets the level to DEBUG', () => {
+    test('logs a DEBUG log when the sample rate sets the level to DEBUG', () => {
       // Prepare
       // Since the buffer is private and we are bypassing the public warn method, we need to spy on the console.warn
       process.env.POWERTOOLS_DEV = 'true';

@@ -89,7 +89,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                 const powertoolsLayer = LayerVersion.fromLayerVersionArn(
                   this,
                   'PowertoolsLayer',
-                  `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3`
+                  `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:5`
                 );
                 
                 new Function(this, 'Function', {

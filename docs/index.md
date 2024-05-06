@@ -111,7 +111,6 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
               bundling: {
                 externalModules: [
                   '@aws-lambda-powertools/*',
-                  '@aws-sdk/*',
                 ],
               }
             });

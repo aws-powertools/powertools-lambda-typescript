@@ -59,7 +59,7 @@
     "@types/node": "20.12.10",
     "aws-cdk": "^2.140.0",
     "constructs": "^10.3.0",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.21.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",

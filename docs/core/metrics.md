@@ -3,8 +3,6 @@ title: Metrics
 description: Core utility
 ---
 
-<!-- markdownlint-disable MD043 -->
-
 Metrics creates custom metrics asynchronously by logging metrics to standard output following [Amazon CloudWatch Embedded Metric Format (EMF)](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html).
 
 These metrics can be visualized through [Amazon CloudWatch Console](https://console.aws.amazon.com/cloudwatch/).
@@ -460,3 +458,32 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
+
+## Testing your code
+
+When unit testing your code that uses the `Metrics` utility, you may want to silence the logs emitted by the utility or assert that metrics are being emitted correctly. By default, the utility manages its own `console` instance, which means that you can't easily access or mock the logs emitted by the utility.
+
+To make it easier to test your code, you can set the `POWERTOOLS_DEV` environment variable to `true` to instruct the utility to use the global `console` object instead of its own.
+
+This allows you to spy on the logs emitted by the utility and assert that the metrics are being emitted correctly.
+
+```typescript title="Spying on emitted metrics"
+describe('Metrics tests', () => {
+  beforeAll(() => {
+    process.env.POWERTOOLS_DEV = 'true';
+  })
+
+  it('function metrics properly', async () => {
+    // Prepare
+    const metricsSpy = jest.spyOn(console, 'log').mockImplementation();
+    
+    // Act & Assess
+  });
+});
+```
+
+When running your tests with both [Jest](https://jestjs.io) and [Vitest](http://vitest.dev), you can use the `--silent` flag to silence the logs emitted by the utility.
+
+```bash title="Disabling logs while testing"
+export POWERTOOLS_DEV=true && npx vitest --silent
+```

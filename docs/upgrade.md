@@ -173,6 +173,27 @@ In v2, you can now directly import from the `types` subpath export, e.g., `@aws-
     import { LogAttributes, UnformattedAttributes } from '@aws-lambda-powertools/logger/types';
     ```
 
+### Using eslint?
+
+When using `eslint`, you might need to use [`@typescript-eslint/parser`](https://github.com/typescript-eslint/typescript-eslint/tree/HEAD/packages/parser) and [`eslint-plugin-import`](https://www.npmjs.com/package/eslint-import-resolver-typescript) to resolve the new subpath imports.
+
+Below is an example of how to configure your `.eslintrc.json` file:
+
+```json
+{
+  "parser": "@typescript-eslint/parser",
+  "settings": {
+    "import/resolver": {
+      "node": {},
+      "typescript": {
+        "project": "./tsconfig.json",
+        "alwaysTryTypes": true,
+      },
+    },
+  },
+}
+```
+
 ## Logger
 
 ### Log sampling

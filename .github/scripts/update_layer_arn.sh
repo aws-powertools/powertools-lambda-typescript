@@ -56,7 +56,7 @@ for file in $files; do
     # arn:aws:lambda:{env.region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:39
     if [[ "$line" == *"eu-central-1"* ]]; then
       # These are all the framework pseudo parameters currently found in the docs
-      for pseudo_region in '{region}' '${AWS::Region}' '${aws:region}' '{aws::region}' '{env.region}' '${cdk.Stack.of(this).region}' '${aws.getRegionOutput().name}'; do
+      for pseudo_region in '{region}' '${AWS::Region}' '${aws:region}' '{aws::region}' '{env.region}' '${Stack.of(this).region}' '${aws.getRegionOutput().name}'; do
         prefix_pseudo_region=$(echo "$prefix" | sed "s/eu-central-1/${pseudo_region}/")
         # prefix_pseudo_region = arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScript
 

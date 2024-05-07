@@ -89,7 +89,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                 const powertoolsLayer = LayerVersion.fromLayerVersionArn(
                   this,
                   'PowertoolsLayer',
-                  `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:3`
+                  `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:5`
                 );
                 
                 new Function(this, 'Function', {
@@ -103,7 +103,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
             }
             ```
 
-            If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools` from being bundled since the packages will be already present the Layer:
+            If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
 
             ```typescript
             new NodejsFunction(this, 'Function', {
@@ -129,7 +129,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                     - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:5
             ```
 
-            If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools` from being bundled since the packages will be already present the Layer:
+            If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
 
             ```yaml hl_lines="5-14"
             MyLambdaFunction:
@@ -142,10 +142,8 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                   BuildProperties:
                   Minify: true
                   External:
-                    - '@aws-lambda-powertools/commons'
-                    - '@aws-lambda-powertools/logger'
-                    - '@aws-lambda-powertools/metrics'
-                    - '@aws-lambda-powertools/tracer'
+                    - '@aws-lambda-powertools/*'
+                    - '@aws-sdk/*'
             ```
 
             Check the [documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build-typescript.html) for more details.
@@ -160,16 +158,14 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                   - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:5
             ```
 
-            If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools` from being bundled since the packages will be already present the Layer:
+            If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
 
             ```yaml
             custom:
               esbuild:
                 external:
-                  - '@aws-lambda-powertools/commons'
-                  - '@aws-lambda-powertools/logger'
-                  - '@aws-lambda-powertools/metrics'
-                  - '@aws-lambda-powertools/tracer'
+                  - '@aws-lambda-powertools/*'
+                  - '@aws-sdk/*'
             ```
 
             Check the [documentation](https://floydspace.github.io/serverless-esbuild/) for more details.
@@ -193,7 +189,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
               function_name = "lambda_function_name"
               role          = ...
               handler       = "index.handler"
-              runtime 		= "nodejs16.x"
+              runtime 		= "nodejs20.x"
               layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:5"]
               source_code_hash = filebase64sha256("lambda_function_payload.zip")
             }
@@ -218,7 +214,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                 tracingConfig: {
                     mode: 'Active'
                 },
-                runtime: aws.lambda.Runtime.NodeJS16dX,
+                runtime: aws.lambda.Runtime.NodeJS20dX,
                 handler: 'index.handler',
                 role: role.arn,
                 architectures: ['x86_64']

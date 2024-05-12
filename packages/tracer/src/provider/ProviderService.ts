@@ -31,10 +31,16 @@ import {
 import type { DiagnosticsChannel } from 'undici-types';
 
 class ProviderService implements ProviderServiceInterface {
+  /**
+   * @deprecated
+   */
   public captureAWS<T>(awssdk: T): T {
     return captureAWS(awssdk);
   }
 
+  /**
+   * @deprecated
+   */
   public captureAWSClient<T>(service: T): T {
     return captureAWSClient(service);
   }

@@ -253,6 +253,7 @@ class Tracer extends Utility implements TracerInterface {
    * }
    * ```
    *
+   * @deprecated Use {@link captureAWSv3Client} instead.
    * @param aws - AWS SDK v2 import
    * @returns AWS - Instrumented AWS SDK
    */
@@ -281,7 +282,7 @@ class Tracer extends Utility implements TracerInterface {
    *   ...
    * }
    * ```
-   *
+   * @deprecated Use {@link captureAWSv3Client} instead.
    * @param service - AWS SDK v2 client
    * @returns service - Instrumented AWS SDK v2 client
    */

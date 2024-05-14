@@ -18,9 +18,7 @@
     "test:e2e": "jest --group=e2e",
     "createLayerFolder": "cdk synth --context BuildFromLocal=true"
   },
-  "lint-staged": {
-    "*.{js,ts}": "npm run lint-fix"
-  },
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

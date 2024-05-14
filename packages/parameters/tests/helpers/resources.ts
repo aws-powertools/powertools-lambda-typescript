@@ -4,20 +4,22 @@ import type {
 } from '@aws-lambda-powertools/testing-utils/types';
 import {
   concatenateResourceName,
-  getRuntimeKey,
   getArchitectureKey,
+  getRuntimeKey,
   type TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
-import { CfnOutput, Stack } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import {
-  CfnApplication,
-  CfnConfigurationProfile,
-  CfnDeployment,
-  CfnDeploymentStrategy,
-  CfnEnvironment,
+  Application,
+  ConfigurationContent,
+  ConfigurationType,
+  DeploymentStrategy,
+  HostedConfiguration,
+  IEnvironment,
+  RolloutStrategy,
   CfnHostedConfigurationVersion,
 } from 'aws-cdk-lib/aws-appconfig';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -212,10 +214,10 @@ class TestDynamodbTableWithItems extends TestDynamodbTable {
  * A set of AppConfig resources that can be used in tests.
  */
 class TestAppConfigWithProfiles extends Construct {
-  private readonly application: CfnApplication;
-  private readonly deploymentStrategy: CfnDeploymentStrategy;
-  private readonly environment: CfnEnvironment;
-  private readonly profiles: CfnDeployment[] = [];
+  private readonly application: Application;
+  private readonly deploymentStrategy: DeploymentStrategy;
+  private readonly environment: IEnvironment;
+  private readonly profiles: HostedConfiguration[] = [];
 
   public constructor(
     testStack: TestStack,
@@ -240,77 +242,55 @@ class TestAppConfigWithProfiles extends Construct {
 
     const { profiles } = props;
 
-    this.application = new CfnApplication(
-      testStack.stack,
-      `app-${randomUUID()}`,
-      {
-        name: randomUUID(),
-      }
-    );
+    this.application = new Application(testStack.stack, `app-${randomUUID()}`, {
+      applicationName: randomUUID(),
+      description: 'Test application for Powertools Parameters',
+    });
 
-    this.deploymentStrategy = new CfnDeploymentStrategy(
+    this.environment = this.application.addEnvironment(`ce-${randomUUID()}`, {
+      environmentName: randomUUID(),
+      description: 'Test environment for Powertools Parameters',
+    });
+
+    this.deploymentStrategy = new DeploymentStrategy(
       testStack.stack,
       `de-${randomUUID()}`,
       {
-        name: randomUUID(),
-        deploymentDurationInMinutes: 0,
-        growthFactor: 100,
-        replicateTo: 'NONE',
-        finalBakeTimeInMinutes: 0,
-      }
-    );
-
-    this.environment = new CfnEnvironment(
-      testStack.stack,
-      `ce-${randomUUID()}`,
-      {
-        name: randomUUID(),
-        applicationId: this.application.ref,
-      }
-    );
-
-    profiles.forEach((profile, index) => {
-      const configProfile = new CfnConfigurationProfile(
-        testStack.stack,
-        `cp-${randomUUID()}`,
-        {
-          name: randomUUID(),
-          applicationId: this.application.ref,
-          locationUri: 'hosted',
-          type: profile.type,
-        }
-      );
-
-      const configVersion = new CfnHostedConfigurationVersion(
-        testStack.stack,
-        `cv-${randomUUID()}`,
-        {
-          applicationId: this.application.ref,
-          configurationProfileId: configProfile.ref,
-          ...profile.content,
-        }
-      );
-
-      const deployment = new CfnDeployment(
-        testStack.stack,
-        concatenateResourceName({
-          testName: testStack.testName,
-          resourceName: profile.nameSuffix,
+        deploymentStrategyName: randomUUID(),
+        description: 'Test deployment strategy for Powertools Parameter',
+        rolloutStrategy: RolloutStrategy.linear({
+          deploymentDuration: Duration.minutes(0),
+          growthFactor: 100,
+          finalBakeTime: Duration.minutes(0),
         }),
+      }
+    );
+
+    profiles.forEach((profile) => {
+      const config = new HostedConfiguration(
+        testStack.stack,
+        `hc-${randomUUID()}`,
         {
-          applicationId: this.application.ref,
-          configurationProfileId: configProfile.ref,
-          configurationVersion: configVersion.ref,
-          deploymentStrategyId: this.deploymentStrategy.ref,
-          environmentId: this.environment.ref,
+          name: `${randomUUID()}-${profile.nameSuffix}`,
+          description: 'Test hosted configuration for Powertools Parameter',
+          deploymentStrategy: this.deploymentStrategy,
+          deployTo: [this.environment],
+          application: this.application,
+          type:
+            profile.type === 'AWS.Freeform'
+              ? ConfigurationType.FREEFORM
+              : ConfigurationType.FEATURE_FLAGS,
+          content: ConfigurationContent.fromInlineJson(
+            profile.content.content,
+            profile.content.contentType
+          ),
         }
       );
-
-      if (index > 0 && this.profiles) {
-        deployment.node.addDependency(this.profiles[index - 1]);
-      }
-
-      this.profiles.push(deployment);
+      // The default is RETAIN so this escape hatch is needed to override it
+      (
+        config.node.defaultChild as CfnHostedConfigurationVersion
+      ).applyRemovalPolicy(RemovalPolicy.DESTROY);
+      this.profiles.push(config);
     });
   }
 
@@ -320,8 +300,8 @@ class TestAppConfigWithProfiles extends Construct {
    * @param fn The function to add the environment variables to
    */
   public addEnvVariablesToFunction(fn: TestNodejsFunction): void {
-    fn.addEnvironment('APPLICATION_NAME', this.application.name);
-    fn.addEnvironment('ENVIRONMENT_NAME', this.environment.name);
+    fn.addEnvironment('APPLICATION_NAME', this.application.name!);
+    fn.addEnvironment('ENVIRONMENT_NAME', this.environment.name!);
     fn.addEnvironment(
       'FREEFORM_JSON_NAME',
       this.profiles[0].configurationProfileId
@@ -349,7 +329,7 @@ class TestAppConfigWithProfiles extends Construct {
     this.profiles.forEach((profile) => {
       const appConfigConfigurationArn = Stack.of(fn).formatArn({
         service: 'appconfig',
-        resource: `application/${profile.applicationId}/environment/${profile.environmentId}/configuration/${profile.configurationProfileId}`,
+        resource: `application/${profile.application.applicationId!}/environment/${profile.deployTo![0].environmentId}/configuration/${profile.configurationProfileId}`,
       });
 
       fn.addToRolePolicy(

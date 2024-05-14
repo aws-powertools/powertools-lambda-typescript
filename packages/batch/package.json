@@ -25,9 +25,6 @@
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
-  "lint-staged": {
-    "*.{js,ts}": "npm run lint-fix"
-  },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/batch#readme",
   "license": "MIT-0",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/testing-utils",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A package containing utilities to test your serverless workloads",
   "author": {
     "name": "Amazon Web Services",
@@ -19,9 +19,6 @@
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
-  },
-  "lint-staged": {
-    "*.{js,ts}": "npm run lint-fix"
   },
   "repository": {
     "type": "git",

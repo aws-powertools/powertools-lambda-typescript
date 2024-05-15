@@ -155,11 +155,11 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-appconfigdata": "^3.574.0",
-    "@aws-sdk/client-dynamodb": "^3.574.0",
-    "@aws-sdk/client-secrets-manager": "^3.574.0",
-    "@aws-sdk/client-ssm": "^3.574.0",
-    "@aws-sdk/util-dynamodb": "^3.574.0",
+    "@aws-sdk/client-appconfigdata": "^3.576.0",
+    "@aws-sdk/client-dynamodb": "^3.576.0",
+    "@aws-sdk/client-secrets-manager": "^3.576.0",
+    "@aws-sdk/client-ssm": "^3.576.0",
+    "@aws-sdk/util-dynamodb": "^3.576.0",
     "@smithy/util-base64": "^3.0.0",
     "aws-sdk-client-mock": "^4.0.0",
     "aws-sdk-client-mock-jest": "^4.0.0"

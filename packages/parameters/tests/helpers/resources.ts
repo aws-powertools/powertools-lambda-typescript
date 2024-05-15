@@ -329,7 +329,7 @@ class TestAppConfigWithProfiles extends Construct {
     this.profiles.forEach((profile) => {
       const appConfigConfigurationArn = Stack.of(fn).formatArn({
         service: 'appconfig',
-        resource: `application/${profile.application.applicationId!}/environment/${profile.deployTo![0].environmentId}/configuration/${profile.configurationProfileId}`,
+        resource: `application/${profile.application.applicationId}/environment/${profile.deployTo![0].environmentId}/configuration/${profile.configurationProfileId}`,
       });
 
       fn.addToRolePolicy(

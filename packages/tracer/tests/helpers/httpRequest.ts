@@ -21,7 +21,6 @@ const httpRequest = (params: RequestOptions): Promise<unknown> =>
     }
 
     const req = https.request(params, (res) => {
-      // reject on bad status
       if (
         res.statusCode == null ||
         res.statusCode < 200 ||
@@ -29,19 +28,18 @@ const httpRequest = (params: RequestOptions): Promise<unknown> =>
       ) {
         return reject(new Error(`statusCode=${res.statusCode || 'unknown'}`));
       }
-      // cumulate data
-      let body: Uint8Array[] = [];
+      const incomingData: Uint8Array[] = [];
+      let responseBody: string;
       res.on('data', (chunk) => {
-        body.push(chunk);
+        incomingData.push(chunk);
       });
-      // resolve on end
       res.on('end', () => {
         try {
-          body = JSON.parse(Buffer.concat(body).toString());
-        } catch (e) {
-          reject(e);
+          responseBody = Buffer.concat(incomingData).toString();
+        } catch (error) {
+          reject(error);
         }
-        resolve(body);
+        resolve(responseBody);
       });
     });
     req.on('error', (err) => {

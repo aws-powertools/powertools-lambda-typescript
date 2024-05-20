@@ -42,8 +42,8 @@ const httpRequest = (params: RequestOptions): Promise<unknown> =>
         resolve(responseBody);
       });
     });
-    req.on('error', (err) => {
-      reject(err);
+    req.on('error', (error) => {
+      reject(error instanceof Error ? error : new Error(error));
     });
 
     req.end();

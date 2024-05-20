@@ -1,43 +1,19 @@
-# Powertools for AWS Lambda (TypeScript) - Batch Processing Utility <!-- omit in toc -->
+# Powertools for AWS Lambda (TypeScript) - Batch Processing Utility
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
-You can use the package in both TypeScript and JavaScript code bases.
-
-- [Intro](#intro)
-- [Key features](#key-features)
-- [Usage](#usage)
-  - [Batch Processor](#batch-processor)
-  - [SQS Processor](#sqs-processor)
-  - [Kinesis Processor](#kinesis-processor)
-  - [DynamoDB Streams Processor](#dynamodb-streams-processor)
-  - [Async processing](#async-processing)
-- [Contribute](#contribute)
-- [Roadmap](#roadmap)
-- [Connect](#connect)
-- [How to support Powertools for AWS Lambda (TypeScript)?](#how-to-support-powertools-for-aws-lambda-typescript)
-  - [Becoming a reference customer](#becoming-a-reference-customer)
-  - [Sharing your work](#sharing-your-work)
-  - [Using Lambda Layer](#using-lambda-layer)
-- [Credits](#credits)
-- [License](#license)
+You can use the library in both TypeScript and JavaScript code bases.
 
 ## Intro
 
-The batch processing utility handles partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
-
-## Key features
-
-* Reports batch item failures to reduce number of retries for a record upon errors
-* Simple interface to process each batch record
-* Build your own batch processor by extending primitives
+The Batch Processing utility handles partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
 
 ## Usage
 
 To get started, install the library by running:
 
 ```sh
-npm install @aws-lambda-powertools/batch
+npm i @aws-lambda-powertools/batch
 ```
 
 ### Batch Processor
@@ -217,28 +193,28 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-* **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
-* **Email**: aws-lambda-powertools-feedback@amazon.com
+- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Email**: <aws-lambda-powertools-feedback@amazon.com>
 
 ## How to support Powertools for AWS Lambda (TypeScript)?
 
 ### Becoming a reference customer
 
-Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E) issue.
+Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://s12d.com/become-reference-pt-ts) issue.
 
 The following companies, among others, use Powertools:
 
-* [Hashnode](https://hashnode.com/)
-* [Trek10](https://www.trek10.com/)
-* [Elva](https://elva-group.com)
-* [globaldatanet](https://globaldatanet.com/)
-* [Bailey Nelson](https://www.baileynelson.com.au)
-* [Perfect Post](https://www.perfectpost.fr)
-* [Sennder](https://sennder.com/)
-* [Certible](https://www.certible.com/)
-* [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
-* [AppYourself](https://appyourself.net)
-* [Alma Media](https://www.almamedia.fi)
+- [Hashnode](https://hashnode.com/)
+- [Trek10](https://www.trek10.com/)
+- [Elva](https://elva-group.com)
+- [globaldatanet](https://globaldatanet.com/)
+- [Bailey Nelson](https://www.baileynelson.com.au)
+- [Perfect Post](https://www.perfectpost.fr)
+- [Sennder](https://sennder.com/)
+- [Certible](https://www.certible.com/)
+- [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
+- [AppYourself](https://appyourself.net)
+- [Alma Media](https://www.almamedia.fi)
 
 ### Sharing your work
 
@@ -246,11 +222,7 @@ Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog po
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools as a dev dependency (or as part of your virtual env) to not impact the development process.
-
-## Credits
-
-Credits for the Lambda Powertools for AWS Lambda (TypeScript) idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 

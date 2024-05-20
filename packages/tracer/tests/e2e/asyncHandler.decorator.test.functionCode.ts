@@ -2,7 +2,7 @@ import { Tracer } from '../../src/index.js';
 import type { Context } from 'aws-lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
-import axios from 'axios';
+import { httpRequest } from '../helpers/httpRequest.js';
 
 const serviceName =
   process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
@@ -58,7 +58,12 @@ export class MyFunctionBase {
       const url = 'https://docs.powertools.aws.dev/lambda/typescript/latest/';
       // Add conditional behavior because fetch is not available in Node.js 16 - this can be removed once we drop support for Node.js 16
       if (process.version.startsWith('v16')) {
-        await axios.get(url, { timeout: 5000 });
+        await httpRequest({
+          hostname: 'docs.powertools.aws.dev',
+          path: '/lambda/typescript/latest/',
+          protocol: 'https',
+          timeout: 5000,
+        });
       } else {
         await fetch(url);
       }

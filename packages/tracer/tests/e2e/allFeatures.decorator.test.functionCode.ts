@@ -1,7 +1,7 @@
 import { Tracer } from '../../src/Tracer.js';
 import type { Callback, Context } from 'aws-lambda';
 import AWS from 'aws-sdk';
-import axios from 'axios';
+import { httpRequest } from '../helpers/httpRequest.js';
 
 const serviceName =
   process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
@@ -52,7 +52,10 @@ export class MyFunctionBase {
           Item: { id: `${serviceName}-${event.invocation}-sdkv2` },
         })
         .promise(),
-      axios.get('https://docs.powertools.aws.dev/lambda/typescript/latest/', {
+      httpRequest({
+        hostname: 'docs.powertools.aws.dev',
+        path: '/lambda/typescript/latest/',
+        protocol: 'https',
         timeout: 5000,
       }),
       new Promise((resolve, reject) => {
@@ -66,7 +69,7 @@ export class MyFunctionBase {
         }, 2000); // We need to wait for to make sure previous calls are finished
       }),
     ])
-      .then(([_dynamoDBRes, _axiosRes, promiseRes]) => promiseRes)
+      .then(([_dynamoDBRes, _httpRes, promiseRes]) => promiseRes)
       .catch((err) => {
         throw err;
       });

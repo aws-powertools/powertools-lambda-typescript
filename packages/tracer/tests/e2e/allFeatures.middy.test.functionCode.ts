@@ -3,7 +3,7 @@ import { Tracer } from '../../src/index.js';
 import { captureLambdaHandler } from '../../src/middleware/middy.js';
 import type { Context } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import axios from 'axios';
+import { httpRequest } from '../helpers/httpRequest.js';
 
 const serviceName =
   process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
@@ -46,10 +46,12 @@ const testHandler = async (
         Item: { id: { S: `${serviceName}-${event.invocation}-sdkv3` } },
       })
     );
-    await axios.get(
-      'https://docs.powertools.aws.dev/lambda/typescript/latest/',
-      { timeout: 5000 }
-    );
+    await httpRequest({
+      hostname: 'docs.powertools.aws.dev',
+      path: '/lambda/typescript/latest/',
+      protocol: 'https',
+      timeout: 5000,
+    });
 
     const res = customResponseValue;
     if (event.throw) {

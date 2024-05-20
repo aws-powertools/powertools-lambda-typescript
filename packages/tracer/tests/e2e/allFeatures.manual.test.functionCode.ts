@@ -1,8 +1,8 @@
 import { Tracer } from '../../src/index.js';
 import type { Context } from 'aws-lambda';
-import axios from 'axios';
 import AWS from 'aws-sdk';
 import type { Subsegment } from 'aws-xray-sdk-core';
+import { httpRequest } from '../helpers/httpRequest.js';
 
 const serviceName =
   process.env.EXPECTED_SERVICE_NAME ?? 'MyFunctionWithStandardHandler';
@@ -55,10 +55,12 @@ export const handler = async (
         Item: { id: `${serviceName}-${event.invocation}-sdkv2` },
       })
       .promise();
-    await axios.get(
-      'https://docs.powertools.aws.dev/lambda/typescript/latest/',
-      { timeout: 5000 }
-    );
+    await httpRequest({
+      hostname: 'docs.powertools.aws.dev',
+      path: '/lambda/typescript/latest/',
+      protocol: 'https',
+      timeout: 5000,
+    });
 
     const res = customResponseValue;
     if (event.throw) {

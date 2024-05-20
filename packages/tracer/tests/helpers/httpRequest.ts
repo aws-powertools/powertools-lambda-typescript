@@ -37,7 +37,7 @@ const httpRequest = (params: RequestOptions): Promise<unknown> =>
         try {
           responseBody = Buffer.concat(incomingData).toString();
         } catch (error) {
-          reject(error);
+          reject(error instanceof Error ? error : new Error('Unknown error'));
         }
         resolve(responseBody);
       });

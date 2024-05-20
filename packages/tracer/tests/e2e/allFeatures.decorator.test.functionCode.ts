@@ -55,8 +55,6 @@ export class MyFunctionBase {
       httpRequest({
         hostname: 'docs.powertools.aws.dev',
         path: '/lambda/typescript/latest/',
-        protocol: 'https',
-        timeout: 5000,
       }),
       new Promise((resolve, reject) => {
         setTimeout(() => {

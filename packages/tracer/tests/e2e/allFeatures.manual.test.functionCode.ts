@@ -58,8 +58,6 @@ export const handler = async (
     await httpRequest({
       hostname: 'docs.powertools.aws.dev',
       path: '/lambda/typescript/latest/',
-      protocol: 'https',
-      timeout: 5000,
     });
 
     const res = customResponseValue;

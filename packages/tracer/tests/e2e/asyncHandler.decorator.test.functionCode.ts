@@ -61,8 +61,6 @@ export class MyFunctionBase {
         await httpRequest({
           hostname: 'docs.powertools.aws.dev',
           path: '/lambda/typescript/latest/',
-          protocol: 'https',
-          timeout: 5000,
         });
       } else {
         await fetch(url);

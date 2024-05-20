@@ -13,6 +13,13 @@ import https, { type RequestOptions } from 'node:https';
  */
 const httpRequest = (params: RequestOptions): Promise<unknown> =>
   new Promise((resolve, reject) => {
+    if (!params.protocol) {
+      params.protocol = 'https:';
+    }
+    if (!params.timeout) {
+      params.timeout = 5000;
+    }
+
     const req = https.request(params, (res) => {
       // reject on bad status
       if (

@@ -20,9 +20,7 @@ export const handler: SQSHandler = async (event, context) => {
   const processedMessages = await processor.process();
 
   for (const message of processedMessages) {
-    const status: 'success' | 'fail' = message[0];
-    const error = message[1];
-    const record = message[2];
+    const [status, error, record] = message;
 
     logger.info('Processed record', { status, record, error });
   }

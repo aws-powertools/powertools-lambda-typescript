@@ -5,6 +5,7 @@ export {
   SqsFifoShortCircuitError,
   UnexpectedBatchTypeError,
 } from './errors.js';
+export { BasePartialProcessor } from './BasePartialProcessor.js';
 export { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 export { BatchProcessorSync } from './BatchProcessorSync.js';
 export { BatchProcessor } from './BatchProcessor.js';

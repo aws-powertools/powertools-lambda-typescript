@@ -35,12 +35,7 @@ import {
   processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type {
-  SQSEvent,
-  SQSRecord,
-  Context,
-  SQSBatchResponse,
-} from 'aws-lambda';
+import type { SQSHandler, SQSRecord } from 'aws-lambda';
 
 const processor = new BatchProcessorSync(EventType.SQS);
 const logger = new Logger();
@@ -53,15 +48,10 @@ const recordHandler = (record: SQSRecord): void => {
   }
 };
 
-export const handler = async (
-  event: SQSEvent,
-  context: Context
-): Promise<SQSBatchResponse> => {
-  return processPartialResponseSync(event, recordHandler, processor, {
+export const handler: SQSHandler = async (event, context) => 
+  processPartialResponseSync(event, recordHandler, processor, {
     context,
   });
-};
-export { processor };
 ```
 
 ### Kinesis Processor
@@ -75,12 +65,7 @@ import {
   processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type {
-  KinesisStreamEvent,
-  KinesisStreamRecord,
-  Context,
-  KinesisStreamBatchResponse,
-} from 'aws-lambda';
+import type { KinesisStreamHandler, KinesisStreamRecord } from 'aws-lambda';
 
 const processor = new BatchProcessorSync(EventType.KinesisDataStreams);
 const logger = new Logger();
@@ -91,14 +76,10 @@ const recordHandler = (record: KinesisStreamRecord): void => {
   logger.info('Processed item', { item: payload });
 };
 
-export const handler = async (
-  event: KinesisStreamEvent,
-  context: Context
-): Promise<KinesisStreamBatchResponse> => {
-  return processPartialResponseSync(event, recordHandler, processor, {
+export const handler: KinesisStreamHandler = async (event, context) => 
+  processPartialResponseSync(event, recordHandler, processor, {
     context,
   });
-};
 ```
 
 ### DynamoDB Streams Processor
@@ -107,19 +88,14 @@ When using DynamoDB Streams as a Lambda event source, you can use the `BatchProc
 
 ```ts
 import {
-  BatchProcessorSync,
+  BatchProcessor,
   EventType,
   processPartialResponseSync,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type {
-  DynamoDBStreamEvent,
-  DynamoDBRecord,
-  Context,
-  DynamoDBBatchResponse,
-} from 'aws-lambda';
+import type { DynamoDBRecord, DynamoDBStreamHandler } from 'aws-lambda';
 
-const processor = new BatchProcessorSync(EventType.DynamoDBStreams);
+const processor = new BatchProcessor(EventType.DynamoDBStreams); // (1)!
 const logger = new Logger();
 
 const recordHandler = (record: DynamoDBRecord): void => {
@@ -133,14 +109,10 @@ const recordHandler = (record: DynamoDBRecord): void => {
   }
 };
 
-export const handler = async (
-  event: DynamoDBStreamEvent,
-  context: Context
-): Promise<DynamoDBBatchResponse> => {
-  return processPartialResponseSync(event, recordHandler, processor, {
+export const handler: DynamoDBStreamHandler = async (event, context) =>
+  processPartialResponseSync(event, recordHandler, processor, {
     context,
   });
-};
 ```
 
 ### Async processing
@@ -153,12 +125,7 @@ import {
   EventType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
-import type {
-  SQSEvent,
-  SQSRecord,
-  Context,
-  SQSBatchResponse,
-} from 'aws-lambda';
+import type { SQSHandler, SQSRecord } from 'aws-lambda';
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -170,14 +137,10 @@ const recordHandler = async (record: SQSRecord): Promise<number> => {
   return res.status;
 };
 
-export const handler = async (
-  event: SQSEvent,
-  context: Context
-): Promise<SQSBatchResponse> => {
-  return await processPartialResponse(event, recordHandler, processor, {
+export const handler: SQSHandler = async (event, context) => 
+  await processPartialResponse(event, recordHandler, processor, {
     context,
   });
-};
 ```
 
 Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/) for more examples.

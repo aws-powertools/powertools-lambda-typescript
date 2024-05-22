@@ -1,36 +1,35 @@
 /**
- * Test sort function
+ * Test deepSort Function
  *
- * @group unit/commons/sort
+ * @group unit/idempotency/deepSort
  */
+import { deepSort } from '../../src/deepSort';
 
-import { sort } from '../../src/sort';
-
-describe('Function: sort', () => {
+describe('Function: deepSort', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetModules();
   });
 
   test('can sort string correctly', () => {
-    expect(sort('test')).toEqual('test');
+    expect(deepSort('test')).toEqual('test');
   });
 
   test('can sort number correctly', () => {
-    expect(sort(5)).toEqual(5);
+    expect(deepSort(5)).toEqual(5);
   });
 
   test('can sort boolean correctly', () => {
-    expect(sort(true)).toEqual(true);
-    expect(sort(false)).toEqual(false);
+    expect(deepSort(true)).toEqual(true);
+    expect(deepSort(false)).toEqual(false);
   });
 
   test('can sort null correctly', () => {
-    expect(sort(null)).toEqual(null);
+    expect(deepSort(null)).toEqual(null);
   });
 
   test('can sort undefined correctly', () => {
-    expect(sort(undefined)).toEqual(undefined);
+    expect(deepSort(undefined)).toEqual(undefined);
   });
 
   test('can sort object with nested keys correctly', () => {
@@ -46,7 +45,7 @@ describe('Function: sort', () => {
     };
 
     // Act
-    const result = sort(input);
+    const result = deepSort(input);
 
     // Assess
     expect(JSON.stringify(result)).toEqual(
@@ -70,7 +69,7 @@ describe('Function: sort', () => {
     };
 
     // Act
-    const result = sort(input);
+    const result = deepSort(input);
 
     //Assess
     expect(JSON.stringify(result)).toEqual(
@@ -117,7 +116,7 @@ describe('Function: sort', () => {
     ];
 
     // Act
-    const result = sort(input);
+    const result = deepSort(input);
 
     // Assess
     expect(JSON.stringify(result)).toEqual(
@@ -157,7 +156,7 @@ describe('Function: sort', () => {
   });
 
   test('handles empty objects and arrays correctly', () => {
-    expect(sort({})).toEqual({});
-    expect(sort([])).toEqual([]);
+    expect(deepSort({})).toEqual({});
+    expect(deepSort([])).toEqual([]);
   });
 });

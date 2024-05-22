@@ -6,11 +6,6 @@
 import { deepSort } from '../../src/deepSort';
 
 describe('Function: deepSort', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
-  });
-
   test('can sort string correctly', () => {
     expect(deepSort('test')).toEqual('test');
   });

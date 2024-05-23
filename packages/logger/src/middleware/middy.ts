@@ -69,7 +69,7 @@ const injectLambdaContext = (
   const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
     if (isClearState) {
       loggers.forEach((logger: Logger) => {
-        logger.clearState();
+        logger.resetState();
       });
     }
   };

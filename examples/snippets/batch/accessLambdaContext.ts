@@ -4,12 +4,7 @@ import {
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type {
-  SQSEvent,
-  SQSRecord,
-  Context,
-  SQSBatchResponse,
-} from 'aws-lambda';
+import type { SQSRecord, Context, SQSHandler } from 'aws-lambda';
 
 const processor = new BatchProcessor(EventType.SQS);
 const logger = new Logger();
@@ -27,11 +22,7 @@ const recordHandler = (record: SQSRecord, lambdaContext?: Context): void => {
   }
 };
 
-export const handler = async (
-  event: SQSEvent,
-  context: Context
-): Promise<SQSBatchResponse> => {
-  return processPartialResponse(event, recordHandler, processor, {
+export const handler: SQSHandler = async (event, context) =>
+  processPartialResponse(event, recordHandler, processor, {
     context,
   });
-};

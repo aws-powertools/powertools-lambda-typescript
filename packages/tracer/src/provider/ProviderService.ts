@@ -29,6 +29,8 @@ import {
   isHttpSubsegment,
 } from './utilities.js';
 import type { DiagnosticsChannel } from 'undici-types';
+import http from 'node:http';
+import https from 'node:https';
 
 class ProviderService implements ProviderServiceInterface {
   /**
@@ -70,10 +72,8 @@ class ProviderService implements ProviderServiceInterface {
   }
 
   public captureHTTPsGlobal(): void {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    captureHTTPsGlobal(require('http'));
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    captureHTTPsGlobal(require('https'));
+    captureHTTPsGlobal(http);
+    captureHTTPsGlobal(https);
   }
 
   public getNamespace(): Namespace {

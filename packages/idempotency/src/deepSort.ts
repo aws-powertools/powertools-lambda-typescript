@@ -5,15 +5,23 @@ import {
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
 
-const sortObject = (object: JSONObject): JSONObject => {
-  return Object.keys(object)
+/**
+ * Sorts the keys of a provided object in a case-insensitive manner.
+ *
+ * This function takes an object as input, sorts its keys alphabetically without
+ * considering case sensitivity and recursively sorts any nested objects or arrays.
+ *
+ * @param {JSONObject} object - The JSON object to be sorted.
+ * @returns {JSONObject} - A new JSON object with all keys sorted alphabetically in a case-insensitive manner.
+ */
+const sortObject = (object: JSONObject): JSONObject =>
+  Object.keys(object)
     .sort((a, b) => (a.toLowerCase() < b.toLowerCase() ? -1 : 1))
     .reduce((acc, key) => {
       acc[key] = deepSort(object[key]);
 
       return acc;
     }, {} as JSONObject);
-};
 
 /**
  * Recursively sorts the keys of an object or elements of an array.
@@ -24,7 +32,6 @@ const sortObject = (object: JSONObject): JSONObject => {
  * @param {JSONValue} data - The input data to be sorted, which can be an object, array or primitive value.
  * @returns {JSONValue} - The sorted data, with all object's keys sorted alphabetically in a case-insensitive manner.
  */
-
 const deepSort = (data: JSONValue): JSONValue => {
   const type = getType(data);
   if (type === 'object') {

@@ -29,12 +29,13 @@ class DefaultLambda implements LambdaInterface {
   public async handler(
     _event: Record<string, unknown>,
     _context: Context
-  ): Promise<string> {
+  ): Promise<void> {
     logger.info(`Got test event: ${JSON.stringify(_event)}`);
     // sleep to enforce error with parallel execution
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    return 'Hello World';
+    // We return void to test that the utility handles it correctly
+    return;
   }
 
   @idempotent({

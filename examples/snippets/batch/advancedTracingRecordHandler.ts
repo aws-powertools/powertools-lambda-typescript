@@ -6,12 +6,7 @@ import {
 import { Tracer } from '@aws-lambda-powertools/tracer';
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
 import middy from '@middy/core';
-import type {
-  SQSEvent,
-  SQSRecord,
-  Context,
-  SQSBatchResponse,
-} from 'aws-lambda';
+import type { SQSRecord, SQSHandler, SQSEvent } from 'aws-lambda';
 
 const processor = new BatchProcessor(EventType.SQS);
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
@@ -35,10 +30,8 @@ const recordHandler = async (record: SQSRecord): Promise<void> => {
   subsegment?.close(); // (3)!
 };
 
-export const handler = middy(
-  async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
-    return processPartialResponse(event, recordHandler, processor, {
-      context,
-    });
-  }
+export const handler: SQSHandler = middy(async (event: SQSEvent, context) =>
+  processPartialResponse(event, recordHandler, processor, {
+    context,
+  })
 ).use(captureLambdaHandler(tracer));

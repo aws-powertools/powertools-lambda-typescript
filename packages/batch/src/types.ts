@@ -4,9 +4,12 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
+import { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor';
+import { BasePartialBatchProcessor } from './BasePartialBatchProcessor';
 
-type BatchProcessingOptions = {
+type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
   context: Context;
+  skipGroupOnError?: T extends SqsFifoPartialProcessor ? boolean : never;
 };
 
 type EventSourceDataClassTypes =

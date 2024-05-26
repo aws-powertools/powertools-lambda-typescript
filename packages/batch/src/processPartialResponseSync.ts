@@ -13,11 +13,11 @@ import type {
  * @param processor Batch processor to handle partial failure cases
  * @returns Lambda Partial Batch Response
  */
-const processPartialResponseSync = (
+const processPartialResponseSync = <T extends BasePartialBatchProcessor>(
   event: { Records: BaseRecord[] },
   recordHandler: CallableFunction,
-  processor: BasePartialBatchProcessor,
-  options?: BatchProcessingOptions
+  processor: T,
+  options?: BatchProcessingOptions<T>
 ): PartialItemFailureResponse => {
   if (!event.Records || !Array.isArray(event.Records)) {
     throw new UnexpectedBatchTypeError();

@@ -226,20 +226,23 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
     const updateExpressionFields: string[] = [
-      '#response_data = :response_data',
       '#expiry = :expiry',
       '#status = :status',
     ];
     const expressionAttributeNames: Record<string, string> = {
-      '#response_data': this.dataAttr,
       '#expiry': this.expiryAttr,
       '#status': this.statusAttr,
     };
     const expressionAttributeValues: Record<string, unknown> = {
-      ':response_data': record.responseData,
       ':expiry': record.expiryTimestamp,
       ':status': record.getStatus(),
     };
+
+    if (record.responseData !== undefined) {
+      updateExpressionFields.push('#response_data = :response_data');
+      expressionAttributeNames['#response_data'] = this.dataAttr;
+      expressionAttributeValues[':response_data'] = record.responseData;
+    }
 
     if (this.isPayloadValidationEnabled()) {
       updateExpressionFields.push('#validation_key = :validation_key');

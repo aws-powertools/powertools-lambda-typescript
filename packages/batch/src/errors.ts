@@ -51,6 +51,7 @@ class UnexpectedBatchTypeError extends BatchProcessingError {
     this.name = 'UnexpectedBatchTypeError';
   }
 }
+
 export {
   BatchProcessingError,
   FullBatchFailureError,

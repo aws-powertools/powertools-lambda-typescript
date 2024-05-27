@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",
@@ -22,9 +22,6 @@
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
-  },
-  "lint-staged": {
-    "*.{js,ts}": "npm run lint-fix"
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/commons#readme",
   "license": "MIT-0",

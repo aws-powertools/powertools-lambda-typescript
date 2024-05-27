@@ -68,6 +68,12 @@ describe('APIGateway ', () => {
       apiGatewayProxyOtherEvent
     );
   });
+  it('should not throw when event has sourceIp as test-invoke-source-ip', () => {
+    const apiGatewayProxyEventTestUi = TestEvents.apiGatewayProxyEventTestUI;
+    expect(() =>
+      APIGatewayProxyEventSchema.parse(apiGatewayProxyEventTestUi)
+    ).not.toThrow();
+  });
   it('should throw error when event is not a valid proxy event', () => {
     const event = {
       resource: '/',

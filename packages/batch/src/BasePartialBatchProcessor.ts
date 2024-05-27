@@ -17,18 +17,37 @@ import type {
 } from './types.js';
 
 /**
- * Process batch and partially report failed items
+ * Base abstract class for processing batch records with partial failure handling
+ *
+ * This class extends the {@link BasePartialProcessor} class and adds additional
+ * functionality to handle batch processing. Specifically, it provides methods
+ * to collect failed records and build the partial failure response.
+ *
+ * @abstract
  */
 abstract class BasePartialBatchProcessor extends BasePartialProcessor {
+  /**
+   * Mapping of event types to their respective failure collectors
+   *
+   * Each service expects a different format for partial failure reporting,
+   * this mapping ensures that the correct format is used for each event type.
+   */
   public COLLECTOR_MAPPING;
 
+  /**
+   * Response to be returned after processing
+   */
   public batchResponse: PartialItemFailureResponse;
 
+  /**
+   * Type of event that the processor is handling
+   */
   public eventType: keyof typeof EventType;
 
   /**
    * Initializes base batch processing class
-   * @param eventType Whether this is SQS, DynamoDB stream, or Kinesis data stream event
+   *
+   * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
    */
   public constructor(eventType: keyof typeof EventType) {
     super();
@@ -42,7 +61,13 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   }
 
   /**
-   * Report messages to be deleted in case of partial failures
+   * Clean up logic to be run after processing a batch
+   *
+   * If the entire batch failed, and the utility is not configured otherwise,
+   * this method will throw a `FullBatchFailureError` with the list of errors
+   * that occurred during processing.
+   *
+   * Otherwise, it will build the partial failure response based on the event type.
    */
   public clean(): void {
     if (!this.hasMessagesToReport()) {
@@ -58,8 +83,11 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   }
 
   /**
-   * Collects identifiers of failed items for a DynamoDB stream
-   * @returns list of identifiers for failed items
+   * Collect the identifiers of failed items for a DynamoDB stream
+   *
+   * The failures are collected based on the sequence number of the record
+   * and formatted as a list of objects with the key `itemIdentifier` as
+   * expected by the service.
    */
   public collectDynamoDBFailures(): PartialItemFailures[] {
     const failures: PartialItemFailures[] = [];
@@ -75,8 +103,11 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   }
 
   /**
-   * Collects identifiers of failed items for a Kinesis stream
-   * @returns list of identifiers for failed items
+   * Collect identifiers of failed items for a Kinesis batch
+   *
+   * The failures are collected based on the sequence number of the record
+   * and formatted as a list of objects with the key `itemIdentifier` as
+   * expected by the service.
    */
   public collectKinesisFailures(): PartialItemFailures[] {
     const failures: PartialItemFailures[] = [];
@@ -90,8 +121,11 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   }
 
   /**
-   * Collects identifiers of failed items for an SQS batch
-   * @returns list of identifiers for failed items
+   * Collect identifiers of failed items for an SQS batch
+   *
+   * The failures are collected based on the message ID of the record
+   * and formatted as a list of objects with the key `itemIdentifier` as
+   * expected by the service.
    */
   public collectSqsFailures(): PartialItemFailures[] {
     const failures: PartialItemFailures[] = [];
@@ -105,31 +139,37 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   }
 
   /**
-   * Determines whether all records in a batch failed to process
-   * @returns true if all records resulted in exception results
+   * Determine if the entire batch failed
+   *
+   * If the number of errors is equal to the number of records, then the
+   * entire batch failed and this method will return `true`.
    */
   public entireBatchFailed(): boolean {
     return this.errors.length == this.records.length;
   }
 
   /**
-   * Collects identifiers for failed batch items
-   * @returns formatted messages to use in batch deletion
+   * Collect identifiers for failed batch items
+   *
+   * The method will call the appropriate collector based on the event type
+   * and return the list of failed items.
    */
   public getMessagesToReport(): PartialItemFailures[] {
     return this.COLLECTOR_MAPPING[this.eventType]();
   }
 
   /**
-   * Determines if any records failed to process
-   * @returns true if any records resulted in exception
+   * Determine if there are any failed records to report
+   *
+   * If there are no failed records, then the batch was successful
+   * and this method will return `false`.
    */
   public hasMessagesToReport(): boolean {
     return this.failureMessages.length != 0;
   }
 
   /**
-   * Remove results from previous execution
+   * Set up the processor with the initial state ready for processing
    */
   public prepare(): void {
     this.successMessages.length = 0;
@@ -139,12 +179,21 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   }
 
   /**
-   * @returns Batch items that failed processing, if any
+   * Get the response from the batch processing
    */
   public response(): PartialItemFailureResponse {
     return this.batchResponse;
   }
 
+  /**
+   * Forward a record to the appropriate batch type
+   *
+   * Based on the event type that the processor was initialized with, this method
+   * will cast the record to the appropriate batch type handler.
+   *
+   * @param record The record to be processed
+   * @param eventType The type of event to process
+   */
   public toBatchType(
     record: EventSourceDataClassTypes,
     eventType: keyof typeof EventType

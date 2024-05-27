@@ -604,7 +604,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           id: dummyKey,
         }),
         UpdateExpression:
-          'SET #response_data = :response_data, #expiry = :expiry, #status = :status',
+          'SET #expiry = :expiry, #status = :status, #response_data = :response_data',
         ExpressionAttributeNames: {
           '#status': 'status',
           '#expiry': 'expiration',
@@ -614,6 +614,41 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           ':status': IdempotencyRecordStatus.EXPIRED,
           ':expiry': expiryTimestamp,
           ':response_data': {},
+        }),
+      });
+    });
+
+    it('updates the item when the response_data is undefined', async () => {
+      // Prepare
+      const persistenceLayer = new TestDynamoDBPersistenceLayer({
+        tableName: dummyTableName,
+      });
+      const status = IdempotencyRecordStatus.EXPIRED;
+      const expiryTimestamp = Date.now();
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status,
+        expiryTimestamp,
+        responseData: undefined,
+      });
+
+      // Act
+      persistenceLayer._updateRecord(record);
+
+      // Assess
+      expect(client).toReceiveCommandWith(UpdateItemCommand, {
+        TableName: dummyTableName,
+        Key: marshall({
+          id: dummyKey,
+        }),
+        UpdateExpression: 'SET #expiry = :expiry, #status = :status',
+        ExpressionAttributeNames: {
+          '#status': 'status',
+          '#expiry': 'expiration',
+        },
+        ExpressionAttributeValues: marshall({
+          ':status': IdempotencyRecordStatus.EXPIRED,
+          ':expiry': expiryTimestamp,
         }),
       });
     });
@@ -646,7 +681,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           id: dummyKey,
         }),
         UpdateExpression:
-          'SET #response_data = :response_data, #expiry = :expiry, #status = :status, #validation_key = :validation_key',
+          'SET #expiry = :expiry, #status = :status, #response_data = :response_data, #validation_key = :validation_key',
         ExpressionAttributeNames: {
           '#status': 'status',
           '#expiry': 'expiration',

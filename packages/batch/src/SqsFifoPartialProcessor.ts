@@ -24,9 +24,12 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
     let currentIndex = 0;
     for (const record of this.records) {
-      // If we have any failed messages, it means the last message failed
-      // We should then short circuit the process and fail remaining messages
-      if (this.failureMessages.length != 0) {
+      // If we have any failed messages, it means the last message failed.
+      // We should then short circuit the process and
+      // fail remaining messages(unless skipGroupOnError is set to true)
+      const shouldShortCircuit =
+        !this.options?.skipGroupOnError && this.failureMessages.length !== 0;
+      if (shouldShortCircuit) {
         return this.shortCircuitProcessing(currentIndex, processedRecords);
       }
 

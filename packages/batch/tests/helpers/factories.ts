@@ -5,7 +5,7 @@ import type {
 } from 'aws-lambda';
 import { randomInt, randomUUID } from 'node:crypto';
 
-const sqsRecordFactory = (body: string): SQSRecord => {
+const sqsRecordFactory = (body: string, messageGroupId?: string): SQSRecord => {
   return {
     messageId: randomUUID(),
     receiptHandle: 'AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a',
@@ -15,6 +15,7 @@ const sqsRecordFactory = (body: string): SQSRecord => {
       SentTimestamp: '1545082649183',
       SenderId: 'AIDAIENQZJOLO23YVJ4VO',
       ApproximateFirstReceiveTimestamp: '1545082649185',
+      MessageGroupId: messageGroupId,
     },
     messageAttributes: {},
     md5OfBody: 'e4e68fb7bd0e697a0ae8f1bb342846b3',

@@ -7,9 +7,11 @@ import {
   SqsFifoPartialProcessor,
   processPartialResponseSync,
   SqsFifoShortCircuitError,
+  SqsFifoMessageGroupShortCircuitError,
 } from '../../src/index.js';
 import { sqsRecordFactory } from '../helpers/factories.js';
 import { sqsRecordHandler } from '../helpers/handlers.js';
+import context from '@aws-lambda-powertools/testing-utils/context';
 
 describe('Class: SqsFifoBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -66,6 +68,81 @@ describe('Class: SqsFifoBatchProcessor', () => {
       expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
         thirdRecord.messageId
       );
+      expect(processor.errors[1]).toBeInstanceOf(SqsFifoShortCircuitError);
+    });
+
+    test('When `skipGroupOnError` is true, SQS FIFO Batch processor keeps on processing record after failure and only skips a record if its previously failed', () => {
+      // Prepare
+      const messageGroupId = 'same_group';
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('fail', messageGroupId);
+      const thirdRecord = sqsRecordFactory('success', 'another_group');
+      const fourthRecord = sqsRecordFactory('fail', messageGroupId);
+      const event = {
+        Records: [firstRecord, secondRecord, thirdRecord, fourthRecord],
+      };
+      const processor = new SqsFifoPartialProcessor();
+
+      // Act
+      const result = processPartialResponseSync(
+        event,
+        sqsRecordHandler,
+        processor,
+        {
+          context,
+          skipGroupOnError: true,
+        }
+      );
+
+      //Assess
+      expect(result['batchItemFailures'].length).toBe(2);
+      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+        secondRecord.messageId
+      );
+      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+        fourthRecord.messageId
+      );
+      expect(processor.errors.length).toBe(2);
+      expect(processor.errors[1]).toBeInstanceOf(
+        SqsFifoMessageGroupShortCircuitError
+      );
+    });
+
+    test('When `skipGroupOnError` is false, SQS FIFO Batch processor short circuits the process on first failure', () => {
+      // Prepare
+      const messageGroupId = 'same_group';
+      const firstRecord = sqsRecordFactory('success');
+      const secondRecord = sqsRecordFactory('fail', messageGroupId);
+      const thirdRecord = sqsRecordFactory('success');
+      const fourthRecord = sqsRecordFactory('fail', messageGroupId);
+      const event = {
+        Records: [firstRecord, secondRecord, thirdRecord, fourthRecord],
+      };
+      const processor = new SqsFifoPartialProcessor();
+
+      // Act
+      const result = processPartialResponseSync(
+        event,
+        sqsRecordHandler,
+        processor,
+        {
+          context,
+          skipGroupOnError: false,
+        }
+      );
+
+      //Assess
+      expect(result['batchItemFailures'].length).toBe(3);
+      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+        secondRecord.messageId
+      );
+      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+        thirdRecord.messageId
+      );
+      expect(result['batchItemFailures'][2]['itemIdentifier']).toBe(
+        fourthRecord.messageId
+      );
+      expect(processor.errors.length).toBe(3);
       expect(processor.errors[1]).toBeInstanceOf(SqsFifoShortCircuitError);
     });
   });

@@ -17,7 +17,7 @@ import type {
  * Process native partial responses from SQS FIFO queues
  * If `skipGroupOnError` is not enabled, stop processing records
  * when the first record fails and the remaining records are reported as failed items.
- * If `skipGroupOnError` is enabled, skip processing of subsequent records
+ * If `skipGroupOnError` is true, skip processing of subsequent records
  * in the same message group after the first failure in that group.
  */
 class SqsFifoPartialProcessor extends BatchProcessorSync {
@@ -37,7 +37,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
 
   /**
    * Handles a failure for a given record.
-   * Adds the current group ID to the set of failed group IDs if `skipGroupOnError` is enabled.
+   * Adds the current group ID to the set of failed group IDs if `skipGroupOnError` is true.
    * @param record - The record that failed.
    * @param exception - The error that occurred.
    * @returns The failure response.
@@ -46,8 +46,9 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
     record: EventSourceDataClassTypes,
     exception: Error
   ): FailureResponse {
-    if (this.options?.skipGroupOnError && this.currentGroupId)
+    if (this.options?.skipGroupOnError && this.currentGroupId) {
       this.addToFailedGroup(this.currentGroupId);
+    }
 
     return super.failureHandler(record, exception);
   }
@@ -56,7 +57,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
    * Call instance's handler for each record.
    * When the first failed message is detected, the process is short-circuited
    * And the remaining messages are reported as failed items,
-   * unless the `skipGroupOnError` option is enabled.
+   * unless the `skipGroupOnError` option is true.
    */
   public processSync(): (SuccessResponse | FailureResponse)[] {
     this.prepare();
@@ -66,15 +67,16 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
     for (const record of this.records) {
       this.setCurrentGroup((record as SQSRecord).attributes?.MessageGroupId);
 
-      // If we have any failed messages, it means the last message failed.
-      // We should then short circuit the process and
-      // fail remaining messages unless `skipGroupOnError` is enabled
+      // If we have any failed messages, we should then short circuit the process and
+      // fail remaining messages unless `skipGroupOnError` is true
       const shouldShortCircuit =
         !this.options?.skipGroupOnError && this.failureMessages.length !== 0;
       if (shouldShortCircuit) {
         return this.shortCircuitProcessing(currentIndex, processedRecords);
       }
 
+      // If `skipGroupOnError` is true and the current group has previously failed,
+      // then we should skip processing the current group.
       const shouldSkipCurrentGroup =
         this.options?.skipGroupOnError &&
         this.currentGroupId &&

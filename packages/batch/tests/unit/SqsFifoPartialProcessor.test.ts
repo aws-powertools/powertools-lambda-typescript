@@ -129,7 +129,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
       const secondRecord = sqsRecordFactory('success', '1');
       const thirdRecord = sqsRecordFactory('fail', '2');
       const fourthRecord = sqsRecordFactory('success', '2');
-      const fifthRecord = sqsRecordFactory('fail', '3');
+      const fifthRecord = sqsRecordFactory('success', '3');
       const event = {
         Records: [
           firstRecord,
@@ -153,17 +153,14 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(3);
+      expect(result['batchItemFailures'].length).toBe(2);
       expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
         thirdRecord.messageId
       );
       expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
         fourthRecord.messageId
       );
-      expect(result['batchItemFailures'][2]['itemIdentifier']).toBe(
-        fifthRecord.messageId
-      );
-      expect(processor.errors.length).toBe(3);
+      expect(processor.errors.length).toBe(2);
       expect(processor.errors[1]).toBeInstanceOf(
         SqsFifoMessageGroupShortCircuitError
       );

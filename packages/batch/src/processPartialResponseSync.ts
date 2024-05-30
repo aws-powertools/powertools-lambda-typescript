@@ -41,11 +41,30 @@ import type {
  *     context,
  *   });
  * ```
+ * @example
+ * ```typescript
+ * import {
+ *   SqsFifoPartialProcessor,
+ *   processPartialResponseSync,
+ * } from '@aws-lambda-powertools/batch';
+ * import type { SQSRecord, SQSHandler } from 'aws-lambda';
  *
+ * const processor = new SqsFifoPartialProcessor();
+ *
+ * const recordHandler = async (record: SQSRecord): Promise<void> => {
+ *   const payload = JSON.parse(record.body);
+ * };
+ *
+ * export const handler: SQSHandler = async (event, context) =>
+ *   processPartialResponseSync(event, recordHandler, processor, {
+ *     context,
+ *     skipGroupOnError: true
+ *   });
+ * ```
  * @param event The event object containing the batch of records
  * @param recordHandler Sync function to process each record from the batch
  * @param processor Batch processor instance to handle the batch processing
- * @param options Batch processing options
+ * @param options Batch processing options, which can vary with chosen batch processor implementation
  */
 const processPartialResponseSync = <T extends BasePartialBatchProcessor>(
   event: { Records: BaseRecord[] },

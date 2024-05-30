@@ -10,7 +10,9 @@ import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 /**
  * Options for batch processing
  *
+ * @template T The type of the batch processor, defaults to BasePartialBatchProcessor
  * @property context The context object provided by the AWS Lambda runtime
+ * @property skipGroupOnError The option to group on error during processing
  */
 type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
   /**
@@ -18,6 +20,10 @@ type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
    * it's made available to the handler function you specify
    */
   context: Context;
+  /**
+   * This option is only available for SqsFifoPartialProcessor.
+   * If true skip the group on error during processing.
+   */
   skipGroupOnError?: T extends SqsFifoPartialProcessor ? boolean : never;
 };
 

@@ -137,9 +137,14 @@ describe(`Idempotency E2E tests, wrapper function usage`, () => {
       );
       // Since records 1 and 3 have the same payload, only 2 records should be created
       expect(idempotencyRecords?.Items?.length).toEqual(2);
-      const idempotencyRecordsItems = idempotencyRecords.Items?.sort((a, b) =>
-        a.expiration > b.expiration ? 1 : -1
-      );
+      const idempotencyRecordsItems = [
+        idempotencyRecords.Items?.find(
+          (record) => record.id === `${functionNameDefault}#${payloadHashes[0]}`
+        ),
+        idempotencyRecords.Items?.find(
+          (record) => record.id === `${functionNameDefault}#${payloadHashes[1]}`
+        ),
+      ];
 
       expect(idempotencyRecordsItems?.[0]).toStrictEqual({
         id: `${functionNameDefault}#${payloadHashes[0]}`,
@@ -197,14 +202,27 @@ describe(`Idempotency E2E tests, wrapper function usage`, () => {
       );
       /**
        * Each record should have a corresponding entry in the persistence store,
-       * if so then we sort the entries by expiry time and compare them to the
-       * expected values. Expiry times should be in the same order as the
-       * payload records.
+       * if so then we retrieve the records based on their custom IDs
+       * The records are retrieved in the same order as the payload records.
        */
       expect(idempotencyRecords.Items?.length).toEqual(3);
-      const idempotencyRecordsItems = idempotencyRecords.Items?.sort((a, b) =>
-        a.expiryAttr > b.expiryAttr ? 1 : -1
-      );
+      const idempotencyRecordsItems = [
+        idempotencyRecords.Items?.find(
+          (record) =>
+            record.customId ===
+            `${functionNameCustomConfig}#${payloadHashes[0]}`
+        ),
+        idempotencyRecords.Items?.find(
+          (record) =>
+            record.customId ===
+            `${functionNameCustomConfig}#${payloadHashes[1]}`
+        ),
+        idempotencyRecords.Items?.find(
+          (record) =>
+            record.customId ===
+            `${functionNameCustomConfig}#${payloadHashes[2]}`
+        ),
+      ];
 
       expect(idempotencyRecordsItems?.[0]).toStrictEqual({
         customId: `${functionNameCustomConfig}#${payloadHashes[0]}`,

@@ -14,7 +14,7 @@ import type {
   FailureResponse,
   BaseRecord,
 } from '@aws-lambda-powertools/batch/types';
-import type { SQSEvent, Context, SQSBatchResponse } from 'aws-lambda';
+import type { SQSHandler } from 'aws-lambda';
 
 const tableName = process.env.TABLE_NAME || 'table-not-found';
 
@@ -89,11 +89,7 @@ const recordHandler = (): number => {
   return Math.floor(randomInt(1, 10));
 };
 
-export const handler = async (
-  event: SQSEvent,
-  context: Context
-): Promise<SQSBatchResponse> => {
-  return processPartialResponse(event, recordHandler, processor, {
+export const handler: SQSHandler = async (event, context) =>
+  processPartialResponse(event, recordHandler, processor, {
     context,
   });
-};

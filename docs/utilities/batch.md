@@ -113,11 +113,11 @@ Processing batches from SQS works in three stages:
 
 === "index.ts"
 
-    ```typescript hl_lines="1-5 14 17 29-31"
+    ```typescript hl_lines="1-5 9 12 21-23"
     --8<--
-     examples/snippets/batch/gettingStartedSQS.ts::16
-     examples/snippets/batch/gettingStartedSQS.ts:18:29
-     examples/snippets/batch/gettingStartedSQS.ts:31:34
+     examples/snippets/batch/gettingStartedSQS.ts::11
+     examples/snippets/batch/gettingStartedSQS.ts:13:21
+     examples/snippets/batch/gettingStartedSQS.ts:23:25
     --8<--
     ```
 
@@ -178,11 +178,11 @@ Processing batches from Kinesis works in three stages:
 
 === "index.ts"
 
-    ```typescript hl_lines="1-5 14 17 27-29"
+    ```typescript hl_lines="1-5 9 12 19-21"
     --8<-- "examples/snippets/batch/gettingStartedKinesis.ts"
     ```
 
-    1.  **Step 1**. Creates a partial failure batch processor for Kinesis Data Streams. See [partial failure mechanics for details](#partial-failure-mechanics)
+    1.  Creates a partial failure batch processor for Kinesis Data Streams. See [partial failure mechanics for details](#partial-failure-mechanics)
 
 === "Sample response"
 
@@ -211,11 +211,11 @@ Processing batches from DynamoDB Streams works in three stages:
 
 === "index.ts"
 
-    ```typescript hl_lines="1-5 14 17 32-34"
+    ```typescript hl_lines="1-5 9 12 24-26"
     --8<-- "examples/snippets/batch/gettingStartedDynamoDBStreams.ts"
     ```
 
-    1.  **Step 1**. Creates a partial failure batch processor for DynamoDB Streams. See [partial failure mechanics for details](#partial-failure-mechanics)
+    1.  Creates a partial failure batch processor for DynamoDB Streams. See [partial failure mechanics for details](#partial-failure-mechanics)
 
 === "Sample response"
 
@@ -237,17 +237,17 @@ By default, we catch any exception raised by your record handler function. This 
 
 === "Sample error handling with custom exception"
 
-    ```typescript hl_lines="30"
+    ```typescript hl_lines="25"
     --8<--
-     examples/snippets/batch/gettingStartedErrorHandling.ts::29
-     examples/snippets/batch/gettingStartedErrorHandling.ts:31:38
-     examples/snippets/batch/gettingStartedErrorHandling.ts:40:43
+     examples/snippets/batch/gettingStartedErrorHandling.ts::24
+     examples/snippets/batch/gettingStartedErrorHandling.ts:26:30
+     examples/snippets/batch/gettingStartedErrorHandling.ts:32:
     --8<--
     ```
 
     1. Any exception works here. See [extending BatchProcessorSync section, if you want to override this behavior.](#extending-batchprocessor)
 
-    2. Exceptions raised in `record_handler` will propagate to `process_partial_response`. <br/><br/> We catch them and include each failed batch item identifier in the response dictionary (see `Sample response` tab).
+    2. Exceptions raised in `recordHandler` will propagate to `process_partial_response`. <br/><br/> We catch them and include each failed batch item identifier in the response dictionary (see `Sample response` tab).
 
 === "Sample response"
 
@@ -433,7 +433,7 @@ Use the `BatchProcessor` directly in your function to access a list of all retur
 * **When successful**. We will include a tuple with `success`, the result of `recordHandler`, and the batch record
 * **When failed**. We will include a tuple with `fail`, exception as a string, and the batch record
 
-```typescript hl_lines="25 27-28 30-33 38" title="Accessing processed messages"
+```typescript hl_lines="17 19-20 23 28" title="Accessing processed messages"
 --8<-- "examples/snippets/batch/accessProcessedMessages.ts"
 ```
 
@@ -446,7 +446,7 @@ Within your `recordHandler` function, you might need access to the Lambda contex
 
 We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lambda/latest/dg/typescript-context.html){target="_blank"} into your `recordHandler` as optional second argument if you register it when using `BatchProcessorSync` or the `processPartialResponseSync` function.
 
-```typescript hl_lines="17 35"
+```typescript hl_lines="12 27"
 --8<-- "examples/snippets/batch/accessLambdaContext.ts"
 ```
 
@@ -461,7 +461,7 @@ For these scenarios, you can subclass `BatchProcessor` and quickly override `suc
 
 Let's suppose you'd like to add a metric named `BatchRecordFailures` for each batch record that failed processing
 
-```typescript hl_lines="3 20 24 31 37" title="Extending failure handling mechanism in BatchProcessor"
+```typescript hl_lines="3 15 19 26 32" title="Extending failure handling mechanism in BatchProcessor"
 --8<-- "examples/snippets/batch/extendingFailure.ts"
 ```
 

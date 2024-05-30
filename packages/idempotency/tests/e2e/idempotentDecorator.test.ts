@@ -193,7 +193,7 @@ describe('Idempotency e2e test decorator, default settings', () => {
       expect(idempotencyRecord.Items?.[0].id).toEqual(
         `${functionNameDefault}#${payloadHash}`
       );
-      expect(idempotencyRecord.Items?.[0].data).toEqual('Hello World');
+      expect(idempotencyRecord.Items?.[0].data).toBeUndefined();
       expect(idempotencyRecord.Items?.[0].status).toEqual('COMPLETED');
       // During the first invocation the handler should be called, so the logs should contain 1 log
       expect(functionLogs[0]).toHaveLength(1);

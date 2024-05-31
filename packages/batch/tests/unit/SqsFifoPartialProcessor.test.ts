@@ -166,6 +166,60 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
     });
 
+    test('When `skipGroupOnError` is true, SQS FIFO Batch processor processes everything with no failures', () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('success', '1');
+      const secondRecord = sqsRecordFactory('success', '2');
+      const thirdRecord = sqsRecordFactory('success', '3');
+      const fourthRecord = sqsRecordFactory('success', '4');
+      const event = {
+        Records: [firstRecord, secondRecord, thirdRecord, fourthRecord],
+      };
+      const processor = new SqsFifoPartialProcessor();
+
+      // Act
+      const result = processPartialResponseSync(
+        event,
+        sqsRecordHandler,
+        processor,
+        {
+          context,
+          skipGroupOnError: true,
+        }
+      );
+
+      // Assess
+      expect(result['batchItemFailures'].length).toBe(0);
+      expect(processor.errors.length).toBe(0);
+    });
+
+    test('When `skipGroupOnError` is false, SQS FIFO Batch processor processes everything with no failures', () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('success', '1');
+      const secondRecord = sqsRecordFactory('success', '2');
+      const thirdRecord = sqsRecordFactory('success', '3');
+      const fourthRecord = sqsRecordFactory('success', '4');
+      const event = {
+        Records: [firstRecord, secondRecord, thirdRecord, fourthRecord],
+      };
+      const processor = new SqsFifoPartialProcessor();
+
+      // Act
+      const result = processPartialResponseSync(
+        event,
+        sqsRecordHandler,
+        processor,
+        {
+          context,
+          skipGroupOnError: false,
+        }
+      );
+
+      // Assess
+      expect(result['batchItemFailures'].length).toBe(0);
+      expect(processor.errors.length).toBe(0);
+    });
+
     test('When `skipGroupOnError` is false, SQS FIFO Batch processor short circuits the process on first failure', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success', '1');

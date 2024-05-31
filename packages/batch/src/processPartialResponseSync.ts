@@ -61,6 +61,7 @@ import type {
  *     skipGroupOnError: true
  *   });
  * ```
+ *
  * @param event The event object containing the batch of records
  * @param recordHandler Sync function to process each record from the batch
  * @param processor Batch processor instance to handle the batch processing

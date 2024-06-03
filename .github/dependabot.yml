@@ -1,25 +1,23 @@
 version: 2
 updates:
   - package-ecosystem: docker
-    directory: /.devcontainer
+    directories:
+      - "/.devcontainer"
+      - "/docs"
     labels: [ ]
     schedule:
       interval: daily
 
   - package-ecosystem: github-actions
-    directory: /
-    labels: [ ]
-    schedule:
-      interval: daily
-
-  - package-ecosystem: docker
-    directory: /docs
+    directories:
+      - "/"
     labels: [ ]
     schedule:
       interval: daily
 
   - package-ecosystem: pip
-    directory: /docs
+    directories:
+      - "/docs"
     labels: [ ]
     schedule:
       interval: daily
@@ -28,7 +26,8 @@ updates:
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
-    directory: /
+    directories:
+      - "/"
     labels: [ ]
     schedule:
       interval: daily

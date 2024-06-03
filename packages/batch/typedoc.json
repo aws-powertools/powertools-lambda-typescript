@@ -3,7 +3,8 @@
     "../../typedoc.base.json"
   ],
   "entryPoints": [
-    "./src/index.ts"
+    "./src/index.ts",
+    "./src/types.ts"
   ],
   "readme": "README.md"
 }

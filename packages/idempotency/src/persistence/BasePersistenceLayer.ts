@@ -261,7 +261,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private getExpiryTimestamp(): number {
     const currentTime: number = Date.now() / 1000;
 
-    return currentTime + this.expiresAfterSeconds;
+    return Math.round(currentTime + this.expiresAfterSeconds);
   }
 
   private getFromCache(idempotencyKey: string): IdempotencyRecord | undefined {

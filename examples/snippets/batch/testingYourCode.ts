@@ -36,7 +36,7 @@ describe('Function tests', () => {
     };
 
     // Act
-    const response = await handler(sqsEvent, context);
+    const response = await handler(sqsEvent, context, () => {});
 
     // Assess
     expect(response).toEqual(expectedResponse);

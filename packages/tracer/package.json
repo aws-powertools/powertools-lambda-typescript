@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "The tracer package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -25,18 +25,14 @@
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
-  "lint-staged": {
-    "*.{js,ts}": "npm run lint-fix"
-  },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/tracer#readme",
   "license": "MIT-0",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.572.0",
-    "@aws-sdk/client-xray": "^3.572.0",
+    "@aws-sdk/client-dynamodb": "^3.574.0",
+    "@aws-sdk/client-xray": "^3.574.0",
     "@types/promise-retry": "^1.1.6",
-    "aws-sdk": "^2.1617.0",
-    "axios": "^1.6.8",
+    "aws-sdk": "^2.1628.0",
     "promise-retry": "^2.0.1"
   },
   "peerDependencies": {
@@ -93,7 +89,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.1.0",
+    "@aws-lambda-powertools/commons": "^2.1.1",
     "aws-xray-sdk-core": "^3.6.0"
   },
   "keywords": [

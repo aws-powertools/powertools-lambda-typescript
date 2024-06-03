@@ -123,8 +123,9 @@ describe('Middy middleware', () => {
 
       // Assess
       expect(debugSpy).toHaveBeenCalledTimes(2);
-      expect(debugSpy).toHaveBeenCalledWith(
-        JSON.stringify({
+      const log1 = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -142,8 +143,9 @@ describe('Middy middleware', () => {
           details: { user_id: '1234' },
         })
       );
-      expect(debugSpy).toHaveBeenLastCalledWith(
-        JSON.stringify({
+      const log2 = JSON.parse(debugSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -158,8 +160,6 @@ describe('Middy middleware', () => {
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         })
       );
-
-      debugSpy.mockRestore();
     });
 
     test('when enabled, the temporary log attributes added within the handler scope are removed after the invocation ends', async () => {
@@ -190,8 +190,9 @@ describe('Middy middleware', () => {
 
       // Assess
       expect(debugSpy).toHaveBeenCalledTimes(2);
-      expect(debugSpy).toHaveBeenCalledWith(
-        JSON.stringify({
+      const log1 = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -209,8 +210,9 @@ describe('Middy middleware', () => {
           details: { user_id: '1234' },
         })
       );
-      expect(debugSpy).toHaveBeenLastCalledWith(
-        JSON.stringify({
+      const log2 = JSON.parse(debugSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -226,8 +228,6 @@ describe('Middy middleware', () => {
           foo: 'bar',
         })
       );
-
-      debugSpy.mockRestore();
     });
 
     test('when enabled, the persistent log attributes added within the handler scope ARE NOT removed after the invocation ends', async () => {

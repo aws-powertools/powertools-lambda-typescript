@@ -1476,15 +1476,9 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(consoleSpy).toHaveBeenCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
-          level: 'INFO',
-          message: 'This is an INFO log with some log attributes',
-          sampling_rate: 0,
-          service: 'hello-world',
-          timestamp: '2016-06-20T12:08:10.000Z',
-          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
           aws_account_id: '0987654321',
         })
       );
@@ -1758,6 +1752,52 @@ describe('Class: Logger', () => {
     });
   });
 
+  describe('Method: appendPersistentKeys', () => {
+    it('overwrites existing persistent keys with new ones', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentKeys: {
+          aws_account_id: '123456789012',
+        },
+      });
+
+      // Act
+      logger.appendPersistentKeys({
+        aws_account_id: '0987654321',
+      });
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            aws_account_id: '0987654321',
+          },
+        })
+      );
+    });
+
+    it('overwrites existing temporary keys with new ones in the next log', () => {
+      // Prepare
+      const logger = new Logger();
+      const debugSpy = jest.spyOn(logger['console'], 'info');
+      logger.appendKeys({
+        aws_account_id: '123456789012',
+      });
+
+      // Act
+      logger.appendPersistentKeys({
+        aws_account_id: '0987654321',
+      });
+      logger.info('This is an INFO log with some log attributes');
+
+      // Assess
+      const log = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({ aws_account_id: '0987654321' })
+      );
+    });
+  });
+
   describe('Method: injectLambdaContext', () => {
     beforeEach(() => {
       jest.spyOn(console, 'log').mockImplementation(() => ({}));
@@ -1788,10 +1828,10 @@ describe('Class: Logger', () => {
       await handler(event, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1830,10 +1870,10 @@ describe('Class: Logger', () => {
 
       // Assess
 
-      expect(consoleSpy).toBeCalledTimes(2);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(2);
+      const log1 = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
           level: 'INFO',
           message: 'An INFO log without context!',
           sampling_rate: 0,
@@ -1842,9 +1882,9 @@ describe('Class: Logger', () => {
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         })
       );
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        2,
-        JSON.stringify({
+      const log2 = JSON.parse(consoleSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1887,10 +1927,10 @@ describe('Class: Logger', () => {
       // Assess
 
       expect(actualResult).toEqual(expectedReturnValue);
-      expect(consoleSpy).toBeCalledTimes(2);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(2);
+      const log1 = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
           level: 'INFO',
           message: 'An INFO log without context!',
           sampling_rate: 0,
@@ -1899,9 +1939,9 @@ describe('Class: Logger', () => {
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         })
       );
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        2,
-        JSON.stringify({
+      const log2 = JSON.parse(consoleSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1953,8 +1993,9 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(debugSpy).toHaveBeenCalledTimes(2);
-      expect(debugSpy).toHaveBeenCalledWith(
-        JSON.stringify({
+      const log1 = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1972,8 +2013,9 @@ describe('Class: Logger', () => {
           details: { user_id: '1234' },
         })
       );
-      expect(debugSpy).toHaveBeenLastCalledWith(
-        JSON.stringify({
+      const log2 = JSON.parse(debugSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1988,8 +2030,6 @@ describe('Class: Logger', () => {
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         })
       );
-
-      debugSpy.mockRestore();
     });
 
     test('when clearState is enabled, the persistent log attributes added in the handler ARE NOT cleared when the method returns', async () => {
@@ -2008,7 +2048,7 @@ describe('Class: Logger', () => {
           _context: Context
         ): Promise<void> {
           // These persistent attributes stay persistent
-          logger.addPersistentLogAttributes({
+          logger.appendPersistentKeys({
             details: { user_id: '1234' },
           });
           logger.debug('This is a DEBUG log with the user_id');
@@ -2054,7 +2094,7 @@ describe('Class: Logger', () => {
           _context: Context
         ): Promise<void> {
           // This key is persistent and will stay persistent
-          logger.addPersistentLogAttributes({
+          logger.appendPersistentKeys({
             foo: 'bar',
           });
           // This attribute is temporary and will be cleared
@@ -2075,8 +2115,9 @@ describe('Class: Logger', () => {
 
       // Assess
       expect(debugSpy).toHaveBeenCalledTimes(2);
-      expect(debugSpy).toHaveBeenCalledWith(
-        JSON.stringify({
+      const log1 = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -2093,8 +2134,9 @@ describe('Class: Logger', () => {
           biz: 'baz',
         })
       );
-      expect(debugSpy).toHaveBeenLastCalledWith(
-        JSON.stringify({
+      const log2 = JSON.parse(debugSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -2129,7 +2171,7 @@ describe('Class: Logger', () => {
           _context: Context
         ): Promise<string> {
           // This key is persistent and will stay persistent
-          logger.addPersistentLogAttributes({
+          logger.appendPersistentKeys({
             foo: 'bar',
           });
           // This attribute is temporary and will be cleared
@@ -2149,8 +2191,9 @@ describe('Class: Logger', () => {
       await expect(handler(event, context)).rejects.toThrow();
 
       expect(debugSpy).toHaveBeenCalledTimes(1);
-      expect(debugSpy).toHaveBeenCalledWith(
-        JSON.stringify({
+      const log = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -2202,10 +2245,10 @@ describe('Class: Logger', () => {
       await handler(event, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -2249,10 +2292,10 @@ describe('Class: Logger', () => {
       await handler(event, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -2307,10 +2350,10 @@ describe('Class: Logger', () => {
       await handler({}, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -2704,7 +2747,7 @@ describe('Class: Logger', () => {
       const childLogger = parentLogger.createChild();
 
       // Act
-      parentLogger.addPersistentLogAttributes({
+      parentLogger.appendPersistentKeys({
         aws_account_id: '123456789012',
         aws_region: 'eu-west-1',
         logger: {

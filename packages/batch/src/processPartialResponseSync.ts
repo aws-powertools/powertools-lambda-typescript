@@ -41,6 +41,12 @@ import type {
  *     context,
  *   });
  * ```
+ *
+ * When working with SQS FIFO queues, we will stop processing at the first failure
+ * and mark unprocessed messages as failed to preserve ordering. However, if you want to
+ * continue processing messages from different group IDs, you can enable the `skipGroupOnError`
+ * option for seamless processing of messages from various group IDs.
+ *
  * @example
  * ```typescript
  * import {

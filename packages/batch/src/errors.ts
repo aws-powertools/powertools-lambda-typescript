@@ -38,6 +38,17 @@ class SqsFifoShortCircuitError extends BatchProcessingError {
 }
 
 /**
+ * Error thrown by the Batch Processing utility when a previous record from
+ * SQS FIFO queue message group fails processing.
+ */
+class SqsFifoMessageGroupShortCircuitError extends BatchProcessingError {
+  public constructor() {
+    super('A previous record from this message group failed processing');
+    this.name = 'SqsFifoMessageGroupShortCircuitError';
+  }
+}
+
+/**
  * Error thrown by the Batch Processing utility when a partial processor receives an unexpected
  * batch type.
  */
@@ -56,5 +67,6 @@ export {
   BatchProcessingError,
   FullBatchFailureError,
   SqsFifoShortCircuitError,
+  SqsFifoMessageGroupShortCircuitError,
   UnexpectedBatchTypeError,
 };

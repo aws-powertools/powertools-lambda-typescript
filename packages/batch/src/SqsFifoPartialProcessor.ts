@@ -163,6 +163,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
 
   /**
    * Adds the specified group ID to the set of failed group IDs.
+   *
    * @param group - The group ID to be added to the set of failed group IDs.
    */
   #addToFailedGroup(group: string): void {
@@ -186,6 +187,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
 
   /**
    * Sets the current group ID for the message being processed.
+   *
    * @param group - The group ID of the current message being processed.
    */
   #setCurrentGroup(group?: string): void {

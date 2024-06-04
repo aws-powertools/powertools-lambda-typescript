@@ -15,7 +15,7 @@ const sqsRecordFactory = (body: string, messageGroupId?: string): SQSRecord => {
       SentTimestamp: '1545082649183',
       SenderId: 'AIDAIENQZJOLO23YVJ4VO',
       ApproximateFirstReceiveTimestamp: '1545082649185',
-      MessageGroupId: messageGroupId,
+      ...(messageGroupId ? { MessageGroupId: messageGroupId } : {}),
     },
     messageAttributes: {},
     md5OfBody: 'e4e68fb7bd0e697a0ae8f1bb342846b3',

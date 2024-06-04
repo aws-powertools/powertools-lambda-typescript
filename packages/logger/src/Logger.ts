@@ -187,6 +187,13 @@ class Logger extends Utility implements LoggerInterface {
    * Flag used to determine if the logger is initialized.
    */
   #isInitialized = false;
+  /**
+   * Map used to hold the list of keys and their type.
+   *
+   * Because keys of different types can be overwritten, we keep a list of keys that were added and their last
+   * type. We then use this map at log preparation time to pick the last one.
+   */
+  #keys: Map<string, 'temp' | 'persistent'> = new Map();
 
   /**
    * Log level used by the current instance of Logger.
@@ -255,7 +262,10 @@ class Logger extends Utility implements LoggerInterface {
    * @param {LogAttributes} attributes
    * @returns {void}
    */
-  public appendKeys(attributes?: LogAttributes): void {
+  public appendKeys(attributes: LogAttributes): void {
+    for (const attributeKey of Object.keys(attributes)) {
+      this.#keys.set(attributeKey, 'temp');
+    }
     merge(this.temporaryLogAttributes, attributes);
   }
 
@@ -265,6 +275,9 @@ class Logger extends Utility implements LoggerInterface {
    * @param attributes - The attributes to add to all log items.
    */
   public appendPersistentKeys(attributes: LogAttributes): void {
+    for (const attributeKey of Object.keys(attributes)) {
+      this.#keys.set(attributeKey, 'persistent');
+    }
     merge(this.persistentLogAttributes, attributes);
   }
 
@@ -508,8 +521,12 @@ class Logger extends Utility implements LoggerInterface {
    */
   public removeKeys(keys: string[]): void {
     for (const key of keys) {
-      if (this.temporaryLogAttributes && key in this.temporaryLogAttributes) {
-        delete this.temporaryLogAttributes[key];
+      this.temporaryLogAttributes[key] = undefined;
+
+      if (this.persistentLogAttributes[key]) {
+        this.#keys.set(key, 'persistent');
+      } else {
+        this.#keys.delete(key);
       }
     }
   }
@@ -522,18 +539,27 @@ class Logger extends Utility implements LoggerInterface {
    */
   public removePersistentLogAttributes(keys: string[]): void {
     for (const key of keys) {
-      if (this.persistentLogAttributes && key in this.persistentLogAttributes) {
-        delete this.persistentLogAttributes[key];
+      this.persistentLogAttributes[key] = undefined;
+
+      if (this.temporaryLogAttributes[key]) {
+        this.#keys.set(key, 'temp');
+      } else {
+        this.#keys.delete(key);
       }
     }
   }
 
   /**
    * It resets the state, by removing all temporary log attributes added with `appendKeys()` method.
-   *
-   * @returns {void}
    */
   public resetState(): void {
+    for (const key of Object.keys(this.temporaryLogAttributes)) {
+      if (this.persistentLogAttributes[key]) {
+        this.#keys.set(key, 'persistent');
+      } else {
+        this.#keys.delete(key);
+      }
+    }
     this.temporaryLogAttributes = {};
   }
 
@@ -688,13 +714,18 @@ class Logger extends Utility implements LoggerInterface {
       ...this.getPowertoolsLogData(),
     };
 
-    // gradually merge additional attributes starting from customer-provided persistent & temporary attributes
-    let additionalLogAttributes = {
-      ...this.temporaryLogAttributes,
-      ...this.getPersistentLogAttributes(),
-    };
+    const additionalAttributes: LogAttributes = {};
+    // gradually add additional attributes picking only the last added for each key
+    for (const [key, type] of this.#keys) {
+      if (type === 'persistent') {
+        additionalAttributes[key] = this.persistentLogAttributes[key];
+      } else {
+        additionalAttributes[key] = this.temporaryLogAttributes[key];
+      }
+    }
+
     // if the main input is not a string, then it's an object with additional attributes, so we merge it
-    additionalLogAttributes = merge(additionalLogAttributes, otherInput);
+    merge(additionalAttributes, otherInput);
     // then we merge the extra input attributes (if any)
     for (const item of extraInput) {
       const attributes: LogAttributes =
@@ -704,12 +735,12 @@ class Logger extends Utility implements LoggerInterface {
             ? { extra: item }
             : item;
 
-      additionalLogAttributes = merge(additionalLogAttributes, attributes);
+      merge(additionalAttributes, attributes);
     }
 
     return this.getLogFormatter().formatAttributes(
       unformattedBaseAttributes,
-      additionalLogAttributes
+      additionalAttributes
     );
   }
 
@@ -1106,7 +1137,7 @@ class Logger extends Utility implements LoggerInterface {
         this.getEnvVarsService().getServiceName() ||
         this.getDefaultServiceName(),
     });
-    this.addPersistentLogAttributes(persistentLogAttributes);
+    this.appendPersistentKeys(persistentLogAttributes);
   }
 }
 

@@ -1719,6 +1719,29 @@ describe('Class: Logger', () => {
         })
       );
     });
+
+    it('preserves persistent keys that were previously overwritten', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentKeys: {
+          aws_region: 'eu-west-1',
+        },
+      });
+      const debugSpy = jest.spyOn(logger['console'], 'info');
+      logger.appendKeys({
+        aws_region: 'us-east-1',
+      });
+
+      // Act
+      logger.resetState();
+      logger.info('foo');
+
+      // Assess
+      const log = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({ aws_region: 'eu-west-1' })
+      );
+    });
   });
 
   describe('method: setPersistentLogAttributes (deprecated)', () => {

@@ -149,13 +149,13 @@ Enable the `skipGroupOnError` option for seamless processing of messages from va
 
 === "Recommended"
 
-    ```typescript hl_lines="1-4 13 28-30"
+    ```typescript hl_lines="1-4 8"
     --8<-- "examples/snippets/batch/gettingStartedSQSFifo.ts"
     ```
 
 === "Enabling skipGroupOnError flag"
 
-    ```typescript hl_lines="1-4 13 28-30"
+    ```typescript hl_lines="1-4 13 30"
     --8<-- "examples/snippets/batch/gettingStartedSQSFifoSkipGroupOnError.ts"
     ```
 

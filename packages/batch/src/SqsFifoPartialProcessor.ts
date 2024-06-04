@@ -48,15 +48,15 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
   /**
    * The ID of the current message group being processed.
    */
-  private currentGroupId?: string;
+  #currentGroupId?: string;
   /**
    * A set of group IDs that have already encountered failures.
    */
-  private failedGroupIds: Set<string>;
+  #failedGroupIds: Set<string>;
 
   public constructor() {
     super(EventType.SQS);
-    this.failedGroupIds = new Set<string>();
+    this.#failedGroupIds = new Set<string>();
   }
 
   /**
@@ -70,8 +70,8 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
     record: EventSourceDataClassTypes,
     exception: Error
   ): FailureResponse {
-    if (this.options?.skipGroupOnError && this.currentGroupId) {
-      this.addToFailedGroup(this.currentGroupId);
+    if (this.options?.skipGroupOnError && this.#currentGroupId) {
+      this.#addToFailedGroup(this.#currentGroupId);
     }
 
     return super.failureHandler(record, exception);
@@ -101,7 +101,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
     let currentIndex = 0;
     for (const record of this.records) {
-      this.setCurrentGroup((record as SQSRecord).attributes?.MessageGroupId);
+      this.#setCurrentGroup((record as SQSRecord).attributes?.MessageGroupId);
 
       // If we have any failed messages, we should then short circuit the process and
       // fail remaining messages unless `skipGroupOnError` is true
@@ -115,11 +115,11 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
       // then we should skip processing the current group.
       const shouldSkipCurrentGroup =
         this.options?.skipGroupOnError &&
-        this.currentGroupId &&
-        this.failedGroupIds.has(this.currentGroupId);
+        this.#currentGroupId &&
+        this.#failedGroupIds.has(this.#currentGroupId);
 
       const result = shouldSkipCurrentGroup
-        ? this.processFailRecord(
+        ? this.#processFailRecord(
             record,
             new SqsFifoMessageGroupShortCircuitError()
           )
@@ -153,7 +153,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
     const remainingRecords = this.records.slice(firstFailureIndex);
 
     for (const record of remainingRecords) {
-      this.processFailRecord(record, new SqsFifoShortCircuitError());
+      this.#processFailRecord(record, new SqsFifoShortCircuitError());
     }
 
     this.clean();
@@ -165,8 +165,8 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
    * Adds the specified group ID to the set of failed group IDs.
    * @param group - The group ID to be added to the set of failed group IDs.
    */
-  private addToFailedGroup(group: string): void {
-    this.failedGroupIds.add(group);
+  #addToFailedGroup(group: string): void {
+    this.#failedGroupIds.add(group);
   }
 
   /**
@@ -175,7 +175,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
    * @param record - The record that failed.
    * @param exception - The error that occurred.
    */
-  private processFailRecord(
+  #processFailRecord(
     record: BaseRecord,
     exception: BatchProcessingError
   ): FailureResponse {
@@ -188,8 +188,8 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
    * Sets the current group ID for the message being processed.
    * @param group - The group ID of the current message being processed.
    */
-  private setCurrentGroup(group?: string): void {
-    this.currentGroupId = group;
+  #setCurrentGroup(group?: string): void {
+    this.#currentGroupId = group;
   }
 }
 

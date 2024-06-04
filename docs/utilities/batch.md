@@ -159,7 +159,7 @@ Enable the `skipGroupOnError` option for seamless processing of messages from va
     --8<-- "examples/snippets/batch/gettingStartedSQSFifoSkipGroupOnError.ts"
     ```
 
-1. **Step 1**. Creates a partial failure batch processor for SQS FIFO queues. See [partial failure mechanics for details](#partial-failure-mechanics)
+    1. **Step 1**. Creates a partial failure batch processor for SQS FIFO queues. See [partial failure mechanics for details](#partial-failure-mechanics)
 
 !!! Note
     Note that SqsFifoPartialProcessor is synchronous using `processPartialResponseSync`.

@@ -10,7 +10,7 @@ import type {
   SQSBatchResponse,
 } from 'aws-lambda';
 
-const processor = new SqsFifoPartialProcessor(); // (1)!
+const processor = new SqsFifoPartialProcessor();
 const logger = new Logger();
 
 const recordHandler = (record: SQSRecord): void => {

@@ -19,7 +19,7 @@ type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
    * The context object provided by the AWS Lambda runtime. When provided,
    * it's made available to the handler function you specify
    */
-  context: Context;
+  context?: Context;
   /**
    * This option is only available for SqsFifoPartialProcessor.
    * If true skip the group on error during processing.

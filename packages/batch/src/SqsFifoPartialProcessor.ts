@@ -171,9 +171,9 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
 
   /**
    * Processes a fail record.
+   *
    * @param record - The record that failed.
    * @param exception - The error that occurred.
-   * @returns The failure response.
    */
   private processFailRecord(
     record: BaseRecord,

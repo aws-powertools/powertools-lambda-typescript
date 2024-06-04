@@ -11,7 +11,6 @@ import {
 } from '../../src/index.js';
 import { sqsRecordFactory } from '../helpers/factories.js';
 import { sqsRecordHandler } from '../helpers/handlers.js';
-import context from '@aws-lambda-powertools/testing-utils/context';
 
 describe('Class: SqsFifoBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -95,7 +94,6 @@ describe('Class: SqsFifoBatchProcessor', () => {
         sqsRecordHandler,
         processor,
         {
-          context,
           skipGroupOnError: true,
         }
       );
@@ -147,7 +145,6 @@ describe('Class: SqsFifoBatchProcessor', () => {
         sqsRecordHandler,
         processor,
         {
-          context,
           skipGroupOnError: true,
         }
       );
@@ -183,7 +180,6 @@ describe('Class: SqsFifoBatchProcessor', () => {
         sqsRecordHandler,
         processor,
         {
-          context,
           skipGroupOnError: true,
         }
       );
@@ -210,7 +206,6 @@ describe('Class: SqsFifoBatchProcessor', () => {
         sqsRecordHandler,
         processor,
         {
-          context,
           skipGroupOnError: false,
         }
       );
@@ -237,7 +232,6 @@ describe('Class: SqsFifoBatchProcessor', () => {
         sqsRecordHandler,
         processor,
         {
-          context,
           skipGroupOnError: false,
         }
       );

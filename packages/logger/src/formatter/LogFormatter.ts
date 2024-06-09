@@ -80,7 +80,10 @@ abstract class LogFormatter implements LogFormatterInterface {
    * @returns {string}
    */
   public formatTimestamp(now: Date): string {
-    return now.toISOString();
+    const timezone = this.envVarsService?.getTimezone() || process.env.TZ;
+    if (!timezone || timezone === 'UTC') return now.toISOString();
+
+    return this.#generateISOTimestampWithOffset(now, timezone);
   }
 
   /**
@@ -107,6 +110,61 @@ abstract class LogFormatter implements LogFormatterInterface {
     }
 
     return '';
+  }
+
+  /**
+   * Generates a new Intl.DateTimeFormat object configured with the specified time zone
+   * and formatting options. The time is displayed in 24-hour format (hour12: false).
+   *
+   * @param {string} timeZone - the IANA time zone identifier (e.g., "Asia/Dhaka").
+   */
+  #getDateFormatter = (timeZone: string): Intl.DateTimeFormat => {
+    const twoDigitFormatOption = '2-digit';
+
+    return new Intl.DateTimeFormat('en', {
+      year: 'numeric',
+      month: twoDigitFormatOption,
+      day: twoDigitFormatOption,
+      hour: twoDigitFormatOption,
+      minute: twoDigitFormatOption,
+      second: twoDigitFormatOption,
+      hour12: false,
+      timeZone,
+    });
+  };
+
+  /**
+   * Generates an ISO 8601 timestamp string with the specified time zone and the local time zone offset.
+   *
+   * @param {Date} date - the date to format
+   * @param {string} timeZone - the IANA time zone identifier (e.g., "Asia/Dhaka").
+   */
+  #generateISOTimestampWithOffset(date: Date, timeZone: string): string {
+    const { year, month, day, hour, minute, second } = this.#getDateFormatter(
+      timeZone
+    )
+      .formatToParts(date)
+      .reduce(
+        (acc, item) => {
+          acc[item.type] = item.value;
+
+          return acc;
+        },
+        {} as Record<Intl.DateTimeFormatPartTypes, string>
+      );
+    const datePart = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+    const offset = -date.getTimezoneOffset();
+    const offsetSign = offset >= 0 ? '+' : '-';
+    const offsetHours = Math.abs(Math.floor(offset / 60))
+      .toString()
+      .padStart(2, '0');
+    const offsetMinutes = Math.abs(offset % 60)
+      .toString()
+      .padStart(2, '0');
+    const millisecondPart = date.getMilliseconds().toString().padStart(3, '0');
+    const offsetPart = `${offsetSign}${offsetHours}:${offsetMinutes}`;
+
+    return `${datePart}.${millisecondPart}${offsetPart}`;
   }
 }
 

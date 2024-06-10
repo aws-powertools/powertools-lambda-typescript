@@ -111,9 +111,9 @@ describe(`Idempotency E2E tests, wrapper function usage`, () => {
       // Prepare
       const payload = {
         records: [
-          { id: 1, foo: 'bar' },
-          { id: 2, foo: 'baz' },
-          { id: 1, foo: 'bar' },
+          { foo: 'bar', id: 1 },
+          { foo: 'baz', id: 2 },
+          { foo: 'bar', id: 1 },
         ],
       };
       const payloadHashes = payload.records.map((record) =>
@@ -173,9 +173,9 @@ describe(`Idempotency E2E tests, wrapper function usage`, () => {
       // Prepare
       const payload = {
         records: [
-          { id: 1, foo: 'bar' },
-          { id: 2, foo: 'baq' },
-          { id: 3, foo: 'bar' },
+          { foo: 'bar', id: 1 },
+          { foo: 'baq', id: 2 },
+          { foo: 'bar', id: 3 },
         ],
       };
       const payloadHashes = payload.records.map((record) =>

@@ -90,7 +90,7 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^2.1.1",
-    "aws-xray-sdk-core": "^3.6.0"
+    "aws-xray-sdk-core": "^3.8.0"
   },
   "keywords": [
     "aws",

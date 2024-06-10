@@ -42,6 +42,72 @@ The `Tracer` utility must always be instantiated outside of the Lambda handler. 
     --8<-- "examples/snippets/tracer/basicUsage.ts"
     ```
 
+#### Using with ESM?
+
+Tracer relies on the AWS X-Ray SDK for Node.js, which is distributed as a CommonJS module and uses `require`.
+
+To use it in an ESM project, you can instruct your bundler to use the `require` syntax for specific dependencies while using ESM for everything else. This is commonly known as [polyfill](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill){target="_blank"}.
+
+??? note "Code snippets for AWS CDK and AWS SAM CLI with `esbuild`"
+
+    === "With AWS CDK"
+
+        ```typescript hl_lines="15 20-21"
+        import { Stack, type StackProps } from 'aws-cdk-lib';
+        import { Construct } from 'constructs';
+        import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
+        import { Runtime } from 'aws-cdk-lib/aws-lambda';
+
+        export class MyStack extends Stack {
+        public constructor(scope: Construct, id: string, props?: StackProps) {
+            super(scope, id, props);
+
+            const handler = new NodejsFunction(this, 'helloWorldFunction', {
+            runtime: Runtime.NODEJS_20_X,
+            handler: 'handler',
+            entry: 'src/index.ts',
+            bundling: {
+                format: OutputFormat.ESM,
+                minify: true,
+                esbuildArgs: {
+                "--tree-shaking": "true",
+                },
+                banner: 
+                "import { createRequire } from 'module';const require = createRequire(import.meta.url);", // (1)!
+            },
+            });
+        }
+        }
+        ```
+        
+        1. `esbuild` will include this arbitrary code at the top of your bundle to maximize CommonJS compatibility _(`require` keyword)_.
+
+    === "With AWS SAM"
+
+        ```yaml hl_lines="14 17-18"
+        Transform: AWS::Serverless-2016-10-31
+        Resources:
+        HelloWorldFunction:
+            Type: AWS::Serverless::Function
+            Properties:
+            Runtime: nodejs20.x
+            Handler: src/index.handler
+            Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'ES2020'
+                Sourcemap: true
+                Format: esm
+                EntryPoints:
+                - src/index.ts
+                Banner:
+                js: "import { createRequire } from 'module';const require = createRequire(import.meta.url);"  # (1)!
+    
+        ```
+
+        1. `esbuild` will include this arbitrary code at the top of your bundle to maximize CommonJS compatibility _(`require` keyword)_.
+
 ### Utility settings
 
 The library has three optional settings. You can set them as environment variables, or pass them in the constructor:

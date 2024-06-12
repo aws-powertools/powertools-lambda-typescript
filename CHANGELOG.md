@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-12)
+
+
+### Bug Fixes
+
+* **idempotency:** deep sort payload during hashing ([#2570](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2570)) ([6765f35](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6765f35e98e2d8267d2672c12ba387a9af62a4b5))
+* **parser:** handle API Gateway Test UI sourceIp ([#2531](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2531)) ([cd6c512](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cd6c512c3a3b799debdafabac1558c8d40c8dc93))
+
+
+### Features
+
+* **batch:** add option to continue processing other group IDs on failure in `SqsFifoPartialProcessor` ([#2590](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2590)) ([a615c24](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a615c24108c4653be4c62d8488092fc08a4a3cc3))
+
+
+
+
+
 ## [2.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.0...v2.1.1) (2024-05-14)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-12)
+
+
+### Features
+
+* **batch:** add option to continue processing other group IDs on failure in `SqsFifoPartialProcessor` ([#2590](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2590)) ([a615c24](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a615c24108c4653be4c62d8488092fc08a4a3cc3))
+
+
+
+
+
 ## [2.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.0...v2.1.1) (2024-05-14)
 
 **Note:** Version bump only for package @aws-lambda-powertools/batch

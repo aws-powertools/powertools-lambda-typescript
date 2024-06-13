@@ -3,17 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-12)
-
-
-### Bug Fixes
-
-* **parser:** handle API Gateway Test UI sourceIp ([#2531](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2531)) ([cd6c512](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cd6c512c3a3b799debdafabac1558c8d40c8dc93))
-
-
-
-
-
 ## [2.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.0...v2.1.1) (2024-05-14)
 
 

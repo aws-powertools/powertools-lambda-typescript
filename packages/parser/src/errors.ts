@@ -1,5 +1,6 @@
 /**
- * Error thrown when a parsing error occurs. The cause of the error is included in the message, if possible.
+ * Custom parsing error that wraps any erros thrown during schema or envelope parsing.
+ * The cause of the error is included in the message, if possible.
  */
 class ParseError extends Error {
   /**

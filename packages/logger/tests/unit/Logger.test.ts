@@ -123,6 +123,7 @@ describe('Class: Logger', () => {
         persistentLogAttributes: {
           awsAccountId: '123456789',
         },
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: 'prod',
@@ -162,6 +163,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -312,6 +314,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -452,6 +455,82 @@ describe('Class: Logger', () => {
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
+    });
+
+    test('when custom persistentKeys is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        persistentKeys: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            aws_account_id: '123456789012',
+            aws_region: 'eu-west-1',
+            logger: {
+              name: 'aws-lambda-powertool-typescript',
+              version: '0.2.4',
+            },
+          },
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          logLevel: 8,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('it emits a warning when both persistentKeys and persistentLogAttributes are used in the constructor', () => {
+      // Prepare
+      // Since the buffer is private and we are bypassing the public warn method, we need to spy on the console.warn
+      process.env.POWERTOOLS_DEV = 'true';
+      const warningSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      type TestConstructorOptions = {
+        persistentLogAttributes?: Record<string, string>;
+        persistentKeys?: Record<string, string>;
+      };
+
+      const loggerOptions: TestConstructorOptions = {
+        persistentKeys: {
+          foo: 'bar',
+        },
+        persistentLogAttributes: {
+          foo: 'bar',
+        },
+      };
+
+      // Act
+      new Logger(loggerOptions as ConstructorOptions);
+
+      // Assess
+      expect(warningSpy).toHaveBeenCalledTimes(1);
+      expect(warningSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases'
+        )
+      );
+      // Cleanup
+      warningSpy.mockRestore();
     });
 
     test('when a custom environment is passed, returns a Logger instance with the correct properties', () => {
@@ -1315,7 +1394,7 @@ describe('Class: Logger', () => {
   });
 
   describe('Method: appendKeys', () => {
-    test('when called, it populates the logger persistentLogAttributes property', () => {
+    test('when called, it populates the logger temporaryLogAttributes property', () => {
       // Prepare
       const logger = new Logger();
 
@@ -1332,7 +1411,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(logger).toEqual(
         expect.objectContaining({
-          persistentLogAttributes: {
+          temporaryLogAttributes: {
             aws_account_id: '123456789012',
             aws_region: 'eu-west-1',
             logger: {
@@ -1374,16 +1453,43 @@ describe('Class: Logger', () => {
       // Assess
       expect(logger).toEqual(
         expect.objectContaining({
-          persistentLogAttributes: {
+          temporaryLogAttributes: {
             duplicateKey: 'two',
           },
+        })
+      );
+    });
+
+    test('when called with the same key as in persistentKeys container option, persistent keys will be overwritten', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentKeys: {
+          aws_account_id: '1234567890',
+        },
+      });
+
+      logger.appendKeys({
+        aws_account_id: '0987654321',
+      });
+
+      const consoleSpy = jest.spyOn(logger['console'], 'info');
+
+      // Act
+      logger.info('This is an INFO log with some log attributes');
+
+      // Assess
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
+          aws_account_id: '0987654321',
         })
       );
     });
   });
 
   describe('Method: removeKeys', () => {
-    test('when called, it removes keys from the logger persistentLogAttributes property', () => {
+    test('when called, it removes keys added with appendKeys() method', () => {
       // Prepare
       const logger = new Logger();
       logger.appendKeys({
@@ -1401,7 +1507,7 @@ describe('Class: Logger', () => {
       // Assess
       expect(logger).toEqual(
         expect.objectContaining({
-          persistentLogAttributes: {
+          temporaryLogAttributes: {
             logger: {
               name: 'aws-lambda-powertool-typescript',
               version: '0.2.4',
@@ -1411,7 +1517,39 @@ describe('Class: Logger', () => {
       );
     });
 
-    test('when called with non-existing keys, the logger property persistentLogAttributes is not mutated and it does not throw an error', () => {
+    test('when called, it DOES NOT remove persistent keys', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        persistentKeys: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      };
+      const logger = new Logger(loggerOptions);
+
+      // Act
+      logger.removeKeys(['aws_account_id', 'aws_region']);
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            aws_account_id: '123456789012',
+            aws_region: 'eu-west-1',
+            logger: {
+              name: 'aws-lambda-powertool-typescript',
+              version: '0.2.4',
+            },
+          },
+        })
+      );
+    });
+
+    test('when called with non-existing keys, the logger instance is not mutated and it does not throw an error', () => {
       // Prepare
       const logger = new Logger();
       logger.appendKeys({
@@ -1431,7 +1569,7 @@ describe('Class: Logger', () => {
       expect(logger).toEqual(loggerBeforeKeysAreRemoved);
       expect(logger).toEqual(
         expect.objectContaining({
-          persistentLogAttributes: {
+          temporaryLogAttributes: {
             aws_account_id: '123456789012',
             aws_region: 'eu-west-1',
             logger: {
@@ -1462,6 +1600,38 @@ describe('Class: Logger', () => {
       // Assess
       expect(logger).toEqual(
         expect.objectContaining({
+          temporaryLogAttributes: {
+            logger: {
+              name: 'aws-lambda-powertool-typescript',
+              version: '0.2.4',
+            },
+          },
+        })
+      );
+    });
+  });
+
+  describe('Method: removePersistentLogAttributes', () => {
+    test('when called, it removes persistent keys', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        persistentKeys: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      };
+      const logger = new Logger(loggerOptions);
+
+      // Act
+      logger.removePersistentLogAttributes(['aws_account_id', 'aws_region']);
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
           persistentLogAttributes: {
             logger: {
               name: 'aws-lambda-powertool-typescript',
@@ -1469,6 +1639,187 @@ describe('Class: Logger', () => {
             },
           },
         })
+      );
+    });
+
+    test('when called, it DOES NOT remove temporary keys', () => {
+      // Prepare
+      const logger = new Logger();
+      logger.appendKeys({
+        aws_account_id: '123456789012',
+        aws_region: 'eu-west-1',
+      });
+
+      // Act
+      logger.removePersistentLogAttributes(['aws_account_id', 'aws_region']);
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
+          temporaryLogAttributes: {
+            aws_account_id: '123456789012',
+            aws_region: 'eu-west-1',
+          },
+        })
+      );
+    });
+  });
+
+  describe('Method: resetState', () => {
+    test('when called, it removes all keys added with appendKeys() method', () => {
+      // Prepare
+      const logger = new Logger();
+      logger.appendKeys({
+        aws_account_id: '123456789012',
+        aws_region: 'eu-west-1',
+        logger: {
+          name: 'aws-lambda-powertool-typescript',
+          version: '0.2.4',
+        },
+      });
+
+      // Act
+      logger.resetState();
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
+          temporaryLogAttributes: {},
+        })
+      );
+    });
+
+    test('when called, it DOES NOT remove persistent keys', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        persistentKeys: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      };
+      const logger = new Logger(loggerOptions);
+      logger.appendKeys({ foo: 'bar' });
+
+      // Act
+      logger.resetState();
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            aws_account_id: '123456789012',
+            aws_region: 'eu-west-1',
+            logger: {
+              name: 'aws-lambda-powertool-typescript',
+              version: '0.2.4',
+            },
+          },
+          temporaryLogAttributes: {},
+        })
+      );
+    });
+
+    it('preserves persistent keys that were previously overwritten', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentKeys: {
+          aws_region: 'eu-west-1',
+        },
+      });
+      const debugSpy = jest.spyOn(logger['console'], 'info');
+      logger.appendKeys({
+        aws_region: 'us-east-1',
+      });
+
+      // Act
+      logger.resetState();
+      logger.info('foo');
+
+      // Assess
+      const log = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({ aws_region: 'eu-west-1' })
+      );
+    });
+  });
+
+  describe('method: setPersistentLogAttributes (deprecated)', () => {
+    test('when called, it overwrites all persistent keys', () => {
+      // Prepare
+      const loggerOptions: ConstructorOptions = {
+        persistentKeys: {
+          aws_account_id: '123456789012',
+          aws_region: 'eu-west-1',
+          logger: {
+            name: 'aws-lambda-powertool-typescript',
+            version: '0.2.4',
+          },
+        },
+      };
+      const logger = new Logger(loggerOptions);
+
+      // Act
+      logger.setPersistentLogAttributes({
+        foo: 'bar',
+      });
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            foo: 'bar',
+          },
+        })
+      );
+    });
+  });
+
+  describe('Method: appendPersistentKeys', () => {
+    it('overwrites existing persistent keys with new ones', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentKeys: {
+          aws_account_id: '123456789012',
+        },
+      });
+
+      // Act
+      logger.appendPersistentKeys({
+        aws_account_id: '0987654321',
+      });
+
+      // Assess
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            aws_account_id: '0987654321',
+          },
+        })
+      );
+    });
+
+    it('overwrites existing temporary keys with new ones in the next log', () => {
+      // Prepare
+      const logger = new Logger();
+      const debugSpy = jest.spyOn(logger['console'], 'info');
+      logger.appendKeys({
+        aws_account_id: '123456789012',
+      });
+
+      // Act
+      logger.appendPersistentKeys({
+        aws_account_id: '0987654321',
+      });
+      logger.info('This is an INFO log with some log attributes');
+
+      // Assess
+      const log = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({ aws_account_id: '0987654321' })
       );
     });
   });
@@ -1503,10 +1854,10 @@ describe('Class: Logger', () => {
       await handler(event, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1545,10 +1896,10 @@ describe('Class: Logger', () => {
 
       // Assess
 
-      expect(consoleSpy).toBeCalledTimes(2);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(2);
+      const log1 = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
           level: 'INFO',
           message: 'An INFO log without context!',
           sampling_rate: 0,
@@ -1557,9 +1908,9 @@ describe('Class: Logger', () => {
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         })
       );
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        2,
-        JSON.stringify({
+      const log2 = JSON.parse(consoleSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1602,10 +1953,10 @@ describe('Class: Logger', () => {
       // Assess
 
       expect(actualResult).toEqual(expectedReturnValue);
-      expect(consoleSpy).toBeCalledTimes(2);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(2);
+      const log1 = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
           level: 'INFO',
           message: 'An INFO log without context!',
           sampling_rate: 0,
@@ -1614,9 +1965,9 @@ describe('Class: Logger', () => {
           xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         })
       );
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        2,
-        JSON.stringify({
+      const log2 = JSON.parse(consoleSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1633,7 +1984,81 @@ describe('Class: Logger', () => {
       );
     });
 
-    test('when clearState is enabled, the persistent log attributes added in the handler are cleared when the method returns', async () => {
+    test('when enabled, it clears all the log attributes added with appendKeys() inside and outside of the handler function', async () => {
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
+      });
+      logger.appendKeys({
+        foo: 'bar',
+        biz: 'baz',
+      });
+
+      const debugSpy = jest.spyOn(logger['console'], 'debug');
+
+      class LambdaFunction implements LambdaInterface {
+        @logger.injectLambdaContext({ clearState: true })
+        public async handler<TEvent>(
+          _event: TEvent,
+          _context: Context
+        ): Promise<void> {
+          // Only add these keys for the scope of this lambda handler
+          logger.appendKeys({
+            details: { user_id: '1234' },
+          });
+          logger.debug('This is a DEBUG log with the user_id');
+        }
+      }
+
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+
+      // Act
+      await handler(event, context);
+      logger.debug('Checking state after handler execution');
+
+      // Assess
+      expect(debugSpy).toHaveBeenCalledTimes(2);
+      const log1 = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
+          cold_start: true,
+          function_arn:
+            'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+          function_memory_size: '128',
+          function_name: 'foo-bar-function',
+          function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+          level: 'DEBUG',
+          message: 'This is a DEBUG log with the user_id',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          foo: 'bar',
+          biz: 'baz',
+          details: { user_id: '1234' },
+        })
+      );
+      const log2 = JSON.parse(debugSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
+          cold_start: true,
+          function_arn:
+            'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+          function_memory_size: '128',
+          function_name: 'foo-bar-function',
+          function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+          level: 'DEBUG',
+          message: 'Checking state after handler execution',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        })
+      );
+    });
+
+    test('when clearState is enabled, the persistent log attributes added in the handler ARE NOT cleared when the method returns', async () => {
       // Prepare
       const logger = new Logger({
         logLevel: 'DEBUG',
@@ -1648,8 +2073,8 @@ describe('Class: Logger', () => {
           _event: TEvent,
           _context: Context
         ): Promise<void> {
-          // Only add these persistent for the scope of this lambda handler
-          logger.appendKeys({
+          // These persistent attributes stay persistent
+          logger.appendPersistentKeys({
             details: { user_id: '1234' },
           });
           logger.debug('This is a DEBUG log with the user_id');
@@ -1673,54 +2098,155 @@ describe('Class: Logger', () => {
         foo: 'bar',
         biz: 'baz',
       });
-      expect(persistentAttribsAfterInvocation).toEqual(
-        persistentAttribsBeforeInvocation
-      );
+      expect(persistentAttribsAfterInvocation).toEqual({
+        foo: 'bar',
+        biz: 'baz',
+        details: { user_id: '1234' },
+      });
     });
 
-    test('when clearState is enabled, the persistent log attributes added in the handler are cleared when the method throws', async () => {
+    test('when clearState is enabled, persistent log attributes added in the handler stay persistent, but temporary added in the handler are cleared when the method returns', async () => {
       // Prepare
       const logger = new Logger({
         logLevel: 'DEBUG',
-        persistentLogAttributes: {
+      });
+
+      const debugSpy = jest.spyOn(logger['console'], 'debug');
+
+      class LambdaFunction implements LambdaInterface {
+        @logger.injectLambdaContext({ clearState: true })
+        public async handler<TEvent>(
+          _event: TEvent,
+          _context: Context
+        ): Promise<void> {
+          // This key is persistent and will stay persistent
+          logger.appendPersistentKeys({
+            foo: 'bar',
+          });
+          // This attribute is temporary and will be cleared
+          logger.appendKeys({
+            biz: 'baz',
+          });
+          logger.debug(
+            'This is a DEBUG log with both pesistent and temporary keys'
+          );
+        }
+      }
+      const handlerClass = new LambdaFunction();
+      const handler = handlerClass.handler.bind(handlerClass);
+
+      // Act
+      await handler(event, context);
+      logger.debug('Checking state after handler execution');
+
+      // Assess
+      expect(debugSpy).toHaveBeenCalledTimes(2);
+      const log1 = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log1).toStrictEqual(
+        expect.objectContaining({
+          cold_start: true,
+          function_arn:
+            'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+          function_memory_size: '128',
+          function_name: 'foo-bar-function',
+          function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+          level: 'DEBUG',
+          message: 'This is a DEBUG log with both pesistent and temporary keys',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
           foo: 'bar',
           biz: 'baz',
-        },
+        })
+      );
+      const log2 = JSON.parse(debugSpy.mock.calls[1][0]);
+      expect(log2).toStrictEqual(
+        expect.objectContaining({
+          cold_start: true,
+          function_arn:
+            'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+          function_memory_size: '128',
+          function_name: 'foo-bar-function',
+          function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+          level: 'DEBUG',
+          message: 'Checking state after handler execution',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          foo: 'bar',
+        })
+      );
+
+      debugSpy.mockRestore();
+    });
+
+    test('when clearState is enabled, the temporary log attributes added in the handler are cleared when the method throws', async () => {
+      // Prepare
+      const logger = new Logger({
+        logLevel: 'DEBUG',
       });
+
+      const debugSpy = jest.spyOn(logger['console'], 'debug');
+
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
         public async handler<TEvent>(
           _event: TEvent,
           _context: Context
         ): Promise<string> {
-          // Only add these persistent for the scope of this lambda handler
-          logger.appendKeys({
-            details: { user_id: '1234' },
+          // This key is persistent and will stay persistent
+          logger.appendPersistentKeys({
+            foo: 'bar',
           });
-          logger.debug('This is a DEBUG log with the user_id');
-          logger.debug('This is another DEBUG log with the user_id');
-
+          // This attribute is temporary and will be cleared
+          logger.appendKeys({
+            biz: 'baz',
+          });
+          logger.debug(
+            'This is a DEBUG log with both pesistent and temporary keys'
+          );
           throw new Error('Unexpected error occurred!');
         }
       }
       const handlerClass = new LambdaFunction();
       const handler = handlerClass.handler.bind(handlerClass);
-      const persistentAttribsBeforeInvocation = {
-        ...logger.getPersistentLogAttributes(),
-      };
 
       // Act & Assess
       await expect(handler(event, context)).rejects.toThrow();
-      const persistentAttribsAfterInvocation = {
-        ...logger.getPersistentLogAttributes(),
-      };
-      expect(persistentAttribsBeforeInvocation).toEqual({
-        foo: 'bar',
-        biz: 'baz',
-      });
-      expect(persistentAttribsAfterInvocation).toEqual(
-        persistentAttribsBeforeInvocation
+
+      expect(debugSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(debugSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
+          cold_start: true,
+          function_arn:
+            'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+          function_memory_size: '128',
+          function_name: 'foo-bar-function',
+          function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+          level: 'DEBUG',
+          message: 'This is a DEBUG log with both pesistent and temporary keys',
+          sampling_rate: 0,
+          service: 'hello-world',
+          timestamp: '2016-06-20T12:08:10.000Z',
+          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          foo: 'bar',
+          biz: 'baz',
+        })
       );
+
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {
+            foo: 'bar',
+          },
+          temporaryLogAttributes: {},
+        })
+      );
+
+      debugSpy.mockRestore();
     });
 
     test('when logEvent is enabled, it logs the event in the first log', async () => {
@@ -1745,10 +2271,10 @@ describe('Class: Logger', () => {
       await handler(event, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1792,10 +2318,10 @@ describe('Class: Logger', () => {
       await handler(event, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1850,10 +2376,10 @@ describe('Class: Logger', () => {
       await handler({}, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const log = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(log).toStrictEqual(
+        expect.objectContaining({
           cold_start: true,
           function_arn:
             'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
@@ -1872,16 +2398,13 @@ describe('Class: Logger', () => {
 
     test('it awaits the decorated method correctly', async () => {
       // Prepare
-      const injectLambdaContextAfterOrOnErrorSpy = jest.spyOn(
-        Logger,
-        'injectLambdaContextAfterOrOnError'
-      );
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
+      const resetStateSpy = jest.spyOn(logger, 'resetState');
       const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
-        @logger.injectLambdaContext()
+        @logger.injectLambdaContext({ clearState: true })
         public async handler(
           _event: unknown,
           _context: unknown
@@ -1903,19 +2426,19 @@ describe('Class: Logger', () => {
       await handler({}, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
       // Here we assert that the logger.info method is called before the cleanup function that should always
       // be called ONLY after the handler has returned. If logger.info is called after the cleanup function
       // it means the decorator is NOT awaiting the handler which would cause the test to fail.
       expect(consoleSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        injectLambdaContextAfterOrOnErrorSpy.mock.invocationCallOrder[0]
+        resetStateSpy.mock.invocationCallOrder[0]
       );
     });
 
-    test('when logEvent and clearState are both TRUE, and the logger has persistent attributes, any key added in the handler is cleared properly', async () => {
+    test('when logEvent and clearState are both TRUE, and the logger has persistent attributes, any key added with appendKeys() in the handler is cleared properly', async () => {
       // Prepare
       const logger = new Logger({
-        persistentLogAttributes: {
+        persistentKeys: {
           version: '1.0.0',
         },
       });
@@ -2012,6 +2535,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2039,6 +2563,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2066,6 +2591,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2141,6 +2667,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2171,6 +2698,7 @@ describe('Class: Logger', () => {
           extra:
             'This is an attribute that will be logged only by the child logger',
         },
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2198,6 +2726,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2225,6 +2754,7 @@ describe('Class: Logger', () => {
           ...logLevelThresholds,
         },
         persistentLogAttributes: {},
+        temporaryLogAttributes: {},
         powertoolsLogData: {
           awsRegion: 'eu-west-1',
           environment: '',
@@ -2240,7 +2770,7 @@ describe('Class: Logger', () => {
       const childLogger = parentLogger.createChild();
 
       // Act
-      parentLogger.appendKeys({
+      parentLogger.appendPersistentKeys({
         aws_account_id: '123456789012',
         aws_region: 'eu-west-1',
         logger: {
@@ -2250,7 +2780,6 @@ describe('Class: Logger', () => {
         test_key: 'key-for-test',
       });
       const childLoggerWithKeys = parentLogger.createChild();
-      childLoggerWithKeys.removeKeys(['test_key']);
 
       // Assess
       expect(childLogger.getPersistentLogAttributes()).toEqual({});
@@ -2262,6 +2791,7 @@ describe('Class: Logger', () => {
           name: 'aws-lambda-powertool-typescript',
           version: '0.2.4',
         },
+        test_key: 'key-for-test',
       });
 
       expect(parentLogger.getPersistentLogAttributes()).toEqual({
@@ -2533,7 +3063,7 @@ describe('Class: Logger', () => {
       );
     });
 
-    it('uses log level set by ALC & emits a warning when setting a higher log level than ALC', () => {
+    test('it uses log level set by ALC & emits a warning when setting a higher log level than ALC', () => {
       // Prepare
       process.env.AWS_LAMBDA_LOG_LEVEL = 'ERROR';
       process.env.LOG_LEVEL = undefined;
@@ -2553,7 +3083,7 @@ describe('Class: Logger', () => {
       );
     });
 
-    it('uses log level set by ALC & emits a warning when initializing with a higher log level than ALC', () => {
+    test('it uses log level set by ALC & emits a warning when initializing with a higher log level than ALC', () => {
       // Prepare
       process.env.AWS_LAMBDA_LOG_LEVEL = 'INFO';
       process.env.LOG_LEVEL = undefined;
@@ -2851,7 +3381,7 @@ describe('Class: Logger', () => {
       );
     });
 
-    it('logs a DEBUG log when the sample rate sets the level to DEBUG', () => {
+    test('logs a DEBUG log when the sample rate sets the level to DEBUG', () => {
       // Prepare
       // Since the buffer is private and we are bypassing the public warn method, we need to spy on the console.warn
       process.env.POWERTOOLS_DEV = 'true';

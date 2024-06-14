@@ -21,15 +21,40 @@ type InjectLambdaContextOptions = {
   clearState?: boolean;
 };
 
-type ConstructorOptions = {
+type BaseConstructorOptions = {
   logLevel?: LogLevel;
   serviceName?: string;
   sampleRateValue?: number;
   logFormatter?: LogFormatterInterface;
   customConfigService?: ConfigServiceInterface;
-  persistentLogAttributes?: LogAttributes;
   environment?: Environment;
 };
+
+type PersistentKeysOption = {
+  persistentKeys?: LogAttributes;
+  persistentLogAttributes?: never;
+};
+
+type DeprecatedOption = {
+  persistentLogAttributes?: LogAttributes;
+  persistentKeys?: never;
+};
+
+/**
+ * Options for the Logger class constructor.
+ *
+ * @type {Object} ConstructorOptions
+ * @property {LogLevel} [logLevel] - The log level.
+ * @property {string} [serviceName] - The service name.
+ * @property {number} [sampleRateValue] - The sample rate value.
+ * @property {LogFormatterInterface} [logFormatter] - The custom log formatter.
+ * @property {ConfigServiceInterface} [customConfigService] - The custom config service.
+ * @property {Environment} [environment] - The environment.
+ * @property {LogAttributes} [persistentKeys] - The keys that will be persisted in all log items.
+ * @property {LogAttributes} [persistentLogAttributes] - **Deprecated!** Use `persistentKeys`.
+ */
+type ConstructorOptions = BaseConstructorOptions &
+  (PersistentKeysOption | DeprecatedOption);
 
 type LambdaFunctionContext = Pick<
   Context,

@@ -2395,16 +2395,13 @@ describe('Class: Logger', () => {
 
     test('it awaits the decorated method correctly', async () => {
       // Prepare
-      const injectLambdaContextAfterOrOnErrorSpy = jest.spyOn(
-        Logger,
-        'injectLambdaContextAfterOrOnError'
-      );
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
+      const resetStateSpy = jest.spyOn(logger, 'resetState');
       const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
-        @logger.injectLambdaContext()
+        @logger.injectLambdaContext({ clearState: true })
         public async handler(
           _event: unknown,
           _context: unknown
@@ -2426,12 +2423,12 @@ describe('Class: Logger', () => {
       await handler({}, context);
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(1);
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
       // Here we assert that the logger.info method is called before the cleanup function that should always
       // be called ONLY after the handler has returned. If logger.info is called after the cleanup function
       // it means the decorator is NOT awaiting the handler which would cause the test to fail.
       expect(consoleSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        injectLambdaContextAfterOrOnErrorSpy.mock.invocationCallOrder[0]
+        resetStateSpy.mock.invocationCallOrder[0]
       );
     });
 

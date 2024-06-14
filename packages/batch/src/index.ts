@@ -3,6 +3,7 @@ export {
   BatchProcessingError,
   FullBatchFailureError,
   SqsFifoShortCircuitError,
+  SqsFifoMessageGroupShortCircuitError,
   UnexpectedBatchTypeError,
 } from './errors.js';
 export { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';

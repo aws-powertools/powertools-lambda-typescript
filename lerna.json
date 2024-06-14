@@ -9,11 +9,12 @@
     "packages/batch",
     "packages/testing",
     "packages/jmespath",
+    "packages/parser",
     "examples/app",
     "layers",
-    "docs/snippets"
+    "examples/snippets"
   ],
-  "version": "2.0.4",
+  "version": "2.2.0",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

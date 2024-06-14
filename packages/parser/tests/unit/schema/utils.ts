@@ -20,6 +20,7 @@ const filenames = [
   'apiGatewayProxyEventPrincipalId',
   'apiGatewayProxyEvent_noVersionAuth',
   'apiGatewayProxyOtherEvent',
+  'apiGatewayProxyEventTestUI',
   'apiGatewayProxyV2Event',
   'apiGatewayProxyV2EventPathTrailingSlash',
   'apiGatewayProxyV2Event_GET',

@@ -34,11 +34,12 @@ runs:
     - name: Build packages
       # Regardless of whether the cache was hit or not, we need to build the packages, unless the caller says otherwise
       if: inputs.build == 'true'
-      # We build the shared package first, then the others in parallel to speed up the process
+      # We build the commons and jmspath packages first, then the others in parallel to speed up the process
       # even though we could just run `npm run build` in the root folder and build them in
       # sequence, but still in the correct order.
       run: |
-        npm run build -w packages/commons
+        npm run build -w packages/commons 
+        npm run build -w packages/jmespath
         npm run build -w packages/logger & \
         npm run build -w packages/tracer & \
         npm run build -w packages/metrics & \
@@ -46,5 +47,5 @@ runs:
         npm run build -w packages/idempotency & \
         npm run build -w packages/batch & \
         npm run build -w packages/testing & \
-        npm run build -w packages/jmespath
+        npm run build -w packages/parser
       shell: bash

@@ -1,9 +1,6 @@
 import { PT_VERSION } from './version.js';
 import type { MiddlewareArgsLike, SdkClient } from './types/awsSdk.js';
 
-/**
- * @internal
- */
 const EXEC_ENV = process.env.AWS_EXECUTION_ENV || 'NA';
 const middlewareOptions = {
   relation: 'after',
@@ -13,8 +10,9 @@ const middlewareOptions = {
 };
 
 /**
+ * Type guard to check if the client provided is a valid AWS SDK v3 client.
+ *
  * @internal
- * Type guard to check if the client provided is a valid AWS SDK v3 client
  */
 const isSdkClient = (client: unknown): client is SdkClient =>
   typeof client === 'object' &&
@@ -35,9 +33,16 @@ const isSdkClient = (client: unknown): client is SdkClient =>
   typeof client.middlewareStack.addRelativeTo === 'function';
 
 /**
+ * Helper function to create a custom user agent middleware for the AWS SDK v3 clients.
+ *
+ * The middleware will append the provided feature name and the current version of
+ * the Powertools for AWS Lambda library to the user agent string.
+ *
+ * @example "PT/Tracer/2.1.0 PTEnv/nodejs20x"
+ *
+ * @param feature The feature name to be added to the user agent
+ *
  * @internal
- * returns a middleware function for the MiddlewareStack, that can be used for the SDK clients
- * @param feature
  */
 const customUserAgentMiddleware = (feature: string) => {
   return <T extends MiddlewareArgsLike>(next: (arg0: T) => Promise<T>) =>
@@ -51,8 +56,12 @@ const customUserAgentMiddleware = (feature: string) => {
 };
 
 /**
+ * Check if the provided middleware stack already has the Powertools for AWS Lambda
+ * user agent middleware.
+ *
+ * @param middlewareStack The middleware stack to check
+ *
  * @internal
- * Checks if the middleware stack already has the Powertools UA middleware
  */
 const hasPowertools = (middlewareStack: string[]): boolean => {
   let found = false;
@@ -65,6 +74,16 @@ const hasPowertools = (middlewareStack: string[]): boolean => {
   return found;
 };
 
+/**
+ * Add the Powertools for AWS Lambda user agent middleware to the
+ * AWS SDK v3 client provided.
+ *
+ * We use this middleware to unbotrusively track the usage of the library
+ * and secure continued investment in the project.
+ *
+ * @param client The AWS SDK v3 client to add the middleware to
+ * @param feature The feature name to be added to the user agent
+ */
 const addUserAgentMiddleware = (client: unknown, feature: string): void => {
   try {
     if (isSdkClient(client)) {

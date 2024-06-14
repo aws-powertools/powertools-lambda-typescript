@@ -1,7 +1,7 @@
 name: Bug report
 description: Report a reproducible bug to help us improve
 title: "Bug: TITLE"
-labels: ["type/bug", "triage"]
+labels: ["bug", "triage"]
 projects: ["aws-powertools/7"]
 body:
   - type: markdown
@@ -11,16 +11,16 @@ body:
         
         Please add as much information as possible to help us reproduce, and remove any potential sensitive data.
   - type: textarea
-    id: expected_behaviour
+    id: expected_behavior
     attributes:
-      label: Expected Behaviour
-      description: Please share details on the behaviour you expected
+      label: Expected Behavior
+      description: Please share details on the behavior you expected
     validations:
       required: true
   - type: textarea
-    id: current_behaviour
+    id: current_behavior
     attributes:
-      label: Current Behaviour
+      label: Current Behavior
       description: Please share details on the current issue
     validations:
       required: true
@@ -58,7 +58,7 @@ body:
     id: version
     attributes:
       label: Powertools for AWS Lambda (TypeScript) version
-      placeholder: "latest, 1.3.0"
+      placeholder: "latest, 2.1.0"
       value: latest
     validations:
       required: true
@@ -77,8 +77,8 @@ body:
     attributes:
       label: Packaging format used
       options:
-        - Lambda Layers
         - npm
+        - Lambda Layers
       multiple: true
     validations:
       required: true

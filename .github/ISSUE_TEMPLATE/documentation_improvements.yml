@@ -1,7 +1,7 @@
 name: Documentation improvements
 description: Suggest a documentation update to improve everyone's experience
 title: "Docs: TITLE"
-labels: ["area/documentation", "triage"]
+labels: ["documentation", "triage"]
 projects: ["aws-powertools/7"]
 body:
   - type: markdown
@@ -27,7 +27,6 @@ body:
     attributes:
       label: How can we improve?
       description: Please share your thoughts on how we can improve this experience
-      render: Markdown
     validations:
       required: true
   - type: textarea

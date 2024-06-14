@@ -1,7 +1,7 @@
 name: Maintenance
 description: Suggest an activity to help address tech debt, governance, and anything internal
 title: "Maintenance: TITLE"
-labels: ["type/internal", "triage"]
+labels: ["internal", "triage"]
 projects: ["aws-powertools/7"]
 body:
   - type: markdown
@@ -31,6 +31,9 @@ body:
         - Automation
         - Governance
         - Tests
+        - Commons
+        - Event Handler
+        - Parser
         - Tracer
         - Logger
         - Metrics
@@ -39,7 +42,6 @@ body:
         - JMESPath
         - Batch Processing
         - Validation
-        - Parser
         - Other
   - type: textarea
     id: suggestion

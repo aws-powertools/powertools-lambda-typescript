@@ -1,5 +1,15 @@
 /**
- * Returns true if the passed value is a record (object).
+ * Check if a value is a record.
+ *
+ * @example
+ * ```typescript
+ * import { isRecord } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = { key: 'value' };
+ * if (isRecord(value)) {
+ *   // value is a record
+ * }
+ * ```
  *
  * @param value The value to check
  */
@@ -15,6 +25,16 @@ const isRecord = (
 /**
  * Check if a value is a string.
  *
+ * @example
+ * ```typescript
+ * import { isString } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = 'foo';
+ * if (isString(value)) {
+ *   // value is a string
+ * }
+ * ```
+ *
  * @param value The value to check
  */
 const isString = (value: unknown): value is string => {
@@ -23,6 +43,16 @@ const isString = (value: unknown): value is string => {
 
 /**
  * Check if a value is a number.
+ *
+ * @example
+ * ```typescript
+ * import { isNumber } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = 42;
+ * if (isNumber(value)) {
+ *   // value is a number
+ * }
+ * ```
  *
  * @param value The value to check
  */
@@ -33,6 +63,16 @@ const isNumber = (value: unknown): value is number => {
 /**
  * Check if a value is an integer number.
  *
+ * @example
+ * ```typescript
+ * import { isIntegerNumber } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = 42;
+ * if (isIntegerNumber(value)) {
+ *   // value is an integer number
+ * }
+ * ```
+ *
  * @param value The value to check
  */
 const isIntegerNumber = (value: unknown): value is number => {
@@ -41,6 +81,18 @@ const isIntegerNumber = (value: unknown): value is number => {
 
 /**
  * Check if a value is truthy.
+ *
+ * @example
+ * ```typescript
+ * import { isTruthy } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = 'yes';
+ * if (isTruthy(value)) {
+ *   // value is truthy
+ * }
+ * ```
+ *
+ * @see https://github.com/getify/You-Dont-Know-JS/blob/2nd-ed/types-grammar/ch4.md#toboolean
  *
  * @param value The value to check
  */
@@ -61,7 +113,17 @@ const isTruthy = (value: unknown): boolean => {
 };
 
 /**
- * Check if a value is null.
+ * Check if a value is `null`.
+ *
+ * @example
+ * ```typescript
+ * import { isNull } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = null;
+ * if (isNull(value)) {
+ *   // value is null
+ * }
+ * ```
  *
  * @param value The value to check
  */
@@ -70,7 +132,17 @@ const isNull = (value: unknown): value is null => {
 };
 
 /**
- * Check if a value is null or undefined.
+ * Check if a value is `null` or `undefined`.
+ *
+ * @example
+ * ```typescript
+ * import { isNullOrUndefined } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = null;
+ * if (isNullOrUndefined(value)) {
+ *   // value is null or undefined
+ * }
+ * ```
  *
  * @param value The value to check
  */
@@ -80,6 +152,16 @@ const isNullOrUndefined = (value: unknown): value is null | undefined => {
 
 /**
  * Get the type of a value as a string.
+ *
+ * @example
+ * ```typescript
+ * import { getType } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const type = getType('foo'); // 'string'
+ * const otherType = getType(42); // 'number'
+ * const anotherType = getType({ key: 'value' }); // 'object'
+ * const unknownType = getType(Symbol('foo')); // 'unknown'
+ * ```
  *
  * @param value The value to check
  */
@@ -104,6 +186,21 @@ const getType = (value: unknown): string => {
 /**
  * Compare two arrays for strict equality.
  *
+ * This function compares each element in the arrays, regardless of order.
+ *
+ * @example
+ * ```typescript
+ * import { areArraysEqual } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const left = [1, 2, 3];
+ * const right = [3, 2, 1];
+ * const equal = areArraysEqual(left, right); // true
+ *
+ * const otherLeft = [1, 2, 3];
+ * const otherRight = [1, 2, 4];
+ * const otherEqual = areArraysEqual(otherLeft, otherRight); // false
+ * ```
+ *
  * @param left The left array to compare
  * @param right The right array to compare
  */
@@ -117,6 +214,19 @@ const areArraysEqual = (left: unknown[], right: unknown[]): boolean => {
 
 /**
  * Compare two records for strict equality.
+ *
+ * @example
+ * ```typescript
+ * import { areRecordsEqual } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const left = { key: 'value' };
+ * const right = { key: 'value' };
+ * const equal = areRecordsEqual(left, right); // true
+ *
+ * const otherLeft = { key: 'value' };
+ * const otherRight = { key: 'other value' };
+ * const otherEqual = areRecordsEqual(otherLeft, otherRight); // false
+ * ```
  *
  * @param left The left record to compare
  * @param right The right record to compare
@@ -142,6 +252,27 @@ const areRecordsEqual = (
  * order. If the values are objects, then each key and value from left
  * is compared to the corresponding key and value from right. If the
  * values are primitives, then they are compared using strict equality.
+ *
+ * @example
+ * ```typescript
+ * import { isStrictEqual } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const left = { key: 'value' };
+ * const right = { key: 'value' };
+ * const equal = isStrictEqual(left, right); // true
+ *
+ * const otherLeft = [1, 2, 3];
+ * const otherRight = [3, 2, 1];
+ * const otherEqual = isStrictEqual(otherLeft, otherRight); // true
+ *
+ * const anotherLeft = 'foo';
+ * const anotherRight = 'bar';
+ * const anotherEqual = isStrictEqual(anotherLeft, anotherRight); // false
+ *
+ * const yetAnotherLeft = 42;
+ * const yetAnotherRight = 42;
+ * const yetAnotherEqual = isStrictEqual(yetAnotherLeft, yetAnotherRight); // true
+ * ```
  *
  * @param left Left side of strict equality comparison
  * @param right Right side of strict equality comparison

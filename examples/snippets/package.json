@@ -1,0 +1,52 @@
+{
+  "name": "code-snippets",
+  "version": "2.2.0",
+  "description": "A collection code snippets for the Powertools for AWS Lambda (TypeScript) docs",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "private": true,
+  "scripts": {
+    "test": "echo 'Not Applicable'",
+    "test:e2e": "echo 'Not Applicable'",
+    "build": "echo 'Not Applicable'",
+    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern ."
+  },
+  "lint-staged": {
+    "*.{js,ts}": "npm run lint-fix",
+    "*.json": "prettier --write --single-quote false",
+    "*.yaml": "prettier --write"
+  },
+  "license": "MIT-0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
+  "devDependencies": {
+    "@aws-lambda-powertools/batch": "^2.2.0",
+    "@aws-lambda-powertools/idempotency": "^2.2.0",
+    "@aws-lambda-powertools/jmespath": "^2.2.0",
+    "@aws-lambda-powertools/logger": "^2.2.0",
+    "@aws-lambda-powertools/metrics": "^2.2.0",
+    "@aws-lambda-powertools/parameters": "^2.2.0",
+    "@aws-lambda-powertools/parser": "^2.2.0",
+    "@aws-lambda-powertools/tracer": "^2.2.0",
+    "@aws-sdk/client-appconfigdata": "^3.596.0",
+    "@aws-sdk/client-dynamodb": "^3.596.0",
+    "@aws-sdk/client-secrets-manager": "^3.596.0",
+    "@aws-sdk/client-ssm": "^3.596.0",
+    "@aws-sdk/util-dynamodb": "^3.596.0",
+    "@middy/core": "^4.7.0",
+    "aws-sdk": "^2.1640.0",
+    "aws-sdk-client-mock": "^4.0.1",
+    "aws-sdk-client-mock-jest": "^4.0.1",
+    "hashi-vault-js": "^0.4.15",
+    "zod": "^3.23.8"
+  }
+}

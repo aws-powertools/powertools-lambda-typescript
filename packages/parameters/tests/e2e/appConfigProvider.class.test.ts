@@ -120,6 +120,7 @@ describe(`Parameters E2E tests, AppConfig provider`, () => {
       },
       {
         nameSuffix: 'appConfigProvider',
+        outputFormat: 'ESM',
       }
     );
 

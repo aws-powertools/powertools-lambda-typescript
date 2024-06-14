@@ -1,47 +1,25 @@
-<!--- 
-Instructions:
-1. Make sure you follow our Contributing Guidelines: https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md
-2. Please follow the template, and do not remove any section/item. If something is not applicable leave it empty, but leave it in the PR. 
-3. -->
+## Summary
 
-## Description of your changes
+### Changes
 
-<!---
-Include here a summary of the change.
+> Please provide a summary of what's being changed
 
-Please include also relevant motivation and context.
+<!-- What is this PR solving? Write a clear description or reference the issue(s) it addresses. -->
 
-Add any applicable code snippets, links, screenshots, or other resources
-that can help us verify your changes.
--->
+> Please add the issue number below, if no issue is present the PR might get blocked and not be reviewed
 
-### Related issues, RFCs
-
-<!--- 
-Add here the number (i.e. #42) to the Github Issue or RFC that is related to this PR.
-
-Don't include any other text, otherwise the Github Issue will not be detected.
-
-Note: If no issue is present the PR might get blocked and not be reviewed.
--->
 **Issue number:** 
 
-## Checklist
+<!-------
+Before creating the pull request, please make sure you do the following:
 
-- [ ] [My changes meet the tenets criteria](https://docs.powertools.aws.dev/lambda/typescript/#tenets)
-- [ ] I have performed a *self-review* of my own code
-- [ ] I have *commented* my code where necessary, particularly in areas that should be flagged with a TODO, or hard-to-understand areas
-- [ ] I have made corresponding changes to the *documentation*
-- [ ] My changes generate *no new warnings*
-- [ ] I have *added tests* that prove my change is effective and works
-- [ ] The PR title follows the [conventional commit semantics](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/semantic.yml#L2)
-
-### Breaking change checklist
-
-***Is it a breaking change?:*** NO
-
-- [ ] I have documented the migration process
-- [ ] I have added, implemented necessary warnings (if it can live side by side)
+- Read the Contributing Guidelines at https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md#sending-a-pull-request
+- Check that there isn't already a PR that addresses the same issue. If you find a duplicate, please leave a comment under the existing PR so we can discuss how to move forward
+- Check that the change meets the project's tenets https://docs.powertools.aws.dev/lambda/typescript/latest/#tenets
+- Add a PR title that follows the conventional commit semantics - https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/semantic.yml#L2
+- If relevant, add tests that prove that the change is effective and works
+- Whenever relevant, make sure to comment functions/methods/types and make appropriate changes to the documentation
+------->
 
 ---
 

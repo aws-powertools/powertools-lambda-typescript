@@ -12,7 +12,7 @@ import {
 } from './errors.js';
 import { Expression } from './Expression.js';
 import { Functions } from './Functions.js';
-import type { Node, TreeInterpreterOptions, JSONObject } from './types.js';
+import type { Node, JMESPathParsingOptions, JSONObject } from './types.js';
 import { isTruthy, sliceArray } from './utils.js';
 
 /**
@@ -30,7 +30,7 @@ class TreeInterpreter {
   /**
    * @param options The options to use for the interpreter.
    */
-  public constructor(options?: TreeInterpreterOptions) {
+  public constructor(options?: JMESPathParsingOptions) {
     if (options?.customFunctions) {
       this.#functions = options.customFunctions;
     } else {

@@ -351,9 +351,6 @@ describe('Coverage tests', () => {
     it('uses the custom function extending the powertools custom functions', () => {
       // Prepare
       class CustomFunctions extends PowertoolsFunctions {
-        public constructor() {
-          super();
-        }
         @PowertoolsFunctions.signature({
           argumentsSpecs: [['string']],
         })
@@ -383,6 +380,27 @@ describe('Coverage tests', () => {
 
       // Assess
       expect(messages).toStrictEqual(['hello world']);
+    });
+
+    it('correctly registers all the custom functions', () => {
+      // Prepare
+      class CustomFunctions extends PowertoolsFunctions {
+        @PowertoolsFunctions.signature({
+          argumentsSpecs: [['string']],
+        })
+        public funcPassThrough(value: string): string {
+          return value;
+        }
+      }
+
+      // Act
+      const customFunctions = new CustomFunctions();
+      search('pass_through(foo)', { foo: 'bar' }, { customFunctions });
+
+      // Assess
+      expect(customFunctions.methods.size).toBeGreaterThan(
+        new PowertoolsFunctions().methods.size
+      );
     });
   });
 });

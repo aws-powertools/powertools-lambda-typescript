@@ -1,7 +1,7 @@
 name: Request for Comments (RFC)
 description: Feature design and detailed proposals
 title: "RFC: TITLE"
-labels: ["type/RFC", "triage"]
+labels: ["RFC", "triage"]
 projects: ["aws-powertools/7"]
 body:
   - type: markdown
@@ -18,6 +18,12 @@ body:
     attributes:
       label: Which Powertools for AWS Lambda (TypeScript) utility does this relate to?
       options:
+        - Automation
+        - Governance
+        - Tests
+        - Batch
+        - Commons
+        - Event Handler
         - Tracer
         - Logger
         - Metrics

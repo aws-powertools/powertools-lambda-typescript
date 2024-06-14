@@ -32,10 +32,9 @@ If you're new to Amazon CloudWatch, there are two terminologies you must be awar
 * **Resolution**. It's a value representing the storage resolution for the corresponding metric. Metrics can be either Standard or High resolution. Read more [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition).
 
 <figure>
-  <img src="../../media/metrics_terminology.png" />
+  <img src="../../media/metrics_terminology.png" alt="metrics terminology diagram" />
   <figcaption>Metric terminology, visually explained</figcaption>
 </figure>
-
 
 ## Getting started
 
@@ -48,8 +47,8 @@ npm install @aws-lambda-powertools/metrics
 ```
 
 !!! warning "Caution"
-    
-    Using the Lambda [Advanced Logging Controls](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced) feature requires you to update your version of Powertools for AWS Lambda (TypeScript) to at least v1.15.0 to ensure metrics are reported correctly to Amazon CloudWatch Metrics.
+
+    When using the Lambda [Advanced Logging Controls](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced) feature you must install version of Powertools for AWS Lambda (TypeScript) v1.15.0 or newer.
 
 ### Usage
 
@@ -58,7 +57,7 @@ The `Metrics` utility must always be instantiated outside of the Lambda handler.
 === "handler.ts"
 
     ```typescript hl_lines="1 3-6"
-    --8<-- "docs/snippets/metrics/basicUsage.ts"
+    --8<-- "examples/snippets/metrics/basicUsage.ts"
     ```
 
 ### Utility settings
@@ -82,7 +81,7 @@ The `Metrics` utility is instantiated outside of the Lambda handler. In doing th
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
-    --8<-- "docs/snippets/metrics/sam.ts"
+    --8<-- "examples/snippets/metrics/sam.ts"
     ```
 
 === "template.yml"
@@ -108,13 +107,13 @@ You can create metrics using the `addMetric` method, and you can create dimensio
 === "Metrics"
 
     ```typescript hl_lines="12"
-    --8<-- "docs/snippets/metrics/createMetrics.ts"
+    --8<-- "examples/snippets/metrics/createMetrics.ts"
     ```
 
 === "Metrics with custom dimensions"
 
     ```typescript hl_lines="12-13"
-    --8<-- "docs/snippets/metrics/customDimensions.ts"
+    --8<-- "examples/snippets/metrics/customDimensions.ts"
     ```
 
 !!! tip "Autocomplete Metric Units"
@@ -128,7 +127,7 @@ You can create metrics using the `addMetric` method, and you can create dimensio
 
 ### Adding high-resolution metrics
 
-You can create [high-resolution metrics](https://aws.amazon.com/about-aws/whats-new/2023/02/amazon-cloudwatch-high-resolution-metric-extraction-structured-logs/) passing `resolution` as parameter to `addMetric`. 
+You can create [high-resolution metrics](https://aws.amazon.com/about-aws/whats-new/2023/02/amazon-cloudwatch-high-resolution-metric-extraction-structured-logs/) passing `resolution` as parameter to `addMetric`.
 
 !!! tip "When is it useful?"
     High-resolution metrics are data with a granularity of one second and are very useful in several situations such as telemetry, time series, real-time incident management, and others.
@@ -136,7 +135,7 @@ You can create [high-resolution metrics](https://aws.amazon.com/about-aws/whats-
 === "Metrics with high resolution"
 
     ```typescript hl_lines="4 20"
-    --8<-- "docs/snippets/metrics/addHighResolutionMetric.ts"
+    --8<-- "examples/snippets/metrics/addHighResolutionMetric.ts"
     ```
 
 !!! tip "Autocomplete Metric Resolutions"
@@ -149,7 +148,7 @@ You can call `addMetric()` with the same name multiple times. The values will be
 === "addMetric() with the same name"
 
     ```typescript hl_lines="12 14"
-    --8<-- "docs/snippets/metrics/multiValueMetrics.ts"
+    --8<-- "examples/snippets/metrics/multiValueMetrics.ts"
     ```
 === "Example CloudWatch Logs excerpt"
 
@@ -194,7 +193,7 @@ You can add default dimensions to your metrics by passing them as parameters in 
 === "constructor"
 
     ```typescript hl_lines="6"
-    --8<-- "docs/snippets/metrics/defaultDimensions.ts"
+    --8<-- "examples/snippets/metrics/defaultDimensions.ts"
     ```
 
 === "Middy middleware"
@@ -204,23 +203,26 @@ You can add default dimensions to your metrics by passing them as parameters in 
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="24-26"
-    --8<-- "docs/snippets/metrics/defaultDimensionsMiddy.ts"
+    --8<-- "examples/snippets/metrics/defaultDimensionsMiddy.ts"
     ```
 
 === "setDefaultDimensions method"
 
     ```typescript hl_lines="7"
-    --8<-- "docs/snippets/metrics/setDefaultDimensions.ts"
+    --8<-- "examples/snippets/metrics/setDefaultDimensions.ts"
     ```
 
 === "with logMetrics decorator"
 
     !!! note
-        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+        Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
+
         If this is not the desired behavior, you can use the `logMetrics` middleware instead.
 
     ```typescript hl_lines="12"
-    --8<-- "docs/snippets/metrics/defaultDimensionsDecorator.ts"
+    --8<-- "examples/snippets/metrics/defaultDimensionsDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -254,7 +256,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
 === "handler.ts"
 
     ```typescript hl_lines="2 17"
-    --8<-- "docs/snippets/metrics/middy.ts"
+    --8<-- "examples/snippets/metrics/middy.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -282,7 +284,10 @@ See below an example of how to automatically flush metrics with the Middy-compat
 #### Using the class decorator
 
 !!! note
-    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+    Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
+
     If this is not the desired behavior, you can use the `logMetrics` middleware instead.
 
 The `logMetrics` decorator of the metrics utility can be used when your Lambda handler function is implemented as method of a Class.
@@ -290,7 +295,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 === "handler.ts"
 
     ```typescript hl_lines="10"
-    --8<-- "docs/snippets/metrics/decorator.ts"
+    --8<-- "examples/snippets/metrics/decorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -327,7 +332,7 @@ You can manually flush the metrics with `publishStoredMetrics` as follows:
 === "handler.ts"
 
     ```typescript hl_lines="13"
-    --8<-- "docs/snippets/metrics/manual.ts"
+    --8<-- "examples/snippets/metrics/manual.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -359,7 +364,7 @@ If you want to ensure that at least one metric is emitted before you flush them,
 === "handler.ts"
 
     ```typescript hl_lines="21"
-    --8<-- "docs/snippets/metrics/throwOnEmptyMetrics.ts"
+    --8<-- "examples/snippets/metrics/throwOnEmptyMetrics.ts"
     ```
 
 ### Capturing a cold start invocation as metric
@@ -369,13 +374,13 @@ You can optionally capture cold start metrics with the `logMetrics` middleware o
 === "Middy Middleware"
 
     ```typescript hl_lines="18"
-    --8<-- "docs/snippets/metrics/captureColdStartMetricMiddy.ts"
+    --8<-- "examples/snippets/metrics/captureColdStartMetricMiddy.ts"
     ```
 
 === "logMetrics decorator"
 
     ```typescript hl_lines="10"
-    --8<-- "docs/snippets/metrics/captureColdStartMetricDecorator.ts"
+    --8<-- "examples/snippets/metrics/captureColdStartMetricDecorator.ts"
     ```
 
 If it's a cold start invocation, this feature will:
@@ -399,7 +404,7 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
 === "handler.ts"
 
     ```typescript hl_lines="15"
-    --8<-- "docs/snippets/metrics/addMetadata.ts"
+    --8<-- "examples/snippets/metrics/addMetadata.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -443,13 +448,42 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetr
 === "Middy Middleware"
 
     ```typescript hl_lines="21 23-24"
-    --8<-- "docs/snippets/metrics/singleMetricDifferentDimsMiddy.ts"
+    --8<-- "examples/snippets/metrics/singleMetricDifferentDimsMiddy.ts"
     ```
 
 === "logMetrics decorator"
 
     ```typescript hl_lines="16 18-19"
-    --8<-- "docs/snippets/metrics/singleMetricDifferentDimsDecorator.ts"
+    --8<-- "examples/snippets/metrics/singleMetricDifferentDimsDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
+
+## Testing your code
+
+When unit testing your code that uses the `Metrics` utility, you may want to silence the logs emitted by the utility or assert that metrics are being emitted correctly. By default, the utility manages its own `console` instance, which means that you can't easily access or mock the logs emitted by the utility.
+
+To make it easier to test your code, you can set the `POWERTOOLS_DEV` environment variable to `true` to instruct the utility to use the global `console` object instead of its own.
+
+This allows you to spy on the logs emitted by the utility and assert that the metrics are being emitted correctly.
+
+```typescript title="Spying on emitted metrics"
+describe('Metrics tests', () => {
+  beforeAll(() => {
+    process.env.POWERTOOLS_DEV = 'true';
+  })
+
+  it('function metrics properly', async () => {
+    // Prepare
+    const metricsSpy = jest.spyOn(console, 'log').mockImplementation();
+    
+    // Act & Assess
+  });
+});
+```
+
+When running your tests with both [Jest](https://jestjs.io) and [Vitest](http://vitest.dev), you can use the `--silent` flag to silence the logs emitted by the utility.
+
+```bash title="Disabling logs while testing"
+export POWERTOOLS_DEV=true && npx vitest --silent
+```

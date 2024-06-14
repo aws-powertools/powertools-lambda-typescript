@@ -1,5 +1,12 @@
 # Powertools for AWS Lambda (TypeScript) - Parser Utility <!-- omit in toc -->
 
+
+| ⚠️ **WARNING: Do not use this utility in production just yet!** ⚠️                                                                                                                                                                                                                                                                                                  |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| This AWS Lambda Powertools for TypeScript utility is currently released as beta developer preview and is intended strictly for feedback and testing purposes only.  <br/>This version is not stable, and significant breaking changes might incur before going [before the GA release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/16). | _ |
+
+
+
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
 You can use the package in both TypeScript and JavaScript code bases.

@@ -50,6 +50,7 @@ describe(`Metrics E2E tests, basic features decorator usage`, () => {
     },
     {
       nameSuffix: 'BasicFeatures',
+      outputFormat: 'ESM',
     }
   );
 

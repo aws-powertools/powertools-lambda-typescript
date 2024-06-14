@@ -29,12 +29,20 @@ import {
   isHttpSubsegment,
 } from './utilities.js';
 import type { DiagnosticsChannel } from 'undici-types';
+import http from 'node:http';
+import https from 'node:https';
 
 class ProviderService implements ProviderServiceInterface {
+  /**
+   * @deprecated
+   */
   public captureAWS<T>(awssdk: T): T {
     return captureAWS(awssdk);
   }
 
+  /**
+   * @deprecated
+   */
   public captureAWSClient<T>(service: T): T {
     return captureAWSClient(service);
   }
@@ -64,10 +72,8 @@ class ProviderService implements ProviderServiceInterface {
   }
 
   public captureHTTPsGlobal(): void {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    captureHTTPsGlobal(require('http'));
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    captureHTTPsGlobal(require('https'));
+    captureHTTPsGlobal(http);
+    captureHTTPsGlobal(https);
   }
 
   public getNamespace(): Namespace {

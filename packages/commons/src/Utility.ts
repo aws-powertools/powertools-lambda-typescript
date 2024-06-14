@@ -1,16 +1,11 @@
 /**
- * ## Intro
- * Utility is a base class that other Powertools for AWS Lambda (TypeScript) utilites can extend to inherit shared logic.
+ * `Utility` is a base class that other Powertools for AWS Lambda (TypeScript) utilites can extend to inherit shared logic.
  *
+ * Its main purpose is to encapsulate the cold start heuristic logic. Cold start is a term commonly used to describe the `Init` phase of a Lambda function.
+ * In this phase, Lambda creates or unfreezes an execution environment with the configured resources, downloads the code for the function and all layers,
+ * initializes any extensions, initializes the runtime, and then runs the function’s initialization code (the code outside the main handler).
  *
- * ## Key features
- *   * Cold Start heuristic to determine if the current
- *
- * ## Usage
- *
- * ### Cold Start
- *
- * Cold start is a term commonly used to describe the `Init` phase of a Lambda function. In this phase, Lambda creates or unfreezes an execution environment with the configured resources, downloads the code for the function and all layers, initializes any extensions, initializes the runtime, and then runs the function’s initialization code (the code outside the main handler). The Init phase happens either during the first invocation, or in advance of function invocations if you have enabled provisioned concurrency.
+ * The Init phase happens either during the first invocation, or in advance of function invocations if you have enabled provisioned concurrency.
  *
  * To learn more about the Lambda execution environment lifecycle, see the [Execution environment section](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html) of the AWS Lambda documentation.
  *
@@ -21,7 +16,7 @@
  *
  * If you want to use this logic in your own utilities, `Utility` provides two methods:
  *
- * #### `getColdStart()`
+ * `Utility.getColdStart()`
  *
  * Since the `Utility` class is instantiated outside of the Lambda handler it will persist across invocations of the same execution environment. This means that if you call `getColdStart()` multiple times, it will return `true` during the first invocation, and `false` afterwards.
  *
@@ -36,7 +31,7 @@
  * };
  * ```
  *
- * #### `isColdStart()`
+ * `Utility.isColdStart()`
  *
  * This method is an alias of `getColdStart()` and is exposed for convenience and better readability in certain usages.
  *
@@ -59,6 +54,20 @@ export class Utility {
   private coldStart = true;
   private readonly defaultServiceName: string = 'service_undefined';
 
+  /**
+   * Get the cold start status of the current execution environment.
+   *
+   * @example
+   * ```typescript
+   * import { Utility } from '@aws-lambda-powertools/commons';
+   *
+   * const utility = new Utility();
+   * utility.isColdStart(); // true
+   * utility.isColdStart(); // false
+   * ```
+   *
+   * The method also flips the cold start status to `false` after the first invocation.
+   */
   public getColdStart(): boolean {
     if (this.coldStart) {
       this.coldStart = false;
@@ -69,10 +78,27 @@ export class Utility {
     return false;
   }
 
+  /**
+   * Get the cold start status of the current execution environment.
+   *
+   * @example
+   * ```typescript
+   * import { Utility } from '@aws-lambda-powertools/commons';
+   *
+   * const utility = new Utility();
+   * utility.isColdStart(); // true
+   * utility.isColdStart(); // false
+   * ```
+   *
+   * @see {@link getColdStart}
+   */
   public isColdStart(): boolean {
     return this.getColdStart();
   }
 
+  /**
+   * Get the default service name.
+   */
   protected getDefaultServiceName(): string {
     return this.defaultServiceName;
   }
@@ -81,7 +107,7 @@ export class Utility {
    * Validate that the service name provided is valid.
    * Used internally during initialization.
    *
-   * @param serviceName - Service name to validate
+   * @param serviceName Service name to validate
    */
   protected isValidServiceName(serviceName?: string): boolean {
     return typeof serviceName === 'string' && serviceName.trim().length > 0;

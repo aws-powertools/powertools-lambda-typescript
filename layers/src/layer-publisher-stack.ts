@@ -62,6 +62,7 @@ export class LayerPublisherStack extends Stack {
               // the name is the same as the npm workspace name
               const utilities = [
                 'commons',
+                'jmespath',
                 'logger',
                 'metrics',
                 'tracer',
@@ -87,8 +88,6 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/async-hook-jl/test',
                 'node_modules/stack-chain/test',
                 'node_modules/shimmer/test',
-                'node_modules/jmespath/artifacts',
-                'node_modules/jmespath/bower.json',
                 'node_modules/obliterator/*.d.ts',
                 'node_modules/strnum/.vscode',
                 'node_modules/strnum/*.test.js',
@@ -101,9 +100,7 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/@aws-lambda-powertools/*/lib/**/*.d.ts',
                 'node_modules/@aws-lambda-powertools/*/lib/**/*.d.ts.map',
                 'node_modules/@aws-sdk/*/dist-types',
-                'node_modules/@aws-sdk/*/dist-es',
                 'node_modules/@smithy/*/dist-types',
-                'node_modules/@smithy/*/dist-es',
                 'node_modules/@smithy/**/README.md ',
                 'node_modules/@aws-sdk/**/README.md ',
               ];

@@ -1,5 +1,6 @@
 import { createHash, Hash } from 'node:crypto';
-import { search } from 'jmespath';
+import { search } from '@aws-lambda-powertools/jmespath';
+import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import type {
   BasePersistenceLayerOptions,
   BasePersistenceLayerInterface,
@@ -14,6 +15,7 @@ import {
 } from '../errors.js';
 import { LRUCache } from './LRUCache.js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { deepSort } from '../deepSort.js';
 
 /**
  * Base class for all persistence layers. This class provides the basic functionality for
@@ -36,6 +38,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private throwOnNoIdempotencyKey = false;
   private useLocalCache = false;
   private validationKeyJmesPath?: string;
+  #jmesPathOptions?: JMESPathParsingOptions;
 
   public constructor() {
     this.envVarsService = new EnvironmentVariablesService();
@@ -63,6 +66,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
     this.eventKeyJmesPath = idempotencyConfig?.eventKeyJmesPath;
     this.validationKeyJmesPath = idempotencyConfig?.payloadValidationJmesPath;
+    this.#jmesPathOptions = idempotencyConfig.jmesPathOptions;
     this.payloadValidationEnabled =
       this.validationKeyJmesPath !== undefined || false;
     this.throwOnNoIdempotencyKey =
@@ -257,7 +261,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private getExpiryTimestamp(): number {
     const currentTime: number = Date.now() / 1000;
 
-    return currentTime + this.expiresAfterSeconds;
+    return Math.round(currentTime + this.expiresAfterSeconds);
   }
 
   private getFromCache(idempotencyKey: string): IdempotencyRecord | undefined {
@@ -279,7 +283,11 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   private getHashedIdempotencyKey(data: JSONValue): string {
     if (this.eventKeyJmesPath) {
-      data = search(data, this.eventKeyJmesPath);
+      data = search(
+        this.eventKeyJmesPath,
+        data,
+        this.#jmesPathOptions
+      ) as JSONValue;
     }
 
     if (BasePersistenceLayer.isMissingIdempotencyKey(data)) {
@@ -294,7 +302,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
 
     return `${this.idempotencyKeyPrefix}#${this.generateHash(
-      JSON.stringify(data)
+      JSON.stringify(deepSort(data))
     )}`;
   }
 
@@ -305,9 +313,13 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   private getHashedPayload(data: JSONValue): string {
     if (this.isPayloadValidationEnabled() && this.validationKeyJmesPath) {
-      data = search(data, this.validationKeyJmesPath);
+      data = search(
+        this.validationKeyJmesPath,
+        data,
+        this.#jmesPathOptions
+      ) as JSONValue;
 
-      return this.generateHash(JSON.stringify(data));
+      return this.generateHash(JSON.stringify(deepSort(data)));
     } else {
       return '';
     }

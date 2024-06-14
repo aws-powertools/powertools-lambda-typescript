@@ -4,6 +4,7 @@
   "description": "A suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.",
   "workspaces": [
     "packages/commons",
+    "packages/jmespath",
     "packages/logger",
     "packages/metrics",
     "packages/tracer",
@@ -11,9 +12,8 @@
     "packages/idempotency",
     "packages/batch",
     "packages/testing",
-    "packages/jmespath",
     "packages/parser",
-    "docs/snippets",
+    "examples/snippets",
     "layers",
     "examples/app"
   ],
@@ -31,7 +31,8 @@
     "docs-api-build-run": "npm run docs-generateApiDoc && npx live-server api",
     "docs-generateApiDoc": "typedoc .",
     "docs-runLocalApiDoc": "npx live-server api",
-    "postpublish": "git restore ."
+    "postpublish": "git restore .",
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#packages/commons/README.md' '#packages/idempotency/README.md' '#packages/jmespath/README.md' '#packages/logger/README.md' '#packages/metrics/README.md' '#packages/parameters/README.md' '#packages/parser/README.md' '#packages/tracer/README.md'"
   },
   "repository": {
     "type": "git",
@@ -49,9 +50,9 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
     "@middy/core": "^4.7.0",
-    "@types/aws-lambda": "^8.10.137",
+    "@types/aws-lambda": "^8.10.138",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.14.2",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.0",
@@ -63,16 +64,26 @@
     "husky": "^9.0.11",
     "jest": "^29.7.0",
     "jest-runner-groups": "^2.2.0",
-    "lerna": "^8.1.2",
-    "lint-staged": "^15.2.2",
-    "prettier": "^3.2.5",
-    "ts-jest": "^29.1.2",
+    "lerna": "8.1.2",
+    "lint-staged": "^15.2.5",
+    "markdownlint-cli2": "^0.13.0",
+    "prettier": "^3.3.2",
+    "ts-jest": "^29.1.4",
     "ts-node": "^10.9.2",
     "typedoc": "^0.25.13",
     "typedoc-plugin-missing-exports": "^2.2.0",
     "typescript": "^5.4.5"
   },
+  "lint-staged": {
+    "*.{js,ts}": "eslint --fix",
+    "*.md": "markdownlint-cli2 --fix"
+  },
   "engines": {
     "node": ">=16"
+  },
+  "overrides": {
+    "lerna": {
+      "tar": "6.2.1"
+    }
   }
 }

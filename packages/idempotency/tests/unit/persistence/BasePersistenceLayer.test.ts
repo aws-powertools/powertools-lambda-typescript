@@ -373,7 +373,7 @@ describe('Class: BasePersistenceLayer', () => {
         expect.objectContaining({
           idempotencyKey: 'my-lambda-function#mocked-hash',
           status: IdempotencyRecordStatus.INPROGRESS,
-          expiryTimestamp: Date.now() / 1000 + 3600,
+          expiryTimestamp: Math.round(Date.now() / 1000 + 3600),
           payloadHash: '',
           inProgressExpiryTimestamp: Date.now() + remainingTimeInMs,
           responseData: undefined,
@@ -443,7 +443,7 @@ describe('Class: BasePersistenceLayer', () => {
         expect.objectContaining({
           idempotencyKey: 'my-lambda-function#mocked-hash',
           status: IdempotencyRecordStatus.COMPLETED,
-          expiryTimestamp: Date.now() / 1000 + 3600,
+          expiryTimestamp: Math.round(Date.now() / 1000 + 3600),
           payloadHash: '',
           inProgressExpiryTimestamp: undefined,
           responseData: result,

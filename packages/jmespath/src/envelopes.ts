@@ -1,6 +1,6 @@
 import { search } from './search.js';
 import { PowertoolsFunctions } from './PowertoolsFunctions.js';
-import type { ParsingOptions, JSONObject } from './types.js';
+import type { JMESPathParsingOptions, JSONObject } from './types.js';
 
 /**
  * Searches and extracts data using JMESPath
@@ -57,7 +57,7 @@ import type { ParsingOptions, JSONObject } from './types.js';
 const extractDataFromEnvelope = <T>(
   data: JSONObject,
   envelope: string,
-  options?: ParsingOptions
+  options?: JMESPathParsingOptions
 ): T => {
   if (!options) {
     options = { customFunctions: new PowertoolsFunctions() };

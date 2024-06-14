@@ -3,7 +3,9 @@ title: Parameters
 description: Utility
 ---
 
+<!-- markdownlint-disable MD013 -->
 The Parameters utility provides high-level functions to retrieve one or multiple parameter values from [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html){target="_blank"}, [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html){target="_blank"}, [AWS AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html){target="_blank"}, [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html){target="_blank"}, or your own parameter store.
+<!-- markdownlint-enable MD013 -->
 
 ## Key features
 
@@ -69,7 +71,7 @@ This utility requires additional permissions to work as expected.
 You can retrieve a single parameter using the `getParameter` high-level function.
 
 ```typescript hl_lines="1 5" title="Fetching a single parameter from SSM"
---8<-- "docs/snippets/parameters/getParameter.ts"
+--8<-- "examples/snippets/parameters/getParameter.ts"
 ```
 
 For multiple parameters, you can use either:
@@ -80,13 +82,13 @@ For multiple parameters, you can use either:
 === "getParameters"
 
     ```typescript hl_lines="1 8" title="Fetching multiple parameters by path from SSM"
-    --8<-- "docs/snippets/parameters/getParameters.ts"
+    --8<-- "examples/snippets/parameters/getParameters.ts"
     ```
 
 === "getParametersByName"
 
     ```typescript hl_lines="1-2 4-11 15" title="Fetching multiple parameters by names from SSM"
-    --8<-- "docs/snippets/parameters/getParametersByName.ts"
+    --8<-- "examples/snippets/parameters/getParametersByName.ts"
     ```
 
 ???+ tip "`getParametersByName` supports graceful error handling"
@@ -99,7 +101,7 @@ For multiple parameters, you can use either:
 	* Throw `GetParameterError` if any of your parameters is named `_errors`
 
 ```typescript hl_lines="9 13-15 18"
---8<-- "docs/snippets/parameters/getParametersByNameGracefulErrorHandling.ts"
+--8<-- "examples/snippets/parameters/getParametersByNameGracefulErrorHandling.ts"
 ```
 
 ### Fetching secrets
@@ -107,7 +109,7 @@ For multiple parameters, you can use either:
 You can fetch secrets stored in Secrets Manager using `getSecret`.
 
 ```typescript hl_lines="1 5" title="Fetching secrets"
---8<-- "docs/snippets/parameters/getSecret.ts"
+--8<-- "examples/snippets/parameters/getSecret.ts"
 ```
 
 ### Fetching app configurations
@@ -117,7 +119,7 @@ You can fetch application configurations in AWS AppConfig using `getAppConfig`.
 The following will retrieve the latest version and store it in the cache.
 
 ```typescript hl_lines="1 5-8" title="Fetching latest config from AppConfig"
---8<-- "docs/snippets/parameters/getAppConfig.ts"
+--8<-- "examples/snippets/parameters/getAppConfig.ts"
 ```
 
 ## Advanced
@@ -132,10 +134,10 @@ You can adjust how long values should be kept in cache by using the param `maxAg
 	If you want to set the same TTL for all parameters, you can set the `POWERTOOLS_PARAMETERS_MAX_AGE` environment variable. **This will override the default TTL of 5 seconds but can be overridden by the `maxAge` parameter**.
 
 ```typescript hl_lines="8 14" title="Caching parameters values in memory for longer than 5 seconds"
---8<-- "docs/snippets/parameters/adjustingCacheTTL.ts"
+--8<-- "examples/snippets/parameters/adjustingCacheTTL.ts"
 ```
 
-1.  Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_MAX_AGE` environment variable.
+1. Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_MAX_AGE` environment variable.
 
 ???+ info
 	The `maxAge` parameter is also available in high level functions like `getParameter`, `getSecret`, etc.
@@ -145,7 +147,7 @@ You can adjust how long values should be kept in cache by using the param `maxAg
 If you'd like to always ensure you fetch the latest parameter from the store regardless if already available in cache, use the `forceFetch` parameter.
 
 ```typescript hl_lines="5" title="Forcefully fetching the latest parameter whether TTL has expired or not"
---8<-- "docs/snippets/parameters/forceFetch.ts"
+--8<-- "examples/snippets/parameters/forceFetch.ts"
 ```
 
 ### Built-in provider class
@@ -158,7 +160,7 @@ For greater flexibility such as configuring the underlying SDK client used by bu
 #### SSMProvider
 
 ```typescript hl_lines="4-5" title="Example with SSMProvider for further extensibility"
---8<-- "docs/snippets/parameters/ssmProvider.ts"
+--8<-- "examples/snippets/parameters/ssmProvider.ts"
 ```
 
 The AWS Systems Manager Parameter Store provider supports two additional arguments for the `get()` and `getMultiple()` methods:
@@ -172,15 +174,15 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 	If you want to always decrypt parameters, you can set the `POWERTOOLS_PARAMETERS_SSM_DECRYPT=true` environment variable. **This will override the default value of `false` but can be overridden by the `decrypt` parameter**.
 
 ```typescript hl_lines="6 12" title="Example with get() and getMultiple()"
---8<-- "docs/snippets/parameters/ssmProviderDecryptAndRecursive.ts"
+--8<-- "examples/snippets/parameters/ssmProviderDecryptAndRecursive.ts"
 ```
 
-1.  Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_SSM_DECRYPT` environment variable.
+1. Options passed to `get()`, `getMultiple()`, and `getParametersByName()` will override the values set in `POWERTOOLS_PARAMETERS_SSM_DECRYPT` environment variable.
 
 #### SecretsProvider
 
 ```typescript hl_lines="4-5" title="Example with SecretsProvider for further extensibility"
---8<-- "docs/snippets/parameters/secretsProvider.ts"
+--8<-- "examples/snippets/parameters/secretsProvider.ts"
 ```
 
 #### AppConfigProvider
@@ -193,7 +195,7 @@ The AWS AppConfig provider requires two arguments when initialized:
 | **environment** | Yes                      | _(N/A)_                                | The environment that corresponds to your current config. |
 
 ```typescript hl_lines="4 8" title="Example with AppConfigProvider for further extensibility"
---8<-- "docs/snippets/parameters/appConfigProvider.ts"
+--8<-- "examples/snippets/parameters/appConfigProvider.ts"
 ```
 
 #### DynamoDBProvider
@@ -216,14 +218,14 @@ With this table, `await dynamoDBProvider.get('my-param')` will return `my-value`
 
 === "handler.ts"
 	```typescript hl_lines="3 7"
-	--8<-- "docs/snippets/parameters/dynamoDBProvider.ts"
+	--8<-- "examples/snippets/parameters/dynamoDBProvider.ts"
 	```
 
 === "DynamoDB Local example"
 	You can initialize the DynamoDB provider pointing to [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) using the `endpoint` field in the `clientConfig` parameter:
 
 	```typescript hl_lines="5-7"
-	--8<-- "docs/snippets/parameters/dynamoDBProviderLocal.ts"
+	--8<-- "examples/snippets/parameters/dynamoDBProviderLocal.ts"
 	```
 
 **DynamoDB table structure for multiple values parameters**
@@ -244,7 +246,7 @@ With this table, `await dynamoDBProvider.getMultiple('my-hash-key')` will return
 
 === "handler.ts"
 	```typescript hl_lines="3 10"
-	--8<-- "docs/snippets/parameters/dynamoDBProviderMultiple.ts"
+	--8<-- "examples/snippets/parameters/dynamoDBProviderMultiple.ts"
 	```
 
 === "values response object"
@@ -263,13 +265,13 @@ DynamoDB provider can be customized at initialization to match your table struct
 
 | Parameter     | Mandatory | Default | Description                                                                                               |
 | ------------- | --------- | ------- | --------------------------------------------------------------------------------------------------------- |
-| **tableName** | **Yes**   | *(N/A)* | Name of the DynamoDB table containing the parameter values.                                               |
+| **tableName** | **Yes**   | _(N/A)_ | Name of the DynamoDB table containing the parameter values.                                               |
 | **keyAttr**   | No        | `id`    | Hash key for the DynamoDB table.                                                                          |
 | **sortAttr**  | No        | `sk`    | Range key for the DynamoDB table. You don't need to set this if you don't use the `getMultiple()` method. |
 | **valueAttr** | No        | `value` | Name of the attribute containing the parameter value.                                                     |
 
 ```typescript hl_lines="3-8" title="Customizing DynamoDBProvider to suit your table design"
---8<-- "docs/snippets/parameters/dynamoDBProviderCustomizeTable.ts"
+--8<-- "examples/snippets/parameters/dynamoDBProviderCustomizeTable.ts"
 ```
 
 ### Create your own provider
@@ -282,17 +284,17 @@ Here's an example of implementing a custom parameter store using an external ser
 
 === "Provider implementation"
 	```typescript
-	--8<-- "docs/snippets/parameters/customProviderVault.ts"
+	--8<-- "examples/snippets/parameters/customProviderVault.ts"
 	```
 
 === "Provider types"
 	```typescript
-	--8<-- "docs/snippets/parameters/customProviderVaultTypes.ts"
+	--8<-- "examples/snippets/parameters/customProviderVaultTypes.ts"
 	```
 
 === "Provider usage"
 	```typescript
-	--8<-- "docs/snippets/parameters/customProviderVaultUsage.ts"
+	--8<-- "examples/snippets/parameters/customProviderVaultUsage.ts"
 	```
 
 ### Deserializing values with transform parameter
@@ -304,12 +306,12 @@ For parameters stored in JSON or Base64 format, you can use the `transform` argu
 
 === "High level functions"
 	```typescript hl_lines="4"
-	--8<-- "docs/snippets/parameters/transform.ts"
+	--8<-- "examples/snippets/parameters/transform.ts"
 	```
 
 === "Providers"
 	```typescript hl_lines="7 10"
-	--8<-- "docs/snippets/parameters/transformProvider.ts"
+	--8<-- "examples/snippets/parameters/transformProvider.ts"
 	```
 
 #### Partial transform failures with `getMultiple()`
@@ -318,10 +320,10 @@ If you use `transform` with `getMultiple()`, you can have a single malformed par
 
 You can override this by setting the `throwOnTransformError` argument to `true`. If you do so, a single transform error will throw a **`TransformParameterError`** error.
 
-For example, if you have three parameters, */param/a*, */param/b* and */param/c*, but */param/c* is malformed:
+For example, if you have three parameters, _/param/a_, _/param/b_ and _/param/c_, but _/param/c_ is malformed:
 
 ```typescript hl_lines="23" title="Throwing TransformParameterError at first malformed parameter"
---8<-- "docs/snippets/parameters/transformPartialFailures.ts"
+--8<-- "examples/snippets/parameters/transformPartialFailures.ts"
 ```
 
 #### Auto-transform values on suffix
@@ -334,7 +336,7 @@ You can do this with a single request by using `transform: 'auto'`. This will in
     `transform: 'auto'` feature is available across all providers, including the high level functions.
 
 ```typescript hl_lines="7" title="Deserializing parameter values based on their suffix"
---8<-- "docs/snippets/parameters/transformAuto.ts"
+--8<-- "examples/snippets/parameters/transformAuto.ts"
 ```
 
 For example, if you have three parameters: two with the following suffixes `.json` and `.binary` and one without any suffix:
@@ -362,7 +364,7 @@ The two parameters with a suffix will be decoded, while the one without a suffix
 You can use a special `sdkOptions` object argument to pass any supported option directly to the underlying SDK method.
 
 ```typescript hl_lines="8 14" title="Specify a VersionId for a secret"
---8<-- "docs/snippets/parameters/sdkOptions.ts"
+--8<-- "examples/snippets/parameters/sdkOptions.ts"
 ```
 
 Here is the mapping between this utility's functions and methods and the underlying SDK:
@@ -396,22 +398,22 @@ You can use the `awsSdkV3Client` parameter via any of the available [Provider Cl
 
 === "SSMProvider"
 	```typescript hl_lines="5 7"
-	--8<-- "docs/snippets/parameters/ssmProviderCustomClient.ts"
+	--8<-- "examples/snippets/parameters/ssmProviderCustomClient.ts"
 	```
 
 === "SecretsProvider"
 	```typescript hl_lines="5 8"
-	--8<-- "docs/snippets/parameters/secretsProviderCustomClient.ts"
+	--8<-- "examples/snippets/parameters/secretsProviderCustomClient.ts"
 	```
 
 === "AppConfigProvider"
 	```typescript hl_lines="5 8"
-	--8<-- "docs/snippets/parameters/appConfigProviderCustomClient.ts"
+	--8<-- "examples/snippets/parameters/appConfigProviderCustomClient.ts"
 	```
 
 === "DynamoDBProvider"
 	```typescript hl_lines="5 7"
-	--8<-- "docs/snippets/parameters/dynamoDBProviderCustomClient.ts"
+	--8<-- "examples/snippets/parameters/dynamoDBProviderCustomClient.ts"
 	```
 
 ### Customizing AWS SDK v3 configuration
@@ -423,9 +425,8 @@ The **`clientConfig`** parameter enables you to pass in a custom [config object]
 
 	When using VPC private endpoints, you can pass a custom client altogether. It's also useful for testing when injecting fake instances.
 
-
 ```typescript hl_lines="2 4-5"
---8<-- "docs/snippets/parameters/clientConfig.ts"
+--8<-- "examples/snippets/parameters/clientConfig.ts"
 ```
 
 ## Testing your code
@@ -436,12 +437,12 @@ For unit testing your applications, you can mock the calls to the parameters uti
 
 === "handler.test.ts"
 	```typescript hl_lines="2 4-9 13 18"
-	--8<-- "docs/snippets/parameters/testingYourCodeFunctionsJestMock.ts"
+	--8<-- "examples/snippets/parameters/testingYourCodeFunctionsJestMock.ts"
 	```
 
 === "handler.ts"
 	```typescript
-	--8<-- "docs/snippets/parameters/testingYourCodeFunctionsHandler.ts"
+	--8<-- "examples/snippets/parameters/testingYourCodeFunctionsHandler.ts"
 	```
 
 With this pattern in place, you can customize the return values of the mocked function to test different scenarios without calling AWS APIs.
@@ -450,24 +451,24 @@ A similar pattern can be applied also to any of the built-in provider classes - 
 
 === "handler.test.ts"
 	```typescript hl_lines="2 5 8 19 26-27"
-	--8<-- "docs/snippets/parameters/testingYourCodeProvidersJestMock.ts"
+	--8<-- "examples/snippets/parameters/testingYourCodeProvidersJestMock.ts"
 	```
 
 === "handler.ts"
 	```typescript
-	--8<-- "docs/snippets/parameters/testingYourCodeProvidersHandler.ts"
+	--8<-- "examples/snippets/parameters/testingYourCodeProvidersHandler.ts"
 	```
 
-In some other cases, you might want to mock the AWS SDK v3 client itself, in these cases we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-jest`](https://www.npmjs.com/package/aws-sdk-client-mock-jest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
+For when you want to mock the AWS SDK v3 client directly, we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-jest`](https://www.npmjs.com/package/aws-sdk-client-mock-jest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
 
 === "handler.test.ts"
 	```typescript hl_lines="2-8 11 14 18 23-30"
-	--8<-- "docs/snippets/parameters/testingYourCodeClientJestMock.ts"
+	--8<-- "examples/snippets/parameters/testingYourCodeClientJestMock.ts"
 	```
 
 === "handler.ts"
 	```typescript
-	--8<-- "docs/snippets/parameters/testingYourCodeClientHandler.ts"
+	--8<-- "examples/snippets/parameters/testingYourCodeClientHandler.ts"
 	```
 
 ### Clearing cache
@@ -478,5 +479,5 @@ Within your tests, you can use `clearCache` method available in [every provider]
 
 === "handler.test.ts"
 	```typescript hl_lines="1 9"
-	--8<-- "docs/snippets/parameters/testingYourCodeClearCache.ts"
+	--8<-- "examples/snippets/parameters/testingYourCodeClearCache.ts"
 	```

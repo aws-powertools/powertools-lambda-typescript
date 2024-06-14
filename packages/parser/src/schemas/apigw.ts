@@ -22,7 +22,16 @@ const APIGatewayEventIdentity = z.object({
   cognitoIdentityId: z.string().nullish(),
   cognitoIdentityPoolId: z.string().nullish(),
   principalOrgId: z.string().nullish(),
-  sourceIp: z.string().ip().optional(),
+  /**
+   * When invoking the API Gateway REST API using the Test Invoke feature,
+   * the sourceIp is hardcoded to `test-invoke-source-ip`. This is a stopgap
+   * solution to allow customers to test their API and have successful parsing.
+   *
+   * See aws-powertools/powertools-lambda-python#1562 for more information.
+   */
+  sourceIp: z
+    .union([z.string().ip(), z.literal('test-invoke-source-ip')])
+    .optional(),
   user: z.string().nullish(),
   userAgent: z.string().nullish(),
   userArn: z.string().nullish(),
@@ -97,14 +106,14 @@ const APIGatewayProxyEventSchema = z.object({
     'OPTIONS',
   ]),
   headers: z.record(z.string()).optional(),
-  queryStringParameters: z.record(z.string()).optional(),
+  queryStringParameters: z.record(z.string()).nullable(),
   multiValueHeaders: z.record(z.array(z.string())).optional(),
-  multiValueQueryStringParameters: z.record(z.array(z.string())).optional(),
+  multiValueQueryStringParameters: z.record(z.array(z.string())).nullable(),
   requestContext: APIGatewayEventRequestContext,
   pathParameters: z.record(z.string()).optional().nullish(),
   stageVariables: z.record(z.string()).optional().nullish(),
   isBase64Encoded: z.boolean().optional(),
-  body: z.string().optional(),
+  body: z.string().nullable(),
 });
 
 export { APIGatewayProxyEventSchema, APIGatewayCert };

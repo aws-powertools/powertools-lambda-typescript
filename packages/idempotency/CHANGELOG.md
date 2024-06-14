@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-13)
+
+
+### Bug Fixes
+
+* **idempotency:** deep sort payload during hashing ([#2570](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2570)) ([6765f35](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6765f35e98e2d8267d2672c12ba387a9af62a4b5))
+
+
+
+
+
+## [2.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.0...v2.1.1) (2024-05-14)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+
+
+
+
+# [2.1.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.0.4...v2.1.0) (2024-04-17)
+
+
+### Features
+
+* **idempotency:** add custom JMESPath functions ([#2364](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2364)) ([9721e7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9721e7c01fc010944eb477bdbc24b9e06a5c4571))
+
+
+
+
+
 ## 2.0.4 (2024-04-10)
 
 ### Bug Fixes

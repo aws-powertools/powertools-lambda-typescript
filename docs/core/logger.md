@@ -37,10 +37,11 @@ The `Logger` utility must always be instantiated outside the Lambda handler. By 
 === "handler.ts"
 
     ```typescript hl_lines="1 3"
-    --8<-- "docs/snippets/logger/basicUsage.ts"
+    --8<-- "examples/snippets/logger/basicUsage.ts"
     ```
 
 ### Utility settings
+
 The library has three optional settings, which can be set via environment variables or passed in the constructor.
 
 These settings will be used across all logs emitted:
@@ -59,7 +60,7 @@ Check API docs to learn more about [Logger constructor options](https://docs.pow
 === "handler.ts"
 
     ```typescript hl_lines="1 4"
-    --8<-- "docs/snippets/logger/sam.ts"
+    --8<-- "examples/snippets/logger/sam.ts"
     ```
 
 === "template.yaml"
@@ -114,17 +115,20 @@ This functionality will include the following keys in your structured logs:
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="2 14"
-    --8<-- "docs/snippets/logger/middy.ts"
+    --8<-- "examples/snippets/logger/middy.ts"
     ```
 
 === "Decorator"
 
     !!! note
-        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. Additionally, they are implemented in a way that fits asynchronous methods. When decorating a synchronous method, the decorator replaces its implementation with an asynchronous one causing the caller to have to `await` the now decorated method.
+        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+
+        Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
+
         If this is not the desired behavior, you can call the `logger.injectLambdaContext()` method directly in your handler.
 
     ```typescript hl_lines="8"
-    --8<-- "docs/snippets/logger/decorator.ts"
+    --8<-- "examples/snippets/logger/decorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -132,7 +136,7 @@ This functionality will include the following keys in your structured logs:
 === "Manual"
 
     ```typescript hl_lines="10"
-    --8<-- "docs/snippets/logger/manual.ts"
+    --8<-- "examples/snippets/logger/manual.ts"
     ```
 
 In each case, the printed log will look like this:
@@ -164,13 +168,13 @@ When debugging in non-production environments, you can instruct Logger to log th
 === "Middy Middleware"
 
     ```typescript hl_lines="15"
-    --8<-- "docs/snippets/logger/eventMiddy.ts"
+    --8<-- "examples/snippets/logger/eventMiddy.ts"
     ```
 
 === "Decorator"
 
     ```typescript hl_lines="8"
-    --8<-- "docs/snippets/logger/eventDecorator.ts"
+    --8<-- "examples/snippets/logger/eventDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -186,11 +190,10 @@ You can append additional persistent keys and values in the logs generated durin
 
 To remove the keys you added, you can use the `removeKeys` method.
 
-
 === "handler.ts"
 
     ```typescript hl_lines="5-13 17-25 32"
-    --8<-- "docs/snippets/logger/appendKeys.ts"
+    --8<-- "examples/snippets/logger/appendKeys.ts"
     ```
 === "Example CloudWatch Logs excerpt"
 
@@ -223,7 +226,6 @@ To remove the keys you added, you can use the `removeKeys` method.
     }
     ```
 
-
 !!! tip "Logger will automatically ignore any key with an `undefined` value"
 
 #### Clearing all state
@@ -237,13 +239,13 @@ If you want to make sure that persistent attributes added **inside the handler f
 === "Middy Middleware"
 
     ```typescript hl_lines="31"
-    --8<-- "docs/snippets/logger/clearStateMiddy.ts"
+    --8<-- "examples/snippets/logger/clearStateMiddy.ts"
     ```
 
 === "Decorator"
 
     ```typescript hl_lines="16"
-    --8<-- "docs/snippets/logger/clearStateDecorator.ts"
+    --8<-- "examples/snippets/logger/clearStateDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
@@ -290,7 +292,6 @@ In each case, the printed log will look like this:
     }
     ```
 
-
 ### Appending additional data to a single log item
 
 You can append additional data to a single log item by passing objects as additional parameters.
@@ -302,7 +303,7 @@ You can append additional data to a single log item by passing objects as additi
 === "handler.ts"
 
     ```typescript hl_lines="16-18 23-25 37"
-    --8<-- "docs/snippets/logger/extraData.ts"
+    --8<-- "examples/snippets/logger/extraData.ts"
     ```
 === "Example CloudWatch Logs excerpt"
 
@@ -355,11 +356,11 @@ The error will be logged with default key name `error`, but you can also pass yo
 === "handler.ts"
 
     ```typescript hl_lines="13 20-22"
-    --8<-- "docs/snippets/logger/logError.ts"
+    --8<-- "examples/snippets/logger/logError.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
-
+    <!-- markdownlint-disable MD013 -->
     ```json hl_lines="7-12 20-25"
     {
         "level": "ERROR",
@@ -374,7 +375,7 @@ The error will be logged with default key name `error`, but you can also pass yo
             "stack": "Error: Unexpected error #1    at lambdaHandler (/path/to/my/source-code/my-service/handler.ts:18:11)    at Object.<anonymous> (/path/to/my/source-code/my-service/handler.ts:35:1)    at Module._compile (node:internal/modules/cjs/loader:1108:14)    at Module.m._compile (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1371:23)    at Module._extensions..js (node:internal/modules/cjs/loader:1137:10)    at Object.require.extensions.<computed> [as .ts] (/path/to/my/source-code/node_modules/ts-node/src/index.ts:1374:12)    at Module.load (node:internal/modules/cjs/loader:973:32)    at Function.Module._load (node:internal/modules/cjs/loader:813:14)    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)    at main (/path/to/my/source-code/node_modules/ts-node/src/bin.ts:331:12)"
         }
     }
-    {   
+    {
         "level": "ERROR",
         "message": "This is the second error",
         "service": "serverlessAirline",
@@ -388,6 +389,7 @@ The error will be logged with default key name `error`, but you can also pass yo
         }
     }
     ```
+    <!-- markdownlint-enable MD013 -->
 
 !!! tip "Logging errors and log level"
     You can also log errors using the `warn`, `info`, and `debug` methods. Be aware of the log level though, you might miss those  errors when analyzing the log later depending on the log level configuration.
@@ -412,7 +414,7 @@ We support the following log levels:
 You can access the current log level by using the `getLevelName()` method. This method returns the name of the current log level as a string. If you want to change the log level at runtime, you can use the `setLogLevel()` method. This method accepts a string value that represents the log level you want to set, both lower and upper case values are supported.
 
 ```typescript
---8<-- "docs/snippets/logger/logLevel.ts"
+--8<-- "examples/snippets/logger/logLevel.ts"
 ```
 
 If you want to access the numeric value of the current log level, you can use the `level` property. For example, if the current log level is `INFO`, `logger.level` property will return `12`.
@@ -430,7 +432,9 @@ By setting the log level to `SILENT`, which can be done either through the `logL
 
 #### AWS Lambda Advanced Logging Controls (ALC)
 
-With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. Regardless of the output format setting in Lambda, we will always output JSON formatted logging messages.
+With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application.
+
+Regardless of the output format setting in Lambda, we will always output JSON formatted logging messages.
 
 When you have this feature enabled, log messages that don’t meet the configured log level are discarded by Lambda. For example, if you set the minimum log level to `WARN`, you will only receive `WARN` and `ERROR` messages in your AWS CloudWatch Logs, all other log levels will be discarded by Lambda.
 
@@ -467,14 +471,16 @@ In the event you have set a log level in Powertools to a level that is lower tha
 
 ### Using multiple Logger instances across your code
 
-The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [persistent attributes](#appending-persistent-additional-log-keys-and-values), and [the log formatter](#custom-log-formatter-bring-your-own-formatter). Once a child logger is created, the logger and its parent will act as separate instances of the Logger class, and as such any change to one won't be applied to the other. 
+The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [persistent attributes](#appending-persistent-additional-log-keys-and-values), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).
+
+Once a child logger is created, the logger and its parent will act as separate instances of the Logger class, and as such any change to one won't be applied to the other.
 
  The following example shows how to create multiple Loggers that share service name and persistent attributes while specifying different logging levels within a single Lambda invocation. As the result, only ERROR logs with all the inherited attributes will be displayed in CloudWatch Logs from the child logger, but all logs emitted will have the same service name and persistent attributes.
 
 === "handler.ts"
 
     ```typescript hl_lines="16-18"
-    --8<-- "docs/snippets/logger/createChild.ts"
+    --8<-- "examples/snippets/logger/createChild.ts"
     ```
 
 === "Example CloudWatch Logs excerpt"
@@ -528,7 +534,7 @@ Sampling decision happens at the Logger initialization. This means sampling may 
 === "handler.ts"
 
     ```typescript hl_lines="6"
-    --8<-- "docs/snippets/logger/logSampling.ts"
+    --8<-- "examples/snippets/logger/logSampling.ts"
     ```
 
 === "Example CloudWatch Logs excerpt - Invocation #1"
@@ -638,7 +644,7 @@ You can customize the structure (keys and values) of your log items by passing a
 === "handler.ts"
 
     ```typescript hl_lines="2 6"
-    --8<-- "docs/snippets/logger/bringYourOwnFormatterHandler.ts"
+    --8<-- "examples/snippets/logger/bringYourOwnFormatterHandler.ts"
     ```
 
 This is how the `MyCompanyLogFormatter` (dummy name) would look like:
@@ -646,7 +652,7 @@ This is how the `MyCompanyLogFormatter` (dummy name) would look like:
 === "utils/formatters/MyCompanyLogFormatter.ts"
 
     ```typescript
-    --8<-- "docs/snippets/logger/bringYourOwnFormatterClass.ts"
+    --8<-- "examples/snippets/logger/bringYourOwnFormatterClass.ts"
     ```
 
 This is how the printed log would look:
@@ -695,7 +701,7 @@ This is a Jest sample that provides the minimum information necessary for Logger
 === "handler.test.ts"
 
     ```typescript
-    --8<-- "docs/snippets/logger/unitTesting.ts"
+    --8<-- "examples/snippets/logger/unitTesting.ts"
     ```
 
 ### Suppress logs with Jest

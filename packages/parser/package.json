@@ -1,13 +1,13 @@
 {
   "name": "@aws-lambda-powertools/parser",
-  "version": "0.0.0",
+  "version": "2.2.0",
   "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "scripts": {
     "test": "npm run test:unit",
@@ -20,9 +20,6 @@
     "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
     "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
-  },
-  "lint-staged": {
-    "*.{js,ts}": "npm run lint-fix"
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parser#readme",
   "license": "MIT-0",
@@ -91,9 +88,16 @@
     "aws",
     "lambda",
     "powertools",
-    "batch",
-    "batch-processing",
+    "parser",
+    "zod",
+    "parse",
+    "events",
+    "payloads",
+    "inputs",
+    "validate",
+    "validation",
     "serverless",
+    "typescript",
     "nodejs"
   ],
   "peerDependencies": {

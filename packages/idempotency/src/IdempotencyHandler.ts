@@ -16,7 +16,7 @@ import { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
 import { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import { IdempotencyConfig } from './IdempotencyConfig.js';
 import { MAX_RETRIES, IdempotencyRecordStatus } from './constants.js';
-import { search } from 'jmespath';
+import { search } from '@aws-lambda-powertools/jmespath';
 
 /**
  * @internal
@@ -155,8 +155,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     let e;
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
-        const result = await this.#saveInProgressOrReturnExistingResult();
-        if (result) return result as ReturnType<Func>;
+        const { isIdempotent, result } =
+          await this.#saveInProgressOrReturnExistingResult();
+        if (isIdempotent) return result as ReturnType<Func>;
 
         return await this.getFunctionResult();
       } catch (error) {
@@ -215,8 +216,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   ): Promise<ReturnType<Func> | void> {
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
-        const result = await this.#saveInProgressOrReturnExistingResult();
-        if (result) {
+        const { isIdempotent, result } =
+          await this.#saveInProgressOrReturnExistingResult();
+        if (isIdempotent) {
           await callback(request);
 
           return result as ReturnType<Func>;
@@ -275,8 +277,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       !this.#idempotencyConfig.throwOnNoIdempotencyKey
     ) {
       const selection = search(
+        this.#idempotencyConfig.eventKeyJmesPath,
         this.#functionPayloadToBeHashed,
-        this.#idempotencyConfig.eventKeyJmesPath
+        this.#idempotencyConfig.jmesPathOptions
       );
 
       return selection === undefined || selection === null;
@@ -309,43 +312,58 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * Before returning a result, we might neede to look up the idempotency record
    * and validate it to ensure that it is consistent with the payload to be hashed.
    */
-  #saveInProgressOrReturnExistingResult =
-    async (): Promise<JSONValue | void> => {
-      try {
-        await this.#persistenceStore.saveInProgress(
-          this.#functionPayloadToBeHashed,
-          this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
-        );
-      } catch (e) {
-        if (e instanceof IdempotencyItemAlreadyExistsError) {
-          let idempotencyRecord = e.existingRecord;
-          if (idempotencyRecord !== undefined) {
-            // If the error includes the existing record, we can use it to validate
-            // the record being processed and cache it in memory.
-            idempotencyRecord = this.#persistenceStore.processExistingRecord(
-              idempotencyRecord,
-              this.#functionPayloadToBeHashed
-            );
-            // If the error doesn't include the existing record, we need to fetch
-            // it from the persistence layer. In doing so, we also call the processExistingRecord
-            // method to validate the record and cache it in memory.
-          } else {
-            idempotencyRecord = await this.#persistenceStore.getRecord(
-              this.#functionPayloadToBeHashed
-            );
-          }
+  #saveInProgressOrReturnExistingResult = async (): Promise<{
+    isIdempotent: boolean;
+    result: JSONValue;
+  }> => {
+    const returnValue: {
+      isIdempotent: boolean;
+      result: JSONValue;
+    } = {
+      isIdempotent: false,
+      result: undefined,
+    };
+    try {
+      await this.#persistenceStore.saveInProgress(
+        this.#functionPayloadToBeHashed,
+        this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
+      );
 
-          return IdempotencyHandler.determineResultFromIdempotencyRecord(
-            idempotencyRecord
+      return returnValue;
+    } catch (e) {
+      if (e instanceof IdempotencyItemAlreadyExistsError) {
+        let idempotencyRecord = e.existingRecord;
+        if (idempotencyRecord !== undefined) {
+          // If the error includes the existing record, we can use it to validate
+          // the record being processed and cache it in memory.
+          idempotencyRecord = this.#persistenceStore.processExistingRecord(
+            idempotencyRecord,
+            this.#functionPayloadToBeHashed
           );
+          // If the error doesn't include the existing record, we need to fetch
+          // it from the persistence layer. In doing so, we also call the processExistingRecord
+          // method to validate the record and cache it in memory.
         } else {
-          throw new IdempotencyPersistenceLayerError(
-            'Failed to save in progress record to idempotency store',
-            e as Error
+          idempotencyRecord = await this.#persistenceStore.getRecord(
+            this.#functionPayloadToBeHashed
           );
         }
+
+        returnValue.isIdempotent = true;
+        returnValue.result =
+          IdempotencyHandler.determineResultFromIdempotencyRecord(
+            idempotencyRecord
+          );
+
+        return returnValue;
+      } else {
+        throw new IdempotencyPersistenceLayerError(
+          'Failed to save in progress record to idempotency store',
+          e as Error
+        );
       }
-    };
+    }
+  };
 
   /**
    * Save a successful result to the idempotency store.

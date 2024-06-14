@@ -13,6 +13,12 @@ interface ExtraTestProps {
    * Note that the maximum length of the name is 64 characters, so the suffix might be truncated.
    */
   nameSuffix: string;
+  /**
+   * The output format of the bundled code.
+   *
+   * @default 'CJS'
+   */
+  outputFormat?: 'CJS' | 'ESM';
 }
 
 type TestDynamodbTableProps = Omit<
@@ -27,8 +33,13 @@ type TestDynamodbTableProps = Omit<
 
 type TestNodejsFunctionProps = Omit<
   NodejsFunctionProps,
-  'logRetention' | 'runtime' | 'functionName'
->;
+  'logRetention' | 'runtime' | 'functionName' | 'bundling'
+> & {
+  bundling?: Omit<
+    NodejsFunctionProps['bundling'],
+    'minify' | 'mainFields' | 'sourceMap' | 'format' | 'banner'
+  >;
+};
 
 type InvokeTestFunctionOptions = {
   functionName: string;

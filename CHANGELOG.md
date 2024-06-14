@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-13)
+
+
+### Bug Fixes
+
+* **idempotency:** deep sort payload during hashing ([#2570](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2570)) ([6765f35](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6765f35e98e2d8267d2672c12ba387a9af62a4b5))
+* **parser:** handle API Gateway Test UI sourceIp ([#2531](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2531)) ([cd6c512](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cd6c512c3a3b799debdafabac1558c8d40c8dc93))
+
+
+### Features
+
+* **batch:** add option to continue processing other group IDs on failure in `SqsFifoPartialProcessor` ([#2590](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2590)) ([a615c24](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a615c24108c4653be4c62d8488092fc08a4a3cc3))
+
+
+
+
+
+## [2.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.0...v2.1.1) (2024-05-14)
+
+
+### Bug Fixes
+
+* **parser:** lambda function url cognitoIdentity and principalOrgId nullable ([#2430](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2430)) ([3c3e393](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3c3e393df47d28a6bddb2a9d01cd6fefea3db15e))
+* **parser:** set APIGatewayProxyEventSchema body and query string keys to be nullable ([#2465](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2465)) ([7ce5b3c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7ce5b3cff88b6eadeda1041b4eb076af2ebd848d))
+* **parser:** set etag optional for delete object notifications ([#2429](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2429)) ([100e223](https://github.com/aws-powertools/powertools-lambda-typescript/commit/100e2238b45e224a369cc7a349f78cafda3f94b7))
+
+
+
+
+
+# [2.1.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.0.4...v2.1.0) (2024-04-17)
+
+
+### Bug Fixes
+
+* **jmespath:** refactor custom function introspection to work with minification ([#2384](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2384)) ([21ecc4f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/21ecc4f736ccba85c276889163860a98613174cc))
+
+
+### Features
+
+* **idempotency:** add custom JMESPath functions ([#2364](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2364)) ([9721e7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9721e7c01fc010944eb477bdbc24b9e06a5c4571))
+
+
+
+
+
 ## 2.0.4 (2024-04-10)
 
 ### Bug Fixes

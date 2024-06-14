@@ -1,49 +1,49 @@
 /**
- * Abstract class ConfigService
+ * @abstract ConfigServiceInterface
  *
  * This class defines common methods and variables that can be set by the developer
  * in the runtime.
  */
 interface ConfigServiceInterface {
   /**
-   * It returns the value of an environment variable that has given name.
+   * Get the value of an environment variable by name.
    *
-   * @param {string} name
-   * @returns {string}
+   * @param {string} name The name of the environment variable to fetch.
    */
   get(name: string): string;
 
   /**
-   * It returns the value of the POWERTOOLS_SERVICE_NAME environment variable.
-   *
-   * @returns {string}
+   * Get the value of the `POWERTOOLS_SERVICE_NAME` environment variable.
    */
   getServiceName(): string;
 
   /**
-   * It returns the value of the _X_AMZN_TRACE_ID environment variable.
+   * Get the value of the `_X_AMZN_TRACE_ID` environment variable.
    *
    * The AWS X-Ray Trace data available in the environment variable has this format:
    * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
    *
    * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
-   *
-   * @returns {string|undefined}
    */
   getXrayTraceId(): string | undefined;
 
   /**
-   * It returns true if the `POWERTOOLS_DEV` environment variable is set to truthy value.
+   * Determine if the current invocation is part of a sampled X-Ray trace.
    *
-   * @returns {boolean}
+   * The AWS X-Ray Trace data available in the environment variable has this format:
+   * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+   */
+  getXrayTraceSampled(): boolean;
+
+  /**
+   * Determine if the current invocation is running in a development environment.
    */
   isDevMode(): boolean;
 
   /**
-   * It returns true if the string value represents a boolean true value.
+   * Helper function to determine if a value is considered thruthy.
    *
-   * @param {string} value
-   * @returns boolean
+   * @param value The value to check for truthiness.
    */
   isValueTrue(value: string): boolean;
 }

@@ -25,19 +25,6 @@ type Node = {
 };
 
 /**
- * Options for the tree interpreter.
- */
-type TreeInterpreterOptions = {
-  /**
-   * The custom functions to use.
-   *
-   * By default, the interpreter uses the standard JMESPath functions
-   * available in the [JMESPath specification](https://jmespath.org/specification.html).
-   */
-  customFunctions?: Functions;
-};
-
-/**
  * Options for parsing.
  *
  * You can use this type to customize the parsing of JMESPath expressions.
@@ -57,7 +44,15 @@ type TreeInterpreterOptions = {
  * console.log(result); // { a: 1 }
  * ```
  */
-type ParsingOptions = TreeInterpreterOptions;
+type JMESPathParsingOptions = {
+  /**
+   * The custom functions to use.
+   *
+   * By default, the interpreter uses the standard JMESPath functions
+   * available in the [JMESPath specification](https://jmespath.org/specification.html).
+   */
+  customFunctions?: Functions;
+};
 
 /**
  * Decorator for function signatures.
@@ -103,8 +98,7 @@ export type {
   FunctionSignatureDecorator,
   FunctionSignatureOptions,
   Node,
-  ParsingOptions,
+  JMESPathParsingOptions,
   Token,
-  TreeInterpreterOptions,
   JSONObject,
 };

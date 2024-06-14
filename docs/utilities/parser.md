@@ -4,9 +4,9 @@ descrition: Utility
 status: new
 ---
 
-This utility provides data validation and parsing using [Zod](https://zod.dev){target="_blank"}.
+<!-- markdownlint-disable MD043 --->
 
-Zod is a TypeScript-first schema declaration and validation library.  
+This utility provides data validation and parsing using [Zod](https://zod.dev){target="_blank"}, a TypeScript-first schema declaration and validation library.  
 
 ## Key features
 
@@ -31,10 +31,10 @@ This utility supports Zod v3.x and above.
 You can define your schema using Zod:
 
 ```typescript title="schema.ts"
---8<-- "docs/snippets/parser/schema.ts"
+--8<-- "examples/snippets/parser/schema.ts"
 ```
 
-This is a schema for `Order` object using Zod. 
+This is a schema for `Order` object using Zod.
 You can create complex schemas by using nested objects, arrays, unions, and other types, see [Zod documentation](https://zod.dev) for more details.
 
 ## Parse events
@@ -43,21 +43,20 @@ You can parse inbound events using `parser` decorator, Middy.js middleware, or [
 Both are also able to parse either an object or JSON string as an input.
 
 ???+ warning
-    The decorator and middleware will replace the event object with the parsed schema if successful. 
+    The decorator and middleware will replace the event object with the parsed schema if successful.
     Be cautious when using multiple decorators that expect event to have a specific structure, the order of evaluation for decorators is from bottom to top.
 
 === "Middy middleware"
     ```typescript hl_lines="34"
-    --8<-- "docs/snippets/parser/middy.ts"
-    ```    
+    --8<-- "examples/snippets/parser/middy.ts"
+    ```
 
-=== "Decorator" 
+=== "Decorator"
     ```typescript hl_lines="25"
-    --8<-- "docs/snippets/parser/decorator.ts"
+    --8<-- "examples/snippets/parser/decorator.ts"
     ```
 
 ## Built-in schemas
-
 
 Parser comes with the following built-in schemas:
 
@@ -94,18 +93,17 @@ You can extend every built-in schema to include your own schema, and yet have al
 
 === "handler.ts"
     ```typescript hl_lines="23-25 30 34"
-    --8<-- "docs/snippets/parser/extend.ts"
+    --8<-- "examples/snippets/parser/extend.ts"
     ```
 
     1. Extend built-in `EventBridgeSchema` with your own detail schema
     2. Pass the extended schema to `parser` decorator or middy middleware
     3. `event` is validated including your custom schema and now available in your handler
 
-
 === "Example payload"
 
     ```json
-    --8<-- "docs/snippets/parser/examplePayload.json"
+    --8<-- "examples/snippets/parser/examplePayload.json"
     ```
 
 ## Envelopes
@@ -122,21 +120,19 @@ Here's an example of parsing a custom schema in an event coming from EventBridge
 
 === "Middy middleware"
     ```typescript hl_lines="5 36"
-    --8<-- "docs/snippets/parser/envelopeMiddy.ts"
+    --8<-- "examples/snippets/parser/envelopeMiddy.ts"
     ```
 
 === "Decorator"
     ```typescript hl_lines="5 26 30"
-    --8<-- "docs/snippets/parser/envelopeDecorator.ts"
+    --8<-- "examples/snippets/parser/envelopeDecorator.ts"
     ```
 
     1. Pass `eventBridgeEnvelope` to `parser` decorator
     2. `event` is parsed and replaced as `Order` object
 
-
-
 The envelopes are functions that take an event and the schema to parse, and return the result of the inner schema.
-Depending on the envelope it can be something simple like extracting a key. 
+Depending on the envelope it can be something simple like extracting a key.
 We have also complex envelopes that parse the payload from a string, decode base64, uncompress gzip, etc.
 
 !!! tip "Envelopes vs schema extension"
@@ -164,18 +160,17 @@ Parser comes with the following built-in envelopes:
 | **vpcLatticeEnvelope**        | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
 | **vpcLatticeV2Envelope**      | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
 
-
 ## Safe parsing
 
-If you want to parse the event without throwing an error, use the `safeParse` option. 
-The handler `event` object will be replaced with `ParsedResult<Input?, Oputput?>`, for example `ParsedResult<SqsEvent, Order>`, where `SqsEvent` is the original event and `Order` is the parsed schema. 
+If you want to parse the event without throwing an error, use the `safeParse` option.
+The handler `event` object will be replaced with `ParsedResult<Input?, Oputput?>`, for example `ParsedResult<SqsEvent, Order>`, where `SqsEvent` is the original event and `Order` is the parsed schema.
 
-The `ParsedResult` object will have `success`, `data`,  or `error` and `originalEvent` fields, depending on the outcome. 
+The `ParsedResult` object will have `success`, `data`,  or `error` and `originalEvent` fields, depending on the outcome.
 If the parsing is successful, the `data` field will contain the parsed event, otherwise you can access the `error` field and the `originalEvent` to handle the error and recover the original event.
 
 === "Middy middleware"
     ```typescript hl_lines="32 35 38 39 44"
-    --8<-- "docs/snippets/parser/safeParseMiddy.ts"
+    --8<-- "examples/snippets/parser/safeParseMiddy.ts"
     ```
 
     1. Use `safeParse` option to parse the event without throwing an error
@@ -186,24 +181,22 @@ If the parsing is successful, the `data` field will contain the parsed event, ot
 
 === "Decorator"
     ```typescript hl_lines="29 35 37 40 41"
-    --8<-- "docs/snippets/parser/safeParseDecorator.ts"
+    --8<-- "examples/snippets/parser/safeParseDecorator.ts"
     ```
-    
+
     1. Use `safeParse` option to parse the event without throwing an error
     2. Check if the result is successful or not and handle the error accordingly
     3. Use `data` to access the parsed event
     4. Use `error` to handle the error message
     5. Use `originalEvent` to get the original event and recover
 
-
 ## Manual parsing
 
 You can use built-in envelopes and schemas to parse the incoming events manually, without using middy or decorator.
 
-
 === "Manual parse"
     ```typescript hl_lines="28 31"
-    --8<-- "docs/snippets/parser/manual.ts"
+    --8<-- "examples/snippets/parser/manual.ts"
     ```
 
     1. Use `EventBridgeSchema` to parse the event, the `details` fields will be parsed as a generic record.
@@ -211,7 +204,7 @@ You can use built-in envelopes and schemas to parse the incoming events manually
 
 === "Manual safeParse"
     ```typescript hl_lines="27 31"
-    --8<-- "docs/snippets/parser/manualSafeParse.ts"
+    --8<-- "examples/snippets/parser/manualSafeParse.ts"
     ```
 
     1. Use `safeParse` option to parse the event without throwing an error
@@ -224,7 +217,7 @@ For example, you can use `refine` to validate a field or a combination of fields
 
 === "Custom validation"
     ```typescript hl_lines="13 18"
-    --8<-- "docs/snippets/parser/refine.ts"
+    --8<-- "examples/snippets/parser/refine.ts"
     ```
 
     1. validate a single field
@@ -232,24 +225,24 @@ For example, you can use `refine` to validate a field or a combination of fields
 
 Zod provides a lot of other features and customization, see [Zod documentation](https://zod.dev) for more details.
 
-
 ## Types
 
 ### Schema and Type inference
+
 Use `z.infer` to extract the type of the schema, so you can use types during development and avoid type errors.
 
 === "Types"
     ```typescript hl_lines="22 25 30"
-    --8<-- "docs/snippets/parser/types.ts"
+    --8<-- "examples/snippets/parser/types.ts"
     ```
-    
+
     1. Use `z.infer` to extract the type of the schema, also works for nested schemas
     2. `event` is of type `Order`
     3. infer types from deeply nested schemas 
 
-### Compatibility with @types/aws-lambda
+### Compatibility with `@types/aws-lambda`
 
-The package `@types/aws-lambda` is a popular project that contains type definitions for many AWS service event invocations. 
+The package `@types/aws-lambda` is a popular project that contains type definitions for many AWS service event invocations.
 Powertools parser utility also bring AWS Lambda event types based on the built-in schema definitions.
 
-We recommend to use the types provided by the parser utility. If you encounter any issues or have any feedback, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose). 
+We recommend to use the types provided by the parser utility. If you encounter any issues or have any feedback, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose).

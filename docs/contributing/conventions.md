@@ -3,6 +3,8 @@ title: Conventions
 description: General conventions and practices that are applicable throughout to Powertools for AWS Lambda (TypeScript)
 ---
 
+<!-- markdownlint-disable MD043 -->
+
 ## General terminology and practices
 
 These are common conventions we keep on building as the project gains new contributors and grows in complexity.
@@ -26,11 +28,13 @@ The repository uses a monorepo structure managed using [npm workspaces](https://
 
 The Powertools for AWS Lambda (TypeScript) repository utilities live under the `packages/` directory. Each utility is a separate package and has its own `package.json` file. For example, the `@aws-lambda-powertools/logger` source code can be found under the `packages/logger/src` directory.
 
-Whenever possible, we use the same directory structure for all utilities. This makes it easier for contributors to navigate the repository and find what they need. Additionally, we try to share common runtime code between utilities to reduce maintenance overhead and runtime footprint. The shared runtime code lives under the `packages/commons/src` directory and is published to npm as the `@aws-lambda-powertools/commons` package.
+Whenever possible, we use the same directory structure for all utilities. This makes it easier for contributors to navigate the repository and find what they need.
+
+Additionally, we try to share common runtime code between utilities to reduce maintenance overhead and runtime footprint. The shared runtime code lives under the `packages/commons/src` directory and is published to npm as the `@aws-lambda-powertools/commons` package.
 
 There are also a few other workspaces that are not utilities published to npm, but that still share dependencies and/or runtime code with the utilities. These workspaces are:
 
-* `docs/snippets`: contains the documentation code snippets
+* `examples/snippets`: contains the documentation code snippets
 * `examples/app`: contains an example project that can be deployed via AWS CDK or AWS SAM
 * `layers`: contains the code used to build and publish the [Lambda layers](../index.md#lambda-layer)
 

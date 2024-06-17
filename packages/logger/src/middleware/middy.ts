@@ -1,5 +1,4 @@
 import { Logger } from '../Logger.js';
-import type { LogAttributes } from '../types/Log.js';
 import type { InjectLambdaContextOptions } from '../types/Logger.js';
 import { LOGGER_KEY } from '@aws-lambda-powertools/commons';
 import type {
@@ -37,7 +36,6 @@ const injectLambdaContext = (
   options?: InjectLambdaContextOptions
 ): MiddlewareLikeObj => {
   const loggers = target instanceof Array ? target : [target];
-  const persistentAttributes: LogAttributes[] = [];
   const isClearState = options && options.clearState === true;
 
   /**
@@ -55,12 +53,8 @@ const injectLambdaContext = (
   const injectLambdaContextBefore = async (
     request: MiddyLikeRequest
   ): Promise<void> => {
-    loggers.forEach((logger: Logger, index: number) => {
+    loggers.forEach((logger: Logger) => {
       if (isClearState) {
-        persistentAttributes[index] = {
-          ...logger.getPersistentLogAttributes(),
-        };
-
         setCleanupFunction(request);
       }
       Logger.injectLambdaContextBefore(
@@ -74,12 +68,8 @@ const injectLambdaContext = (
 
   const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
     if (isClearState) {
-      loggers.forEach((logger: Logger, index: number) => {
-        Logger.injectLambdaContextAfterOrOnError(
-          logger,
-          persistentAttributes[index],
-          options
-        );
+      loggers.forEach((logger: Logger) => {
+        logger.resetState();
       });
     }
   };

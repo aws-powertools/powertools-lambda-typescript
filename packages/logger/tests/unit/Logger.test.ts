@@ -3443,7 +3443,6 @@ describe('Class: Logger', () => {
           logger.refreshSampleRateCalculation();
           if (logger.getLevelName() === 'DEBUG') {
             logLevelChangedToDebug++;
-            logger.setLogLevel('ERROR');
           }
         }
 

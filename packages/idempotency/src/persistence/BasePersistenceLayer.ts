@@ -15,6 +15,7 @@ import {
 } from '../errors.js';
 import { LRUCache } from './LRUCache.js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { deepSort } from '../deepSort.js';
 
 /**
  * Base class for all persistence layers. This class provides the basic functionality for
@@ -301,7 +302,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
 
     return `${this.idempotencyKeyPrefix}#${this.generateHash(
-      JSON.stringify(data)
+      JSON.stringify(deepSort(data))
     )}`;
   }
 
@@ -318,7 +319,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
         this.#jmesPathOptions
       ) as JSONValue;
 
-      return this.generateHash(JSON.stringify(data));
+      return this.generateHash(JSON.stringify(deepSort(data)));
     } else {
       return '';
     }

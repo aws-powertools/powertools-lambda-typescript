@@ -1,5 +1,5 @@
 import { Logger } from '../../src/index.js';
-import type { TestEvent, TestOutput } from '../helpers/types';
+import type { TestEvent, TestOutput } from '../helpers/types.js';
 import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
@@ -9,6 +9,7 @@ const LOG_MSG = process.env.LOG_MSG || 'Hello World';
 const logger = new Logger({
   sampleRateValue: SAMPLE_RATE,
 });
+let firstInvocation = true;
 
 class Lambda implements LambdaInterface {
   private readonly logMsg: string;
@@ -19,9 +20,12 @@ class Lambda implements LambdaInterface {
 
   // Decorate your handler class method
   @logger.injectLambdaContext()
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  public async handler(event: TestEvent, context: Context): TestOutput {
+  public async handler(_event: TestEvent, context: Context): TestOutput {
+    if (firstInvocation) {
+      firstInvocation = false;
+    } else {
+      logger.refreshSampleRateCalculation();
+    }
     this.printLogInAllLevels();
 
     return {

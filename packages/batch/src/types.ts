@@ -4,18 +4,27 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
+import { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
+import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 
 /**
  * Options for batch processing
  *
+ * @template T The type of the batch processor, defaults to BasePartialBatchProcessor
  * @property context The context object provided by the AWS Lambda runtime
+ * @property skipGroupOnError The option to group on error during processing
  */
-type BatchProcessingOptions = {
+type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
   /**
    * The context object provided by the AWS Lambda runtime. When provided,
    * it's made available to the handler function you specify
    */
-  context: Context;
+  context?: Context;
+  /**
+   * This option is only available for SqsFifoPartialProcessor.
+   * If true skip the group on error during processing.
+   */
+  skipGroupOnError?: T extends SqsFifoPartialProcessor ? boolean : never;
 };
 
 /**

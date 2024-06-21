@@ -88,6 +88,56 @@ const APIGatewayEventRequestContext = z
     }
   );
 
+/**
+ * Zod schema for an API Gateway Proxy event
+ *
+ * @example
+ * ```json
+ * {
+ *   "type": "REQUEST",
+ *   "methodArn": "arn:aws:execute-api:us-east-1:123456789012:abcdef123/test/GET/request",
+ *   "resource": "/request",
+ *   "path": "/request",
+ *   "httpMethod": "GET",
+ *   "headers": {
+ *     "X-AMZ-Date": "20170718T062915Z",
+ *     "Accept": "application/json",
+ *     "HeaderAuth1": "headerValue1"
+ *   },
+ *   "queryStringParameters": {
+ *     "QueryString1": "queryValue1"
+ *   },
+ *   "pathParameters": {},
+ *   "stageVariables": null,
+ *   "requestContext": {
+ *     "path": "/request",
+ *     "accountId": "123456789012",
+ *     "resourceId": "05c7jb",
+ *     "stage": "test",
+ *     "requestId": "...",
+ *     "identity": {
+ *       "cognitoIdentityPoolId": null,
+ *       "accountId": null,
+ *       "cognitoIdentityId": null,
+ *       "caller": null,
+ *       "sourceIp": "192.168.1.1",
+ *       "principalOrgId": null,
+ *       "accessKey": null,
+ *       "cognitoAuthenticationType": null,
+ *       "cognitoAuthenticationProvider": null,
+ *       "userArn": null,
+ *       "userAgent": "HTTPie/3.2.2",
+ *       "user": null
+ *     }
+ *   },
+ *   "resourcePath": "/request",
+ *   "httpMethod": "GET",
+ *   "apiId": "abcdef123"
+ * }
+ * ```
+ * @see {@link types.APIGatewayProxyEvent | APIGatewayProxyEvent}
+ * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html}
+ */
 const APIGatewayProxyEventSchema = z.object({
   version: z.string().optional(),
   authorizationToken: z.string().optional(),
@@ -115,5 +165,5 @@ const APIGatewayProxyEventSchema = z.object({
   isBase64Encoded: z.boolean().optional(),
   body: z.string().nullable(),
 });
-
+export const foo = APIGatewayProxyEventSchema;
 export { APIGatewayProxyEventSchema, APIGatewayCert };

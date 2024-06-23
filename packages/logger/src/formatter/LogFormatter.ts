@@ -89,7 +89,7 @@ abstract class LogFormatter implements LogFormatterInterface {
      * format the timestamp with the appropriate timezone offset.
      **/
     const configuredTimezone = this.envVarsService?.getTimezone();
-    if (configuredTimezone && configuredTimezone !== defaultTimezone)
+    if (configuredTimezone && !configuredTimezone.includes(defaultTimezone))
       return this.#generateISOTimestampWithOffset(now, configuredTimezone);
 
     return now.toISOString();

@@ -74,16 +74,25 @@ abstract class LogFormatter implements LogFormatterInterface {
   }
 
   /**
-   * It formats a date into a string in simplified extended ISO format (ISO 8601).
+   * Formats a given date into an ISO 8601 string, considering the configured timezone.
+   * If `envVarsService` is set and the configured timezone differs from 'UTC',
+   * the date is formatted to that timezone. Otherwise, it defaults to 'UTC'.
    *
    * @param {Date} now
    * @returns {string}
    */
   public formatTimestamp(now: Date): string {
-    const timezone = this.envVarsService?.getTimezone() || process.env.TZ;
-    if (!timezone || timezone === 'UTC') return now.toISOString();
+    const defaultTimezone = 'UTC';
 
-    return this.#generateISOTimestampWithOffset(now, timezone);
+    /**
+     * If a specific timezone is configured and it's not the default `UTC`,
+     * format the timestamp with the appropriate timezone offset.
+     **/
+    const configuredTimezone = this.envVarsService?.getTimezone();
+    if (configuredTimezone && configuredTimezone !== defaultTimezone)
+      return this.#generateISOTimestampWithOffset(now, configuredTimezone);
+
+    return now.toISOString();
   }
 
   /**

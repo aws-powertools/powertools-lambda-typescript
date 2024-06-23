@@ -8,6 +8,7 @@ import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogForm
 import { LogItem } from '../../../src/index.js';
 import type { UnformattedAttributes } from '../../../src/types/Logger.js';
 import type { LogAttributes } from '../../../src/types/Log.js';
+import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: PowertoolsLogFormatter', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -324,7 +325,9 @@ describe('Class: PowertoolsLogFormatter', () => {
         The positive value indicates that `America/New_York` is behind UTC.
       */
       jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
-      const formatter = new PowertoolsLogFormatter();
+      const formatter = new PowertoolsLogFormatter({
+        envVarsService: new EnvironmentVariablesService(),
+      });
 
       // Act
       const timestamp = formatter.formatTimestamp(new Date());
@@ -343,7 +346,9 @@ describe('Class: PowertoolsLogFormatter', () => {
         The positive value indicates that `America/New_York` is behind UTC.
       */
       jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
-      const formatter = new PowertoolsLogFormatter();
+      const formatter = new PowertoolsLogFormatter({
+        envVarsService: new EnvironmentVariablesService(),
+      });
 
       // Act
       const timestamp = formatter.formatTimestamp(new Date());
@@ -352,7 +357,7 @@ describe('Class: PowertoolsLogFormatter', () => {
       expect(timestamp).toEqual('2016-06-20T08:08:10.910-04:00');
     });
 
-    test('it correctly formats the timestamp to ISO 8601, adjusting for `America/New_York` timezone, preserving milliseconds and accounting for date change', () => {
+    test('it formats the timestamp to ISO 8601, adjusting for `America/New_York` timezone, preserving milliseconds and accounting for date change', () => {
       // Prepare
       process.env.TZ = 'America/New_York';
       const mockDate = new Date('2016-06-20T00:08:10.910Z');
@@ -362,7 +367,9 @@ describe('Class: PowertoolsLogFormatter', () => {
         The positive value indicates that `America/New_York` is behind UTC.
       */
       jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
-      const formatter = new PowertoolsLogFormatter();
+      const formatter = new PowertoolsLogFormatter({
+        envVarsService: new EnvironmentVariablesService(),
+      });
 
       // Act
       const timestamp = formatter.formatTimestamp(new Date());
@@ -379,7 +386,9 @@ describe('Class: PowertoolsLogFormatter', () => {
         The negative value indicates that `Asia/Dhaka` is ahead of UTC.
       */
       jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
-      const formatter = new PowertoolsLogFormatter();
+      const formatter = new PowertoolsLogFormatter({
+        envVarsService: new EnvironmentVariablesService(),
+      });
 
       // Act
       const timestamp = formatter.formatTimestamp(new Date());
@@ -397,7 +406,9 @@ describe('Class: PowertoolsLogFormatter', () => {
         The negative value indicates that `Asia/Dhaka` is ahead of UTC.
       */
       jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
-      const formatter = new PowertoolsLogFormatter();
+      const formatter = new PowertoolsLogFormatter({
+        envVarsService: new EnvironmentVariablesService(),
+      });
 
       // Act
       const timestamp = formatter.formatTimestamp(new Date());
@@ -406,7 +417,7 @@ describe('Class: PowertoolsLogFormatter', () => {
       expect(timestamp).toEqual('2016-06-20T18:08:10.910+06:00');
     });
 
-    test('it correctly formats the timestamp to ISO 8601, adjusting for `Asia/Dhaka` timezone, preserving milliseconds and accounting for date change', () => {
+    test('it formats the timestamp to ISO 8601, adjusting for `Asia/Dhaka` timezone, preserving milliseconds and accounting for date change', () => {
       // Prepare
       process.env.TZ = 'Asia/Dhaka';
       const mockDate = new Date('2016-06-20T20:08:10.910Z');
@@ -416,7 +427,9 @@ describe('Class: PowertoolsLogFormatter', () => {
         The negative value indicates that `Asia/Dhaka` is ahead of UTC.
       */
       jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
-      const formatter = new PowertoolsLogFormatter();
+      const formatter = new PowertoolsLogFormatter({
+        envVarsService: new EnvironmentVariablesService(),
+      });
 
       // Act
       const timestamp = formatter.formatTimestamp(new Date());

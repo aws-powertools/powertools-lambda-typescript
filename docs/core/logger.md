@@ -469,6 +469,28 @@ We prioritise log level settings in this order:
 
 In the event you have set a log level in Powertools to a level that is lower than the ACL setting, we will output a warning log message informing you that your messages will be discarded by Lambda.
 
+### Setting timestamp to custom Timezone
+
+By default, this Logger and the standard logging library emit records with the default AWS Lambda timestamp in **UTC**.
+
+<!-- markdownlint-disable MD013 -->
+If you prefer to log in a specific timezone, you can configure it by setting the `TZ` environment variable. You can do this either as an AWS Lambda environment variable or directly within your Lambda function settings. [Click here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime){target="_blank"} for a comprehensive list of available Lambda environment variables.
+<!-- markdownlint-enable MD013 -->
+
+=== "customTimezone.ts"
+
+    ```typescript hl_lines="7"
+    --8<-- "examples/snippets/logger/customTimezone.ts"
+    ```
+    
+    1.  You don't need to set the TZ variable again when configuring it as an environment variable in AWS Lambda.
+
+=== "customTimezoneOutput.json"
+
+    ```json hl_lines="7 15"
+    --8<-- "examples/snippets/logger/customTimezoneOutput.json"
+    ```
+
 ### Using multiple Logger instances across your code
 
 The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [persistent attributes](#appending-persistent-additional-log-keys-and-values), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).

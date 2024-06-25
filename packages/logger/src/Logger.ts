@@ -194,6 +194,12 @@ class Logger extends Utility implements LoggerInterface {
    * type. We then use this map at log preparation time to pick the last one.
    */
   #keys: Map<string, 'temp' | 'persistent'> = new Map();
+  /**
+   * This is the initial log leval as set during the initialization of the logger.
+   *
+   * We keep this value to be able to reset the log level to the initial value when the sample rate is refreshed.
+   */
+  #initialLogLevel = 12;
 
   /**
    * Log level used by the current instance of Logger.
@@ -976,6 +982,7 @@ class Logger extends Utility implements LoggerInterface {
 
     if (this.isValidLogLevel(constructorLogLevel)) {
       this.logLevel = this.logLevelThresholds[constructorLogLevel];
+      this.#initialLogLevel = this.logLevel;
 
       return;
     }
@@ -984,12 +991,14 @@ class Logger extends Utility implements LoggerInterface {
       ?.toUpperCase();
     if (this.isValidLogLevel(customConfigValue)) {
       this.logLevel = this.logLevelThresholds[customConfigValue];
+      this.#initialLogLevel = this.logLevel;
 
       return;
     }
     const envVarsValue = this.getEnvVarsService()?.getLogLevel()?.toUpperCase();
     if (this.isValidLogLevel(envVarsValue)) {
       this.logLevel = this.logLevelThresholds[envVarsValue];
+      this.#initialLogLevel = this.logLevel;
 
       return;
     }
@@ -1019,6 +1028,10 @@ class Logger extends Utility implements LoggerInterface {
         if (value && randomInt(0, 100) / 100 <= value) {
           this.setLogLevel('DEBUG');
           this.debug('Setting log level to DEBUG due to sampling rate');
+        } else {
+          this.setLogLevel(
+            this.getLogLevelNameFromNumber(this.#initialLogLevel)
+          );
         }
 
         return;

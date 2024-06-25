@@ -47,11 +47,18 @@ const APIGatewayEventRequestContext = z
   .object({
     accountId: z.string(),
     apiId: z.string(),
+    deploymentId: z.string().nullish(),
     authorizer: z
-      .object({
-        claims: z.record(z.string(), z.any()).optional(),
-        scopes: APIGatewayStringArray.optional(),
-      })
+      .union([
+        z.object({
+          integrationLatency: z.number(),
+          principalId: z.string(),
+        }),
+        z.object({
+          claims: z.record(z.string(), z.any()),
+          scopes: APIGatewayStringArray.optional(),
+        }),
+      ])
       .nullish(),
     stage: z.string(),
     protocol: z.string(),

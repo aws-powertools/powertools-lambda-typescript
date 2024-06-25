@@ -4,7 +4,7 @@ import {
   APIGatewayRecord,
   APIGatewayStringArray,
   APIGatewayHttpMethod,
-} from './apigw_proxy.js';
+} from './apigw-proxy.js';
 
 /**
  * A zod schema for an API Gateway Event Identity

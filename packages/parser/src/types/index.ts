@@ -25,12 +25,11 @@ export type {
   KafkaSelfManagedEvent,
   KafkaMskEvent,
   KinesisDataStreamEvent,
-  KinesisDataStreamRecord,
-  KinesisDataStreamRecordPayload,
   KinesisFireHoseEvent,
   KinesisFireHoseSqsEvent,
   LambdaFunctionUrlEvent,
   SesEvent,
+  S3ObjectLambdaEvent,
   VpcLatticeEvent,
   VpcLatticeEventV2,
 } from './schema.js';

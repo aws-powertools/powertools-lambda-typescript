@@ -19,6 +19,7 @@ import type { IdempotencyRecordOptions } from '../../src/types/index.js';
 import { Context } from 'aws-lambda';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { IdempotencyRecordStatus } from '../../src/constants.js';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
 const mockSaveInProgress = jest
   .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')
@@ -86,7 +87,10 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     testingKey: keyValueToBeSaved,
     otherKey: 'thisWillNot',
   };
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+  });
 
   describe('When wrapping a function with no previous executions', () => {
     beforeEach(async () => {
@@ -312,5 +316,35 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     afterAll(() => {
       delete process.env.POWERTOOLS_IDEMPOTENCY_DISABLED;
     });
+  });
+
+  it('maintains the scope of the decorated function', async () => {
+    // Prepare
+    class TestClass implements LambdaInterface {
+      private readonly foo = 'foo';
+
+      @idempotent({
+        persistenceStore: new PersistenceLayerTestClass(),
+      })
+      public async handler(
+        _event: unknown,
+        _context: Context
+      ): Promise<string> {
+        return this.privateMethod();
+      }
+
+      public privateMethod(): string {
+        return `private ${this.foo}`;
+      }
+    }
+
+    const handlerClass = new TestClass();
+    const handler = handlerClass.handler.bind(handlerClass);
+
+    // Act
+    const result = await handler({}, context);
+
+    // Assess
+    expect(result).toBe('private foo');
   });
 });

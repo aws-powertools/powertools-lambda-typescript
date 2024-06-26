@@ -1,45 +1,38 @@
-import {
-  KafkaSelfManagedEventSchema,
-  KafkaMskEventSchema,
-} from '../schemas/kafka.js';
 import { z } from 'zod';
 import {
-  KinesisDataStreamRecord,
-  KinesisDataStreamRecordPayload,
-  KinesisDataStreamSchema,
-} from '../schemas/kinesis.js';
-import { APIGatewayProxyEventSchema } from '../schemas/apigw.js';
-import { AlbSchema, AlbMultiValueHeadersSchema } from '../schemas/alb.js';
-import { APIGatewayProxyEventV2Schema } from '../schemas/apigwv2.js';
-import { DynamoDBStreamSchema } from '../schemas/dynamodb.js';
-import { SqsSchema } from '../schemas/sqs.js';
-import {
+  AlbSchema,
+  AlbMultiValueHeadersSchema,
+  APIGatewayProxyEventSchema,
+  APIGatewayProxyEventV2Schema,
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
-} from '../schemas/cloudformation-custom-resource.js';
-import { CloudWatchLogsSchema } from '../schemas/cloudwatch.js';
-import { EventBridgeSchema } from '../schemas/eventbridge.js';
-import {
+  CloudWatchLogsSchema,
+  DynamoDBStreamSchema,
+  EventBridgeSchema,
+  KafkaSelfManagedEventSchema,
+  KafkaMskEventSchema,
+  KinesisDataStreamSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
-} from '../schemas/kinesis-firehose.js';
-import { LambdaFunctionUrlSchema } from '../schemas/lambda.js';
-import {
-  S3EventNotificationEventBridgeSchema,
+  LambdaFunctionUrlSchema,
   S3Schema,
+  S3EventNotificationEventBridgeSchema,
   S3SqsEventNotificationSchema,
-} from '../schemas/s3.js';
-import { SesSchema } from '../schemas/ses.js';
-import { SnsSchema } from '../schemas/sns.js';
-import { VpcLatticeSchema } from '../schemas/vpc-lattice.js';
-import { VpcLatticeV2Schema } from '../schemas/vpc-latticev2.js';
+  SesSchema,
+  SnsSchema,
+  SqsSchema,
+  VpcLatticeSchema,
+  VpcLatticeV2Schema,
+  S3ObjectLambdaEventSchema,
+} from '../schemas/index.js';
 
 type ALBEvent = z.infer<typeof AlbSchema>;
 
 type ALBMultiValueHeadersEvent = z.infer<typeof AlbMultiValueHeadersSchema>;
 
 type APIGatewayProxyEvent = z.infer<typeof APIGatewayProxyEventSchema>;
+
 type APIGatewayProxyEventV2 = z.infer<typeof APIGatewayProxyEventV2Schema>;
 
 type CloudFormationCustomResourceCreateEvent = z.infer<
@@ -80,6 +73,8 @@ type S3EventNotificationEventBridge = z.infer<
 
 type S3SqsEventNotification = z.infer<typeof S3SqsEventNotificationSchema>;
 
+type S3ObjectLambdaEvent = z.infer<typeof S3ObjectLambdaEventSchema>;
+
 type SesEvent = z.infer<typeof SesSchema>;
 
 type SnsEvent = z.infer<typeof SnsSchema>;
@@ -104,14 +99,13 @@ export type {
   KafkaSelfManagedEvent,
   KafkaMskEvent,
   KinesisDataStreamEvent,
-  KinesisDataStreamRecord,
-  KinesisDataStreamRecordPayload,
   KinesisFireHoseEvent,
   KinesisFireHoseSqsEvent,
   LambdaFunctionUrlEvent,
   S3Event,
   S3EventNotificationEventBridge,
   S3SqsEventNotification,
+  S3ObjectLambdaEvent,
   SesEvent,
   SnsEvent,
   SqsEvent,

@@ -147,6 +147,7 @@ const APIGatewayEventRequestContext = z
  *   "apiId": "abcdef123"
  * }
  * ```
+ * @see {@link types.APIGatewayProxyEvent | APIGatewayProxyEvent}
  *
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html}
  */

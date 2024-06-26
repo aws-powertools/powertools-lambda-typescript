@@ -1,16 +1,16 @@
 import { z } from 'zod';
+import {
+  APIGatewayCert,
+  APIGatewayRecord,
+  APIGatewayStringArray,
+  APIGatewayHttpMethod,
+} from './apigw-proxy.js';
 
-const APIGatewayCert = z.object({
-  clientCertPem: z.string(),
-  subjectDN: z.string(),
-  issuerDN: z.string(),
-  serialNumber: z.string(),
-  validity: z.object({
-    notBefore: z.string(),
-    notAfter: z.string(),
-  }),
-});
-
+/**
+ * A zod schema for an API Gateway Event Identity
+ *
+ * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html}
+ */
 const APIGatewayEventIdentity = z.object({
   accessKey: z.string().nullish(),
   accountId: z.string().nullish(),
@@ -38,15 +38,27 @@ const APIGatewayEventIdentity = z.object({
   clientCert: APIGatewayCert.nullish(),
 });
 
+/**
+ * A zod schema for an API Gateway Event Request Context
+ *
+ * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#context-variable-reference}
+ */
 const APIGatewayEventRequestContext = z
   .object({
     accountId: z.string(),
     apiId: z.string(),
+    deploymentId: z.string().nullish(),
     authorizer: z
-      .object({
-        claims: z.record(z.string(), z.any()).nullish(),
-        scopes: z.array(z.string()).nullish(),
-      })
+      .union([
+        z.object({
+          integrationLatency: z.number(),
+          principalId: z.string(),
+        }),
+        z.object({
+          claims: z.record(z.string(), z.any()),
+          scopes: APIGatewayStringArray.optional(),
+        }),
+      ])
       .nullish(),
     stage: z.string(),
     protocol: z.string(),
@@ -89,7 +101,7 @@ const APIGatewayEventRequestContext = z
   );
 
 /**
- * Zod schema for an API Gateway Proxy event
+ * A zod schema for an API Gateway Proxy event
  *
  * @example
  * ```json
@@ -136,34 +148,118 @@ const APIGatewayEventRequestContext = z
  * }
  * ```
  * @see {@link types.APIGatewayProxyEvent | APIGatewayProxyEvent}
+ *
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html}
  */
 const APIGatewayProxyEventSchema = z.object({
-  version: z.string().optional(),
-  authorizationToken: z.string().optional(),
-  identitySource: z.string().optional(),
-  methodArn: z.string().optional(),
-  type: z.enum(['TOKEN', 'REQUEST']).optional(),
   resource: z.string(),
   path: z.string(),
-  httpMethod: z.enum([
-    'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'HEAD',
-    'OPTIONS',
-  ]),
-  headers: z.record(z.string()).optional(),
-  queryStringParameters: z.record(z.string()).nullable(),
-  multiValueHeaders: z.record(z.array(z.string())).optional(),
-  multiValueQueryStringParameters: z.record(z.array(z.string())).nullable(),
+  httpMethod: APIGatewayHttpMethod,
+  headers: APIGatewayRecord.nullish(),
+  multiValueHeaders: z.record(APIGatewayStringArray).nullish(),
+  queryStringParameters: APIGatewayRecord.nullable(),
+  multiValueQueryStringParameters: z.record(APIGatewayStringArray).nullable(),
+  pathParameters: APIGatewayRecord.nullish(),
+  stageVariables: APIGatewayRecord.nullish(),
   requestContext: APIGatewayEventRequestContext,
-  pathParameters: z.record(z.string()).optional().nullish(),
-  stageVariables: z.record(z.string()).optional().nullish(),
-  isBase64Encoded: z.boolean().optional(),
   body: z.string().nullable(),
+  isBase64Encoded: z.boolean(),
 });
-export const foo = APIGatewayProxyEventSchema;
-export { APIGatewayProxyEventSchema, APIGatewayCert };
+
+/**
+ * A zod schema for an API Gateway Request Authorizer event
+ *
+ * @example
+ * ```json
+ * {
+ *   "type": "REQUEST",
+ *   "methodArn": "arn:aws:execute-api:us-west-2:123456789012:ymy8tbxw7b/prod/GET/",
+ *   "resource": "/{proxy+}",
+ *   "path": "/hello/world",
+ *   "httpMethod": "GET",
+ *   "headers": {
+ *     "X-AMZ-Date": "20170718T062915Z",
+ *     "Accept": "application/json",
+ *     "HeaderAuth1": "headerValue1"
+ *   },
+ *   "multiValueHeaders": {
+ *     "X-AMZ-Date": ["20170718T062915Z"],
+ *     "Accept": ["application/json"],
+ *     "HeaderAuth1": ["headerValue1"]
+ *   },
+ *   "queryStringParameters": {},
+ *   "multiValueQueryStringParameters": {},
+ *   "pathParameters": {},
+ *   "stageVariables": {},
+ *   "requestContext": {
+ *     "path": "/request",
+ *     "accountId": "123456789012",
+ *     "resourceId": "05c7jb",
+ *     "stage": "test",
+ *     "requestId": "...",
+ *     "identity": {
+ *       "cognitoIdentityPoolId": null,
+ *       "accountId": null,
+ *       "cognitoIdentityId": null,
+ *       "caller": null,
+ *       "sourceIp": "192.168.1.1",
+ *       "principalOrgId": null,
+ *       "accessKey": null,
+ *       "cognitoAuthenticationType": null,
+ *       "cognitoAuthenticationProvider": null,
+ *       "userArn": null,
+ *       "userAgent": "HTTPie/3.2.2",
+ *       "user": null
+ *     }
+ *   },
+ *   "domainName": "id.execute-api.us-west-2.amazonaws.com",
+ *   "deploymentId": "lle82z",
+ *   "apiId": "ymy8tbxw7b"
+ * }
+ * ```
+ *
+ * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-input.html#w76aac15b9c21c25c21b5}
+ */
+const APIGatewayRequestAuthorizerEventSchema = z.object({
+  type: z.literal('REQUEST'),
+  methodArn: z.string(),
+  resource: z.string(),
+  path: z.string(),
+  httpMethod: APIGatewayHttpMethod,
+  headers: APIGatewayRecord,
+  multiValueHeaders: z.record(APIGatewayStringArray),
+  queryStringParameters: APIGatewayRecord,
+  multiValueQueryStringParameters: z.record(APIGatewayStringArray),
+  pathParameters: APIGatewayRecord,
+  stageVariables: APIGatewayRecord,
+  requestContext: APIGatewayEventRequestContext,
+  domainName: z.string().optional(),
+  deploymentId: z.string().optional(),
+  apiId: z.string().optional(),
+});
+
+/**
+ * A zod schema for an API Gateway Token Authorizer event
+ *
+ * @example
+ * ```json
+ * {
+ *   "type": "TOKEN",
+ *   "authorizationToken": "Bearer abcd1234",
+ *   "methodArn": "arn:aws:execute-api:us-west-2:123456789012:ymy8tbxw7b/prod/GET/"
+ * }
+ * ```
+ *
+ * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-input.html#w76aac15b9c21c25c21b3}
+ */
+const APIGatewayTokenAuthorizerEventSchema = z.object({
+  type: z.literal('TOKEN'),
+  authorizationToken: z.string(),
+  methodArn: z.string(),
+});
+
+export {
+  APIGatewayProxyEventSchema,
+  APIGatewayRequestAuthorizerEventSchema,
+  APIGatewayTokenAuthorizerEventSchema,
+};

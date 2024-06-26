@@ -1,6 +1,6 @@
 {
   "name": "layers",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "bin": {
     "layer": "bin/layers.js"
   },
@@ -18,7 +18,6 @@
     "test:e2e": "jest --group=e2e",
     "createLayerFolder": "cdk synth --context BuildFromLocal=true"
   },
-
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
@@ -37,8 +36,8 @@
     "source-map-support": "^0.5.21"
   },
   "dependencies": {
-    "aws-cdk": "^2.145.0",
-    "aws-cdk-lib": "^2.145.0",
-    "esbuild": "^0.21.4"
+    "aws-cdk": "^2.146.0",
+    "aws-cdk-lib": "^2.146.0",
+    "esbuild": "^0.21.5"
   }
 }

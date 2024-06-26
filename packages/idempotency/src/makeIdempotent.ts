@@ -72,16 +72,17 @@ const isOptionsWithDataIndexArgument = (
  *
  * ```
  */
-const makeIdempotent = <Func extends AnyFunction>(
+// eslint-disable-next-line func-style
+function makeIdempotent<Func extends AnyFunction>(
   fn: Func,
   options: ItempotentFunctionOptions<Parameters<Func>>
-): ((...args: Parameters<Func>) => ReturnType<Func>) => {
+): (...args: Parameters<Func>) => ReturnType<Func> {
   const { persistenceStore, config } = options;
   const idempotencyConfig = config ? config : new IdempotencyConfig({});
 
   if (!idempotencyConfig.isEnabled()) return fn;
 
-  return (...args: Parameters<Func>): ReturnType<Func> => {
+  return function (this: Handler, ...args: Parameters<Func>): ReturnType<Func> {
     let functionPayloadToBeHashed;
 
     if (isFnHandler(fn, args)) {
@@ -101,8 +102,9 @@ const makeIdempotent = <Func extends AnyFunction>(
       persistenceStore: persistenceStore,
       functionArguments: args,
       functionPayloadToBeHashed,
+      thisArg: this,
     }).handle() as ReturnType<Func>;
   };
-};
+}
 
 export { makeIdempotent };

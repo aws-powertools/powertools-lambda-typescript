@@ -72,9 +72,10 @@ const isOptionsWithDataIndexArgument = (
  *
  * ```
  */
-const makeIdempotent = <Func extends AnyFunction>(
+/* const makeIdempotent = <Func extends AnyFunction>(
   fn: Func,
-  options: ItempotentFunctionOptions<Parameters<Func>>
+  options: ItempotentFunctionOptions<Parameters<Func>>,
+  thisArg: Handler
 ): ((...args: Parameters<Func>) => ReturnType<Func>) => {
   const { persistenceStore, config } = options;
   const idempotencyConfig = config ? config : new IdempotencyConfig({});
@@ -101,8 +102,44 @@ const makeIdempotent = <Func extends AnyFunction>(
       persistenceStore: persistenceStore,
       functionArguments: args,
       functionPayloadToBeHashed,
+      thisArg,
     }).handle() as ReturnType<Func>;
   };
-};
+}; */
+// eslint-disable-next-line func-style
+function makeIdempotent<Func extends AnyFunction>(
+  fn: Func,
+  options: ItempotentFunctionOptions<Parameters<Func>>
+): (...args: Parameters<Func>) => ReturnType<Func> {
+  const { persistenceStore, config } = options;
+  const idempotencyConfig = config ? config : new IdempotencyConfig({});
+
+  if (!idempotencyConfig.isEnabled()) return fn;
+
+  return function (...args: Parameters<Func>): ReturnType<Func> {
+    let functionPayloadToBeHashed;
+
+    if (isFnHandler(fn, args)) {
+      idempotencyConfig.registerLambdaContext(args[1]);
+      functionPayloadToBeHashed = args[0];
+    } else {
+      if (isOptionsWithDataIndexArgument(options)) {
+        functionPayloadToBeHashed = args[options.dataIndexArgument];
+      } else {
+        functionPayloadToBeHashed = args[0];
+      }
+    }
+
+    return new IdempotencyHandler({
+      functionToMakeIdempotent: fn,
+      idempotencyConfig: idempotencyConfig,
+      persistenceStore: persistenceStore,
+      functionArguments: args,
+      functionPayloadToBeHashed,
+      // @ts-expect-error abc
+      thisArg: this,
+    }).handle() as ReturnType<Func>;
+  };
+}
 
 export { makeIdempotent };

@@ -1,16 +1,16 @@
 /**
- * Test built-in API Gateway HTTP API (v2) envelope
+ * Test built-in API Gateway REST envelope
  *
- * @group unit/parser/envelopes/apigwv2
+ * @group unit/parser/envelopes/apigw
  */
 import { TestSchema, getTestEvent } from '../schema/utils.js';
-import { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
-import { ApiGatewayV2Envelope } from '../../../src/envelopes/index.js';
+import { APIGatewayProxyEvent } from '../../../src/types/schema.js';
+import { ApiGatewayEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 
-describe('API Gateway HTTP Envelope', () => {
-  const eventsPath = 'apigw-http';
-  const eventPrototype = getTestEvent<APIGatewayProxyEventV2>({
+describe('API Gateway REST Envelope', () => {
+  const eventsPath = 'apigw-rest';
+  const eventPrototype = getTestEvent<APIGatewayProxyEvent>({
     eventsPath,
     filename: 'no-auth',
   });
@@ -22,18 +22,18 @@ describe('API Gateway HTTP Envelope', () => {
       event.body = JSON.stringify({ name: 'foo' });
 
       // Act & Assess
-      expect(() => ApiGatewayV2Envelope.parse(event, TestSchema)).toThrow(
+      expect(() => ApiGatewayEnvelope.parse(event, TestSchema)).toThrow(
         ParseError
       );
     });
 
-    it('should throw if the body is undefined', () => {
+    it('should throw if the body is null', () => {
       // Prepare
       const event = { ...eventPrototype };
-      event.body = undefined;
+      event.body = null;
 
       // Act & Assess
-      expect(() => ApiGatewayV2Envelope.parse(event, TestSchema)).toThrow(
+      expect(() => ApiGatewayEnvelope.parse(event, TestSchema)).toThrow(
         ParseError
       );
     });
@@ -45,7 +45,7 @@ describe('API Gateway HTTP Envelope', () => {
       event.body = JSON.stringify(payload);
 
       // Act
-      const parsedEvent = ApiGatewayV2Envelope.parse(event, TestSchema);
+      const parsedEvent = ApiGatewayEnvelope.parse(event, TestSchema);
 
       // Assess
       expect(parsedEvent).toEqual(payload);
@@ -59,7 +59,7 @@ describe('API Gateway HTTP Envelope', () => {
       event.body = JSON.stringify({ name: 'foo' });
 
       // Act
-      const parseResult = ApiGatewayV2Envelope.safeParse(event, TestSchema);
+      const parseResult = ApiGatewayEnvelope.safeParse(event, TestSchema);
 
       // Assess
       expect(parseResult).toEqual({
@@ -69,13 +69,13 @@ describe('API Gateway HTTP Envelope', () => {
       });
     });
 
-    it('should not throw if the body is undefined', () => {
+    it('should not throw if the body is null', () => {
       // Prepare
       const event = { ...eventPrototype };
-      event.body = undefined;
+      event.body = null;
 
       // Act
-      const parseResult = ApiGatewayV2Envelope.safeParse(event, TestSchema);
+      const parseResult = ApiGatewayEnvelope.safeParse(event, TestSchema);
 
       // Assess
       expect(parseResult).toEqual({
@@ -90,7 +90,7 @@ describe('API Gateway HTTP Envelope', () => {
       const event = getTestEvent({ eventsPath, filename: 'invalid' });
 
       // Act
-      const parseResult = ApiGatewayV2Envelope.safeParse(event, TestSchema);
+      const parseResult = ApiGatewayEnvelope.safeParse(event, TestSchema);
 
       // Assess
       expect(parseResult).toEqual({
@@ -107,7 +107,7 @@ describe('API Gateway HTTP Envelope', () => {
       event.body = JSON.stringify(payload);
 
       // Act
-      const parsedEvent = ApiGatewayV2Envelope.safeParse(event, TestSchema);
+      const parsedEvent = ApiGatewayEnvelope.safeParse(event, TestSchema);
 
       // Assess
       expect(parsedEvent).toEqual({

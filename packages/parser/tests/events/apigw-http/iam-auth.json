@@ -1,0 +1,51 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /iam",
+  "rawPath": "/iam",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "authorization": "AWS4-HMAC-SHA256 Credential=ABCAXZWZ5ZDPIFV7JHWH/20240617/eu-west-1/execute-api/aws4_request, SignedHeaders=host;x-amz-date;x-amz-security-token, Signature=2ec027cabfd1c83da3a0f7d53f5edfda4bb30469be552966303bdbe7fda5ad6d",
+    "content-length": "0",
+    "host": "lsw1ro4ipb.execute-api.eu-west-1.amazonaws.com",
+    "user-agent": "HTTPie/3.2.2",
+    "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "x-amz-date": "20240617T153941Z",
+    "x-amz-security-token": "IQoJb3JpZ2luX2Vj[...]==",
+    "x-amzn-trace-id": "Root=1-667058bd-3265707259baa0695cdc20c5",
+    "x-forwarded-for": "15.248.3.126",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "lsw1ro4ipb",
+    "authorizer": {
+      "iam": {
+        "accessKey": "ABCAXZWZ5ZDPIFV7JHWH",
+        "accountId": "123456789012",
+        "callerId": "ABCAXZWZ5ZDPNIH6C6ODK:aamorosi",
+        "cognitoIdentity": null,
+        "principalOrgId": null,
+        "userArn": "arn:aws:sts::123456789012:assumed-role/Admin/aamorosi",
+        "userId": "ABCOAXZWZ5ZDPNIH6C6ODK:aamorosi"
+      }
+    },
+    "domainName": "lsw1ro4ipb.execute-api.eu-west-1.amazonaws.com",
+    "domainPrefix": "lsw1ro4ipb",
+    "http": {
+      "method": "POST",
+      "path": "/iam",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "15.248.3.126",
+      "userAgent": "HTTPie/3.2.2"
+    },
+    "requestId": "ZhLNpgotDoEEJUQ=",
+    "routeKey": "POST /iam",
+    "stage": "$default",
+    "time": "17/Jun/2024:15:39:41 +0000",
+    "timeEpoch": 1718638781472
+  },
+  "isBase64Encoded": false
+}

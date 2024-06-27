@@ -4,7 +4,7 @@ import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 // Persistent attributes will be cached across invocations
 const logger = new Logger({
   logLevel: 'info',
-  persistentLogAttributes: {
+  persistentKeys: {
     environment: 'prod',
   },
 });

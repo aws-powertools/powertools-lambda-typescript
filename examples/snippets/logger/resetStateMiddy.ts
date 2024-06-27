@@ -5,7 +5,7 @@ import middy from '@middy/core';
 // Persistent attributes will be cached across invocations
 const logger = new Logger({
   logLevel: 'info',
-  persistentLogAttributes: {
+  persistentKeys: {
     environment: 'prod',
   },
 });

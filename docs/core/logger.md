@@ -181,118 +181,15 @@ When debugging in non-production environments, you can instruct Logger to log th
 
 Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature.
 
-### Appending persistent additional log keys and values
+### Appending additional keys
 
-You can append additional persistent keys and values in the logs generated during a Lambda invocation using either mechanism:
+You can append additional keys using either machanism:
 
-* Via the Logger's `appendKeys` method, for all log items generated after calling this method
-* Passing them in the Logger's constructor
+* Add keys to a single log message by passing them to the log method directly
+* Append keys to all future log messages via the `appendKeys()` method until `resetState()` is called
+* Persistent keys that are added to every log message via the `persistentKeys` constructor option or the `appendPersistentKeys()` method
 
-To remove the keys you added, you can use the `removeKeys` method.
-
-=== "handler.ts"
-
-    ```typescript hl_lines="5-13 17-25 32"
-    --8<-- "examples/snippets/logger/appendKeys.ts"
-    ```
-=== "Example CloudWatch Logs excerpt"
-
-    ```json hl_lines="7-12 20-25"
-    {
-        "level": "INFO",
-        "message": "This is an INFO log",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T21:49:58.084Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
-        "aws_account_id": "123456789012",
-        "aws_region": "eu-west-1",
-        "logger": { 
-            "name": "@aws-lambda-powertools/logger",
-            "version": "0.0.1"
-        }
-    }
-    {
-        "level": "INFO",
-        "message": "This is another INFO log",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T21:49:58.088Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
-        "aws_account_id": "123456789012",
-        "aws_region": "eu-west-1",
-        "logger": { 
-            "name": "@aws-lambda-powertools/logger",
-            "version": "0.0.1"
-        }
-    }
-    ```
-
-!!! tip "Logger will automatically ignore any key with an `undefined` value"
-
-#### Clearing all state
-
-The Logger utility is commonly initialized in the global scope, outside the handler function.
-When you attach persistent log attributes through the `persistentLogAttributes` constructor option or via the `appendKeys`, `addPersistentLogAttributes` methods, this data is attached to the Logger instance.  
-
-Due to the [Lambda Execution Context reuse](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html), this means those persistent log attributes may be reused across invocations.
-If you want to make sure that persistent attributes added **inside the handler function** code are not persisted across invocations, you can set the parameter `clearState` as `true`  in the `injectLambdaContext` middleware or decorator.
-
-=== "Middy Middleware"
-
-    ```typescript hl_lines="31"
-    --8<-- "examples/snippets/logger/clearStateMiddy.ts"
-    ```
-
-=== "Decorator"
-
-    ```typescript hl_lines="16"
-    --8<-- "examples/snippets/logger/clearStateDecorator.ts"
-    ```
-
-    1. Binding your handler method allows your handler to access `this` within the class methods.
-
-In each case, the printed log will look like this:
-
-=== "First invocation"
-
-    ```json hl_lines="2 4-7"
-    {
-        "biz": "baz",
-        "cold_start": true,
-        "details": {
-            "special_key": "123456",
-        },
-        "foo": "bar",
-        "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
-        "function_memory_size": 128,
-        "function_name": "foo-bar-function",
-        "function_request_id": "abcdef123456abcdef123456",
-        "level": "DEBUG",
-        "message": "This is a DEBUG log with the user_id",
-        "service": "hello-world",
-        "timestamp": "2021-12-12T22:32:54.670Z",
-        "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
-    }
-    ```
-=== "Second invocation"
-
-    ```json hl_lines="2 4"
-    {
-        "biz": "baz",
-        "cold_start": false,
-        "foo": "bar",
-        "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
-        "function_memory_size": 128,
-        "function_name": "foo-bar-function",
-        "function_request_id": "abcdef123456abcdef123456",
-        "level": "DEBUG",
-        "message": "This is a DEBUG log with the user_id",
-        "service": "hello-world",
-        "timestamp": "2021-12-12T22:40:23.120Z",
-        "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
-    }
-    ```
-
-### Appending additional data to a single log item
+#### Extra keys
 
 You can append additional data to a single log item by passing objects as additional parameters.
 
@@ -345,6 +242,176 @@ You can append additional data to a single log item by passing objects as additi
         "timestamp": "2021-12-12T22:06:17.463Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "additionalValue": 42
+    }
+    ```
+
+#### Temporary keys
+
+You can append additional keys to all future log messages by using the `appendKeys()` method. This is helpful when you want to add keys to all log messages within a specific context.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="9-11"
+    --8<-- "examples/snippets/logger/appendAndRemoveKeys.ts"
+    ```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json hl_lines="7"
+    {
+        "level": "INFO",
+        "message": "transaction processed",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T21:49:58.084Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "customerId": "123456789012"
+    }
+    {
+        "level": "INFO",
+        "message": "other business logic processed",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T21:49:58.088Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    ```
+
+#### Persistent keys
+
+In some cases, you might want to add keys to all log messages. You can do this by using the `persistentKeys` constructor option or the `appendPersistentKeys()` method.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="5-7 13"
+    --8<-- "examples/snippets/logger/persistentKeys.ts"
+    ```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json hl_lines="7-8"
+    {
+        "level": "INFO",
+        "message": "processing transaction",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T21:49:58.084Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "environment": "prod",
+        "feature_flag": true
+    }
+    ```
+
+### Removing additional keys
+
+You can remove additional keys from the logger instance at any time:
+
+* Remove temporary keys added via the `appendKeys()` method by using the `removeKeys()` method
+* Remove persistent keys added via the `persistentKeys` constructor option or the `appendPersistentKeys()` method by using the `removePersistentKeys()` method
+
+#### `removeKeys` method
+
+You can remove temporay keys by using the `removeKeys()` method.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="9-11 17"
+    --8<-- "examples/snippets/logger/appendAndRemoveKeys.ts"
+    ```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json hl_lines="7"
+    {
+        "level": "INFO",
+        "message": "transaction processed",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T21:49:58.084Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
+        "customerId": "123456789012"
+    }
+    {
+        "level": "INFO",
+        "message": "other business logic processed",
+        "service": "serverlessAirline",
+        "timestamp": "2021-12-12T21:49:58.088Z",
+        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+    }
+    ```
+
+#### `removePersistentKeys` method
+
+Similarly, you can remove persistent keys by using the `removePersistentKeys()` method.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="5-7 13"
+    NOT SURE WHAT TO PUT HERE
+    ```
+
+#### Resetting state
+
+Logger is commonly initialized in the global scope. Due to [Lambda Execution Context](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html){target="_blank"} reuse, this means that custom keys can be persisted across invocations.
+
+If you want all temporary keys to be deleted, you can use the `clearState()` method, or if using the `injectLambdaContext` middleware or decorator, set the `clearState` parameter to `true`.
+
+???+ tip "Tip: When is this useful?"
+    This is useful when you add multiple custom keys conditionally or when you use canonical or wide logs. Think of calling the `clearState()` method as a way to reset the state of the logger to its initial state.
+
+=== "Clearing state manually"
+
+    ```typescript hl_lines="25"
+    --8<-- "examples/snippets/logger/resetStateManual.ts"
+    ```
+
+=== "Middy Middleware"
+
+    ```typescript hl_lines="24"
+    --8<-- "examples/snippets/logger/resetStateMiddy.ts"
+    ```
+
+=== "Decorator"
+
+    ```typescript hl_lines="13"
+    --8<-- "examples/snippets/logger/resetStateDecorator.ts"
+    ```
+
+    1. Binding your handler method allows your handler to access `this` within the class methods.
+
+When you clear the state, the next log item will not contain the additional keys you added by calling the `appendKeys()` method.
+
+=== "First invocation"
+
+    ```json hl_lines="2 4"
+    {
+        "env": "prod",
+        "cold_start": true,
+        "userId": "123456789012",
+        "foo": "bar",
+        "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
+        "function_memory_size": 128,
+        "function_name": "foo-bar-function",
+        "function_request_id": "abcdef123456abcdef123456",
+        "level": "INFO",
+        "message": "WIDE",
+        "service": "hello-world",
+        "timestamp": "2021-12-12T22:32:54.670Z",
+        "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
+    }
+    ```
+=== "Second invocation"
+
+    ```json hl_lines="2 4"
+    {
+        "biz": "baz",
+        "cold_start": false,
+        "userId": "210987654321",
+        "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",
+        "function_memory_size": 128,
+        "function_name": "foo-bar-function",
+        "function_request_id": "abcdef123456abcdef123456",
+        "level": "INFO",
+        "message": "WIDE",
+        "service": "hello-world",
+        "timestamp": "2021-12-12T22:40:23.120Z",
+        "xray_trace_id": "1-5759e988-bd862e3fe1be46a994272793"
     }
     ```
 
@@ -471,7 +538,7 @@ In the event you have set a log level in Powertools to a level that is lower tha
 
 ### Using multiple Logger instances across your code
 
-The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [persistent attributes](#appending-persistent-additional-log-keys-and-values), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).
+The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [extra keys](#appending-additional-keys), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).
 
 Once a child logger is created, the logger and its parent will act as separate instances of the Logger class, and as such any change to one won't be applied to the other.
 

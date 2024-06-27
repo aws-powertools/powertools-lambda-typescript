@@ -3,7 +3,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 // Persistent attributes will be cached across invocations
 const logger = new Logger({
   logLevel: 'info',
-  persistentLogAttributes: {
+  persistentKeys: {
     environment: 'prod',
   },
 });

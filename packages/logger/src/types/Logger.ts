@@ -18,7 +18,14 @@ type LogFunction = {
 
 type InjectLambdaContextOptions = {
   logEvent?: boolean;
+  /**
+   * @deprecated Use `resetState` instead.
+   */
   clearState?: boolean;
+  /**
+   * If `true`, the logger will reset the state of the logger instance by removing all log attributes added with {@link `appendKeys()`}
+   */
+  resetState?: boolean;
 };
 
 type BaseConstructorOptions = {
@@ -31,12 +38,24 @@ type BaseConstructorOptions = {
 };
 
 type PersistentKeysOption = {
+  /**
+   * Keys that will be added in all log items.
+   */
   persistentKeys?: LogAttributes;
+  /**
+   * @deprecated Use `persistentKeys` instead.
+   */
   persistentLogAttributes?: never;
 };
 
 type DeprecatedOption = {
+  /**
+   * @deprecated Use `persistentKeys` instead.
+   */
   persistentLogAttributes?: LogAttributes;
+  /**
+   * Keys that will be added in all log items.
+   */
   persistentKeys?: never;
 };
 
@@ -50,8 +69,7 @@ type DeprecatedOption = {
  * @property {LogFormatterInterface} [logFormatter] - The custom log formatter.
  * @property {ConfigServiceInterface} [customConfigService] - The custom config service.
  * @property {Environment} [environment] - The environment.
- * @property {LogAttributes} [persistentKeys] - The keys that will be persisted in all log items.
- * @property {LogAttributes} [persistentLogAttributes] - **Deprecated!** Use `persistentKeys`.
+ * @property {LogAttributes} [persistentKeys] - Keys that will be added in all log items.
  */
 type ConstructorOptions = BaseConstructorOptions &
   (PersistentKeysOption | DeprecatedOption);

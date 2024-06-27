@@ -14,7 +14,7 @@ const processTransaction = async (customerId: string): Promise<void> => {
 
     logger.info('transaction processed');
   } finally {
-    logger.resetKeys(); // (1)!
+    logger.removeKeys(['customerId']);
   }
 };
 

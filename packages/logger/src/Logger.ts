@@ -460,8 +460,7 @@ class Logger extends Utility implements LoggerInterface {
         } catch (error) {
           throw error;
         } finally {
-          if (options?.clearState || options?.resetState)
-            loggerRef.resetState();
+          if (options?.clearState || options?.resetKeys) loggerRef.resetKeys();
         }
 
         return result;
@@ -470,7 +469,7 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * @deprecated This method is deprecated and will be removed in the future major versions. Use {@link resetState()} instead.
+   * @deprecated This method is deprecated and will be removed in the future major versions. Use {@link resetKeys()} instead.
    */
   /* istanbul ignore next */
   public static injectLambdaContextAfterOrOnError(
@@ -478,8 +477,8 @@ class Logger extends Utility implements LoggerInterface {
     _persistentAttributes: LogAttributes,
     options?: InjectLambdaContextOptions
   ): void {
-    if (options && (options.clearState || options?.resetState)) {
-      logger.resetState();
+    if (options && (options.clearState || options?.resetKeys)) {
+      logger.resetKeys();
     }
   }
 
@@ -580,9 +579,9 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * It resets the state, by removing all temporary log attributes added with `appendKeys()` method.
+   * It removes all temporary log attributes added with `appendKeys()` method.
    */
-  public resetState(): void {
+  public resetKeys(): void {
     for (const key of Object.keys(this.temporaryLogAttributes)) {
       if (this.persistentLogAttributes[key]) {
         this.#keys.set(key, 'persistent');

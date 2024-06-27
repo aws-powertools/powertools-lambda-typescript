@@ -37,7 +37,7 @@ const injectLambdaContext = (
 ): MiddlewareLikeObj => {
   const loggers = target instanceof Array ? target : [target];
   const isResetStateEnabled =
-    options && (options.clearState || options.resetState);
+    options && (options.clearState || options.resetKeys);
 
   /**
    * Set the cleanup function to be called in case other middlewares return early.
@@ -70,7 +70,7 @@ const injectLambdaContext = (
   const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
     if (isResetStateEnabled) {
       loggers.forEach((logger: Logger) => {
-        logger.resetState();
+        logger.resetKeys();
       });
     }
   };

@@ -1,4 +1,5 @@
 import { Logger } from '@aws-lambda-powertools/logger';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
 // Persistent attributes will be cached across invocations
 const logger = new Logger({
@@ -8,20 +9,22 @@ const logger = new Logger({
   },
 });
 
-// Enable the clear state flag
-export const handler = async (
-  event: { userId: string },
-  _context: unknown
-): Promise<void> => {
-  try {
+class Lambda implements LambdaInterface {
+  @logger.injectLambdaContext({ resetKeys: true })
+  public async handler(
+    event: { userId: string },
+    _context: unknown
+  ): Promise<void> {
     // This temporary key will be included in the log & cleared after the invocation
     logger.appendKeys({
       details: { userId: event.userId },
     });
 
     // ... your business logic
-  } finally {
+
     logger.info('WIDE');
-    logger.resetState();
   }
-};
+}
+
+const myFunction = new Lambda();
+export const handler = myFunction.handler.bind(myFunction); // (1)!

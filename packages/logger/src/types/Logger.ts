@@ -19,13 +19,13 @@ type LogFunction = {
 type InjectLambdaContextOptions = {
   logEvent?: boolean;
   /**
-   * @deprecated Use `resetState` instead.
+   * @deprecated Use `resetKeys` instead.
    */
   clearState?: boolean;
   /**
-   * If `true`, the logger will reset the state of the logger instance by removing all log attributes added with {@link `appendKeys()`}
+   * If `true`, the logger will reset the keys added via {@link `appendKeys()`}
    */
-  resetState?: boolean;
+  resetKeys?: boolean;
 };
 
 type BaseConstructorOptions = {

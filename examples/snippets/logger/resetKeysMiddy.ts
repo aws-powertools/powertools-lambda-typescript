@@ -21,4 +21,4 @@ export const handler = middy(
 
     logger.info('WIDE');
   }
-).use(injectLambdaContext(logger, { resetState: true }));
+).use(injectLambdaContext(logger, { resetKeys: true }));

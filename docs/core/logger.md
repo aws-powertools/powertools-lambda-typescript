@@ -185,9 +185,9 @@ Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`tr
 
 You can append additional keys using either machanism:
 
-* Add keys to a single log message by passing them to the log method directly
-* Append keys to all future log messages via the `appendKeys()` method until `resetState()` is called
-* Persistent keys that are added to every log message via the `persistentKeys` constructor option or the `appendPersistentKeys()` method
+* Add **extra keys** to a single log message by passing them to the log method directly
+* Append **temporary keys** to all future log messages via the `appendKeys()` method until `resetKeys()` is called
+* Set **Persistent keys** for the logger instance via the `persistentKeys` constructor option or the `appendPersistentKeys()` method
 
 #### Extra keys
 
@@ -247,13 +247,18 @@ You can append additional data to a single log item by passing objects as additi
 
 #### Temporary keys
 
-You can append additional keys to all future log messages by using the `appendKeys()` method. This is helpful when you want to add keys to all log messages within a specific context.
+You can append additional keys to all future log messages by using the `appendKeys()` method.
+
+???+ tip "When is this useful?"
+    This is helpful to contextualize log messages emitted during a specific function.
 
 === "handler.ts"
 
     ```typescript hl_lines="9-11"
     --8<-- "examples/snippets/logger/appendAndRemoveKeys.ts"
     ```
+
+    1. You can also remove specific keys by calling the `removeKeys()` method.
 
 === "Example CloudWatch Logs excerpt"
 
@@ -277,11 +282,19 @@ You can append additional keys to all future log messages by using the `appendKe
 
 #### Persistent keys
 
-In some cases, you might want to add keys to all log messages. You can do this by using the `persistentKeys` constructor option or the `appendPersistentKeys()` method.
+You can persist keys across Lambda invocations by using the `persistentKeys` constructor option or the `appendPersistentKeys()` method. These keys will persist even if you call the [`resetKeys()` method](#resetting-keys).
 
-=== "handler.ts"
+A common use case is to set keys about your environment or application version, so that you can easily filter logs in CloudWatch Logs.
 
-    ```typescript hl_lines="5-7 13"
+=== "As constructor options"
+
+    ```typescript hl_lines="5-8"
+    --8<-- "examples/snippets/logger/persistentKeysConstructor.ts"
+    ```
+
+=== "Via dynamic method"
+
+    ```typescript hl_lines="13"
     --8<-- "examples/snippets/logger/persistentKeys.ts"
     ```
 
@@ -295,7 +308,7 @@ In some cases, you might want to add keys to all log messages. You can do this b
         "timestamp": "2021-12-12T21:49:58.084Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
         "environment": "prod",
-        "feature_flag": true
+        "version": "1.2.0",
     }
     ```
 
@@ -306,82 +319,52 @@ You can remove additional keys from the logger instance at any time:
 * Remove temporary keys added via the `appendKeys()` method by using the `removeKeys()` method
 * Remove persistent keys added via the `persistentKeys` constructor option or the `appendPersistentKeys()` method by using the `removePersistentKeys()` method
 
-#### `removeKeys` method
+=== "Remove temporary keys"
 
-You can remove temporay keys by using the `removeKeys()` method.
-
-=== "handler.ts"
-
-    ```typescript hl_lines="9-11 17"
-    --8<-- "examples/snippets/logger/appendAndRemoveKeys.ts"
+    ```typescript hl_lines="17"
+    --8<-- "examples/snippets/logger/removeKeys.ts"
     ```
 
-=== "Example CloudWatch Logs excerpt"
+=== "Remove persistent keys"
 
-    ```json hl_lines="7"
-    {
-        "level": "INFO",
-        "message": "transaction processed",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T21:49:58.084Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456",
-        "customerId": "123456789012"
-    }
-    {
-        "level": "INFO",
-        "message": "other business logic processed",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T21:49:58.088Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    ```typescript hl_lines="19"
+    --8<-- "examples/snippets/logger/removePersistentKeys.ts"
     ```
 
-#### `removePersistentKeys` method
-
-Similarly, you can remove persistent keys by using the `removePersistentKeys()` method.
-
-=== "handler.ts"
-
-    ```typescript hl_lines="5-7 13"
-    NOT SURE WHAT TO PUT HERE
-    ```
-
-#### Resetting state
+#### Resetting keys
 
 Logger is commonly initialized in the global scope. Due to [Lambda Execution Context](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html){target="_blank"} reuse, this means that custom keys can be persisted across invocations.
 
-If you want all temporary keys to be deleted, you can use the `clearState()` method, or if using the `injectLambdaContext` middleware or decorator, set the `clearState` parameter to `true`.
+Resetting the state allows you to clear all the temporary keys you have added.
 
 ???+ tip "Tip: When is this useful?"
-    This is useful when you add multiple custom keys conditionally or when you use canonical or wide logs. Think of calling the `clearState()` method as a way to reset the state of the logger to its initial state.
+    This is useful when you add multiple custom keys conditionally or when you use canonical or wide logs.
 
 === "Clearing state manually"
 
     ```typescript hl_lines="25"
-    --8<-- "examples/snippets/logger/resetStateManual.ts"
+    --8<-- "examples/snippets/logger/resetKeys.ts"
     ```
 
 === "Middy Middleware"
 
     ```typescript hl_lines="24"
-    --8<-- "examples/snippets/logger/resetStateMiddy.ts"
+    --8<-- "examples/snippets/logger/resetKeysMiddy.ts"
     ```
 
 === "Decorator"
 
     ```typescript hl_lines="13"
-    --8<-- "examples/snippets/logger/resetStateDecorator.ts"
+    --8<-- "examples/snippets/logger/resetKeysDecorator.ts"
     ```
 
     1. Binding your handler method allows your handler to access `this` within the class methods.
-
-When you clear the state, the next log item will not contain the additional keys you added by calling the `appendKeys()` method.
 
 === "First invocation"
 
     ```json hl_lines="2 4"
     {
-        "env": "prod",
+        "environment": "prod",
         "cold_start": true,
         "userId": "123456789012",
         "foo": "bar",
@@ -400,7 +383,7 @@ When you clear the state, the next log item will not contain the additional keys
 
     ```json hl_lines="2 4"
     {
-        "biz": "baz",
+        "environment": "prod",
         "cold_start": false,
         "userId": "210987654321",
         "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function",

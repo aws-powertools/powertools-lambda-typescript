@@ -1665,7 +1665,7 @@ describe('Class: Logger', () => {
     });
   });
 
-  describe('Method: resetState', () => {
+  describe('Method: resetKeys', () => {
     test('when called, it removes all keys added with appendKeys() method', () => {
       // Prepare
       const logger = new Logger();
@@ -1679,7 +1679,7 @@ describe('Class: Logger', () => {
       });
 
       // Act
-      logger.resetState();
+      logger.resetKeys();
 
       // Assess
       expect(logger).toEqual(
@@ -1705,7 +1705,7 @@ describe('Class: Logger', () => {
       logger.appendKeys({ foo: 'bar' });
 
       // Act
-      logger.resetState();
+      logger.resetKeys();
 
       // Assess
       expect(logger).toEqual(
@@ -1736,7 +1736,7 @@ describe('Class: Logger', () => {
       });
 
       // Act
-      logger.resetState();
+      logger.resetKeys();
       logger.info('foo');
 
       // Assess
@@ -2401,7 +2401,7 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const resetStateSpy = jest.spyOn(logger, 'resetState');
+      const resetKeysSpy = jest.spyOn(logger, 'resetKeys');
       const consoleSpy = jest.spyOn(logger['console'], 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
@@ -2431,7 +2431,7 @@ describe('Class: Logger', () => {
       // be called ONLY after the handler has returned. If logger.info is called after the cleanup function
       // it means the decorator is NOT awaiting the handler which would cause the test to fail.
       expect(consoleSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        resetStateSpy.mock.invocationCallOrder[0]
+        resetKeysSpy.mock.invocationCallOrder[0]
       );
     });
 

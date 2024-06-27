@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
+
+
+### Bug Fixes
+
+* **idempotency:** preserve scope of decorated class ([#2693](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2693)) ([22ec1f0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/22ec1f005ae334577a2ee878a454527ad16a56d9))
+* **logger:** reset log level after sampling refresh ([#2673](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2673)) ([618faec](https://github.com/aws-powertools/powertools-lambda-typescript/commit/618faeca7a2fff1d8570bd46832da65129196220))
+
+
+### Features
+
+* **logger:** add `clearState()` method ([#2408](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2408)) ([f55e2d0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f55e2d019f8693ca79753eb56ba951b0fd33101b))
+* **parser:** enhance API Gateway schemas ([#2665](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2665)) ([b3bc1f0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b3bc1f0a173233fdcf50f2573949b17a312813b4))
+
+
+
+
+
 # [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-13)
 
 

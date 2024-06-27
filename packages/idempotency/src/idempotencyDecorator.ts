@@ -1,3 +1,4 @@
+import type { Handler } from 'aws-lambda';
 import {
   AnyFunction,
   ItempotentFunctionOptions,
@@ -65,7 +66,10 @@ const idempotent = function (
     descriptor: PropertyDescriptor
   ) {
     const childFunction = descriptor.value;
-    descriptor.value = makeIdempotent(childFunction, options);
+
+    descriptor.value = async function (this: Handler, ...args: unknown[]) {
+      return makeIdempotent(childFunction, options).bind(this)(...args);
+    };
 
     return descriptor;
   };

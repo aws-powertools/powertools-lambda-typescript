@@ -13,6 +13,7 @@
     "layers",
     "examples/**"
   ],
+  "plugin": ["typedoc-plugin-zod"],
   "skipErrorChecking": true,
   "excludePrivate": true,
   "visibilityFilters": {

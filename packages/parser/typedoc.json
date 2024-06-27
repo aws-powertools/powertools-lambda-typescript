@@ -3,7 +3,11 @@
     "../../typedoc.base.json"
   ],
   "entryPoints": [
-    "./src/index.ts"
+    "./src/index.ts",
+    "./src/middleware/parser.ts",
+    "./src/types/index.ts",
+    "./src/envelopes/index.ts",
+    "./src/schemas/index.ts"
   ],
   "readme": "README.md"
 }

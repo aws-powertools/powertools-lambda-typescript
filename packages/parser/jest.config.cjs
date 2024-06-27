@@ -9,8 +9,7 @@ module.exports = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
-    '^.+\\.ts?$': ['ts-jest', {tsconfig: './tests/tsconfig.json'}],
-
+    '^.+\\.ts?$': ['ts-jest'],
   },
   moduleFileExtensions: ['js', 'ts'],
   collectCoverageFrom: ['**/src/**/*.ts', '!**/node_modules/**'],

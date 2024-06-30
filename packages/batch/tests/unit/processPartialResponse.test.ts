@@ -15,6 +15,7 @@ import {
   processPartialResponse,
   EventType,
   UnexpectedBatchTypeError,
+  FullBatchFailureError,
 } from '../../src/index.js';
 import type {
   BatchProcessingOptions,
@@ -89,6 +90,59 @@ describe('Function: processPartialResponse()', () => {
 
       // Assess
       expect(ret).toStrictEqual({ batchItemFailures: [] });
+    });
+
+    test('Process partial response function call with asynchronous handler for full batch failure', async () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const batch = { Records: records };
+      const processor = new BatchProcessor(EventType.SQS);
+
+      // Act & Assess
+      await expect(
+        processPartialResponse(batch, asyncSqsRecordHandler, processor)
+      ).rejects.toThrow(FullBatchFailureError);
+    });
+
+    test('Process partial response function call with asynchronous handler for full batch failure when `throwOnFullBatchFailure` is `true`', async () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const batch = { Records: records };
+      const processor = new BatchProcessor(EventType.SQS);
+
+      // Act & Assess
+      await expect(
+        processPartialResponse(batch, asyncSqsRecordHandler, processor, {
+          ...options,
+          throwOnFullBatchFailure: true,
+        })
+      ).rejects.toThrow(FullBatchFailureError);
+    });
+
+    test('Process partial response function call with asynchronous handler for full batch failure when `throwOnFullBatchFailure` is `false`', async () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const batch = { Records: records };
+      const processor = new BatchProcessor(EventType.SQS);
+
+      // Act
+      const response = await processPartialResponse(
+        batch,
+        asyncSqsRecordHandler,
+        processor,
+        {
+          ...options,
+          throwOnFullBatchFailure: false,
+        }
+      );
+
+      // Assess
+      expect(response).toStrictEqual({
+        batchItemFailures: [
+          { itemIdentifier: records[0].messageId },
+          { itemIdentifier: records[1].messageId },
+        ],
+      });
     });
   });
 

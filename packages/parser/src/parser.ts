@@ -44,8 +44,8 @@ const parse = <T extends ZodSchema, E extends Envelope>(
   }
   try {
     return schema.parse(data);
-  } catch (e) {
-    throw new ParseError('Failed to parse schema', e as Error);
+  } catch (error) {
+    throw new ParseError('Failed to parse schema', { cause: error as Error });
   }
 };
 
@@ -66,7 +66,9 @@ const safeParseSchema = <T extends ZodSchema>(
     ? result
     : {
         success: false,
-        error: new ParseError('Failed to parse schema safely', result.error),
+        error: new ParseError('Failed to parse schema safely', {
+          cause: result.error,
+        }),
         originalEvent: data,
       };
 };

@@ -118,7 +118,7 @@ const getSecret = async <
   | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
   | undefined
 > => {
-  if (!DEFAULT_PROVIDERS.hasOwnProperty('secrets')) {
+  if (!Object.hasOwn(DEFAULT_PROVIDERS, 'secrets')) {
     DEFAULT_PROVIDERS.secrets = new SecretsProvider();
   }
 

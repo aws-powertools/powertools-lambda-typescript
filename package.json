@@ -80,7 +80,7 @@
     "*.md": "markdownlint-cli2 --fix"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "overrides": {
     "lerna": {

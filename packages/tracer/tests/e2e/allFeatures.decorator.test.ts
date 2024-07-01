@@ -332,7 +332,7 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
           expect(invocationSubsegment.error).toBe(true);
           expect(handlerSubsegment.error).toBe(true);
           // Assert that no error was captured on the subsegment
-          expect(handlerSubsegment.hasOwnProperty('cause')).toBe(false);
+          expect(Object.hasOwn(handlerSubsegment, 'cause')).toBe(false);
         }
       }
     },

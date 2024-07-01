@@ -41,6 +41,7 @@ jobs:
             "us-west-2",
             "ap-east-1",
             "ap-south-1",
+            "ap-south-2",
             "ap-northeast-1",
             "ap-northeast-2",
             "ap-northeast-3",
@@ -57,6 +58,7 @@ jobs:
             "eu-south-2",
             "eu-north-1",
             "sa-east-1",
+            "me-central-1",
             "me-south-1",
             "il-central-1",
           ]

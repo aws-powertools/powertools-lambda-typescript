@@ -25,12 +25,14 @@ const dynamoDBPersistenceLayerCustomized = new DynamoDBPersistenceLayer({
 const config = new IdempotencyConfig({});
 
 class DefaultLambda implements LambdaInterface {
+  private readonly message = 'Got test event:';
+
   @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
   public async handler(
     _event: Record<string, unknown>,
     _context: Context
   ): Promise<void> {
-    logger.info(`Got test event: ${JSON.stringify(_event)}`);
+    logger.info(`${this.message} ${JSON.stringify(_event)}`);
     // sleep to enforce error with parallel execution
     await new Promise((resolve) => setTimeout(resolve, 1000));
 

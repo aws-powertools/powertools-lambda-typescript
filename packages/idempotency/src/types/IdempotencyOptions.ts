@@ -1,4 +1,4 @@
-import type { Context } from 'aws-lambda';
+import type { Context, Handler } from 'aws-lambda';
 import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
 import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
@@ -139,6 +139,12 @@ type IdempotencyHandlerOptions = {
    * Persistence layer used to store the idempotency records.
    */
   persistenceStore: BasePersistenceLayer;
+  /**
+   * The `this` context to be used when calling the function.
+   *
+   * When decorating a class method, this will be the instance of the class.
+   */
+  thisArg?: Handler;
 };
 
 /**

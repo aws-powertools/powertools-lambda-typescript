@@ -1,3 +1,4 @@
+import type { Handler } from 'aws-lambda';
 import type {
   JSONValue,
   MiddyLikeRequest,
@@ -53,6 +54,12 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * Persistence layer used to store the idempotency records.
    */
   readonly #persistenceStore: BasePersistenceLayer;
+  /**
+   * The `this` context to be used when calling the function.
+   *
+   * When decorating a class method, this will be the instance of the class.
+   */
+  readonly #thisArg?: Handler;
 
   public constructor(options: IdempotencyHandlerOptions) {
     const {
@@ -61,11 +68,13 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       idempotencyConfig,
       functionArguments,
       persistenceStore,
+      thisArg,
     } = options;
     this.#functionToMakeIdempotent = functionToMakeIdempotent;
     this.#functionPayloadToBeHashed = functionPayloadToBeHashed;
     this.#idempotencyConfig = idempotencyConfig;
     this.#functionArguments = functionArguments;
+    this.#thisArg = thisArg;
 
     this.#persistenceStore = persistenceStore;
 
@@ -121,7 +130,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   public async getFunctionResult(): Promise<ReturnType<Func>> {
     let result;
     try {
-      result = await this.#functionToMakeIdempotent(...this.#functionArguments);
+      result = await this.#functionToMakeIdempotent.apply(
+        this.#thisArg,
+        this.#functionArguments
+      );
     } catch (error) {
       await this.#deleteInProgressRecord();
       throw error;
@@ -149,7 +161,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   public async handle(): Promise<ReturnType<Func>> {
     // early return if we should skip idempotency completely
     if (this.shouldSkipIdempotency()) {
-      return await this.#functionToMakeIdempotent(...this.#functionArguments);
+      return await this.#functionToMakeIdempotent.apply(
+        this.#thisArg,
+        this.#functionArguments
+      );
     }
 
     let e;

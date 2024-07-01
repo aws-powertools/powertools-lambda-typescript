@@ -31,6 +31,81 @@ const DynamoDBStreamRecord = z.object({
   userIdentity: UserIdentity.optional(),
 });
 
+/**
+ * Zod schema for Amazon DynamoDB Stream event.
+ *
+ * @example
+ * ```json
+ * {
+ *   "Records": [
+ *     {
+ *       "eventID": "1",
+ *       "eventVersion": "1.0",
+ *       "dynamodb": {
+ *         "ApproximateCreationDateTime": 1693997155.0,
+ *         "Keys": {
+ *           "Id": {
+ *             "N": "101"
+ *           }
+ *         },
+ *         "NewImage": {
+ *           "Message": {
+ *             "S": "New item!"
+ *           },
+ *           "Id": {
+ *             "N": "101"
+ *           }
+ *         },
+ *         "StreamViewType": "NEW_AND_OLD_IMAGES",
+ *         "SequenceNumber": "111",
+ *         "SizeBytes": 26
+ *       },
+ *       "awsRegion": "us-west-2",
+ *       "eventName": "INSERT",
+ *       "eventSourceARN": "eventsource_arn",
+ *       "eventSource": "aws:dynamodb"
+ *     },
+ *     {
+ *       "eventID": "2",
+ *       "eventVersion": "1.0",
+ *       "dynamodb": {
+ *         "OldImage": {
+ *           "Message": {
+ *             "S": "New item!"
+ *           },
+ *           "Id": {
+ *             "N": "101"
+ *           }
+ *         },
+ *         "SequenceNumber": "222",
+ *         "Keys": {
+ *           "Id": {
+ *             "N": "101"
+ *           }
+ *         },
+ *         "SizeBytes": 59,
+ *         "NewImage": {
+ *           "Message": {
+ *             "S": "This item has changed"
+ *           },
+ *           "Id": {
+ *             "N": "101"
+ *           }
+ *         },
+ *         "StreamViewType": "NEW_AND_OLD_IMAGES"
+ *       },
+ *       "awsRegion": "us-west-2",
+ *       "eventName": "MODIFY",
+ *       "eventSourceARN": "source_arn",
+ *       "eventSource": "aws:dynamodb"
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * @see {@link types.DynamoDBStreamEvent | DynamoDBStreamEvent}
+ * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html}
+ */
 const DynamoDBStreamSchema = z.object({
   Records: z.array(DynamoDBStreamRecord),
 });

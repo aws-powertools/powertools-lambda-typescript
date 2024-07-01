@@ -52,7 +52,7 @@
     "@middy/core": "^4.7.0",
     "@types/aws-lambda": "^8.10.140",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.14.2",
+    "@types/node": "^20.14.9",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.0",
@@ -68,10 +68,11 @@
     "lint-staged": "^15.2.7",
     "markdownlint-cli2": "^0.13.0",
     "prettier": "^3.3.2",
-    "ts-jest": "^29.1.4",
+    "ts-jest": "^29.1.5",
     "ts-node": "^10.9.2",
     "typedoc": "^0.25.13",
-    "typedoc-plugin-missing-exports": "^2.2.0",
+    "typedoc-plugin-missing-exports": "^2.3.0",
+    "typedoc-plugin-zod": "^1.1.2",
     "typescript": "^5.4.5"
   },
   "lint-staged": {

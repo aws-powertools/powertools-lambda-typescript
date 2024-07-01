@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
+
+
+### Bug Fixes
+
+* **idempotency:** preserve scope of decorated class ([#2693](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2693)) ([22ec1f0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/22ec1f005ae334577a2ee878a454527ad16a56d9))
+
+
+
+
+
 # [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-13)
 
 

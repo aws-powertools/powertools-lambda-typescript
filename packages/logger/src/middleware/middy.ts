@@ -36,7 +36,8 @@ const injectLambdaContext = (
   options?: InjectLambdaContextOptions
 ): MiddlewareLikeObj => {
   const loggers = target instanceof Array ? target : [target];
-  const isClearState = options && options.clearState === true;
+  const isResetStateEnabled =
+    options && (options.clearState || options.resetKeys);
 
   /**
    * Set the cleanup function to be called in case other middlewares return early.
@@ -54,7 +55,7 @@ const injectLambdaContext = (
     request: MiddyLikeRequest
   ): Promise<void> => {
     loggers.forEach((logger: Logger) => {
-      if (isClearState) {
+      if (isResetStateEnabled) {
         setCleanupFunction(request);
       }
       Logger.injectLambdaContextBefore(
@@ -67,9 +68,9 @@ const injectLambdaContext = (
   };
 
   const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
-    if (isClearState) {
+    if (isResetStateEnabled) {
       loggers.forEach((logger: Logger) => {
-        logger.resetState();
+        logger.resetKeys();
       });
     }
   };

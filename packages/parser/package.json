@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parser",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -43,6 +43,14 @@
       "require": "./lib/cjs/schemas/index.js",
       "import": "./lib/esm/schemas/index.js"
     },
+    "./schemas/api-gateway": {
+      "require": "./lib/cjs/schemas/apigw.js",
+      "import": "./lib/esm/schemas/apigw.js"
+    },
+    "./schemas/api-gatewayv2": {
+      "require": "./lib/cjs/schemas/apigwv2.js",
+      "import": "./lib/esm/schemas/apigwv2.js"
+    },
     "./envelopes": {
       "require": "./lib/cjs/envelopes/index.js",
       "import": "./lib/esm/envelopes/index.js"
@@ -65,6 +73,14 @@
       "schemas": [
         "./lib/cjs/schemas/index.d.ts",
         "./lib/esm/schemas/index.d.ts"
+      ],
+      "schemas/api-gateway": [
+        "./lib/cjs/schemas/apigw.d.ts",
+        "./lib/esm/schemas/apigw.d.ts"
+      ],
+      "schemas/api-gatewayv2": [
+        "./lib/cjs/schemas/apigwv2.d.ts",
+        "./lib/esm/schemas/apigwv2.d.ts"
       ],
       "envelopes": [
         "./lib/cjs/envelopes/index.d.ts",

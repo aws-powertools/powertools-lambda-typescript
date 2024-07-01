@@ -64,7 +64,10 @@ Parser comes with the following built-in schemas:
 | -------------------------------------------- | ------------------------------------------------------------------------------------- |
 | **AlbSchema**                                | Lambda Event Source payload for Amazon Application Load Balancer                      |
 | **APIGatewayProxyEventSchema**               | Lambda Event Source payload for Amazon API Gateway                                    |
+| **APIGatewayRequestAuthorizerEventSchema**   | Lambda Event Source payload for Amazon API Gateway Request Authorizer                 |
+| **APIGatewayTokenAuthorizerEventSchema**     | Lambda Event Source payload for Amazon API Gateway Token Authorizer                   |
 | **APIGatewayProxyEventV2Schema**             | Lambda Event Source payload for Amazon API Gateway v2 payload                         |
+| **APIGatewayRequestAuthorizerEventV2Schema** | Lambda Event Source payload for Amazon API Gateway v2 Authorizer                      |
 | **CloudFormationCustomResourceCreateSchema** | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                 |
 | **CloudFormationCustomResourceUpdateSchema** | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                 |
 | **CloudFormationCustomResourceDeleteSchema** | Lambda Event Source payload for AWS CloudFormation `DELETE` operation                 |

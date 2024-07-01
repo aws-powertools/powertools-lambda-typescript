@@ -22,7 +22,7 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  *
  * class Lambda implements LambdaInterface {
  *
- *   ⁣@parser({ envelope: SqsEnvelope, schema: OrderSchema })
+ *   @parser({ envelope: SqsEnvelope, schema: OrderSchema })
  *   public async handler(event: Order, _context: Context): Promise<unknown> {
  *   // sqs event is parsed and the payload is extracted and parsed
  *   // apply business logic to your Order event
@@ -53,7 +53,7 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  *
  * class Lambda implements LambdaInterface {
  *
- *   ⁣git@parser({ envelope: SqsEnvelope, schema: OrderSchema,  safeParse: true })
+ *   @parser({ envelope: SqsEnvelope, schema: OrderSchema,  safeParse: true })
  *   public async handler(event: ParsedResult<Order>, _context: unknown): Promise<unknown> {
  *     if (event.success) {
  *      // event.data is the parsed event object of type Order

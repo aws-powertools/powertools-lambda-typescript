@@ -35,15 +35,21 @@ updates:
     ignore:
       - dependency-name: "@middy/core"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "lerna"
+        update-types: [ "version-update:semver-major" ]
     groups:
-      aws-sdk:
+      aws-sdk-v3:
         patterns:
-        - "@aws-sdk/**"
-        - "@smithy/**"
+        - "@aws-sdk/*"
+        - "@smithy/*"
         - "aws-sdk-client-mock"
         - "aws-sdk-client-mock-jest"
       aws-cdk:
         patterns:
-        - "@aws-cdk/**"
+        - "@aws-cdk/*"
         - "aws-cdk-lib"
         - "aws-cdk"
+      typedoc:
+        patterns:
+        - "typedoc"
+        - "typedoc-plugin-*"

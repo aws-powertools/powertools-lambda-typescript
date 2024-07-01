@@ -532,8 +532,6 @@ If you prefer to log in a specific timezone, you can configure it by setting the
     ```typescript hl_lines="7"
     --8<-- "examples/snippets/logger/customTimezone.ts"
     ```
-    
-    1.  You don't need to set the TZ variable again when configuring it as an environment variable in AWS Lambda.
 
 === "customTimezoneOutput.json"
 

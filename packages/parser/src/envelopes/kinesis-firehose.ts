@@ -37,10 +37,9 @@ export class KinesisFirehoseEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse Kinesis Firehose envelope',
-          parsedEnvelope.error
-        ),
+        error: new ParseError('Failed to parse Kinesis Firehose envelope', {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -51,10 +50,9 @@ export class KinesisFirehoseEnvelope extends Envelope {
       if (!parsedData.success) {
         return {
           success: false,
-          error: new ParseError(
-            'Failed to parse Kinesis Firehose record',
-            parsedData.error
-          ),
+          error: new ParseError('Failed to parse Kinesis Firehose record', {
+            cause: parsedData.error,
+          }),
           originalEvent: data,
         };
       }

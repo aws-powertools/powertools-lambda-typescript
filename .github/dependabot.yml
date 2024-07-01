@@ -35,8 +35,6 @@ updates:
     ignore:
       - dependency-name: "@middy/core"
         update-types: [ "version-update:semver-major" ]
-      - dependency-name: "lerna"
-        update-types: [ "version-update:semver-major" ]
     groups:
       aws-sdk-v3:
         patterns:

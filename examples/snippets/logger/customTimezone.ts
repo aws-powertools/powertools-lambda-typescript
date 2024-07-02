@@ -1,11 +1,13 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 
-export const handler = async (_event, _context): Promise<void> => {
-  const loggerInUTC = new Logger({ serviceName: 'payment' });
-  loggerInUTC.info('Logging with default AWS Lambda timezone: UTC time');
+const logger = new Logger({ serviceName: 'serverlessAirline' });
 
-  process.env.TZ = 'US/Eastern'; // (1)!
+export const handler = async (): Promise<void> => {
+  logger.info('Hello, World!');
 
-  const logger = new Logger({ serviceName: 'order' });
-  logger.info('Logging with US Eastern timezone');
+  process.env.TZ = 'Europe/Rome';
+
+  const childLogger = logger.createChild();
+
+  childLogger.info('Ciao, Mondo!');
 };

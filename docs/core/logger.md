@@ -529,7 +529,7 @@ If you prefer to log in a specific timezone, you can configure it by setting the
 
 === "customTimezone.ts"
 
-    ```typescript hl_lines="7"
+    ```typescript hl_lines="8"
     --8<-- "examples/snippets/logger/customTimezone.ts"
     ```
 

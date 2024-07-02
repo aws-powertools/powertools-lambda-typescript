@@ -527,7 +527,6 @@ By default, Logger emits records with the default Lambda timestamp in **UTC**, i
 If you prefer to log in a specific timezone, you can configure it by setting the `TZ` environment variable. You can do this either as an environment variable or directly within your Lambda function settings.
 
 [Click here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime){target="_blank"} for a comprehensive list of available Lambda environment variables.
-<!-- markdownlint-enable MD013 -->
 
 === "customTimezone.ts"
 

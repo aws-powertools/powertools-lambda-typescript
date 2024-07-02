@@ -521,7 +521,7 @@ In the event you have set a log level in Powertools to a level that is lower tha
 
 ### Setting timestamp to custom Timezone
 
-By default, this Logger and the standard logging library emit records with the default AWS Lambda timestamp in **UTC**.
+By default, Logger emits records with the default Lambda timestamp in **UTC**, i.e. `2016-06-20T12:08:10.000Z`
 
 <!-- markdownlint-disable MD013 -->
 If you prefer to log in a specific timezone, you can configure it by setting the `TZ` environment variable. You can do this either as an AWS Lambda environment variable or directly within your Lambda function settings. [Click here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime){target="_blank"} for a comprehensive list of available Lambda environment variables.

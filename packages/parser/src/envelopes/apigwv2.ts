@@ -23,10 +23,9 @@ export class ApiGatewayV2Envelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse API Gateway V2 envelope',
-          parsedEnvelope.error
-        ),
+        error: new ParseError('Failed to parse API Gateway V2 envelope', {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -36,10 +35,9 @@ export class ApiGatewayV2Envelope extends Envelope {
     if (!parsedBody.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse API Gateway V2 envelope body',
-          parsedBody.error
-        ),
+        error: new ParseError('Failed to parse API Gateway V2 envelope body', {
+          cause: parsedBody.error,
+        }),
         originalEvent: data,
       };
     }

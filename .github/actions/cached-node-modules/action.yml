@@ -14,10 +14,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Install npm
-      # We need to keep this npm version until we drop Node.js 16 support because Node.js 16 doesn't support npm 10
-      run: npm i -g npm@next-9
-      shell: bash
     - name: Cache node modules
       id: cache-node-modules
       uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0

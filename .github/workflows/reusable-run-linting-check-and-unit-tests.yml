@@ -13,7 +13,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [16, 18, 20]
+        version: [18, 20]
       fail-fast: false
     steps:
       - name: Checkout code

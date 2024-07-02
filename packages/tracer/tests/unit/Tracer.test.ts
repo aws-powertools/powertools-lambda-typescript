@@ -229,7 +229,7 @@ describe('Class: Tracer', () => {
 
     test('when AWS_EXECUTION_ENV environment variable is set, tracing is enabled', () => {
       // Prepare
-      process.env.AWS_EXECUTION_ENV = 'nodejs16.x';
+      process.env.AWS_EXECUTION_ENV = 'nodejs20.x';
 
       // Act
       const tracer = new Tracer();

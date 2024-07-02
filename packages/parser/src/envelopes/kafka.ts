@@ -53,10 +53,9 @@ export class KafkaEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse Kafka envelope',
-          parsedEnvelope.error
-        ),
+        error: new ParseError('Failed to parse Kafka envelope', {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -68,10 +67,9 @@ export class KafkaEnvelope extends Envelope {
         if (!parsedRecord.success) {
           return {
             success: false,
-            error: new ParseError(
-              'Failed to parse Kafka record',
-              parsedRecord.error
-            ),
+            error: new ParseError('Failed to parse Kafka record', {
+              cause: parsedRecord.error,
+            }),
             originalEvent: data,
           };
         }

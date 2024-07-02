@@ -250,7 +250,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
 [Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html){target="_blank"} is a `.zip` file archive that can contain additional code, pre-packaged dependencies, data, or configuration files. We compile and optimize [all dependencies](#install) to achieve an optimal build.
 
-You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for Node.js 18.x and newer runtimes. **If you are using the managed Node.js 16.x runtime and cannot upgrade, you should use the CommonJS version only**.
+You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for Node.js 18.x and newer runtimes.
 
 ??? note "Click to expand and copy any regional Lambda Layer ARN"
     | Region           | Layer ARN                                                                                                     |
@@ -260,6 +260,7 @@ You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for
     | `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
     | `us-west-2`      | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
     | `ap-south-1`     | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
+    | `ap-south-2`     | [arn:aws:lambda:ap-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
     | `ap-east-1`      | [arn:aws:lambda:ap-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
     | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
     | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
@@ -281,6 +282,7 @@ You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for
     | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
     | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
     | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
+    | `me-central-1`   | [arn:aws:lambda:me-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:   |
     | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:   |
 
 **Want to inspect the contents of the Layer?**

@@ -55,16 +55,10 @@ export class MyFunctionBase {
           Item: { id: `${serviceName}-${event.invocation}-sdkv3` },
         })
       );
-      const url = 'https://docs.powertools.aws.dev/lambda/typescript/latest/';
-      // Add conditional behavior because fetch is not available in Node.js 16 - this can be removed once we drop support for Node.js 16
-      if (process.version.startsWith('v16')) {
-        await httpRequest({
-          hostname: 'docs.powertools.aws.dev',
-          path: '/lambda/typescript/latest/',
-        });
-      } else {
-        await fetch(url);
-      }
+      await httpRequest({
+        hostname: 'docs.powertools.aws.dev',
+        path: '/lambda/typescript/latest/',
+      });
 
       const res = this.myMethod();
       if (event.throw) {

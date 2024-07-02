@@ -166,7 +166,7 @@ const getParametersByName = async <ExplicitUserProvidedType = undefined>(
   parameters: Record<string, SSMGetParametersByNameOptions>,
   options?: SSMGetParametersByNameOptions
 ): Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>> => {
-  if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
+  if (!Object.hasOwn(DEFAULT_PROVIDERS, 'ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 

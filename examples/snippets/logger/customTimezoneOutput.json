@@ -1,18 +1,18 @@
 [
   {
     "level": "INFO",
-    "message": "Logging with default AWS Lambda timezone: UTC time",
+    "message": "Hello, World!",
     "sampling_rate": 0,
-    "service": "payment",
-    "timestamp": "2024-06-23T12:29:34.721Z",
-    "xray_trace_id": "1-6678152e-4f2ffb716d51f4112ec21b1d"
+    "service": "serverlessAirline",
+    "timestamp": "2024-07-01T11:00:37.886Z",
+    "xray_trace_id": "1-66828c55-2bb635c65eb609c820ebe7bc"
   },
   {
     "level": "INFO",
-    "message": "Logging with US Eastern timezone",
+    "message": "Ciao, Mondo!",
     "sampling_rate": 0,
-    "service": "order",
-    "timestamp": "2024-06-23T08:29:34.814-04:00",
-    "xray_trace_id": "1-6678152e-4f2ffb716d51f4112ec21b1d"
+    "service": "serverlessAirline",
+    "timestamp": "2024-07-01T13:00:37.934+02:00",
+    "xray_trace_id": "1-66828c55-2bb635c65eb609c820ebe7bc"
   }
 ]

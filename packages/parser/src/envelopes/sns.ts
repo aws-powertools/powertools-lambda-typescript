@@ -35,10 +35,9 @@ export class SnsEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          `Failed to parse SNS envelope`,
-          parsedEnvelope.error
-        ),
+        error: new ParseError(`Failed to parse SNS envelope`, {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -49,10 +48,9 @@ export class SnsEnvelope extends Envelope {
       if (!parsedMessage.success) {
         return {
           success: false,
-          error: new ParseError(
-            `Failed to parse SNS message`,
-            parsedMessage.error
-          ),
+          error: new ParseError(`Failed to parse SNS message`, {
+            cause: parsedMessage.error,
+          }),
           originalEvent: data,
         };
       }
@@ -101,10 +99,9 @@ export class SnsSqsEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          `Failed to parse SQS envelope`,
-          parsedEnvelope.error
-        ),
+        error: new ParseError(`Failed to parse SQS envelope`, {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -120,10 +117,9 @@ export class SnsSqsEnvelope extends Envelope {
         if (!snsNotification.success) {
           return {
             success: false,
-            error: new ParseError(
-              `Failed to parse SNS notification`,
-              snsNotification.error
-            ),
+            error: new ParseError(`Failed to parse SNS notification`, {
+              cause: snsNotification.error,
+            }),
             originalEvent: data,
           };
         }
@@ -134,10 +130,9 @@ export class SnsSqsEnvelope extends Envelope {
         if (!parsedMessage.success) {
           return {
             success: false,
-            error: new ParseError(
-              `Failed to parse SNS message`,
-              parsedMessage.error
-            ),
+            error: new ParseError(`Failed to parse SNS message`, {
+              cause: parsedMessage.error,
+            }),
             originalEvent: data,
           };
         }

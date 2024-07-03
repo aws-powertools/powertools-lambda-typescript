@@ -34,10 +34,9 @@ export class KinesisEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse Kinesis Data Stream envelope',
-          parsedEnvelope.error
-        ),
+        error: new ParseError('Failed to parse Kinesis Data Stream envelope', {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -49,10 +48,9 @@ export class KinesisEnvelope extends Envelope {
       if (!parsedRecord.success) {
         return {
           success: false,
-          error: new ParseError(
-            'Failed to parse Kinesis Data Stream record',
-            parsedRecord.error
-          ),
+          error: new ParseError('Failed to parse Kinesis Data Stream record', {
+            cause: parsedRecord.error,
+          }),
           originalEvent: data,
         };
       }

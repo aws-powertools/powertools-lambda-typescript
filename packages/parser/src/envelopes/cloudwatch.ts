@@ -34,10 +34,9 @@ export class CloudWatchEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse CloudWatch envelope',
-          parsedEnvelope.error
-        ),
+        error: new ParseError('Failed to parse CloudWatch envelope', {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -48,10 +47,9 @@ export class CloudWatchEnvelope extends Envelope {
       if (!parsedMessage.success) {
         return {
           success: false,
-          error: new ParseError(
-            'Failed to parse CloudWatch log event',
-            parsedMessage.error
-          ),
+          error: new ParseError('Failed to parse CloudWatch log event', {
+            cause: parsedMessage.error,
+          }),
           originalEvent: data,
         };
       } else {

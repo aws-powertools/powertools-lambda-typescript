@@ -250,7 +250,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
 [Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html){target="_blank"} is a `.zip` file archive that can contain additional code, pre-packaged dependencies, data, or configuration files. We compile and optimize [all dependencies](#install) to achieve an optimal build.
 
-You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for Node.js 18.x and newer runtimes. **If you are using the managed Node.js 16.x runtime and cannot upgrade, you should use the CommonJS version only**.
+You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for Node.js 18.x and newer runtimes.
 
 ??? note "Click to expand and copy any regional Lambda Layer ARN"
     | Region           | Layer ARN                                                                                                     |

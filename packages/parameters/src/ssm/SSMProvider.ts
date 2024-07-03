@@ -845,7 +845,7 @@ class SSMProvider extends BaseProvider {
     reservedParameter: string,
     throwOnError: boolean
   ): void {
-    if (!throwOnError && parameters.hasOwnProperty(reservedParameter)) {
+    if (!throwOnError && Object.hasOwn(parameters, reservedParameter)) {
       throw new GetParameterError(
         `You cannot fetch a parameter named ${reservedParameter} in graceful error mode.`
       );

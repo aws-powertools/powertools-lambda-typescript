@@ -26,10 +26,9 @@ export class VpcLatticeEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse VpcLattice envelope',
-          parsedEnvelope.error
-        ),
+        error: new ParseError('Failed to parse VpcLattice envelope', {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -39,10 +38,9 @@ export class VpcLatticeEnvelope extends Envelope {
     if (!parsedBody.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse VpcLattice envelope body',
-          parsedBody.error
-        ),
+        error: new ParseError('Failed to parse VpcLattice envelope body', {
+          cause: parsedBody.error,
+        }),
         originalEvent: data,
       };
     }

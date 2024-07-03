@@ -153,7 +153,7 @@ const getAppConfig = <
   | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
   | undefined
 > => {
-  if (!DEFAULT_PROVIDERS.hasOwnProperty('appconfig')) {
+  if (!Object.hasOwn(DEFAULT_PROVIDERS, 'appconfig')) {
     DEFAULT_PROVIDERS.appconfig = new AppConfigProvider({
       application: options?.application,
       environment: options.environment,

@@ -13,7 +13,6 @@
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "jest": "jest --detectOpenHandles --verbose",
-    "test:e2e:nodejs16x": "echo 'Not Implemented'",
     "test:e2e:nodejs18x": "echo 'Not Implemented'",
     "test:e2e:nodejs20x": "echo 'Not Implemented'",
     "test:e2e": "echo 'Not Implemented'",

@@ -69,7 +69,7 @@ const cleanupMiddlewares = async (request: MiddyLikeRequest): Promise<void> => {
     IDEMPOTENCY_KEY,
   ];
   for (const functionName of cleanupFunctionNames) {
-    if (Object(request.internal).hasOwnProperty(functionName)) {
+    if (Object.hasOwn(request.internal, functionName)) {
       const functionReference = request.internal[functionName];
       if (isFunction(functionReference)) {
         await functionReference(request);

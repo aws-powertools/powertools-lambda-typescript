@@ -35,7 +35,25 @@ class PowertoolsLogFormatter extends LogFormatter {
       timestamp: this.formatTimestamp(attributes.timestamp),
       xray_trace_id: attributes.xRayTraceId,
     };
-    const powertoolsLogItem = new LogItem({ attributes: baseAttributes });
+
+    const orderedAttributes = {} as PowertoolsLog;
+
+    // If logRecordOrder is set, order the attributes in the log item
+    this.logRecordOrder?.forEach((key) => {
+      if (key in baseAttributes) {
+        orderedAttributes[key] = baseAttributes[key];
+        delete baseAttributes[key];
+      }
+    });
+
+    // Merge the ordered attributes with the rest of the attributes
+    const powertoolsLogItem = new LogItem({
+      attributes: {
+        ...orderedAttributes,
+        ...baseAttributes,
+      },
+    });
+
     powertoolsLogItem.addAttributes(additionalLogAttributes);
 
     return powertoolsLogItem;

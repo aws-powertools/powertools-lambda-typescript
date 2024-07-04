@@ -24,6 +24,7 @@ import type {
   LogItemMessage,
   LoggerInterface,
   PowertoolsLogData,
+  UnformattedAttributes,
 } from './types/Logger.js';
 
 /**
@@ -1080,12 +1081,19 @@ class Logger extends Utility implements LoggerInterface {
    *
    * @private
    * @param {LogFormatterInterface} logFormatter
+   * @param {Array<keyof UnformattedAttributes>} logRecordOrder
    * @returns {void}
    */
-  private setLogFormatter(logFormatter?: LogFormatterInterface): void {
+  private setLogFormatter(
+    logFormatter?: LogFormatterInterface,
+    logRecordOrder?: Array<keyof UnformattedAttributes>
+  ): void {
     this.logFormatter =
       logFormatter ??
-      new PowertoolsLogFormatter({ envVarsService: this.getEnvVarsService() });
+      new PowertoolsLogFormatter({
+        envVarsService: this.getEnvVarsService(),
+        logRecordOrder,
+      });
   }
 
   /**
@@ -1119,6 +1127,7 @@ class Logger extends Utility implements LoggerInterface {
       persistentKeys,
       persistentLogAttributes, // deprecated in favor of persistentKeys
       environment,
+      logRecordOrder,
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
@@ -1140,7 +1149,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setInitialSampleRate(sampleRateValue);
 
     // configurations that affect how logs are printed
-    this.setLogFormatter(logFormatter);
+    this.setLogFormatter(logFormatter, logRecordOrder);
     this.setConsole();
     this.setLogIndentation();
 

@@ -21,8 +21,14 @@ abstract class LogFormatter implements LogFormatterInterface {
    */
   protected envVarsService?: EnvironmentVariablesService;
 
+  /**
+   * An array of keys that defines the order of the log record.
+   */
+  protected logRecordOrder?: Array<keyof UnformattedAttributes>;
+
   public constructor(options?: LogFormatterOptions) {
     this.envVarsService = options?.envVarsService;
+    this.logRecordOrder = options?.logRecordOrder;
   }
 
   /**

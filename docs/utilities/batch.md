@@ -261,7 +261,7 @@ All records in the batch will be passed to this handler for processing, even if 
 
 * **All records successfully processed**. We will return an empty list of item failures `{'batchItemFailures': []}`
 * **Partial success with some exceptions**. We will return a list of all item IDs/sequence numbers that failed processing
-* **All records failed to be processed**. We will raise `BatchProcessingError` exception with a list of all exceptions raised when processing. This exception can be bypassed if you set `throwOnFullBatchFailure` option to `false`
+* **All records failed to be processed**. We will raise `BatchProcessingError` exception with a list of all exceptions raised when processing. This exception can be bypassed if you set `throwOnFullBatchFailure` option to `false`.
 
 The following sequence diagrams explain how each Batch processor behaves under different scenarios.
 

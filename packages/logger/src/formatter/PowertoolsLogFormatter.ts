@@ -1,3 +1,4 @@
+import merge from 'lodash.merge';
 import type { LogAttributes, PowertoolsLog } from '../types/Log.js';
 import type { UnformattedAttributes } from '../types/Logger.js';
 import { LogFormatter } from './LogFormatter.js';
@@ -48,10 +49,7 @@ class PowertoolsLogFormatter extends LogFormatter {
 
     // Merge the ordered attributes with the rest of the attributes
     const powertoolsLogItem = new LogItem({
-      attributes: {
-        ...orderedAttributes,
-        ...baseAttributes,
-      },
+      attributes: merge(orderedAttributes, baseAttributes),
     });
 
     powertoolsLogItem.addAttributes(additionalLogAttributes);

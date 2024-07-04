@@ -132,6 +132,8 @@ type LogFormatterOptions = {
    * If set, it gives the LogFormatter access to environment variables.
    */
   envVarsService?: EnvironmentVariablesService;
+
+  logRecordOrder?: Array<keyof UnformattedAttributes>;
 };
 
 /**

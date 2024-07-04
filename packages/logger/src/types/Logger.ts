@@ -35,6 +35,7 @@ type BaseConstructorOptions = {
   logFormatter?: LogFormatterInterface;
   customConfigService?: ConfigServiceInterface;
   environment?: Environment;
+  logRecordOrder?: Array<keyof UnformattedAttributes>;
 };
 
 type PersistentKeysOption = {

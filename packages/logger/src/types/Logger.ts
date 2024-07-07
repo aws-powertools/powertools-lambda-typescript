@@ -142,6 +142,5 @@ export type {
   PowertoolsLogData,
   ConstructorOptions,
   InjectLambdaContextOptions,
-  JsonReplacerFn,
   CustomReplacerFn,
 };

@@ -314,6 +314,7 @@ class Logger extends Utility implements LoggerInterface {
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
           temporaryLogAttributes: this.temporaryLogAttributes,
+          jsonReplacerFn: this.jsonReplacerFn,
         },
         options
       )

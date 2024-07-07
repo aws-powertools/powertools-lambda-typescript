@@ -539,6 +539,24 @@ If you prefer to log in a specific timezone, you can configure it by setting the
     --8<-- "examples/snippets/logger/customTimezoneOutput.json"
     ```
 
+### Custom function for unserializable values
+
+By default, Logger uses `JSON.stringify()` to serialize log items. This means that `Map`, `Set` etc. will be serialized as `{}`, as detailed in the [MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#description).
+
+You can manage the serialization of these types by providing your own replacer function, which will be utilized during serialization.
+
+=== "unserializableValues.ts"
+
+    ```typescript hl_lines="4 7"
+    --8<-- "examples/snippets/logger/unserializableValues.ts"
+    ```
+
+=== "unserializableValues.json"
+
+    ```json hl_lines="8"
+    --8<-- "examples/snippets/logger/unserializableValues.json"
+    ```
+
 ### Using multiple Logger instances across your code
 
 The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [extra keys](#appending-additional-keys), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).

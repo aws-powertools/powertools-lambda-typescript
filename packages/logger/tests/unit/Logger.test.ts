@@ -10,9 +10,10 @@ import { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.j
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
 import { LogLevelThresholds, LogLevel } from '../../src/types/Log.js';
-import type {
-  LogFunction,
-  ConstructorOptions,
+import {
+  type LogFunction,
+  type ConstructorOptions,
+  type CustomReplacerFn,
 } from '../../src/types/Logger.js';
 import { LogJsonIndent } from '../../src/constants.js';
 import type { Context } from 'aws-lambda';
@@ -560,6 +561,37 @@ describe('Class: Logger', () => {
           customConfigService: undefined,
           logLevel: 8,
           logFormatter: expect.any(PowertoolsLogFormatter),
+        })
+      );
+    });
+
+    test('when a custom json replacer function is passed, returns a Logger instance with the correct properties', () => {
+      // Prepare
+      const mockReplacerFunction: CustomReplacerFn = jest.fn();
+      const loggerOptions: ConstructorOptions = {
+        jsonReplacerFn: mockReplacerFunction,
+      };
+
+      // Act
+      const logger = new Logger(loggerOptions);
+
+      // Assess
+      expect(logger).toBeInstanceOf(Logger);
+      expect(logger).toEqual(
+        expect.objectContaining({
+          persistentLogAttributes: {},
+          powertoolsLogData: {
+            sampleRateValue: 0,
+            awsRegion: 'eu-west-1',
+            environment: '',
+            serviceName: 'hello-world',
+          },
+          envVarsService: expect.any(EnvironmentVariablesService),
+          customConfigService: undefined,
+          defaultServiceName: 'service_undefined',
+          logLevel: 8,
+          logFormatter: expect.any(PowertoolsLogFormatter),
+          jsonReplacerFn: mockReplacerFunction,
         })
       );
     });
@@ -2930,6 +2962,24 @@ describe('Class: Logger', () => {
       expect(childLogger).toEqual(
         expect.objectContaining({
           customConfigService: expect.any(MyCustomEnvironmentVariablesService),
+        })
+      );
+    });
+
+    test('child logger should have the same jsonReplacerFn as its parent', () => {
+      // Prepare
+      const mockReplacerFunction: CustomReplacerFn = jest.fn();
+      const parentLogger = new Logger({
+        jsonReplacerFn: mockReplacerFunction,
+      });
+
+      // Act
+      const childLoggerWithParentLogFormatter = parentLogger.createChild();
+
+      // Assess
+      expect(childLoggerWithParentLogFormatter).toEqual(
+        expect.objectContaining({
+          jsonReplacerFn: mockReplacerFunction,
         })
       );
     });

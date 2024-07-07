@@ -790,6 +790,40 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
+   * When the data added in the log item contains object references or BigInt values,
+   * `JSON.stringify()` can't handle them and instead throws errors:
+   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
+   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
+   * @private
+   */
+  private getDefaultReplacer(): (
+    key: string,
+    value: LogAttributes | Error | bigint
+  ) => void {
+    const references = new WeakSet();
+
+    return (key, value) => {
+      let item = value;
+      if (item instanceof Error) {
+        item = this.getLogFormatter().formatError(item);
+      }
+      if (typeof item === 'bigint') {
+        return item.toString();
+      }
+      if (typeof item === 'object' && value !== null) {
+        if (references.has(item)) {
+          return;
+        }
+        references.add(item);
+      }
+
+      return item;
+    };
+  }
+
+  /**
    * It returns the instance of a service that fetches environment variables.
    *
    * @private
@@ -839,40 +873,6 @@ class Logger extends Utility implements LoggerInterface {
    */
   private getPowertoolsLogData(): PowertoolsLogData {
     return this.powertoolsLogData;
-  }
-
-  /**
-   * When the data added in the log item contains object references or BigInt values,
-   * `JSON.stringify()` can't handle them and instead throws errors:
-   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
-   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
-   * @private
-   */
-  private getReplacer(): (
-    key: string,
-    value: LogAttributes | Error | bigint
-  ) => void {
-    const references = new WeakSet();
-
-    return (key, value) => {
-      let item = value;
-      if (item instanceof Error) {
-        item = this.getLogFormatter().formatError(item);
-      }
-      if (typeof item === 'bigint') {
-        return item.toString();
-      }
-      if (typeof item === 'object' && value !== null) {
-        if (references.has(item)) {
-          return;
-        }
-        references.add(item);
-      }
-
-      return item;
-    };
   }
 
   /**
@@ -1191,7 +1191,7 @@ class Logger extends Utility implements LoggerInterface {
    */
   #setJsonReplacerFn(customerReplacerFn?: CustomReplacerFn): void {
     this.jsonReplacerFn =
-      customerReplacerFn ?? (this.getReplacer() as CustomReplacerFn);
+      customerReplacerFn ?? (this.getDefaultReplacer() as CustomReplacerFn);
   }
 }
 

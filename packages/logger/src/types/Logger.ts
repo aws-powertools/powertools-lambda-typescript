@@ -28,6 +28,11 @@ type InjectLambdaContextOptions = {
   resetKeys?: boolean;
 };
 
+/**
+ * Custom replacer function for JSON.stringify.
+ */
+type CustomReplacerFn = (key: string, value: unknown) => void;
+
 type BaseConstructorOptions = {
   logLevel?: LogLevel;
   serviceName?: string;
@@ -35,6 +40,7 @@ type BaseConstructorOptions = {
   logFormatter?: LogFormatterInterface;
   customConfigService?: ConfigServiceInterface;
   environment?: Environment;
+  jsonReplacerFn?: CustomReplacerFn;
 };
 
 type PersistentKeysOption = {
@@ -139,4 +145,5 @@ export type {
   PowertoolsLogData,
   ConstructorOptions,
   InjectLambdaContextOptions,
+  CustomReplacerFn,
 };

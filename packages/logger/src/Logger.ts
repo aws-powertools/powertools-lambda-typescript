@@ -116,7 +116,7 @@ import type {
  */
 class Logger extends Utility implements LoggerInterface {
   /**
-   * Replacer function used to format the log items.
+   * Replacer function used to serialize the log items.
    */
   protected jsonReplacerFn?: CustomReplacerFn;
   /**
@@ -1185,7 +1185,7 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * It sets the JSON replacer function used to serialize the log items.
+   * It sets the JSON replacer function which is used to serialize the log items.
    * @private
    * @param customerReplacerFn
    */

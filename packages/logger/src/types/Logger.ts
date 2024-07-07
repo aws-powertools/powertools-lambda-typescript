@@ -28,9 +28,6 @@ type InjectLambdaContextOptions = {
   resetKeys?: boolean;
 };
 
-/**
- * Custom replacer function for JSON.stringify.
- */
 type CustomReplacerFn = (key: string, value: unknown) => void;
 
 type BaseConstructorOptions = {
@@ -145,5 +142,6 @@ export type {
   PowertoolsLogData,
   ConstructorOptions,
   InjectLambdaContextOptions,
+  JsonReplacerFn,
   CustomReplacerFn,
 };

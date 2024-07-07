@@ -24,6 +24,7 @@ import type {
   LogItemMessage,
   LoggerInterface,
   PowertoolsLogData,
+  CustomReplacerFn,
 } from './types/Logger.js';
 
 /**
@@ -114,6 +115,10 @@ import type {
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/
  */
 class Logger extends Utility implements LoggerInterface {
+  /**
+   * Replacer function used to format the log items.
+   */
+  protected jsonReplacerFn?: CustomReplacerFn;
   /**
    * Console instance used to print logs.
    *
@@ -920,7 +925,7 @@ class Logger extends Utility implements LoggerInterface {
     this.console[consoleMethod](
       JSON.stringify(
         log.getAttributes(),
-        this.getReplacer(),
+        this.jsonReplacerFn,
         this.logIndentation
       )
     );
@@ -1119,6 +1124,7 @@ class Logger extends Utility implements LoggerInterface {
       persistentKeys,
       persistentLogAttributes, // deprecated in favor of persistentKeys
       environment,
+      jsonReplacerFn,
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
@@ -1143,6 +1149,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setLogFormatter(logFormatter);
     this.setConsole();
     this.setLogIndentation();
+    this.#setJsonReplacerFn(jsonReplacerFn);
 
     return this;
   }
@@ -1174,6 +1181,16 @@ class Logger extends Utility implements LoggerInterface {
         this.getDefaultServiceName(),
     });
     this.appendPersistentKeys(persistentLogAttributes);
+  }
+
+  /**
+   * It sets the JSON replacer function used to serialize the log items.
+   * @private
+   * @param customerReplacerFn
+   */
+  #setJsonReplacerFn(customerReplacerFn?: CustomReplacerFn): void {
+    this.jsonReplacerFn =
+      customerReplacerFn ?? (this.getReplacer() as CustomReplacerFn);
   }
 }
 

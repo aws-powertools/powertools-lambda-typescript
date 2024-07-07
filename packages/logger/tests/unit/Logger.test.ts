@@ -1348,6 +1348,144 @@ describe('Class: Logger', () => {
           );
         });
       });
+
+      describe('Feature: custom replacer function', () => {
+        test('it should correctly serialize Set values using the provided jsonReplacerFn', () => {
+          const jsonReplacerFn: CustomReplacerFn = (
+            key: string,
+            value: unknown
+          ) => (value instanceof Set ? [...value] : value);
+
+          const logger = new Logger({ jsonReplacerFn });
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
+          const message = `This is an ${methodOfLogger} log with Set value`;
+
+          const logItem = { value: new Set([1, 2]) };
+
+          // Act
+          logger[methodOfLogger](message, logItem);
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(
+            1,
+            JSON.stringify({
+              level: methodOfLogger.toUpperCase(),
+              message: message,
+              sampling_rate: 0,
+              service: 'hello-world',
+              timestamp: '2016-06-20T12:08:10.000Z',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+              value: [1, 2],
+            })
+          );
+        });
+
+        test('it is unable to serialize Set values while using the default jsonReplacerFn', () => {
+          const logger = new Logger();
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
+          const message = `This is an ${methodOfLogger} log with Set value`;
+
+          const logItem = { value: new Set([1, 2]) };
+
+          // Act
+          logger[methodOfLogger](message, logItem);
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(
+            1,
+            JSON.stringify({
+              level: methodOfLogger.toUpperCase(),
+              message: message,
+              sampling_rate: 0,
+              service: 'hello-world',
+              timestamp: '2016-06-20T12:08:10.000Z',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+              value: {},
+            })
+          );
+        });
+
+        test('it should correctly serialize Map values using the provided jsonReplacerFn', () => {
+          const jsonReplacerFn: CustomReplacerFn = (
+            key: string,
+            value: unknown
+          ) => (value instanceof Map ? [...value] : value);
+
+          const logger = new Logger({ jsonReplacerFn });
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
+          const message = `This is an ${methodOfLogger} log with Map value`;
+
+          const mappedValue = new Map();
+          mappedValue.set('foo', 'bar');
+          mappedValue.set('baz', 'qux');
+
+          const logItem = { value: mappedValue };
+
+          // Act
+          logger[methodOfLogger](message, logItem);
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(
+            1,
+            JSON.stringify({
+              level: methodOfLogger.toUpperCase(),
+              message: message,
+              sampling_rate: 0,
+              service: 'hello-world',
+              timestamp: '2016-06-20T12:08:10.000Z',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+              value: [
+                ['foo', 'bar'],
+                ['baz', 'qux'],
+              ],
+            })
+          );
+        });
+
+        test('it is unable to serialize Map values while using the default jsonReplacerFn', () => {
+          const logger = new Logger();
+          const consoleSpy = jest.spyOn(
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
+          const message = `This is an ${methodOfLogger} log with Map value`;
+          const mappedValue = new Map();
+          mappedValue.set('foo', 'bar');
+          mappedValue.set('baz', 'qux');
+
+          const logItem = { value: mappedValue };
+
+          // Act
+          logger[methodOfLogger](message, logItem);
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(
+            1,
+            JSON.stringify({
+              level: methodOfLogger.toUpperCase(),
+              message: message,
+              sampling_rate: 0,
+              service: 'hello-world',
+              timestamp: '2016-06-20T12:08:10.000Z',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+              value: {},
+            })
+          );
+        });
+      });
     }
   );
 

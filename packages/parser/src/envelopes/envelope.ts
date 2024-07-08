@@ -27,7 +27,7 @@ export class Envelope {
         return schema.parse(data);
       }
     } catch (e) {
-      throw new ParseError(`Failed to parse envelope`, e as Error);
+      throw new ParseError(`Failed to parse envelope`, { cause: e as Error });
     }
   };
 
@@ -63,13 +63,17 @@ export class Envelope {
           }
         : {
             success: false,
-            error: new ParseError(`Failed to parse envelope`, parsed.error),
+            error: new ParseError(`Failed to parse envelope`, {
+              cause: parsed.error,
+            }),
             originalEvent: input,
           };
     } catch (e) {
       return {
         success: false,
-        error: new ParseError(`Failed to parse envelope`, e as Error),
+        error: new ParseError(`Failed to parse envelope`, {
+          cause: e as Error,
+        }),
         originalEvent: input,
       };
     }

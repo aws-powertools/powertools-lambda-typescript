@@ -33,10 +33,9 @@ export class SqsEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse Sqs Envelope',
-          parsedEnvelope.error
-        ),
+        error: new ParseError('Failed to parse Sqs Envelope', {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -47,10 +46,9 @@ export class SqsEnvelope extends Envelope {
       if (!parsedRecord.success) {
         return {
           success: false,
-          error: new ParseError(
-            'Failed to parse Sqs Record',
-            parsedRecord.error
-          ),
+          error: new ParseError('Failed to parse Sqs Record', {
+            cause: parsedRecord.error,
+          }),
           originalEvent: data,
         };
       }

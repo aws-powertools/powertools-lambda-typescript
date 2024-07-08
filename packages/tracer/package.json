@@ -13,7 +13,6 @@
     "test": "npm run test:unit",
     "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "jest": "jest --detectOpenHandles --verbose",
-    "test:e2e:nodejs16x": "RUNTIME=nodejs16x jest --group=e2e",
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
@@ -29,10 +28,10 @@
   "license": "MIT-0",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.602.0",
-    "@aws-sdk/client-xray": "^3.600.0",
+    "@aws-sdk/client-dynamodb": "^3.609.0",
+    "@aws-sdk/client-xray": "^3.609.0",
     "@types/promise-retry": "^1.1.6",
-    "aws-sdk": "^2.1649.0",
+    "aws-sdk": "^2.1652.0",
     "promise-retry": "^2.0.1"
   },
   "peerDependencies": {

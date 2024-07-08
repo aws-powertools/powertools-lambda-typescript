@@ -91,14 +91,14 @@ describe('Class: EnvironmentVariablesService', () => {
   describe('Method: getAwsExecutionEnv', () => {
     test('It returns the value of the environment variable AWS_EXECUTION_ENV', () => {
       // Prepare
-      process.env.AWS_EXECUTION_ENV = 'nodejs16.x';
+      process.env.AWS_EXECUTION_ENV = 'nodejs20.x';
       const service = new EnvironmentVariablesService();
 
       // Act
       const value = service.getAwsExecutionEnv();
 
       // Assess
-      expect(value).toEqual('nodejs16.x');
+      expect(value).toEqual('nodejs20.x');
     });
   });
 });

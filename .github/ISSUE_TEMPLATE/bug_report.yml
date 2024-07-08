@@ -69,7 +69,6 @@ body:
       options:
         - 20.x
         - 18.x
-        - 16.x
     validations:
       required: true
   - type: dropdown

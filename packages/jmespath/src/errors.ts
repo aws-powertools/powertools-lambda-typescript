@@ -108,13 +108,6 @@ class ParseError extends JMESPathError {
  * Error thrown when an incomplete expression is encountered during parsing.
  */
 class IncompleteExpressionError extends ParseError {
-  /**
-   * Expression that was being parsed when the error occurred.
-   *
-   * Can be set by whatever catches the error.
-   */
-  public expression?: string;
-
   public constructor(options: {
     lexPosition: number;
     tokenValue: Token['value'];

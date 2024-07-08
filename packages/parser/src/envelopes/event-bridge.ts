@@ -24,10 +24,9 @@ export class EventBridgeEnvelope extends Envelope {
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse EventBridge envelope',
-          parsedEnvelope.error
-        ),
+        error: new ParseError('Failed to parse EventBridge envelope', {
+          cause: parsedEnvelope.error,
+        }),
         originalEvent: data,
       };
     }
@@ -37,10 +36,9 @@ export class EventBridgeEnvelope extends Envelope {
     if (!parsedDetail.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse EventBridge envelope detail',
-          parsedDetail.error
-        ),
+        error: new ParseError('Failed to parse EventBridge envelope detail', {
+          cause: parsedDetail.error,
+        }),
         originalEvent: data,
       };
     }

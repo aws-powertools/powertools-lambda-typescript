@@ -31,7 +31,7 @@ export const assertErrorAndFault = (
 
   const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
   expect(handlerSubsegment.fault).toBe(true);
-  expect(handlerSubsegment.hasOwnProperty('cause')).toBe(true);
+  expect(Object.hasOwn(handlerSubsegment, 'cause')).toBe(true);
   expect(handlerSubsegment.cause?.exceptions[0].message).toBe(
     expectedCustomErrorMessage
   );

@@ -146,7 +146,7 @@ const getParameter = async <
 ): Promise<
   SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined
 > => {
-  if (!DEFAULT_PROVIDERS.hasOwnProperty('ssm')) {
+  if (!Object.hasOwn(DEFAULT_PROVIDERS, 'ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 

@@ -39,10 +39,9 @@ export class LambdaFunctionUrlEnvelope extends Envelope {
     if (!parsedBody.success) {
       return {
         success: false,
-        error: new ParseError(
-          'Failed to parse Lambda function URL body',
-          parsedBody.error
-        ),
+        error: new ParseError('Failed to parse Lambda function URL body', {
+          cause: parsedBody.error,
+        }),
         originalEvent: data,
       };
     }

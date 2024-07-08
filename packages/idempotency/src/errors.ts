@@ -8,6 +8,7 @@ class IdempotencyItemAlreadyExistsError extends Error {
 
   public constructor(message?: string, existingRecord?: IdempotencyRecord) {
     super(message);
+    this.name = 'IdempotencyItemAlreadyExistsError';
     this.existingRecord = existingRecord;
   }
 }

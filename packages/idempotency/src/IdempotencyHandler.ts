@@ -346,8 +346,11 @@ export class IdempotencyHandler<Func extends AnyFunction> {
 
       return returnValue;
     } catch (e) {
+      /* if (!(e instanceof Error)) throw e;
+      if (e.name === 'IdempotencyItemAlreadyExistsError') { */
       if (e instanceof IdempotencyItemAlreadyExistsError) {
-        let idempotencyRecord = e.existingRecord;
+        let idempotencyRecord = (e as IdempotencyItemAlreadyExistsError)
+          .existingRecord;
         if (idempotencyRecord !== undefined) {
           // If the error includes the existing record, we can use it to validate
           // the record being processed and cache it in memory.

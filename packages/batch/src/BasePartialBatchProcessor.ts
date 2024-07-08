@@ -63,9 +63,8 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   /**
    * Clean up logic to be run after processing a batch
    *
-   * If the entire batch failed, and `throwOnFullBatchFailure` option is not explicitly
-   * set to `false`, this method will throw a `FullBatchFailureError` with the list of
-   * errors that occurred during processing.
+   * If the entire batch failed this method will throw a {@link FullBatchFailureError | `FullBatchFailureError`} with the list of
+   * errors that occurred during processing, unless the `throwOnFullBatchFailure` option is set to `false`.
    *
    * Otherwise, it will build the partial failure response based on the event type.
    */

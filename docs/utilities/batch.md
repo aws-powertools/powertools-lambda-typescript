@@ -261,7 +261,7 @@ All records in the batch will be passed to this handler for processing, even if 
 
 * **All records successfully processed**. We will return an empty list of item failures `{'batchItemFailures': []}`
 * **Partial success with some exceptions**. We will return a list of all item IDs/sequence numbers that failed processing
-* **All records failed to be processed**. We will raise `BatchProcessingError` exception with a list of all exceptions raised when processing. This exception can be bypassed if you set `throwOnFullBatchFailure` option to `false`.
+* **All records failed to be processed**. We will throw a `FullBatchFailureError` error with a list of all the errors thrown while processing unless `throwOnFullBatchFailure` is disabled.
 
 The following sequence diagrams explain how each Batch processor behaves under different scenarios.
 
@@ -448,6 +448,18 @@ We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lam
 
 ```typescript hl_lines="12 27"
 --8<-- "examples/snippets/batch/accessLambdaContext.ts"
+```
+
+### Working with full batch failures
+
+By default, the `BatchProcessor` will throw a `FullBatchFailureError` if all records in the batch fail to process, we do this to reflect the failure in your operational metrics.
+
+In some cases, for example such as when working with small batches or when using errors as flow control mechanism, this behavior might not be desired and end up negatively impacting the concurrency of your function.
+
+For these scenarios, you can set the `throwOnFullBatchFailure` option to `false` when calling.
+
+```typescript hl_lines="17"
+--8<-- "examples/snippets/batch/noThrowOnFullBatchFailure.ts"
 ```
 
 ### Extending BatchProcessor

@@ -8,7 +8,7 @@ import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 class IdempotencyUnknownError extends Error {
   public constructor(message?: string, options?: ErrorOptions) {
     super(message, options);
-    this.name = 'IdempotencyError';
+    this.name = 'IdempotencyUnknownError';
   }
 }
 

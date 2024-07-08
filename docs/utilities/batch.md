@@ -454,7 +454,7 @@ We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lam
 
 By default, the `BatchProcessor` will throw a `FullBatchFailureError` if all records in the batch fail to process, we do this to reflect the failure in your operational metrics.
 
-In some cases, for example such as when working with small batches or when using errors as flow control mechanism, this behavior might not be desired and end up negatively impacting the concurrency of your function.
+When working with functions that handle batches with a small number of records, or when you use errors as a flow control mechanism, this behavior might not be desirable as your function might generate an unnaturally high number of errors. When this happens, the [Lambda service will scale down the concurrency of your function](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-backoff-strategy){target="_blank"}, potentially impacting performance.
 
 For these scenarios, you can set the `throwOnFullBatchFailure` option to `false` when calling.
 

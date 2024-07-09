@@ -12,6 +12,7 @@ import {
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyPersistenceLayerError,
+  IdempotencyUnknownError,
 } from './errors.js';
 import { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
 import { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
@@ -176,8 +177,13 @@ export class IdempotencyHandler<Func extends AnyFunction> {
 
         return await this.getFunctionResult();
       } catch (error) {
+        if (!(error instanceof Error))
+          throw new IdempotencyUnknownError(
+            'An unknown error occurred while processing the request.',
+            { cause: error }
+          );
         if (
-          error instanceof IdempotencyInconsistentStateError &&
+          error.name === 'IdempotencyInconsistentStateError' &&
           retryNo < MAX_RETRIES
         ) {
           // Retry
@@ -241,7 +247,12 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         break;
       } catch (error) {
         if (
-          error instanceof IdempotencyInconsistentStateError &&
+          /**
+           * It's safe to cast the error here because this catch block is only
+           * reached when an error is thrown in code paths that we control,
+           * and we only throw instances of `Error`.
+           */
+          (error as Error).name === 'IdempotencyInconsistentStateError' &&
           retryNo < MAX_RETRIES
         ) {
           // Retry
@@ -313,10 +324,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       await this.#persistenceStore.deleteRecord(
         this.#functionPayloadToBeHashed
       );
-    } catch (e) {
+    } catch (error) {
       throw new IdempotencyPersistenceLayerError(
         'Failed to delete record from idempotency store',
-        e as Error
+        { cause: error }
       );
     }
   };
@@ -345,9 +356,15 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
 
       return returnValue;
-    } catch (e) {
-      if (e instanceof IdempotencyItemAlreadyExistsError) {
-        let idempotencyRecord = e.existingRecord;
+    } catch (error) {
+      if (!(error instanceof Error))
+        throw new IdempotencyUnknownError(
+          'An unknown error occurred while processing the request.',
+          { cause: error }
+        );
+      if (error.name === 'IdempotencyItemAlreadyExistsError') {
+        let idempotencyRecord = (error as IdempotencyItemAlreadyExistsError)
+          .existingRecord;
         if (idempotencyRecord !== undefined) {
           // If the error includes the existing record, we can use it to validate
           // the record being processed and cache it in memory.
@@ -374,7 +391,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       } else {
         throw new IdempotencyPersistenceLayerError(
           'Failed to save in progress record to idempotency store',
-          e as Error
+          { cause: error }
         );
       }
     }
@@ -393,10 +410,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         this.#functionPayloadToBeHashed,
         result
       );
-    } catch (e) {
+    } catch (error) {
       throw new IdempotencyPersistenceLayerError(
         'Failed to update success record to idempotency store',
-        e as Error
+        { cause: error }
       );
     }
   };

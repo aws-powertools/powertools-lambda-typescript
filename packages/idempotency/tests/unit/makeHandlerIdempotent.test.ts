@@ -12,6 +12,7 @@ import {
   IdempotencyPersistenceLayerError,
   IdempotencyConfig,
   IdempotencyRecordStatus,
+  IdempotencyUnknownError,
 } from '../../src/index.js';
 import middy from '@middy/core';
 import { MAX_RETRIES } from '../../src/constants.js';
@@ -245,6 +246,39 @@ describe('Middleware: makeHandlerIdempotent', () => {
       )
     );
     expect(getRecordSpy).toHaveBeenCalledTimes(MAX_RETRIES + 1);
+  });
+  it('throws immediately if an object other than an error was thrown', async () => {
+    // Prepare
+    const handler = middy(
+      async (_event: unknown, _context: Context): Promise<boolean> => {
+        return true;
+      }
+    ).use(makeHandlerIdempotent(mockIdempotencyOptions));
+    jest
+      .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
+      .mockImplementationOnce(() => {
+        // eslint-disable-next-line no-throw-literal
+        throw 'Something went wrong';
+      });
+    const stubRecordInconsistent = new IdempotencyRecord({
+      idempotencyKey: 'idempotencyKey',
+      expiryTimestamp: Date.now() + 10000,
+      inProgressExpiryTimestamp: 0,
+      responseData: { response: false },
+      payloadHash: 'payloadHash',
+      status: IdempotencyRecordStatus.EXPIRED,
+    });
+    const getRecordSpy = jest
+      .spyOn(mockIdempotencyOptions.persistenceStore, 'getRecord')
+      .mockResolvedValue(stubRecordInconsistent);
+
+    // Act & Assess
+    await expect(handler(event, context)).rejects.toThrow(
+      new IdempotencyUnknownError(
+        'An unknown error occurred while processing the request.'
+      )
+    );
+    expect(getRecordSpy).toHaveBeenCalledTimes(0);
   });
   it('does not do anything if idempotency is disabled', async () => {
     // Prepare

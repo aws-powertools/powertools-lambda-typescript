@@ -1,4 +1,4 @@
-import middy from '@middy/core';
+import middy from 'middy5';
 import { Tracer } from '../../src/index.js';
 import { captureLambdaHandler } from '../../src/middleware/middy.js';
 import type { Context } from 'aws-lambda';

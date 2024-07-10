@@ -172,7 +172,7 @@
     "@aws-sdk/client-secrets-manager": ">=3.x",
     "@aws-sdk/client-ssm": ">=3.x",
     "@aws-sdk/util-dynamodb": ">=3.x",
-    "@middy/core": ">=3.x"
+    "@middy/core": "4.x || 5.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {

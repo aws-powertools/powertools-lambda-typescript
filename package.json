@@ -49,7 +49,6 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@middy/core": "^4.7.0",
     "@types/aws-lambda": "^8.10.140",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.14.9",
@@ -67,6 +66,8 @@
     "lerna": "8.1.2",
     "lint-staged": "^15.2.7",
     "markdownlint-cli2": "^0.13.0",
+    "middy4": "npm:@middy/core@^4.7.0",
+    "middy5": "npm:@middy/core@^5.4.3",
     "prettier": "^3.3.2",
     "ts-jest": "^29.1.5",
     "ts-node": "^10.9.2",

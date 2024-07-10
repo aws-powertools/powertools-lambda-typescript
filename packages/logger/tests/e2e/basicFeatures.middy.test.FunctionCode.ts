@@ -2,7 +2,7 @@ import { Logger } from '../../src/index.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 import type { Context, APIGatewayAuthorizerResult } from 'aws-lambda';
 import type { TestEvent, TestOutput } from '../helpers/types.js';
-import middy from '@middy/core';
+import middy from 'middy5';
 
 const PERSISTENT_KEY = process.env.PERSISTENT_KEY || 'persistentKey';
 const PERSISTENT_VALUE = process.env.PERSISTENT_VALUE || 'persistentValue';

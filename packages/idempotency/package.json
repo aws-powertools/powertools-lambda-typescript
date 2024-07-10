@@ -102,7 +102,7 @@
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": ">=3.x",
     "@aws-sdk/lib-dynamodb": ">=3.x",
-    "@middy/core": ">=3.x"
+    "@middy/core": "4.x || 5.x"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": {

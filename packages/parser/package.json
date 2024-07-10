@@ -117,7 +117,16 @@
     "nodejs"
   ],
   "peerDependencies": {
-    "zod": ">=3.x"
+    "zod": ">=3.x",
+    "@middy/core": "4.x || 5.x"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "@middy/core": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@anatine/zod-mock": "^3.13.3",

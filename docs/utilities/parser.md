@@ -252,27 +252,27 @@ We recommend to use the types provided by the parser utility. If you encounter a
 
 ## Testing your code
 
-When testing your handler with **parser decorator** you need to use double assetion to bypass TypeScript type checking in your tests.
+When testing your handler with [**parser decorator**](#parse-events) you need to use double assetion to bypass TypeScript type checking in your tests.
 This is useful when you want to test the handler for invalid payloads or when you want to test the error handling.
 If you are you use middy middleware, you don't need to do this.
 
 === "handlerDecorator.test.ts"
 
-    ```typescript hl_lines="29"
+    ```typescript hl_lines="26"
     --8<-- "examples/snippets/parser/unitTestDecorator.ts"
     ```
-
+    
     1. Use double assertion `as unknown as X` to bypass TypeScript type checking in your tests
 
 === "handlerDecorator.ts"
 
     ```typescript
-    --8<-- "examples/snippets/parser/decorator.ts"
+    --8<-- "examples/snippets/parser/handlerDecorator.ts"
     ```
 
 === "schema.ts"
 
-    ```typescript"
+    ```typescript
     --8<-- "examples/snippets/parser/schema.ts"
     ```
 
@@ -280,7 +280,7 @@ This also works when using `safeParse` option.
 
 === "handlerSafeParse.test.ts"
 
-    ```typescript hl_lines="24-32 38 48"
+    ```typescript hl_lines="21-29 35 45"
     --8<-- "examples/snippets/parser/unitTestSafeParse.ts"
     ```
     
@@ -289,11 +289,11 @@ This also works when using `safeParse` option.
 === "handlerSafeParse.ts"
 
     ```typescript
-    --8<-- "examples/snippets/parser/safeParseDecorator.ts"
+    --8<-- "examples/snippets/parser/handlerSafeParseDecorator.ts"
     ```
 
 === "schema.ts"
 
-    ```typescript"
+    ```typescript
     --8<-- "examples/snippets/parser/schema.ts"
     ```

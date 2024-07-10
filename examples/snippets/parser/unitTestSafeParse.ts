@@ -1,15 +1,12 @@
-import { orderSchema } from 'examples/snippets/parser/schema';
-import { Context } from 'aws-lambda';
-import { handler } from 'examples/snippets/parser/safeParseDecorator';
-import { z } from 'zod';
+import type { Order } from './schema.js';
+import type { Context } from 'aws-lambda';
+import { handler } from './safeParseDecorator.js';
 import {
   ParsedResult,
   EventBridgeEvent,
 } from '@aws-lambda-powertools/parser/types';
 
 describe('Test handler', () => {
-  type Order = z.infer<typeof orderSchema>;
-
   it('should parse event successfully', async () => {
     const testEvent = {
       version: '0',
@@ -38,7 +35,7 @@ describe('Test handler', () => {
         testEvent as unknown as ParsedResult<EventBridgeEvent, Order>, // (1)!
         {} as Context
       )
-    ).resolves.not.toThrow();
+    ).resolves.toEqual(10876546789);
   });
 
   it('should throw error if event is invalid', async () => {

@@ -7,6 +7,7 @@ export {
   IdempotencyInconsistentStateError,
   IdempotencyPersistenceLayerError,
   IdempotencyKeyError,
+  IdempotencyUnknownError,
 } from './errors.js';
 export { IdempotencyConfig } from './IdempotencyConfig.js';
 export { makeIdempotent } from './makeIdempotent.js';

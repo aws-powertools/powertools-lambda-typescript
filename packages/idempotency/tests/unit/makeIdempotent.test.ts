@@ -11,6 +11,7 @@ import {
   IdempotencyPersistenceLayerError,
   IdempotencyConfig,
   IdempotencyRecordStatus,
+  IdempotencyUnknownError,
 } from '../../src/index.js';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { MAX_RETRIES } from '../../src/constants.js';
@@ -265,12 +266,37 @@ describe('Function: makeIdempotent', () => {
       .mockResolvedValue(stubRecordInconsistent);
 
     // Act & Assess
-    await expect(handler(event, context)).rejects.toThrowError(
+    await expect(handler(event, context)).rejects.toThrow(
       new IdempotencyInconsistentStateError(
         'Item has expired during processing and may not longer be valid.'
       )
     );
     expect(getRecordSpy).toHaveBeenCalledTimes(MAX_RETRIES + 1);
+  });
+  it('throws immediately if an object other than an error was thrown', async () => {
+    // Prepare
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: Context) => {
+        // eslint-disable-next-line no-throw-literal
+        throw 'Something went wrong';
+      },
+      {
+        ...mockIdempotencyOptions,
+        config: new IdempotencyConfig({}),
+      }
+    );
+    const saveSuccessSpy = jest.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveSuccess'
+    );
+
+    // Act & Assess
+    await expect(handler(event, context)).rejects.toThrow(
+      new IdempotencyUnknownError(
+        'An unknown error occurred while processing the request.'
+      )
+    );
+    expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
   });
   it('does not do anything if idempotency is disabled', async () => {
     // Prepare

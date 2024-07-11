@@ -7,6 +7,7 @@ import type {
   EventBridgeEvent,
 } from '@aws-lambda-powertools/parser/types';
 import { Logger } from '@aws-lambda-powertools/logger';
+import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
 
 const logger = new Logger();
 
@@ -26,7 +27,11 @@ const orderSchema = z.object({
 type Order = z.infer<typeof orderSchema>;
 
 class Lambda implements LambdaInterface {
-  @parser({ schema: orderSchema, safeParse: true }) // (1)!
+  @parser({
+    schema: orderSchema,
+    envelope: EventBridgeEnvelope,
+    safeParse: true,
+  }) // (1)!
   public async handler(
     event: ParsedResult<EventBridgeEvent, Order>,
     _context: Context

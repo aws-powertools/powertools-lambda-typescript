@@ -762,7 +762,7 @@ This is how the printed log would look:
 
 ### Bring your own JSON serializer
 
-You can extend the default JSON serializer by passing a custom serializer function to the `Logger` constructor, using the `jsonReplacerFn` option. This is useful when you need to serialize custom objects or when you want to customize the serialization of specific values.
+You can extend the default JSON serializer by passing a custom serializer function to the `Logger` constructor, using the `jsonReplacerFn` option. This is useful when you want to customize the serialization of specific values.
 
 === "unserializableValues.ts"
 
@@ -778,7 +778,7 @@ You can extend the default JSON serializer by passing a custom serializer functi
 
 By default, Logger uses `JSON.stringify()` to serialize log items and a [custom replacer function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter) to serialize common unserializable values such as `BigInt`, circular references, and `Error` objects.
 
-When you extend the default JSON serializer, your custom serializer function will be called before the default one. This allows you to customize the serialization while still benefiting from the default behavior.
+When you extend the default JSON serializer, we will call your custom serializer function before the default one. This allows you to customize the serialization while still benefiting from the default behavior.
 
 ## Testing your code
 

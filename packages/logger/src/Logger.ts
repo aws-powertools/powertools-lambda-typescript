@@ -681,13 +681,17 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * When the data added in the log item contains object references or BigInt values,
-   * `JSON.stringify()` can't handle them and instead throws errors:
-   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
-   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
+   * A custom JSON replacer function that is used to serialize the log items.
    *
-   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
-   * @private
+   * By default, we already extend the default serialization behavior to handle `BigInt` and `Error` objects, as well as remove circular references.
+   * When a custom JSON replacer function is passed to the Logger constructor, it will be called **before** our custom rules for each key-value pair in the object being stringified.
+   *
+   * This allows you to customize the serialization while still benefiting from the default behavior.
+   *
+   * @see {@link ConstructorOptions.jsonReplacerFn}
+   *
+   * @param key - The key of the value being stringified.
+   * @param value - The value being stringified.
    */
   protected getJsonReplacer(): (key: string, value: unknown) => void {
     const references = new WeakSet();

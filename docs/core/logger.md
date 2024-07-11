@@ -539,24 +539,6 @@ If you prefer to log in a specific timezone, you can configure it by setting the
     --8<-- "examples/snippets/logger/customTimezoneOutput.json"
     ```
 
-### Custom function for unserializable values
-
-By default, Logger uses `JSON.stringify()` to serialize log items. This means that `Map`, `Set` etc. will be serialized as `{}`, as detailed in the [MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#description).
-
-You can manage the serialization of these types by providing your own replacer function, which will be utilized during serialization.
-
-=== "unserializableValues.ts"
-
-    ```typescript hl_lines="4-5 7"
-    --8<-- "examples/snippets/logger/unserializableValues.ts"
-    ```
-
-=== "unserializableValues.json"
-
-    ```json hl_lines="8"
-    --8<-- "examples/snippets/logger/unserializableValues.json"
-    ```
-
 ### Using multiple Logger instances across your code
 
 The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [extra keys](#appending-additional-keys), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).
@@ -777,6 +759,26 @@ This is how the printed log would look:
 
 !!! tip "Custom Log formatter and Child loggers"
     It is not necessary to pass the `LogFormatter` each time a [child logger](#using-multiple-logger-instances-across-your-code) is created. The parent's LogFormatter will be inherited by the child logger.
+
+### Bring your own JSON serializer
+
+You can extend the default JSON serializer by passing a custom serializer function to the `Logger` constructor, using the `jsonReplacerFn` option. This is useful when you need to serialize custom objects or when you want to customize the serialization of specific values.
+
+=== "unserializableValues.ts"
+
+    ```typescript hl_lines="4-5 7"
+    --8<-- "examples/snippets/logger/unserializableValues.ts"
+    ```
+
+=== "unserializableValues.json"
+
+    ```json hl_lines="8"
+    --8<-- "examples/snippets/logger/unserializableValues.json"
+    ```
+
+By default, Logger uses `JSON.stringify()` to serialize log items and a [custom replacer function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter) to serialize common unserializable values such as `BigInt`, circular references, and `Error` objects.
+
+When you extend the default JSON serializer, your custom serializer function will be called before the default one. This allows you to customize the serialization while still benefiting from the default behavior.
 
 ## Testing your code
 

@@ -41,7 +41,6 @@ jobs:
             "us-west-2",
             "ap-east-1",
             "ap-south-1",
-            "ap-south-2",
             "ap-northeast-1",
             "ap-northeast-2",
             "ap-northeast-3",
@@ -58,7 +57,6 @@ jobs:
             "eu-south-2",
             "eu-north-1",
             "sa-east-1",
-            "me-central-1",
             "me-south-1",
             "il-central-1",
           ]
@@ -72,7 +70,7 @@ jobs:
           role-to-assume: ${{ secrets.target-account-role }}
           mask-aws-account-id: true
       - name: Setup Node.js
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: "20"
       - name: Setup dependencies

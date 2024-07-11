@@ -28,7 +28,13 @@ type InjectLambdaContextOptions = {
   resetKeys?: boolean;
 };
 
-type CustomReplacerFn = (key: string, value: unknown) => void;
+/**
+ * A custom JSON replacer function that can be passed to the Logger constructor.
+ *
+ * @param key - The key of the value being stringified.
+ * @param value - The value being stringified.
+ */
+type CustomJsonReplacerFn = (key: string, value: unknown) => unknown;
 
 type BaseConstructorOptions = {
   logLevel?: LogLevel;
@@ -37,7 +43,10 @@ type BaseConstructorOptions = {
   logFormatter?: LogFormatterInterface;
   customConfigService?: ConfigServiceInterface;
   environment?: Environment;
-  jsonReplacerFn?: CustomReplacerFn;
+  /**
+   * A custom JSON replacer function that can be passed to the Logger constructor.
+   */
+  jsonReplacerFn?: CustomJsonReplacerFn;
 };
 
 type PersistentKeysOption = {
@@ -142,5 +151,5 @@ export type {
   PowertoolsLogData,
   ConstructorOptions,
   InjectLambdaContextOptions,
-  CustomReplacerFn,
+  CustomJsonReplacerFn,
 };

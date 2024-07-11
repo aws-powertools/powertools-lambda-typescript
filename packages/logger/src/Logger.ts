@@ -24,7 +24,7 @@ import type {
   LogItemMessage,
   LoggerInterface,
   PowertoolsLogData,
-  CustomReplacerFn,
+  CustomJsonReplacerFn,
 } from './types/Logger.js';
 
 /**
@@ -116,10 +116,6 @@ import type {
  */
 class Logger extends Utility implements LoggerInterface {
   /**
-   * Replacer function used to serialize the log items.
-   */
-  protected jsonReplacerFn?: CustomReplacerFn;
-  /**
    * Console instance used to print logs.
    *
    * In AWS Lambda, we create a new instance of the Console class so that we can have
@@ -205,6 +201,10 @@ class Logger extends Utility implements LoggerInterface {
    * We keep this value to be able to reset the log level to the initial value when the sample rate is refreshed.
    */
   #initialLogLevel = 12;
+  /**
+   * Replacer function used to serialize the log items.
+   */
+  #jsonReplacerFn?: CustomJsonReplacerFn;
 
   /**
    * Log level used by the current instance of Logger.
@@ -314,7 +314,7 @@ class Logger extends Utility implements LoggerInterface {
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
           temporaryLogAttributes: this.temporaryLogAttributes,
-          jsonReplacerFn: this.jsonReplacerFn,
+          jsonReplacerFn: this.#jsonReplacerFn,
         },
         options
       )
@@ -681,6 +681,38 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
+   * When the data added in the log item contains object references or BigInt values,
+   * `JSON.stringify()` can't handle them and instead throws errors:
+   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
+   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
+   * @private
+   */
+  protected getJsonReplacer(): (key: string, value: unknown) => void {
+    const references = new WeakSet();
+
+    return (key, value) => {
+      if (this.#jsonReplacerFn) value = this.#jsonReplacerFn?.(key, value);
+
+      if (value instanceof Error) {
+        value = this.getLogFormatter().formatError(value);
+      }
+      if (typeof value === 'bigint') {
+        return value.toString();
+      }
+      if (typeof value === 'object' && value !== null) {
+        if (references.has(value)) {
+          return;
+        }
+        references.add(value);
+      }
+
+      return value;
+    };
+  }
+
+  /**
    * It stores information that is printed in all log items.
    *
    * @param {Partial<PowertoolsLogData>} attributes
@@ -790,40 +822,6 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * When the data added in the log item contains object references or BigInt values,
-   * `JSON.stringify()` can't handle them and instead throws errors:
-   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
-   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
-   * @private
-   */
-  private getDefaultReplacer(): (
-    key: string,
-    value: LogAttributes | Error | bigint
-  ) => void {
-    const references = new WeakSet();
-
-    return (key, value) => {
-      let item = value;
-      if (item instanceof Error) {
-        item = this.getLogFormatter().formatError(item);
-      }
-      if (typeof item === 'bigint') {
-        return item.toString();
-      }
-      if (typeof item === 'object' && value !== null) {
-        if (references.has(item)) {
-          return;
-        }
-        references.add(item);
-      }
-
-      return item;
-    };
-  }
-
-  /**
    * It returns the instance of a service that fetches environment variables.
    *
    * @private
@@ -926,7 +924,7 @@ class Logger extends Utility implements LoggerInterface {
     this.console[consoleMethod](
       JSON.stringify(
         log.getAttributes(),
-        this.jsonReplacerFn,
+        this.getJsonReplacer(),
         this.logIndentation
       )
     );
@@ -1150,7 +1148,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setLogFormatter(logFormatter);
     this.setConsole();
     this.setLogIndentation();
-    this.#setJsonReplacerFn(jsonReplacerFn);
+    this.#jsonReplacerFn = jsonReplacerFn;
 
     return this;
   }
@@ -1182,16 +1180,6 @@ class Logger extends Utility implements LoggerInterface {
         this.getDefaultServiceName(),
     });
     this.appendPersistentKeys(persistentLogAttributes);
-  }
-
-  /**
-   * It sets the JSON replacer function which is used to serialize the log items.
-   * @private
-   * @param customerReplacerFn
-   */
-  #setJsonReplacerFn(customerReplacerFn?: CustomReplacerFn): void {
-    this.jsonReplacerFn =
-      customerReplacerFn ?? (this.getDefaultReplacer() as CustomReplacerFn);
   }
 }
 

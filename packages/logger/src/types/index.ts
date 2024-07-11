@@ -14,5 +14,5 @@ export type {
   PowertoolsLogData,
   ConstructorOptions,
   InjectLambdaContextOptions,
-  CustomReplacerFn,
+  CustomJsonReplacerFn,
 } from './Logger.js';

@@ -547,7 +547,7 @@ You can manage the serialization of these types by providing your own replacer f
 
 === "unserializableValues.ts"
 
-    ```typescript hl_lines="4 7"
+    ```typescript hl_lines="4-5 7"
     --8<-- "examples/snippets/logger/unserializableValues.ts"
     ```
 

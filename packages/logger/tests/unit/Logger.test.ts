@@ -13,7 +13,7 @@ import { LogLevelThresholds, LogLevel } from '../../src/types/Log.js';
 import {
   type LogFunction,
   type ConstructorOptions,
-  type CustomReplacerFn,
+  type CustomJsonReplacerFn,
 } from '../../src/types/Logger.js';
 import { LogJsonIndent } from '../../src/constants.js';
 import type { Context } from 'aws-lambda';
@@ -108,7 +108,6 @@ describe('Class: Logger', () => {
         defaultServiceName: 'service_undefined',
         customConfigService: expect.any(EnvironmentVariablesService),
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -151,7 +150,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -303,7 +301,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -561,37 +558,6 @@ describe('Class: Logger', () => {
           customConfigService: undefined,
           logLevel: 8,
           logFormatter: expect.any(PowertoolsLogFormatter),
-        })
-      );
-    });
-
-    test('when a custom json replacer function is passed, returns a Logger instance with the correct properties', () => {
-      // Prepare
-      const mockReplacerFunction: CustomReplacerFn = jest.fn();
-      const loggerOptions: ConstructorOptions = {
-        jsonReplacerFn: mockReplacerFunction,
-      };
-
-      // Act
-      const logger = new Logger(loggerOptions);
-
-      // Assess
-      expect(logger).toBeInstanceOf(Logger);
-      expect(logger).toEqual(
-        expect.objectContaining({
-          persistentLogAttributes: {},
-          powertoolsLogData: {
-            sampleRateValue: 0,
-            awsRegion: 'eu-west-1',
-            environment: '',
-            serviceName: 'hello-world',
-          },
-          envVarsService: expect.any(EnvironmentVariablesService),
-          customConfigService: undefined,
-          defaultServiceName: 'service_undefined',
-          logLevel: 8,
-          logFormatter: expect.any(PowertoolsLogFormatter),
-          jsonReplacerFn: mockReplacerFunction,
         })
       );
     });
@@ -1225,7 +1191,7 @@ describe('Class: Logger', () => {
         });
       });
 
-      describe('Feature: handle safely unexpected errors', () => {
+      describe('Feature: custom JSON replacer function', () => {
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
           // Prepare
           const logger = new Logger({
@@ -1347,12 +1313,11 @@ describe('Class: Logger', () => {
             })
           );
         });
-      });
 
-      describe('Feature: custom replacer function', () => {
-        test('it should correctly serialize Set values using the provided jsonReplacerFn', () => {
-          const jsonReplacerFn: CustomReplacerFn = (
-            key: string,
+        it('should correctly serialize custom values using the provided jsonReplacerFn', () => {
+          // Prepare
+          const jsonReplacerFn: CustomJsonReplacerFn = (
+            _: string,
             value: unknown
           ) => (value instanceof Set ? [...value] : value);
 
@@ -1369,7 +1334,7 @@ describe('Class: Logger', () => {
           logger[methodOfLogger](message, logItem);
 
           // Assess
-          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenCalledTimes(1);
           expect(consoleSpy).toHaveBeenNthCalledWith(
             1,
             JSON.stringify({
@@ -1384,59 +1349,33 @@ describe('Class: Logger', () => {
           );
         });
 
-        test('it is unable to serialize Set values while using the default jsonReplacerFn', () => {
-          const logger = new Logger();
-          const consoleSpy = jest.spyOn(
-            logger['console'],
-            getConsoleMethod(methodOfLogger)
-          );
-          const message = `This is an ${methodOfLogger} log with Set value`;
-
-          const logItem = { value: new Set([1, 2]) };
-
-          // Act
-          logger[methodOfLogger](message, logItem);
-
-          // Assess
-          expect(consoleSpy).toBeCalledTimes(1);
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            1,
-            JSON.stringify({
-              level: methodOfLogger.toUpperCase(),
-              message: message,
-              sampling_rate: 0,
-              service: 'hello-world',
-              timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              value: {},
-            })
-          );
-        });
-
-        test('it should correctly serialize Map values using the provided jsonReplacerFn', () => {
-          const jsonReplacerFn: CustomReplacerFn = (
-            key: string,
+        it('should serialize using both the existing replacer and the customer-provided one', () => {
+          // Prepare
+          const jsonReplacerFn: CustomJsonReplacerFn = (
+            _: string,
             value: unknown
-          ) => (value instanceof Map ? [...value] : value);
+          ) => {
+            if (value instanceof Set || value instanceof Map) {
+              return [...value];
+            }
+
+            return value;
+          };
 
           const logger = new Logger({ jsonReplacerFn });
           const consoleSpy = jest.spyOn(
             logger['console'],
             getConsoleMethod(methodOfLogger)
           );
-          const message = `This is an ${methodOfLogger} log with Map value`;
 
-          const mappedValue = new Map();
-          mappedValue.set('foo', 'bar');
-          mappedValue.set('baz', 'qux');
-
-          const logItem = { value: mappedValue };
+          const message = `This is an ${methodOfLogger} log with Set value`;
+          const logItem = { value: new Set([1, 2]), number: BigInt(42) };
 
           // Act
           logger[methodOfLogger](message, logItem);
 
           // Assess
-          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenCalledTimes(1);
           expect(consoleSpy).toHaveBeenNthCalledWith(
             1,
             JSON.stringify({
@@ -1446,44 +1385,27 @@ describe('Class: Logger', () => {
               service: 'hello-world',
               timestamp: '2016-06-20T12:08:10.000Z',
               xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              value: [
-                ['foo', 'bar'],
-                ['baz', 'qux'],
-              ],
+              value: [1, 2],
+              number: '42',
             })
           );
         });
 
-        test('it is unable to serialize Map values while using the default jsonReplacerFn', () => {
-          const logger = new Logger();
-          const consoleSpy = jest.spyOn(
-            logger['console'],
-            getConsoleMethod(methodOfLogger)
-          );
-          const message = `This is an ${methodOfLogger} log with Map value`;
-          const mappedValue = new Map();
-          mappedValue.set('foo', 'bar');
-          mappedValue.set('baz', 'qux');
-
-          const logItem = { value: mappedValue };
+        it('should pass the JSON customer-provided replacer function to child loggers', () => {
+          // Prepare
+          const jsonReplacerFn: CustomJsonReplacerFn = (
+            _: string,
+            value: unknown
+          ) => (value instanceof Set ? [...value] : value);
+          const logger = new Logger({ jsonReplacerFn });
 
           // Act
-          logger[methodOfLogger](message, logItem);
+          const childLogger = logger.createChild();
 
           // Assess
-          expect(consoleSpy).toBeCalledTimes(1);
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            1,
-            JSON.stringify({
-              level: methodOfLogger.toUpperCase(),
-              message: message,
-              sampling_rate: 0,
-              service: 'hello-world',
-              timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              value: {},
-            })
-          );
+          expect(() =>
+            childLogger.info('foo', { foo: new Set([1, 2]) })
+          ).not.toThrow();
         });
       });
     }
@@ -2700,7 +2622,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -2729,7 +2650,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -2758,7 +2678,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -2835,7 +2754,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -2864,7 +2782,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -2896,7 +2813,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -2925,7 +2841,6 @@ describe('Class: Logger', () => {
         customConfigService: undefined,
         defaultServiceName: 'service_undefined',
         envVarsService: expect.any(EnvironmentVariablesService),
-        jsonReplacerFn: expect.any(Function),
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
@@ -3100,24 +3015,6 @@ describe('Class: Logger', () => {
       expect(childLogger).toEqual(
         expect.objectContaining({
           customConfigService: expect.any(MyCustomEnvironmentVariablesService),
-        })
-      );
-    });
-
-    test('child logger should have the same jsonReplacerFn as its parent', () => {
-      // Prepare
-      const mockReplacerFunction: CustomReplacerFn = jest.fn();
-      const parentLogger = new Logger({
-        jsonReplacerFn: mockReplacerFunction,
-      });
-
-      // Act
-      const childLoggerWithParentLogFormatter = parentLogger.createChild();
-
-      // Assess
-      expect(childLoggerWithParentLogFormatter).toEqual(
-        expect.objectContaining({
-          jsonReplacerFn: mockReplacerFunction,
         })
       );
     });

@@ -13,4 +13,6 @@ const orderSchema = z.object({
   optionalField: z.string().optional(),
 });
 
-export { orderSchema };
+type Order = z.infer<typeof orderSchema>;
+
+export { orderSchema, type Order };

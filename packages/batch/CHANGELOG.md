@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
+
+
+### Features
+
+* **batch:** add option to not throw `FullBatchFailureError` when the entire batch fails ([#2711](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2711)) ([74198ef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/74198ef1ec1d11267813d2f4b6dd5f4c5692f7d4))
+* **maintenance:** drop support for Node.js 16.x ([#2717](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2717)) ([e4eee73](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e4eee73770ffccead9212a566335ec256a31af7d))
+
+
+
+
+
 # [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
 
 **Note:** Version bump only for package @aws-lambda-powertools/batch

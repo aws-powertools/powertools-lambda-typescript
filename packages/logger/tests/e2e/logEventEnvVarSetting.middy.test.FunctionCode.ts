@@ -2,7 +2,7 @@ import { Logger } from '../../src/index.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 import type { TestEvent, TestOutput } from '../helpers/types.js';
 import type { Context } from 'aws-lambda';
-import middy from '@middy/core';
+import middy from 'middy4';
 
 const logger = new Logger();
 

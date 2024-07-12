@@ -760,6 +760,26 @@ This is how the printed log would look:
 !!! tip "Custom Log formatter and Child loggers"
     It is not necessary to pass the `LogFormatter` each time a [child logger](#using-multiple-logger-instances-across-your-code) is created. The parent's LogFormatter will be inherited by the child logger.
 
+### Bring your own JSON serializer
+
+You can extend the default JSON serializer by passing a custom serializer function to the `Logger` constructor, using the `jsonReplacerFn` option. This is useful when you want to customize the serialization of specific values.
+
+=== "unserializableValues.ts"
+
+    ```typescript hl_lines="4-5 7"
+    --8<-- "examples/snippets/logger/unserializableValues.ts"
+    ```
+
+=== "unserializableValues.json"
+
+    ```json hl_lines="8"
+    --8<-- "examples/snippets/logger/unserializableValues.json"
+    ```
+
+By default, Logger uses `JSON.stringify()` to serialize log items and a [custom replacer function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter) to serialize common unserializable values such as `BigInt`, circular references, and `Error` objects.
+
+When you extend the default JSON serializer, we will call your custom serializer function before the default one. This allows you to customize the serialization while still benefiting from the default behavior.
+
 ## Testing your code
 
 ### Inject Lambda Context

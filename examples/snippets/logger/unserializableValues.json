@@ -1,0 +1,9 @@
+{
+  "level": "INFO",
+  "message": "Serialize with custom serializer",
+  "sampling_rate": 0,
+  "service": "serverlessAirline",
+  "timestamp": "2024-07-07T09:52:14.212Z",
+  "xray_trace_id": "1-668a654d-396c646b760ee7d067f32f18",
+  "serializedValue": [1, 2, 3]
+}

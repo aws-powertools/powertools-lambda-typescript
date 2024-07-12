@@ -24,6 +24,7 @@ import type {
   LogItemMessage,
   LoggerInterface,
   PowertoolsLogData,
+  CustomJsonReplacerFn,
 } from './types/Logger.js';
 
 /**
@@ -200,6 +201,10 @@ class Logger extends Utility implements LoggerInterface {
    * We keep this value to be able to reset the log level to the initial value when the sample rate is refreshed.
    */
   #initialLogLevel = 12;
+  /**
+   * Replacer function used to serialize the log items.
+   */
+  #jsonReplacerFn?: CustomJsonReplacerFn;
 
   /**
    * Log level used by the current instance of Logger.
@@ -309,6 +314,7 @@ class Logger extends Utility implements LoggerInterface {
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
           temporaryLogAttributes: this.temporaryLogAttributes,
+          jsonReplacerFn: this.#jsonReplacerFn,
         },
         options
       )
@@ -675,6 +681,42 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
+   * A custom JSON replacer function that is used to serialize the log items.
+   *
+   * By default, we already extend the default serialization behavior to handle `BigInt` and `Error` objects, as well as remove circular references.
+   * When a custom JSON replacer function is passed to the Logger constructor, it will be called **before** our custom rules for each key-value pair in the object being stringified.
+   *
+   * This allows you to customize the serialization while still benefiting from the default behavior.
+   *
+   * @see {@link ConstructorOptions.jsonReplacerFn}
+   *
+   * @param key - The key of the value being stringified.
+   * @param value - The value being stringified.
+   */
+  protected getJsonReplacer(): (key: string, value: unknown) => void {
+    const references = new WeakSet();
+
+    return (key, value) => {
+      if (this.#jsonReplacerFn) value = this.#jsonReplacerFn?.(key, value);
+
+      if (value instanceof Error) {
+        value = this.getLogFormatter().formatError(value);
+      }
+      if (typeof value === 'bigint') {
+        return value.toString();
+      }
+      if (typeof value === 'object' && value !== null) {
+        if (references.has(value)) {
+          return;
+        }
+        references.add(value);
+      }
+
+      return value;
+    };
+  }
+
+  /**
    * It stores information that is printed in all log items.
    *
    * @param {Partial<PowertoolsLogData>} attributes
@@ -836,40 +878,6 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * When the data added in the log item contains object references or BigInt values,
-   * `JSON.stringify()` can't handle them and instead throws errors:
-   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
-   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
-   * @private
-   */
-  private getReplacer(): (
-    key: string,
-    value: LogAttributes | Error | bigint
-  ) => void {
-    const references = new WeakSet();
-
-    return (key, value) => {
-      let item = value;
-      if (item instanceof Error) {
-        item = this.getLogFormatter().formatError(item);
-      }
-      if (typeof item === 'bigint') {
-        return item.toString();
-      }
-      if (typeof item === 'object' && value !== null) {
-        if (references.has(item)) {
-          return;
-        }
-        references.add(item);
-      }
-
-      return item;
-    };
-  }
-
-  /**
    * It returns true and type guards the log level if a given log level is valid.
    *
    * @param {LogLevel} logLevel
@@ -920,7 +928,7 @@ class Logger extends Utility implements LoggerInterface {
     this.console[consoleMethod](
       JSON.stringify(
         log.getAttributes(),
-        this.getReplacer(),
+        this.getJsonReplacer(),
         this.logIndentation
       )
     );
@@ -1119,6 +1127,7 @@ class Logger extends Utility implements LoggerInterface {
       persistentKeys,
       persistentLogAttributes, // deprecated in favor of persistentKeys
       environment,
+      jsonReplacerFn,
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
@@ -1143,6 +1152,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setLogFormatter(logFormatter);
     this.setConsole();
     this.setLogIndentation();
+    this.#jsonReplacerFn = jsonReplacerFn;
 
     return this;
   }

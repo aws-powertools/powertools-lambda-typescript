@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 import { Envelope } from '../../src/envelopes/envelope.js';
 import { ParseError } from '../../src/errors.js';
 
@@ -73,6 +73,13 @@ describe('envelope: ', () => {
       expect(() =>
         Envelope.parse({ name: 123 }, z.object({ name: z.string() }))
       ).toThrow();
+    });
+    it('the error has the cause attached to it', () => {
+      try {
+        Envelope.parse('{"name": "John"}', z.object({ name: z.number() }));
+      } catch (error) {
+        expect((error as { cause: Error }).cause).toBeInstanceOf(ZodError);
+      }
     });
   });
 });

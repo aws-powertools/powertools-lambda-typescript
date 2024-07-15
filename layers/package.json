@@ -1,6 +1,6 @@
 {
   "name": "layers",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "bin": {
     "layer": "bin/layers.js"
   },

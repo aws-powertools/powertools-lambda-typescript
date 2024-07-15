@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
+
+
+### Bug Fixes
+
+* **parser:** include error cause in ParseError ([#2774](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2774)) ([34d0b55](https://github.com/aws-powertools/powertools-lambda-typescript/commit/34d0b5500ca67a6df0703be66031d1aee61a09fa))
+
+
+
+
+
 # [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
 
 

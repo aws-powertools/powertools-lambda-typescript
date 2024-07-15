@@ -7,8 +7,7 @@ class ParseError extends Error {
     const errorMessage = options?.cause
       ? `${message}. This error was caused by: ${options?.cause.message}.`
       : message;
-    super(errorMessage);
-    this.cause = options?.cause;
+    super(errorMessage, options);
     this.name = 'ParseError';
   }
 }

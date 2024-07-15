@@ -1,3 +1,9 @@
+/**
+ * Test decorator parser
+ *
+ * @group unit/parser
+ */
+
 import { z, ZodError } from 'zod';
 import { Envelope } from '../../src/envelopes/envelope.js';
 import { ParseError } from '../../src/errors.js';
@@ -74,11 +80,11 @@ describe('envelope: ', () => {
         Envelope.parse({ name: 123 }, z.object({ name: z.string() }))
       ).toThrow();
     });
-    it('the error has the cause attached to it', () => {
+    it('includes the ZodError as the cause of the ParseError', () => {
       try {
         Envelope.parse('{"name": "John"}', z.object({ name: z.number() }));
       } catch (error) {
-        expect((error as { cause: Error }).cause).toBeInstanceOf(ZodError);
+        expect((error as Error).cause).toBeInstanceOf(ZodError);
       }
     });
   });

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
+
+
+### Features
+
+* **logger:** custom function for unserializable values (JSON replacer)  ([#2739](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2739)) ([fbc8688](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fbc86889f88203945a4201c6a6c403b3a257d54f))
+
+
+
+
+
 # [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
 
 

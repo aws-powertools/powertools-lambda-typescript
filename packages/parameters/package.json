@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "The parameters package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -164,7 +164,7 @@
     "aws-sdk-client-mock-jest": "^4.0.1"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.4.0"
+    "@aws-lambda-powertools/commons": "^2.5.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-appconfigdata": ">=3.x",

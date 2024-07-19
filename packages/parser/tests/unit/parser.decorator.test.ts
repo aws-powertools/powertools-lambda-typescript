@@ -27,7 +27,7 @@ describe('Parser Decorator', () => {
     public async handler(
       event: TestEvent,
       _context: Context
-    ): Promise<unknown> {
+    ): Promise<TestEvent> {
       return event;
     }
 
@@ -60,7 +60,7 @@ describe('Parser Decorator', () => {
       safeParse: true,
     })
     public async handlerWithSchemaAndSafeParse(
-      event: ParsedResult<TestEvent, TestEvent>,
+      event: ParsedResult<unknown, TestEvent>,
       _context: Context
     ): Promise<ParsedResult> {
       return event;
@@ -99,9 +99,7 @@ describe('Parser Decorator', () => {
     testEvent.detail = customPayload;
 
     const resp = await lambda.handlerWithSchemaAndEnvelope(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      testEvent,
+      testEvent as unknown as TestEvent,
       {} as Context
     );
 
@@ -130,9 +128,7 @@ describe('Parser Decorator', () => {
     testEvent.detail = customPayload;
 
     const resp = await lambda.handlerWithParserCallsAnotherMethod(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      testEvent,
+      testEvent as unknown as TestEvent,
       {} as Context
     );
 
@@ -143,9 +139,7 @@ describe('Parser Decorator', () => {
     const testEvent = generateMock(TestSchema);
 
     const resp = await lambda.handlerWithSchemaAndSafeParse(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      testEvent,
+      testEvent as unknown as ParsedResult<unknown, TestEvent>,
       {} as Context
     );
 
@@ -157,9 +151,10 @@ describe('Parser Decorator', () => {
 
   it('should parse event with schema and safeParse and return error', async () => {
     expect(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      await lambda.handlerWithSchemaAndSafeParse({ foo: 'bar' }, {} as Context)
+      await lambda.handlerWithSchemaAndSafeParse(
+        { foo: 'bar' } as unknown as ParsedResult<unknown, TestEvent>,
+        {} as Context
+      )
     ).toEqual({
       error: expect.any(ParseError),
       success: false,
@@ -173,9 +168,7 @@ describe('Parser Decorator', () => {
     event.detail = testEvent;
 
     const resp = await lambda.harndlerWithEnvelopeAndSafeParse(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      event,
+      event as unknown as ParsedResult<TestEvent, TestEvent>,
       {} as Context
     );
 
@@ -188,9 +181,7 @@ describe('Parser Decorator', () => {
   it('should parse event with envelope and safeParse and return error', async () => {
     expect(
       await lambda.harndlerWithEnvelopeAndSafeParse(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        { foo: 'bar' },
+        { foo: 'bar' } as unknown as ParsedResult<TestEvent, TestEvent>,
         {} as Context
       )
     ).toEqual({

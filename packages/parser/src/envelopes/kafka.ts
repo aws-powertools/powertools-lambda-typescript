@@ -20,7 +20,7 @@ export class KafkaEnvelope extends Envelope {
   public static parse<T extends ZodSchema>(
     data: unknown,
     schema: T
-  ): z.infer<T> {
+  ): z.infer<T>[] {
     // manually fetch event source to deside between Msk or SelfManaged
     const eventSource = (data as KafkaMskEvent)['eventSource'];
 

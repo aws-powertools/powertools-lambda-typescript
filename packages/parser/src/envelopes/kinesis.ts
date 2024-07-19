@@ -18,7 +18,7 @@ export class KinesisEnvelope extends Envelope {
   public static parse<T extends ZodSchema>(
     data: unknown,
     schema: T
-  ): z.infer<T> {
+  ): z.infer<T>[] {
     const parsedEnvelope = KinesisDataStreamSchema.parse(data);
 
     return parsedEnvelope.Records.map((record) => {

@@ -1,8 +1,9 @@
 import { type MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
 import { type MiddlewareObj } from '@middy/core';
-import { type ZodSchema } from 'zod';
-import { type ParserOptions } from '../types/parser.js';
+import { ZodType } from 'zod';
+import type { ParserOptions, ParseOutput } from '../types/parser.js';
 import { parse } from '../parser.js';
+import type { Envelope } from '../types/envelope.js';
 
 /**
  * A middiy middleware to parse your event.
@@ -32,9 +33,13 @@ import { parse } from '../parser.js';
  *
  * @param options
  */
-const parser = <S extends ZodSchema>(
-  options: ParserOptions<S>
-): MiddlewareObj => {
+const parser = <
+  TSchema extends ZodType,
+  TEnvelope extends Envelope = undefined,
+  TSafeParse extends boolean = false,
+>(
+  options: ParserOptions<TSchema, TEnvelope, TSafeParse>
+): MiddlewareObj<ParseOutput<TSchema, TEnvelope, TSafeParse>> => {
   const before = (request: MiddyLikeRequest): void => {
     const { schema, envelope, safeParse } = options;
 

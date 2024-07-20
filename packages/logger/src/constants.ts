@@ -14,4 +14,13 @@ const LogJsonIndent = {
   COMPACT: 0,
 } as const;
 
-export { LogJsonIndent };
+const LogLevel = {
+  DEBUG: 'DEBUG',
+  INFO: 'INFO',
+  WARN: 'WARN',
+  ERROR: 'ERROR',
+  SILENT: 'SILENT',
+  CRITICAL: 'CRITICAL',
+} as const;
+
+export { LogJsonIndent, LogLevel };

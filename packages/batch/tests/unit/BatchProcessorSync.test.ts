@@ -3,12 +3,12 @@
  *
  * @group unit/batch/class/batchprocessorsync
  */
-import type { Context } from 'aws-lambda';
 import context from '@aws-lambda-powertools/testing-utils/context';
+import type { Context } from 'aws-lambda';
 import {
+  BatchProcessingError,
   BatchProcessorSync,
   EventType,
-  BatchProcessingError,
   FullBatchFailureError,
 } from '../../src/index.js';
 import type { BatchProcessingOptions } from '../../src/types.js';

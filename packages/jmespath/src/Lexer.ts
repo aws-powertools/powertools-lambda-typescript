@@ -32,9 +32,7 @@ class Lexer {
     while (this.#current !== '' && this.#current !== undefined) {
       if (SIMPLE_TOKENS.has(this.#current)) {
         yield {
-          // We know that SIMPLE_TOKENS has this.#current as a key because
-          // we checked for that above.
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          // biome-ignore lint/style/noNonNullAssertion: We know that SIMPLE_TOKENS has this.#current as a key because we checked for that above.
           type: SIMPLE_TOKENS.get(this.#current)!,
           value: this.#current,
           start: this.#position,
@@ -57,7 +55,7 @@ class Lexer {
         const buff = this.#consumeNumber();
         yield {
           type: 'number',
-          value: parseInt(buff),
+          value: Number.parseInt(buff),
           start: start,
           end: start + buff.length,
         };
@@ -119,9 +117,8 @@ class Lexer {
         start: this.#position - 1,
         end: this.#position,
       };
-    } else {
-      throw new LexerError(this.#position - 1, '=');
     }
+    throw new LexerError(this.#position - 1, '=');
   }
 
   /**
@@ -158,14 +155,13 @@ class Lexer {
     if (buff.length > 1) {
       return {
         type: 'number',
-        value: parseInt(buff),
+        value: Number.parseInt(buff),
         start: start,
         end: start + buff.length,
       };
-    } else {
-      // If the negative sign is not followed by a number, it is an error.
-      throw new LexerError(start, 'Unknown token after "-"');
     }
+    // If the negative sign is not followed by a number, it is an error.
+    throw new LexerError(start, 'Unknown token after "-"');
   }
 
   /**
@@ -194,17 +190,17 @@ class Lexer {
   #consumeSquareBracket(): Token {
     const start = this.#position;
     const nextChar = this.#next();
-    if (nextChar == ']') {
+    if (nextChar === ']') {
       this.#next();
 
       return { type: 'flatten', value: '[]', start: start, end: start + 2 };
-    } else if (nextChar == '?') {
+    }
+    if (nextChar === '?') {
       this.#next();
 
       return { type: 'filter', value: '[?', start: start, end: start + 2 };
-    } else {
-      return { type: 'lbracket', value: '[', start: start, end: start + 1 };
     }
+    return { type: 'lbracket', value: '[', start: start, end: start + 1 };
   }
 
   /**
@@ -301,7 +297,7 @@ class Lexer {
    */
   #consumeQuotedIdentifier(): Token {
     const start = this.#position;
-    const lexeme = '"' + this.#consumeUntil('"') + '"';
+    const lexeme = `"${this.#consumeUntil('"')}"`;
     const tokenLen = this.#position - start;
 
     return {

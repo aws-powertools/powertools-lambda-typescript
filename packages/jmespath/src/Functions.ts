@@ -159,9 +159,8 @@ class Functions {
   ): number {
     if (isRecord(arg)) {
       return Object.keys(arg).length;
-    } else {
-      return arg.length;
     }
+    return arg.length;
   }
 
   /**
@@ -194,12 +193,12 @@ class Functions {
     if (arg.length === 0) {
       return null;
       // The signature decorator already enforces that all elements are of the same type
-    } else if (isNumber(arg[0])) {
-      return Math.max(...(arg as number[]));
-    } else {
-      // local compare function to handle string comparison
-      return arg.reduce((a, b) => (a > b ? a : b));
     }
+    if (isNumber(arg[0])) {
+      return Math.max(...(arg as number[]));
+    }
+    // local compare function to handle string comparison
+    return arg.reduce((a, b) => (a > b ? a : b));
   }
 
   /**
@@ -236,14 +235,13 @@ class Functions {
 
       if (max.visited === current.visited) {
         return max;
-      } else {
-        // We can safely cast visited to number | string here because we've already
-        // checked the type at runtime above and we know that it's either a number or a string
-        return (max.visited as number | string) >
-          (current.visited as number | string)
-          ? max
-          : current;
       }
+      // We can safely cast visited to number | string here because we've already
+      // checked the type at runtime above and we know that it's either a number or a string
+      return (max.visited as number | string) >
+        (current.visited as number | string)
+        ? max
+        : current;
     }, visitedArgs[0]);
 
     return max.arg;
@@ -261,6 +259,7 @@ class Functions {
     variadic: true,
   })
   public funcMerge(...args: Array<JSONObject>): JSONObject {
+    // biome-ignore lint/performance/noAccumulatingSpread: This is a shallow merge so the tradeoff is acceptable
     return args.reduce((a, b) => ({ ...a, ...b }), {});
   }
 
@@ -276,11 +275,11 @@ class Functions {
     if (arg.length === 0) {
       return null;
       // The signature decorator already enforces that all elements are of the same type
-    } else if (isNumber(arg[0])) {
-      return Math.min(...arg);
-    } else {
-      return arg.reduce((a, b) => (a < b ? a : b));
     }
+    if (isNumber(arg[0])) {
+      return Math.min(...arg);
+    }
+    return arg.reduce((a, b) => (a < b ? a : b));
   }
 
   /**
@@ -317,14 +316,13 @@ class Functions {
 
       if (min.visited === current.visited) {
         return min;
-      } else {
-        // We can safely cast visited to number | string here because we've already
-        // checked the type at runtime above and we know that it's either a number or a string
-        return (min.visited as string | number) <
-          (current.visited as string | number)
-          ? min
-          : current;
       }
+      // We can safely cast visited to number | string here because we've already
+      // checked the type at runtime above and we know that it's either a number or a string
+      return (min.visited as string | number) <
+        (current.visited as string | number)
+        ? min
+        : current;
     }, visitedArgs[0]);
 
     return min.arg;
@@ -415,13 +413,12 @@ class Functions {
       .sort((a, b) => {
         if (a.visited === b.visited) {
           return a.index - b.index; // Make the sort stable
-        } else {
-          // We can safely cast visited to number | string here because we've already
-          // checked the type at runtime above and we know that it's either a number or a string
-          return (a.visited as string | number) > (b.visited as string | number)
-            ? 1
-            : -1;
         }
+        // We can safely cast visited to number | string here because we've already
+        // checked the type at runtime above and we know that it's either a number or a string
+        return (a.visited as string | number) > (b.visited as string | number)
+          ? 1
+          : -1;
       })
       .map(({ value }) => value); // Extract the original values
   }
@@ -484,13 +481,13 @@ class Functions {
   public funcToNumber(arg: JSONValue): number | null {
     if (typeof arg === 'number') {
       return arg;
-    } else if (typeof arg === 'string') {
+    }
+    if (typeof arg === 'string') {
       const num = Number(arg);
 
       return Number.isNaN(num) ? null : num;
-    } else {
-      return null;
     }
+    return null;
   }
 
   /**

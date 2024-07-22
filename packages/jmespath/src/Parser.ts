@@ -15,8 +15,8 @@ import {
   indexExpression,
   keyValPair,
   literal,
-  multiSelectObject,
   multiSelectList,
+  multiSelectObject,
   notExpression,
   orExpression,
   pipe,
@@ -175,13 +175,13 @@ class Parser {
       case 'flatten':
         return this.#processFlattenTokenNud();
       case 'not':
-        return notExpression(this.#expression(BINDING_POWER['not']));
+        return notExpression(this.#expression(BINDING_POWER.not));
       case 'lbracket':
         return this.#processLBracketTokenNud();
       case 'current':
         return currentNode();
       case 'expref':
-        return expref(this.#expression(BINDING_POWER['expref']));
+        return expref(this.#expression(BINDING_POWER.expref));
       default:
         return this.#processDefaultToken(token);
     }
@@ -218,11 +218,11 @@ class Parser {
    */
   #processStarToken(): Node {
     const left = identity();
-    let right;
+    let right: Node;
     if (this.#currentToken() === 'rbracket') {
       right = identity();
     } else {
-      right = this.#parseProjectionRhs(BINDING_POWER['star']);
+      right = this.#parseProjectionRhs(BINDING_POWER.star);
     }
 
     return valueProjection(left, right);
@@ -253,7 +253,7 @@ class Parser {
    */
   #processFlattenTokenNud(): Node {
     const left = flatten(identity());
-    const right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
+    const right = this.#parseProjectionRhs(BINDING_POWER.flatten);
 
     return projection(left, right);
   }
@@ -271,18 +271,15 @@ class Parser {
       const right = this.#parseIndexExpression();
 
       return this.#projectIfSlice(identity(), right);
-    } else if (
-      this.#currentToken() === 'star' &&
-      this.#lookahead(1) === 'rbracket'
-    ) {
+    }
+    if (this.#currentToken() === 'star' && this.#lookahead(1) === 'rbracket') {
       this.#advance();
       this.#advance();
-      const right = this.#parseProjectionRhs(BINDING_POWER['star']);
+      const right = this.#parseProjectionRhs(BINDING_POWER.star);
 
       return projection(identity(), right);
-    } else {
-      return this.#parseMultiSelectList();
     }
+    return this.#parseMultiSelectList();
   }
 
   /**
@@ -357,21 +354,19 @@ class Parser {
    */
   #processDotToken(leftNode: Node): Node {
     if (this.#currentToken() !== 'star') {
-      const right = this.#parseDotRhs(BINDING_POWER['dot']);
+      const right = this.#parseDotRhs(BINDING_POWER.dot);
       if (leftNode.type === 'subexpression') {
         leftNode.children.push(right);
 
         return leftNode;
-      } else {
-        return subexpression([leftNode, right]);
       }
-    } else {
-      // We are creating a value projection
-      this.#advance();
-      const right = this.#parseProjectionRhs(BINDING_POWER['dot']);
-
-      return valueProjection(leftNode, right);
+      return subexpression([leftNode, right]);
     }
+    // We are creating a value projection
+    this.#advance();
+    const right = this.#parseProjectionRhs(BINDING_POWER.dot);
+
+    return valueProjection(leftNode, right);
   }
 
   /**
@@ -385,7 +380,7 @@ class Parser {
    * @param leftNode The left hand side of the expression.
    */
   #processPipeToken(leftNode: Node): Node {
-    const right = this.#expression(BINDING_POWER['pipe']);
+    const right = this.#expression(BINDING_POWER.pipe);
 
     return pipe(leftNode, right);
   }
@@ -401,7 +396,7 @@ class Parser {
    * @param leftNode The left hand side of the expression.
    */
   #processOrToken(leftNode: Node): Node {
-    const right = this.#expression(BINDING_POWER['or']);
+    const right = this.#expression(BINDING_POWER.or);
 
     return orExpression(leftNode, right);
   }
@@ -417,7 +412,7 @@ class Parser {
    * @param leftNode The left hand side of the expression.
    */
   #processAndToken(leftNode: Node): Node {
-    const right = this.#expression(BINDING_POWER['and']);
+    const right = this.#expression(BINDING_POWER.and);
 
     return andExpression(leftNode, right);
   }
@@ -445,7 +440,7 @@ class Parser {
     if (this.#currentToken() === 'flatten') {
       right = identity();
     } else {
-      right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
+      right = this.#parseProjectionRhs(BINDING_POWER.flatten);
     }
 
     return filterProjection(leftNode, right, condition);
@@ -453,7 +448,7 @@ class Parser {
 
   #processFlattenToken(leftNode: Node): Node {
     const left = flatten(leftNode);
-    const right = this.#parseProjectionRhs(BINDING_POWER['flatten']);
+    const right = this.#parseProjectionRhs(BINDING_POWER.flatten);
 
     return projection(left, right);
   }
@@ -469,17 +464,15 @@ class Parser {
         leftNode.children.push(right);
 
         return leftNode;
-      } else {
-        return this.#projectIfSlice(leftNode, right);
       }
-    } else {
-      // We have a projection
-      this.#match('star');
-      this.#match('rbracket');
-      const right = this.#parseProjectionRhs(BINDING_POWER['star']);
-
-      return projection(leftNode, right);
+      return this.#projectIfSlice(leftNode, right);
     }
+    // We have a projection
+    this.#match('star');
+    this.#match('rbracket');
+    const right = this.#parseProjectionRhs(BINDING_POWER.star);
+
+    return projection(leftNode, right);
   }
 
   /**
@@ -523,14 +516,13 @@ class Parser {
     //  | (currentToken)
     if (this.#lookahead(0) === 'colon' || this.#lookahead(1) === 'colon') {
       return this.#parseSliceExpression();
-    } else {
-      // Parse the syntax [number]
-      const node = index(this.#lookaheadToken(0).value);
-      this.#advance();
-      this.#match('rbracket');
-
-      return node;
     }
+    // Parse the syntax [number]
+    const node = index(this.#lookaheadToken(0).value);
+    this.#advance();
+    this.#match('rbracket');
+
+    return node;
   }
 
   /**
@@ -591,11 +583,10 @@ class Parser {
     if (right.type === 'slice') {
       return projection(
         idxExpression,
-        this.#parseProjectionRhs(BINDING_POWER['star'])
+        this.#parseProjectionRhs(BINDING_POWER.star)
       );
-    } else {
-      return idxExpression;
     }
+    return idxExpression;
   }
 
   /**
@@ -630,9 +621,8 @@ class Parser {
       expressions.push(expression);
       if (this.#currentToken() === 'rbracket') {
         break;
-      } else {
-        this.#match('comma');
       }
+      this.#match('comma');
     }
     this.#match('rbracket');
 
@@ -654,14 +644,14 @@ class Parser {
       // Before getting the token value, verify it's
       // an identifier.
       this.#matchMultipleTokens(['quoted_identifier', 'unquoted_identifier']); // token types
-      const keyName = keyToken['value'];
+      const keyName = keyToken.value;
       this.#match('colon');
       const value = this.#expression(0);
       const node = keyValPair(keyName, value);
       pairs.push(node);
-      if (this.#currentToken() == 'comma') {
+      if (this.#currentToken() === 'comma') {
         this.#match('comma');
-      } else if (this.#currentToken() == 'rbrace') {
+      } else if (this.#currentToken() === 'rbrace') {
         this.#match('rbrace');
         break;
       }
@@ -677,15 +667,15 @@ class Parser {
    */
   #parseProjectionRhs(bindingPower: number): Node {
     // Parse the right hand side of the projection.
-    let right;
+    let right: Node;
     if (BINDING_POWER[this.#currentToken()] < this.#projectionStop) {
       // BP of 10 are all the tokens that stop a projection.
       right = identity();
-    } else if (this.#currentToken() == 'lbracket') {
+    } else if (this.#currentToken() === 'lbracket') {
       right = this.#expression(bindingPower);
-    } else if (this.#currentToken() == 'filter') {
+    } else if (this.#currentToken() === 'filter') {
       right = this.#expression(bindingPower);
-    } else if (this.#currentToken() == 'dot') {
+    } else if (this.#currentToken() === 'dot') {
       this.#match('dot');
       right = this.#parseDotRhs(bindingPower);
     } else {
@@ -715,17 +705,18 @@ class Parser {
       ['quoted_identifier', 'unquoted_identifier', 'star'].includes(lookahead)
     ) {
       return this.#expression(bindingPower);
-    } else if (lookahead == 'lbracket') {
+    }
+    if (lookahead === 'lbracket') {
       this.#match('lbracket');
 
       return this.#parseMultiSelectList();
-    } else if (lookahead == 'lbrace') {
+    }
+    if (lookahead === 'lbrace') {
       this.#match('lbrace');
 
       return this.#parseMultiSelectHash();
-    } else {
-      this.#throwParseError();
     }
+    this.#throwParseError();
   }
 
   /**
@@ -745,13 +736,12 @@ class Parser {
           tokenValue: token.value,
           tokenType: token.type,
         });
-      } else {
-        throw new ParseError({
-          lexPosition: token.start,
-          tokenValue: token.value,
-          tokenType: token.type,
-        });
       }
+      throw new ParseError({
+        lexPosition: token.start,
+        tokenValue: token.value,
+        tokenType: token.type,
+      });
     }
   }
 
@@ -770,13 +760,12 @@ class Parser {
           tokenValue: token.value,
           tokenType: token.type,
         });
-      } else {
-        throw new ParseError({
-          lexPosition: token.start,
-          tokenValue: token.value,
-          tokenType: token.type,
-        });
       }
+      throw new ParseError({
+        lexPosition: token.start,
+        tokenValue: token.value,
+        tokenType: token.type,
+      });
     }
     this.#advance();
   }

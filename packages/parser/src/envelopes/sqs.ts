@@ -17,7 +17,7 @@ export class SqsEnvelope extends Envelope {
   public static parse<T extends ZodSchema>(
     data: unknown,
     schema: T
-  ): z.infer<T> {
+  ): z.infer<T>[] {
     const parsedEnvelope = SqsSchema.parse(data);
 
     return parsedEnvelope.Records.map((record) => {

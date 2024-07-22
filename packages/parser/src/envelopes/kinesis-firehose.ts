@@ -20,7 +20,7 @@ export class KinesisFirehoseEnvelope extends Envelope {
   public static parse<T extends ZodSchema>(
     data: unknown,
     schema: T
-  ): z.infer<T> {
+  ): z.infer<T>[] {
     const parsedEnvelope = KinesisFirehoseSchema.parse(data);
 
     return parsedEnvelope.records.map((record) => {

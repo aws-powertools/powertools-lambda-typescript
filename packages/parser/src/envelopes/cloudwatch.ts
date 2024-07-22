@@ -17,7 +17,7 @@ export class CloudWatchEnvelope extends Envelope {
   public static parse<T extends ZodSchema>(
     data: unknown,
     schema: T
-  ): z.infer<T> {
+  ): z.infer<T>[] {
     const parsedEnvelope = CloudWatchLogsSchema.parse(data);
 
     return parsedEnvelope.awslogs.data.logEvents.map((record) => {

@@ -3,11 +3,7 @@ import { DynamoDBStreamSchema } from '../schemas/index.js';
 import type { ParsedResult, ParsedResultError } from '../types/index.js';
 import { Envelope } from './envelope.js';
 import { ParseError } from '../errors.js';
-
-type DynamoDBStreamEnvelopeResponse<T extends ZodSchema> = {
-  NewImage: z.infer<T>;
-  OldImage: z.infer<T>;
-};
+import type { DynamoDBStreamEnvelopeResponse } from '../types/envelope.js';
 
 /**
  * DynamoDB Stream Envelope to extract data within NewImage/OldImage

@@ -1,11 +1,11 @@
+import type { Logger, Segment, Subsegment } from 'aws-xray-sdk-core';
+import xraySdk from 'aws-xray-sdk-core';
 import type { Namespace } from 'cls-hooked';
 import type {
-  ProviderServiceInterface,
   ContextMissingStrategy,
   HttpSubsegment,
+  ProviderServiceInterface,
 } from '../types/ProviderService.js';
-import type { Segment, Subsegment, Logger } from 'aws-xray-sdk-core';
-import xraySdk from 'aws-xray-sdk-core';
 const {
   captureAWS,
   captureAWSClient,
@@ -21,16 +21,16 @@ const {
   setDaemonAddress,
   setLogger,
 } = xraySdk;
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { subscribe } from 'node:diagnostics_channel';
+import http from 'node:http';
+import https from 'node:https';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import type { DiagnosticsChannel } from 'undici-types';
 import {
   findHeaderAndDecode,
   getOriginURL,
   isHttpSubsegment,
 } from './utilities.js';
-import type { DiagnosticsChannel } from 'undici-types';
-import http from 'node:http';
-import https from 'node:https';
 
 class ProviderService implements ProviderServiceInterface {
   /**
@@ -50,8 +50,7 @@ class ProviderService implements ProviderServiceInterface {
   public captureAWSv3Client<T>(service: T): T {
     addUserAgentMiddleware(service, 'tracer');
 
-    // Type must be aliased as any because of this https://github.com/aws/aws-xray-sdk-node/issues/439#issuecomment-859715660
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Type must be aliased as any because of this https://github.com/aws/aws-xray-sdk-node/issues/439#issuecomment-859715660
     return captureAWSv3Client(service as any);
   }
 
@@ -150,7 +149,7 @@ class ProviderService implements ProviderServiceInterface {
           response: {
             status,
             ...(contentLenght && {
-              content_length: parseInt(contentLenght),
+              content_length: Number.parseInt(contentLenght),
             }),
           },
         };

@@ -3,17 +3,17 @@
  *
  * @group unit/tracer/all
  */
-import context from '@aws-lambda-powertools/testing-utils/context';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { Tracer } from './../../src/index.js';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Callback, Context } from 'aws-lambda';
 import {
   Segment,
-  setContextMissingStrategy,
   Subsegment,
+  setContextMissingStrategy,
 } from 'aws-xray-sdk-core';
-import type { ProviderServiceInterface } from '../../src/types/ProviderService.js';
 import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
+import type { ProviderServiceInterface } from '../../src/types/ProviderService.js';
+import { Tracer } from './../../src/index.js';
 
 type CaptureAsyncFuncMock = jest.SpyInstance<
   unknown,
@@ -23,20 +23,19 @@ type CaptureAsyncFuncMock = jest.SpyInstance<
     parent?: Segment | Subsegment,
   ]
 >;
-const createCaptureAsyncFuncMock = function (
+const createCaptureAsyncFuncMock = (
   provider: ProviderServiceInterface,
   subsegment?: Subsegment
-): CaptureAsyncFuncMock {
-  return jest
+): CaptureAsyncFuncMock =>
+  jest
     .spyOn(provider, 'captureAsyncFunc')
     .mockImplementation(async (methodName, callBackFn) => {
-      if (!subsegment) {
-        subsegment = new Subsegment(`### ${methodName}`);
-      }
-      jest.spyOn(subsegment, 'flush').mockImplementation(() => null);
-      await callBackFn(subsegment);
+      const newSubsegment = subsegment
+        ? subsegment
+        : new Subsegment(`### ${methodName}`);
+      jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
+      await callBackFn(newSubsegment);
     });
-};
 
 jest.spyOn(console, 'log').mockImplementation(() => null);
 jest.spyOn(console, 'debug').mockImplementation(() => null);
@@ -244,7 +243,7 @@ describe('Class: Tracer', () => {
 
     test('when AWS_EXECUTION_ENV environment variable is NOT set, tracing is disabled', () => {
       // Prepare
-      delete process.env.AWS_EXECUTION_ENV;
+      process.env.AWS_EXECUTION_ENV = undefined;
 
       // Act
       const tracer = new Tracer();
@@ -445,7 +444,7 @@ describe('Class: Tracer', () => {
 
     test('when called when a serviceName has not been set in the constructor or environment variables, it adds the default service name as an annotation', () => {
       // Prepare
-      delete process.env.POWERTOOLS_SERVICE_NAME;
+      process.env.POWERTOOLS_SERVICE_NAME = undefined;
       const tracer: Tracer = new Tracer();
       const putAnnotation = jest
         .spyOn(tracer, 'putAnnotation')
@@ -484,7 +483,7 @@ describe('Class: Tracer', () => {
 
       // Assess
       expect(putMetadataSpy).toBeCalledTimes(0);
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
+      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = undefined;
     });
 
     test('when called with data equal to undefined, it does nothing', () => {
@@ -546,7 +545,7 @@ describe('Class: Tracer', () => {
       // Assess
       expect(addErrorFlagSpy).toBeCalledTimes(1);
       expect(addErrorSpy).toBeCalledTimes(0);
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = undefined;
     });
 
     test('when called with default config, it calls subsegment.addError correctly', () => {
@@ -609,7 +608,7 @@ describe('Class: Tracer', () => {
 
     test('when called outside of a namespace or without parent segment, and tracing is disabled, it returns a dummy subsegment', () => {
       // Prepare
-      delete process.env.AWS_EXECUTION_ENV; // This will disable the tracer, simulating local execution
+      process.env.AWS_EXECUTION_ENV = undefined; // This will disable the tracer, simulating local execution
       const tracer: Tracer = new Tracer();
 
       // Act
@@ -683,7 +682,7 @@ describe('Class: Tracer', () => {
 
     test('when called outside of a namespace or without parent segment, and tracing is disabled, it does nothing', () => {
       // Prepare
-      delete process.env.AWS_EXECUTION_ENV; // This will disable the tracer, simulating local execution
+      process.env.AWS_EXECUTION_ENV = undefined; // This will disable the tracer, simulating local execution
       const tracer: Tracer = new Tracer();
       const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment');
 
@@ -852,11 +851,7 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        public handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
           return new Promise((resolve, _reject) =>
             resolve({
               foo: 'bar',
@@ -866,14 +861,12 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(putMetadataSpy).toHaveBeenCalledTimes(0);
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
+      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = undefined;
     });
 
     test('when used as decorator while captureResponse is set to false, it does not capture the response as metadata', async () => {
@@ -890,11 +883,7 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler({ captureResponse: false })
-        public handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
           return new Promise((resolve, _reject) =>
             resolve({
               foo: 'bar',
@@ -904,9 +893,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -927,11 +914,7 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler({ captureResponse: true })
-        public handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
           return new Promise((resolve, _reject) =>
             resolve({
               foo: 'bar',
@@ -941,9 +924,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -972,11 +953,7 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureLambdaHandler()
-        public handler<TEvent, TResult>(
-          _event: TEvent,
-          _context: Context,
-          _callback: Callback<TResult>
-        ): void | Promise<TResult> {
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
           return new Promise((resolve, _reject) =>
             resolve({
               foo: 'bar',
@@ -986,9 +963,7 @@ describe('Class: Tracer', () => {
       }
 
       // Act
-      await new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await new Lambda().handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -1037,7 +1012,7 @@ describe('Class: Tracer', () => {
       expect(addErrorSpy).toHaveBeenCalledTimes(0);
       expect.assertions(4);
 
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = undefined;
     });
 
     test('when used as decorator and with standard config, it captures the exception', async () => {
@@ -1271,7 +1246,7 @@ describe('Class: Tracer', () => {
       expect(closeSpy).toHaveBeenCalledTimes(1);
       expect(logWarningSpy).toHaveBeenNthCalledWith(
         1,
-        `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+        'Failed to close or serialize segment %s. We are catching the error but data might be lost.',
         handlerSubsegment.name,
         new Error('dummy error')
       );
@@ -1605,8 +1580,6 @@ describe('Class: Tracer', () => {
         'captureAsyncFunc'
       );
 
-      // Creating custom external decorator
-      // eslint-disable-next-line func-style
       function passThrough() {
         // A decorator that calls the original method.
         return (
@@ -1614,7 +1587,7 @@ describe('Class: Tracer', () => {
           _propertyKey: string,
           descriptor: PropertyDescriptor
         ) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          // biome-ignore lint/style/noNonNullAssertion: we know it's defined because this is a method decorator
           const originalMethod = descriptor.value!;
           descriptor.value = function (...args: unknown[]) {
             return originalMethod.apply(this, [...args]);
@@ -1626,7 +1599,7 @@ describe('Class: Tracer', () => {
         @tracer.captureMethod()
         @passThrough()
         public async dummyMethod(): Promise<string> {
-          return `foo`;
+          return 'foo';
         }
 
         public async handler(
@@ -1733,7 +1706,7 @@ describe('Class: Tracer', () => {
       expect(closeSpy).toHaveBeenCalledTimes(1);
       expect(logWarningSpy).toHaveBeenNthCalledWith(
         1,
-        `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+        'Failed to close or serialize segment %s. We are catching the error but data might be lost.',
         handlerSubsegment.name,
         new Error('dummy error')
       );

@@ -13,14 +13,25 @@
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineEnding": "lf"
+    "lineEnding": "lf",
+    "lineWidth": 80
   },
   "javascript": {
     "formatter": {
       "semicolons": "always",
       "bracketSpacing": true,
       "quoteStyle": "single",
-      "trailingComma": "es5"
+      "trailingCommas": "es5"
     }
+  },
+  "files": {
+    "ignore": [
+      "node_modules",
+      "coverage",
+      "lib",
+      "cdk.out",
+      "site",
+      ".aws-sam"
+    ]
   }
 }

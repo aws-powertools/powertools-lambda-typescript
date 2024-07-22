@@ -78,7 +78,7 @@
     "typescript": "^5.4.5"
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --fix",
+    "*.{js,ts}": "biome check --write",
     "*.md": "markdownlint-cli2 --fix"
   },
   "engines": {

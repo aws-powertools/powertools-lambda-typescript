@@ -1,7 +1,7 @@
+import { GetCommand, type GetCommandOutput } from '@aws-sdk/lib-dynamodb';
 import { docClient } from '#clients/dynamodb';
 import { itemsTableName } from '#constants';
 import type { DebugLogger } from '#types';
-import { GetCommand, type GetCommandOutput } from '@aws-sdk/lib-dynamodb';
 
 /**
  * Fetch an item from the DynamoDB table.
@@ -22,7 +22,7 @@ const getItemDynamoDB = async (
     })
   );
 
-  logger.debug(`ddb response`, {
+  logger.debug('ddb response', {
     response,
   });
 

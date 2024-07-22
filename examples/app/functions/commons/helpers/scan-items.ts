@@ -1,7 +1,7 @@
+import { ScanCommand, type ScanCommandOutput } from '@aws-sdk/lib-dynamodb';
 import { docClient } from '#clients/dynamodb';
 import { itemsTableName } from '#constants';
 import type { DebugLogger } from '#types';
-import { ScanCommand, type ScanCommandOutput } from '@aws-sdk/lib-dynamodb';
 
 /**
  * Scan the DynamoDB table and return all items.
@@ -19,7 +19,7 @@ const scanItemsDynamoDB = async (
     })
   );
 
-  logger.debug(`ddb response`, {
+  logger.debug('ddb response', {
     response,
   });
 

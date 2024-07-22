@@ -62,7 +62,7 @@ type ZodInferredSafeParseResult<
 /**
  * The output of the parser function, can be either schema inferred type or a ParsedResult
  */
-type ParseOutput<
+type ParserOutput<
   TSchema extends ZodSchema,
   TEnvelope extends Envelope,
   TSafeParse = false,
@@ -79,5 +79,5 @@ export type {
   ParsedResult,
   ParsedResultError,
   ParsedResultSuccess,
-  ParseOutput,
+  ParserOutput,
 };

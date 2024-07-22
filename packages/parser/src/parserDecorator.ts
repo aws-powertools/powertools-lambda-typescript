@@ -3,7 +3,7 @@ import type { Context, Handler } from 'aws-lambda';
 import { type ZodSchema } from 'zod';
 import { parse } from './parser.js';
 import type { ParserOptions, Envelope } from './types/index.js';
-import type { ParseOutput } from './types/parser.js';
+import type { ParserOutput } from './types/parser.js';
 
 /**
  * A decorator to parse your event.
@@ -82,7 +82,7 @@ export const parser = <
 
     descriptor.value = async function (
       this: Handler,
-      event: ParseOutput<TSchema, TEnvelope, TSafeParse>,
+      event: ParserOutput<TSchema, TEnvelope, TSafeParse>,
       context: Context,
       callback
     ) {

@@ -1,7 +1,7 @@
 import { type MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
 import { type MiddlewareObj } from '@middy/core';
 import { ZodType } from 'zod';
-import type { ParserOptions, ParseOutput } from '../types/parser.js';
+import type { ParserOptions, ParserOutput } from '../types/parser.js';
 import { parse } from '../parser.js';
 import type { Envelope } from '../types/envelope.js';
 
@@ -39,7 +39,7 @@ const parser = <
   TSafeParse extends boolean = false,
 >(
   options: ParserOptions<TSchema, TEnvelope, TSafeParse>
-): MiddlewareObj<ParseOutput<TSchema, TEnvelope, TSafeParse>> => {
+): MiddlewareObj<ParserOutput<TSchema, TEnvelope, TSafeParse>> => {
   const before = (request: MiddyLikeRequest): void => {
     const { schema, envelope, safeParse } = options;
 

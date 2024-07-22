@@ -3,13 +3,12 @@
  *
  * @group unit/commons/lambdaInterface
  */
-import { Handler } from 'aws-lambda';
-import { Callback, Context } from 'aws-lambda';
 import context from '@aws-lambda-powertools/testing-utils/context';
+import type { Callback, Context, Handler } from 'aws-lambda';
 import type {
-  SyncHandler,
   AsyncHandler,
   LambdaInterface,
+  SyncHandler,
 } from '../../src/types/index.js';
 
 describe('LambdaInterface with arrow function', () => {
@@ -105,10 +104,8 @@ describe('LambdaInterface with decorator', () => {
               callback,
             ]);
             console.log(`Invoked ${String(_propertyKey)}`);
-          } catch (error) {
-            throw error;
           } finally {
-            console.log(`Finally from decorator`);
+            console.log('Finally from decorator');
           }
 
           return result;

@@ -1,18 +1,18 @@
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 /**
  * Test makeIdempotent function
  *
  * @group e2e/idempotency/makeIdempotent
  */
 import {
-  invokeFunction,
   TestInvocationLogs,
   TestStack,
+  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-import { createHash } from 'node:crypto';
-import { join } from 'node:path';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -21,7 +21,7 @@ import {
   TEST_CASE_TIMEOUT,
 } from './constants';
 
-describe(`Idempotency E2E tests, wrapper function usage`, () => {
+describe('Idempotency E2E tests, wrapper function usage', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

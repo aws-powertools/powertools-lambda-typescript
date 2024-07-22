@@ -31,7 +31,7 @@ describe('Class: EnvironmentVariableService', () => {
 
     test('When called without the environment variable set, it returns an empty string', () => {
       // Prepare
-      delete process.env.AWS_LAMBDA_FUNCTION_NAME;
+      process.env.AWS_LAMBDA_FUNCTION_NAME = undefined;
 
       // Act
       const lambdaName = new EnvironmentVariablesService().getFunctionName();

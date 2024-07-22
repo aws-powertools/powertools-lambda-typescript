@@ -3,23 +3,23 @@
  *
  * @group e2e/layers/all
  */
-import { App } from 'aws-cdk-lib';
-import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
-import { LayerPublisherStack } from '../../src/layer-publisher-stack';
+import { join } from 'node:path';
 import {
-  TestStack,
   TestInvocationLogs,
-  invokeFunctionOnce,
+  TestStack,
   generateTestUniqueName,
+  invokeFunctionOnce,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
+import { App } from 'aws-cdk-lib';
+import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
+import packageJson from '../../package.json';
+import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
 } from './constants';
-import { join } from 'node:path';
-import packageJson from '../../package.json';
 
 jest.spyOn(console, 'log').mockImplementation();
 
@@ -39,7 +39,7 @@ function assertLogs(
  *
  * The lambda function is invoked once and the logs are collected. The goal of the test is to verify that the layer creation and usage works as expected.
  */
-describe(`Layers E2E tests`, () => {
+describe('Layers E2E tests', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
@@ -96,7 +96,7 @@ describe(`Layers E2E tests`, () => {
     );
 
     // Add a lambda function for each output format to the test stack
-    cases.forEach((outputFormat) => {
+    for (const outputFormat of cases) {
       new TestNodejsFunction(
         testStack,
         {
@@ -120,7 +120,7 @@ describe(`Layers E2E tests`, () => {
           ...(outputFormat === 'ESM' && { outputFormat: 'ESM' }),
         }
       );
-    });
+    }
 
     // Deploy the test stack
     await testStack.deploy();
@@ -141,20 +141,19 @@ describe(`Layers E2E tests`, () => {
   describe.each(cases)(
     'utilities tests for %s output format',
     (outputFormat) => {
-      let invocationLogs: TestInvocationLogs;
-      beforeAll(() => {
+      it('should have no errors in the logs, which indicates the pacakges version matches the expected one', () => {
         const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
         assertLogs(maybeInvocationLogs);
-        invocationLogs = maybeInvocationLogs;
-      });
-
-      it('should have no errors in the logs, which indicates the pacakges version matches the expected one', () => {
+        const invocationLogs = maybeInvocationLogs;
         const logs = invocationLogs.getFunctionLogs('ERROR');
 
         expect(logs.length).toBe(0);
       });
 
       it('should have one warning related to missing Metrics namespace', () => {
+        const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
+        assertLogs(maybeInvocationLogs);
+        const invocationLogs = maybeInvocationLogs;
         const logs = invocationLogs.getFunctionLogs('WARN');
 
         expect(logs.length).toBe(1);
@@ -162,7 +161,11 @@ describe(`Layers E2E tests`, () => {
       });
 
       it('should have one info log related to coldstart metric', () => {
+        const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
+        assertLogs(maybeInvocationLogs);
+        const invocationLogs = maybeInvocationLogs;
         const logs = invocationLogs.getFunctionLogs();
+
         const emfLogEntry = logs.find((log) =>
           log.match(
             /{"_aws":{"Timestamp":\d+,"CloudWatchMetrics":\[\{"Namespace":"\S+","Dimensions":\[\["service"\]\],"Metrics":\[\{"Name":"ColdStart","Unit":"Count"\}\]\}\]},"service":"\S+","ColdStart":1}/
@@ -173,6 +176,9 @@ describe(`Layers E2E tests`, () => {
       });
 
       it('should have one debug log with tracer subsegment info', () => {
+        const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
+        assertLogs(maybeInvocationLogs);
+        const invocationLogs = maybeInvocationLogs;
         const logs = invocationLogs.getFunctionLogs('DEBUG');
 
         expect(logs.length).toBe(1);

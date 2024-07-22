@@ -1,9 +1,9 @@
 import type { Handler } from 'aws-lambda';
-import {
+import { makeIdempotent } from './makeIdempotent.js';
+import type {
   AnyFunction,
   ItempotentFunctionOptions,
 } from './types/IdempotencyOptions.js';
-import { makeIdempotent } from './makeIdempotent.js';
 
 /**
  * Use this decorator to make your lambda handler itempotent.
@@ -60,6 +60,7 @@ const idempotent = function (
   propertyKey: string,
   descriptor: PropertyDescriptor
 ) => PropertyDescriptor {
+  // biome-ignore lint/complexity/useArrowFunction: this is a decorator function and we need to maintain the `this` context
   return function (
     _target: unknown,
     _propertyKey: string,

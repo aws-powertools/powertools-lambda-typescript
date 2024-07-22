@@ -26,11 +26,10 @@ const invokeFunctionOnce = async ({
 
   if (result?.LogResult) {
     return new TestInvocationLogs(result?.LogResult);
-  } else {
-    throw new Error(
-      'No LogResult field returned in the response of Lambda invocation. This should not happen.'
-    );
   }
+  throw new Error(
+    'No LogResult field returned in the response of Lambda invocation. This should not happen.'
+  );
 };
 
 /**
@@ -50,11 +49,11 @@ const invokeFunction = async ({
 
   if (payload && Array.isArray(payload) && payload.length !== times) {
     throw new Error(
-      `The payload array must have the same length as the times parameter.`
+      'The payload array must have the same length as the times parameter.'
     );
   }
 
-  if (invocationMode == 'PARALLEL') {
+  if (invocationMode === 'PARALLEL') {
     const invocationPromises = Array.from(
       { length: times },
       () => invokeFunctionOnce

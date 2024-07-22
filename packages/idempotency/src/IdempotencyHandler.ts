@@ -1,24 +1,24 @@
-import type { Handler } from 'aws-lambda';
 import type {
   JSONValue,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
+import { search } from '@aws-lambda-powertools/jmespath';
+import type { Handler } from 'aws-lambda';
+import type { IdempotencyConfig } from './IdempotencyConfig.js';
+import { IdempotencyRecordStatus, MAX_RETRIES } from './constants.js';
+import {
+  IdempotencyAlreadyInProgressError,
+  IdempotencyInconsistentStateError,
+  type IdempotencyItemAlreadyExistsError,
+  IdempotencyPersistenceLayerError,
+  IdempotencyUnknownError,
+} from './errors.js';
+import type { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
+import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import type {
   AnyFunction,
   IdempotencyHandlerOptions,
 } from './types/IdempotencyOptions.js';
-import {
-  IdempotencyAlreadyInProgressError,
-  IdempotencyInconsistentStateError,
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyPersistenceLayerError,
-  IdempotencyUnknownError,
-} from './errors.js';
-import { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
-import { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
-import { IdempotencyConfig } from './IdempotencyConfig.js';
-import { MAX_RETRIES, IdempotencyRecordStatus } from './constants.js';
-import { search } from '@aws-lambda-powertools/jmespath';
 
 /**
  * @internal
@@ -99,9 +99,8 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       throw new IdempotencyInconsistentStateError(
         'Item has expired during processing and may not longer be valid.'
       );
-    } else if (
-      idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS
-    ) {
+    }
+    if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS) {
       if (
         idempotencyRecord.inProgressExpiryTimestamp &&
         idempotencyRecord.inProgressExpiryTimestamp <
@@ -110,11 +109,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         throw new IdempotencyInconsistentStateError(
           'Item is in progress but the in progress expiry timestamp has expired.'
         );
-      } else {
-        throw new IdempotencyAlreadyInProgressError(
-          `There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`
-        );
       }
+      throw new IdempotencyAlreadyInProgressError(
+        `There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`
+      );
     }
 
     return idempotencyRecord.getResponse();
@@ -129,7 +127,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * @returns The result of the function execution
    */
   public async getFunctionResult(): Promise<ReturnType<Func>> {
-    let result;
+    let result: ReturnType<Func>;
     try {
       result = await this.#functionToMakeIdempotent.apply(
         this.#thisArg,
@@ -168,7 +166,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
     }
 
-    let e;
+    let e: Error | undefined;
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
         const { isIdempotent, result } =
@@ -234,7 +232,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   public async handleMiddyBefore(
     request: MiddyLikeRequest,
     callback: (request: MiddyLikeRequest) => Promise<void>
-  ): Promise<ReturnType<Func> | void> {
+  ): Promise<ReturnType<Func> | undefined> {
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
         const { isIdempotent, result } =
@@ -309,9 +307,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
 
       return selection === undefined || selection === null;
-    } else {
-      return false;
     }
+
+    return false;
   }
 
   /**
@@ -388,12 +386,11 @@ export class IdempotencyHandler<Func extends AnyFunction> {
           );
 
         return returnValue;
-      } else {
-        throw new IdempotencyPersistenceLayerError(
-          'Failed to save in progress record to idempotency store',
-          { cause: error }
-        );
       }
+      throw new IdempotencyPersistenceLayerError(
+        'Failed to save in progress record to idempotency store',
+        { cause: error }
+      );
     }
   };
 

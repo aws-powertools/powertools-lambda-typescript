@@ -1,13 +1,13 @@
-import { CustomResource, Duration, Stack, StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { randomUUID } from 'node:crypto';
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Provider } from 'aws-cdk-lib/custom-resources';
-import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import path from 'node:path';
+import { CustomResource, Duration, Stack, type StackProps } from 'aws-cdk-lib';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { Provider } from 'aws-cdk-lib/custom-resources';
+import type { Construct } from 'constructs';
 
 export interface CanaryStackProps extends StackProps {
   readonly layerName: string;

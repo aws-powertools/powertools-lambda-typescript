@@ -1,21 +1,21 @@
-import { createHash, Hash } from 'node:crypto';
+import { type Hash, createHash } from 'node:crypto';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { search } from '@aws-lambda-powertools/jmespath';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
-import type {
-  BasePersistenceLayerOptions,
-  BasePersistenceLayerInterface,
-} from '../types/BasePersistenceLayer.js';
-import { IdempotencyRecordStatus } from '../constants.js';
 import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
-import { IdempotencyRecord } from './IdempotencyRecord.js';
+import { IdempotencyRecordStatus } from '../constants.js';
+import { deepSort } from '../deepSort.js';
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyKeyError,
   IdempotencyValidationError,
 } from '../errors.js';
+import type {
+  BasePersistenceLayerInterface,
+  BasePersistenceLayerOptions,
+} from '../types/BasePersistenceLayer.js';
+import { IdempotencyRecord } from './IdempotencyRecord.js';
 import { LRUCache } from './LRUCache.js';
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
-import { deepSort } from '../deepSort.js';
 
 /**
  * Base class for all persistence layers. This class provides the basic functionality for
@@ -282,15 +282,15 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * @returns the idempotency key
    */
   private getHashedIdempotencyKey(data: JSONValue): string {
-    if (this.eventKeyJmesPath) {
-      data = search(
-        this.eventKeyJmesPath,
-        data,
-        this.#jmesPathOptions
-      ) as JSONValue;
-    }
+    const payload = this.eventKeyJmesPath
+      ? (search(
+          this.eventKeyJmesPath,
+          data,
+          this.#jmesPathOptions
+        ) as JSONValue)
+      : data;
 
-    if (BasePersistenceLayer.isMissingIdempotencyKey(data)) {
+    if (BasePersistenceLayer.isMissingIdempotencyKey(payload)) {
       if (this.throwOnNoIdempotencyKey) {
         throw new IdempotencyKeyError(
           'No data found to create a hashed idempotency_key'
@@ -302,7 +302,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
 
     return `${this.idempotencyKeyPrefix}#${this.generateHash(
-      JSON.stringify(deepSort(data))
+      JSON.stringify(deepSort(payload))
     )}`;
   }
 
@@ -313,16 +313,20 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   private getHashedPayload(data: JSONValue): string {
     if (this.isPayloadValidationEnabled() && this.validationKeyJmesPath) {
-      data = search(
-        this.validationKeyJmesPath,
-        data,
-        this.#jmesPathOptions
-      ) as JSONValue;
-
-      return this.generateHash(JSON.stringify(deepSort(data)));
-    } else {
-      return '';
+      return this.generateHash(
+        JSON.stringify(
+          deepSort(
+            search(
+              this.validationKeyJmesPath,
+              data,
+              this.#jmesPathOptions
+            ) as JSONValue
+          )
+        )
+      );
     }
+
+    return '';
   }
 
   private static isMissingIdempotencyKey(data: JSONValue): boolean {

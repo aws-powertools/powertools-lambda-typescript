@@ -1,9 +1,9 @@
-import type { Context } from 'aws-lambda';
-import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
-import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
-import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
 import { Logger } from '@aws-lambda-powertools/logger';
 import middy from '@middy/core';
+import type { Context } from 'aws-lambda';
+import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
+import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
+import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
 
 const IDEMPOTENCY_TABLE_NAME =
   process.env.IDEMPOTENCY_TABLE_NAME || 'table_name';
@@ -19,7 +19,7 @@ const logger = new Logger();
 export const handler = middy(
   async (event: { foo: string }, context: Context) => {
     logger.addContext(context);
-    logger.info(`foo`, { details: event.foo });
+    logger.info('foo', { details: event.foo });
 
     return event.foo;
   }

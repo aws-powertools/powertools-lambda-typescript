@@ -1,7 +1,7 @@
-import type { TableProps, AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-import type { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import type { App, Stack } from 'aws-cdk-lib';
-import { LogLevel } from './constants.js';
+import type { AttributeType, TableProps } from 'aws-cdk-lib/aws-dynamodb';
+import type { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
+import type { LogLevel } from './constants.js';
 
 interface ExtraTestProps {
   /**

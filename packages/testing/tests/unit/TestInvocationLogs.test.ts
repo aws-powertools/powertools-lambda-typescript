@@ -4,7 +4,6 @@
  * @group unit/commons/invocationLogs
  *
  */
-
 import { TestInvocationLogs } from '../../src/TestInvocationLogs.js';
 
 const exampleLogs = `START RequestId: c6af9ac6-7b61-11e6-9a41-93e812345678 Version: $LATEST

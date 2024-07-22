@@ -1,8 +1,8 @@
+import { randomUUID } from 'node:crypto';
+import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient } from '#clients/dynamodb';
 import { itemsTableName } from '#constants';
 import type { DebugLogger } from '#types';
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
-import { randomUUID } from 'node:crypto';
 
 /**
  * Put an item in the DynamoDB table.
@@ -28,7 +28,7 @@ const putItemInDynamoDB = async (
     })
   );
 
-  logger.debug(`ddb response`, {
+  logger.debug('ddb response', {
     response,
   });
 

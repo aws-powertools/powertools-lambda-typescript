@@ -11,15 +11,11 @@
   "scripts": {
     "build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
     "test": "npm run test:unit",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --fix --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "test:unit": "export POWERTOOLS_DEV=true && jest --silent",
     "test:e2e": "echo 'To be implemented ...'",
     "cdk": "cdk"
-  },
-  "lint-staged": {
-    "*.ts": "npm run lint-fix",
-    "*.js": "npm run lint-fix"
   },
   "type": "module",
   "imports": {

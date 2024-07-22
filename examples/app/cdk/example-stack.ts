@@ -1,4 +1,4 @@
-import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import {
   AttributeType,
@@ -18,7 +18,7 @@ import { DynamoEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { Construct } from 'constructs';
+import type { Construct } from 'constructs';
 import { FunctionWithLogGroup } from './function-with-logstream-construct.js';
 
 export class PowertoolsExampleStack extends Stack {

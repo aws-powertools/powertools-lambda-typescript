@@ -95,7 +95,7 @@ import {
  * Test 9
  * Get a cached parameter and force retrieval. This also uses the same custom SDK client that counts the number of calls to DynamoDB.
  */
-describe(`Parameters E2E tests, dynamoDB provider`, () => {
+describe('Parameters E2E tests, dynamoDB provider', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

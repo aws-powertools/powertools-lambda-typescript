@@ -8,7 +8,7 @@ import {
   getRuntimeKey,
   type TestStack,
 } from '@aws-lambda-powertools/testing-utils';
-import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
+import type { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
@@ -18,15 +18,15 @@ import {
   ConfigurationType,
   DeploymentStrategy,
   HostedConfiguration,
-  IEnvironment,
+  type IEnvironment,
   RolloutStrategy,
-  CfnHostedConfigurationVersion,
+  type CfnHostedConfigurationVersion,
 } from 'aws-cdk-lib/aws-appconfig';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import type { SecretProps } from 'aws-cdk-lib/aws-secretsmanager';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import type { StringParameterProps } from 'aws-cdk-lib/aws-ssm';
-import { IStringParameter, StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { type IStringParameter, StringParameter } from 'aws-cdk-lib/aws-ssm';
 import {
   AwsCustomResource,
   AwsCustomResourcePolicy,
@@ -266,7 +266,7 @@ class TestAppConfigWithProfiles extends Construct {
       }
     );
 
-    profiles.forEach((profile) => {
+    for (const profile of profiles) {
       const config = new HostedConfiguration(
         testStack.stack,
         `hc-${randomUUID()}`,
@@ -291,7 +291,7 @@ class TestAppConfigWithProfiles extends Construct {
         config.node.defaultChild as CfnHostedConfigurationVersion
       ).applyRemovalPolicy(RemovalPolicy.DESTROY);
       this.profiles.push(config);
-    });
+    };
   }
 
   /**
@@ -300,7 +300,9 @@ class TestAppConfigWithProfiles extends Construct {
    * @param fn The function to add the environment variables to
    */
   public addEnvVariablesToFunction(fn: TestNodejsFunction): void {
+    // biome-ignore lint/style/noNonNullAssertion: we know this is called after the AppConfig resources are created
     fn.addEnvironment('APPLICATION_NAME', this.application.name!);
+    // biome-ignore lint/style/noNonNullAssertion: we know this is called after the AppConfig resources are created
     fn.addEnvironment('ENVIRONMENT_NAME', this.environment.name!);
     fn.addEnvironment(
       'FREEFORM_JSON_NAME',
@@ -326,9 +328,10 @@ class TestAppConfigWithProfiles extends Construct {
    * @param fn The function to grant access to the profiles
    */
   public grantReadData(fn: TestNodejsFunction): void {
-    this.profiles.forEach((profile) => {
+    for (const profile of this.profiles) {
       const appConfigConfigurationArn = Stack.of(fn).formatArn({
         service: 'appconfig',
+        // biome-ignore lint/style/noNonNullAssertion: we know this is called after the AppConfig resources are created
         resource: `application/${profile.application.applicationId}/environment/${profile.deployTo![0].environmentId}/configuration/${profile.configurationProfileId}`,
       });
 
@@ -342,7 +345,7 @@ class TestAppConfigWithProfiles extends Construct {
           resources: [appConfigConfigurationArn],
         })
       );
-    });
+    };
   }
 }
 

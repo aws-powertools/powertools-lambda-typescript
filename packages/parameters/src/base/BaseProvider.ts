@@ -97,7 +97,7 @@ abstract class BaseProvider implements BaseProviderInterface {
     name: string,
     options?: GetOptionsInterface
   ): Promise<unknown | undefined> {
-    const configs = new GetOptions(options, this.envVarsService);
+    const configs = new GetOptions(this.envVarsService, options);
     const key = [name, configs.transform].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
@@ -136,16 +136,15 @@ abstract class BaseProvider implements BaseProviderInterface {
     path: string,
     options?: GetMultipleOptionsInterface
   ): Promise<unknown> {
-    const configs = new GetMultipleOptions(options, this.envVarsService);
+    const configs = new GetMultipleOptions(this.envVarsService, options);
     const key = [path, configs.transform].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
-      // If the code enters in this block, then the key must exist & not have been expired
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: If the code enters in this block, then the key must exist & not have been expired
       return this.store.get(key)!.value as Record<string, unknown>;
     }
 
-    let values;
+    let values: Record<string, unknown> | undefined;
     try {
       values = await this._getMultiple(path, options);
       if (!isRecord(values)) {
@@ -216,7 +215,7 @@ abstract class BaseProvider implements BaseProviderInterface {
   protected abstract _getMultiple(
     path: string,
     options?: unknown
-  ): Promise<Record<string, unknown> | void>;
+  ): Promise<Record<string, unknown> | undefined>;
 }
 
 export { BaseProvider };

@@ -292,6 +292,7 @@ class AppConfigProvider extends BaseProvider {
   ): Promise<Uint8Array | undefined> {
     if (
       !this.configurationTokenStore.has(name) ||
+      // biome-ignore lint/style/noNonNullAssertion: we check if the value is in the map before accessing it
       this.configurationTokenStore.get(name)!.expiration <= Date.now()
     ) {
       const sessionOptions: StartConfigurationSessionCommandInput = {
@@ -356,7 +357,7 @@ class AppConfigProvider extends BaseProvider {
   protected async _getMultiple(
     _path: string,
     _sdkOptions?: unknown
-  ): Promise<void> {
+  ): Promise<Record<string, unknown> | undefined> {
     throw new Error('Method not implemented.');
   }
 }

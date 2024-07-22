@@ -122,10 +122,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public getParametersBatchByName = jest.fn();
       public getParametersByNameWithDecryptOption = jest.fn();
-
-      public constructor() {
-        super();
-      }
     }
 
     test('when called with no parameters to decrypt, it calls both getParametersByNameWithDecryptOption and getParametersBatchByName, then returns', async () => {
@@ -559,10 +555,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public transformAndCacheGetParametersResponse = jest.fn();
 
-      public constructor() {
-        super();
-      }
-
       public _getParametersByName(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         throwOnError: boolean,
@@ -650,10 +642,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public getParametersByNameFromCache = jest.fn();
       public getParametersByNameInChunks = jest.fn();
-
-      public constructor() {
-        super();
-      }
 
       public getParametersBatchByName(
         parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -800,10 +788,6 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: getParametersByNameFromCache', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public _add(key: string, value: ExpirableValue): void {
         this.store.set(key, value);
       }
@@ -845,10 +829,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public _getParametersByName = jest.fn();
       public maxGetParametersItems = 1;
-
-      public constructor() {
-        super();
-      }
 
       public async getParametersByNameInChunks(
         parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -955,10 +935,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public _get = jest.fn();
 
-      public constructor() {
-        super();
-      }
-
       public async getParametersByNameWithDecryptOption(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         throwOnError: boolean
@@ -1033,10 +1009,6 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: handleAnyInvalidGetparameterErrors', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public handleAnyInvalidGetParameterErrors(
         result: Partial<GetParametersCommandOutput>,
         throwOnError: boolean
@@ -1092,10 +1064,6 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: splitBatchAndDecryptParameters', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public splitBatchAndDecryptParameters(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         configs: SSMGetParametersByNameOptions
@@ -1198,16 +1166,12 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: throwIfErrorsKeyIsPresent', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public throwIfErrorsKeyIsPresent(
         parameters: Record<string, unknown>,
         reservedParameter: string,
         throwOnError: boolean
       ): void {
-        return SSMProvider.throwIfErrorsKeyIsPresent(
+        SSMProvider.throwIfErrorsKeyIsPresent(
           parameters,
           reservedParameter,
           throwOnError
@@ -1264,10 +1228,6 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: transformAndCacheGetParametersResponse', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public transformAndCacheGetParametersResponse(
         response: Partial<GetParametersCommandOutput>,
         parameters: Record<string, SSMGetParametersByNameOptions>,

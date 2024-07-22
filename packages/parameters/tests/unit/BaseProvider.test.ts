@@ -633,8 +633,7 @@ describe('Class: GetOptions', () => {
       getParametersMaxAge: jest.fn(),
     };
     const options = new GetOptions(
-      undefined,
-      envVarsService as unknown as EnvironmentVariablesService
+      envVarsService as unknown as EnvironmentVariablesService,
     );
 
     // Assess
@@ -649,8 +648,7 @@ describe('Class: GetMultipleOptions', () => {
       getParametersMaxAge: jest.fn(),
     };
     const options = new GetMultipleOptions(
-      undefined,
-      envVarsService as unknown as EnvironmentVariablesService
+      envVarsService as unknown as EnvironmentVariablesService,
     );
 
     // Assess

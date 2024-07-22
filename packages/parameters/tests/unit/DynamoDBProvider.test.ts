@@ -311,7 +311,7 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `#key = :key`,
+        KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
@@ -366,7 +366,7 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `#key = :key`,
+        KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
@@ -423,7 +423,7 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `#key = :key`,
+        KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
@@ -525,7 +525,7 @@ describe('Class: DynamoDBProvider', () => {
       // Act
       await provider.getMultiple(parameterPath, {
         sdkOptions: {
-          KeyConditionExpression: `key = :myKey`,
+          KeyConditionExpression: '#key = :key',
           ExpressionAttributeValues: marshall({
             ':myKey': 'foo',
           }),
@@ -538,7 +538,7 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `#key = :key`,
+        KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),

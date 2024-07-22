@@ -27,6 +27,7 @@ import type {
   SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameFromCacheOutputType,
 } from '../types/SSMProvider.js';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**
  * ## Intro
@@ -550,9 +551,7 @@ class SSMProvider extends BaseProvider {
          * The parameter name returned by SSM will contain the full path.
          * However, for readability, we should return only the part after the path.
          **/
-
-        // If the parameter is present in the response, then it has a Name
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        // biome-ignore lint/style/noNonNullAssertion: If the parameter is present in the response, then it has a Name
         let name = parameter.Name!;
         name = name.replace(path, '');
         if (name.startsWith('/')) {
@@ -656,8 +655,7 @@ class SSMProvider extends BaseProvider {
     )) {
       const cacheKey = [parameterName, parameterOptions.transform].toString();
       if (!this.hasKeyExpiredInCache(cacheKey)) {
-        // Since we know the key exists in the cache, we can safely use the non-null assertion operator
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        // biome-ignore lint/style/noNonNullAssertion: Since we know the key exists in the cache, we can safely use the non-null assertion operator
         cached[parameterName] = this.store.get(cacheKey)!.value as Record<
           string,
           string | Record<string, unknown>
@@ -867,13 +865,12 @@ class SSMProvider extends BaseProvider {
     const processedParameters: Record<string, unknown> = {};
 
     for (const parameter of response.Parameters || []) {
-      // If the parameter is present in the response, then it has a Name
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: If the parameter is present in the response, then it has a Name
       const parameterName = parameter.Name!;
       const parameterValue = parameter.Value;
       const parameterOptions = parameters[parameterName];
 
-      let value;
+      let value: string | JSONValue | Uint8Array | undefined;
       // NOTE: if transform is set, we do it before caching to reduce number of operations
       if (parameterValue && parameterOptions.transform) {
         value = transformValue(

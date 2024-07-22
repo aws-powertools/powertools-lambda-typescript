@@ -71,7 +71,7 @@ import {
  * is created after the previous one. This is necessary because we share the same AppConfig
  * application and environment for all tests.
  */
-describe(`Parameters E2E tests, AppConfig provider`, () => {
+describe('Parameters E2E tests, AppConfig provider', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

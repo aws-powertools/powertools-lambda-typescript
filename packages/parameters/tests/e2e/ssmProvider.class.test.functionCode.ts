@@ -1,6 +1,6 @@
 import type { Context } from 'aws-lambda';
 import { SSMProvider } from '../../src/ssm/SSMProvider.js';
-import {
+import type {
   SSMGetOptions,
   SSMGetMultipleOptions,
   SSMGetParametersByNameOptions,

@@ -245,7 +245,7 @@ class SecretsProvider extends BaseProvider {
   protected async _getMultiple(
     _path: string,
     _options?: unknown
-  ): Promise<void> {
+  ): Promise<Record<string, unknown> | undefined> {
     throw new Error('Method not implemented.');
   }
 }

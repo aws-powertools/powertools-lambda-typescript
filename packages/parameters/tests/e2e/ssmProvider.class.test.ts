@@ -70,7 +70,7 @@ import {
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
  */
-describe(`Parameters E2E tests, SSM provider`, () => {
+describe('Parameters E2E tests, SSM provider', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

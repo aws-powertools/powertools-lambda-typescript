@@ -5,7 +5,7 @@
  */
 import { AppConfigProvider } from '../../src/appconfig/index.js';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
-import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider.js';
+import type { AppConfigProviderOptions } from '../../src/types/AppConfigProvider.js';
 import {
   AppConfigDataClient,
   GetLatestConfigurationCommand,

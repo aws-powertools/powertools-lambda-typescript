@@ -36,7 +36,7 @@ import {
  * Make sure to add the right permissions to the lambda function to access the resources. We use our `ResourceAccessGranter` to add permissions.
  *
  */
-describe(`Parameters E2E tests, Secrets Manager provider`, () => {
+describe('Parameters E2E tests, Secrets Manager provider', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

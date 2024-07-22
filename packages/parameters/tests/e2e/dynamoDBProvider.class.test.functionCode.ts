@@ -1,7 +1,7 @@
 import type { Context } from 'aws-lambda';
 import { Transform } from '../../src/constants.js';
 import { DynamoDBProvider } from '../../src/dynamodb/DynamoDBProvider.js';
-import {
+import type {
   DynamoDBGetOptions,
   DynamoDBGetMultipleOptions,
 } from '../../src/types/DynamoDBProvider.js';

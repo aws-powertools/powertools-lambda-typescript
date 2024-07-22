@@ -12,8 +12,8 @@
     "jest": "jest --detectOpenHandles",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --fix --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "test:unit": "jest --group=unit",
     "test:e2e": "jest --group=e2e",
     "createLayerFolder": "cdk synth --context BuildFromLocal=true"

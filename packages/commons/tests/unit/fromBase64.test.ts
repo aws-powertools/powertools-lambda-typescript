@@ -34,7 +34,7 @@ describe('Function: fromBase64', () => {
 
     // Assess
     expect(result).toThrow(TypeError);
-    expect(result).toThrow(`Incorrect padding on base64 string.`);
+    expect(result).toThrow('Incorrect padding on base64 string.');
   });
 
   it('throws a TypeError when the base64 string is invalid', () => {
@@ -46,7 +46,7 @@ describe('Function: fromBase64', () => {
 
     // Assess
     expect(result).toThrow(TypeError);
-    expect(result).toThrow(`Invalid base64 string.`);
+    expect(result).toThrow('Invalid base64 string.');
   });
 
   it('uses the provided encoding to create the Uint8Array', () => {

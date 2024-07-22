@@ -1,18 +1,18 @@
-import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { BatchProcessor, EventType } from '@aws-lambda-powertools/batch';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
-import { Tracer } from '@aws-lambda-powertools/tracer';
-import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { BatchProcessor, EventType } from '@aws-lambda-powertools/batch';
-import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
 import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
 import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
-import { SSMClient } from '@aws-sdk/client-ssm';
-import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
+import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
+import { Tracer } from '@aws-lambda-powertools/tracer';
 import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { SSMClient } from '@aws-sdk/client-ssm';
 
 const logger = new Logger({
   logLevel: 'DEBUG',
@@ -91,7 +91,7 @@ export const handler = async (): Promise<void> => {
     'batch',
   ]) {
     const moduleVersion = await getVersionFromModule(moduleName);
-    if (moduleVersion != expectedVersion) {
+    if (moduleVersion !== expectedVersion) {
       throw new Error(
         `Package version mismatch (${moduleName}): ${moduleVersion} != ${expectedVersion}`
       );

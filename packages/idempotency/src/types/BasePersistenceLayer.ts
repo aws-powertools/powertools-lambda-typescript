@@ -1,5 +1,5 @@
-import { IdempotencyRecord } from '../persistence/IdempotencyRecord.js';
-import { IdempotencyConfig } from '../IdempotencyConfig.js';
+import type { IdempotencyConfig } from '../IdempotencyConfig.js';
+import type { IdempotencyRecord } from '../persistence/IdempotencyRecord.js';
 
 type BasePersistenceLayerOptions = {
   config: IdempotencyConfig;

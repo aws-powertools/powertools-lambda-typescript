@@ -99,17 +99,21 @@ const isIntegerNumber = (value: unknown): value is number => {
 const isTruthy = (value: unknown): boolean => {
   if (isString(value)) {
     return value !== '';
-  } else if (isNumber(value)) {
-    return value !== 0;
-  } else if (typeof value === 'boolean') {
-    return value;
-  } else if (Array.isArray(value)) {
-    return value.length > 0;
-  } else if (isRecord(value)) {
-    return Object.keys(value).length > 0;
-  } else {
-    return false;
   }
+  if (isNumber(value)) {
+    return value !== 0;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+  if (isRecord(value)) {
+    return Object.keys(value).length > 0;
+  }
+
+  return false;
 };
 
 /**
@@ -168,19 +172,24 @@ const isNullOrUndefined = (value: unknown): value is null | undefined => {
 const getType = (value: unknown): string => {
   if (Array.isArray(value)) {
     return 'array';
-  } else if (isRecord(value)) {
-    return 'object';
-  } else if (isString(value)) {
-    return 'string';
-  } else if (isNumber(value)) {
-    return 'number';
-  } else if (typeof value === 'boolean') {
-    return 'boolean';
-  } else if (isNull(value)) {
-    return 'null';
-  } else {
-    return 'unknown';
   }
+  if (isRecord(value)) {
+    return 'object';
+  }
+  if (isString(value)) {
+    return 'string';
+  }
+  if (isNumber(value)) {
+    return 'number';
+  }
+  if (typeof value === 'boolean') {
+    return 'boolean';
+  }
+  if (isNull(value)) {
+    return 'null';
+  }
+
+  return 'unknown';
 };
 
 /**

@@ -1,3 +1,15 @@
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import context from '@aws-lambda-powertools/testing-utils/context';
+import type { Context } from 'aws-lambda';
+import { IdempotencyRecordStatus } from '../../src/constants.js';
+import {
+  IdempotencyAlreadyInProgressError,
+  IdempotencyConfig,
+  IdempotencyInconsistentStateError,
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyPersistenceLayerError,
+  idempotent,
+} from '../../src/index.js';
 /**
  * Test Function Wrapper
  *
@@ -7,19 +19,7 @@ import {
   BasePersistenceLayer,
   IdempotencyRecord,
 } from '../../src/persistence/index.js';
-import {
-  idempotent,
-  IdempotencyConfig,
-  IdempotencyAlreadyInProgressError,
-  IdempotencyInconsistentStateError,
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyPersistenceLayerError,
-} from '../../src/index.js';
 import type { IdempotencyRecordOptions } from '../../src/types/index.js';
-import { Context } from 'aws-lambda';
-import context from '@aws-lambda-powertools/testing-utils/context';
-import { IdempotencyRecordStatus } from '../../src/constants.js';
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
 const mockSaveInProgress = jest
   .spyOn(BasePersistenceLayer.prototype, 'saveInProgress')
@@ -314,7 +314,7 @@ describe('Given a class with a function to decorate', (classWithLambdaHandler = 
     });
 
     afterAll(() => {
-      delete process.env.POWERTOOLS_IDEMPOTENCY_DISABLED;
+      process.env.POWERTOOLS_IDEMPOTENCY_DISABLED = undefined;
     });
   });
 

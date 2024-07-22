@@ -16,17 +16,15 @@
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "type": "module",
   "exports": {
     ".": {
@@ -66,25 +64,13 @@
         "lib/cjs/resources/TestDynamodbTable.d.ts",
         "lib/esm/resources/TestDynamodbTable.d.ts"
       ],
-      "types": [
-        "lib/cjs/types.d.ts",
-        "lib/esm/types.d.ts"
-      ],
-      "context": [
-        "lib/cjs/context.d.ts",
-        "lib/esm/context.d.ts"
-      ]
+      "types": ["lib/cjs/types.d.ts", "lib/esm/types.d.ts"],
+      "context": ["lib/cjs/context.d.ts", "lib/esm/context.d.ts"]
     }
   },
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
-  "keywords": [
-    "aws",
-    "lambda",
-    "powertools",
-    "testing",
-    "serverless"
-  ],
+  "keywords": ["aws", "lambda", "powertools", "testing", "serverless"],
   "license": "MIT-0",
   "bugs": {
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"

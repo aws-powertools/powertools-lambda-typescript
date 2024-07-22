@@ -4,10 +4,10 @@
  * @group unit/batch/class/sqsfifobatchprocessor
  */
 import {
-  SqsFifoPartialProcessor,
-  processPartialResponseSync,
-  SqsFifoShortCircuitError,
   SqsFifoMessageGroupShortCircuitError,
+  SqsFifoPartialProcessor,
+  SqsFifoShortCircuitError,
+  processPartialResponseSync,
 } from '../../src/index.js';
 import { sqsRecordFactory } from '../helpers/factories.js';
 import { sqsRecordHandler } from '../helpers/handlers.js';
@@ -41,7 +41,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures']).toStrictEqual([]);
+      expect(result.batchItemFailures).toStrictEqual([]);
     });
 
     test('SQS FIFO Batch processor with failures', () => {
@@ -60,11 +60,11 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(2);
-      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures.length).toBe(2);
+      expect(result.batchItemFailures[0].itemIdentifier).toBe(
         secondRecord.messageId
       );
-      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[1].itemIdentifier).toBe(
         thirdRecord.messageId
       );
       expect(processor.errors[1]).toBeInstanceOf(SqsFifoShortCircuitError);
@@ -99,17 +99,17 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(4);
-      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures.length).toBe(4);
+      expect(result.batchItemFailures[0].itemIdentifier).toBe(
         firstRecord.messageId
       );
-      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[1].itemIdentifier).toBe(
         secondRecord.messageId
       );
-      expect(result['batchItemFailures'][2]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[2].itemIdentifier).toBe(
         thirdRecord.messageId
       );
-      expect(result['batchItemFailures'][3]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[3].itemIdentifier).toBe(
         fourthRecord.messageId
       );
       expect(processor.errors.length).toBe(4);
@@ -150,11 +150,11 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(2);
-      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures.length).toBe(2);
+      expect(result.batchItemFailures[0].itemIdentifier).toBe(
         thirdRecord.messageId
       );
-      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[1].itemIdentifier).toBe(
         fourthRecord.messageId
       );
       expect(processor.errors.length).toBe(2);
@@ -185,7 +185,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(0);
+      expect(result.batchItemFailures.length).toBe(0);
       expect(processor.errors.length).toBe(0);
     });
 
@@ -211,7 +211,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(0);
+      expect(result.batchItemFailures.length).toBe(0);
       expect(processor.errors.length).toBe(0);
     });
 
@@ -237,14 +237,14 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(3);
-      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures.length).toBe(3);
+      expect(result.batchItemFailures[0].itemIdentifier).toBe(
         secondRecord.messageId
       );
-      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[1].itemIdentifier).toBe(
         thirdRecord.messageId
       );
-      expect(result['batchItemFailures'][2]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[2].itemIdentifier).toBe(
         fourthRecord.messageId
       );
       expect(processor.errors.length).toBe(3);

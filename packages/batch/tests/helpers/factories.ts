@@ -1,9 +1,9 @@
+import { randomInt, randomUUID } from 'node:crypto';
 import type {
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
-import { randomInt, randomUUID } from 'node:crypto';
 
 const sqsRecordFactory = (body: string, messageGroupId?: string): SQSRecord => {
   return {
@@ -41,7 +41,7 @@ const kinesisRecordFactory = (body: string): KinesisStreamRecord => {
     },
     eventSource: 'aws:kinesis',
     eventVersion: '1.0',
-    eventID: 'shardId-000000000006:' + seq,
+    eventID: `shardId-000000000006:${seq}`,
     eventName: 'aws:kinesis:record',
     invokeIdentityArn: 'arn:aws:iam::123456789012:role/lambda-role',
     awsRegion: 'us-east-2',

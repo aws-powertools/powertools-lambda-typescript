@@ -1,8 +1,8 @@
 import type {
+  Context,
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,
-  Context,
 } from 'aws-lambda';
 
 const sqsRecordHandler = (record: SQSRecord): string => {
@@ -45,7 +45,7 @@ const asyncKinesisRecordHandler = async (
 
 const dynamodbRecordHandler = (record: DynamoDBRecord): object => {
   const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
-  if (body['S']?.includes('fail')) {
+  if (body.S?.includes('fail')) {
     throw Error('Failed to process record.');
   }
 
@@ -56,7 +56,7 @@ const asyncDynamodbRecordHandler = async (
   record: DynamoDBRecord
 ): Promise<object> => {
   const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
-  if (body['S']?.includes('fail')) {
+  if (body.S?.includes('fail')) {
     throw Error('Failed to process record.');
   }
 
@@ -65,11 +65,11 @@ const asyncDynamodbRecordHandler = async (
 
 const handlerWithContext = (record: SQSRecord, context: Context): string => {
   try {
-    if (context.getRemainingTimeInMillis() == 0) {
+    if (context.getRemainingTimeInMillis() === 0) {
       throw Error('No time remaining.');
     }
   } catch (e) {
-    throw Error('Context possibly malformed. Displaying context:\n' + context);
+    throw Error(`Context possibly malformed. Displaying context:\n${context}`);
   }
 
   return record.body;
@@ -80,11 +80,11 @@ const asyncHandlerWithContext = async (
   context: Context
 ): Promise<string> => {
   try {
-    if (context.getRemainingTimeInMillis() == 0) {
+    if (context.getRemainingTimeInMillis() === 0) {
       throw Error('No time remaining.');
     }
   } catch (e) {
-    throw Error('Context possibly malformed. Displaying context:\n' + context);
+    throw Error(`Context possibly malformed. Displaying context:\n${context}`);
   }
 
   return Promise.resolve(record.body);

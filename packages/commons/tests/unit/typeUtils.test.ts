@@ -4,15 +4,15 @@
  * @group unit/commons/typeUtils
  */
 import {
-  isRecord,
-  isTruthy,
-  isNullOrUndefined,
-  isString,
-  isNumber,
+  getType,
   isIntegerNumber,
   isNull,
-  getType,
+  isNullOrUndefined,
+  isNumber,
+  isRecord,
   isStrictEqual,
+  isString,
+  isTruthy,
 } from '../../src/index.js';
 
 describe('Functions: typeUtils', () => {

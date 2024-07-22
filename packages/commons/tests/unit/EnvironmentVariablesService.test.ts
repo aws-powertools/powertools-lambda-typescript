@@ -32,7 +32,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
     test('When the variable IS NOT present, it returns an empty string', () => {
       // Prepare
-      delete process.env.CUSTOM_VARIABLE;
+      process.env.CUSTOM_VARIABLE = undefined;
       const service = new EnvironmentVariablesService();
 
       // Act
@@ -84,7 +84,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
     test('It returns the value of the Root X-Ray segment ID properly formatted', () => {
       // Prepare
-      delete process.env._X_AMZN_TRACE_ID;
+      process.env._X_AMZN_TRACE_ID = undefined;
       const service = new EnvironmentVariablesService();
 
       // Act
@@ -124,7 +124,7 @@ describe('Class: EnvironmentVariablesService', () => {
 
     it('It returns false when no _X_AMZN_TRACE_ID environment variable is present', () => {
       // Prepare
-      delete process.env._X_AMZN_TRACE_ID;
+      process.env._X_AMZN_TRACE_ID = undefined;
       const service = new EnvironmentVariablesService();
 
       // Act

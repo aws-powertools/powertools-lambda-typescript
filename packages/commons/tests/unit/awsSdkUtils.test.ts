@@ -1,9 +1,14 @@
+/**
+ * Test AWS SDK utilities
+ *
+ * @group unit/commons/awsSdkUtils
+ */
+import { customUserAgentMiddleware } from '../../src/awsSdkUtils.js';
 import {
   addUserAgentMiddleware,
   isSdkClient,
   PT_VERSION as version,
 } from '../../src/index.js';
-import { customUserAgentMiddleware } from '../../src/awsSdkUtils.js';
 
 describe('Helpers: awsSdk', () => {
   describe('Function: userAgentMiddleware', () => {

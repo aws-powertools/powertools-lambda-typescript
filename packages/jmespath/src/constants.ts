@@ -57,11 +57,11 @@ const DIGITS = '0123456789';
 /**
  * The set of ASCII letters and digits allowed in JMESPath identifiers.
  */
-const START_IDENTIFIER = new Set(ASCII_LETTERS + '_');
+const START_IDENTIFIER = new Set(`${ASCII_LETTERS}_`);
 /**
  * The set of ASCII letters and digits allowed in JMESPath identifiers.
  */
-const VALID_IDENTIFIER = new Set(ASCII_LETTERS + DIGITS + '_');
+const VALID_IDENTIFIER = new Set(`${ASCII_LETTERS}${DIGITS}_`);
 /**
  * The set of ASCII digits allowed in JMESPath identifiers.
  */

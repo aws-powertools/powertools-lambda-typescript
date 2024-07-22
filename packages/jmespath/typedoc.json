@@ -1,13 +1,11 @@
 {
-  "extends": [
-    "../../typedoc.base.json"
-  ],
+  "extends": ["../../typedoc.base.json"],
   "entryPoints": [
     "./src/index.ts",
     "./src/types.ts",
     "./src/envelopes.ts",
     "./src/Functions.ts",
-    "./src/PowertoolsFunctions.ts",
+    "./src/PowertoolsFunctions.ts"
   ],
   "readme": "README.md"
 }

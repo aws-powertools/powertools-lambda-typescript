@@ -1,4 +1,7 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { execSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { join, resolve, sep } from 'node:path';
+import { CfnOutput, RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
 import {
   CfnLayerVersionPermission,
   Code,
@@ -6,10 +9,7 @@ import {
   Runtime,
 } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { Construct } from 'constructs';
-import { execSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
-import { join, resolve, sep } from 'node:path';
+import type { Construct } from 'constructs';
 
 export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string;
@@ -217,7 +217,7 @@ export class LayerPublisherStack extends Stack {
 
     new CfnOutput(this, 'LatestLayerArn', {
       value: this.lambdaLayerVersion.layerVersionArn,
-      exportName: props?.layerName ?? `LambdaPowerToolsForTypeScriptLayerARN`,
+      exportName: props?.layerName ?? 'LambdaPowerToolsForTypeScriptLayerARN',
     });
   }
 }

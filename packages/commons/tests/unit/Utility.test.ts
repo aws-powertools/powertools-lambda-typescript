@@ -14,10 +14,6 @@ describe('Class: Utility', () => {
   describe('Method: getDefaultServiceName', () => {
     test('it should return the default service name', () => {
       class PowerTool extends Utility {
-        public constructor() {
-          super();
-        }
-
         public dummyMethod(): string {
           return this.getDefaultServiceName();
         }
@@ -56,10 +52,6 @@ describe('Class: Utility', () => {
     test('when called multiple times on a child class, it returns true the first time, then false afterwards', () => {
       // Prepare
       class PowerTool extends Utility {
-        public constructor() {
-          super();
-        }
-
         public dummyMethod(): boolean {
           return this.getColdStart();
         }
@@ -115,10 +107,6 @@ describe('Class: Utility', () => {
     test('when called multiple times on a child class, it returns true the first time, then false afterwards', () => {
       // Prepare
       class PowerTool extends Utility {
-        public constructor() {
-          super();
-        }
-
         public dummyMethod(): boolean {
           return this.isColdStart();
         }
@@ -149,10 +137,6 @@ describe('Class: Utility', () => {
 
   describe('Method: isValidServiceName', () => {
     class PowerTool extends Utility {
-      public constructor() {
-        super();
-      }
-
       public dummyMethod(name: string): boolean {
         return this.isValidServiceName(name);
       }

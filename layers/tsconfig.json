@@ -1,12 +1,9 @@
 {
-    "extends": "../tsconfig.json",
-    "compilerOptions": {
-        "outDir": "./lib",
-        "rootDir": "./",
-        "resolveJsonModule": true
-    },
-    "include": [
-        "./src/**/*",
-        "./bin/**/*"
-    ],
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "rootDir": "./",
+    "resolveJsonModule": true
+  },
+  "include": ["./src/**/*", "./bin/**/*"]
 }

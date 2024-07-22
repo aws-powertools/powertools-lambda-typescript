@@ -1,9 +1,9 @@
-import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { idempotent } from '../../src/idempotencyDecorator';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
+import type { Context } from 'aws-lambda';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
+import { idempotent } from '../../src/idempotencyDecorator';
+import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
 
 const IDEMPOTENCY_TABLE_NAME =
   process.env.IDEMPOTENCY_TABLE_NAME || 'table_name';
@@ -148,7 +148,7 @@ class LambdaWithKeywordArgument implements LambdaInterface {
   public async process(id: string, foo: string): Promise<string> {
     logger.info('Got test event', { id, foo });
 
-    return 'idempotent result: ' + foo;
+    return `idempotent result: ${foo}`;
   }
 }
 

@@ -1,8 +1,8 @@
-import { SQSRecord } from 'aws-lambda';
+import type { SQSRecord } from 'aws-lambda';
 import { BatchProcessorSync } from './BatchProcessorSync.js';
 import { EventType } from './constants.js';
 import {
-  BatchProcessingError,
+  type BatchProcessingError,
   SqsFifoMessageGroupShortCircuitError,
   SqsFifoShortCircuitError,
 } from './errors.js';

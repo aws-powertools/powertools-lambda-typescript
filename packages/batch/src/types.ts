@@ -4,8 +4,8 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
-import { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
-import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
 
 /**
  * Options for batch processing

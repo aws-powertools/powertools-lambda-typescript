@@ -3,19 +3,20 @@
  *
  * @group unit/batch/function/processpartialresponse
  */
+import assert from 'node:assert';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import type {
   Context,
   DynamoDBStreamEvent,
   KinesisStreamEvent,
   SQSEvent,
 } from 'aws-lambda';
-import context from '@aws-lambda-powertools/testing-utils/context';
 import {
   BatchProcessorSync,
-  processPartialResponseSync,
   EventType,
-  UnexpectedBatchTypeError,
   FullBatchFailureError,
+  UnexpectedBatchTypeError,
+  processPartialResponseSync,
 } from '../../src/index.js';
 import type {
   BatchProcessingOptions,
@@ -32,7 +33,6 @@ import {
   kinesisRecordHandler,
   sqsRecordHandler,
 } from '../helpers/handlers.js';
-import assert from 'node:assert';
 
 describe('Function: processPartialResponse()', () => {
   const ENVIRONMENT_VARIABLES = process.env;

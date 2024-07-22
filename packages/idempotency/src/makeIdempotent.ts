@@ -1,11 +1,12 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
+import { IdempotencyConfig } from './IdempotencyConfig.js';
+import { IdempotencyHandler } from './IdempotencyHandler.js';
 import type {
   AnyFunction,
-  ItempotentFunctionOptions,
   IdempotencyLambdaHandlerOptions,
+  ItempotentFunctionOptions,
 } from './types/IdempotencyOptions.js';
-import { IdempotencyHandler } from './IdempotencyHandler.js';
-import { IdempotencyConfig } from './IdempotencyConfig.js';
 
 const isContext = (arg: unknown): arg is Context => {
   return (
@@ -72,7 +73,6 @@ const isOptionsWithDataIndexArgument = (
  *
  * ```
  */
-// eslint-disable-next-line func-style
 function makeIdempotent<Func extends AnyFunction>(
   fn: Func,
   options: ItempotentFunctionOptions<Parameters<Func>>
@@ -83,7 +83,7 @@ function makeIdempotent<Func extends AnyFunction>(
   if (!idempotencyConfig.isEnabled()) return fn;
 
   return function (this: Handler, ...args: Parameters<Func>): ReturnType<Func> {
-    let functionPayloadToBeHashed;
+    let functionPayloadToBeHashed: JSONValue;
 
     if (isFnHandler(fn, args)) {
       idempotencyConfig.registerLambdaContext(args[1]);

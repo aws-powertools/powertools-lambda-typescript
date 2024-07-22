@@ -1,15 +1,15 @@
+import { randomUUID } from 'node:crypto';
 import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { randomUUID } from 'node:crypto';
-import { TEST_RUNTIMES, TEST_ARCHITECTURES } from '../constants.js';
+import type { TestStack } from '../TestStack.js';
+import { TEST_ARCHITECTURES, TEST_RUNTIMES } from '../constants.js';
 import {
   concatenateResourceName,
-  getRuntimeKey,
   getArchitectureKey,
+  getRuntimeKey,
 } from '../helpers.js';
-import type { TestStack } from '../TestStack.js';
 import type { ExtraTestProps, TestNodejsFunctionProps } from '../types.js';
 
 /**

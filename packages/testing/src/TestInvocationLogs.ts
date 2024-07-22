@@ -85,7 +85,7 @@ class TestInvocationLogs {
         try {
           const parsedLog = TestInvocationLogs.parseFunctionLog(log);
 
-          return parsedLog.level == levelToFilter;
+          return parsedLog.level === levelToFilter;
         } catch (error) {
           // If log is not from structured logging : such as metrics one.
           return (

@@ -1,4 +1,4 @@
-import { Runtime, Architecture } from 'aws-cdk-lib/aws-lambda';
+import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
 
 /**
  * The default AWS Lambda runtime to use when none is provided.

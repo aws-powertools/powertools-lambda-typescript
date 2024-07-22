@@ -1,7 +1,7 @@
-import type { Context, Handler } from 'aws-lambda';
-import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
-import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { Context, Handler } from 'aws-lambda';
+import type { IdempotencyConfig } from '../IdempotencyConfig.js';
+import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
 
 /**
  * Configuration options for the idempotency utility.
@@ -23,7 +23,7 @@ type IdempotencyLambdaHandlerOptions = {
  *
  * It's left intentionally open to allow for any function to be wrapped.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: This is a generic type that is intentionally open
 type AnyFunction = (...args: Array<any>) => any;
 
 /**
@@ -99,7 +99,7 @@ type AnyFunction = (...args: Array<any>) => any;
  * the `eventKeyJmesPath` property to indicate the JMESPath expression to use to extract part of the payload.
  *
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: This is a generic type that is intentionally open
 type ItempotentFunctionOptions<T extends Array<any>> = T[1] extends Context
   ? IdempotencyLambdaHandlerOptions
   : IdempotencyLambdaHandlerOptions & {

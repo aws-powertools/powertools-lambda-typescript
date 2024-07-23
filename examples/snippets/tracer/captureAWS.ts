@@ -1,5 +1,5 @@
-import { S3 } from 'aws-sdk';
 import { Tracer } from '@aws-lambda-powertools/tracer';
+import { S3 } from 'aws-sdk';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 // Instrument the AWS SDK client

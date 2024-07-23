@@ -1,5 +1,5 @@
-import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics({
   namespace: 'serverlessAirline',

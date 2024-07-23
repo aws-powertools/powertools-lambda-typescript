@@ -176,7 +176,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 
 === "Manual"
 
-    ```typescript hl_lines="9-15 18-19 23 26 29-34"
+    ```typescript hl_lines="10-16 19-20 24 27 30-35"
     --8<-- "examples/snippets/tracer/manual.ts"
     ```
 
@@ -239,7 +239,7 @@ You can trace other class methods using the `captureMethod` decorator or any arb
 
 === "Manual"
 
-    ```typescript hl_lines="6-12 18 21 25-30"
+    ```typescript hl_lines="7-13 19 22 26-31"
     --8<-- "examples/snippets/tracer/captureMethodManual.ts"
     ```
 

@@ -1,5 +1,5 @@
-import { handler } from './testingYourCodeFunctionsHandler';
 import { getParameter } from '@aws-lambda-powertools/parameters/ssm';
+import { handler } from './testingYourCodeFunctionsHandler';
 
 jest.mock('@aws-lambda-powertools/parameters/ssm', () => ({
   getParameter: jest.fn(),

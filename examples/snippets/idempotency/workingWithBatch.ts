@@ -3,17 +3,17 @@ import {
   EventType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
+import {
+  IdempotencyConfig,
+  makeIdempotent,
+} from '@aws-lambda-powertools/idempotency';
+import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type {
   Context,
   SQSBatchResponse,
   SQSEvent,
   SQSRecord,
 } from 'aws-lambda';
-import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
-import {
-  IdempotencyConfig,
-  makeIdempotent,
-} from '@aws-lambda-powertools/idempotency';
 
 const processor = new BatchProcessor(EventType.SQS);
 

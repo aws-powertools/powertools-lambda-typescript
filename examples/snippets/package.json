@@ -11,13 +11,8 @@
     "test": "echo 'Not Applicable'",
     "test:e2e": "echo 'Not Applicable'",
     "build": "echo 'Not Applicable'",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern ."
-  },
-  "lint-staged": {
-    "*.{js,ts}": "npm run lint-fix",
-    "*.json": "prettier --write --single-quote false",
-    "*.yaml": "prettier --write"
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write ."
   },
   "license": "MIT-0",
   "repository": {

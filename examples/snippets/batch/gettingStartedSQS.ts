@@ -4,12 +4,12 @@ import {
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type { SQSRecord, SQSHandler } from 'aws-lambda';
+import type { SQSHandler, SQSRecord } from 'aws-lambda';
 
 const processor = new BatchProcessor(EventType.SQS); // (1)!
 const logger = new Logger();
 
-// prettier-ignore
+// biome-ignore format: we need the comment in the next line to stay there to annotate the code snippet in the docs
 const recordHandler = async (record: SQSRecord): Promise<void> => { // (2)!
   const payload = record.body;
   if (payload) {
@@ -19,7 +19,7 @@ const recordHandler = async (record: SQSRecord): Promise<void> => { // (2)!
 };
 
 export const handler: SQSHandler = async (event, context) =>
-  // prettier-ignore
+  // biome-ignore format: we need the comment in the next line to stay there to annotate the code snippet in the docs
   processPartialResponse(event, recordHandler, processor, { // (3)!
     context,
   });

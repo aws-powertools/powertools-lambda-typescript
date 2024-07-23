@@ -4,10 +4,10 @@ import {
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
-  SQSEvent,
-  SQSRecord,
   Context,
   SQSBatchResponse,
+  SQSEvent,
+  SQSRecord,
 } from 'aws-lambda';
 
 const processor = new SqsFifoPartialProcessor();

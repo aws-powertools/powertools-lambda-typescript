@@ -1,8 +1,8 @@
-import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { parser } from '@aws-lambda-powertools/parser';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { orderSchema, type Order } from './schema.js';
+import { parser } from '@aws-lambda-powertools/parser';
+import type { Context } from 'aws-lambda';
+import { type Order, orderSchema } from './schema.js';
 
 const logger = new Logger();
 

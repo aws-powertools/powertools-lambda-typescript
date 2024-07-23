@@ -1,6 +1,6 @@
 import { BatchProcessor, EventType } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type { SQSRecord, SQSHandler } from 'aws-lambda';
+import type { SQSHandler, SQSRecord } from 'aws-lambda';
 
 const processor = new BatchProcessor(EventType.SQS);
 const logger = new Logger();

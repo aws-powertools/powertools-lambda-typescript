@@ -1,11 +1,9 @@
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import {
   type CloudWatchClient,
+  type Dimension,
   ListMetricsCommand,
-} from '@aws-sdk/client-cloudwatch';
-import type {
-  Dimension,
-  ListMetricsCommandOutput,
+  type ListMetricsCommandOutput,
 } from '@aws-sdk/client-cloudwatch';
 import type { Context, Handler } from 'aws-lambda';
 import promiseRetry from 'promise-retry';

@@ -5,7 +5,7 @@
  */
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Callback, Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import {
   Segment,
   Subsegment,
@@ -14,6 +14,7 @@ import {
 import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 import type { ProviderServiceInterface } from '../../src/types/ProviderService.js';
 import { Tracer } from './../../src/index.js';
+import type { CaptureLambdaHandlerOptions } from './../../src/types/index.js';
 
 type CaptureAsyncFuncMock = jest.SpyInstance<
   unknown,
@@ -30,11 +31,9 @@ const createCaptureAsyncFuncMock = (
   jest
     .spyOn(provider, 'captureAsyncFunc')
     .mockImplementation(async (methodName, callBackFn) => {
-      const newSubsegment = subsegment
-        ? subsegment
-        : new Subsegment(`### ${methodName}`);
+      const newSubsegment = subsegment || new Subsegment(`### ${methodName}`);
       jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
-      await callBackFn(newSubsegment);
+      return await callBackFn(newSubsegment);
     });
 
 jest.spyOn(console, 'log').mockImplementation(() => null);
@@ -805,6 +804,28 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: captureLambdaHandler', () => {
+    const getLambdaClass = (
+      tracer: Tracer,
+      options?: {
+        shouldThrow?: boolean;
+        tracerOptions?: CaptureLambdaHandlerOptions;
+      }
+    ) => {
+      class Lambda implements LambdaInterface {
+        @tracer.captureLambdaHandler(options?.tracerOptions)
+        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
+          if (options?.shouldThrow) throw new Error('An error has occurred');
+          return new Promise((resolve, _reject) =>
+            resolve({
+              foo: 'bar',
+            } as unknown as TResult)
+          );
+        }
+      }
+
+      return new Lambda();
+    };
+
     test('when used as decorator while tracing is disabled, it does nothing', async () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
@@ -817,23 +838,10 @@ describe('Class: Tracer', () => {
         tracer.provider,
         'captureAsyncFunc'
       );
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler()
-        public handler(
-          _event: unknown,
-          _context: Context,
-          callback: Callback<unknown>
-        ): void {
-          callback(null, {
-            foo: 'bar',
-          });
-        }
-      }
+      const lambda = getLambdaClass(tracer);
 
       // Act
-      new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await lambda.handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(0);
@@ -848,20 +856,10 @@ describe('Class: Tracer', () => {
         'captureAsyncFunc'
       );
       const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler()
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
-          return new Promise((resolve, _reject) =>
-            resolve({
-              foo: 'bar',
-            } as unknown as TResult)
-          );
-        }
-      }
+      const lambda = getLambdaClass(tracer);
 
       // Act
-      await new Lambda().handler(event, context);
+      await lambda.handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -880,20 +878,12 @@ describe('Class: Tracer', () => {
         tracer,
         'addResponseAsMetadata'
       );
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler({ captureResponse: false })
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
-          return new Promise((resolve, _reject) =>
-            resolve({
-              foo: 'bar',
-            } as unknown as TResult)
-          );
-        }
-      }
+      const lambda = getLambdaClass(tracer, {
+        tracerOptions: { captureResponse: false },
+      });
 
       // Act
-      await new Lambda().handler(event, context);
+      await lambda.handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -911,20 +901,10 @@ describe('Class: Tracer', () => {
         tracer,
         'addResponseAsMetadata'
       );
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler({ captureResponse: true })
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
-          return new Promise((resolve, _reject) =>
-            resolve({
-              foo: 'bar',
-            } as unknown as TResult)
-          );
-        }
-      }
+      const lambda = getLambdaClass(tracer);
 
       // Act
-      await new Lambda().handler(event, context);
+      await lambda.handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -950,20 +930,10 @@ describe('Class: Tracer', () => {
         tracer,
         'addResponseAsMetadata'
       );
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler()
-        public handler<TEvent, TResult>(_event: TEvent, _context: Context) {
-          return new Promise((resolve, _reject) =>
-            resolve({
-              foo: 'bar',
-            } as unknown as TResult)
-          );
-        }
-      }
+      const lambda = getLambdaClass(tracer);
 
       // Act
-      await new Lambda().handler(event, context);
+      await lambda.handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -990,23 +960,10 @@ describe('Class: Tracer', () => {
       jest.spyOn(tracer, 'getSegment').mockImplementation(() => newSubsegment);
       const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
       const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler()
-        public handler(
-          _event: unknown,
-          _context: Context,
-          _callback: Callback<void>
-        ): void {
-          throw new Error('Exception thrown!');
-        }
-      }
-      const lambda = new Lambda();
+      const lambda = getLambdaClass(tracer, { shouldThrow: true });
 
       // Act & Assess
-      expect(
-        lambda.handler({}, context, () => console.log('Lambda invoked!'))
-      ).rejects.toThrowError(Error);
+      expect(lambda.handler({}, context)).rejects.toThrow(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledTimes(0);
@@ -1027,23 +984,10 @@ describe('Class: Tracer', () => {
       jest.spyOn(tracer, 'getSegment').mockImplementation(() => newSubsegment);
       const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
       const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler()
-        public handler(
-          _event: unknown,
-          _context: Context,
-          _callback: Callback<void>
-        ): void {
-          throw new Error('Exception thrown!2');
-        }
-      }
+      const lambda = getLambdaClass(tracer, { shouldThrow: true });
 
       // Act & Assess
-      const lambda = new Lambda();
-      expect(
-        lambda.handler({}, context, () => console.log('Lambda invoked!'))
-      ).rejects.toThrowError(Error);
+      expect(lambda.handler({}, context)).rejects.toThrow(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(addErrorAsMetadataSpy).toHaveBeenCalledTimes(1);
       expect(addErrorAsMetadataSpy).toHaveBeenCalledWith(expect.any(Error));
@@ -1057,22 +1001,10 @@ describe('Class: Tracer', () => {
       const tracer: Tracer = new Tracer();
       const captureAsyncFuncSpy = createCaptureAsyncFuncMock(tracer.provider);
       const annotateColdStartSpy = jest.spyOn(tracer, 'annotateColdStart');
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler()
-        public handler(
-          _event: unknown,
-          _context: Context,
-          callback: Callback<{ foo: string }>
-        ): void {
-          callback(null, { foo: 'bar' });
-        }
-      }
+      const lambda = getLambdaClass(tracer);
 
       // Act
-      new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      lambda.handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -1091,24 +1023,10 @@ describe('Class: Tracer', () => {
         tracer,
         'addServiceNameAnnotation'
       );
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler()
-        public handler(
-          _event: unknown,
-          _context: Context,
-          callback: Callback<{ foo: string }>
-        ): void {
-          callback(null, {
-            foo: 'bar',
-          });
-        }
-      }
+      const lambda = getLambdaClass(tracer);
 
       // Act
-      new Lambda().handler(event, context, () =>
-        console.log('Lambda invoked!')
-      );
+      await lambda.handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -1118,39 +1036,6 @@ describe('Class: Tracer', () => {
       );
       // The first call is for the Cold Start annotation
       expect(addServiceNameAnnotationSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test('when used as decorator and when calling the handler, it has access to member variables', async () => {
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
-        '### dummyMethod'
-      );
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-
-      class Lambda implements LambdaInterface {
-        private readonly memberVariable: string;
-
-        public constructor(memberVariable: string) {
-          this.memberVariable = memberVariable;
-        }
-
-        @tracer.captureLambdaHandler()
-        public async handler(
-          _event: unknown,
-          _context: Context
-        ): Promise<string> {
-          return `memberVariable:${this.memberVariable}`;
-        }
-      }
-
-      // Act / Assess
-      const lambda = new Lambda('someValue');
-      const handler = lambda.handler.bind(lambda);
-      expect(await handler({}, context)).toEqual('memberVariable:someValue');
     });
 
     test('when used as decorator on an async method, the method is awaited correctly', async () => {
@@ -1170,35 +1055,40 @@ describe('Class: Tracer', () => {
       createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
 
       class Lambda implements LambdaInterface {
-        public async dummyMethod(): Promise<void> {
-          return;
+        private memberVariable: string;
+
+        public constructor(memberVariable: string) {
+          this.memberVariable = memberVariable;
+        }
+
+        public async dummyMethod(): Promise<string> {
+          return this.memberVariable;
         }
 
         @tracer.captureLambdaHandler()
         public async handler(
           _event: unknown,
           _context: Context
-        ): Promise<void> {
-          await this.dummyMethod();
+        ): Promise<string> {
+          const result = await this.dummyMethod();
           this.otherDummyMethod();
 
-          return;
+          return this.memberVariable;
         }
 
         public otherDummyMethod(): void {
           return;
         }
       }
+      const lambda = new Lambda('someValue');
+      const otherDummyMethodSpy = jest.spyOn(lambda, 'otherDummyMethod');
 
       // Act
-      const lambda = new Lambda();
-      const otherDummyMethodSpy = jest
-        .spyOn(lambda, 'otherDummyMethod')
-        .mockImplementation();
       const handler = lambda.handler.bind(lambda);
-      await handler({}, context);
+      const result = await handler({}, context);
 
       // Assess
+      expect(result).toEqual('someValue');
       // Here we assert that the otherDummyMethodSpy method is called before the cleanup logic (inside the finally of decorator)
       // that should always be called after the handler has returned. If otherDummyMethodSpy is called after it means the
       // decorator is NOT awaiting the handler which would cause the test to fail.
@@ -1228,19 +1118,10 @@ describe('Class: Tracer', () => {
         .mockImplementation(() => {
           throw new Error('dummy error');
         });
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureLambdaHandler()
-        public async handler(
-          _event: unknown,
-          _context: Context
-        ): Promise<string> {
-          return 'foo bar';
-        }
-      }
+      const lambda = getLambdaClass(tracer);
 
       // Act
-      await new Lambda().handler(event, context);
+      await lambda.handler(event, context);
 
       // Assess
       expect(closeSpy).toHaveBeenCalledTimes(1);

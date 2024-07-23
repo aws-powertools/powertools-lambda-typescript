@@ -26,8 +26,11 @@ import {
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import type { SecretProps } from 'aws-cdk-lib/aws-secretsmanager';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
-import type { StringParameterProps } from 'aws-cdk-lib/aws-ssm';
-import { type IStringParameter, StringParameter } from 'aws-cdk-lib/aws-ssm';
+import {
+  type IStringParameter,
+  StringParameter,
+  type StringParameterProps,
+} from 'aws-cdk-lib/aws-ssm';
 import {
   AwsCustomResource,
   AwsCustomResourcePolicy,

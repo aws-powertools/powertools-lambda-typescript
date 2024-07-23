@@ -74,7 +74,7 @@ interface BaseProviderInterface {
   getMultiple(
     path: string,
     options?: GetMultipleOptionsInterface
-  ): Promise<unknown | unknown>;
+  ): Promise<unknown>;
   clearCache?(): void;
 }
 

@@ -3,13 +3,13 @@ import {
   IdempotencyItemNotFoundError,
   IdempotencyRecordStatus,
 } from '@aws-lambda-powertools/idempotency';
-import { IdempotencyRecordOptions } from '@aws-lambda-powertools/idempotency/types';
 import {
-  IdempotencyRecord,
   BasePersistenceLayer,
+  IdempotencyRecord,
 } from '@aws-lambda-powertools/idempotency/persistence';
-import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
+import type { IdempotencyRecordOptions } from '@aws-lambda-powertools/idempotency/types';
 import { Transform } from '@aws-lambda-powertools/parameters';
+import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
 import {
   ProviderClient,
   ProviderItemAlreadyExists,
@@ -26,18 +26,20 @@ class CustomPersistenceLayer extends BasePersistenceLayer {
   }
 
   protected async _deleteRecord(record: IdempotencyRecord): Promise<void> {
-    await (
-      await this.#getClient()
-    ).delete(this.#collectionName, record.idempotencyKey);
+    await (await this.#getClient()).delete(
+      this.#collectionName,
+      record.idempotencyKey
+    );
   }
 
   protected async _getRecord(
     idempotencyKey: string
   ): Promise<IdempotencyRecord> {
     try {
-      const item = await (
-        await this.#getClient()
-      ).get(this.#collectionName, idempotencyKey);
+      const item = await (await this.#getClient()).get(
+        this.#collectionName,
+        idempotencyKey
+      );
 
       return new IdempotencyRecord({
         ...(item as unknown as IdempotencyRecordOptions),
@@ -67,11 +69,14 @@ class CustomPersistenceLayer extends BasePersistenceLayer {
 
     let existingItem: ProviderItem | undefined;
     try {
-      existingItem = await (
-        await this.#getClient()
-      ).put(this.#collectionName, record.idempotencyKey, item, {
-        ttl,
-      });
+      existingItem = await (await this.#getClient()).put(
+        this.#collectionName,
+        record.idempotencyKey,
+        item,
+        {
+          ttl,
+        }
+      );
     } catch (error) {
       if (error instanceof ProviderItemAlreadyExists) {
         if (
@@ -97,9 +102,11 @@ class CustomPersistenceLayer extends BasePersistenceLayer {
       value.validation = record.payloadHash;
     }
 
-    await (
-      await this.#getClient()
-    ).update(this.#collectionName, record.idempotencyKey, value);
+    await (await this.#getClient()).update(
+      this.#collectionName,
+      record.idempotencyKey,
+      value
+    );
   }
 
   async #getClient(): Promise<ProviderClient> {

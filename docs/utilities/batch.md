@@ -510,7 +510,7 @@ classDiagram
 
 You can then use this class as a context manager, or pass it to `processPartialResponseSync` to process the records in your Lambda handler function.
 
-```typescript hl_lines="21 35 56 61 73 86" title="Creating a custom batch processor"
+```typescript hl_lines="21 35 55 60 72 85" title="Creating a custom batch processor"
 --8<-- "examples/snippets/batch/customPartialProcessor.ts"
 ```
 

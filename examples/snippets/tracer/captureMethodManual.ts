@@ -1,17 +1,18 @@
 import { Tracer } from '@aws-lambda-powertools/tracer';
+import type { Subsegment } from 'aws-xray-sdk-core';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 
 const getChargeId = async (): Promise<unknown> => {
   const parentSubsegment = tracer.getSegment(); // This is the subsegment currently active
-  let subsegment;
+  let subsegment: Subsegment | undefined;
   if (parentSubsegment) {
     // Create subsegment for the function & set it as active
-    subsegment = parentSubsegment.addNewSubsegment(`### chargeId`);
+    subsegment = parentSubsegment.addNewSubsegment('### chargeId');
     tracer.setSegment(subsegment);
   }
 
-  let res;
+  let res: unknown;
   try {
     /* ... */
     // Add the response as metadata

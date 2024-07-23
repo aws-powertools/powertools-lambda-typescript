@@ -1,10 +1,10 @@
-import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import {
   IdempotencyConfig,
   idempotent,
 } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import type { Context } from 'aws-lambda';
 import type { Request, Response } from './types.js';
 
 const dynamoDBPersistenceLayer = new DynamoDBPersistenceLayer({

@@ -6,15 +6,13 @@ import { Logger } from '@aws-lambda-powertools/logger';
 
 const logger = new Logger();
 
-// prettier-ignore
+// biome-ignore format:
 class CustomFunctions extends PowertoolsFunctions {
-  @PowertoolsFunctions.signature({
-    // (1)!
+  @PowertoolsFunctions.signature({ // (1)!
     argumentsSpecs: [['string']],
     variadic: false,
   })
-  public funcDecodeBrotliCompression(value: string): string {
-    // (2)!
+  public funcDecodeBrotliCompression(value: string): string { // (2)!
     const encoded = fromBase64(value, 'base64');
     const uncompressed = brotliDecompressSync(encoded);
 

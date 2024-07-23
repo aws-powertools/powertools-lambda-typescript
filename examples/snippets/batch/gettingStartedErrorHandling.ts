@@ -22,16 +22,13 @@ const recordHandler = async (record: SQSRecord): Promise<void> => {
     const item = JSON.parse(payload);
     logger.info('Processed item', { item });
   } else {
-    // prettier-ignore
-    throw new InvalidPayload(
-      'Payload does not contain minimum required fields'
-    ); // (1)!
+    // biome-ignore format:
+    throw new InvalidPayload('Payload does not contain minimum required fields'); // (1)!
   }
 };
 
 export const handler: SQSHandler = async (event, context) =>
-  // prettier-ignore
-  processPartialResponse(event, recordHandler, processor, {
-    // (2)!
+  // biome-ignore format:
+  processPartialResponse(event, recordHandler, processor, { // (2)!
     context,
   });

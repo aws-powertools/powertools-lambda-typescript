@@ -1,6 +1,6 @@
-import type { ParsedResult, Envelope } from './types/index.js';
-import { z, type ZodSchema } from 'zod';
+import type { ZodSchema, z } from 'zod';
 import { ParseError } from './errors.js';
+import type { Envelope, ParsedResult } from './types/index.js';
 
 /**
  * Parse the data using the provided schema, envelope and safeParse flag

@@ -5,11 +5,11 @@
  */
 
 import { generateMock } from '@anatine/zod-mock';
-import { TestEvents } from '../schema/utils.js';
-import { DynamoDBStreamEvent } from 'aws-lambda';
+import type { AttributeValue, DynamoDBStreamEvent } from 'aws-lambda';
 import { z } from 'zod';
 import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
+import { TestEvents } from '../schema/utils.js';
 
 describe('DynamoDB', () => {
   const schema = z.object({
@@ -19,12 +19,16 @@ describe('DynamoDB', () => {
   const mockOldImage = generateMock(schema);
   const mockNewImage = generateMock(schema);
   const dynamodbEvent = TestEvents.dynamoStreamEvent as DynamoDBStreamEvent;
+  // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
   (dynamodbEvent.Records[0].dynamodb!.NewImage as typeof mockNewImage) =
     mockNewImage;
+  // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
   (dynamodbEvent.Records[1].dynamodb!.NewImage as typeof mockNewImage) =
     mockNewImage;
+  // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
   (dynamodbEvent.Records[0].dynamodb!.OldImage as typeof mockOldImage) =
     mockOldImage;
+  // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
   (dynamodbEvent.Records[1].dynamodb!.OldImage as typeof mockOldImage) =
     mockOldImage;
   describe('parse', () => {
@@ -46,9 +50,8 @@ describe('DynamoDB', () => {
     });
     it('parse should throw error if new or old image is invalid', () => {
       const ddbEvent = TestEvents.dynamoStreamEvent as DynamoDBStreamEvent;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      ddbEvent.Records[0].dynamodb!.NewImage.Id = 'foo';
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
+      ddbEvent.Records[0].dynamodb!.NewImage!.Id = 'foo' as AttributeValue;
       expect(() => DynamoDBStreamEnvelope.parse(ddbEvent, schema)).toThrow();
     });
   });
@@ -75,14 +78,18 @@ describe('DynamoDB', () => {
       const invalidDDBEvent =
         TestEvents.dynamoStreamEvent as DynamoDBStreamEvent;
 
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
       (invalidDDBEvent.Records[0].dynamodb!.NewImage as typeof mockNewImage) = {
         Id: { N: 101 },
         Message: { S: 'foo' },
       };
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
       (invalidDDBEvent.Records[1].dynamodb!.NewImage as typeof mockNewImage) =
         mockNewImage;
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
       (invalidDDBEvent.Records[0].dynamodb!.OldImage as typeof mockOldImage) =
         mockOldImage;
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
       (invalidDDBEvent.Records[1].dynamodb!.OldImage as typeof mockOldImage) =
         mockOldImage;
 
@@ -98,14 +105,18 @@ describe('DynamoDB', () => {
       const invalidDDBEvent =
         TestEvents.dynamoStreamEvent as DynamoDBStreamEvent;
 
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
       (invalidDDBEvent.Records[0].dynamodb!.OldImage as typeof mockNewImage) = {
         Id: { N: 101 },
         Message: { S: 'foo' },
       };
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
       (invalidDDBEvent.Records[1].dynamodb!.NewImage as typeof mockNewImage) =
         mockNewImage;
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
       (invalidDDBEvent.Records[0].dynamodb!.OldImage as typeof mockOldImage) =
         mockOldImage;
+      // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
       (invalidDDBEvent.Records[0].dynamodb!.NewImage as typeof mockNewImage) =
         mockNewImage;
 

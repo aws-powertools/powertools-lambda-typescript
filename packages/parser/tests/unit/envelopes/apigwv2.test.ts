@@ -3,10 +3,11 @@
  *
  * @group unit/parser/envelopes/apigwv2
  */
-import { TestSchema, getTestEvent } from '../schema/utils.js';
-import { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
+
 import { ApiGatewayV2Envelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
+import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
+import { TestSchema, getTestEvent } from '../schema/utils.js';
 
 describe('API Gateway HTTP Envelope', () => {
   const eventsPath = 'apigw-http';

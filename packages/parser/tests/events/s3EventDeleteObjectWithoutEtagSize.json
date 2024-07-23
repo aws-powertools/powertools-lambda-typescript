@@ -5,7 +5,7 @@
       "eventSource": "aws:s3",
       "awsRegion": "us-east-2",
       "eventTime": "2019-09-03T19:37:27.192Z",
-      "eventName": "ObjectCreated:Put",
+      "eventName": "ObjectRemoved:Delete",
       "userIdentity": {
         "principalId": "AWS:AIDAINPONIXQXHT3IKHL2"
       },
@@ -28,15 +28,7 @@
         },
         "object": {
           "key": "b21b84d653bb07b05b1e6b33684dc11b",
-          "size": 1305107,
-          "eTag": "b21b84d653bb07b05b1e6b33684dc11b",
           "sequencer": "0C0F6F405D6ED209E1"
-        }
-      },
-      "glacierEventData": {
-        "restoreEventData": {
-          "lifecycleRestorationExpiryTime": "1970-01-01T00:01:00.000Z",
-          "lifecycleRestoreStorageClass": "standard"
         }
       }
     }

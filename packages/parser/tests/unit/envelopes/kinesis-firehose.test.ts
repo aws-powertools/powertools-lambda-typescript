@@ -4,11 +4,11 @@
  * @group unit/parser/envelopes
  */
 
-import { TestEvents, TestSchema } from '../schema/utils.js';
 import { generateMock } from '@anatine/zod-mock';
-import { KinesisFirehoseSchema } from '../../../src/schemas/';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { KinesisFirehoseEnvelope } from '../../../src/envelopes/index.js';
+import type { KinesisFirehoseSchema } from '../../../src/schemas/';
+import { TestEvents, TestSchema } from '../schema/utils.js';
 
 describe('Kinesis Firehose Envelope', () => {
   describe('parse', () => {

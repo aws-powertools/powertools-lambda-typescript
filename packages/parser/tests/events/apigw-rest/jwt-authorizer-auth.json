@@ -23,60 +23,26 @@
     "X-Forwarded-Proto": "https"
   },
   "multiValueHeaders": {
-    "Accept": [
-      "*/*"
-    ],
-    "Accept-Encoding": [
-      "gzip, deflate"
-    ],
+    "Accept": ["*/*"],
+    "Accept-Encoding": ["gzip, deflate"],
     "Authorization": [
       "Bearer eyJraWQiOiJadVlaXC9KdmtST2hpN1hBT3FIekx0TVwvdUpKXC9kWUtPMUs1QkVZSjVUM2xZPSIsImFsZyI6IlJTMjU2In0.eyJvcmlnaW5fanRpIjoiMzdjYzAyY2YtNWMxNC00NjM2LWJlYjMtNGY4Y2E4ODc5MzViIiwic3ViIjoiZDJmNTA0NDQtMDA0MS03MDM2LWFlYTItYTk1NWZjYTMzZDM3IiwiYXVkIjoiM25rb2VwNDE1MWI3dW1lZ2dub3R0YzMwdTkiLCJldmVudF9pZCI6ImM3ZjZjYzYyLWM0NzYtNGM2YS1iYTViLTc0NTI0NGRmZTVlZSIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzE4NjM2NDA0LCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAuZXUtd2VzdC0xLmFtYXpvbmF3cy5jb21cL2V1LXdlc3QtMV95MGJMRzRpMjciLCJjb2duaXRvOnVzZXJuYW1lIjoiYWFtb3Jvc2kiLCJleHAiOjE3MTg3MjI4MDQsImlhdCI6MTcxODYzNjQwNCwianRpIjoiMTM3MjdhYmEtODllNi00ODk2LWJkOWUtOGNiYzBmNDc4ZjljIn0.k9GKFY028MbL8hyLpsq2aCsMYt0P_im93qSyDF5awnhePlnfpNVXGXGGIcoBPyj-wlsZPdJAS_3Y324VhYlRzX76xTlew1lAtM665RAe4tncLl6MFlicTgHqsFXeOyXroSAe_X9wlP1jfMGiqW6oOkxrl_dajz7GJFFTEX8ztnTLD7FZvE5KophYihxq6RFZlOQFLWmx6w378ZQ49kHg-H5FF6JluI1G9sQ3P77rrhfL7MGv5xi1YiDeWa7T27PhHcgqll9fuLFA-_8LrdN-G5XMEt0Zlfb-WxF8YaStJ4e519GfnVWUuNWJo9BnFj0ChCiyhlK7cAWDjm1mz-Y4FA"
     ],
-    "CloudFront-Forwarded-Proto": [
-      "https"
-    ],
-    "CloudFront-Is-Desktop-Viewer": [
-      "true"
-    ],
-    "CloudFront-Is-Mobile-Viewer": [
-      "false"
-    ],
-    "CloudFront-Is-SmartTV-Viewer": [
-      "false"
-    ],
-    "CloudFront-Is-Tablet-Viewer": [
-      "false"
-    ],
-    "CloudFront-Viewer-ASN": [
-      "7224"
-    ],
-    "CloudFront-Viewer-Country": [
-      "GB"
-    ],
-    "Host": [
-      "puhdx84jy9.execute-api.eu-west-1.amazonaws.com"
-    ],
-    "User-Agent": [
-      "HTTPie/3.2.2"
-    ],
-    "Via": [
-      "1.1 ff7cafeac35b91a7af23c56e3b9691e8.cloudfront.net (CloudFront)"
-    ],
-    "X-Amz-Cf-Id": [
-      "zTKRjCprnRv8GXztLX3l3gQVmT0MLysk_-FcFmxxBfz0qSPCBQsGIg=="
-    ],
-    "X-Amzn-Trace-Id": [
-      "Root=1-66704f8a-626bb89a0b2bf33b547f581c"
-    ],
-    "X-Forwarded-For": [
-      "15.248.3.126, 130.176.209.4"
-    ],
-    "X-Forwarded-Port": [
-      "443"
-    ],
-    "X-Forwarded-Proto": [
-      "https"
-    ]
+    "CloudFront-Forwarded-Proto": ["https"],
+    "CloudFront-Is-Desktop-Viewer": ["true"],
+    "CloudFront-Is-Mobile-Viewer": ["false"],
+    "CloudFront-Is-SmartTV-Viewer": ["false"],
+    "CloudFront-Is-Tablet-Viewer": ["false"],
+    "CloudFront-Viewer-ASN": ["7224"],
+    "CloudFront-Viewer-Country": ["GB"],
+    "Host": ["puhdx84jy9.execute-api.eu-west-1.amazonaws.com"],
+    "User-Agent": ["HTTPie/3.2.2"],
+    "Via": ["1.1 ff7cafeac35b91a7af23c56e3b9691e8.cloudfront.net (CloudFront)"],
+    "X-Amz-Cf-Id": ["zTKRjCprnRv8GXztLX3l3gQVmT0MLysk_-FcFmxxBfz0qSPCBQsGIg=="],
+    "X-Amzn-Trace-Id": ["Root=1-66704f8a-626bb89a0b2bf33b547f581c"],
+    "X-Forwarded-For": ["15.248.3.126, 130.176.209.4"],
+    "X-Forwarded-Port": ["443"],
+    "X-Forwarded-Proto": ["https"]
   },
   "queryStringParameters": null,
   "multiValueQueryStringParameters": null,

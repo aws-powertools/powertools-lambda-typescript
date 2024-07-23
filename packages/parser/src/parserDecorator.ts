@@ -1,8 +1,8 @@
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
-import { type ZodSchema } from 'zod';
+import type { ZodSchema } from 'zod';
 import { parse } from './parser.js';
-import type { ParserOptions, Envelope } from './types/index.js';
+import type { Envelope, ParserOptions } from './types/index.js';
 import type { ParserOutput } from './types/parser.js';
 
 /**
@@ -76,6 +76,7 @@ export const parser = <
   options: ParserOptions<TSchema, TEnvelope, TSafeParse>
 ): HandlerMethodDecorator => {
   return (_target, _propertyKey, descriptor) => {
+    // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
     const original = descriptor.value!;
 
     const { schema, envelope, safeParse } = options;

@@ -21,9 +21,7 @@
     "defaultAuthStrategy": "ALLOW",
     "groups": null,
     "issuer": "https://cognito-idp.us-west-2.amazonaws.com/us-west-xxxxxxxxxxx",
-    "sourceIp": [
-      "1.1.1.1"
-    ],
+    "sourceIp": ["1.1.1.1"],
     "sub": "192879fc-a240-4bf1-ab5a-d6a00f3063f9",
     "username": "jdoe"
   },
@@ -60,11 +58,7 @@
   },
   "prev": null,
   "info": {
-    "selectionSetList": [
-      "id",
-      "field1",
-      "field2"
-    ],
+    "selectionSetList": ["id", "field1", "field2"],
     "selectionSetGraphQL": "{\n  id\n  field1\n  field2\n}",
     "parentTypeName": "Mutation",
     "fieldName": "createSomething",

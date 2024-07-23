@@ -4,11 +4,13 @@
  * @group unit/parser/schema/
  */
 
+import { ZodError } from 'zod';
+import { ParseError } from '../../../src';
 import {
   S3EventNotificationEventBridgeSchema,
-  S3SqsEventNotificationSchema,
-  S3Schema,
   S3ObjectLambdaEventSchema,
+  S3Schema,
+  S3SqsEventNotificationSchema,
 } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
@@ -81,7 +83,8 @@ describe('S3 ', () => {
   it('should parse s3 object event temp credentials', () => {
     // ignore any because we don't want typed json
     const s3ObjectEventTempCredentials =
-      TestEvents.s3ObjectEventTempCredentials as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: no specific typing needed
+      TestEvents.s3ObjectEventTempCredentials as any;
     const parsed = S3ObjectLambdaEventSchema.parse(
       s3ObjectEventTempCredentials
     );
@@ -101,5 +104,22 @@ describe('S3 ', () => {
     expect(
       parsed.userIdentity?.sessionContext?.attributes.mfaAuthenticated
     ).toEqual(false);
+  });
+
+  it('should throw error when s3 event delete object does not contain etag or size', () => {
+    const s3EventDeleteObjectWithoutEtagSize =
+      TestEvents.s3EventDeleteObjectWithoutEtagSize;
+    expect(() =>
+      S3Schema.parse(s3EventDeleteObjectWithoutEtagSize)
+    ).toThrowError(
+      new ZodError([
+        {
+          code: 'custom',
+          message:
+            'S3 event notification with ObjectRemoved event name must have size or eTag defined',
+          path: ['Records', 0],
+        },
+      ])
+    );
   });
 });

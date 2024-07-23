@@ -1,10 +1,10 @@
-import { randomUUID } from 'node:crypto';
-import { join } from 'node:path';
 /**
  * Test logger sample rate feature
  *
  * @group e2e/logger/sampleRate
  */
+import { randomUUID } from 'node:crypto';
+import { join } from 'node:path';
 import {
   TestInvocationLogs,
   TestStack,

@@ -1,9 +1,9 @@
-import { join } from 'node:path';
 /**
  * Test logger child logger
  *
  * @group e2e/logger/childLogger
  */
+import { join } from 'node:path';
 import {
   TestInvocationLogs,
   TestStack,

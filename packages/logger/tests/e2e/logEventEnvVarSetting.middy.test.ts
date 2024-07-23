@@ -1,9 +1,9 @@
-import { join } from 'node:path';
 /**
  * Test logger basic features
  *
  * @group e2e/logger/logEventEnvVarSetting
  */
+import { join } from 'node:path';
 import {
   TestInvocationLogs,
   TestStack,

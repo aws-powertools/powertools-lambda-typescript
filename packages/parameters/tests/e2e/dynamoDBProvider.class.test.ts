@@ -3,14 +3,14 @@
  *
  * @group e2e/parameters/dynamodb/class
  */
+import { join } from 'node:path';
 import {
-  invokeFunctionOnce,
   TestInvocationLogs,
   TestStack,
+  invokeFunctionOnce,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-import { join } from 'node:path';
 import { TestDynamodbTableWithItems } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,

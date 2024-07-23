@@ -3,14 +3,14 @@
  *
  * @group e2e/parameters/appconfig/class
  */
+import { join } from 'node:path';
 import {
-  invokeFunctionOnce,
   TestInvocationLogs,
   TestStack,
+  invokeFunctionOnce,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { toBase64 } from '@smithy/util-base64';
-import { join } from 'node:path';
 import { TestAppConfigWithProfiles } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,

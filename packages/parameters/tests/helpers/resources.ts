@@ -1,26 +1,27 @@
+import { randomUUID } from 'node:crypto';
+import {
+  type TestStack,
+  concatenateResourceName,
+  getArchitectureKey,
+  getRuntimeKey,
+} from '@aws-lambda-powertools/testing-utils';
+import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
+import type { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import type {
   ExtraTestProps,
   TestDynamodbTableProps,
 } from '@aws-lambda-powertools/testing-utils/types';
-import {
-  concatenateResourceName,
-  getArchitectureKey,
-  getRuntimeKey,
-  type TestStack,
-} from '@aws-lambda-powertools/testing-utils';
-import type { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
-import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import {
   Application,
+  type CfnHostedConfigurationVersion,
   ConfigurationContent,
   ConfigurationType,
   DeploymentStrategy,
   HostedConfiguration,
   type IEnvironment,
   RolloutStrategy,
-  type CfnHostedConfigurationVersion,
 } from 'aws-cdk-lib/aws-appconfig';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import type { SecretProps } from 'aws-cdk-lib/aws-secretsmanager';
@@ -33,7 +34,6 @@ import {
   PhysicalResourceId,
 } from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
-import { randomUUID } from 'node:crypto';
 
 /**
  * A secure string parameter that can be used in tests.
@@ -291,7 +291,7 @@ class TestAppConfigWithProfiles extends Construct {
         config.node.defaultChild as CfnHostedConfigurationVersion
       ).applyRemovalPolicy(RemovalPolicy.DESTROY);
       this.profiles.push(config);
-    };
+    }
   }
 
   /**
@@ -345,7 +345,7 @@ class TestAppConfigWithProfiles extends Construct {
           resources: [appConfigConfigurationArn],
         })
       );
-    };
+    }
   }
 }
 

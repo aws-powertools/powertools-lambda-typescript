@@ -3,14 +3,14 @@
  *
  * @group e2e/parameters/secrets/class
  */
+import { join } from 'node:path';
 import {
-  invokeFunctionOnce,
   TestInvocationLogs,
   TestStack,
+  invokeFunctionOnce,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { SecretValue } from 'aws-cdk-lib';
-import { join } from 'node:path';
 import { TestSecret } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,

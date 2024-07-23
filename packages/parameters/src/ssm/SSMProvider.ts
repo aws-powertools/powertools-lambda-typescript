@@ -1,12 +1,9 @@
-import { BaseProvider } from '../base/BaseProvider.js';
-import { transformValue } from '../base/transformValue.js';
-import { GetParameterError } from '../errors.js';
-import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import {
-  SSMClient,
   GetParameterCommand,
-  paginateGetParametersByPath,
   GetParametersCommand,
+  SSMClient,
+  paginateGetParametersByPath,
 } from '@aws-sdk/client-ssm';
 import type {
   GetParameterCommandInput,
@@ -15,19 +12,22 @@ import type {
   GetParametersCommandOutput,
   SSMPaginationConfiguration,
 } from '@aws-sdk/client-ssm';
+import { BaseProvider } from '../base/BaseProvider.js';
+import { transformValue } from '../base/transformValue.js';
+import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
+import { GetParameterError } from '../errors.js';
 import type {
-  SSMProviderOptions,
-  SSMGetOptions,
-  SSMGetOutput,
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,
+  SSMGetOptions,
+  SSMGetOutput,
+  SSMGetParametersByNameFromCacheOutputType,
+  SSMGetParametersByNameOptions,
   SSMGetParametersByNameOutput,
   SSMGetParametersByNameOutputInterface,
-  SSMGetParametersByNameOptions,
+  SSMProviderOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
-  SSMGetParametersByNameFromCacheOutputType,
 } from '../types/SSMProvider.js';
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**
  * ## Intro

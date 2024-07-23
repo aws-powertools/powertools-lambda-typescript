@@ -18,7 +18,7 @@ class GetOptions implements GetOptionsInterface {
 
   public constructor(
     envVarsService: EnvironmentVariablesService,
-    options: GetOptionsInterface = {},
+    options: GetOptionsInterface = {}
   ) {
     Object.assign(this, options);
 

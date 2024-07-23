@@ -1,13 +1,13 @@
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { Context } from 'aws-lambda';
 import { Transform } from '../../src/constants.js';
 import { DynamoDBProvider } from '../../src/dynamodb/DynamoDBProvider.js';
 import type {
-  DynamoDBGetOptions,
   DynamoDBGetMultipleOptions,
+  DynamoDBGetOptions,
 } from '../../src/types/DynamoDBProvider.js';
-import { TinyLogger } from '../helpers/tinyLogger.js';
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter.js';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { TinyLogger } from '../helpers/tinyLogger.js';
 
 // We use a custom logger to log pure JSON objects to stdout
 const logger = new TinyLogger();

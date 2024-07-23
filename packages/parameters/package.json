@@ -20,8 +20,8 @@
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parameters#readme",
@@ -89,26 +89,17 @@
         "lib/cjs/types/BaseProvider.d.ts",
         "lib/esm/types/BaseProvider.d.ts"
       ],
-      "base": [
-        "lib/cjs/base/index.d.ts",
-        "lib/esm/base/index.d.ts"
-      ],
+      "base": ["lib/cjs/base/index.d.ts", "lib/esm/base/index.d.ts"],
       "ssm/types": [
         "lib/cjs/types/SSMProvider.d.ts",
         "lib/esm/types/SSMProvider.d.ts"
       ],
-      "ssm": [
-        "lib/cjs/ssm/index.d.ts",
-        "lib/esm/ssm/index.d.ts"
-      ],
+      "ssm": ["lib/cjs/ssm/index.d.ts", "lib/esm/ssm/index.d.ts"],
       "secrets/types": [
         "lib/cjs/types/SecretsProvider.d.ts",
         "lib/esm/types/SecretsProvider.d.ts"
       ],
-      "secrets": [
-        "lib/cjs/secrets/index.d.ts",
-        "lib/esm/secrets/index.d.ts"
-      ],
+      "secrets": ["lib/cjs/secrets/index.d.ts", "lib/esm/secrets/index.d.ts"],
       "dynamodb/types": [
         "./lib/cjs/types/DynamoDBProvider.d.ts",
         "./lib/esm/types/DynamoDBProvider.d.ts"
@@ -125,17 +116,12 @@
         "lib/cjs/appconfig/index.d.ts",
         "lib/esm/appconfig/index.d.ts"
       ],
-      "errors": [
-        "lib/cjs/errors.d.ts",
-        "lib/esm/errors.d.ts"
-      ]
+      "errors": ["lib/cjs/errors.d.ts", "lib/esm/errors.d.ts"]
     }
   },
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

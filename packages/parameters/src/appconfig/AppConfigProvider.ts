@@ -1,16 +1,16 @@
-import { BaseProvider } from '../base/BaseProvider.js';
 import {
   AppConfigDataClient,
-  StartConfigurationSessionCommand,
   GetLatestConfigurationCommand,
+  StartConfigurationSessionCommand,
 } from '@aws-sdk/client-appconfigdata';
 import type { StartConfigurationSessionCommandInput } from '@aws-sdk/client-appconfigdata';
+import { BaseProvider } from '../base/BaseProvider.js';
+import { APPCONFIG_TOKEN_EXPIRATION } from '../constants.js';
 import type {
-  AppConfigProviderOptions,
   AppConfigGetOptions,
   AppConfigGetOutput,
+  AppConfigProviderOptions,
 } from '../types/AppConfigProvider.js';
-import { APPCONFIG_TOKEN_EXPIRATION } from '../constants.js';
 
 /**
  * ## Intro

@@ -3,21 +3,21 @@
  *
  * @group unit/parameters/baseProvider/class
  */
+import { toBase64 } from '@smithy/util-base64';
+import { ExpirableValue } from '../../src/base/ExpirableValue.js';
 import {
   BaseProvider,
   DEFAULT_PROVIDERS,
-  GetOptions,
   GetMultipleOptions,
+  GetOptions,
 } from '../../src/base/index.js';
-import { DEFAULT_MAX_AGE_SECS } from '../../src/constants.js';
 import type { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
-import { ExpirableValue } from '../../src/base/ExpirableValue.js';
+import { DEFAULT_MAX_AGE_SECS } from '../../src/constants.js';
 import {
   GetParameterError,
   TransformParameterError,
   clearCaches,
 } from '../../src/index.js';
-import { toBase64 } from '@smithy/util-base64';
 
 const encoder = new TextEncoder();
 jest.mock('@aws-lambda-powertools/commons', () => ({
@@ -633,7 +633,7 @@ describe('Class: GetOptions', () => {
       getParametersMaxAge: jest.fn(),
     };
     const options = new GetOptions(
-      envVarsService as unknown as EnvironmentVariablesService,
+      envVarsService as unknown as EnvironmentVariablesService
     );
 
     // Assess
@@ -648,7 +648,7 @@ describe('Class: GetMultipleOptions', () => {
       getParametersMaxAge: jest.fn(),
     };
     const options = new GetMultipleOptions(
-      envVarsService as unknown as EnvironmentVariablesService,
+      envVarsService as unknown as EnvironmentVariablesService
     );
 
     // Assess

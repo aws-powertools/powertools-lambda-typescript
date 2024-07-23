@@ -3,14 +3,14 @@
  *
  * @group unit/parameters/SecretsProvider/class
  */
-import { SecretsProvider } from '../../src/secrets/index.js';
 import {
-  SecretsManagerClient,
   GetSecretValueCommand,
+  SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
-import type { SecretsProviderOptions } from '../../src/types/SecretsProvider.js';
 import { mockClient } from 'aws-sdk-client-mock';
+import { SecretsProvider } from '../../src/secrets/index.js';
+import type { SecretsProviderOptions } from '../../src/types/SecretsProvider.js';
 import 'aws-sdk-client-mock-jest';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 

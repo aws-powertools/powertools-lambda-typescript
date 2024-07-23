@@ -3,26 +3,26 @@
  *
  * @group unit/parameters/ssm/class
  */
-import { SSMProvider } from '../../src/ssm/index.js';
 import {
-  SSMClient,
   GetParameterCommand,
-  GetParametersCommand,
   GetParametersByPathCommand,
+  GetParametersCommand,
+  SSMClient,
 } from '@aws-sdk/client-ssm';
 import type { GetParametersCommandOutput } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
+import { SSMProvider } from '../../src/ssm/index.js';
 import 'aws-sdk-client-mock-jest';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { toBase64 } from '@smithy/util-base64';
+import { ExpirableValue } from '../../src/base/ExpirableValue.js';
 import type {
-  SSMProviderOptions,
   SSMGetParametersByNameFromCacheOutputType,
   SSMGetParametersByNameOptions,
-  SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface,
+  SSMProviderOptions,
+  SSMSplitBatchAndDecryptParametersOutputType,
 } from '../../src/types/SSMProvider.js';
-import { ExpirableValue } from '../../src/base/ExpirableValue.js';
-import { toBase64 } from '@smithy/util-base64';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 const encoder = new TextEncoder();
 jest.mock('@aws-lambda-powertools/commons', () => ({

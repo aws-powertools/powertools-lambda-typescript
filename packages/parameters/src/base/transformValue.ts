@@ -1,5 +1,5 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { isString } from '@aws-lambda-powertools/commons';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import {
   TRANSFORM_METHOD_BINARY,
@@ -58,17 +58,20 @@ const transformValue = (
 
   try {
     // If the value is a Uint8Array, decode it to a string first
-    if (value instanceof Uint8Array) {
-      value = new TextDecoder('utf-8').decode(value);
-    }
+    const valueToTransform =
+      value instanceof Uint8Array
+        ? new TextDecoder('utf-8').decode(value)
+        : value;
 
     // If the transform is `json` or `auto` and the key ends with `.json`, parse the value as JSON
     if (isJsonTransform || isAutoJsonTransform) {
-      return JSON.parse(value) as JSONValue;
+      return JSON.parse(valueToTransform) as JSONValue;
       // If the transform is `binary` or `auto` and the key ends with `.binary`, decode the value from base64
     }
     if (isBinaryTransform || isAutoBinaryTransform) {
-      return new TextDecoder('utf-8').decode(fromBase64(value, 'base64'));
+      return new TextDecoder('utf-8').decode(
+        fromBase64(valueToTransform, 'base64')
+      );
     }
   } catch (error) {
     if (throwOnTransformError)

@@ -1,7 +1,7 @@
-import { Tracer } from '../../src/index.js';
 import type { Context } from 'aws-lambda';
 import AWS from 'aws-sdk';
 import type { Subsegment } from 'aws-xray-sdk-core';
+import { Tracer } from '../../src/index.js';
 import { httpRequest } from '../helpers/httpRequest.js';
 
 const serviceName =

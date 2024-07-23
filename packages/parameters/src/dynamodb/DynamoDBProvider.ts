@@ -248,11 +248,8 @@ class DynamoDBProvider extends BaseProvider {
    */
   public constructor(config: DynamoDBProviderOptions) {
     super({
-      // biome-ignore lint/correctness/noInvalidUseBeforeDeclaration: <explanation>
-      awsSdkV3Client: config.awsSdkV3Client,
-      // biome-ignore lint/correctness/noInvalidUseBeforeDeclaration: <explanation>
-      clientConfig: config.clientConfig,
       proto: DynamoDBClient as new (config?: unknown) => DynamoDBClient,
+      ...config,
     });
 
     const { tableName, keyAttr, sortAttr, valueAttr } = config;

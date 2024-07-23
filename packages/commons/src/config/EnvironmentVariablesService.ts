@@ -108,11 +108,11 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
 
     const xRayTraceData: Record<string, string> = {};
 
-    xRayTraceEnv.split(';').forEach((field) => {
+    for (const field of xRayTraceEnv.split(';')) {
       const [key, value] = field.split('=');
 
       xRayTraceData[key] = value;
-    });
+    }
 
     return xRayTraceData;
   }

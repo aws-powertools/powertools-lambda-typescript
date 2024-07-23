@@ -1,5 +1,5 @@
 import { getType } from '@aws-lambda-powertools/commons';
-import {
+import type {
   JSONArray,
   JSONObject,
   JSONValue,
@@ -36,7 +36,8 @@ const deepSort = (data: JSONValue): JSONValue => {
   const type = getType(data);
   if (type === 'object') {
     return sortObject(data as JSONObject);
-  } else if (type === 'array') {
+  }
+  if (type === 'array') {
     return (data as JSONArray).map(deepSort);
   }
 

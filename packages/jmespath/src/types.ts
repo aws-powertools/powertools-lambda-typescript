@@ -1,9 +1,9 @@
 import type {
-  JSONValue,
   JSONArray,
+  JSONValue,
 } from '@aws-lambda-powertools/commons/types';
 import type { Functions } from './Functions.js';
-import { BINDING_POWER } from './constants.js';
+import type { BINDING_POWER } from './constants.js';
 
 /**
  * A token in the JMESPath AST.

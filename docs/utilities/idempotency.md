@@ -723,7 +723,7 @@ Below an example implementation of a custom persistence layer backed by a generi
 
 === "CustomPersistenceLayer"
 
-    ```typescript hl_lines="9 19 28 34 50 90"
+    ```typescript hl_lines="9 19 28 35 52 95"
     --8<-- "examples/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
     ```
 

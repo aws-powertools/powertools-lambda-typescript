@@ -1,6 +1,6 @@
-import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 
 /**
  * Options for the tracer class to be used during initialization.
@@ -99,9 +99,9 @@ type CaptureMethodOptions = {
   captureResponse?: boolean;
 };
 
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: this is a generic type that is intentionally open
 type AnyClassMethod = (...args: any[]) => any;
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: this is a generic type that is intentionally open
 type AnyClass = new (...args: any[]) => any;
 
 type MethodDecorator<T extends AnyClass> = (
@@ -115,9 +115,9 @@ interface TracerInterface {
   addResponseAsMetadata(data?: unknown, methodName?: string): void;
   addServiceNameAnnotation(): void;
   annotateColdStart(): void;
-  captureAWS<T>(aws: T): void | T;
-  captureAWSv3Client<T>(service: T): void | T;
-  captureAWSClient<T>(service: T): void | T;
+  captureAWS<T>(aws: T): undefined | T;
+  captureAWSv3Client<T>(service: T): undefined | T;
+  captureAWSClient<T>(service: T): undefined | T;
   captureLambdaHandler(
     options?: CaptureLambdaHandlerOptions
   ): HandlerMethodDecorator;

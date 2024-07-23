@@ -5,7 +5,7 @@ import {
   UnknownFunctionError,
   VariadicArityError,
 } from './errors.js';
-import type { Node, JMESPathParsingOptions, JSONObject } from './types.js';
+import type { JMESPathParsingOptions, JSONObject, Node } from './types.js';
 
 class ParsedResult {
   public expression: string;

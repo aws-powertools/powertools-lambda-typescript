@@ -1,10 +1,10 @@
-import type { Order } from './schema.js';
+import type {
+  EventBridgeEvent,
+  ParsedResult,
+} from '@aws-lambda-powertools/parser/types';
 import type { Context } from 'aws-lambda';
 import { handler } from './safeParseDecorator.js';
-import {
-  ParsedResult,
-  EventBridgeEvent,
-} from '@aws-lambda-powertools/parser/types';
+import type { Order } from './schema.js';
 
 describe('Test handler', () => {
   it('should parse event successfully', async () => {

@@ -3,31 +3,31 @@
  *
  * @group e2e/tracer/manual
  */
+import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
-import { join } from 'node:path';
 import { TracerTestNodejsFunction } from '../helpers/resources.js';
 import {
   assertAnnotation,
   assertErrorAndFault,
 } from '../helpers/traceAssertions.js';
 import {
+  type ParsedTrace,
   getFirstSubsegment,
   getInvocationSubsegment,
   getTraces,
   invokeAllTestCases,
   splitSegmentsByName,
-  type ParsedTrace,
 } from '../helpers/tracesUtils.js';
 import {
-  commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
+  commonEnvironmentVars,
 } from './constants.js';
 
-describe(`Tracer E2E tests, all features with manual instantiation`, () => {
+describe('Tracer E2E tests, all features with manual instantiation', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
@@ -171,14 +171,14 @@ describe(`Tracer E2E tests, all features with manual instantiation`, () => {
         if (!metadata) {
           fail('metadata is missing');
         }
-        expect(metadata['AllFlagsOn'][expectedCustomMetadataKey]).toEqual(
+        expect(metadata.AllFlagsOn[expectedCustomMetadataKey]).toEqual(
           expectedCustomMetadataValue
         );
 
         const shouldThrowAnError = i === invocationCount - 1;
         if (!shouldThrowAnError) {
           // Assert that the metadata object contains the response
-          expect(metadata['AllFlagsOn']['index.handler response']).toEqual(
+          expect(metadata.AllFlagsOn['index.handler response']).toEqual(
             expectedCustomResponseValue
           );
         }

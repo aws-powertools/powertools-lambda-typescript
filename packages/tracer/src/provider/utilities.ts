@@ -1,6 +1,6 @@
-import type { HttpSubsegment } from '../types/ProviderService.js';
-import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 import { URL } from 'node:url';
+import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { HttpSubsegment } from '../types/ProviderService.js';
 
 const decoder = new TextDecoder();
 

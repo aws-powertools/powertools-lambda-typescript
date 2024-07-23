@@ -1,9 +1,9 @@
 import {
   getType,
   isIntegerNumber,
+  isNumber,
   isRecord,
   isTruthy as isTruthyJS,
-  isNumber,
 } from '@aws-lambda-powertools/commons/typeutils';
 import { Expression } from './Expression.js';
 import { ArityError, JMESPathTypeError, VariadicArityError } from './errors.js';
@@ -21,9 +21,8 @@ import { ArityError, JMESPathTypeError, VariadicArityError } from './errors.js';
 const isTruthy = (value: unknown): boolean => {
   if (isNumber(value)) {
     return true;
-  } else {
-    return isTruthyJS(value);
   }
+  return isTruthyJS(value);
 };
 
 /**
@@ -40,16 +39,17 @@ const capSliceRange = (
   value: number,
   isStepNegative: boolean
 ): number => {
-  if (value < 0) {
-    value += arrayLength;
-    if (value < 0) {
-      value = isStepNegative ? -1 : 0;
+  let capValue = value;
+  if (capValue < 0) {
+    capValue += arrayLength;
+    if (capValue < 0) {
+      capValue = isStepNegative ? -1 : 0;
     }
-  } else if (value >= arrayLength) {
-    value = isStepNegative ? arrayLength - 1 : arrayLength;
+  } else if (capValue >= arrayLength) {
+    capValue = isStepNegative ? arrayLength - 1 : arrayLength;
   }
 
-  return value;
+  return capValue;
 };
 
 /**
@@ -227,8 +227,10 @@ const checkIfArgumentTypeIsValid = (
     checkExpressionType(arg, argumentSpec, hasMoreTypesToCheck);
 
     return true;
-  } else if (['string', 'number', 'boolean'].includes(type)) {
+  }
+  if (['string', 'number', 'boolean'].includes(type)) {
     typeCheckType(arg, type, argumentSpec, hasMoreTypesToCheck);
+    // biome-ignore lint/suspicious/useValidTypeof: we know that `type` is one of 'string', 'number', or 'boolean' because we checked for that above
     if (typeof arg === type) return true;
   } else if (type === 'object') {
     checkObjectType(arg, argumentSpec, hasMoreTypesToCheck);
@@ -253,6 +255,7 @@ const typeCheckType = (
   argumentSpec: string[],
   hasMoreTypesToCheck: boolean
 ): void => {
+  // biome-ignore lint/suspicious/useValidTypeof: we know that `type` is one of 'string', 'number', or 'boolean' because we checked before calling this function
   if (typeof arg !== type && !hasMoreTypesToCheck) {
     throw new JMESPathTypeError({
       currentValue: arg,

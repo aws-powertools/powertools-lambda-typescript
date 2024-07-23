@@ -1,4 +1,4 @@
-import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import { UnexpectedBatchTypeError } from './errors.js';
 import type {
   BaseRecord,

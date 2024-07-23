@@ -1,5 +1,5 @@
-import { GetOptionsInterface } from '@aws-lambda-powertools/parameters/base/types';
-import Vault from 'hashi-vault-js';
+import type { GetOptionsInterface } from '@aws-lambda-powertools/parameters/base/types';
+import type Vault from 'hashi-vault-js';
 
 /**
  * Base interface for HashiCorpVaultProviderOptions.

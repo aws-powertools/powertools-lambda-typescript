@@ -1,13 +1,13 @@
-import { BaseProvider } from '../base/BaseProvider.js';
 import {
-  SecretsManagerClient,
   GetSecretValueCommand,
+  SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
+import { BaseProvider } from '../base/BaseProvider.js';
 import type {
-  SecretsProviderOptions,
   SecretsGetOptions,
   SecretsGetOutput,
+  SecretsProviderOptions,
 } from '../types/SecretsProvider.js';
 
 /**
@@ -245,7 +245,7 @@ class SecretsProvider extends BaseProvider {
   protected async _getMultiple(
     _path: string,
     _options?: unknown
-  ): Promise<void> {
+  ): Promise<Record<string, unknown> | undefined> {
     throw new Error('Method not implemented.');
   }
 }

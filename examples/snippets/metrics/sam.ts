@@ -1,4 +1,4 @@
-import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
 
 // Metrics parameters fetched from the environment variables (see template.yaml tab)
 const metrics = new Metrics();

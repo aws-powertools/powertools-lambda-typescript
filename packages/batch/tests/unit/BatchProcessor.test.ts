@@ -3,12 +3,12 @@
  *
  * @group unit/batch/class/batchprocessor
  */
-import type { Context } from 'aws-lambda';
 import context from '@aws-lambda-powertools/testing-utils/context';
+import type { Context } from 'aws-lambda';
 import {
+  BatchProcessingError,
   BatchProcessor,
   EventType,
-  BatchProcessingError,
   FullBatchFailureError,
 } from '../../src/index.js';
 import type { BatchProcessingOptions } from '../../src/types.js';
@@ -19,9 +19,9 @@ import {
 } from '../helpers/factories.js';
 import {
   asyncDynamodbRecordHandler,
+  asyncHandlerWithContext,
   asyncKinesisRecordHandler,
   asyncSqsRecordHandler,
-  asyncHandlerWithContext,
 } from '../helpers/handlers.js';
 
 describe('Class: AsyncBatchProcessor', () => {

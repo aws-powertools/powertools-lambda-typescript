@@ -97,8 +97,7 @@ class LRUCache<K, V> {
   public add(key: K, value: V): void {
     // If the key already exists, we just update the value and mark it as the most recently used
     if (this.map.has(key)) {
-      // At this point, we know that the key exists in the map, so we can safely use the non-null
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: At this point, we know that the key exists in the map, so we can safely use the non-null
       const item = this.map.get(key)!;
       item.value = value;
       this.trackItemUse(item);
@@ -192,8 +191,7 @@ class LRUCache<K, V> {
    * Removes the oldest item from the cache and unlinks it from the linked list.
    */
   private shift(): void {
-    // If this function is called, we know that the least recently used item exists
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // biome-ignore lint/style/noNonNullAssertion: If this function is called, we know that the least recently used item exists
     const item = this.leastRecentlyUsed!;
 
     // If there's a newer item, make it the oldest

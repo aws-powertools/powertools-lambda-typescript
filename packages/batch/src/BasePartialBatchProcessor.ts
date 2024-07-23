@@ -147,7 +147,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * entire batch failed and this method will return `true`.
    */
   public entireBatchFailed(): boolean {
-    return this.errors.length == this.records.length;
+    return this.errors.length === this.records.length;
   }
 
   /**
@@ -167,7 +167,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * and this method will return `false`.
    */
   public hasMessagesToReport(): boolean {
-    return this.failureMessages.length != 0;
+    return this.failureMessages.length !== 0;
   }
 
   /**

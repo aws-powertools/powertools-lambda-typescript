@@ -3,26 +3,26 @@
  *
  * @group unit/parameters/ssm/class
  */
-import { SSMProvider } from '../../src/ssm/index.js';
 import {
-  SSMClient,
   GetParameterCommand,
-  GetParametersCommand,
   GetParametersByPathCommand,
+  GetParametersCommand,
+  SSMClient,
 } from '@aws-sdk/client-ssm';
 import type { GetParametersCommandOutput } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
+import { SSMProvider } from '../../src/ssm/index.js';
 import 'aws-sdk-client-mock-jest';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { toBase64 } from '@smithy/util-base64';
+import { ExpirableValue } from '../../src/base/ExpirableValue.js';
 import type {
-  SSMProviderOptions,
   SSMGetParametersByNameFromCacheOutputType,
   SSMGetParametersByNameOptions,
-  SSMSplitBatchAndDecryptParametersOutputType,
   SSMGetParametersByNameOutputInterface,
+  SSMProviderOptions,
+  SSMSplitBatchAndDecryptParametersOutputType,
 } from '../../src/types/SSMProvider.js';
-import { ExpirableValue } from '../../src/base/ExpirableValue.js';
-import { toBase64 } from '@smithy/util-base64';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 const encoder = new TextEncoder();
 jest.mock('@aws-lambda-powertools/commons', () => ({
@@ -122,10 +122,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public getParametersBatchByName = jest.fn();
       public getParametersByNameWithDecryptOption = jest.fn();
-
-      public constructor() {
-        super();
-      }
     }
 
     test('when called with no parameters to decrypt, it calls both getParametersByNameWithDecryptOption and getParametersBatchByName, then returns', async () => {
@@ -559,10 +555,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public transformAndCacheGetParametersResponse = jest.fn();
 
-      public constructor() {
-        super();
-      }
-
       public _getParametersByName(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         throwOnError: boolean,
@@ -650,10 +642,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public getParametersByNameFromCache = jest.fn();
       public getParametersByNameInChunks = jest.fn();
-
-      public constructor() {
-        super();
-      }
 
       public getParametersBatchByName(
         parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -800,10 +788,6 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: getParametersByNameFromCache', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public _add(key: string, value: ExpirableValue): void {
         this.store.set(key, value);
       }
@@ -845,10 +829,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public _getParametersByName = jest.fn();
       public maxGetParametersItems = 1;
-
-      public constructor() {
-        super();
-      }
 
       public async getParametersByNameInChunks(
         parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -955,10 +935,6 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public _get = jest.fn();
 
-      public constructor() {
-        super();
-      }
-
       public async getParametersByNameWithDecryptOption(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         throwOnError: boolean
@@ -1033,10 +1009,6 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: handleAnyInvalidGetparameterErrors', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public handleAnyInvalidGetParameterErrors(
         result: Partial<GetParametersCommandOutput>,
         throwOnError: boolean
@@ -1092,10 +1064,6 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: splitBatchAndDecryptParameters', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public splitBatchAndDecryptParameters(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         configs: SSMGetParametersByNameOptions
@@ -1198,16 +1166,12 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: throwIfErrorsKeyIsPresent', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public throwIfErrorsKeyIsPresent(
         parameters: Record<string, unknown>,
         reservedParameter: string,
         throwOnError: boolean
       ): void {
-        return SSMProvider.throwIfErrorsKeyIsPresent(
+        SSMProvider.throwIfErrorsKeyIsPresent(
           parameters,
           reservedParameter,
           throwOnError
@@ -1264,10 +1228,6 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: transformAndCacheGetParametersResponse', () => {
     class SSMProviderMock extends SSMProvider {
-      public constructor() {
-        super();
-      }
-
       public transformAndCacheGetParametersResponse(
         response: Partial<GetParametersCommandOutput>,
         parameters: Record<string, SSMGetParametersByNameOptions>,

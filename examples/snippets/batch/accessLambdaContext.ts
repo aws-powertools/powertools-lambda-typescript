@@ -4,7 +4,7 @@ import {
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type { SQSRecord, Context, SQSHandler } from 'aws-lambda';
+import type { Context, SQSHandler, SQSRecord } from 'aws-lambda';
 
 const processor = new BatchProcessor(EventType.SQS);
 const logger = new Logger();

@@ -1,11 +1,11 @@
 import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import type { LogLevel as LogLevelList } from '../constants.js';
 import type { LogItem } from '../formatter/LogItem.js';
 import type { UnformattedAttributes } from './Logger.js';
-import { LogLevel } from '../constants.js';
 
 type LogLevel =
-  | (typeof LogLevel)[keyof typeof LogLevel]
-  | Lowercase<(typeof LogLevel)[keyof typeof LogLevel]>;
+  | (typeof LogLevelList)[keyof typeof LogLevelList]
+  | Lowercase<(typeof LogLevelList)[keyof typeof LogLevelList]>;
 
 type LogLevelThresholds = {
   [key in Uppercase<LogLevel>]: number;

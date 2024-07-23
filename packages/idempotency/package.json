@@ -20,8 +20,8 @@
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/idempotency#readme",
@@ -125,8 +125,8 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.614.0",
-    "@aws-sdk/lib-dynamodb": "^3.614.0",
+    "@aws-sdk/client-dynamodb": "^3.616.0",
+    "@aws-sdk/lib-dynamodb": "^3.616.0",
     "aws-sdk-client-mock": "^4.0.1",
     "aws-sdk-client-mock-jest": "^4.0.1"
   }

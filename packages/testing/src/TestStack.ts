@@ -1,9 +1,9 @@
+import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { readFile } from 'node:fs/promises';
-import { App, Stack } from 'aws-cdk-lib';
 import { AwsCdkCli, RequireApproval } from '@aws-cdk/cli-lib-alpha';
 import type { ICloudAssemblyDirectoryProducer } from '@aws-cdk/cli-lib-alpha';
+import { App, Stack } from 'aws-cdk-lib';
 import { generateTestUniqueName } from './helpers.js';
 import type { TestStackProps } from './types.js';
 

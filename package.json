@@ -49,6 +49,7 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
     "@types/aws-lambda": "^8.10.141",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.14.10",
@@ -77,7 +78,7 @@
     "typescript": "^5.4.5"
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --fix",
+    "*.{js,ts}": "biome check --write",
     "*.md": "markdownlint-cli2 --fix"
   },
   "engines": {

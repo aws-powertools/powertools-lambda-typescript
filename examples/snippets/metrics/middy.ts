@@ -1,4 +1,4 @@
-import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
 import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
 import middy from '@middy/core';
 

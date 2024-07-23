@@ -3,14 +3,14 @@
  *
  * @group unit/commons/cleanupMiddlewares
  */
-import {
-  cleanupMiddlewares,
-  TRACER_KEY,
-  METRICS_KEY,
-  LOGGER_KEY,
-  IDEMPOTENCY_KEY,
-} from '../../src/index.js';
 import context from '@aws-lambda-powertools/testing-utils/context';
+import {
+  IDEMPOTENCY_KEY,
+  LOGGER_KEY,
+  METRICS_KEY,
+  TRACER_KEY,
+  cleanupMiddlewares,
+} from '../../src/index.js';
 
 describe('Function: cleanupMiddlewares', () => {
   it('calls the cleanup function that are present', async () => {

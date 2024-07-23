@@ -3,6 +3,8 @@ import {
   isRecord,
   isStrictEqual,
 } from '@aws-lambda-powertools/commons/typeutils';
+import { Expression } from './Expression.js';
+import { Functions } from './Functions.js';
 import {
   ArityError,
   JMESPathError,
@@ -10,9 +12,7 @@ import {
   UnknownFunctionError,
   VariadicArityError,
 } from './errors.js';
-import { Expression } from './Expression.js';
-import { Functions } from './Functions.js';
-import type { Node, JMESPathParsingOptions, JSONObject } from './types.js';
+import type { JMESPathParsingOptions, JSONObject, Node } from './types.js';
 import { isTruthy, sliceArray } from './utils.js';
 
 /**
@@ -79,11 +79,8 @@ class TreeInterpreter {
     const visitMethod = visitMethods[nodeType];
     if (visitMethod) {
       return visitMethod.call(this, node, value);
-    } else {
-      throw new JMESPathError(
-        `Not Implemented: Invalid node type: ${node.type}`
-      );
     }
+    throw new JMESPathError(`Not Implemented: Invalid node type: ${node.type}`);
   }
 
   /**
@@ -122,9 +119,8 @@ class TreeInterpreter {
       node.value in value
     ) {
       return value[node.value] as JSONObject;
-    } else {
-      return null;
     }
+    return null;
   }
 
   /**
@@ -144,20 +140,23 @@ class TreeInterpreter {
       // Common cases: comparator is == or !=
       if (comparator === 'eq') {
         return isStrictEqual(left, right);
-      } else if (comparator === 'ne') {
+      }
+      if (comparator === 'ne') {
         return !isStrictEqual(left, right);
-      } else if (typeof left === 'number' && typeof right === 'number') {
+      }
+      if (typeof left === 'number' && typeof right === 'number') {
         // Ordering operators only work on numbers. Evaluating them on other
         // types will return null.
         if (comparator === 'lt') {
           return left < right;
-        } else if (comparator === 'lte') {
-          return left <= right;
-        } else if (comparator === 'gt') {
-          return left > right;
-        } else {
-          return left >= right;
         }
+        if (comparator === 'lte') {
+          return left <= right;
+        }
+        if (comparator === 'gt') {
+          return left > right;
+        }
+        return left >= right;
       }
     } else {
       throw new JMESPathError(`Invalid comparator: ${comparator}`);

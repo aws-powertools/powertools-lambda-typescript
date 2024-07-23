@@ -1073,7 +1073,7 @@ describe('Class: Tracer', () => {
           const result = await this.dummyMethod();
           this.otherDummyMethod();
 
-          return this.memberVariable;
+          return result;
         }
 
         public otherDummyMethod(): void {

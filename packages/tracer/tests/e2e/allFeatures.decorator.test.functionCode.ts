@@ -1,6 +1,6 @@
-import { Tracer } from '../../src/Tracer.js';
 import type { Callback, Context } from 'aws-lambda';
 import AWS from 'aws-sdk';
+import { Tracer } from '../../src/Tracer.js';
 import { httpRequest } from '../helpers/httpRequest.js';
 
 const serviceName =
@@ -41,7 +41,7 @@ export class MyFunctionBase {
     event: CustomEvent,
     _context: Context,
     _callback: Callback<unknown>
-  ): void | Promise<unknown> {
+  ): unknown {
     tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
     tracer.putMetadata(customMetadataKey, customMetadataValue);
 
@@ -84,7 +84,7 @@ class MyFunctionWithDecorator extends MyFunctionBase {
     event: CustomEvent,
     _context: Context,
     _callback: Callback<unknown>
-  ): void | Promise<unknown> {
+  ): unknown {
     return super.handler(event, _context, _callback);
   }
 
@@ -103,7 +103,7 @@ class MyFunctionWithDecoratorCaptureResponseFalse extends MyFunctionBase {
     event: CustomEvent,
     _context: Context,
     _callback: Callback<unknown>
-  ): void | Promise<unknown> {
+  ): unknown {
     return super.handler(event, _context, _callback);
   }
 

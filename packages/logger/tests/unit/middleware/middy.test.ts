@@ -8,7 +8,7 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { injectLambdaContext } from '../../../src/middleware/middy.js';
-import { ConfigServiceInterface } from '../../../src/types/ConfigServiceInterface.js';
+import type { ConfigServiceInterface } from '../../../src/types/ConfigServiceInterface.js';
 import { Logger } from './../../../src/Logger.js';
 
 const mockDate = new Date(1466424490000);
@@ -107,6 +107,7 @@ describe('Middy middleware', () => {
         biz: 'baz',
       });
 
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const debugSpy = jest.spyOn(logger['console'], 'debug');
 
       const handler = middy((): void => {
@@ -174,6 +175,7 @@ describe('Middy middleware', () => {
         biz: 'baz',
       });
 
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const debugSpy = jest.spyOn(logger['console'], 'debug');
 
       const handler = middy((): void => {
@@ -314,6 +316,7 @@ describe('Middy middleware', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const loggerSpy = jest.spyOn(logger['console'], 'debug');
       const myCustomMiddleware = (): middy.MiddlewareObj => {
         const before = async (
@@ -371,6 +374,7 @@ describe('Middy middleware', () => {
       // Prepare
       const logger = new Logger();
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy((): void => {
@@ -447,6 +451,7 @@ describe('Middy middleware', () => {
         customConfigService: configService,
       });
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy((): void => {
@@ -486,6 +491,7 @@ describe('Middy middleware', () => {
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
       const logger = new Logger();
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy((): void => {
@@ -525,6 +531,7 @@ describe('Middy middleware', () => {
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
       const logger = new Logger();
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy((): void => {
@@ -562,6 +569,7 @@ describe('Middy middleware', () => {
         },
       });
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy(

@@ -3,31 +3,31 @@
  *
  * @group unit/tracer/providerservice
  */
+import { channel } from 'node:diagnostics_channel';
+import http from 'node:http';
+import https from 'node:https';
+import { URL } from 'node:url';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
-  captureAsyncFunc,
+  Segment,
+  Subsegment,
   captureAWS,
   captureAWSClient,
   captureAWSv3Client,
+  captureAsyncFunc,
   captureFunc,
   captureHTTPsGlobal,
   getNamespace,
   getSegment,
-  Segment,
   setContextMissingStrategy,
   setDaemonAddress,
   setLogger,
   setSegment,
-  Subsegment,
 } from 'aws-xray-sdk-core';
-import { channel } from 'node:diagnostics_channel';
-import http from 'node:http';
-import https from 'node:https';
 import { ProviderService } from '../../src/provider/ProviderService.js';
 import type { HttpSubsegment } from '../../src/types/ProviderService.js';
 import { mockFetch } from '../helpers/mockRequests.js';
-import { URL } from 'node:url';
 
 jest.mock('aws-xray-sdk-core', () => ({
   ...jest.requireActual('aws-xray-sdk-core'),

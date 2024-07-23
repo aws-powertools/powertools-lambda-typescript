@@ -692,24 +692,24 @@ class Logger extends Utility implements LoggerInterface {
     const references = new WeakSet();
 
     return (key, value) => {
-      // biome-ignore lint/style/noParameterAssign:
-      if (this.#jsonReplacerFn) value = this.#jsonReplacerFn?.(key, value);
+      let replacedValue = value;
+      if (this.#jsonReplacerFn)
+        replacedValue = this.#jsonReplacerFn?.(key, replacedValue);
 
-      if (value instanceof Error) {
-        // biome-ignore lint/style/noParameterAssign:
-        value = this.getLogFormatter().formatError(value);
+      if (replacedValue instanceof Error) {
+        replacedValue = this.getLogFormatter().formatError(replacedValue);
       }
-      if (typeof value === 'bigint') {
-        return value.toString();
+      if (typeof replacedValue === 'bigint') {
+        return replacedValue.toString();
       }
-      if (typeof value === 'object' && value !== null) {
-        if (references.has(value)) {
+      if (typeof replacedValue === 'object' && replacedValue !== null) {
+        if (references.has(replacedValue)) {
           return;
         }
-        references.add(value);
+        references.add(replacedValue);
       }
 
-      return value;
+      return replacedValue;
     };
   }
 

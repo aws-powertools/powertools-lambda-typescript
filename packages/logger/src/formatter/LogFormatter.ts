@@ -5,7 +5,7 @@ import type {
   LogFormatterOptions,
 } from '../types/Log.js';
 import type { UnformattedAttributes } from '../types/Logger.js';
-import { LogItem } from './LogItem.js';
+import type { LogItem } from './LogItem.js';
 
 /**
  * This class defines and implements common methods for the formatting of log attributes.
@@ -92,9 +92,8 @@ abstract class LogFormatter implements LogFormatterInterface {
     const stackLines = stack.split('\n');
     const regex = /\(([^)]*?):(\d+?):(\d+?)\)\\?$/;
 
-    let i;
-    for (i = 0; i < stackLines.length; i++) {
-      const match = regex.exec(stackLines[i]);
+    for (const item of stackLines) {
+      const match = regex.exec(item);
 
       if (Array.isArray(match)) {
         return `${match[1]}:${Number(match[2])}`;

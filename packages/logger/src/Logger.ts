@@ -1,30 +1,30 @@
+import { Console } from 'node:console';
+import { randomInt } from 'node:crypto';
 import { Utility } from '@aws-lambda-powertools/commons';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
-import { Console } from 'node:console';
-import { randomInt } from 'node:crypto';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import { LogJsonIndent } from './constants.js';
-import { LogItem } from './formatter/LogItem.js';
+import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
   Environment,
   LogAttributes,
+  LogFormatterInterface,
   LogLevel,
   LogLevelThresholds,
-  LogFormatterInterface,
 } from './types/Log.js';
 import type {
-  LogFunction,
   ConstructorOptions,
+  CustomJsonReplacerFn,
   InjectLambdaContextOptions,
+  LogFunction,
   LogItemExtraInput,
   LogItemMessage,
   LoggerInterface,
   PowertoolsLogData,
-  CustomJsonReplacerFn,
 } from './types/Logger.js';
 
 /**
@@ -442,10 +442,7 @@ class Logger extends Utility implements LoggerInterface {
     options?: InjectLambdaContextOptions
   ): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
-      /**
-       * The descriptor.value is the method this decorator decorates, it cannot be undefined.
-       */
-      /* eslint-disable  @typescript-eslint/no-non-null-assertion */
+      // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
       const originalMethod = descriptor.value!;
 
       // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -463,8 +460,6 @@ class Logger extends Utility implements LoggerInterface {
         let result: unknown;
         try {
           result = await originalMethod.apply(this, [event, context, callback]);
-        } catch (error) {
-          throw error;
         } finally {
           if (options?.clearState || options?.resetKeys) loggerRef.resetKeys();
         }
@@ -697,22 +692,24 @@ class Logger extends Utility implements LoggerInterface {
     const references = new WeakSet();
 
     return (key, value) => {
-      if (this.#jsonReplacerFn) value = this.#jsonReplacerFn?.(key, value);
+      let replacedValue = value;
+      if (this.#jsonReplacerFn)
+        replacedValue = this.#jsonReplacerFn?.(key, replacedValue);
 
-      if (value instanceof Error) {
-        value = this.getLogFormatter().formatError(value);
+      if (replacedValue instanceof Error) {
+        replacedValue = this.getLogFormatter().formatError(replacedValue);
       }
-      if (typeof value === 'bigint') {
-        return value.toString();
+      if (typeof replacedValue === 'bigint') {
+        return replacedValue.toString();
       }
-      if (typeof value === 'object' && value !== null) {
-        if (references.has(value)) {
+      if (typeof replacedValue === 'object' && replacedValue !== null) {
+        if (references.has(replacedValue)) {
           return;
         }
-        references.add(value);
+        references.add(replacedValue);
       }
 
-      return value;
+      return replacedValue;
     };
   }
 
@@ -855,10 +852,10 @@ class Logger extends Utility implements LoggerInterface {
    * @returns - The name of the log level
    */
   private getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
-    let found;
+    let found: Uppercase<LogLevel> | undefined;
     for (const [key, value] of Object.entries(this.logLevelThresholds)) {
       if (value === logLevel) {
-        found = key;
+        found = key as Uppercase<LogLevel>;
         break;
       }
     }

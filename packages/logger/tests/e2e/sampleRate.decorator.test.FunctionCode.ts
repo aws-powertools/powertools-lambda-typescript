@@ -1,9 +1,9 @@
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import type { Context } from 'aws-lambda';
 import { Logger } from '../../src/index.js';
 import type { TestEvent, TestOutput } from '../helpers/types.js';
-import type { Context } from 'aws-lambda';
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
-const SAMPLE_RATE = parseFloat(process.env.SAMPLE_RATE || '0.1');
+const SAMPLE_RATE = Number.parseFloat(process.env.SAMPLE_RATE || '0.1');
 const LOG_MSG = process.env.LOG_MSG || 'Hello World';
 
 const logger = new Logger({

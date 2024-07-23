@@ -5,7 +5,6 @@
  */
 
 import { ZodError } from 'zod';
-import { ParseError } from '../../../src';
 import {
   S3EventNotificationEventBridgeSchema,
   S3ObjectLambdaEventSchema,

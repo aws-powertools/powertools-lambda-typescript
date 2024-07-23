@@ -1,7 +1,7 @@
-import { Tracer } from '../../src/index.js';
-import type { Context } from 'aws-lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import type { Context } from 'aws-lambda';
+import { Tracer } from '../../src/index.js';
 import { httpRequest } from '../helpers/httpRequest.js';
 
 const serviceName =
@@ -48,27 +48,23 @@ export class MyFunctionBase {
     tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
     tracer.putMetadata(customMetadataKey, customMetadataValue);
 
-    try {
-      await dynamoDB.send(
-        new PutCommand({
-          TableName: testTableName,
-          Item: { id: `${serviceName}-${event.invocation}-sdkv3` },
-        })
-      );
-      await httpRequest({
-        hostname: 'docs.powertools.aws.dev',
-        path: '/lambda/typescript/latest/',
-      });
+    await dynamoDB.send(
+      new PutCommand({
+        TableName: testTableName,
+        Item: { id: `${serviceName}-${event.invocation}-sdkv3` },
+      })
+    );
+    await httpRequest({
+      hostname: 'docs.powertools.aws.dev',
+      path: '/lambda/typescript/latest/',
+    });
 
-      const res = this.myMethod();
-      if (event.throw) {
-        throw new Error(customErrorMessage);
-      }
-
-      return res;
-    } catch (err) {
-      throw err;
+    const res = this.myMethod();
+    if (event.throw) {
+      throw new Error(customErrorMessage);
     }
+
+    return res;
   }
 
   public myMethod(): string {

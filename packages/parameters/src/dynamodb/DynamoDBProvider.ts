@@ -1,23 +1,23 @@
-import { BaseProvider } from '../base/BaseProvider.js';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import {
   DynamoDBClient,
+  type DynamoDBPaginationConfiguration,
   GetItemCommand,
   paginateQuery,
-  type DynamoDBPaginationConfiguration,
 } from '@aws-sdk/client-dynamodb';
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import type {
-  DynamoDBProviderOptions,
-  DynamoDBGetOptions,
-  DynamoDBGetMultipleOptions,
-  DynamoDBGetOutput,
-  DynamoDBGetMultipleOutput,
-} from '../types/DynamoDBProvider.js';
 import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
+import { BaseProvider } from '../base/BaseProvider.js';
+import type {
+  DynamoDBGetMultipleOptions,
+  DynamoDBGetMultipleOutput,
+  DynamoDBGetOptions,
+  DynamoDBGetOutput,
+  DynamoDBProviderOptions,
+} from '../types/DynamoDBProvider.js';
 
 /**
  * ## Intro
@@ -248,9 +248,8 @@ class DynamoDBProvider extends BaseProvider {
    */
   public constructor(config: DynamoDBProviderOptions) {
     super({
-      awsSdkV3Client: config.awsSdkV3Client,
-      clientConfig: config.clientConfig,
       proto: DynamoDBClient as new (config?: unknown) => DynamoDBClient,
+      ...config,
     });
 
     const { tableName, keyAttr, sortAttr, valueAttr } = config;

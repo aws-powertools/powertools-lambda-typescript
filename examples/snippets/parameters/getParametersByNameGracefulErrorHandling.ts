@@ -15,7 +15,7 @@ export const handler = async (): Promise<void> => {
   });
 
   // Handle gracefully, since `/this/param/does/not/exist` will only be available in `_errors`
-  if (errors && errors.length) {
+  if (errors?.length) {
     console.error(`Unable to retrieve parameters: ${errors.join(',')}`);
   }
 

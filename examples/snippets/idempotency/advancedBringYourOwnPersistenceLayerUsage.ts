@@ -1,10 +1,10 @@
-import type { Context } from 'aws-lambda';
 import { randomUUID } from 'node:crypto';
-import { CustomPersistenceLayer } from './advancedBringYourOwnPersistenceLayer';
 import {
   IdempotencyConfig,
   makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
+import type { Context } from 'aws-lambda';
+import { CustomPersistenceLayer } from './advancedBringYourOwnPersistenceLayer';
 import type { Request, Response, SubscriptionResult } from './types.js';
 
 const persistenceStore = new CustomPersistenceLayer({

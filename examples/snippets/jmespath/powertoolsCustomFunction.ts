@@ -1,12 +1,12 @@
+import { brotliDecompressSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import { extractDataFromEnvelope } from '@aws-lambda-powertools/jmespath/envelopes';
 import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { brotliDecompressSync } from 'node:zlib';
 
 const logger = new Logger();
 
-// prettier-ignore
+// biome-ignore format: we need the comment in the next line to stay there to annotate the code snippet in the docs
 class CustomFunctions extends PowertoolsFunctions {
   @PowertoolsFunctions.signature({ // (1)!
     argumentsSpecs: [['string']],

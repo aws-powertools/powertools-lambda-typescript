@@ -4,6 +4,7 @@ import type { ProviderItem } from './types.js';
  * This is a mock implementation of an SDK client for a generic key-value store.
  */
 class ProviderClient {
+  // biome-ignore lint/complexity/noUselessConstructor: Keep mock constructor for clarity
   public constructor(_config: { apiKey: string; defaultTtlSeconds: number }) {
     // ...
   }

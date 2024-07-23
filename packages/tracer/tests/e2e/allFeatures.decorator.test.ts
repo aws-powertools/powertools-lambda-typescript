@@ -3,9 +3,9 @@
  *
  * @group e2e/tracer/decorator
  */
+import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
-import { join } from 'node:path';
 import { TracerTestNodejsFunction } from '../helpers/resources.js';
 import {
   assertAnnotation,
@@ -19,11 +19,11 @@ import {
   splitSegmentsByName,
 } from '../helpers/tracesUtils.js';
 import {
-  commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
+  commonEnvironmentVars,
 } from './constants.js';
 
 /**
@@ -35,7 +35,7 @@ import {
  * Each stack must use a unique `serviceName` as it's used to for retrieving the trace.
  * Using the same one will result in traces from different test cases mixing up.
  */
-describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
+describe('Tracer E2E tests, all features with decorator instantiation', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
@@ -265,14 +265,14 @@ describe(`Tracer E2E tests, all features with decorator instantiation`, () => {
         if (!metadata) {
           fail('metadata is missing');
         }
-        expect(metadata['AllFlagsOn'][expectedCustomMetadataKey]).toEqual(
+        expect(metadata.AllFlagsOn[expectedCustomMetadataKey]).toEqual(
           expectedCustomMetadataValue
         );
 
         const shouldThrowAnError = i === invocationCount - 1;
         if (!shouldThrowAnError) {
           // Assert that the metadata object contains the response
-          expect(metadata['AllFlagsOn']['index.handler response']).toEqual(
+          expect(metadata.AllFlagsOn['index.handler response']).toEqual(
             expectedCustomResponseValue
           );
         }

@@ -4,11 +4,11 @@
  * @group unit/logger/logFormatter
  */
 import { AssertionError } from 'node:assert';
+import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
 import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
 import { LogItem } from '../../../src/index.js';
-import type { UnformattedAttributes } from '../../../src/types/Logger.js';
 import type { LogAttributes } from '../../../src/types/Log.js';
-import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
+import type { UnformattedAttributes } from '../../../src/types/Logger.js';
 
 describe('Class: PowertoolsLogFormatter', () => {
   const ENVIRONMENT_VARIABLES = process.env;

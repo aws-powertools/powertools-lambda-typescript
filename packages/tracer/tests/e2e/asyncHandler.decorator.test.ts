@@ -3,9 +3,9 @@
  *
  * @group e2e/tracer/decorator-async-handler
  */
+import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
-import { join } from 'node:path';
 import { TracerTestNodejsFunction } from '../helpers/resources.js';
 import {
   assertAnnotation,
@@ -19,14 +19,14 @@ import {
   splitSegmentsByName,
 } from '../helpers/tracesUtils.js';
 import {
-  commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
+  commonEnvironmentVars,
 } from './constants.js';
 
-describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
+describe('Tracer E2E tests, async handler with decorator instantiation', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
@@ -208,14 +208,14 @@ describe(`Tracer E2E tests, async handler with decorator instantiation`, () => {
         if (!metadata) {
           fail('metadata is missing');
         }
-        expect(metadata['AllFlagsOn'][expectedCustomMetadataKey]).toEqual(
+        expect(metadata.AllFlagsOn[expectedCustomMetadataKey]).toEqual(
           expectedCustomMetadataValue
         );
 
         const shouldThrowAnError = i === invocationsCount - 1;
         if (!shouldThrowAnError) {
           // Assert that the metadata object contains the response
-          expect(metadata['AllFlagsOn']['index.handler response']).toEqual(
+          expect(metadata.AllFlagsOn['index.handler response']).toEqual(
             expectedCustomResponseValue
           );
         }

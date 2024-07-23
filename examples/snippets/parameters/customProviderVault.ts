@@ -2,8 +2,8 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { BaseProvider } from '@aws-lambda-powertools/parameters/base';
 import Vault from 'hashi-vault-js';
 import type {
-  HashiCorpVaultProviderOptions,
   HashiCorpVaultGetOptions,
+  HashiCorpVaultProviderOptions,
 } from './customProviderVaultTypes.js';
 
 class HashiCorpVaultProvider extends BaseProvider {
@@ -96,9 +96,8 @@ class HashiCorpVaultProvider extends BaseProvider {
         error: response.vaultHelpMessage,
       });
       throw response;
-    } else {
-      return response.data;
     }
+    return response.data;
   }
 
   /**

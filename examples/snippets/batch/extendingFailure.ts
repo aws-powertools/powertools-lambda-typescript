@@ -1,15 +1,15 @@
-import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 import {
   BatchProcessor,
   EventType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import type {
-  FailureResponse,
   EventSourceDataClassTypes,
+  FailureResponse,
 } from '@aws-lambda-powertools/batch/types';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type { SQSRecord, SQSHandler } from 'aws-lambda';
+import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+import type { SQSHandler, SQSRecord } from 'aws-lambda';
 
 class MyProcessor extends BatchProcessor {
   #metrics: Metrics;

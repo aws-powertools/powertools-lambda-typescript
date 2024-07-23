@@ -3,10 +3,10 @@
  *
  * @group unit/parameters/ssm/getParameters/function
  */
+import { GetParametersByPathCommand, SSMClient } from '@aws-sdk/client-ssm';
+import { mockClient } from 'aws-sdk-client-mock';
 import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
 import { SSMProvider, getParameters } from '../../src/ssm/index.js';
-import { SSMClient, GetParametersByPathCommand } from '@aws-sdk/client-ssm';
-import { mockClient } from 'aws-sdk-client-mock';
 import 'aws-sdk-client-mock-jest';
 
 /**

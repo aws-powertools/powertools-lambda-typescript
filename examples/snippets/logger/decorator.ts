@@ -1,5 +1,5 @@
-import { Logger } from '@aws-lambda-powertools/logger';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import { Logger } from '@aws-lambda-powertools/logger';
 
 const logger = new Logger();
 

@@ -3,14 +3,14 @@
  *
  * @group e2e/parameters/secrets/class
  */
+import { join } from 'node:path';
 import {
-  invokeFunctionOnce,
   TestInvocationLogs,
   TestStack,
+  invokeFunctionOnce,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { SecretValue } from 'aws-cdk-lib';
-import { join } from 'node:path';
 import { TestSecret } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -36,7 +36,7 @@ import {
  * Make sure to add the right permissions to the lambda function to access the resources. We use our `ResourceAccessGranter` to add permissions.
  *
  */
-describe(`Parameters E2E tests, Secrets Manager provider`, () => {
+describe('Parameters E2E tests, Secrets Manager provider', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

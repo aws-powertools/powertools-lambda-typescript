@@ -1,10 +1,10 @@
-import promiseRetry from 'promise-retry';
+import { invokeFunction } from '@aws-lambda-powertools/testing-utils';
 import {
-  XRayClient,
   BatchGetTracesCommand,
   GetTraceSummariesCommand,
+  XRayClient,
 } from '@aws-sdk/client-xray';
-import { invokeFunction } from '@aws-lambda-powertools/testing-utils';
+import promiseRetry from 'promise-retry';
 import { FunctionSegmentNotDefinedError } from './FunctionSegmentNotDefinedError.js';
 
 interface ParsedDocument {
@@ -170,14 +170,14 @@ const getTraces = async ({
     for (const trace of sortedTraces) {
       let retryFlag = false;
 
-      let invocationSubsegment;
+      let invocationSubsegment: ParsedDocument;
       try {
         invocationSubsegment = getInvocationSubsegment(trace);
       } catch (error) {
         if (error instanceof FunctionSegmentNotDefinedError) {
           retry(
             new Error(
-              `There is no Function subsegment (AWS::Lambda::Function) yet. Retry.`
+              'There is no Function subsegment (AWS::Lambda::Function) yet. Retry.'
             )
           );
         } else {
@@ -205,15 +205,15 @@ const getTraces = async ({
       );
     }
 
-    sortedTraces.forEach((trace) => {
-      if (trace.Segments?.length != expectedSegmentsCount) {
+    for (const trace of sortedTraces) {
+      if (trace.Segments?.length !== expectedSegmentsCount) {
         retry(
           new Error(
             `Expected ${expectedSegmentsCount} segments, got ${trace.Segments?.length} for trace id ${trace.Id}`
           )
         );
       }
-    });
+    }
 
     return sortedTraces;
   }, retryOptions);
@@ -235,7 +235,7 @@ const getFunctionSegment = (trace: ParsedTrace): ParsedSegment => {
 
 const getFirstSubsegment = (segment: ParsedDocument): ParsedDocument => {
   const subsegments = segment.subsegments;
-  if (!subsegments || subsegments.length == 0) {
+  if (!subsegments || subsegments.length === 0) {
     throw new Error('segment should have subsegments');
   }
 
@@ -262,13 +262,13 @@ const splitSegmentsByName = (
   const splitSegments: Map<string, ParsedDocument[]> = new Map(
     [...expectedNames, 'other'].map((name) => [name, []])
   );
-  subsegments.forEach((subsegment) => {
+  for (const subsegment of subsegments) {
     const name =
       expectedNames.indexOf(subsegment.name) !== -1 ? subsegment.name : 'other';
     const newSegments = splitSegments.get(name) as ParsedDocument[];
     newSegments.push(subsegment);
     splitSegments.set(name, newSegments);
-  });
+  }
 
   return splitSegments;
 };

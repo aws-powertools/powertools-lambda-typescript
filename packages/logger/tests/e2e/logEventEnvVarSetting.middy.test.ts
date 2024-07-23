@@ -3,12 +3,12 @@
  *
  * @group e2e/logger/logEventEnvVarSetting
  */
+import { join } from 'node:path';
 import {
-  invokeFunction,
   TestInvocationLogs,
   TestStack,
+  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
-import { join } from 'node:path';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -18,7 +18,7 @@ import {
   TEST_CASE_TIMEOUT,
 } from './constants.js';
 
-describe(`Logger E2E tests, log event via env var setting with middy`, () => {
+describe('Logger E2E tests, log event via env var setting with middy', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

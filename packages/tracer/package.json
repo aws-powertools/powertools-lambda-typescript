@@ -20,16 +20,16 @@
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/tracer#readme",
   "license": "MIT-0",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.614.0",
-    "@aws-sdk/client-xray": "^3.614.0",
+    "@aws-sdk/client-dynamodb": "^3.616.0",
+    "@aws-sdk/client-xray": "^3.616.0",
     "@types/promise-retry": "^1.1.6",
     "aws-sdk": "^2.1659.0",
     "promise-retry": "^2.0.1"
@@ -69,17 +69,12 @@
         "lib/cjs/middleware/middy.d.ts",
         "lib/esm/middleware/middy.d.ts"
       ],
-      "types": [
-        "lib/cjs/types/index.d.ts",
-        "lib/esm/types/index.d.ts"
-      ]
+      "types": ["lib/cjs/types/index.d.ts", "lib/esm/types/index.d.ts"]
     }
   },
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

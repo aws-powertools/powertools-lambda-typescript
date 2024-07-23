@@ -1,6 +1,6 @@
 import {
-  makeIdempotent,
   IdempotencyConfig,
+  makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { Context } from 'aws-lambda';

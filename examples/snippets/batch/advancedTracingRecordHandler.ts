@@ -6,7 +6,7 @@ import {
 import { Tracer } from '@aws-lambda-powertools/tracer';
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
 import middy from '@middy/core';
-import type { SQSRecord, SQSHandler, SQSEvent } from 'aws-lambda';
+import type { SQSEvent, SQSHandler, SQSRecord } from 'aws-lambda';
 
 const processor = new BatchProcessor(EventType.SQS);
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });

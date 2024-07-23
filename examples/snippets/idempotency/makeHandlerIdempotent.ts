@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { makeHandlerIdempotent } from '@aws-lambda-powertools/idempotency/middleware';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import { makeHandlerIdempotent } from '@aws-lambda-powertools/idempotency/middleware';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import type { Request, Response, SubscriptionResult } from './types.js';

@@ -1,18 +1,20 @@
+import { brotliDecompressSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import { extractDataFromEnvelope } from '@aws-lambda-powertools/jmespath/envelopes';
 import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { brotliDecompressSync } from 'node:zlib';
 
 const logger = new Logger();
 
 // prettier-ignore
 class CustomFunctions extends PowertoolsFunctions {
-  @PowertoolsFunctions.signature({ // (1)!
+  @PowertoolsFunctions.signature({
+    // (1)!
     argumentsSpecs: [['string']],
     variadic: false,
   })
-  public funcDecodeBrotliCompression(value: string): string { // (2)!
+  public funcDecodeBrotliCompression(value: string): string {
+    // (2)!
     const encoded = fromBase64(value, 'base64');
     const uncompressed = brotliDecompressSync(encoded);
 

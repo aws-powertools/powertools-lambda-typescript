@@ -1,6 +1,6 @@
 import type { Context } from 'aws-lambda';
-import type { Order } from './schema.js';
 import { handler } from './decorator.js';
+import type { Order } from './schema.js';
 
 describe('Test handler', () => {
   it('should parse event successfully', async () => {

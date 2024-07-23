@@ -1,9 +1,9 @@
-import type { Context } from 'aws-lambda';
-import { parser } from '@aws-lambda-powertools/parser/middleware';
-import { z } from 'zod';
-import middy from '@middy/core';
-import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
 import { Logger } from '@aws-lambda-powertools/logger';
+import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
+import { parser } from '@aws-lambda-powertools/parser/middleware';
+import middy from '@middy/core';
+import type { Context } from 'aws-lambda';
+import { z } from 'zod';
 
 const logger = new Logger();
 

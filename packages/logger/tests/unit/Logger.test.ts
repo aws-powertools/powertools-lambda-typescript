@@ -1,25 +1,25 @@
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 /**
  * Test Logger class
  *
  * @group unit/logger/logger
  */
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { Logger, LogFormatter, LogLevel } from '../../src/index.js';
-import { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
-import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
-import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
-import {
-  LogLevelThresholds,
-  type LogLevel as LogLevelType,
-} from '../../src/types/Log.js';
-import {
-  type LogFunction,
-  type ConstructorOptions,
-  type CustomJsonReplacerFn,
-} from '../../src/types/Logger.js';
-import { LogJsonIndent } from '../../src/constants.js';
 import type { Context } from 'aws-lambda';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
+import { LogJsonIndent } from '../../src/constants.js';
+import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
+import { LogFormatter, LogLevel, Logger } from '../../src/index.js';
+import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
+import type {
+  LogLevelThresholds,
+  LogLevel as LogLevelType,
+} from '../../src/types/Log.js';
+import type {
+  ConstructorOptions,
+  CustomJsonReplacerFn,
+  LogFunction,
+} from '../../src/types/Logger.js';
 
 const mockDate = new Date(1466424490000);
 const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -140,8 +140,8 @@ describe('Class: Logger', () => {
     test('when no constructor parameters and no environment variables are set, returns a Logger instance with the default properties', () => {
       // Prepare
       const loggerOptions = undefined;
-      delete process.env.POWERTOOLS_SERVICE_NAME;
-      delete process.env.POWERTOOLS_LOG_LEVEL;
+      process.env.POWERTOOLS_SERVICE_NAME = undefined;
+      process.env.POWERTOOLS_LOG_LEVEL = undefined;
 
       // Act
       const logger = new Logger(loggerOptions);
@@ -292,7 +292,7 @@ describe('Class: Logger', () => {
     test('when no log level is set, returns a Logger instance with INFO level', () => {
       // Prepare
       const loggerOptions: ConstructorOptions = {};
-      delete process.env.POWERTOOLS_LOG_LEVEL;
+      process.env.POWERTOOLS_LOG_LEVEL = undefined;
 
       // Act
       const logger = new Logger(loggerOptions);
@@ -604,7 +604,7 @@ describe('Class: Logger', () => {
             logLevel: LogLevel.DEBUG,
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(method)
           );
           // Act
@@ -633,7 +633,7 @@ describe('Class: Logger', () => {
             logLevel: 'INFO',
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -662,7 +662,7 @@ describe('Class: Logger', () => {
             logLevel: LogLevel.WARN,
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -691,7 +691,7 @@ describe('Class: Logger', () => {
             logLevel: 'ERROR',
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -720,7 +720,7 @@ describe('Class: Logger', () => {
             logLevel: LogLevel.SILENT,
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -735,7 +735,7 @@ describe('Class: Logger', () => {
           process.env.POWERTOOLS_LOG_LEVEL = methodOfLogger.toUpperCase();
           const logger = new Logger();
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -765,7 +765,7 @@ describe('Class: Logger', () => {
             sampleRateValue: 0,
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -786,7 +786,7 @@ describe('Class: Logger', () => {
             sampleRateValue: 1,
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -813,78 +813,68 @@ describe('Class: Logger', () => {
       });
 
       describe('Feature: inject context', () => {
-        test(
-          'when the Lambda context is not captured and a string is passed as log message, it should print a valid ' +
-            method.toUpperCase() +
-            ' log',
-          () => {
-            // Prepare
-            const logger = new Logger();
-            const consoleSpy = jest.spyOn(
-              logger['console'],
-              getConsoleMethod(methodOfLogger)
-            );
-            // Act
-            if (logger[methodOfLogger]) {
-              logger[methodOfLogger]('foo');
-            }
-
-            // Assess
-            expect(consoleSpy).toBeCalledTimes(1);
-            expect(consoleSpy).toHaveBeenNthCalledWith(
-              1,
-              JSON.stringify({
-                level: method.toUpperCase(),
-                message: 'foo',
-                sampling_rate: 0,
-                service: 'hello-world',
-                timestamp: '2016-06-20T12:08:10.000Z',
-                xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              })
-            );
+        test(`when the Lambda context is not captured and a string is passed as log message, it should print a valid ${method.toUpperCase()} log`, () => {
+          // Prepare
+          const logger = new Logger();
+          const consoleSpy = jest.spyOn(
+            logger.console,
+            getConsoleMethod(methodOfLogger)
+          );
+          // Act
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
-        );
 
-        test(
-          'when the Lambda context is captured, it returns a valid ' +
-            method.toUpperCase() +
-            ' log',
-          () => {
-            // Prepare
-            const logger = new Logger({
-              logLevel: 'DEBUG',
-            });
-            logger.addContext(context);
-            const consoleSpy = jest.spyOn(
-              logger['console'],
-              getConsoleMethod(methodOfLogger)
-            );
-            // Act
-            if (logger[methodOfLogger]) {
-              logger[methodOfLogger]('foo');
-            }
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(
+            1,
+            JSON.stringify({
+              level: method.toUpperCase(),
+              message: 'foo',
+              sampling_rate: 0,
+              service: 'hello-world',
+              timestamp: '2016-06-20T12:08:10.000Z',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+            })
+          );
+        });
 
-            // Assess
-            expect(consoleSpy).toBeCalledTimes(1);
-            expect(consoleSpy).toHaveBeenNthCalledWith(
-              1,
-              JSON.stringify({
-                cold_start: true,
-                function_arn:
-                  'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
-                function_memory_size: '128',
-                function_name: 'foo-bar-function',
-                function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
-                level: method.toUpperCase(),
-                message: 'foo',
-                sampling_rate: 0,
-                service: 'hello-world',
-                timestamp: '2016-06-20T12:08:10.000Z',
-                xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              })
-            );
+        test(`when the Lambda context is captured, it returns a valid ${method.toUpperCase()} log`, () => {
+          // Prepare
+          const logger = new Logger({
+            logLevel: 'DEBUG',
+          });
+          logger.addContext(context);
+          const consoleSpy = jest.spyOn(
+            logger.console,
+            getConsoleMethod(methodOfLogger)
+          );
+          // Act
+          if (logger[methodOfLogger]) {
+            logger[methodOfLogger]('foo');
           }
-        );
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(1);
+          expect(consoleSpy).toHaveBeenNthCalledWith(
+            1,
+            JSON.stringify({
+              cold_start: true,
+              function_arn:
+                'arn:aws:lambda:eu-west-1:123456789012:function:foo-bar-function',
+              function_memory_size: '128',
+              function_name: 'foo-bar-function',
+              function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+              level: method.toUpperCase(),
+              message: 'foo',
+              sampling_rate: 0,
+              service: 'hello-world',
+              timestamp: '2016-06-20T12:08:10.000Z',
+              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+            })
+          );
+        });
       });
 
       describe('Feature: ephemeral log attributes', () => {
@@ -1082,7 +1072,7 @@ describe('Class: Logger', () => {
           ({ idx, inputs, expected }) => {
             // Prepare
             const consoleSpy = jest.spyOn(
-              logger['console'],
+              logger.console,
               getConsoleMethod(methodOfLogger)
             );
 
@@ -1108,7 +1098,7 @@ describe('Class: Logger', () => {
             },
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -1141,7 +1131,7 @@ describe('Class: Logger', () => {
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -1166,12 +1156,12 @@ describe('Class: Logger', () => {
 
         test('when the `_X_AMZN_TRACE_ID` environment variable is NOT set it parses it correctly and adds the Trace ID to the log', () => {
           // Prepare
-          delete process.env._X_AMZN_TRACE_ID;
+          process.env._X_AMZN_TRACE_ID = undefined;
           const logger = new Logger({
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -1201,7 +1191,7 @@ describe('Class: Logger', () => {
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           const circularObject = {
@@ -1243,7 +1233,7 @@ describe('Class: Logger', () => {
         test('when a logged item has BigInt value, it does not throw TypeError', () => {
           // Prepare
           const logger = new Logger();
-          jest.spyOn(logger['console'], getConsoleMethod(methodOfLogger));
+          jest.spyOn(logger.console, getConsoleMethod(methodOfLogger));
           const message = `This is an ${methodOfLogger} log with BigInt value`;
           const logItem = { value: BigInt(42) };
           const errorMessage = 'Do not know how to serialize a BigInt';
@@ -1258,7 +1248,7 @@ describe('Class: Logger', () => {
           // Prepare
           const logger = new Logger();
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           const message = `This is an ${methodOfLogger} log with BigInt value`;
@@ -1287,7 +1277,7 @@ describe('Class: Logger', () => {
           // Prepare
           const logger = new Logger();
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           const message = `This is an ${methodOfLogger} log with empty, null, and undefined values`;
@@ -1326,7 +1316,7 @@ describe('Class: Logger', () => {
 
           const logger = new Logger({ jsonReplacerFn });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
           const message = `This is an ${methodOfLogger} log with Set value`;
@@ -1367,7 +1357,7 @@ describe('Class: Logger', () => {
 
           const logger = new Logger({ jsonReplacerFn });
           const consoleSpy = jest.spyOn(
-            logger['console'],
+            logger.console,
             getConsoleMethod(methodOfLogger)
           );
 
@@ -1570,7 +1560,7 @@ describe('Class: Logger', () => {
         aws_account_id: '0987654321',
       });
 
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
 
       // Act
       logger.info('This is an INFO log with some log attributes');
@@ -1828,7 +1818,7 @@ describe('Class: Logger', () => {
           aws_region: 'eu-west-1',
         },
       });
-      const debugSpy = jest.spyOn(logger['console'], 'info');
+      const debugSpy = jest.spyOn(logger.console, 'info');
       logger.appendKeys({
         aws_region: 'us-east-1',
       });
@@ -1903,7 +1893,7 @@ describe('Class: Logger', () => {
     it('overwrites existing temporary keys with new ones in the next log', () => {
       // Prepare
       const logger = new Logger();
-      const debugSpy = jest.spyOn(logger['console'], 'info');
+      const debugSpy = jest.spyOn(logger.console, 'info');
       logger.appendKeys({
         aws_account_id: '123456789012',
       });
@@ -1931,7 +1921,7 @@ describe('Class: Logger', () => {
       // Prepare
 
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -1975,7 +1965,7 @@ describe('Class: Logger', () => {
     test('it captures Lambda context information and adds it in the printed logs', async () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -2029,7 +2019,7 @@ describe('Class: Logger', () => {
       // Prepare
       const expectedReturnValue = 'Lambda invoked!';
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -2092,7 +2082,7 @@ describe('Class: Logger', () => {
         biz: 'baz',
       });
 
-      const debugSpy = jest.spyOn(logger['console'], 'debug');
+      const debugSpy = jest.spyOn(logger.console, 'debug');
 
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
@@ -2209,7 +2199,7 @@ describe('Class: Logger', () => {
         logLevel: 'DEBUG',
       });
 
-      const debugSpy = jest.spyOn(logger['console'], 'debug');
+      const debugSpy = jest.spyOn(logger.console, 'debug');
 
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
@@ -2286,7 +2276,7 @@ describe('Class: Logger', () => {
         logLevel: 'DEBUG',
       });
 
-      const debugSpy = jest.spyOn(logger['console'], 'debug');
+      const debugSpy = jest.spyOn(logger.console, 'debug');
 
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
@@ -2352,7 +2342,7 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: LogLevel.DEBUG,
       });
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ logEvent: true })
         public async handler<TEvent>(
@@ -2399,7 +2389,7 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -2445,7 +2435,7 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       class LambdaFunction implements LambdaInterface {
         private readonly memberVariable: string;
 
@@ -2500,7 +2490,7 @@ describe('Class: Logger', () => {
         logLevel: 'DEBUG',
       });
       const resetKeysSpy = jest.spyOn(logger, 'resetKeys');
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
         public async handler(
@@ -2540,7 +2530,7 @@ describe('Class: Logger', () => {
           version: '1.0.0',
         },
       });
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true, logEvent: true })
         public async handler(
@@ -3027,7 +3017,7 @@ describe('Class: Logger', () => {
     test('When the feature is disabled, it DOES NOT log the event', () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.logEventIfEnabled(event);
 
@@ -3041,7 +3031,7 @@ describe('Class: Logger', () => {
         something: 'happened!',
       };
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.logEventIfEnabled(event, true);
 
@@ -3097,7 +3087,7 @@ describe('Class: Logger', () => {
     test('when the `POWERTOOLS_DEV` env var is NOT SET it makes log output as one-liner', () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.info('Message without pretty identation');
 
@@ -3278,7 +3268,7 @@ describe('Class: Logger', () => {
         customConfigService: new MyCustomEnvironmentVariablesService(),
       };
       const logger: Logger = new Logger(loggerOptions);
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.info('foo');
 
@@ -3311,7 +3301,7 @@ describe('Class: Logger', () => {
         customConfigService: new MyCustomEnvironmentVariablesService(),
       };
       const logger: Logger = new Logger(loggerOptions);
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.info('foo');
 
@@ -3334,7 +3324,7 @@ describe('Class: Logger', () => {
       // Prepare
       process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
       const logger: Logger = new Logger();
-      const consoleSpy = jest.spyOn(logger['console'], 'debug');
+      const consoleSpy = jest.spyOn(logger.console, 'debug');
       // Act
       logger.debug('foo');
 
@@ -3377,7 +3367,7 @@ describe('Class: Logger', () => {
       };
 
       const logger: Logger = new Logger(loggerOptions);
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.info('foo');
 
@@ -3402,7 +3392,7 @@ describe('Class: Logger', () => {
         logLevel: LogLevel.INFO,
         sampleRateValue: 42,
       });
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.info('foo');
 
@@ -3435,7 +3425,7 @@ describe('Class: Logger', () => {
       };
 
       const logger: Logger = new Logger(loggerOptions);
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.info('foo');
 
@@ -3460,7 +3450,7 @@ describe('Class: Logger', () => {
       const logger: Logger = new Logger({
         logLevel: 'INFO',
       });
-      const consoleSpy = jest.spyOn(logger['console'], 'info');
+      const consoleSpy = jest.spyOn(logger.console, 'info');
       // Act
       logger.info('foo');
 
@@ -3504,7 +3494,7 @@ describe('Class: Logger', () => {
           logLevel: LogLevel.INFO,
           sampleRateValue: 1,
         });
-        const consoleSpy = jest.spyOn(logger['console'], 'info');
+        const consoleSpy = jest.spyOn(logger.console, 'info');
         // Act
         logger.refreshSampleRateCalculation();
         logger.info('foo');

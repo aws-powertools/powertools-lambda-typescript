@@ -1,15 +1,15 @@
+import { randomUUID } from 'node:crypto';
+import { join } from 'node:path';
 /**
  * Test logger sample rate feature
  *
  * @group e2e/logger/sampleRate
  */
 import {
-  invokeFunction,
   TestInvocationLogs,
   TestStack,
+  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
-import { randomUUID } from 'node:crypto';
-import { join } from 'node:path';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -19,7 +19,7 @@ import {
   TEST_CASE_TIMEOUT,
 } from './constants.js';
 
-describe(`Logger E2E tests, sample rate and injectLambdaContext()`, () => {
+describe('Logger E2E tests, sample rate and injectLambdaContext()', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

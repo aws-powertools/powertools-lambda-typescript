@@ -1,15 +1,15 @@
+import { join } from 'node:path';
 /**
  * Test logger basic features
  *
  * @group e2e/logger/basicFeatures
  */
 import {
-  invokeFunction,
   TestInvocationLogs,
   TestStack,
+  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import type { APIGatewayAuthorizerResult } from 'aws-lambda';
-import { join } from 'node:path';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -21,7 +21,7 @@ import {
   commonEnvironmentVars,
 } from './constants.js';
 
-describe(`Logger E2E tests, basic functionalities middy usage`, () => {
+describe('Logger E2E tests, basic functionalities middy usage', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

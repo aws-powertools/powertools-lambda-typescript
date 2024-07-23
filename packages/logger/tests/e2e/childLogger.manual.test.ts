@@ -1,25 +1,25 @@
+import { join } from 'node:path';
 /**
  * Test logger child logger
  *
  * @group e2e/logger/childLogger
  */
 import {
-  invokeFunction,
   TestInvocationLogs,
   TestStack,
+  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
-import { join } from 'node:path';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
-  commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   STACK_OUTPUT_LOG_GROUP,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
+  commonEnvironmentVars,
 } from './constants.js';
 
-describe(`Logger E2E tests, child logger`, () => {
+describe('Logger E2E tests, child logger', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

@@ -1,13 +1,13 @@
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type { Context } from 'aws-lambda';
 import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 import type {
   Environment,
   LogAttributes,
   LogAttributesWithMessage,
-  LogLevel,
   LogFormatterInterface,
+  LogLevel,
 } from './Log.js';
-import type { Context } from 'aws-lambda';
 
 type LogFunction = {
   [key in Exclude<Lowercase<LogLevel>, 'silent'>]: (

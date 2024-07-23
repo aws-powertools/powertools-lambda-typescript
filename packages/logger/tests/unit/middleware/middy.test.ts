@@ -8,7 +8,7 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { injectLambdaContext } from '../../../src/middleware/middy.js';
-import { ConfigServiceInterface } from '../../../src/types/ConfigServiceInterface.js';
+import type { ConfigServiceInterface } from '../../../src/types/ConfigServiceInterface.js';
 import { Logger } from './../../../src/Logger.js';
 
 const mockDate = new Date(1466424490000);
@@ -107,7 +107,7 @@ describe('Middy middleware', () => {
         biz: 'baz',
       });
 
-      const debugSpy = jest.spyOn(logger['console'], 'debug');
+      const debugSpy = jest.spyOn(logger.console, 'debug');
 
       const handler = middy((): void => {
         // Only add these keys for the scope of this lambda handler
@@ -174,7 +174,7 @@ describe('Middy middleware', () => {
         biz: 'baz',
       });
 
-      const debugSpy = jest.spyOn(logger['console'], 'debug');
+      const debugSpy = jest.spyOn(logger.console, 'debug');
 
       const handler = middy((): void => {
         // These keys stay only in the scope of this lambda handler
@@ -314,7 +314,7 @@ describe('Middy middleware', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const loggerSpy = jest.spyOn(logger['console'], 'debug');
+      const loggerSpy = jest.spyOn(logger.console, 'debug');
       const myCustomMiddleware = (): middy.MiddlewareObj => {
         const before = async (
           request: middy.Request
@@ -371,7 +371,7 @@ describe('Middy middleware', () => {
       // Prepare
       const logger = new Logger();
       const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
+        .spyOn(logger.console, 'info')
         .mockImplementation();
       const handler = middy((): void => {
         logger.info('This is an INFO log with some context');
@@ -447,7 +447,7 @@ describe('Middy middleware', () => {
         customConfigService: configService,
       });
       const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
+        .spyOn(logger.console, 'info')
         .mockImplementation();
       const handler = middy((): void => {
         logger.info('This is an INFO log with some context');
@@ -486,7 +486,7 @@ describe('Middy middleware', () => {
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
       const logger = new Logger();
       const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
+        .spyOn(logger.console, 'info')
         .mockImplementation();
       const handler = middy((): void => {
         logger.info('This is an INFO log with some context');
@@ -525,7 +525,7 @@ describe('Middy middleware', () => {
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
       const logger = new Logger();
       const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
+        .spyOn(logger.console, 'info')
         .mockImplementation();
       const handler = middy((): void => {
         logger.info('This is an INFO log');
@@ -562,7 +562,7 @@ describe('Middy middleware', () => {
         },
       });
       const consoleSpy = jest
-        .spyOn(logger['console'], 'info')
+        .spyOn(logger.console, 'info')
         .mockImplementation();
       const handler = middy(
         async (event: { foo: string }, _context: Context) => {

@@ -6,7 +6,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 
 const logger = new Logger();
 
-// biome-ignore format:
+// biome-ignore format: we need the comment in the next line to stay there to annotate the code snippet in the docs
 class CustomFunctions extends PowertoolsFunctions {
   @PowertoolsFunctions.signature({ // (1)!
     argumentsSpecs: [['string']],

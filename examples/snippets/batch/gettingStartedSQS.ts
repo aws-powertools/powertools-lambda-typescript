@@ -9,7 +9,7 @@ import type { SQSHandler, SQSRecord } from 'aws-lambda';
 const processor = new BatchProcessor(EventType.SQS); // (1)!
 const logger = new Logger();
 
-// biome-ignore format:
+// biome-ignore format: we need the comment in the next line to stay there to annotate the code snippet in the docs
 const recordHandler = async (record: SQSRecord): Promise<void> => { // (2)!
   const payload = record.body;
   if (payload) {
@@ -19,7 +19,7 @@ const recordHandler = async (record: SQSRecord): Promise<void> => { // (2)!
 };
 
 export const handler: SQSHandler = async (event, context) =>
-  // biome-ignore format:
+  // biome-ignore format: we need the comment in the next line to stay there to annotate the code snippet in the docs
   processPartialResponse(event, recordHandler, processor, { // (3)!
     context,
   });

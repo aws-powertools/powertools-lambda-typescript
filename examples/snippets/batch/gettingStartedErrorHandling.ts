@@ -22,13 +22,13 @@ const recordHandler = async (record: SQSRecord): Promise<void> => {
     const item = JSON.parse(payload);
     logger.info('Processed item', { item });
   } else {
-    // biome-ignore format:
+    // biome-ignore format: we need the comment in the next line to stay there to annotate the code snippet in the docs
     throw new InvalidPayload('Payload does not contain minimum required fields'); // (1)!
   }
 };
 
 export const handler: SQSHandler = async (event, context) =>
-  // biome-ignore format:
+  // biome-ignore format: we need the comment in the next line to stay there to annotate the code snippet in the docs
   processPartialResponse(event, recordHandler, processor, { // (2)!
     context,
   });

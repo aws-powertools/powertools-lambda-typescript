@@ -1,10 +1,10 @@
-import { Logger } from '../Logger.js';
-import type { InjectLambdaContextOptions } from '../types/Logger.js';
 import { LOGGER_KEY } from '@aws-lambda-powertools/commons';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
+import { Logger } from '../Logger.js';
+import type { InjectLambdaContextOptions } from '../types/Logger.js';
 
 /**
  * A middy middleware that helps emitting CloudWatch EMF metrics in your logs.
@@ -35,7 +35,7 @@ const injectLambdaContext = (
   target: Logger | Logger[],
   options?: InjectLambdaContextOptions
 ): MiddlewareLikeObj => {
-  const loggers = target instanceof Array ? target : [target];
+  const loggers = Array.isArray(target) ? target : [target];
   const isResetStateEnabled =
     options && (options.clearState || options.resetKeys);
 
@@ -54,7 +54,7 @@ const injectLambdaContext = (
   const injectLambdaContextBefore = async (
     request: MiddyLikeRequest
   ): Promise<void> => {
-    loggers.forEach((logger: Logger) => {
+    for (const logger of loggers) {
       if (isResetStateEnabled) {
         setCleanupFunction(request);
       }
@@ -64,14 +64,14 @@ const injectLambdaContext = (
         request.context,
         options
       );
-    });
+    }
   };
 
   const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
     if (isResetStateEnabled) {
-      loggers.forEach((logger: Logger) => {
+      for (const logger of loggers) {
         logger.resetKeys();
-      });
+      }
     }
   };
 

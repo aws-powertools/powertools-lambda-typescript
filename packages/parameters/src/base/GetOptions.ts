@@ -1,4 +1,4 @@
-import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import type {
   GetOptionsInterface,
@@ -17,8 +17,8 @@ class GetOptions implements GetOptionsInterface {
   public transform?: TransformOptions;
 
   public constructor(
-    options: GetOptionsInterface = {},
-    envVarsService: EnvironmentVariablesService
+    envVarsService: EnvironmentVariablesService,
+    options: GetOptionsInterface = {}
   ) {
     Object.assign(this, options);
 

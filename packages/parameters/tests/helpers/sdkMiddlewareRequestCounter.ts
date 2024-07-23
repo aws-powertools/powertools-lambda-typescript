@@ -1,6 +1,6 @@
 import type {
-  InitializeHandler,
   HandlerExecutionContext,
+  InitializeHandler,
   InitializeHandlerArguments,
   MiddlewareStack,
 } from '@aws-sdk/types';

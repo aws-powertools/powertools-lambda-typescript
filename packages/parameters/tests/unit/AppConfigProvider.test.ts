@@ -3,9 +3,7 @@
  *
  * @group unit/parameters/AppConfigProvider/class
  */
-import { AppConfigProvider } from '../../src/appconfig/index.js';
-import { ExpirableValue } from '../../src/base/ExpirableValue.js';
-import { AppConfigProviderOptions } from '../../src/types/AppConfigProvider.js';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import {
   AppConfigDataClient,
   GetLatestConfigurationCommand,
@@ -13,7 +11,9 @@ import {
 } from '@aws-sdk/client-appconfigdata';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { AppConfigProvider } from '../../src/appconfig/index.js';
+import { ExpirableValue } from '../../src/base/ExpirableValue.js';
+import type { AppConfigProviderOptions } from '../../src/types/AppConfigProvider.js';
 import 'aws-sdk-client-mock-jest';
 import { APPCONFIG_TOKEN_EXPIRATION } from '../../src/constants';
 

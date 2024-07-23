@@ -1,6 +1,6 @@
-import { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
-import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import { EnvironmentVariablesService as CommonEnvironmentVariablesService } from '@aws-lambda-powertools/commons';
+import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
+import type { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
 
 class EnvironmentVariablesService
   extends CommonEnvironmentVariablesService
@@ -20,8 +20,8 @@ class EnvironmentVariablesService
 
     if (maxAge.length === 0) return undefined;
 
-    const maxAgeAsNumber = parseInt(maxAge, 10);
-    if (isNaN(maxAgeAsNumber)) {
+    const maxAgeAsNumber = Number.parseInt(maxAge, 10);
+    if (Number.isNaN(maxAgeAsNumber)) {
       console.warn(
         `Invalid value for ${this.parametersMaxAgeVariable} environment variable: [${maxAge}], using default value of ${DEFAULT_MAX_AGE_SECS} seconds`
       );

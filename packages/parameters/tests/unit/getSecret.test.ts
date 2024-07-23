@@ -3,13 +3,13 @@
  *
  * @group unit/parameters/SecretsProvider/getSecret/function
  */
-import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
-import { SecretsProvider, getSecret } from '../../src/secrets/index.js';
 import {
-  SecretsManagerClient,
   GetSecretValueCommand,
+  SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import { mockClient } from 'aws-sdk-client-mock';
+import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
+import { SecretsProvider, getSecret } from '../../src/secrets/index.js';
 import 'aws-sdk-client-mock-jest';
 
 const encoder = new TextEncoder();

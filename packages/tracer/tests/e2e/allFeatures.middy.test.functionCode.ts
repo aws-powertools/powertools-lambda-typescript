@@ -1,8 +1,8 @@
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import type { Context } from 'aws-lambda';
 import middy from 'middy5';
 import { Tracer } from '../../src/index.js';
 import { captureLambdaHandler } from '../../src/middleware/middy.js';
-import type { Context } from 'aws-lambda';
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { httpRequest } from '../helpers/httpRequest.js';
 
 const serviceName =
@@ -39,27 +39,23 @@ const testHandler = async (
   tracer.putAnnotation(customAnnotationKey, customAnnotationValue);
   tracer.putMetadata(customMetadataKey, customMetadataValue);
 
-  try {
-    await dynamoDB.send(
-      new PutItemCommand({
-        TableName: testTableName,
-        Item: { id: { S: `${serviceName}-${event.invocation}-sdkv3` } },
-      })
-    );
-    await httpRequest({
-      hostname: 'docs.powertools.aws.dev',
-      path: '/lambda/typescript/latest/',
-    });
+  await dynamoDB.send(
+    new PutItemCommand({
+      TableName: testTableName,
+      Item: { id: { S: `${serviceName}-${event.invocation}-sdkv3` } },
+    })
+  );
+  await httpRequest({
+    hostname: 'docs.powertools.aws.dev',
+    path: '/lambda/typescript/latest/',
+  });
 
-    const res = customResponseValue;
-    if (event.throw) {
-      throw new Error(customErrorMessage);
-    }
-
-    return res;
-  } catch (err) {
-    throw err;
+  const res = customResponseValue;
+  if (event.throw) {
+    throw new Error(customErrorMessage);
   }
+
+  return res;
 };
 
 export const handler = middy(testHandler).use(captureLambdaHandler(tracer));

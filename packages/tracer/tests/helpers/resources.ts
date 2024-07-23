@@ -1,9 +1,9 @@
-import { type TestStack } from '@aws-lambda-powertools/testing-utils';
+import type { TestStack } from '@aws-lambda-powertools/testing-utils';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import type {
   ExtraTestProps,
   TestNodejsFunctionProps,
 } from '@aws-lambda-powertools/testing-utils/types';
-import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { commonEnvironmentVars } from '../e2e/constants.js';
 
 class TracerTestNodejsFunction extends TestNodejsFunction {

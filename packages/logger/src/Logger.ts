@@ -855,7 +855,7 @@ class Logger extends Utility implements LoggerInterface {
     let found: Uppercase<LogLevel> | undefined;
     for (const [key, value] of Object.entries(this.logLevelThresholds)) {
       if (value === logLevel) {
-        found = key as keyof typeof this.logLevelThresholds;
+        found = key as Uppercase<LogLevel>;
         break;
       }
     }

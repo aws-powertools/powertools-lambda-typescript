@@ -604,7 +604,8 @@ describe('Class: Logger', () => {
             logLevel: LogLevel.DEBUG,
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(method)
           );
           // Act
@@ -633,7 +634,8 @@ describe('Class: Logger', () => {
             logLevel: 'INFO',
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -662,7 +664,8 @@ describe('Class: Logger', () => {
             logLevel: LogLevel.WARN,
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -691,7 +694,8 @@ describe('Class: Logger', () => {
             logLevel: 'ERROR',
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -720,7 +724,8 @@ describe('Class: Logger', () => {
             logLevel: LogLevel.SILENT,
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -735,7 +740,8 @@ describe('Class: Logger', () => {
           process.env.POWERTOOLS_LOG_LEVEL = methodOfLogger.toUpperCase();
           const logger = new Logger();
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -765,7 +771,8 @@ describe('Class: Logger', () => {
             sampleRateValue: 0,
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -786,7 +793,8 @@ describe('Class: Logger', () => {
             sampleRateValue: 1,
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -817,7 +825,8 @@ describe('Class: Logger', () => {
           // Prepare
           const logger = new Logger();
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -847,7 +856,8 @@ describe('Class: Logger', () => {
           });
           logger.addContext(context);
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -1072,7 +1082,8 @@ describe('Class: Logger', () => {
           ({ idx, inputs, expected }) => {
             // Prepare
             const consoleSpy = jest.spyOn(
-              logger.console,
+              // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+              logger['console'],
               getConsoleMethod(methodOfLogger)
             );
 
@@ -1098,7 +1109,8 @@ describe('Class: Logger', () => {
             },
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -1131,7 +1143,8 @@ describe('Class: Logger', () => {
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -1161,7 +1174,8 @@ describe('Class: Logger', () => {
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           // Act
@@ -1191,7 +1205,8 @@ describe('Class: Logger', () => {
             logLevel: 'DEBUG',
           });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           const circularObject = {
@@ -1233,7 +1248,11 @@ describe('Class: Logger', () => {
         test('when a logged item has BigInt value, it does not throw TypeError', () => {
           // Prepare
           const logger = new Logger();
-          jest.spyOn(logger.console, getConsoleMethod(methodOfLogger));
+          jest.spyOn(
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
+            getConsoleMethod(methodOfLogger)
+          );
           const message = `This is an ${methodOfLogger} log with BigInt value`;
           const logItem = { value: BigInt(42) };
           const errorMessage = 'Do not know how to serialize a BigInt';
@@ -1248,7 +1267,8 @@ describe('Class: Logger', () => {
           // Prepare
           const logger = new Logger();
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           const message = `This is an ${methodOfLogger} log with BigInt value`;
@@ -1277,7 +1297,8 @@ describe('Class: Logger', () => {
           // Prepare
           const logger = new Logger();
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           const message = `This is an ${methodOfLogger} log with empty, null, and undefined values`;
@@ -1316,7 +1337,8 @@ describe('Class: Logger', () => {
 
           const logger = new Logger({ jsonReplacerFn });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
           const message = `This is an ${methodOfLogger} log with Set value`;
@@ -1357,7 +1379,8 @@ describe('Class: Logger', () => {
 
           const logger = new Logger({ jsonReplacerFn });
           const consoleSpy = jest.spyOn(
-            logger.console,
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
             getConsoleMethod(methodOfLogger)
           );
 
@@ -1560,7 +1583,11 @@ describe('Class: Logger', () => {
         aws_account_id: '0987654321',
       });
 
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
 
       // Act
       logger.info('This is an INFO log with some log attributes');
@@ -1818,7 +1845,11 @@ describe('Class: Logger', () => {
           aws_region: 'eu-west-1',
         },
       });
-      const debugSpy = jest.spyOn(logger.console, 'info');
+      const debugSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       logger.appendKeys({
         aws_region: 'us-east-1',
       });
@@ -1893,7 +1924,11 @@ describe('Class: Logger', () => {
     it('overwrites existing temporary keys with new ones in the next log', () => {
       // Prepare
       const logger = new Logger();
-      const debugSpy = jest.spyOn(logger.console, 'info');
+      const debugSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       logger.appendKeys({
         aws_account_id: '123456789012',
       });
@@ -1921,7 +1956,11 @@ describe('Class: Logger', () => {
       // Prepare
 
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -1965,7 +2004,11 @@ describe('Class: Logger', () => {
     test('it captures Lambda context information and adds it in the printed logs', async () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -2019,7 +2062,11 @@ describe('Class: Logger', () => {
       // Prepare
       const expectedReturnValue = 'Lambda invoked!';
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -2082,7 +2129,11 @@ describe('Class: Logger', () => {
         biz: 'baz',
       });
 
-      const debugSpy = jest.spyOn(logger.console, 'debug');
+      const debugSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'debug'
+      );
 
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
@@ -2199,7 +2250,11 @@ describe('Class: Logger', () => {
         logLevel: 'DEBUG',
       });
 
-      const debugSpy = jest.spyOn(logger.console, 'debug');
+      const debugSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'debug'
+      );
 
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
@@ -2276,7 +2331,11 @@ describe('Class: Logger', () => {
         logLevel: 'DEBUG',
       });
 
-      const debugSpy = jest.spyOn(logger.console, 'debug');
+      const debugSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'debug'
+      );
 
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
@@ -2342,7 +2401,11 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: LogLevel.DEBUG,
       });
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ logEvent: true })
         public async handler<TEvent>(
@@ -2389,7 +2452,11 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext()
         public async handler<TEvent>(
@@ -2435,7 +2502,11 @@ describe('Class: Logger', () => {
       const logger = new Logger({
         logLevel: 'DEBUG',
       });
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       class LambdaFunction implements LambdaInterface {
         private readonly memberVariable: string;
 
@@ -2490,7 +2561,11 @@ describe('Class: Logger', () => {
         logLevel: 'DEBUG',
       });
       const resetKeysSpy = jest.spyOn(logger, 'resetKeys');
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true })
         public async handler(
@@ -2530,7 +2605,11 @@ describe('Class: Logger', () => {
           version: '1.0.0',
         },
       });
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       class LambdaFunction implements LambdaInterface {
         @logger.injectLambdaContext({ clearState: true, logEvent: true })
         public async handler(
@@ -3017,7 +3096,11 @@ describe('Class: Logger', () => {
     test('When the feature is disabled, it DOES NOT log the event', () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.logEventIfEnabled(event);
 
@@ -3031,7 +3114,11 @@ describe('Class: Logger', () => {
         something: 'happened!',
       };
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.logEventIfEnabled(event, true);
 
@@ -3087,7 +3174,11 @@ describe('Class: Logger', () => {
     test('when the `POWERTOOLS_DEV` env var is NOT SET it makes log output as one-liner', () => {
       // Prepare
       const logger = new Logger();
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.info('Message without pretty identation');
 
@@ -3268,7 +3359,11 @@ describe('Class: Logger', () => {
         customConfigService: new MyCustomEnvironmentVariablesService(),
       };
       const logger: Logger = new Logger(loggerOptions);
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.info('foo');
 
@@ -3301,7 +3396,11 @@ describe('Class: Logger', () => {
         customConfigService: new MyCustomEnvironmentVariablesService(),
       };
       const logger: Logger = new Logger(loggerOptions);
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.info('foo');
 
@@ -3324,7 +3423,11 @@ describe('Class: Logger', () => {
       // Prepare
       process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
       const logger: Logger = new Logger();
-      const consoleSpy = jest.spyOn(logger.console, 'debug');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'debug'
+      );
       // Act
       logger.debug('foo');
 
@@ -3367,7 +3470,11 @@ describe('Class: Logger', () => {
       };
 
       const logger: Logger = new Logger(loggerOptions);
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.info('foo');
 
@@ -3392,7 +3499,11 @@ describe('Class: Logger', () => {
         logLevel: LogLevel.INFO,
         sampleRateValue: 42,
       });
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.info('foo');
 
@@ -3425,7 +3536,11 @@ describe('Class: Logger', () => {
       };
 
       const logger: Logger = new Logger(loggerOptions);
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.info('foo');
 
@@ -3450,7 +3565,11 @@ describe('Class: Logger', () => {
       const logger: Logger = new Logger({
         logLevel: 'INFO',
       });
-      const consoleSpy = jest.spyOn(logger.console, 'info');
+      const consoleSpy = jest.spyOn(
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+        logger['console'],
+        'info'
+      );
       // Act
       logger.info('foo');
 
@@ -3494,7 +3613,11 @@ describe('Class: Logger', () => {
           logLevel: LogLevel.INFO,
           sampleRateValue: 1,
         });
-        const consoleSpy = jest.spyOn(logger.console, 'info');
+        const consoleSpy = jest.spyOn(
+          // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+          logger['console'],
+          'info'
+        );
         // Act
         logger.refreshSampleRateCalculation();
         logger.info('foo');

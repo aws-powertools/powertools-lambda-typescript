@@ -1,6 +1,6 @@
-import { handler } from './testingYourCodeFunctionsHandler';
 import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
+import { handler } from './testingYourCodeFunctionsHandler';
 
 describe('Function tests', () => {
   const providerSpy = jest.spyOn(AppConfigProvider.prototype, 'get');

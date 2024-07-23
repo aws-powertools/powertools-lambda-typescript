@@ -1,4 +1,4 @@
-import { IdempotencyRecordStatusValue } from '@aws-lambda-powertools/idempotency/types';
+import type { IdempotencyRecordStatusValue } from '@aws-lambda-powertools/idempotency/types';
 
 export type Request = {
   user: string;

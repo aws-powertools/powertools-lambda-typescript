@@ -1,10 +1,10 @@
+import { randomUUID } from 'node:crypto';
 import {
   IdempotencyConfig,
   makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { APIGatewayEvent } from 'aws-lambda';
-import { randomUUID } from 'node:crypto';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: 'IdempotencyTable',

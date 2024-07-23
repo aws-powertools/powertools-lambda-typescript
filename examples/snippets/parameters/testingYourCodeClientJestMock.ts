@@ -1,10 +1,10 @@
-import { handler } from './testingYourCodeFunctionsHandler';
 import {
-  SecretsManagerClient,
   GetSecretValueCommand,
   ResourceNotFoundException,
+  SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import { mockClient } from 'aws-sdk-client-mock';
+import { handler } from './testingYourCodeFunctionsHandler';
 import 'aws-sdk-client-mock-jest';
 
 describe('Function tests', () => {

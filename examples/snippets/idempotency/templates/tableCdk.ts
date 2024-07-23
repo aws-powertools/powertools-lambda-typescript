@@ -1,8 +1,8 @@
 import { Stack, type StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import type { Construct } from 'constructs';
 
 export class IdempotencyStack extends Stack {
   public constructor(scope: Construct, id: string, props?: StackProps) {

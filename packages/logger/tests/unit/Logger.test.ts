@@ -1,9 +1,9 @@
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 /**
  * Test Logger class
  *
  * @group unit/logger/logger
  */
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';

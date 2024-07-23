@@ -373,8 +373,8 @@ describe('Middy middleware', () => {
     test('when enabled, it logs the event', async () => {
       // Prepare
       const logger = new Logger();
-      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy((): void => {
@@ -450,8 +450,8 @@ describe('Middy middleware', () => {
       const logger = new Logger({
         customConfigService: configService,
       });
-      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy((): void => {
@@ -490,8 +490,8 @@ describe('Middy middleware', () => {
       // Prepare
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
       const logger = new Logger();
-      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy((): void => {
@@ -530,8 +530,8 @@ describe('Middy middleware', () => {
       // Prepare
       process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
       const logger = new Logger();
-      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy((): void => {
@@ -568,8 +568,8 @@ describe('Middy middleware', () => {
           version: '1.0.0',
         },
       });
-      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(logger['console'], 'info')
         .mockImplementation();
       const handler = middy(

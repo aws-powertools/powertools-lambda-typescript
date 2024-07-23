@@ -1,3 +1,8 @@
+/**
+ * Test metrics standard functions
+ *
+ * @group e2e/metrics/decorator
+ */
 import { join } from 'node:path';
 import {
   TestStack,

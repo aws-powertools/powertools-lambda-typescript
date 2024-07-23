@@ -1,5 +1,8 @@
+import type {
+  MetricResolution as MetricResolutionList,
+  MetricUnit as MetricUnitList,
+} from '../constants.js';
 import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
-import { MetricResolution, MetricUnit } from '../constants.js';
 
 type Dimensions = Record<string, string>;
 
@@ -49,9 +52,9 @@ type ExtraOptions = {
 };
 
 type MetricResolution =
-  (typeof MetricResolution)[keyof typeof MetricResolution];
+  (typeof MetricResolutionList)[keyof typeof MetricResolutionList];
 
-type MetricUnit = (typeof MetricUnit)[keyof typeof MetricUnit];
+type MetricUnit = (typeof MetricUnitList)[keyof typeof MetricUnitList];
 
 type StoredMetric = {
   name: string;

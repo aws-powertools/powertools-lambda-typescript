@@ -3,12 +3,12 @@
  *
  * @group unit/metrics/middleware
  */
-import { Metrics, MetricUnit, MetricResolution } from '../../../src/index.js';
-import { logMetrics } from '../../../src/middleware/middy.js';
-import middy from '@middy/core';
-import { ExtraOptions } from '../../../src/types/index.js';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
 import context from '@aws-lambda-powertools/testing-utils/context';
+import middy from '@middy/core';
+import { MetricResolution, MetricUnit, Metrics } from '../../../src/index.js';
+import { logMetrics } from '../../../src/middleware/middy.js';
+import type { ExtraOptions } from '../../../src/types/index.js';
 
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
@@ -91,6 +91,7 @@ describe('Middy middleware', () => {
         serviceName: 'orders',
       });
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(metrics['console'], 'log')
         .mockImplementation();
       // Monkey patch the singleMetric method to return the metrics instance
@@ -128,6 +129,7 @@ describe('Middy middleware', () => {
         serviceName: 'orders',
       });
       const consoleSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(metrics['console'], 'log')
         .mockImplementation();
       // Monkey patch the singleMetric method to return the metrics instance
@@ -168,6 +170,7 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const handler = middy(async (): Promise<void> => {
         metrics.addMetric('successfulBooking', MetricUnit.Count, 2);
@@ -203,6 +206,7 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const metricsOptions: ExtraOptions = {
         throwOnEmptyMetrics: true,
@@ -244,6 +248,7 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const handler = middy(async (): Promise<void> => {
         metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
@@ -278,6 +283,7 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const handler = middy(async (): Promise<void> => {
         metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
@@ -362,6 +368,7 @@ describe('Middy middleware', () => {
         serviceName: 'orders',
       });
 
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const handler = middy((): void => {
         metrics.addMetric(
@@ -405,6 +412,7 @@ describe('Middy middleware', () => {
         namespace: 'serverlessAirline',
         serviceName: 'orders',
       });
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const handler = middy((): void => {
         metrics.addMetric(

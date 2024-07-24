@@ -3,7 +3,7 @@
  *
  * @group unit/parameters/DynamoDBProvider/class
  */
-import { DynamoDBProvider } from '../../src/dynamodb/index.js';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import {
   DynamoDBClient,
   GetItemCommand,
@@ -13,10 +13,10 @@ import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
-import type { DynamoDBProviderOptions } from '../../src/types/DynamoDBProvider.js';
 import { marshall } from '@aws-sdk/util-dynamodb';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { mockClient } from 'aws-sdk-client-mock';
+import { DynamoDBProvider } from '../../src/dynamodb/index.js';
+import type { DynamoDBProviderOptions } from '../../src/types/DynamoDBProvider.js';
 import 'aws-sdk-client-mock-jest';
 jest.mock('@aws-lambda-powertools/commons', () => ({
   ...jest.requireActual('@aws-lambda-powertools/commons'),
@@ -311,7 +311,7 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `#key = :key`,
+        KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
@@ -366,7 +366,7 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `#key = :key`,
+        KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
@@ -423,7 +423,7 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `#key = :key`,
+        KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),
@@ -525,7 +525,7 @@ describe('Class: DynamoDBProvider', () => {
       // Act
       await provider.getMultiple(parameterPath, {
         sdkOptions: {
-          KeyConditionExpression: `key = :myKey`,
+          KeyConditionExpression: '#key = :key',
           ExpressionAttributeValues: marshall({
             ':myKey': 'foo',
           }),
@@ -538,7 +538,7 @@ describe('Class: DynamoDBProvider', () => {
       // Assess
       expect(client).toReceiveCommandWith(QueryCommand, {
         TableName: 'test-table',
-        KeyConditionExpression: `#key = :key`,
+        KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
           ':key': parameterPath,
         }),

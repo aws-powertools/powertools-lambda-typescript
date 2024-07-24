@@ -1,12 +1,13 @@
+import type { ZodSchema, z } from 'zod';
 import type {
   ApiGatewayEnvelope,
-  KinesisFirehoseEnvelope,
-  KinesisEnvelope,
-  KafkaEnvelope,
-  CloudWatchEnvelope,
-  EventBridgeEnvelope,
   ApiGatewayV2Envelope,
+  CloudWatchEnvelope,
   DynamoDBStreamEnvelope,
+  EventBridgeEnvelope,
+  KafkaEnvelope,
+  KinesisEnvelope,
+  KinesisFirehoseEnvelope,
   LambdaFunctionUrlEnvelope,
   SnsEnvelope,
   SnsSqsEnvelope,
@@ -14,7 +15,6 @@ import type {
   VpcLatticeEnvelope,
   VpcLatticeV2Envelope,
 } from '../envelopes/index.js';
-import { z, type ZodSchema } from 'zod';
 
 type DynamoDBStreamEnvelopeResponse<Schema extends ZodSchema> = {
   NewImage: z.infer<Schema>;

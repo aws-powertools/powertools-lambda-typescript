@@ -4,11 +4,11 @@
  * @group unit/parser/envelopes
  */
 
-import { TestEvents, TestSchema } from '../schema/utils.js';
 import { generateMock } from '@anatine/zod-mock';
-import { EventBridgeEvent } from 'aws-lambda';
+import type { EventBridgeEvent } from 'aws-lambda';
 import { EventBridgeEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
+import { TestEvents, TestSchema } from '../schema/utils.js';
 
 describe('EventBridgeEnvelope ', () => {
   describe('parse', () => {

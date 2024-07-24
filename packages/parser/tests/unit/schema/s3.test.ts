@@ -6,9 +6,9 @@
 
 import {
   S3EventNotificationEventBridgeSchema,
-  S3SqsEventNotificationSchema,
-  S3Schema,
   S3ObjectLambdaEventSchema,
+  S3Schema,
+  S3SqsEventNotificationSchema,
 } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
@@ -81,7 +81,8 @@ describe('S3 ', () => {
   it('should parse s3 object event temp credentials', () => {
     // ignore any because we don't want typed json
     const s3ObjectEventTempCredentials =
-      TestEvents.s3ObjectEventTempCredentials as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: no specific typing needed
+      TestEvents.s3ObjectEventTempCredentials as any;
     const parsed = S3ObjectLambdaEventSchema.parse(
       s3ObjectEventTempCredentials
     );

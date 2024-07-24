@@ -2,9 +2,7 @@
   "version": "2.0",
   "type": "REQUEST",
   "routeArn": "arn:aws:execute-api:eu-west-1:123456789012:lsw1ro4ipb/$default/POST/lambda",
-  "identitySource": [
-    "Bearer foo"
-  ],
+  "identitySource": ["Bearer foo"],
   "routeKey": "POST /lambda",
   "rawPath": "/lambda",
   "rawQueryString": "",

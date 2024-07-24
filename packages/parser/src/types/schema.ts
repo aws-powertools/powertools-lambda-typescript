@@ -1,30 +1,30 @@
-import { z } from 'zod';
-import {
-  AlbSchema,
-  AlbMultiValueHeadersSchema,
+import type { z } from 'zod';
+import type {
   APIGatewayProxyEventSchema,
   APIGatewayProxyEventV2Schema,
+  AlbMultiValueHeadersSchema,
+  AlbSchema,
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
   CloudWatchLogsSchema,
   DynamoDBStreamSchema,
   EventBridgeSchema,
-  KafkaSelfManagedEventSchema,
   KafkaMskEventSchema,
+  KafkaSelfManagedEventSchema,
   KinesisDataStreamSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
   LambdaFunctionUrlSchema,
-  S3Schema,
   S3EventNotificationEventBridgeSchema,
+  S3ObjectLambdaEventSchema,
+  S3Schema,
   S3SqsEventNotificationSchema,
   SesSchema,
   SnsSchema,
   SqsSchema,
   VpcLatticeSchema,
   VpcLatticeV2Schema,
-  S3ObjectLambdaEventSchema,
 } from '../schemas/index.js';
 
 type ALBEvent = z.infer<typeof AlbSchema>;

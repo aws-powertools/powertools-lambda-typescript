@@ -5,9 +5,9 @@
  */
 
 import { generateMock } from '@anatine/zod-mock';
-import { TestEvents, TestSchema } from '../schema/utils.js';
 import { VpcLatticeV2Envelope } from '../../../src/envelopes/index.js';
-import { VpcLatticeEventV2 } from '../../../src/types/index.js';
+import type { VpcLatticeEventV2 } from '../../../src/types/index.js';
+import { TestEvents, TestSchema } from '../schema/utils.js';
 
 describe('VpcLatticeV2Envelope2', () => {
   describe('parse', () => {

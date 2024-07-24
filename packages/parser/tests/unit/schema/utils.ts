@@ -83,6 +83,7 @@ const filenames = [
   's3EventBridgeNotificationObjectRestoreCompletedEvent',
   's3EventDecodedKey',
   's3EventDeleteObject',
+  's3EventDeleteObjectWithoutEtagSize',
   's3EventGlacier',
   's3ObjectEventIAMUser',
   's3ObjectEventTempCredentials',
@@ -106,11 +107,11 @@ const loadFileContent = (filename: string): string =>
 const createTestEvents = (fileList: readonly string[]): TestEvents => {
   const testEvents: Partial<TestEvents> = {};
 
-  fileList.forEach((filename) => {
+  for (const filename of fileList) {
     Object.defineProperty(testEvents, filename, {
       get: () => JSON.parse(loadFileContent(filename)),
     });
-  });
+  }
 
   return testEvents as TestEvents;
 };

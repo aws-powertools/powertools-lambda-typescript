@@ -16,7 +16,7 @@
       "email": "create-auth@mail.com"
     },
     "challengeName": "PASSWORD_VERIFIER",
-    "session" : [
+    "session": [
       {
         "challengeName": "CUSTOM_CHALLENGE",
         "challengeResult": true,

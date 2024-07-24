@@ -5,9 +5,9 @@
  */
 
 import { generateMock } from '@anatine/zod-mock';
-import { TestEvents, TestSchema } from '../schema/utils.js';
-import { MSKEvent, SelfManagedKafkaEvent } from 'aws-lambda';
+import type { MSKEvent, SelfManagedKafkaEvent } from 'aws-lambda';
 import { KafkaEnvelope } from '../../../src/envelopes/index.js';
+import { TestEvents, TestSchema } from '../schema/utils.js';
 
 describe('Kafka', () => {
   describe('parse', () => {

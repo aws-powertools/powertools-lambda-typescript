@@ -1,8 +1,8 @@
-import { z, type ZodSchema } from 'zod';
-import type { ParsedResult } from '../types/parser.js';
+import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
+import type { ParsedResult } from '../types/parser.js';
 
-export class Envelope {
+export const Envelope = {
   /**
    * Abstract function to parse the content of the envelope using provided schema.
    * Both inputs are provided as unknown by the user.
@@ -11,10 +11,7 @@ export class Envelope {
    * @param data data to parse
    * @param schema schema
    */
-  public static readonly parse = <T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): z.infer<T> => {
+  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     if (typeof data !== 'object' && typeof data !== 'string') {
       throw new ParseError(
         `Invalid data type for envelope. Expected string or object, got ${typeof data}`
@@ -23,13 +20,14 @@ export class Envelope {
     try {
       if (typeof data === 'string') {
         return schema.parse(JSON.parse(data));
-      } else if (typeof data === 'object') {
+      }
+      if (typeof data === 'object') {
         return schema.parse(data);
       }
     } catch (e) {
-      throw new ParseError(`Failed to parse envelope`, { cause: e as Error });
+      throw new ParseError('Failed to parse envelope', { cause: e as Error });
     }
-  };
+  },
 
   /**
    * Abstract function to safely parse the content of the envelope using provided schema.
@@ -37,10 +35,10 @@ export class Envelope {
    * @param input
    * @param schema
    */
-  public static readonly safeParse = <T extends ZodSchema>(
+  safeParse<T extends ZodSchema>(
     input: unknown,
     schema: T
-  ): ParsedResult<unknown, z.infer<T>> => {
+  ): ParsedResult<unknown, z.infer<T>> {
     try {
       if (typeof input !== 'object' && typeof input !== 'string') {
         return {
@@ -63,7 +61,7 @@ export class Envelope {
           }
         : {
             success: false,
-            error: new ParseError(`Failed to parse envelope`, {
+            error: new ParseError('Failed to parse envelope', {
               cause: parsed.error,
             }),
             originalEvent: input,
@@ -71,11 +69,11 @@ export class Envelope {
     } catch (e) {
       return {
         success: false,
-        error: new ParseError(`Failed to parse envelope`, {
+        error: new ParseError('Failed to parse envelope', {
           cause: e as Error,
         }),
         originalEvent: input,
       };
     }
-  };
-}
+  },
+};

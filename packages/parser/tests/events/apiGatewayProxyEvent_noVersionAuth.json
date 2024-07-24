@@ -7,26 +7,16 @@
     "Header2": "value2"
   },
   "multiValueHeaders": {
-    "Header1": [
-      "value1"
-    ],
-    "Header2": [
-      "value1",
-      "value2"
-    ]
+    "Header1": ["value1"],
+    "Header2": ["value1", "value2"]
   },
   "queryStringParameters": {
     "parameter1": "value1",
     "parameter2": "value"
   },
   "multiValueQueryStringParameters": {
-    "parameter1": [
-      "value1",
-      "value2"
-    ],
-    "parameter2": [
-      "value"
-    ]
+    "parameter1": ["value1", "value2"],
+    "parameter2": ["value"]
   },
   "requestContext": {
     "accountId": "123456789012",

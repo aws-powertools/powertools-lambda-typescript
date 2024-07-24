@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import {
   APIGatewayCert,
+  APIGatewayHttpMethod,
   APIGatewayRecord,
   APIGatewayStringArray,
-  APIGatewayHttpMethod,
 } from './apigw-proxy.js';
 
 /**

@@ -9,24 +9,10 @@
           "contentEncoding": null,
           "headers": {
             "header1": {
-              "bytes": [
-                118,
-                97,
-                108,
-                117,
-                101,
-                49
-              ]
+              "bytes": [118, 97, 108, 117, 101, 49]
             },
             "header2": {
-              "bytes": [
-                118,
-                97,
-                108,
-                117,
-                101,
-                50
-              ]
+              "bytes": [118, 97, 108, 117, 101, 50]
             },
             "numberInHeader": 10
           },

@@ -6,17 +6,15 @@
   "account": "111122223333",
   "time": "2021-11-12T00:00:00Z",
   "region": "ca-central-1",
-  "resources": [
-    "arn:aws:s3:::example-bucket"
-  ],
+  "resources": ["arn:aws:s3:::example-bucket"],
   "detail": {
     "version": "0",
     "bucket": {
       "name": "example-bucket"
     },
     "object": {
-        "key": "IMG_m7fzo3.jpg",
-        "sequencer": "006408CAD69598B05E"
+      "key": "IMG_m7fzo3.jpg",
+      "sequencer": "006408CAD69598B05E"
     },
     "request-id": "0BH729840619AG5K",
     "requester": "123456789012",

@@ -4,12 +4,12 @@
  * @group unit/parser/envelopes
  */
 
-import { z } from 'zod';
 import { generateMock } from '@anatine/zod-mock';
-import { SNSEvent, SQSEvent } from 'aws-lambda';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import type { SNSEvent, SQSEvent } from 'aws-lambda';
+import type { z } from 'zod';
 import { SnsEnvelope, SnsSqsEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
+import { TestEvents, TestSchema } from '../schema/utils.js';
 
 describe('Sns and SQS Envelope', () => {
   describe('SnsSqsEnvelope parse', () => {

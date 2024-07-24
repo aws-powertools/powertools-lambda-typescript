@@ -3,10 +3,7 @@
   "routeKey": "$default",
   "rawPath": "/other/path",
   "rawQueryString": "parameter1=value1&parameter1=value2&parameter2=value",
-  "cookies": [
-    "cookie1",
-    "cookie2"
-  ],
+  "cookies": ["cookie1", "cookie2"],
   "headers": {
     "Header1": "value1",
     "Header2": "value1,value2"
@@ -36,10 +33,7 @@
           "claim1": "value1",
           "claim2": "value2"
         },
-        "scopes": [
-          "scope1",
-          "scope2"
-        ]
+        "scopes": ["scope1", "scope2"]
       }
     },
     "domainName": "id.execute-api.us-east-1.amazonaws.com",

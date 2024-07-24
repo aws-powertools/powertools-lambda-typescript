@@ -25,66 +25,28 @@
     "X-Forwarded-Proto": "https"
   },
   "multiValueHeaders": {
-    "Accept": [
-      "*/*"
-    ],
-    "Accept-Encoding": [
-      "gzip, deflate"
-    ],
-    "CloudFront-Forwarded-Proto": [
-      "https"
-    ],
-    "CloudFront-Is-Desktop-Viewer": [
-      "true"
-    ],
-    "CloudFront-Is-Mobile-Viewer": [
-      "false"
-    ],
-    "CloudFront-Is-SmartTV-Viewer": [
-      "false"
-    ],
-    "CloudFront-Is-Tablet-Viewer": [
-      "false"
-    ],
-    "CloudFront-Viewer-ASN": [
-      "7224"
-    ],
-    "CloudFront-Viewer-Country": [
-      "GB"
-    ],
-    "Host": [
-      "puhdx84jy9.execute-api.eu-west-1.amazonaws.com"
-    ],
-    "User-Agent": [
-      "HTTPie/3.2.2"
-    ],
-    "Via": [
-      "1.1 d3e65123eab254da0d61a912409e06b4.cloudfront.net (CloudFront)"
-    ],
-    "X-Amz-Cf-Id": [
-      "tP3wYavwGbIRVlinJVTXtHLSXkXwPi6WYz7EarjB1QnsqC0giphxmA=="
-    ],
+    "Accept": ["*/*"],
+    "Accept-Encoding": ["gzip, deflate"],
+    "CloudFront-Forwarded-Proto": ["https"],
+    "CloudFront-Is-Desktop-Viewer": ["true"],
+    "CloudFront-Is-Mobile-Viewer": ["false"],
+    "CloudFront-Is-SmartTV-Viewer": ["false"],
+    "CloudFront-Is-Tablet-Viewer": ["false"],
+    "CloudFront-Viewer-ASN": ["7224"],
+    "CloudFront-Viewer-Country": ["GB"],
+    "Host": ["puhdx84jy9.execute-api.eu-west-1.amazonaws.com"],
+    "User-Agent": ["HTTPie/3.2.2"],
+    "Via": ["1.1 d3e65123eab254da0d61a912409e06b4.cloudfront.net (CloudFront)"],
+    "X-Amz-Cf-Id": ["tP3wYavwGbIRVlinJVTXtHLSXkXwPi6WYz7EarjB1QnsqC0giphxmA=="],
     "x-amz-content-sha256": [
       "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     ],
-    "x-amz-date": [
-      "20240617T145824Z"
-    ],
-    "X-Amz-Security-Token": [
-      "IQoJb3JpZ[...]=="
-    ],
-    "X-Amzn-Trace-Id": [
-      "Root=1-66704f11-56b0f1d611b392cb68ad2b83"
-    ],
-    "X-Forwarded-For": [
-      "15.248.3.126, 130.176.209.38"
-    ],
-    "X-Forwarded-Port": [
-      "443"
-    ],
-    "X-Forwarded-Proto": [
-      "https"
-    ]
+    "x-amz-date": ["20240617T145824Z"],
+    "X-Amz-Security-Token": ["IQoJb3JpZ[...]=="],
+    "X-Amzn-Trace-Id": ["Root=1-66704f11-56b0f1d611b392cb68ad2b83"],
+    "X-Forwarded-For": ["15.248.3.126, 130.176.209.38"],
+    "X-Forwarded-Port": ["443"],
+    "X-Forwarded-Proto": ["https"]
   },
   "queryStringParameters": null,
   "multiValueQueryStringParameters": null,

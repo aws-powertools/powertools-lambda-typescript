@@ -21,9 +21,7 @@
     "defaultAuthStrategy": "ALLOW",
     "groups": null,
     "issuer": "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_POOL_ID",
-    "sourceIp": [
-      "11.215.2.22"
-    ],
+    "sourceIp": ["11.215.2.22"],
     "sub": "07920713-4526-4642-9c88-2953512de441",
     "username": "mike"
   },

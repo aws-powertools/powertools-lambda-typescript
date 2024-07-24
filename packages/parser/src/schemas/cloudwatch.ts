@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { gunzipSync } from 'node:zlib';
+import { z } from 'zod';
 
 const CloudWatchLogEventSchema = z.object({
   id: z.string(),

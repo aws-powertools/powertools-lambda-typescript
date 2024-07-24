@@ -15,7 +15,7 @@
       "name": "First Last",
       "email": "define-auth@mail.com"
     },
-    "session" : [
+    "session": [
       {
         "challengeName": "PASSWORD_VERIFIER",
         "challengeResult": true

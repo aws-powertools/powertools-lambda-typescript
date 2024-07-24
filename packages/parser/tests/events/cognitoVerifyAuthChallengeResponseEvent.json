@@ -18,7 +18,7 @@
     "privateChallengeParameters": {
       "answer": "challengeAnswer"
     },
-    "clientMetadata" : {
+    "clientMetadata": {
       "foo": "value"
     },
     "challengeAnswer": "challengeAnswer",

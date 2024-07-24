@@ -23,60 +23,24 @@
     "X-Forwarded-Proto": "https"
   },
   "multiValueHeaders": {
-    "Accept": [
-      "*/*"
-    ],
-    "Accept-Encoding": [
-      "gzip, deflate"
-    ],
-    "Authorization": [
-      "Bearer foo"
-    ],
-    "CloudFront-Forwarded-Proto": [
-      "https"
-    ],
-    "CloudFront-Is-Desktop-Viewer": [
-      "true"
-    ],
-    "CloudFront-Is-Mobile-Viewer": [
-      "false"
-    ],
-    "CloudFront-Is-SmartTV-Viewer": [
-      "false"
-    ],
-    "CloudFront-Is-Tablet-Viewer": [
-      "false"
-    ],
-    "CloudFront-Viewer-ASN": [
-      "7224"
-    ],
-    "CloudFront-Viewer-Country": [
-      "GB"
-    ],
-    "Host": [
-      "puhdx84jy9.execute-api.eu-west-1.amazonaws.com"
-    ],
-    "User-Agent": [
-      "HTTPie/3.2.2"
-    ],
-    "Via": [
-      "1.1 8313bbb5b34d1ea0742b64ffbb83b692.cloudfront.net (CloudFront)"
-    ],
-    "X-Amz-Cf-Id": [
-      "lrbUQoVv2blphI3jBSXQNqA3oq4s8VCCimuaSxMrX4YbEZjVKWaLWg=="
-    ],
-    "X-Amzn-Trace-Id": [
-      "Root=1-66704db9-6136092d02f4e3424fe2ce95"
-    ],
-    "X-Forwarded-For": [
-      "15.248.3.126, 130.176.209.10"
-    ],
-    "X-Forwarded-Port": [
-      "443"
-    ],
-    "X-Forwarded-Proto": [
-      "https"
-    ]
+    "Accept": ["*/*"],
+    "Accept-Encoding": ["gzip, deflate"],
+    "Authorization": ["Bearer foo"],
+    "CloudFront-Forwarded-Proto": ["https"],
+    "CloudFront-Is-Desktop-Viewer": ["true"],
+    "CloudFront-Is-Mobile-Viewer": ["false"],
+    "CloudFront-Is-SmartTV-Viewer": ["false"],
+    "CloudFront-Is-Tablet-Viewer": ["false"],
+    "CloudFront-Viewer-ASN": ["7224"],
+    "CloudFront-Viewer-Country": ["GB"],
+    "Host": ["puhdx84jy9.execute-api.eu-west-1.amazonaws.com"],
+    "User-Agent": ["HTTPie/3.2.2"],
+    "Via": ["1.1 8313bbb5b34d1ea0742b64ffbb83b692.cloudfront.net (CloudFront)"],
+    "X-Amz-Cf-Id": ["lrbUQoVv2blphI3jBSXQNqA3oq4s8VCCimuaSxMrX4YbEZjVKWaLWg=="],
+    "X-Amzn-Trace-Id": ["Root=1-66704db9-6136092d02f4e3424fe2ce95"],
+    "X-Forwarded-For": ["15.248.3.126, 130.176.209.10"],
+    "X-Forwarded-Port": ["443"],
+    "X-Forwarded-Proto": ["https"]
   },
   "queryStringParameters": null,
   "multiValueQueryStringParameters": null,

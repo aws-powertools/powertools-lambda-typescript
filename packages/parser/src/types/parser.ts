@@ -1,4 +1,4 @@
-import { type ZodSchema, type ZodError, z } from 'zod';
+import type { ZodError, ZodSchema, z } from 'zod';
 import type { Envelope, EnvelopeArrayReturnType } from './envelope.js';
 
 /**

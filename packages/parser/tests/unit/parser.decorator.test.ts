@@ -4,16 +4,16 @@
  * @group unit/parser
  */
 
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/lib/esm/types';
-import { Context } from 'aws-lambda';
-import { parser } from '../../src/index.js';
-import { TestSchema, TestEvents } from './schema/utils';
 import { generateMock } from '@anatine/zod-mock';
-import { EventBridgeSchema } from '../../src/schemas/index.js';
-import { z } from 'zod';
-import { ParsedResult, EventBridgeEvent } from '../../src/types';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/lib/esm/types';
+import type { Context } from 'aws-lambda';
+import type { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/index.js';
 import { ParseError } from '../../src/errors.js';
+import { parser } from '../../src/index.js';
+import { EventBridgeSchema } from '../../src/schemas/index.js';
+import type { EventBridgeEvent, ParsedResult } from '../../src/types';
+import { TestEvents, TestSchema } from './schema/utils';
 
 describe('Parser Decorator', () => {
   const customEventBridgeSchema = EventBridgeSchema.extend({

@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { gunzipSync } from 'node:zlib';
+import { z } from 'zod';
 
 const KinesisDataStreamRecordPayload = z.object({
   kinesisSchemaVersion: z.string(),

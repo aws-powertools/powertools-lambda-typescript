@@ -3,10 +3,7 @@
   "routeKey": "$default",
   "rawPath": "/my/path",
   "rawQueryString": "parameter1=value1&parameter1=value2&parameter2=value",
-  "cookies": [
-    "cookie1",
-    "cookie2"
-  ],
+  "cookies": ["cookie1", "cookie2"],
   "headers": {
     "header1": "value1",
     "header2": "value1,value2"
@@ -20,15 +17,15 @@
     "apiId": "<urlid>",
     "authentication": null,
     "authorizer": {
-        "iam": {
-                "accessKey": "AKIA...",
-                "accountId": "111122223333",
-                "callerId": "AIDA...",
-                "cognitoIdentity": null,
-                "principalOrgId": null,
-                "userArn": "arn:aws:iam::111122223333:user/example-user",
-                "userId": "AIDA..."
-        }
+      "iam": {
+        "accessKey": "AKIA...",
+        "accountId": "111122223333",
+        "callerId": "AIDA...",
+        "cognitoIdentity": null,
+        "principalOrgId": null,
+        "userArn": "arn:aws:iam::111122223333:user/example-user",
+        "userId": "AIDA..."
+      }
     },
     "domainName": "<url-id>.lambda-url.us-west-2.on.aws",
     "domainPrefix": "<url-id>",

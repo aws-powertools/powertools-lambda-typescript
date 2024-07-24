@@ -1,13 +1,13 @@
-import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/index.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
-import { generateMock } from '@anatine/zod-mock';
-import { APIGatewayProxyEventV2 } from 'aws-lambda';
-
 /**
  * Test built in schema envelopes for Lambda Functions URL
  *
  * @group unit/parser/envelopes
  */
+
+import { generateMock } from '@anatine/zod-mock';
+import type { APIGatewayProxyEventV2 } from 'aws-lambda';
+import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/index.js';
+import { TestEvents, TestSchema } from '../schema/utils.js';
 
 describe('Lambda Functions Url ', () => {
   describe('parse', () => {

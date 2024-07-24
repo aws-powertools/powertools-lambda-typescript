@@ -1,6 +1,6 @@
-import { Metrics, MetricUnit } from '../../src/index.js';
-import type { MetricUnit as MetricUnitType } from '../../src/types/index.js';
 import type { Context } from 'aws-lambda';
+import { MetricUnit, Metrics } from '../../src/index.js';
+import type { MetricUnit as MetricUnitType } from '../../src/types/index.js';
 
 const namespace = process.env.EXPECTED_NAMESPACE ?? 'CdkExample';
 const serviceName =
@@ -32,7 +32,7 @@ export const handler = async (
   metrics.captureColdStartMetric();
   metrics.throwOnEmptyMetrics();
   metrics.setDefaultDimensions(JSON.parse(defaultDimensions));
-  metrics.addMetric(metricName, metricUnit, parseInt(metricValue));
+  metrics.addMetric(metricName, metricUnit, Number.parseInt(metricValue));
   metrics.addDimension(
     Object.entries(JSON.parse(extraDimension))[0][0],
     Object.entries(JSON.parse(extraDimension))[0][1] as string
@@ -46,7 +46,7 @@ export const handler = async (
   metricWithItsOwnDimensions.addMetric(
     singleMetricName,
     singleMetricUnit,
-    parseInt(singleMetricValue)
+    Number.parseInt(singleMetricValue)
   );
 
   metrics.publishStoredMetrics();

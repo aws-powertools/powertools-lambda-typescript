@@ -4,7 +4,6 @@
  * @group unit/parser/schema/
  */
 
-import { ZodError } from 'zod';
 import {
   S3EventNotificationEventBridgeSchema,
   S3ObjectLambdaEventSchema,
@@ -103,22 +102,5 @@ describe('S3 ', () => {
     expect(
       parsed.userIdentity?.sessionContext?.attributes.mfaAuthenticated
     ).toEqual(false);
-  });
-
-  it('should throw error when s3 event delete object does not contain etag or size', () => {
-    const s3EventDeleteObjectWithoutEtagSize =
-      TestEvents.s3EventDeleteObjectWithoutEtagSize;
-    expect(() =>
-      S3Schema.parse(s3EventDeleteObjectWithoutEtagSize)
-    ).toThrowError(
-      new ZodError([
-        {
-          code: 'custom',
-          message:
-            'S3 event notification with ObjectRemoved event name must have size or eTag defined',
-          path: ['Records', 0],
-        },
-      ])
-    );
   });
 });

@@ -15,4 +15,5 @@ export type {
   ConstructorOptions,
   InjectLambdaContextOptions,
   CustomJsonReplacerFn,
+  LoggerInterface,
 } from './Logger.js';

@@ -3,27 +3,27 @@
  *
  * @group e2e/metrics/decorator
  */
+import { join } from 'node:path';
 import {
-  invokeFunction,
   TestStack,
+  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import {
   CloudWatchClient,
   GetMetricStatisticsCommand,
 } from '@aws-sdk/client-cloudwatch';
-import { join } from 'node:path';
 import { getMetrics, sortDimensions } from '../helpers/metricsUtils.js';
 import { MetricsTestNodejsFunction } from '../helpers/resources.js';
 import {
-  commonEnvironmentVars,
   ONE_MINUTE,
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
+  commonEnvironmentVars,
 } from './constants.js';
 
-describe(`Metrics E2E tests, basic features decorator usage`, () => {
+describe('Metrics E2E tests, basic features decorator usage', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
@@ -205,7 +205,7 @@ describe(`Metrics E2E tests, basic features decorator usage`, () => {
           ? metricStat.Datapoints[0]
           : {};
         expect(singleDataPoint?.Sum).toBeGreaterThanOrEqual(
-          parseInt(expectedMetricValue) * invocations
+          Number.parseInt(expectedMetricValue) * invocations
         );
       },
       TEST_CASE_TIMEOUT

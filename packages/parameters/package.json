@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "The parameters package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -89,17 +89,26 @@
         "lib/cjs/types/BaseProvider.d.ts",
         "lib/esm/types/BaseProvider.d.ts"
       ],
-      "base": ["lib/cjs/base/index.d.ts", "lib/esm/base/index.d.ts"],
+      "base": [
+        "lib/cjs/base/index.d.ts",
+        "lib/esm/base/index.d.ts"
+      ],
       "ssm/types": [
         "lib/cjs/types/SSMProvider.d.ts",
         "lib/esm/types/SSMProvider.d.ts"
       ],
-      "ssm": ["lib/cjs/ssm/index.d.ts", "lib/esm/ssm/index.d.ts"],
+      "ssm": [
+        "lib/cjs/ssm/index.d.ts",
+        "lib/esm/ssm/index.d.ts"
+      ],
       "secrets/types": [
         "lib/cjs/types/SecretsProvider.d.ts",
         "lib/esm/types/SecretsProvider.d.ts"
       ],
-      "secrets": ["lib/cjs/secrets/index.d.ts", "lib/esm/secrets/index.d.ts"],
+      "secrets": [
+        "lib/cjs/secrets/index.d.ts",
+        "lib/esm/secrets/index.d.ts"
+      ],
       "dynamodb/types": [
         "./lib/cjs/types/DynamoDBProvider.d.ts",
         "./lib/esm/types/DynamoDBProvider.d.ts"
@@ -116,12 +125,17 @@
         "lib/cjs/appconfig/index.d.ts",
         "lib/esm/appconfig/index.d.ts"
       ],
-      "errors": ["lib/cjs/errors.d.ts", "lib/esm/errors.d.ts"]
+      "errors": [
+        "lib/cjs/errors.d.ts",
+        "lib/esm/errors.d.ts"
+      ]
     }
   },
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
@@ -150,7 +164,7 @@
     "aws-sdk-client-mock-jest": "^4.0.1"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.5.0"
+    "@aws-lambda-powertools/commons": "^2.6.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-appconfigdata": ">=3.x",

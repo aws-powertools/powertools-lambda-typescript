@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "2.6.0",
+  "version": "2.5.0",
   "description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",
@@ -52,25 +52,14 @@
   },
   "typesVersions": {
     "*": {
-      "typeutils": [
-        "lib/cjs/typeUtils.d.ts",
-        "lib/esm/typeUtils.d.ts"
-      ],
-      "utils/base64": [
-        "lib/cjs/fromBase64.d.ts",
-        "lib/esm/fromBase64.d.ts"
-      ],
-      "types": [
-        "lib/cjs/types/index.d.ts",
-        "lib/esm/types/index.d.ts"
-      ]
+      "typeutils": ["lib/cjs/typeUtils.d.ts", "lib/esm/typeUtils.d.ts"],
+      "utils/base64": ["lib/cjs/fromBase64.d.ts", "lib/esm/fromBase64.d.ts"],
+      "types": ["lib/cjs/types/index.d.ts", "lib/esm/types/index.d.ts"]
     }
   },
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
@@ -78,13 +67,7 @@
   "bugs": {
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
-  "keywords": [
-    "aws",
-    "lambda",
-    "powertools",
-    "serverless",
-    "nodejs"
-  ],
+  "keywords": ["aws", "lambda", "powertools", "serverless", "nodejs"],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing"
   }

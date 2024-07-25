@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
+
+
+### Features
+
+* **logger:** introduce loglevel constant ([#2787](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2787)) ([e75f593](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e75f5933602342a45fbeaa7a459452387e43c492))
+
+
+
+
+
 # [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
 
 

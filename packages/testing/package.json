@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/testing-utils",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "A package containing utilities to test your serverless workloads",
   "author": {
     "name": "Amazon Web Services",
@@ -24,7 +24,9 @@
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
   },
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -64,13 +66,25 @@
         "lib/cjs/resources/TestDynamodbTable.d.ts",
         "lib/esm/resources/TestDynamodbTable.d.ts"
       ],
-      "types": ["lib/cjs/types.d.ts", "lib/esm/types.d.ts"],
-      "context": ["lib/cjs/context.d.ts", "lib/esm/context.d.ts"]
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
+      ],
+      "context": [
+        "lib/cjs/context.d.ts",
+        "lib/esm/context.d.ts"
+      ]
     }
   },
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
-  "keywords": ["aws", "lambda", "powertools", "testing", "serverless"],
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "testing",
+    "serverless"
+  ],
   "license": "MIT-0",
   "bugs": {
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"

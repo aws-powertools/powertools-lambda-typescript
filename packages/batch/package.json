@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/batch",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "The batch processing package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -45,12 +45,17 @@
   },
   "typesVersions": {
     "*": {
-      "types": ["lib/cjs/types.d.ts", "lib/esm/types.d.ts"]
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
+      ]
     }
   },
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

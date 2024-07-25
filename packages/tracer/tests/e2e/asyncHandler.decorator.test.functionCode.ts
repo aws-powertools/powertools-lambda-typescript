@@ -74,8 +74,6 @@ export class MyFunctionBase {
 
 class MyFunctionWithDecorator extends MyFunctionBase {
   @tracer.captureLambdaHandler()
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public async handler(
     event: CustomEvent,
     _context: Context
@@ -84,8 +82,6 @@ class MyFunctionWithDecorator extends MyFunctionBase {
   }
 
   @tracer.captureMethod()
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public myMethod(): string {
     return super.myMethod();
   }
@@ -96,8 +92,6 @@ export const handler = handlerClass.handler.bind(handlerClass);
 
 export class MyFunctionWithDecoratorAndCustomNamedSubSegmentForMethod extends MyFunctionBase {
   @tracer.captureLambdaHandler()
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public async handler(
     event: CustomEvent,
     _context: Context
@@ -106,8 +100,6 @@ export class MyFunctionWithDecoratorAndCustomNamedSubSegmentForMethod extends My
   }
 
   @tracer.captureMethod({ subSegmentName: customSubSegmentName })
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public myMethod(): string {
     return super.myMethod();
   }

@@ -32,8 +32,6 @@ class Lambda implements LambdaInterface {
     defaultDimensions: JSON.parse(defaultDimensions),
     throwOnEmptyMetrics: true,
   })
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public async handler(_event: unknown, _context: Context): Promise<void> {
     metrics.addMetric(metricName, metricUnit, Number.parseInt(metricValue));
     metrics.addDimension(

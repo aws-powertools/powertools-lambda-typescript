@@ -9,7 +9,6 @@
  *
  * @param error The value to assert is an error
  */
-// eslint-disable-next-line func-style -- type assertions cannot use arrow functions microsoft/TypeScript#34523
 function assertIsError(error: unknown): asserts error is Error {
   if (!(error instanceof Error)) {
     throw error;

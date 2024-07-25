@@ -374,8 +374,6 @@ class Tracer extends Utility implements TracerInterface {
     return (_target, _propertyKey, descriptor) => {
       // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
       const originalMethod = descriptor.value!;
-
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
@@ -466,7 +464,6 @@ class Tracer extends Utility implements TracerInterface {
       // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
       const originalMethod = descriptor.value!;
 
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.

@@ -306,7 +306,6 @@ describe('Functions tests', () => {
       expected: false,
     },
     {
-      // prettier-ignore
       expression: "contains(strings, 'a')",
       expected: true,
     },

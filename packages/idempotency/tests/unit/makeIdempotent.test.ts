@@ -1,22 +1,22 @@
+import context from '@aws-lambda-powertools/testing-utils/context';
+import type { Context } from 'aws-lambda';
+import { MAX_RETRIES } from '../../src/constants.js';
+import {
+  IdempotencyConfig,
+  IdempotencyInconsistentStateError,
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyPersistenceLayerError,
+  IdempotencyRecordStatus,
+  IdempotencyUnknownError,
+  makeIdempotent,
+} from '../../src/index.js';
 /**
  * Test makeIdempotent Function Wrapper
  *
  * @group unit/idempotency/makeIdempotent
  */
 import { IdempotencyRecord } from '../../src/persistence/index.js';
-import {
-  makeIdempotent,
-  IdempotencyInconsistentStateError,
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyPersistenceLayerError,
-  IdempotencyConfig,
-  IdempotencyRecordStatus,
-  IdempotencyUnknownError,
-} from '../../src/index.js';
-import context from '@aws-lambda-powertools/testing-utils/context';
-import { MAX_RETRIES } from '../../src/constants.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
-import type { Context } from 'aws-lambda';
 
 const mockIdempotencyOptions = {
   persistenceStore: new PersistenceLayerTestClass(),
@@ -277,7 +277,6 @@ describe('Function: makeIdempotent', () => {
     // Prepare
     const handler = makeIdempotent(
       async (_event: unknown, _context: Context) => {
-        // eslint-disable-next-line no-throw-literal
         throw 'Something went wrong';
       },
       {

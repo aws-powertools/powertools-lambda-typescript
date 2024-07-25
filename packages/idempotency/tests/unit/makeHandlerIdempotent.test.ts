@@ -1,23 +1,23 @@
+import context from '@aws-lambda-powertools/testing-utils/context';
+import middy from '@middy/core';
+import type { Context } from 'aws-lambda';
+import { MAX_RETRIES } from '../../src/constants.js';
+import {
+  IdempotencyConfig,
+  IdempotencyInconsistentStateError,
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyPersistenceLayerError,
+  IdempotencyRecordStatus,
+  IdempotencyUnknownError,
+} from '../../src/index.js';
 /**
  * Test Idempotency middleware
  *
  * @group unit/idempotency/makeHandlerIdempotent
  */
 import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
-import context from '@aws-lambda-powertools/testing-utils/context';
 import { IdempotencyRecord } from '../../src/persistence/index.js';
-import {
-  IdempotencyInconsistentStateError,
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyPersistenceLayerError,
-  IdempotencyConfig,
-  IdempotencyRecordStatus,
-  IdempotencyUnknownError,
-} from '../../src/index.js';
-import middy from '@middy/core';
-import { MAX_RETRIES } from '../../src/constants.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
-import type { Context } from 'aws-lambda';
 
 const mockIdempotencyOptions = {
   persistenceStore: new PersistenceLayerTestClass(),
@@ -257,7 +257,6 @@ describe('Middleware: makeHandlerIdempotent', () => {
     jest
       .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
       .mockImplementationOnce(() => {
-        // eslint-disable-next-line no-throw-literal
         throw 'Something went wrong';
       });
     const stubRecordInconsistent = new IdempotencyRecord({

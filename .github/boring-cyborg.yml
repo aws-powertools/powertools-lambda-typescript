@@ -95,8 +95,7 @@ labelPRBasedOnFilePath:
     - LICENSE-THIRD-PARTY
     - lerna.json
     - .nvmrc
-    - .eslintrc.cjs
-    - .eslintignore
+    - .biome.json
     - .npmignore
     - .gitpod.yml
     - .husky/*

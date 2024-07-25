@@ -20,11 +20,17 @@ export {
 } from './cloudwatch.js';
 export { DynamoDBStreamSchema } from './dynamodb.js';
 export { EventBridgeSchema } from './eventbridge.js';
-export { KafkaMskEventSchema, KafkaSelfManagedEventSchema } from './kafka.js';
-export { KinesisDataStreamSchema } from './kinesis.js';
+export {
+  KafkaMskEventSchema,
+  KafkaSelfManagedEventSchema,
+  KafkaRecordSchema,
+} from './kafka.js';
+export { KinesisDataStreamSchema, KinesisDataStreamRecord } from './kinesis.js';
 export {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
+  KinesisFirehoseRecordSchema,
+  KinesisFirehoseSqsRecordSchema,
 } from './kinesis-firehose.js';
 export { LambdaFunctionUrlSchema } from './lambda.js';
 export {
@@ -33,8 +39,13 @@ export {
   S3ObjectLambdaEventSchema,
   S3Schema,
 } from './s3.js';
-export { SesSchema } from './ses.js';
-export { SnsSchema } from './sns.js';
-export { SqsSchema } from './sqs.js';
+export { SesSchema, SesRecordSchema } from './ses.js';
+export {
+  SnsSchema,
+  SnsRecordSchema,
+  SnsSqsNotificationSchema,
+  SnsNotificationSchema,
+} from './sns.js';
+export { SqsSchema, SqsRecordSchema } from './sqs.js';
 export { VpcLatticeSchema } from './vpc-lattice.js';
 export { VpcLatticeV2Schema } from './vpc-latticev2.js';

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/metrics",
-  "version": "2.6.0",
+  "version": "2.5.0",
   "description": "The metrics package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -52,10 +52,7 @@
         "lib/cjs/middleware/middy.d.ts",
         "lib/esm/middleware/middy.d.ts"
       ],
-      "types": [
-        "lib/cjs/types/index.d.ts",
-        "lib/esm/types/index.d.ts"
-      ]
+      "types": ["lib/cjs/types/index.d.ts", "lib/esm/types/index.d.ts"]
     }
   },
   "types": "./lib/cjs/index.d.ts",
@@ -74,9 +71,7 @@
       "optional": true
     }
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
@@ -85,14 +80,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.6.0"
+    "@aws-lambda-powertools/commons": "^2.5.0"
   },
-  "keywords": [
-    "aws",
-    "lambda",
-    "powertools",
-    "metrics",
-    "serverless",
-    "nodejs"
-  ]
+  "keywords": ["aws", "lambda", "powertools", "metrics", "serverless", "nodejs"]
 }

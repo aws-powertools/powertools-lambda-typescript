@@ -3,17 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
-
-
-### Features
-
-* **parser:** allow parser set event type of handler with middy ([#2786](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2786)) ([9973f09](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9973f09da260305ce8fd18780a9a474f3404ca1a))
-
-
-
-
-
 # [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
 
 

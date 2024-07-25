@@ -43,17 +43,133 @@
       "require": "./lib/cjs/schemas/index.js",
       "import": "./lib/esm/schemas/index.js"
     },
+    "./schemas/alb": {
+      "require": "./lib/cjs/schemas/alb.js",
+      "import": "./lib/esm/schemas/alb.js"
+    },
     "./schemas/api-gateway": {
       "require": "./lib/cjs/schemas/apigw.js",
       "import": "./lib/esm/schemas/apigw.js"
+    },
+    "./schemas/api-gateway-proxy": {
+      "require": "./lib/cjs/schemas/apigw-proxy.js",
+      "import": "./lib/esm/schemas/apigw-proxy.js"
     },
     "./schemas/api-gatewayv2": {
       "require": "./lib/cjs/schemas/apigwv2.js",
       "import": "./lib/esm/schemas/apigwv2.js"
     },
+    "./schemas/cloudformation-custom-resources": {
+      "require": "./lib/cjs/schemas/cloudformation-custom-resources.js",
+      "import": "./lib/esm/schemas/cloudformation-custom-resources.js"
+    },
+    "./schemas/cloudwatch": {
+      "require": "./lib/cjs/schemas/cloudwatch.js",
+      "import": "./lib/esm/schemas/cloudwatch.js"
+    },
+    "./schemas/dynamodb": {
+      "require": "./lib/cjs/schemas/dynamodb.js",
+      "import": "./lib/esm/schemas/dynamodb.js"
+    },
+    "./schemas/eventbridge": {
+      "require": "./lib/cjs/schemas/eventbridge.js",
+      "import": "./lib/esm/schemas/eventbridge.js"
+    },
+    "./schemas/kafka": {
+      "require": "./lib/cjs/schemas/kafka.js",
+      "import": "./lib/esm/schemas/kafka.js"
+    },
+    "./schemas/kinesis": {
+      "require": "./lib/cjs/schemas/kinesis.js",
+      "import": "./lib/esm/schemas/kinesis.js"
+    },
+    "./schemas/kinesis-firehose": {
+      "require": "./lib/cjs/schemas/kinesis-firehose.js",
+      "import": "./lib/esm/schemas/kinesis-firehose.js"
+    },
+    "./schemas/lambda": {
+      "require": "./lib/cjs/schemas/lambda.js",
+      "import": "./lib/esm/schemas/lambda.js"
+    },
+    "./schemas/s3": {
+      "require": "./lib/cjs/schemas/s3.js",
+      "import": "./lib/esm/schemas/s3.js"
+    },
+    "./schemas/ses": {
+      "require": "./lib/cjs/schemas/ses.js",
+      "import": "./lib/esm/schemas/ses.js"
+    },
+    "./schemas/sns": {
+      "require": "./lib/cjs/schemas/sns.js",
+      "import": "./lib/esm/schemas/sns.js"
+    },
+    "./schemas/sqs": {
+      "require": "./lib/cjs/schemas/sqs.js",
+      "import": "./lib/esm/schemas/sqs.js"
+    },
+    "./schemas/vpc-lattice": {
+      "require": "./lib/cjs/schemas/vpc-lattice.js",
+      "import": "./lib/esm/schemas/vpc-lattice.js"
+    },
+    "./schemas/vpc-latticev2": {
+      "require": "./lib/cjs/schemas/vpc-latticev2.js",
+      "import": "./lib/esm/schemas/vpc-latticev2.js"
+    },
     "./envelopes": {
       "require": "./lib/cjs/envelopes/index.js",
       "import": "./lib/esm/envelopes/index.js"
+    },
+    "./envelopes/api-gateway": {
+      "require": "./lib/cjs/envelopes/apigw.js",
+      "import": "./lib/esm/envelopes/apigw.js"
+    },
+    "./envelopes/api-gatewayv2": {
+      "require": "./lib/cjs/envelopes/apigwv2.js",
+      "import": "./lib/esm/envelopes/apigwv2.js"
+    },
+    "./envelopes/cloudwatch": {
+      "require": "./lib/cjs/envelopes/cloudwatch.js",
+      "import": "./lib/esm/envelopes/cloudwatch.js"
+    },
+    "./envelopes/dynamodb": {
+      "require": "./lib/cjs/envelopes/dynamodb.js",
+      "import": "./lib/esm/envelopes/dynamodb.js"
+    },
+    "./envelopes/eventbridge": {
+      "require": "./lib/cjs/envelopes/eventbridge.js",
+      "import": "./lib/esm/envelopes/eventbridge.js"
+    },
+    "./envelopes/kafka": {
+      "require": "./lib/cjs/envelopes/kafka.js",
+      "import": "./lib/esm/envelopes/kafka.js"
+    },
+    "./envelopes/kinesis": {
+      "require": "./lib/cjs/envelopes/kinesis.js",
+      "import": "./lib/esm/envelopes/kinesis.js"
+    },
+    "./envelopes/kinesis-firehose": {
+      "require": "./lib/cjs/envelopes/kinesis-firehose.js",
+      "import": "./lib/esm/envelopes/kinesis-firehose.js"
+    },
+    "./envelopes/lambda": {
+      "require": "./lib/cjs/envelopes/lambda.js",
+      "import": "./lib/esm/envelopes/lambda.js"
+    },
+    "./envelopes/sns": {
+      "require": "./lib/cjs/envelopes/sns.js",
+      "import": "./lib/esm/envelopes/sns.js"
+    },
+    "./envelopes/sqs": {
+      "require": "./lib/cjs/envelopes/sqs.js",
+      "import": "./lib/esm/envelopes/sqs.js"
+    },
+    "./envelopes/vpc-lattice": {
+      "require": "./lib/cjs/envelopes/vpc-lattice.js",
+      "import": "./lib/esm/envelopes/vpc-lattice.js"
+    },
+    "./envelopes/vpc-latticev2": {
+      "require": "./lib/cjs/envelopes/vpc-latticev2.js",
+      "import": "./lib/esm/envelopes/vpc-latticev2.js"
     },
     "./types": {
       "require": "./lib/cjs/types/index.js",
@@ -62,10 +178,7 @@
   },
   "typesVersions": {
     "*": {
-      "types": [
-        "./lib/cjs/types/index.d.ts",
-        "./lib/esm/types/index.d.ts"
-      ],
+      "types": ["./lib/cjs/types/index.d.ts", "./lib/esm/types/index.d.ts"],
       "middleware": [
         "./lib/cjs/middleware/parser.d.ts",
         "./lib/esm/middleware/parser.d.ts"
@@ -74,25 +187,136 @@
         "./lib/cjs/schemas/index.d.ts",
         "./lib/esm/schemas/index.d.ts"
       ],
+      "schemas/alb": [
+        "./lib/cjs/schemas/alb.d.ts",
+        "./lib/esm/schemas/alb.d.ts"
+      ],
       "schemas/api-gateway": [
         "./lib/cjs/schemas/apigw.d.ts",
         "./lib/esm/schemas/apigw.d.ts"
+      ],
+      "schemas/api-gateway-proxy": [
+        "./lib/cjs/schemas/apigw-proxy.d.ts",
+        "./lib/esm/schemas/apigw-proxy.d.ts"
       ],
       "schemas/api-gatewayv2": [
         "./lib/cjs/schemas/apigwv2.d.ts",
         "./lib/esm/schemas/apigwv2.d.ts"
       ],
+      "schemas/cloudformation-custom-resources": [
+        "./lib/cjs/schemas/cloudformation-custom-resources.d.ts",
+        "./lib/esm/schemas/cloudformation-custom-resources.d.ts"
+      ],
+      "schemas/cloudwatch": [
+        "./lib/cjs/schemas/cloudwatch.d.ts",
+        "./lib/esm/schemas/cloudwatch.d.ts"
+      ],
+      "schemas/dynamodb": [
+        "./lib/cjs/schemas/dynamodb.d.ts",
+        "./lib/esm/schemas/dynamodb.d.ts"
+      ],
+      "schemas/eventbridge": [
+        "./lib/cjs/schemas/eventbridge.d.ts",
+        "./lib/esm/schemas/eventbridge.d.ts"
+      ],
+      "schemas/kafka": [
+        "./lib/cjs/schemas/kafka.d.ts",
+        "./lib/esm/schemas/kafka.d.ts"
+      ],
+      "schemas/kinesis": [
+        "./lib/cjs/schemas/kinesis.d.ts",
+        "./lib/esm/schemas/kinesis.d.ts"
+      ],
+      "schemas/kinesis-firehose": [
+        "./lib/cjs/schemas/kinesis-firehose.d.ts",
+        "./lib/esm/schemas/kinesis-firehose.d.ts"
+      ],
+      "schemas/lambda": [
+        "./lib/cjs/schemas/lambda.d.ts",
+        "./lib/esm/schemas/lambda.d.ts"
+      ],
+      "schemas/s3": ["./lib/cjs/schemas/s3.d.ts", "./lib/esm/schemas/s3.d.ts"],
+      "schemas/ses": [
+        "./lib/cjs/schemas/ses.d.ts",
+        "./lib/esm/schemas/ses.d.ts"
+      ],
+      "schemas/sns": [
+        "./lib/cjs/schemas/sns.d.ts",
+        "./lib/esm/schemas/sns.d.ts"
+      ],
+      "schemas/sqs": [
+        "./lib/cjs/schemas/sqs.d.ts",
+        "./lib/esm/schemas/sqs.d.ts"
+      ],
+      "schemas/vpc-lattice": [
+        "./lib/cjs/schemas/vpc-lattice.d.ts",
+        "./lib/esm/schemas/vpc-lattice.d.ts"
+      ],
+      "schemas/vpc-latticev2": [
+        "./lib/cjs/schemas/vpc-latticev2.d.ts",
+        "./lib/esm/schemas/vpc-latticev2.d.ts"
+      ],
       "envelopes": [
         "./lib/cjs/envelopes/index.d.ts",
         "./lib/esm/envelopes/index.d.ts"
+      ],
+      "envelopes/api-gateway": [
+        "./lib/cjs/envelopes/apigw.d.ts",
+        "./lib/esm/envelopes/apigw.d.ts"
+      ],
+      "envelopes/api-gatewayv2": [
+        "./lib/cjs/envelopes/apigwv2.d.ts",
+        "./lib/esm/envelopes/apigwv2.d.ts"
+      ],
+      "envelopes/cloudwatch": [
+        "./lib/cjs/envelopes/cloudwatch.d.ts",
+        "./lib/esm/envelopes/cloudwatch.d.ts"
+      ],
+      "envelopes/dynamodb": [
+        "./lib/cjs/envelopes/dynamodb.d.ts",
+        "./lib/esm/envelopes/dynamodb.d.ts"
+      ],
+      "envelopes/eventbridge": [
+        "./lib/cjs/envelopes/eventbridge.d.ts",
+        "./lib/esm/envelopes/eventbridge.d.ts"
+      ],
+      "envelopes/kafka": [
+        "./lib/cjs/envelopes/kafka.d.ts",
+        "./lib/esm/envelopes/kafka.d.ts"
+      ],
+      "envelopes/kinesis": [
+        "./lib/cjs/envelopes/kinesis.d.ts",
+        "./lib/esm/envelopes/kinesis.d.ts"
+      ],
+      "envelopes/kinesis-firehose": [
+        "./lib/cjs/envelopes/kinesis-firehose.d.ts",
+        "./lib/esm/envelopes/kinesis-firehose.d.ts"
+      ],
+      "envelopes/lambda": [
+        "./lib/cjs/envelopes/lambda.d.ts",
+        "./lib/esm/envelopes/lambda.d.ts"
+      ],
+      "envelopes/sns": [
+        "./lib/cjs/envelopes/sns.d.ts",
+        "./lib/esm/envelopes/sns.d.ts"
+      ],
+      "envelopes/sqs": [
+        "./lib/cjs/envelopes/sqs.d.ts",
+        "./lib/esm/envelopes/sqs.d.ts"
+      ],
+      "envelopes/vpc-lattice": [
+        "./lib/cjs/envelopes/vpc-lattice.d.ts",
+        "./lib/esm/envelopes/vpc-lattice.d.ts"
+      ],
+      "envelopes/vpc-latticev2": [
+        "./lib/cjs/envelopes/vpc-latticev2.d.ts",
+        "./lib/esm/envelopes/vpc-latticev2.d.ts"
       ]
     }
   },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

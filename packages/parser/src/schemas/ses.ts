@@ -52,6 +52,9 @@ const SesMessage = z.object({
   receipt: SesReceipt,
 });
 
+/**
+ * Zod schema for a SES record from an SES event.
+ */
 const SesRecordSchema = z.object({
   eventSource: z.literal('aws:ses'),
   eventVersion: z.string(),
@@ -173,4 +176,4 @@ const SesSchema = z.object({
   Records: z.array(SesRecordSchema),
 });
 
-export { SesSchema };
+export { SesSchema, SesRecordSchema };

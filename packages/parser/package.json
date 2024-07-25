@@ -62,10 +62,7 @@
   },
   "typesVersions": {
     "*": {
-      "types": [
-        "./lib/cjs/types/index.d.ts",
-        "./lib/esm/types/index.d.ts"
-      ],
+      "types": ["./lib/cjs/types/index.d.ts", "./lib/esm/types/index.d.ts"],
       "middleware": [
         "./lib/cjs/middleware/parser.d.ts",
         "./lib/esm/middleware/parser.d.ts"
@@ -90,9 +87,7 @@
   },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

@@ -22,12 +22,18 @@ const KinesisFireHoseBaseSchema = z.object({
   sourceKinesisStreamArn: z.string().optional(),
 });
 
+/**
+ * Zod schema for a Kinesis Firehose record from an Kinesis Firehose event.
+ */
 const KinesisFirehoseRecord = KinesisFireHoseRecordBase.extend({
   data: z
     .string()
     .transform((data) => Buffer.from(data, 'base64').toString('utf8')),
 });
 
+/**
+ * Zod schema for a SQS record from an Kinesis Firehose event.
+ */
 const KinesisFirehoseSqsRecord = KinesisFireHoseRecordBase.extend({
   data: z.string().transform((data) => {
     try {
@@ -111,4 +117,9 @@ const KinesisFirehoseSqsSchema = KinesisFireHoseBaseSchema.extend({
   records: z.array(KinesisFirehoseSqsRecord),
 });
 
-export { KinesisFirehoseSchema, KinesisFirehoseSqsSchema };
+export {
+  KinesisFirehoseSchema,
+  KinesisFirehoseSqsSchema,
+  KinesisFirehoseRecord,
+  KinesisFirehoseSqsRecord,
+};

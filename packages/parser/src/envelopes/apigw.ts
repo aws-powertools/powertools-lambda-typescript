@@ -2,7 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { APIGatewayProxyEventSchema } from '../schemas/apigw.js';
 import type { ParsedResult } from '../types/parser.js';
-import { Envelope } from './envelope';
+import { Envelope } from './envelope.js';
 
 /**
  * API Gateway envelope to extract data within body key

@@ -29,8 +29,8 @@ export { KinesisDataStreamSchema, KinesisDataStreamRecord } from './kinesis.js';
 export {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
-  KinesisFirehoseRecord,
-  KinesisFirehoseSqsRecord,
+  KinesisFirehoseRecordSchema,
+  KinesisFirehoseSqsRecordSchema,
 } from './kinesis-firehose.js';
 export { LambdaFunctionUrlSchema } from './lambda.js';
 export {

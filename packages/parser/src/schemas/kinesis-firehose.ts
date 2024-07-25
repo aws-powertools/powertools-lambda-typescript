@@ -25,7 +25,7 @@ const KinesisFireHoseBaseSchema = z.object({
 /**
  * Zod schema for a Kinesis Firehose record from an Kinesis Firehose event.
  */
-const KinesisFirehoseRecord = KinesisFireHoseRecordBase.extend({
+const KinesisFirehoseRecordSchema = KinesisFireHoseRecordBase.extend({
   data: z
     .string()
     .transform((data) => Buffer.from(data, 'base64').toString('utf8')),
@@ -34,7 +34,7 @@ const KinesisFirehoseRecord = KinesisFireHoseRecordBase.extend({
 /**
  * Zod schema for a SQS record from an Kinesis Firehose event.
  */
-const KinesisFirehoseSqsRecord = KinesisFireHoseRecordBase.extend({
+const KinesisFirehoseSqsRecordSchema = KinesisFireHoseRecordBase.extend({
   data: z.string().transform((data) => {
     try {
       return SqsRecordSchema.parse(
@@ -89,7 +89,7 @@ const KinesisFirehoseSqsRecord = KinesisFireHoseRecordBase.extend({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/services-kinesisfirehose.html}
  */
 const KinesisFirehoseSchema = KinesisFireHoseBaseSchema.extend({
-  records: z.array(KinesisFirehoseRecord),
+  records: z.array(KinesisFirehoseRecordSchema),
 });
 
 /**
@@ -114,12 +114,12 @@ const KinesisFirehoseSchema = KinesisFireHoseBaseSchema.extend({
  * @see {@link types.KinesisFireHoseSqsEvent | KinesisFireHoseSqsEvent}
  */
 const KinesisFirehoseSqsSchema = KinesisFireHoseBaseSchema.extend({
-  records: z.array(KinesisFirehoseSqsRecord),
+  records: z.array(KinesisFirehoseSqsRecordSchema),
 });
 
 export {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,
-  KinesisFirehoseRecord,
-  KinesisFirehoseSqsRecord,
+  KinesisFirehoseRecordSchema,
+  KinesisFirehoseSqsRecordSchema,
 };

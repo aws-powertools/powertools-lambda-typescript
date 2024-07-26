@@ -23,6 +23,9 @@ const SqsAttributesSchema = z.object({
   DeadLetterQueueSourceArn: z.string().optional(),
 });
 
+/**
+ * Zod schema for a SQS record inside an SQS event.
+ */
 const SqsRecordSchema = z.object({
   messageId: z.string(),
   receiptHandle: z.string(),

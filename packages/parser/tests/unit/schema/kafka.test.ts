@@ -6,8 +6,11 @@
 
 import {
   KafkaMskEventSchema,
+  KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
 } from '../../../src/schemas/';
+import type { KafkaSelfManagedEvent } from '../../../src/types';
+import type { KafkaRecord } from '../../../src/types/schema';
 import { TestEvents } from './utils.js';
 
 describe('Kafka ', () => {
@@ -59,5 +62,13 @@ describe('Kafka ', () => {
     const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
 
     expect(parsed.bootstrapServers).toBeUndefined();
+  });
+  it('should parse kafka record from kafka event', () => {
+    const kafkaEventMsk: KafkaSelfManagedEvent =
+      TestEvents.kafkaEventSelfManaged as KafkaSelfManagedEvent;
+    const parsedRecord: KafkaRecord = KafkaRecordSchema.parse(
+      kafkaEventMsk.records['mytopic-0'][0]
+    );
+    expect(parsedRecord.topic).toEqual('mytopic');
   });
 });

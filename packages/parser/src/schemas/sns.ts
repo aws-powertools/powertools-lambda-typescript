@@ -5,6 +5,9 @@ const SnsMsgAttribute = z.object({
   Value: z.string(),
 });
 
+/**
+ * Zod schema for a SNS event notification record.
+ */
 const SnsNotificationSchema = z.object({
   Subject: z.string().optional(),
   TopicArn: z.string(),
@@ -58,6 +61,9 @@ const SnsSqsNotificationSchema = SnsNotificationSchema.extend({
   SigningCertUrl: true,
 });
 
+/**
+ * Zod schema for a SNS record inside of an SNS event.
+ */
 const SnsRecordSchema = z.object({
   EventSource: z.literal('aws:sns'),
   EventVersion: z.string(),
@@ -110,4 +116,9 @@ const SnsSchema = z.object({
   Records: z.array(SnsRecordSchema),
 });
 
-export { SnsSchema, SnsSqsNotificationSchema };
+export {
+  SnsSchema,
+  SnsSqsNotificationSchema,
+  SnsRecordSchema,
+  SnsNotificationSchema,
+};

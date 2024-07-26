@@ -51,10 +51,6 @@
       "require": "./lib/cjs/schemas/apigw.js",
       "import": "./lib/esm/schemas/apigw.js"
     },
-    "./schemas/api-gateway-proxy": {
-      "require": "./lib/cjs/schemas/apigw-proxy.js",
-      "import": "./lib/esm/schemas/apigw-proxy.js"
-    },
     "./schemas/api-gatewayv2": {
       "require": "./lib/cjs/schemas/apigwv2.js",
       "import": "./lib/esm/schemas/apigwv2.js"
@@ -194,10 +190,6 @@
       "schemas/api-gateway": [
         "./lib/cjs/schemas/apigw.d.ts",
         "./lib/esm/schemas/apigw.d.ts"
-      ],
-      "schemas/api-gateway-proxy": [
-        "./lib/cjs/schemas/apigw-proxy.d.ts",
-        "./lib/esm/schemas/apigw-proxy.d.ts"
       ],
       "schemas/api-gatewayv2": [
         "./lib/cjs/schemas/apigwv2.d.ts",

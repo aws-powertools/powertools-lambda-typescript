@@ -9,6 +9,5 @@ tasks:
       npm run setup-local
 vscode:
   extensions:
-    - dbaeumer.vscode-eslint
-    - esbenp.prettier-vscode
+    - biomejs.biome
     - firsttris.vscode-jest-runner

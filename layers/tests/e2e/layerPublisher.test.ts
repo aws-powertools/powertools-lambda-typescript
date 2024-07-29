@@ -23,7 +23,6 @@ import {
 
 jest.spyOn(console, 'log').mockImplementation();
 
-// eslint-disable-next-line func-style -- type assertions can't be arrow functions
 function assertLogs(
   logs: TestInvocationLogs | undefined
 ): asserts logs is TestInvocationLogs {

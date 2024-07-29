@@ -218,7 +218,6 @@ class TreeInterpreter {
       // doesn't know that, so we have to use @ts-ignore to tell it that it's
       // okay. We could use a type assertion like `as keyof Functions`, but
       // we also want to keep the args generic, so for now we'll just ignore it.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore-next-line
       return this.#functions[funcName](args);
     } catch (error) {

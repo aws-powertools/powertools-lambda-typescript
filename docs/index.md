@@ -387,6 +387,9 @@ Knowing which companies are using this library is important to help prioritize t
 [**Hashnode**](https://hashnode.com/){target="_blank" rel="nofollow"}
 { .card }
 
+[**Caylent**](https://caylent.com/){target="_blank" rel="nofollow"}
+{ .card }
+
 [**Trek10)**](https://www.trek10.com/){target="_blank" rel="nofollow"}
 { .card }
 

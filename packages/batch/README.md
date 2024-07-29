@@ -168,6 +168,7 @@ Knowing which companies are using this library is important to help prioritize t
 The following companies, among others, use Powertools:
 
 - [Hashnode](https://hashnode.com/)
+- [Caylent](https://caylent.com/)
 - [Trek10](https://www.trek10.com/)
 - [Elva](https://elva-group.com)
 - [globaldatanet](https://globaldatanet.com/)

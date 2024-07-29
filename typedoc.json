@@ -11,7 +11,8 @@
     "**/*.test.ts",
     "**/*.json",
     "layers",
-    "examples/**"
+    "examples/**",
+    "packages/event-handler",
   ],
   "plugin": ["typedoc-plugin-zod"],
   "skipErrorChecking": true,

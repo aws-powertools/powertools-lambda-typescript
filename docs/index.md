@@ -417,13 +417,13 @@ Knowing which companies are using this library is important to help prioritize t
 [**AppYourself**](https://appyourself.net){target="_blank" rel="nofollow"}
 { .card }
 
-[**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow}
+[**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow"}
 { .card }
 
-[**Banxware**](https://www.banxware.com){target="_blank" rel="nofollow}
+[**Banxware**](https://www.banxware.com){target="_blank" rel="nofollow"}
 { .card }
 
-[**Weschool**](https://www.weschool.com){target="_blank" rel="nofollow}
+[**Weschool**](https://www.weschool.com){target="_blank" rel="nofollow"}
 { .card }
 
 </div>

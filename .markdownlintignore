@@ -11,7 +11,6 @@ LICENSE
 .github/**
 **node_modules/** */
 # these will be removed from the ignore and linted in future PRs
-packages/batch/README.md
 packages/commons/README.md
 packages/idempotency/README.md
 packages/jmespath/README.md

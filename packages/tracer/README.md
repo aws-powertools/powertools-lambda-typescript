@@ -101,7 +101,8 @@ The following companies, among others, use Powertools:
 * [Certible](https://www.certible.com/)
 * [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
 * [AppYourself](https://appyourself.net)
-* [Alma Media](https://www.almamedia.fi)
+* [Banxware](https://www.banxware.com)
+* [Weschool](https://www.weschool.com)
 
 ### Sharing your work
 

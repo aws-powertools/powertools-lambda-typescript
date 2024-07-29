@@ -420,6 +420,12 @@ Knowing which companies are using this library is important to help prioritize t
 [**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow}
 { .card }
 
+[**Banxware**](https://www.banxware.com){target="_blank" rel="nofollow}
+{ .card }
+
+[**Weschool**](https://www.weschool.com){target="_blank" rel="nofollow}
+{ .card }
+
 </div>
 
 ### Using Lambda Layers

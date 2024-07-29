@@ -8,7 +8,8 @@
   },
   "private": true,
   "scripts": {
-    "test": "echo \"Not implemented\"",
+    "test": "npm run test:unit",
+    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
     "test:e2e:nodejs18x": "echo \"Not implemented\"",
     "test:e2e:nodejs20x": "echo \"Not implemented\"",
     "test:e2e": "echo \"Not implemented\"",

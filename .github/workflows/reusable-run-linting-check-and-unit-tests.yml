@@ -40,7 +40,8 @@ jobs:
             -w packages/parser \
             -w packages/event-handler
       - name: Run unit tests
-        run: npm t -w packages/commons \
+        run: |
+          npm t -w packages/commons \
             -w packages/logger \
             -w packages/tracer \
             -w packages/metrics \

@@ -1,3 +1,8 @@
+/**
+ * Test makeIdempotent Function Wrapper
+ *
+ * @group unit/idempotency/makeIdempotent
+ */
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { MAX_RETRIES } from '../../src/constants.js';
@@ -10,11 +15,6 @@ import {
   IdempotencyUnknownError,
   makeIdempotent,
 } from '../../src/index.js';
-/**
- * Test makeIdempotent Function Wrapper
- *
- * @group unit/idempotency/makeIdempotent
- */
 import { IdempotencyRecord } from '../../src/persistence/index.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 

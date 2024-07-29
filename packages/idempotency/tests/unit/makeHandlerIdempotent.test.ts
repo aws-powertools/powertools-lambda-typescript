@@ -1,3 +1,8 @@
+/**
+ * Test Idempotency middleware
+ *
+ * @group unit/idempotency/makeHandlerIdempotent
+ */
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -10,11 +15,6 @@ import {
   IdempotencyRecordStatus,
   IdempotencyUnknownError,
 } from '../../src/index.js';
-/**
- * Test Idempotency middleware
- *
- * @group unit/idempotency/makeHandlerIdempotent
- */
 import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
 import { IdempotencyRecord } from '../../src/persistence/index.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';

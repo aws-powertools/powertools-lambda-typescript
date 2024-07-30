@@ -10,6 +10,7 @@
     "packages/testing",
     "packages/jmespath",
     "packages/parser",
+    "packages/event-handler",
     "examples/app",
     "layers",
     "examples/snippets"

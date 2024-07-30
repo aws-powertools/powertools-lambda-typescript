@@ -18,6 +18,9 @@ labelPRBasedOnFilePath:
   parser:
     - packages/parser/src/*
     - packages/parser/src/**/*
+  event-handler:
+    - packages/event-handler/src/*
+    - packages/event-handler/src/**/*
   validator:
     - packages/validator/src/*
     - packages/validator/src/**/*
@@ -53,6 +56,9 @@ labelPRBasedOnFilePath:
     - packages/parser/tests/*
     - packages/parser/tests/**/*
     - packages/parser/jest.config.cjs
+    - packages/event-handler/tests/*
+    - packages/event-handler/tests/**/*
+    - packages/event-handler/jest.config.cjs
     - packages/validator/tests/*
     - packages/validator/tests/**/*
     - packages/validator/jest.config.cjs
@@ -108,6 +114,8 @@ labelPRBasedOnFilePath:
     - packages/tracer/README.md
     - packages/parser/tsconfig*.json
     - packages/parser/README.md
+    - packages/event-handler/tsconfig*.json
+    - packages/event-handler/README.md
     - packages/idempotency/tsconfig*.json
     - packages/idempotency/README.md
     - packages/batch/tsconfig*.json
@@ -116,8 +124,6 @@ labelPRBasedOnFilePath:
     - packages/commons/README.md
     - packages/validator/tsconfig*.json
     - packages/validator/README.md
-    - packages/parser/tsconfig*.json
-    - packages/parser/README.md
     - layers/tsconfig*.json
     - layers/README.md
     - examples/app/tsconfig*.json
@@ -132,6 +138,7 @@ labelPRBasedOnFilePath:
     - packages/parameters/package.json
     - packages/idempotency/package.json
     - packages/parser/package.json
+    - packages/event-handler/package.json
     - packages/validator/package.json
     - packages/batch/package.json
     - layers/package.json

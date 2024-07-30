@@ -19,8 +19,8 @@ labelPRBasedOnFilePath:
     - packages/parser/src/*
     - packages/parser/src/**/*
   event-handler:
-    - packages/parser/src/*
-    - packages/parser/src/**/*
+    - packages/event-handler/src/*
+    - packages/event-handler/src/**/*
   validator:
     - packages/validator/src/*
     - packages/validator/src/**/*

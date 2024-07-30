@@ -423,7 +423,7 @@ Knowing which companies are using this library is important to help prioritize t
 [**Banxware**](https://www.banxware.com){target="_blank" rel="nofollow"}
 { .card }
 
-[**Weschool**](https://www.weschool.com){target="_blank" rel="nofollow"}
+[**WeSchool**](https://www.weschool.com){target="_blank" rel="nofollow"}
 { .card }
 
 </div>

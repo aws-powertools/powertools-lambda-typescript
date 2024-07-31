@@ -6,4 +6,5 @@ npm t \
   -w packages/tracer \
   -w packages/idempotency \
   -w packages/parameters \
-  -w packages/parser
+  -w packages/parser \
+  -w packages/event-handler

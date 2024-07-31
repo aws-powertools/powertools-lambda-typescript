@@ -387,6 +387,9 @@ Knowing which companies are using this library is important to help prioritize t
 [**Hashnode**](https://hashnode.com/){target="_blank" rel="nofollow"}
 { .card }
 
+[**Caylent**](https://caylent.com/){target="_blank" rel="nofollow"}
+{ .card }
+
 [**Trek10)**](https://www.trek10.com/){target="_blank" rel="nofollow"}
 { .card }
 
@@ -414,7 +417,13 @@ Knowing which companies are using this library is important to help prioritize t
 [**AppYourself**](https://appyourself.net){target="_blank" rel="nofollow"}
 { .card }
 
-[**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow}
+[**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow"}
+{ .card }
+
+[**Banxware**](https://www.banxware.com){target="_blank" rel="nofollow"}
+{ .card }
+
+[**WeSchool**](https://www.weschool.com){target="_blank" rel="nofollow"}
 { .card }
 
 </div>

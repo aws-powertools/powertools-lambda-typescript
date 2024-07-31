@@ -168,6 +168,7 @@ Knowing which companies are using this library is important to help prioritize t
 The following companies, among others, use Powertools:
 
 - [Hashnode](https://hashnode.com/)
+- [Caylent](https://caylent.com/)
 - [Trek10](https://www.trek10.com/)
 - [Elva](https://elva-group.com)
 - [globaldatanet](https://globaldatanet.com/)
@@ -178,6 +179,8 @@ The following companies, among others, use Powertools:
 - [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
 - [AppYourself](https://appyourself.net)
 - [Alma Media](https://www.almamedia.fi)
+- [Banxware](https://www.banxware.com)
+- [WeSchool](https://www.weschool.com)
 
 ### Sharing your work
 

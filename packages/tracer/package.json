@@ -28,10 +28,10 @@
   "license": "MIT-0",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.616.0",
-    "@aws-sdk/client-xray": "^3.616.0",
+    "@aws-sdk/client-dynamodb": "^3.620.1",
+    "@aws-sdk/client-xray": "^3.620.1",
     "@types/promise-retry": "^1.1.6",
-    "aws-sdk": "^2.1663.0",
+    "aws-sdk": "^2.1664.0",
     "promise-retry": "^2.0.1"
   },
   "peerDependencies": {

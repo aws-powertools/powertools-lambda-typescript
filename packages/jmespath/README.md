@@ -6,16 +6,16 @@ You can use the package in both TypeScript and JavaScript code bases.
 
 - [Intro](#intro)
 - [Usage](#usage)
-  - [Basic usage](#basic-usage)
-  - [Extract data from envelopes](#extract-data-from-envelopes)
-  - [JMESPath custom functions](#jmespath-custom-functions)
+    - [Basic usage](#basic-usage)
+    - [Extract data from envelopes](#extract-data-from-envelopes)
+    - [JMESPath custom functions](#jmespath-custom-functions)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
 - [How to support Powertools for AWS Lambda (TypeScript)?](#how-to-support-powertools-for-aws-lambda-typescript)
-  - [Becoming a reference customer](#becoming-a-reference-customer)
-  - [Sharing your work](#sharing-your-work)
-  - [Using Lambda Layer](#using-lambda-layer)
+    - [Becoming a reference customer](#becoming-a-reference-customer)
+    - [Sharing your work](#sharing-your-work)
+    - [Using Lambda Layer](#using-lambda-layer)
 - [License](#license)
 
 ## Intro
@@ -182,8 +182,8 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-* **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
-* **Email**: aws-lambda-powertools-feedback@amazon.com
+- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Email**: <aws-lambda-powertools-feedback@amazon.com>
 
 ## How to support Powertools for AWS Lambda (TypeScript)?
 
@@ -193,20 +193,21 @@ Knowing which companies are using this library is important to help prioritize t
 
 The following companies, among others, use Powertools:
 
-* [Hashnode](https://hashnode.com/)
-* [Caylent](https://caylent.com/)
-* [Trek10](https://www.trek10.com/)
-* [Elva](https://elva-group.com)
-* [globaldatanet](https://globaldatanet.com/)
-* [Bailey Nelson](https://www.baileynelson.com.au)
-* [Perfect Post](https://www.perfectpost.fr)
-* [Sennder](https://sennder.com/)
-* [Certible](https://www.certible.com/)
-* [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
-* [AppYourself](https://appyourself.net)
-* [Alma Media](https://www.almamedia.fi)
-* [Banxware](https://www.banxware.com)
-* [WeSchool](https://www.weschool.com)
+- [Alma Media](https://www.almamedia.fi)
+- [AppYourself](https://appyourself.net)
+- [Bailey Nelson](https://www.baileynelson.com.au)
+- [Banxware](https://www.banxware.com)
+- [Caylent](https://caylent.com/)
+- [Certible](https://www.certible.com/)
+- [Elva](https://elva-group.com)
+- [globaldatanet](https://globaldatanet.com/)
+- [Hashnode](https://hashnode.com/)
+- [LocalStack](https://localstack.cloud/)
+- [Perfect Post](https://www.perfectpost.fr)
+- [Sennder](https://sennder.com/)
+- [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
+- [Trek10](https://www.trek10.com/)
+- [WeSchool](https://www.weschool.com)
 
 ### Sharing your work
 

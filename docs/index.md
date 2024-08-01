@@ -384,13 +384,22 @@ Knowing which companies are using this library is important to help prioritize t
 
 <div class="grid" style="text-align:center;" markdown>
 
-[**Hashnode**](https://hashnode.com/){target="_blank" rel="nofollow"}
+[**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow"}
+{ .card }
+
+[**AppYourself**](https://appyourself.net){target="_blank" rel="nofollow"}
+{ .card }
+
+[**Bailey Nelson**](https://www.baileynelson.com.au){target="_blank" rel="nofollow"}
+{ .card }
+
+[**Banxware**](https://www.banxware.com){target="_blank" rel="nofollow"}
 { .card }
 
 [**Caylent**](https://caylent.com/){target="_blank" rel="nofollow"}
 { .card }
 
-[**Trek10)**](https://www.trek10.com/){target="_blank" rel="nofollow"}
+[**Certible**](https://www.certible.com/){target="_blank" rel="nofollow"}
 { .card }
 
 [**Elva**](https://elva-group.com){target="_blank" rel="nofollow"}
@@ -399,7 +408,10 @@ Knowing which companies are using this library is important to help prioritize t
 [**globaldatanet**](https://globaldatanet.com/){target="_blank" rel="nofollow"}
 { .card }
 
-[**Bailey Nelson**](https://www.baileynelson.com.au){target="_blank" rel="nofollow"}
+[**Hashnode**](https://hashnode.com/){target="_blank" rel="nofollow"}
+{ .card }
+
+[**LocalStack**](https://localstack.cloud/){target="_blank" rel="nofollow"}
 { .card }
 
 [**Perfect Post**](https://www.perfectpost.fr){target="_blank" rel="nofollow"}
@@ -408,19 +420,10 @@ Knowing which companies are using this library is important to help prioritize t
 [**Sennder**](https://sennder.com/){target="_blank" rel="nofollow"}
 { .card }
 
-[**Certible**](https://www.certible.com/){target="_blank" rel="nofollow"}
-{ .card }
-
 [**tecRacer GmbH & Co. KG**](https://www.tecracer.com/){target="_blank" rel="nofollow"}
 { .card }
 
-[**AppYourself**](https://appyourself.net){target="_blank" rel="nofollow"}
-{ .card }
-
-[**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow"}
-{ .card }
-
-[**Banxware**](https://www.banxware.com){target="_blank" rel="nofollow"}
+[**Trek10**](https://www.trek10.com/){target="_blank" rel="nofollow"}
 { .card }
 
 [**WeSchool**](https://www.weschool.com){target="_blank" rel="nofollow"}

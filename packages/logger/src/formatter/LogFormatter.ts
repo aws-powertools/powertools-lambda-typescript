@@ -111,6 +111,9 @@ abstract class LogFormatter implements LogFormatterInterface {
    */
   #getDateFormatter = (timeZone: string): Intl.DateTimeFormat => {
     const twoDigitFormatOption = '2-digit';
+    const validTimeZone = Intl.supportedValuesOf('timeZone').includes(timeZone)
+      ? timeZone
+      : 'UTC';
 
     return new Intl.DateTimeFormat('en', {
       year: 'numeric',
@@ -120,7 +123,7 @@ abstract class LogFormatter implements LogFormatterInterface {
       minute: twoDigitFormatOption,
       second: twoDigitFormatOption,
       hour12: false,
-      timeZone,
+      timeZone: validTimeZone,
     });
   };
 

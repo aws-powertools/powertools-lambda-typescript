@@ -7,33 +7,33 @@ You can use the package in both TypeScript and JavaScript code bases.
 - [Intro](#intro)
 - [Key features](#key-features)
 - [Usage](#usage)
-  - [Function wrapper](#function-wrapper)
-  - [Decorator](#decorator)
-  - [Middy middleware](#middy-middleware)
-  - [DynamoDB persistence layer](#dynamodb-persistence-layer)
+    - [Function wrapper](#function-wrapper)
+    - [Decorator](#decorator)
+    - [Middy middleware](#middy-middleware)
+    - [DynamoDB persistence layer](#dynamodb-persistence-layer)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
 - [How to support Powertools for AWS Lambda (TypeScript)?](#how-to-support-powertools-for-aws-lambda-typescript)
-  - [Becoming a reference customer](#becoming-a-reference-customer)
-  - [Sharing your work](#sharing-your-work)
-  - [Using Lambda Layer](#using-lambda-layer)
+    - [Becoming a reference customer](#becoming-a-reference-customer)
+    - [Sharing your work](#sharing-your-work)
+    - [Using Lambda Layer](#using-lambda-layer)
 - [License](#license)
 
 ## Intro
 
-This package provides a utility to implement idempotency in your Lambda functions. 
+This package provides a utility to implement idempotency in your Lambda functions.
 You can either use it to wrap a function, decorate a method, or as Middy middleware to make your AWS Lambda handler idempotent.
 
 The current implementation provides a persistence layer for Amazon DynamoDB, which offers a variety of configuration options. You can also bring your own persistence layer by extending the `BasePersistenceLayer` class.
 
 ## Key features
 
-* Prevent Lambda handler from executing more than once on the same event payload during a time window
-* Ensure Lambda handler returns the same result when called with the same payload
-* Select a subset of the event as the idempotency key using JMESPath expressions
-* Set a time window in which records with the same payload should be considered duplicates
-* Expires in-progress executions if the Lambda function times out halfway through 
+- Prevent Lambda handler from executing more than once on the same event payload during a time window
+- Ensure Lambda handler returns the same result when called with the same payload
+- Select a subset of the event as the idempotency key using JMESPath expressions
+- Set a time window in which records with the same payload should be considered duplicates
+- Expires in-progress executions if the Lambda function times out halfway through
 
 ## Usage
 
@@ -134,7 +134,7 @@ export const handler = async (
 };
 ```
 
-Note that you can also specify a JMESPath expression in the Idempotency config object to select a subset of the event payload as the idempotency key. This is useful when dealing with payloads that contain timestamps or request ids. 
+Note that you can also specify a JMESPath expression in the Idempotency config object to select a subset of the event payload as the idempotency key. This is useful when dealing with payloads that contain timestamps or request ids.
 
 ```ts
 import { makeIdempotent, IdempotencyConfig } from '@aws-lambda-powertools/idempotency';
@@ -307,8 +307,8 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-* **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
-* **Email**: aws-lambda-powertools-feedback@amazon.com
+- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Email**: <aws-lambda-powertools-feedback@amazon.com>
 
 ## How to support Powertools for AWS Lambda (TypeScript)?
 
@@ -318,20 +318,21 @@ Knowing which companies are using this library is important to help prioritize t
 
 The following companies, among others, use Powertools:
 
-* [Hashnode](https://hashnode.com/)
-* [Caylent](https://caylent.com/)
-* [Trek10](https://www.trek10.com/)
-* [Elva](https://elva-group.com)
-* [globaldatanet](https://globaldatanet.com/)
-* [Bailey Nelson](https://www.baileynelson.com.au)
-* [Perfect Post](https://www.perfectpost.fr)
-* [Sennder](https://sennder.com/)
-* [Certible](https://www.certible.com/)
-* [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
-* [AppYourself](https://appyourself.net)
-* [Alma Media](https://www.almamedia.fi)
-* [Banxware](https://www.banxware.com)
-* [WeSchool](https://www.weschool.com)
+- [Alma Media](https://www.almamedia.fi)
+- [AppYourself](https://appyourself.net)
+- [Bailey Nelson](https://www.baileynelson.com.au)
+- [Banxware](https://www.banxware.com)
+- [Caylent](https://caylent.com/)
+- [Certible](https://www.certible.com/)
+- [Elva](https://elva-group.com)
+- [globaldatanet](https://globaldatanet.com/)
+- [Hashnode](https://hashnode.com/)
+- [LocalStack](https://localstack.cloud/)
+- [Perfect Post](https://www.perfectpost.fr)
+- [Sennder](https://sennder.com/)
+- [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
+- [Trek10](https://www.trek10.com/)
+- [WeSchool](https://www.weschool.com)
 
 ### Sharing your work
 

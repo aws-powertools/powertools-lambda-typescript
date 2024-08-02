@@ -320,7 +320,7 @@ describe('Class: PowertoolsLogFormatter', () => {
     test('it formats the timestamp to ISO 8601, accounting for the `America/New_York` timezone offset', () => {
       // Prepare
       process.env.TZ = 'America/New_York';
-      /* 
+      /*
         Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
         The positive value indicates that `America/New_York` is behind UTC.
       */
@@ -341,7 +341,7 @@ describe('Class: PowertoolsLogFormatter', () => {
       process.env.TZ = 'America/New_York';
       const mockDate = new Date('2016-06-20T12:08:10.910Z');
       jest.useFakeTimers().setSystemTime(mockDate);
-      /* 
+      /*
         Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
         The positive value indicates that `America/New_York` is behind UTC.
       */
@@ -362,7 +362,7 @@ describe('Class: PowertoolsLogFormatter', () => {
       process.env.TZ = 'America/New_York';
       const mockDate = new Date('2016-06-20T00:08:10.910Z');
       jest.useFakeTimers().setSystemTime(mockDate);
-      /* 
+      /*
         Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
         The positive value indicates that `America/New_York` is behind UTC.
       */
@@ -381,7 +381,7 @@ describe('Class: PowertoolsLogFormatter', () => {
     test('if `envVarsService` is not set, ensures timestamp is formatted to `UTC` even with `America/New_York` timezone', () => {
       // Prepare
       process.env.TZ = 'America/New_York';
-      /* 
+      /*
         Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
         The positive value indicates that `America/New_York` is behind UTC.
       */
@@ -470,6 +470,22 @@ describe('Class: PowertoolsLogFormatter', () => {
 
       // Assess
       expect(timestamp).toEqual('2016-06-20T12:08:10.000Z');
+    });
+
+    test('it is using UTC timezone when env var is set to :/etc/localtime', () => {
+      // Prepare
+      process.env.TZ = ':/etc/localtime';
+
+      jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
+      const formatter = new PowertoolsLogFormatter({
+        envVarsService: new EnvironmentVariablesService(),
+      });
+
+      // Act
+      const timestamp = formatter.formatTimestamp(new Date());
+
+      // Assess
+      expect(timestamp).toEqual('2016-06-20T12:08:10.000+00:00');
     });
   });
 

@@ -28,7 +28,7 @@ jobs:
           node-version: "20"
           cache: "npm"
       - name: Setup dependencies
-        uses: ./.github/actions/cached-node-modules
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Version
         id: bump-version
         run: npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes

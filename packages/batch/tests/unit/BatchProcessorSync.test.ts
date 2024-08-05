@@ -1,10 +1,6 @@
-/**
- * Test BatchProcessorSync class
- *
- * @group unit/batch/class/batchprocessorsync
- */
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BatchProcessingError,
   BatchProcessorSync,
@@ -31,8 +27,7 @@ describe('Class: BatchProcessor', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -41,7 +36,7 @@ describe('Class: BatchProcessor', () => {
   });
 
   describe('Synchronously processing SQS Records', () => {
-    test('Batch processing SQS records with no failures', () => {
+    it('Batch processing SQS records with no failures', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
@@ -59,7 +54,7 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing SQS records with some failures', () => {
+    it('Batch processing SQS records with some failures', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('failure');
       const secondRecord = sqsRecordFactory('success');
@@ -86,7 +81,7 @@ describe('Class: BatchProcessor', () => {
       });
     });
 
-    test('Batch processing SQS records with all failures', () => {
+    it('Batch processing SQS records with all failures', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('failure');
       const secondRecord = sqsRecordFactory('failure');
@@ -102,7 +97,7 @@ describe('Class: BatchProcessor', () => {
   });
 
   describe('Synchronously processing Kinesis Records', () => {
-    test('Batch processing Kinesis records with no failures', () => {
+    it('Batch processing Kinesis records with no failures', () => {
       // Prepare
       const firstRecord = kinesisRecordFactory('success');
       const secondRecord = kinesisRecordFactory('success');
@@ -120,7 +115,7 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing Kinesis records with some failures', () => {
+    it('Batch processing Kinesis records with some failures', () => {
       // Prepare
       const firstRecord = kinesisRecordFactory('failure');
       const secondRecord = kinesisRecordFactory('success');
@@ -147,7 +142,7 @@ describe('Class: BatchProcessor', () => {
       });
     });
 
-    test('Batch processing Kinesis records with all failures', () => {
+    it('Batch processing Kinesis records with all failures', () => {
       const firstRecord = kinesisRecordFactory('failure');
       const secondRecord = kinesisRecordFactory('failure');
       const thirdRecord = kinesisRecordFactory('fail');
@@ -164,7 +159,7 @@ describe('Class: BatchProcessor', () => {
   });
 
   describe('Synchronously processing DynamoDB Records', () => {
-    test('Batch processing DynamoDB records with no failures', () => {
+    it('Batch processing DynamoDB records with no failures', () => {
       // Prepare
       const firstRecord = dynamodbRecordFactory('success');
       const secondRecord = dynamodbRecordFactory('success');
@@ -182,7 +177,7 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing DynamoDB records with some failures', () => {
+    it('Batch processing DynamoDB records with some failures', () => {
       // Prepare
       const firstRecord = dynamodbRecordFactory('failure');
       const secondRecord = dynamodbRecordFactory('success');
@@ -209,7 +204,7 @@ describe('Class: BatchProcessor', () => {
       });
     });
 
-    test('Batch processing DynamoDB records with all failures', () => {
+    it('Batch processing DynamoDB records with all failures', () => {
       // Prepare
       const firstRecord = dynamodbRecordFactory('failure');
       const secondRecord = dynamodbRecordFactory('failure');
@@ -227,7 +222,7 @@ describe('Class: BatchProcessor', () => {
   });
 
   describe('Batch processing with Lambda context', () => {
-    test('Batch processing when context is provided and handler accepts', () => {
+    it('Batch processing when context is provided and handler accepts', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
@@ -245,7 +240,7 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing when context is provided and handler does not accept', () => {
+    it('Batch processing when context is provided and handler does not accept', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
@@ -263,7 +258,7 @@ describe('Class: BatchProcessor', () => {
       ]);
     });
 
-    test('Batch processing when malformed context is provided and handler attempts to use', () => {
+    it('Batch processing when malformed context is provided and handler attempts to use', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
@@ -274,11 +269,13 @@ describe('Class: BatchProcessor', () => {
 
       // Act
       processor.register(records, handlerWithContext, badOptions);
+
+      // Assess
       expect(() => processor.processSync()).toThrowError(FullBatchFailureError);
     });
   });
 
-  test('When calling the async process method, it should throw an error', async () => {
+  it('throws an error when calling the async method', async () => {
     // Prepare
     const processor = new BatchProcessorSync(EventType.SQS);
 

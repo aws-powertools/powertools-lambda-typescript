@@ -1,8 +1,4 @@
-/**
- * Test BasePartialBatchProcessor class
- *
- * @group unit/batch/class/basepartialbatchprocessor
- */
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BasePartialBatchProcessor, EventType } from '../../src/index.js';
 import type {
   BaseRecord,
@@ -16,8 +12,7 @@ describe('Class: BasePartialBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -46,7 +41,7 @@ describe('Class: BasePartialBatchProcessor', () => {
   }
 
   describe('create custom batch partial processor', () => {
-    it('should create a custom batch partial processor', () => {
+    it('creates a custom batch partial processor', () => {
       // Act
       const processor = new MyPartialProcessor();
 
@@ -54,11 +49,11 @@ describe('Class: BasePartialBatchProcessor', () => {
       expect(processor).toBeInstanceOf(BasePartialBatchProcessor);
     });
 
-    it('should process a batch of records', () => {
+    it('processes a batch of records', () => {
       // Prepare
       const processor = new MyPartialProcessor();
       const records = [sqsRecordFactory('success')];
-      const consoleSpy = jest.spyOn(console, 'log');
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       // Act
       processor.register(records, sqsRecordHandler);

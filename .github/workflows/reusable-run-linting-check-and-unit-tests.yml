@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ matrix.version }}
           cache: "npm"
       - name: Setup dependencies
-        uses: ./.github/actions/cached-node-modules
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
         with:
           nodeVersion: ${{ matrix.version }}
       - name: Run linting
@@ -71,7 +71,7 @@ jobs:
           node-version: 20
           cache: "npm"
       - name: Setup dependencies
-        uses: ./.github/actions/cached-node-modules
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Run linting
         run: npm run lint
       - name: Run tests
@@ -89,7 +89,7 @@ jobs:
           node-version: 20
           cache: "npm"
       - name: Setup dependencies
-        uses: ./.github/actions/cached-node-modules
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Run linting
         run: npm run lint -w layers
       - name: Run tests
@@ -107,7 +107,7 @@ jobs:
           node-version: 20
           cache: "npm"
       - name: Setup dependencies
-        uses: ./.github/actions/cached-node-modules
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Run linting
         run: npm run lint -w examples/snippets
   check-docs:
@@ -123,6 +123,6 @@ jobs:
           node-version: 20
           cache: "npm"
       - name: Setup dependencies
-        uses: ./.github/actions/cached-node-modules
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Run linting
         run: npm run lint:markdown

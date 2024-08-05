@@ -67,7 +67,7 @@
     "typedoc": "^0.26.5",
     "typedoc-plugin-missing-exports": "^3.0.0",
     "typedoc-plugin-zod": "^1.2.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.4"
   },
   "lint-staged": {
     "*.{js,ts}": "biome check --write",

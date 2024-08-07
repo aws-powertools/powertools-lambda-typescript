@@ -1,3 +1,9 @@
+/**
+ * Test decorator parser
+ *
+ * @group unit/parser
+ */
+
 import { z } from 'zod';
 import { JSONStringified } from '../../src/helpers.js';
 import {

@@ -37,17 +37,5 @@ This is the sample infrastructure for API Gateway and Lambda Function URLs we ar
 
 ???+ info "There is no additional permissions or dependencies required to use this utility."
 
-=== "API Gateway SAM Template"
-
-    ```yaml title="AWS Serverless Application Model (SAM) example"
-    --8<-- "examples/snippets/event-handler/rest/templates/template.yaml"
-    ```
-
-=== "Lambda Function URL SAM Template"
-
-    ```yaml title="AWS Serverless Application Model (SAM) example"
-    --8<-- "examples/event_handler_lambda_function_url/sam/template.yaml"
-    ```
-
 <!-- remove line below while editing this doc & put it back until the doc has reached its first draft -->
 <!-- markdownlint-disable MD043 -->

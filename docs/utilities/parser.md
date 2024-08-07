@@ -109,6 +109,23 @@ You can extend every built-in schema to include your own schema, and yet have al
     --8<-- "examples/snippets/parser/examplePayload.json"
     ```
 
+For scenarios where you have a stringiied JSON payload, you can extend the built-in schema using `.transform()` and `.pipe()` method.
+
+=== "APIGatewayProxyEventSchema"
+
+    ```typescript hl_lines="24-34"
+    --8<-- "examples/snippets/parser/extendAPIGatewaySchema.ts"
+    ```
+
+    1. parse the `body` inside `transform` method
+    2. chain your custom schema to `pipe` operation
+
+=== "Example Payload for API Gateway Event"
+
+    ```json
+    --8<-- "examples/snippets/parser/exampleAPIGatewayPayload.json"
+    ```
+
 ## Envelopes
 
 When trying to parse your payload you might encounter the following situations:

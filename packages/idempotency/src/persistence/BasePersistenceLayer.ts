@@ -1,5 +1,6 @@
 import { type Hash, createHash } from 'node:crypto';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import { search } from '@aws-lambda-powertools/jmespath';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
@@ -15,7 +16,6 @@ import type {
   BasePersistenceLayerOptions,
 } from '../types/BasePersistenceLayer.js';
 import { IdempotencyRecord } from './IdempotencyRecord.js';
-import { LRUCache } from './LRUCache.js';
 
 /**
  * Base class for all persistence layers. This class provides the basic functionality for

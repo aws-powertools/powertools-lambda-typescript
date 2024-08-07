@@ -1,7 +1,7 @@
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { parser } from '@aws-lambda-powertools/parser';
-import { APIGatewayProxyEventSchema } from '@aws-lambda-powertools/parser/schemas';
+import { APIGatewayProxyEventSchema } from '@aws-lambda-powertools/parser/schemas/api-gateway';
 import type { Context } from 'aws-lambda';
 import { z } from 'zod';
 

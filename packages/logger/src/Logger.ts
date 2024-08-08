@@ -1062,7 +1062,12 @@ class Logger extends Utility implements LoggerInterface {
       if (this.isValidSampleRate(value)) {
         this.powertoolsLogData.sampleRateValue = value;
 
-        if (value && randomInt(0, 100) / 100 <= value) {
+        if (
+          this.logLevel > this.logLevelThresholds.DEBUG &&
+          value &&
+          randomInt(0, 100) / 100 <= value
+        ) {
+          // only change logLevel if higher than debug, i.e. don't change from e.g. tracing to debug
           this.setLogLevel('DEBUG');
           this.debug('Setting log level to DEBUG due to sampling rate');
         } else {

@@ -664,11 +664,7 @@ describe('Class: Logger', () => {
       const methodOfLogger = method as keyof LogFunction;
 
       describe('Feature: log level', () => {
-        test(`when the level is TRACE, it ${traceAction} print to stdout`, () => {
-          // Prepare
-          const logger = new Logger({
-            logLevel: LogLevel.TRACE,
-          });
+        function testLoggerPrints(logger: Logger, expectPrints: boolean): void {
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
             logger['console'],
@@ -678,8 +674,8 @@ describe('Class: Logger', () => {
           logger[methodOfLogger]('foo');
 
           // Assess
-          expect(consoleSpy).toBeCalledTimes(tracePrints ? 1 : 0);
-          if (tracePrints) {
+          expect(consoleSpy).toBeCalledTimes(expectPrints ? 1 : 0);
+          if (expectPrints) {
             expect(consoleSpy).toHaveBeenNthCalledWith(
               1,
               JSON.stringify({
@@ -692,6 +688,15 @@ describe('Class: Logger', () => {
               })
             );
           }
+        }
+
+        test(`when the level is TRACE, it ${traceAction} print to stdout`, () => {
+          // Prepare
+          const logger = new Logger({
+            logLevel: LogLevel.TRACE,
+          });
+
+          testLoggerPrints(logger, tracePrints);
         });
 
         test(`when the level is DEBUG, it ${debugAction} print to stdout`, () => {
@@ -699,29 +704,8 @@ describe('Class: Logger', () => {
           const logger = new Logger({
             logLevel: LogLevel.DEBUG,
           });
-          const consoleSpy = jest.spyOn(
-            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
-            logger['console'],
-            getConsoleMethod(method)
-          );
-          // Act
-          logger[methodOfLogger]('foo');
 
-          // Assess
-          expect(consoleSpy).toBeCalledTimes(debugPrints ? 1 : 0);
-          if (debugPrints) {
-            expect(consoleSpy).toHaveBeenNthCalledWith(
-              1,
-              JSON.stringify({
-                level: methodOfLogger.toUpperCase(),
-                message: 'foo',
-                sampling_rate: 0,
-                service: 'hello-world',
-                timestamp: '2016-06-20T12:08:10.000Z',
-                xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              })
-            );
-          }
+          testLoggerPrints(logger, debugPrints);
         });
 
         test(`when the log level is INFO, it ${infoAction} print to stdout`, () => {
@@ -729,29 +713,8 @@ describe('Class: Logger', () => {
           const logger = new Logger({
             logLevel: 'INFO',
           });
-          const consoleSpy = jest.spyOn(
-            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
-            logger['console'],
-            getConsoleMethod(methodOfLogger)
-          );
-          // Act
-          logger[methodOfLogger]('foo');
 
-          // Assess
-          expect(consoleSpy).toBeCalledTimes(infoPrints ? 1 : 0);
-          if (infoPrints) {
-            expect(consoleSpy).toHaveBeenNthCalledWith(
-              1,
-              JSON.stringify({
-                level: methodOfLogger.toUpperCase(),
-                message: 'foo',
-                sampling_rate: 0,
-                service: 'hello-world',
-                timestamp: '2016-06-20T12:08:10.000Z',
-                xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              })
-            );
-          }
+          testLoggerPrints(logger, infoPrints);
         });
 
         test(`when the log level is WARN, it ${warnAction} print to stdout`, () => {
@@ -759,29 +722,8 @@ describe('Class: Logger', () => {
           const logger = new Logger({
             logLevel: LogLevel.WARN,
           });
-          const consoleSpy = jest.spyOn(
-            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
-            logger['console'],
-            getConsoleMethod(methodOfLogger)
-          );
-          // Act
-          logger[methodOfLogger]('foo');
 
-          // Assess
-          expect(consoleSpy).toBeCalledTimes(warnPrints ? 1 : 0);
-          if (warnPrints) {
-            expect(consoleSpy).toHaveBeenNthCalledWith(
-              1,
-              JSON.stringify({
-                level: methodOfLogger.toUpperCase(),
-                message: 'foo',
-                sampling_rate: 0,
-                service: 'hello-world',
-                timestamp: '2016-06-20T12:08:10.000Z',
-                xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              })
-            );
-          }
+          testLoggerPrints(logger, warnPrints);
         });
 
         test(`when the log level is ERROR, it ${errorAction} print to stdout`, () => {
@@ -789,29 +731,8 @@ describe('Class: Logger', () => {
           const logger = new Logger({
             logLevel: 'ERROR',
           });
-          const consoleSpy = jest.spyOn(
-            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
-            logger['console'],
-            getConsoleMethod(methodOfLogger)
-          );
-          // Act
-          logger[methodOfLogger]('foo');
 
-          // Assess
-          expect(consoleSpy).toBeCalledTimes(errorPrints ? 1 : 0);
-          if (errorPrints) {
-            expect(consoleSpy).toHaveBeenNthCalledWith(
-              1,
-              JSON.stringify({
-                level: methodOfLogger.toUpperCase(),
-                message: 'foo',
-                sampling_rate: 0,
-                service: 'hello-world',
-                timestamp: '2016-06-20T12:08:10.000Z',
-                xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-              })
-            );
-          }
+          testLoggerPrints(logger, errorPrints);
         });
 
         test('when the log level is SILENT, it DOES NOT print to stdout', () => {
@@ -819,43 +740,16 @@ describe('Class: Logger', () => {
           const logger = new Logger({
             logLevel: LogLevel.SILENT,
           });
-          const consoleSpy = jest.spyOn(
-            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
-            logger['console'],
-            getConsoleMethod(methodOfLogger)
-          );
-          // Act
-          logger[methodOfLogger]('foo');
 
-          // Assess
-          expect(consoleSpy).toBeCalledTimes(0);
+          testLoggerPrints(logger, false);
         });
 
         test('when the log level is set through POWERTOOLS_LOG_LEVEL env variable, it DOES print to stdout', () => {
           // Prepare
           process.env.POWERTOOLS_LOG_LEVEL = methodOfLogger.toUpperCase();
           const logger = new Logger();
-          const consoleSpy = jest.spyOn(
-            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
-            logger['console'],
-            getConsoleMethod(methodOfLogger)
-          );
-          // Act
-          logger[methodOfLogger]('foo');
 
-          // Assess
-          expect(consoleSpy).toBeCalledTimes(1);
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            1,
-            JSON.stringify({
-              level: methodOfLogger.toUpperCase(),
-              message: 'foo',
-              sampling_rate: 0,
-              service: 'hello-world',
-              timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-            })
-          );
+          testLoggerPrints(logger, true);
         });
       });
 

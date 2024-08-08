@@ -982,6 +982,11 @@ class Logger extends Utility implements LoggerInterface {
     } else {
       this.console = console;
     }
+
+    // patch console.trace to no print stack trace
+    this.console.trace = (message: string, ...optionalParams: unknown[]) => {
+      this.console.log(message, ...optionalParams);
+    };
   }
 
   /**

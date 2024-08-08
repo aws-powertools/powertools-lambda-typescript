@@ -32,7 +32,7 @@ const getConsoleMethod = (
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
   Console: jest.fn().mockImplementation(() => ({
-    trace: jest.fn(),
+    log: jest.fn(), // patched equivalent for trace
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
@@ -800,7 +800,9 @@ describe('Class: Logger', () => {
           if (method === 'trace') {
             expect(consoleSpy).toHaveBeenCalledTimes(0);
           } else {
-            expect(consoleSpy).toBeCalledTimes(method === 'debug' ? 2 : 1);
+            expect(consoleSpy).toHaveBeenCalledTimes(
+              method === 'debug' ? 2 : 1
+            );
             expect(consoleSpy).toHaveBeenNthCalledWith(
               method === 'debug' ? 2 : 1,
               JSON.stringify({

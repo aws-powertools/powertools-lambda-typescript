@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
+
+
+### Bug Fixes
+
+* **logger:** invalid time zone environment variables leads to error ([#2865](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2865)) ([d55465f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d55465f937390f4511e837033db0dab582cf4e14))
+
+
+### Features
+
+* **metrics:** add unit None for CloudWatch EMF Metrics ([#2904](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2904)) ([fa27cba](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fa27cba5ffdb9d123b25d206c189ad17eeb8b44b))
+* **parser:** add helper function to handle JSON stringified fields ([#2901](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2901)) ([806b884](https://github.com/aws-powertools/powertools-lambda-typescript/commit/806b884f51684fa4654d357fafdf8ebeda4de01b))
+
+
+
+
+
 # [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
 
 

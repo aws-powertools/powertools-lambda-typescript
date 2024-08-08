@@ -32,6 +32,7 @@ const getConsoleMethod = (
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
   Console: jest.fn().mockImplementation(() => ({
+    trace: jest.fn(),
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
@@ -58,6 +59,7 @@ describe('Class: Logger', () => {
   beforeEach(() => {
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
+    process.env.POWERTOOLS_LOG_LEVEL = 'trace';
   });
 
   describe('Method: constructor', () => {
@@ -82,7 +84,7 @@ describe('Class: Logger', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           defaultServiceName: 'service_undefined',
-          logLevel: 8,
+          logLevel: logLevelThresholds.TRACE,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -115,7 +117,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: 0,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 8, // 100% sample rate value changes log level to DEBUG
+        logLevel: logLevelThresholds.DEBUG, // 100% sample rate value changes log level from WARN to DEBUG
         console: expect.objectContaining({
           debug: expect.any(Function),
           error: expect.any(Function),
@@ -200,7 +202,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: 8,
+          logLevel: logLevelThresholds.TRACE,
           logFormatter: expect.any(LogFormatter),
         })
       );
@@ -228,7 +230,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: 8,
+          logLevel: logLevelThresholds.TRACE,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -351,7 +353,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: 8,
+          logLevel: logLevelThresholds.TRACE,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -456,7 +458,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: 8,
+          logLevel: logLevelThresholds.TRACE,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -498,7 +500,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: 8,
+          logLevel: logLevelThresholds.TRACE,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -560,7 +562,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: 8,
+          logLevel: logLevelThresholds.TRACE,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -793,20 +795,24 @@ describe('Class: Logger', () => {
           }
 
           // Assess
-          expect(logger.level).toBe(8);
+          expect(logger.level).toBe(logLevelThresholds.DEBUG);
           expect(logger.getLevelName()).toBe('DEBUG');
-          expect(consoleSpy).toBeCalledTimes(method === 'debug' ? 2 : 1);
-          expect(consoleSpy).toHaveBeenNthCalledWith(
-            method === 'debug' ? 2 : 1,
-            JSON.stringify({
-              level: method.toUpperCase(),
-              message: 'foo',
-              sampling_rate: 1,
-              service: 'hello-world',
-              timestamp: '2016-06-20T12:08:10.000Z',
-              xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-            })
-          );
+          if (method === 'trace') {
+            expect(consoleSpy).toHaveBeenCalledTimes(0);
+          } else {
+            expect(consoleSpy).toBeCalledTimes(method === 'debug' ? 2 : 1);
+            expect(consoleSpy).toHaveBeenNthCalledWith(
+              method === 'debug' ? 2 : 1,
+              JSON.stringify({
+                level: method.toUpperCase(),
+                message: 'foo',
+                sampling_rate: 1,
+                service: 'hello-world',
+                timestamp: '2016-06-20T12:08:10.000Z',
+                xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+              })
+            );
+          }
         });
       });
 
@@ -842,7 +848,7 @@ describe('Class: Logger', () => {
         test(`when the Lambda context is captured, it returns a valid ${method.toUpperCase()} log`, () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'DEBUG',
+            logLevel: 'TRACE',
           });
           logger.addContext(context);
           const consoleSpy = jest.spyOn(
@@ -879,7 +885,7 @@ describe('Class: Logger', () => {
 
       describe('Feature: ephemeral log attributes', () => {
         const logger = new Logger({
-          logLevel: 'DEBUG',
+          logLevel: 'TRACE',
         });
 
         it.each([
@@ -1092,7 +1098,7 @@ describe('Class: Logger', () => {
         test('when persistent log attributes are added to the Logger instance, they should appear in all logs printed by the instance', () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'DEBUG',
+            logLevel: 'TRACE',
             persistentLogAttributes: {
               aws_account_id: '123456789012',
               aws_region: 'eu-west-1',
@@ -1130,7 +1136,7 @@ describe('Class: Logger', () => {
         test('when the `_X_AMZN_TRACE_ID` environment variable is set it parses it correctly and adds the Trace ID to the log', () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'DEBUG',
+            logLevel: 'TRACE',
           });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
@@ -1161,7 +1167,7 @@ describe('Class: Logger', () => {
           // Prepare
           process.env._X_AMZN_TRACE_ID = undefined;
           const logger = new Logger({
-            logLevel: 'DEBUG',
+            logLevel: 'TRACE',
           });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
@@ -1192,7 +1198,7 @@ describe('Class: Logger', () => {
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'DEBUG',
+            logLevel: 'TRACE',
           });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
@@ -2687,7 +2693,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 8,
+        logLevel: logLevelThresholds.TRACE,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2715,7 +2721,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 8,
+        logLevel: logLevelThresholds.TRACE,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2743,7 +2749,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 8,
+        logLevel: logLevelThresholds.TRACE,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2819,7 +2825,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 8,
+        logLevel: logLevelThresholds.TRACE,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2847,7 +2853,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 8,
+        logLevel: logLevelThresholds.TRACE,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2878,7 +2884,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 8,
+        logLevel: logLevelThresholds.TRACE,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2906,7 +2912,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: 20,
+        logLevel: logLevelThresholds.ERROR,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -3285,7 +3291,7 @@ describe('Class: Logger', () => {
       });
 
       // Assess
-      expect(logger.level).toBe(8);
+      expect(logger.level).toBe(logLevelThresholds.DEBUG);
       expect(logger.getLevelName()).toBe('DEBUG');
     });
 
@@ -3305,7 +3311,7 @@ describe('Class: Logger', () => {
       const logger: Logger = new Logger(loggerOptions);
 
       // Assess
-      expect(logger.level).toBe(8);
+      expect(logger.level).toBe(logLevelThresholds.DEBUG);
       expect(logger.getLevelName()).toBe('DEBUG');
     });
 
@@ -3318,7 +3324,7 @@ describe('Class: Logger', () => {
       });
 
       // Assess
-      expect(logger.level).toBe(8);
+      expect(logger.level).toBe(logLevelThresholds.DEBUG);
       expect(logger.getLevelName()).toBe('DEBUG');
     });
 
@@ -3412,7 +3418,7 @@ describe('Class: Logger', () => {
     test('when sample rate is set in environmental variable, it should use POWERTOOLS_LOGGER_SAMPLE_RATE value', () => {
       // Prepare
       process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
-      const logger: Logger = new Logger();
+      const logger: Logger = new Logger({ logLevel: 'WARN' });
       const consoleSpy = jest.spyOn(
         // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         logger['console'],
@@ -3422,7 +3428,7 @@ describe('Class: Logger', () => {
       logger.debug('foo');
 
       // Assess
-      expect(consoleSpy).toBeCalledTimes(2);
+      expect(consoleSpy).toHaveBeenCalledTimes(2);
       expect(consoleSpy).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
@@ -3585,7 +3591,7 @@ describe('Class: Logger', () => {
       const debugSpy = jest.spyOn(console, 'debug').mockImplementation();
 
       // Act
-      new Logger({ sampleRateValue: 1 });
+      new Logger({ sampleRateValue: 1, logLevel: 'WARN' });
 
       // Assess
       expect(debugSpy).toHaveBeenCalledTimes(1);

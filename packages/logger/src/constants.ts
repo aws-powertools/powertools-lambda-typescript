@@ -15,6 +15,7 @@ const LogJsonIndent = {
 } as const;
 
 const LogLevel = {
+  TRACE: 'TRACE',
   DEBUG: 'DEBUG',
   INFO: 'INFO',
   WARN: 'WARN',

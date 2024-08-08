@@ -158,6 +158,7 @@ class Logger extends Utility implements LoggerInterface {
    * The levels are in ascending order from the most verbose to the least verbose (no logs).
    */
   private readonly logLevelThresholds: LogLevelThresholds = {
+    TRACE: 6,
     DEBUG: 8,
     INFO: 12,
     WARN: 16,
@@ -634,6 +635,17 @@ class Logger extends Utility implements LoggerInterface {
     }
 
     return this.getLogEvent();
+  }
+
+  /**
+   * It prints a log item with level TRACE.
+   *
+   * @param {LogItemMessage} input
+   * @param {Error | LogAttributes | string} extraInput
+   * @returns {void}
+   */
+  public trace(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
+    this.processLogItem(6, input, extraInput);
   }
 
   /**

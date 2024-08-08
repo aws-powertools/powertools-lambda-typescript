@@ -201,7 +201,7 @@ class Logger extends Utility implements LoggerInterface {
    *
    * We keep this value to be able to reset the log level to the initial value when the sample rate is refreshed.
    */
-  #initialLogLevel = 12;
+  #initialLogLevel = this.logLevelThresholds.INFO;
   /**
    * Replacer function used to serialize the log items.
    */
@@ -338,7 +338,7 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     ...extraInput: LogItemExtraInput
   ): void {
-    this.processLogItem(24, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.CRITICAL, input, extraInput);
   }
 
   /**
@@ -349,7 +349,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(8, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.DEBUG, input, extraInput);
   }
 
   /**
@@ -360,7 +360,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(20, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.ERROR, input, extraInput);
   }
 
   /**
@@ -404,7 +404,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(12, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.INFO, input, extraInput);
   }
 
   /**
@@ -645,7 +645,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public trace(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(6, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.TRACE, input, extraInput);
   }
 
   /**
@@ -656,7 +656,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(16, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.WARN, input, extraInput);
   }
 
   /**
@@ -925,7 +925,7 @@ class Logger extends Utility implements LoggerInterface {
     log.prepareForPrint();
 
     const consoleMethod =
-      logLevel === 24
+      logLevel === this.logLevelThresholds.CRITICAL
         ? 'error'
         : (this.getLogLevelNameFromNumber(logLevel).toLowerCase() as keyof Omit<
             LogFunction,

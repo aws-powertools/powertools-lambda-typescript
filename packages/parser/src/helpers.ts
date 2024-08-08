@@ -16,8 +16,9 @@ import { type ZodSchema, z } from 'zod';
  * });
  *
  * const extendedSchema = AlbSchema.extend({
- *   body: JSONStringified(customSchema), // (1)!
+ *   body: JSONStringified(customSchema),
  * });
+ *
  * ```
  *
  * @param schema - The schema to validate the JSON string against

@@ -1,9 +1,9 @@
 /**
  * Test LRUCache class
  *
- * @group unit/idempotency/persistence/lru-cache
+ * @group unit/commons/lru-cache
  */
-import { LRUCache } from '../../../src/persistence/LRUCache.js';
+import { LRUCache } from '../../src/LRUCache.js';
 
 describe('Class: LRUMap', () => {
   describe('Method: add', () => {

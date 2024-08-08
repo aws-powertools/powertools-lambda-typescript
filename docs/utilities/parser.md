@@ -109,6 +109,34 @@ You can extend every built-in schema to include your own schema, and yet have al
     --8<-- "examples/snippets/parser/examplePayload.json"
     ```
 
+If you want to extend a schema and transform a JSON stringified payload to an object, you can use helper function `JSONStringified`:
+
+=== "AlbSchema with JSONStringified"
+    ```typescript hl_lines="12"
+    --8<-- "examples/snippets/parser/extendAlbSchema.ts"
+    ```
+
+    1. Extend built-in `AlbSchema` using JSONStringified function to transform your payload
+
+=== "Alb exmaple payload"
+
+    ```json hl_lines="26"
+    --8<-- "examples/snippets/parser/exampleAlbPayload.json"
+    ```
+
+=== "SQS Schema with JSONStringified"
+    ```typescript hl_lines="23-25 30 34"
+    --8<-- "examples/snippets/parser/extendSqsSchema.ts"
+    ```
+
+    1. make sure to set your schema to the correct key in the JSON payload
+
+=== "SQS exmaple payload"
+
+    ```json hl_lines="6 28"
+    --8<-- "examples/snippets/parser/exampleSqsPayload.json"
+    ```
+
 ## Envelopes
 
 When trying to parse your payload you might encounter the following situations:

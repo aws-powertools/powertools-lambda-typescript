@@ -46,6 +46,7 @@ describe('Class: Logger', () => {
     bar: 'baz',
   };
   const logLevelThresholds: LogLevelThresholds = {
+    TRACE: 6,
     DEBUG: 8,
     INFO: 12,
     WARN: 16,
@@ -568,7 +569,22 @@ describe('Class: Logger', () => {
 
   describe.each([
     [
+      'trace',
+      'DOES',
+      true,
+      'DOES NOT',
+      false,
+      'DOES NOT',
+      false,
+      'DOES NOT',
+      false,
+      'DOES NOT',
+      false,
+    ],
+    [
       'debug',
+      'DOES',
+      true,
       'DOES',
       true,
       'DOES NOT',
@@ -578,14 +594,64 @@ describe('Class: Logger', () => {
       'DOES NOT',
       false,
     ],
-    ['info', 'DOES', true, 'DOES', true, 'DOES NOT', false, 'DOES NOT', false],
-    ['warn', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES NOT', false],
-    ['error', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true],
-    ['critical', 'DOES', true, 'DOES', true, 'DOES', true, 'DOES', true],
+    [
+      'info',
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES NOT',
+      false,
+      'DOES NOT',
+      false,
+    ],
+    [
+      'warn',
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES NOT',
+      false,
+    ],
+    [
+      'error',
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+    ],
+    [
+      'critical',
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+      'DOES',
+      true,
+    ],
   ])(
     'Method:',
     (
       method: string,
+      traceAction,
+      tracePrints,
       debugAction,
       debugPrints,
       infoAction,
@@ -598,6 +664,36 @@ describe('Class: Logger', () => {
       const methodOfLogger = method as keyof LogFunction;
 
       describe('Feature: log level', () => {
+        test(`when the level is TRACE, it ${traceAction} print to stdout`, () => {
+          // Prepare
+          const logger = new Logger({
+            logLevel: LogLevel.TRACE,
+          });
+          const consoleSpy = jest.spyOn(
+            // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
+            logger['console'],
+            getConsoleMethod(method)
+          );
+          // Act
+          logger[methodOfLogger]('foo');
+
+          // Assess
+          expect(consoleSpy).toBeCalledTimes(tracePrints ? 1 : 0);
+          if (tracePrints) {
+            expect(consoleSpy).toHaveBeenNthCalledWith(
+              1,
+              JSON.stringify({
+                level: methodOfLogger.toUpperCase(),
+                message: 'foo',
+                sampling_rate: 0,
+                service: 'hello-world',
+                timestamp: '2016-06-20T12:08:10.000Z',
+                xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+              })
+            );
+          }
+        });
+
         test(`when the level is DEBUG, it ${debugAction} print to stdout`, () => {
           // Prepare
           const logger = new Logger({

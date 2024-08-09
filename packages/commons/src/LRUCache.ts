@@ -1,4 +1,4 @@
-import type { LRUCacheOptions } from '../types/LRUCache.js';
+import type { LRUCacheOptions } from './types/LRUCache.js';
 
 const DEFAULT_MAX_SIZE = 100;
 const NEWER = Symbol('newer');
@@ -213,7 +213,7 @@ class LRUCache<K, V> {
    */
   private trackItemUse(item: Item<K, V>): void {
     // If the item is already the newest, we don't need to do anything
-    if (this.mostRecentlyUsed === item) return; // TODO: check this
+    if (this.mostRecentlyUsed === item) return;
 
     // If the item is not the newest, we need to mark it as the newest
     if (item[NEWER]) {

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/jmespath",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "A type safe and modern jmespath module to parse and extract data from JSON documents using JMESPath",
   "author": {
     "name": "Amazon Web Services",
@@ -71,7 +71,7 @@
     "lib"
   ],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.6.0"
+    "@aws-lambda-powertools/commons": "^2.7.0"
   },
   "repository": {
     "type": "git",

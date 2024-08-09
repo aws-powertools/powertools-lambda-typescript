@@ -31,6 +31,7 @@ const MetricUnit = {
   GigabitsPerSecond: 'Gigabits/Second',
   TerabitsPerSecond: 'Terabits/Second',
   CountPerSecond: 'Count/Second',
+  NoUnit: 'None',
 } as const;
 
 const MetricResolution = {

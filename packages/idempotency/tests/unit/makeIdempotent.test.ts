@@ -144,6 +144,7 @@ describe('Function: makeIdempotent', () => {
       await expect(handler(event, context)).rejects.toThrow({
         name: 'IdempotencyPersistenceLayerError',
         message: 'Failed to save in progress record to idempotency store',
+        cause: new Error('Something went wrong'),
       });
     }
   );
@@ -166,6 +167,7 @@ describe('Function: makeIdempotent', () => {
       await expect(handler(event, context)).rejects.toThrow({
         name: 'IdempotencyPersistenceLayerError',
         message: 'Failed to update success record to idempotency store',
+        cause: new Error('Something went wrong'),
       });
     }
   );
@@ -186,6 +188,7 @@ describe('Function: makeIdempotent', () => {
       await expect(handler(event, context)).rejects.toThrow({
         name: 'IdempotencyPersistenceLayerError',
         message: 'Failed to delete record from idempotency store',
+        cause: new Error('Something went wrong'),
       });
     }
   );

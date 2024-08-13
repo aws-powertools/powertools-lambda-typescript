@@ -33,7 +33,7 @@
     "docs-generateApiDoc": "typedoc .",
     "docs-runLocalApiDoc": "npx live-server api",
     "postpublish": "git restore .",
-    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#packages/commons/README.md' '#packages/idempotency/README.md' '#packages/jmespath/README.md' '#packages/logger/README.md' '#packages/metrics/README.md' '#packages/parameters/README.md' '#packages/parser/README.md' '#packages/tracer/README.md'"
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#packages/commons/README.md' '#packages/jmespath/README.md' '#packages/logger/README.md' '#packages/metrics/README.md' '#packages/parameters/README.md' '#packages/parser/README.md' '#packages/tracer/README.md'"
   },
   "repository": {
     "type": "git",

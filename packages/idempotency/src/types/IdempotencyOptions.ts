@@ -7,7 +7,7 @@ import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.j
  * Configuration options for the idempotency utility.
  *
  * When making a function idempotent you should always set
- * a persistence store (i.e. {@link DynamoDBPersistenceLayer}).
+ * a persistence store (i.e. @see {@link persistence/DynamoDBPersistenceLayer.DynamoDBPersistenceLayer | DynamoDBPersistenceLayer}).
  *
  * Optionally, you can also pass a custom configuration object,
  * this allows you to customize the behavior of the idempotency utility.
@@ -110,8 +110,7 @@ type ItempotentFunctionOptions<T extends Array<any>> = T[1] extends Context
  * @internal
  * Options to configure the behavior of the idempotency logic.
  *
- * This is an internal type that is used by the Idempotency utility to
- * configure {@link IdempotencyHandler}.
+ * This is an internal type that is used for configuration.
  */
 type IdempotencyHandlerOptions = {
   /**

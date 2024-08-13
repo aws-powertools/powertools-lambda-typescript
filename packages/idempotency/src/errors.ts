@@ -97,8 +97,6 @@ class IdempotencyInconsistentStateError extends IdempotencyUnknownError {
  * Unrecoverable error from the data store
  */
 class IdempotencyPersistenceLayerError extends IdempotencyUnknownError {
-  public readonly cause: Error | undefined;
-
   public constructor(message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = 'IdempotencyPersistenceLayerError';

@@ -71,6 +71,8 @@ const isOptionsWithDataIndexArgument = (
  *   return Promise.resolve();
  * };
  *
+ * @param fn - the function to make idempotent
+ * @param options - the options to configure the idempotency behavior
  * ```
  */
 function makeIdempotent<Func extends AnyFunction>(

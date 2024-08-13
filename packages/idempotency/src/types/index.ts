@@ -10,4 +10,5 @@ export type {
   IdempotencyConfigOptions,
   IdempotencyLambdaHandlerOptions,
   IdempotencyHandlerOptions,
+  ItempotentFunctionOptions,
 } from './IdempotencyOptions.js';

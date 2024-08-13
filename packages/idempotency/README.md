@@ -5,7 +5,6 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 You can use the package in both TypeScript and JavaScript code bases.
 
 - [Intro](#intro)
-- [Key features](#key-features)
 - [Usage](#usage)
     - [Function wrapper](#function-wrapper)
     - [Decorator](#decorator)
@@ -27,14 +26,6 @@ You can either use it to wrap a function, decorate a method, or as Middy middlew
 
 The current implementation provides a persistence layer for Amazon DynamoDB, which offers a variety of configuration options. You can also bring your own persistence layer by extending the `BasePersistenceLayer` class.
 
-## Key features
-
-- Prevent Lambda handler from executing more than once on the same event payload during a time window
-- Ensure Lambda handler returns the same result when called with the same payload
-- Select a subset of the event as the idempotency key using JMESPath expressions
-- Set a time window in which records with the same payload should be considered duplicates
-- Expires in-progress executions if the Lambda function times out halfway through
-
 ## Usage
 
 To get started, install the library by running:
@@ -49,7 +40,7 @@ Next, review the IAM permissions attached to your AWS Lambda function and make s
 
 You can make any function idempotent, and safe to retry, by wrapping it using the `makeIdempotent` higher-order function.
 
-The function wrapper takes a reference to the function to be made idempotent as first argument, and an object with options as second argument.
+The `makeIdempotent` function takes a reference to the function to be made idempotent as first argument, and an object with options as second argument.
 
 When you wrap your Lambda handler function, the utility uses the content of the `event` parameter to handle the idempotency logic.
 
@@ -57,7 +48,7 @@ When you wrap your Lambda handler function, the utility uses the content of the 
 import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import type { Context, APIGatewayProxyEvent } from 'aws-lambda';
-
+``
 const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: 'idempotencyTableName',
 });
@@ -255,7 +246,8 @@ The decorator configuration options are identical with the ones of the `makeIdem
 
 If instead you use Middy, you can use the `makeHandlerIdempotent` middleware. When using the middleware your Lambda handler becomes idempotent.
 
-By default, the Idempotency utility will use the full event payload to create an hash and determine if a request is idempotent, and therefore it should not be retried. When dealing with a more elaborate payload, where parts of the payload always change you should use the `IdempotencyConfig` object to instruct the utility to only use a portion of your payload. This is useful when dealing with payloads that contain timestamps or request ids.
+By default, the Idempotency utility will use the full event payload to create an hash and determine if a request is idempotent, and therefore it should not be retried.
+When dealing with a more elaborate payload, where parts of the payload always change you should use the `IdempotencyConfig` object to instruct the utility to only use a portion of your payload. This is useful when dealing with payloads that contain timestamps or request ids.
 
 ```ts
 import { IdempotencyConfig } from '@aws-lambda-powertools/idempotency';
@@ -314,7 +306,7 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ### Becoming a reference customer
 
-Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E) issue.
+Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://s12d.com/become-reference-pt-ts) issue.
 
 The following companies, among others, use Powertools:
 

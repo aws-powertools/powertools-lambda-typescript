@@ -7,7 +7,7 @@
     "./src/types/index.ts",
     "./src/middleware/index.ts",
     "./src/persistence/index.ts",
-    "./src/persistence/DynamoDBPersistenceLayer.ts",
+    "./src/persistence/DynamoDBPersistenceLayer.ts"
   ],
   "readme": "README.md"
 }

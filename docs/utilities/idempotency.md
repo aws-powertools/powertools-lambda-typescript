@@ -3,9 +3,8 @@ title: Idempotency
 description: Utility
 ---
 
-<!-- markdownlint-disable MD043 -->
-
-The idempotency utility provides a simple solution to convert your Lambda functions into idempotent operations which are safe to retry.
+The idempotency utility provides a simple solution to convert your Lambda functions into idempotent operations which are
+safe to retry.
 
 ## Key features
 
@@ -17,13 +16,17 @@ The idempotency utility provides a simple solution to convert your Lambda functi
 
 ## Terminology
 
-The property of idempotency means that an operation does not cause additional side effects if it is called more than once with the same input parameters.
+The property of idempotency means that an operation does not cause additional side effects if it is called more than
+once with the same input parameters.
 
-**Idempotent operations will return the same result when they are called multiple times with the same parameters**. This makes idempotent operations safe to retry.
+**Idempotent operations will return the same result when they are called multiple times with the same parameters**. This
+makes idempotent operations safe to retry.
 
-**Idempotency key** is a hash representation of either the entire event or a specific configured subset of the event, and invocation results are **JSON serialized** and stored in your persistence storage layer.
+**Idempotency key** is a hash representation of either the entire event or a specific configured subset of the event,
+and invocation results are **JSON serialized** and stored in your persistence storage layer.
 
-**Idempotency record** is the data representation of an idempotent request saved in your preferred  storage layer. We use it to coordinate whether a request is idempotent, whether it's still valid or expired based on timestamps, etc.
+**Idempotency record** is the data representation of an idempotent request saved in your preferred storage layer. We use
+it to coordinate whether a request is idempotent, whether it's still valid or expired based on timestamps, etc.
 
 <center>
 ```mermaid
@@ -59,32 +62,41 @@ Install the library in your project
 npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
 ```
 
-While we support Amazon DynamoDB as a persistence layer out of the box, you need to bring your own AWS SDK for JavaScript v3 DynamoDB client.
+While we support Amazon DynamoDB as a persistence layer out of the box, you need to bring your own AWS SDK for
+JavaScript v3 DynamoDB client.
 
 ???+ note
-    This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="_blank"} only**. If you are using the `nodejs18.x` runtime or newer, the AWS SDK for JavaScript v3 is already installed and you can install only the utility.
+This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="
+_blank"} only**. If you are using the `nodejs18.x` runtime or newer, the AWS SDK for JavaScript v3 is already installed
+and you can install only the utility.
 
 ### IAM Permissions
 
-Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, `dynamodb:UpdateItem` and `dynamodb:DeleteItem` IAM permissions before using this feature. If you're using one of our examples: [AWS Serverless Application Model (SAM)](#required-resources) or [Terraform](#required-resources) the required permissions are already included.
+Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, `dynamodb:UpdateItem`
+and `dynamodb:DeleteItem` IAM permissions before using this feature. If you're using one of our
+examples: [AWS Serverless Application Model (SAM)](#required-resources) or [Terraform](#required-resources) the required
+permissions are already included.
 
 ### Required resources
 
-Before getting started, you need to create a persistent storage layer where the idempotency utility can store its state - your lambda functions will need read and write access to it.
+Before getting started, you need to create a persistent storage layer where the idempotency utility can store its
+state - your lambda functions will need read and write access to it.
 
 As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first.
 
 **Default table configuration**
 
-If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
+If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this
+is the expected default configuration:
 
 | Configuration      | Default value | Notes                                                                                  |
-| ------------------ | :------------ | -------------------------------------------------------------------------------------- |
+|--------------------|:--------------|----------------------------------------------------------------------------------------|
 | Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`. |
 | TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.   |
 
 ???+ tip "Tip: You can share a single state table for all functions"
-    You can reuse the same DynamoDB table to store idempotency state. We add the Lambda function name in addition to the idempotency key as a hash key.
+You can reuse the same DynamoDB table to store idempotency state. We add the Lambda function name in addition to the
+idempotency key as a hash key.
 
 === "AWS Cloud Development Kit (CDK) example"
 
@@ -105,20 +117,28 @@ If you're not [changing the default configuration for the DynamoDB persistence l
     ```
 
 ???+ warning "Warning: Large responses with DynamoDB persistence layer"
-    When using this utility with DynamoDB, your function's responses must be [smaller than 400KB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html#limits-items){target="_blank"}.
+When using this utility with DynamoDB, your function's responses must
+be [smaller than 400KB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html#limits-items)
+{target="_blank"}.
 
     Larger items cannot be written to DynamoDB and will cause exceptions.
 
 ???+ info "Info: DynamoDB"
-    Each function invocation will make only 1 request to DynamoDB by using DynamoDB's [conditional expressions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html){target="_blank"} to ensure that we don't overwrite existing records,
-    and [ReturnValuesOnConditionCheckFailure](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html#DDB-PutItem-request-ReturnValuesOnConditionCheckFailure){target="_blank"} to return the record if it exists.
-    See [AWS Blog post on handling conditional write errors](https://aws.amazon.com/blogs/database/handle-conditional-write-errors-in-high-concurrency-scenarios-with-amazon-dynamodb/) for more details.
-    For retried invocations, you will see 1WCU and 1RCU.
-    Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to estimate the cost.
+Each function invocation will make only 1 request to DynamoDB by using
+DynamoDB's [conditional expressions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html)
+{target="_blank"} to ensure that we don't overwrite existing records,
+and [ReturnValuesOnConditionCheckFailure](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html#DDB-PutItem-request-ReturnValuesOnConditionCheckFailure)
+{target="_blank"} to return the record if it exists.
+See [AWS Blog post on handling conditional write errors](https://aws.amazon.com/blogs/database/handle-conditional-write-errors-in-high-concurrency-scenarios-with-amazon-dynamodb/)
+for more details.
+For retried invocations, you will see 1WCU and 1RCU.
+Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to estimate the
+cost.
 
 ### MakeIdempotent function wrapper
 
-You can quickly start by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeIdempotent` function wrapper on your Lambda handler.
+You can quickly start by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeIdempotent`
+function wrapper on your Lambda handler.
 
 === "index.ts"
 
@@ -132,19 +152,26 @@ You can quickly start by initializing the `DynamoDBPersistenceLayer` class and u
     --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
-After processing this request successfully, a second request containing the exact same payload above will now return the same response, ensuring our customer isn't charged twice.
+After processing this request successfully, a second request containing the exact same payload above will now return the
+same response, ensuring our customer isn't charged twice.
 
 ???+ note
-    In this example, the entire Lambda handler is treated as a single idempotent operation. If your Lambda handler can cause multiple side effects, or you're only interested in making a specific logic idempotent, use the `makeIdempotent` high-order function only on the function that needs to be idempotent.
+In this example, the entire Lambda handler is treated as a single idempotent operation. If your Lambda handler can cause
+multiple side effects, or you're only interested in making a specific logic idempotent, use the `makeIdempotent`
+high-order function only on the function that needs to be idempotent.
 
     See [Choosing a payload subset for idempotency](#choosing-a-payload-subset-for-idempotency) for more elaborate use cases.
 
-You can also use the `makeIdempotent` function wrapper on any method that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
+You can also use the `makeIdempotent` function wrapper on any method that returns a response to make it idempotent. This
+is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side
+effects and you only want to make a specific one idempotent.
 
 ???+ warning "Limitation"
-    Make sure to return a JSON serializable response from your function, otherwise you'll get an error.
+Make sure to return a JSON serializable response from your function, otherwise you'll get an error.
 
-When using `makeIdempotent` on arbitrary functions, you can tell us which argument in your function signature has the data we should use via **`dataIndexArgument`**. If you don't specify this argument, we'll use the first argument in the function signature.
+When using `makeIdempotent` on arbitrary functions, you can tell us which argument in your function signature has the
+data we should use via **`dataIndexArgument`**. If you don't specify this argument, we'll use the first argument in the
+function signature.
 
 === "index.ts"
 
@@ -158,14 +185,20 @@ When using `makeIdempotent` on arbitrary functions, you can tell us which argume
     --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
-The function this example has two arguments, note that while wrapping it with the `makeIdempotent` high-order function, we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one with the data we should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the second is `1`, etc.
+The function this example has two arguments, note that while wrapping it with the `makeIdempotent` high-order function,
+we specify the `dataIndexArgument` as `1` to tell the decorator that the second argument is the one with the data we
+should use to make the function idempotent. Remember that arguments are zero-indexed, so the first argument is `0`, the
+second is `1`, etc.
 
 ### Idempotent Decorator
 
-You can also use the `@idempotent` decorator to make your Lambda handler idempotent, similar to the `makeIdempotent` function wrapper.
+You can also use the `@idempotent` decorator to make your Lambda handler idempotent, similar to the `makeIdempotent`
+function wrapper.
 
 !!! info
-    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
+The class method decorators in this project follow the experimental implementation enabled via
+the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in
+TypeScript.
 
     Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
 
@@ -183,18 +216,26 @@ You can also use the `@idempotent` decorator to make your Lambda handler idempot
     --8<-- "examples/snippets/idempotency/types.ts"
     ```
 
-You can use the decorator on your Lambda handler or on any function that returns a response to make it idempotent. This is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side effects and you only want to make a specific one idempotent.
-The configuration options for the `@idempotent` decorator are the same as the ones for the `makeIdempotent` function wrapper.
+You can use the decorator on your Lambda handler or on any function that returns a response to make it idempotent. This
+is useful when you want to make a specific logic idempotent, for example when your Lambda handler performs multiple side
+effects and you only want to make a specific one idempotent.
+The configuration options for the `@idempotent` decorator are the same as the ones for the `makeIdempotent` function
+wrapper.
 
 ### MakeHandlerIdempotent Middy middleware
 
 !!! tip "A note about Middy"
-    We guarantee support for both Middy.js `v4.x` & `v5.x` with the latter being available only if you are using ES modules.
-    Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
+We guarantee support for both Middy.js `v4.x` & `v5.x` with the latter being available only if you are using ES modules.
+Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started)
+{target="_blank"} as well
+as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices)
+{target="_blank"}.
 
-If you are using [Middy.js](https://middy.js.org){target="_blank"} as your middleware engine, you can use the `makeHandlerIdempotent` middleware to make your Lambda handler idempotent.
+If you are using [Middy.js](https://middy.js.org){target="_blank"} as your middleware engine, you can use
+the `makeHandlerIdempotent` middleware to make your Lambda handler idempotent.
 
-Similar to the `makeIdempotent` function wrapper, you can quickly make your Lambda handler idempotent by initializing the `DynamoDBPersistenceLayer` class and using it with the `makeHandlerIdempotent` middleware.
+Similar to the `makeIdempotent` function wrapper, you can quickly make your Lambda handler idempotent by initializing
+the `DynamoDBPersistenceLayer` class and using it with the `makeHandlerIdempotent` middleware.
 
 === "index.ts"
 
@@ -210,18 +251,25 @@ Similar to the `makeIdempotent` function wrapper, you can quickly make your Lamb
 
 ### Choosing a payload subset for idempotency
 
-Use [`IdempotencyConfig`](#customizing-the-default-behavior) to instruct the idempotent decorator to only use a portion of your payload to verify whether a request is idempotent, and therefore it should not be retried. When dealing with a more elaborate payload, where parts of the payload always change, you should use the **`eventKeyJmesPath`** parameter.
+Use [`IdempotencyConfig`](#customizing-the-default-behavior) to instruct the idempotent decorator to only use a portion
+of your payload to verify whether a request is idempotent, and therefore it should not be retried. When dealing with a
+more elaborate payload, where parts of the payload always change, you should use the **`eventKeyJmesPath`** parameter.
 
 **Payment scenario**
 
-In this example, we have a Lambda handler that creates a payment for a user subscribing to a product. We want to ensure that we don't accidentally charge our customer by subscribing them more than once.
+In this example, we have a Lambda handler that creates a payment for a user subscribing to a product. We want to ensure
+that we don't accidentally charge our customer by subscribing them more than once.
 
-Imagine the function executes successfully, but the client never receives the response due to a connection issue. It is safe to retry in this instance, as the idempotent decorator will return a previously saved response.
+Imagine the function executes successfully, but the client never receives the response due to a connection issue. It is
+safe to retry in this instance, as the idempotent decorator will return a previously saved response.
 
-**What we want here** is to instruct Idempotency to use the `user` and `productId` fields from our incoming payload as our idempotency key. If we were to treat the entire request as our idempotency key, a simple HTTP header or timestamp change would cause our customer to be charged twice.
+**What we want here** is to instruct Idempotency to use the `user` and `productId` fields from our incoming payload as
+our idempotency key. If we were to treat the entire request as our idempotency key, a simple HTTP header or timestamp
+change would cause our customer to be charged twice.
 
 ???+ warning "Deserializing JSON strings in payloads for increased accuracy."
-    The payload extracted by the `eventKeyJmesPath` is treated as a string by default. This means there could be differences in whitespace even when the JSON payload itself is identical.
+The payload extracted by the `eventKeyJmesPath` is treated as a string by default. This means there could be differences
+in whitespace even when the JSON payload itself is identical.
 
     To alter this behaviour, we can use the [JMESPath built-in function `powertools_json()`](jmespath.md#powertools_json-function) to treat the payload as a JSON object rather than a string.
 
@@ -245,16 +293,23 @@ Imagine the function executes successfully, but the client never receives the re
 
 ### Lambda timeouts
 
-To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools for AWS Lambda calculates and includes the remaining invocation available time as part of the idempotency record.
-This is automatically done when you wrap your Lambda handler with the [makeIdempotent](#makeidempotent-function-wrapper) function wrapper, or use the [`makeHandlerIdempotent`](#makehandleridempotent-middy-middleware) Middy middleware.
+To prevent against extended failed retries when
+a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/),
+Powertools for AWS Lambda calculates and includes the remaining invocation available time as part of the idempotency
+record.
+This is automatically done when you wrap your Lambda handler with the [makeIdempotent](#makeidempotent-function-wrapper)
+function wrapper, or use the [`makeHandlerIdempotent`](#makehandleridempotent-middy-middleware) Middy middleware.
 
 ???+ example
-    If a second invocation happens **after** this timestamp, and the record is marked as `INPROGRESS`, we will execute the invocation again as if it was in the `EXPIRED` state (e.g, `expire_seconds` field elapsed).
+If a second invocation happens **after** this timestamp, and the record is marked as `INPROGRESS`, we will execute the
+invocation again as if it was in the `EXPIRED` state (e.g, `expire_seconds` field elapsed).
 
     This means that if an invocation expired during execution, it will be quickly executed again on the next retry.
 
 ???+ important
-    If you are only using the [makeIdempotent function wrapper](#makeidempotent-function-wrapper) to guard isolated parts of your code outside of your handler, you must use `registerLambdaContext` available in the [idempotency config object](#customizing-the-default-behavior) to benefit from this protection.
+If you are only using the [makeIdempotent function wrapper](#makeidempotent-function-wrapper) to guard isolated parts of
+your code outside of your handler, you must use `registerLambdaContext` available in
+the [idempotency config object](#customizing-the-default-behavior) to benefit from this protection.
 
 Here is an example on how you register the Lambda context in your handler:
 
@@ -266,8 +321,10 @@ Here is an example on how you register the Lambda context in your handler:
 
 ### Handling exceptions
 
-If you are making on your entire Lambda handler idempotent, any unhandled exceptions that are raised during the code execution will cause **the record in the persistence layer to be deleted**.
-This means that new invocations will execute your code again despite having the same payload. If you don't want the record to be deleted, you need to catch exceptions within the idempotent function and return a successful response.
+If you are making on your entire Lambda handler idempotent, any unhandled exceptions that are raised during the code
+execution will cause **the record in the persistence layer to be deleted**.
+This means that new invocations will execute your code again despite having the same payload. If you don't want the
+record to be deleted, you need to catch exceptions within the idempotent function and return a successful response.
 
 <center>
 ```mermaid
@@ -288,9 +345,13 @@ sequenceDiagram
 <i>Idempotent sequence exception</i>
 </center>
 
-If you are using `makeIdempotent` on any other function, any unhandled exceptions that are thrown _inside_ the wrapped function will cause the record in the persistence layer to be deleted, and allow the function to be executed again if retried.
+If you are using `makeIdempotent` on any other function, any unhandled exceptions that are thrown _inside_ the wrapped
+function will cause the record in the persistence layer to be deleted, and allow the function to be executed again if
+retried.
 
-If an error is thrown _outside_ the scope of the decorated function and after your function has been called, the persistent record will not be affected. In this case, idempotency will be maintained for your decorated function. Example:
+If an error is thrown _outside_ the scope of the decorated function and after your function has been called, the
+persistent record will not be affected. In this case, idempotency will be maintained for your decorated function.
+Example:
 
 === "Handling exceptions"
 
@@ -299,7 +360,7 @@ If an error is thrown _outside_ the scope of the decorated function and after yo
     ```
 
 ???+ warning
-    **We will throw `IdempotencyPersistenceLayerError`** if any of the calls to the persistence layer fail unexpectedly.
+**We will throw `IdempotencyPersistenceLayerError`** if any of the calls to the persistence layer fail unexpectedly.
 
     As this happens outside the scope of your decorated function, you are not able to catch it when making your Lambda handler idempotent.
 
@@ -509,7 +570,8 @@ sequenceDiagram
 
 #### DynamoDBPersistenceLayer
 
-This persistence layer is built-in, and you can either use an existing DynamoDB table or create a new one dedicated for idempotency state (recommended).
+This persistence layer is built-in, and you can either use an existing DynamoDB table or create a new one dedicated for
+idempotency state (recommended).
 
 === "Customizing DynamoDBPersistenceLayer to suit your table structure"
 
@@ -517,10 +579,11 @@ This persistence layer is built-in, and you can either use an existing DynamoDB 
     --8<-- "examples/snippets/idempotency/customizePersistenceLayer.ts"
     ```
 
-When using DynamoDB as a persistence layer, you can alter the attribute names by passing these parameters when initializing the persistence layer:
+When using DynamoDB as a persistence layer, you can alter the attribute names by passing these parameters when
+initializing the persistence layer:
 
 | Parameter                | Required           | Default                              | Description                                                                                              |
-| ------------------------ | ------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+|--------------------------|--------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------|
 | **tableName**            | :heavy_check_mark: |                                      | Table name to store state                                                                                |
 | **keyAttr**              |                    | `id`                                 | Partition key of the table. Hashed representation of the payload (unless **sort_key_attr** is specified) |
 | **expiryAttr**           |                    | `expiration`                         | Unix timestamp of when record expires                                                                    |
@@ -533,10 +596,11 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 
 ### Customizing the default behavior
 
-Idempotent decorator can be further configured with **`IdempotencyConfig`** as seen in the previous examples. These are the available options for further configuration
+Idempotent decorator can be further configured with **`IdempotencyConfig`** as seen in the previous examples. These are
+the available options for further configuration
 
 | Parameter                     | Default | Description                                                                                                                                                                                |
-| ----------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|-------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **eventKeyJmespath**          | `''`    | JMESPath expression to extract the idempotency key from the event                                                                                                                          |
 | **payloadValidationJmespath** | `''`    | JMESPath expression to validate whether certain parameters have changed in the event while the event payload                                                                               |
 | **throwOnNoIdempotencyKey**   | `false` | Throw an error if no idempotency key was found in the request                                                                                                                              |
@@ -547,19 +611,23 @@ Idempotent decorator can be further configured with **`IdempotencyConfig`** as s
 
 ### Handling concurrent executions with the same payload
 
-This utility will throw an **`IdempotencyAlreadyInProgressError`** error if you receive **multiple invocations with the same payload while the first invocation hasn't completed yet**.
+This utility will throw an **`IdempotencyAlreadyInProgressError`** error if you receive **multiple invocations with the
+same payload while the first invocation hasn't completed yet**.
 
 ???+ info
-    If you receive `IdempotencyAlreadyInProgressError`, you can safely retry the operation.
+If you receive `IdempotencyAlreadyInProgressError`, you can safely retry the operation.
 
-This is a locking mechanism for correctness. Since we don't know the result from the first invocation yet, we can't safely allow another concurrent execution.
+This is a locking mechanism for correctness. Since we don't know the result from the first invocation yet, we can't
+safely allow another concurrent execution.
 
 ### Using in-memory cache
 
-**By default, in-memory local caching is disabled**, since we don't know how much memory you consume per invocation compared to the maximum configured in your Lambda function.
+**By default, in-memory local caching is disabled**, since we don't know how much memory you consume per invocation
+compared to the maximum configured in your Lambda function.
 
 ???+ note "Note: This in-memory cache is local to each Lambda execution environment"
-    This means it will be effective in cases where your function's concurrency is low in comparison to the number of "retry" invocations with the same payload, because cache might be empty.
+This means it will be effective in cases where your function's concurrency is low in comparison to the number of "retry"
+invocations with the same payload, because cache might be empty.
 
 You can enable in-memory caching with the **`useLocalCache`** parameter:
 
@@ -569,13 +637,15 @@ You can enable in-memory caching with the **`useLocalCache`** parameter:
     --8<-- "examples/snippets/idempotency/workingWithLocalCache.ts"
     ```
 
-When enabled, the default is to cache a maximum of 256 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
+When enabled, the default is to cache a maximum of 256 records in each Lambda execution environment - You can change it
+with the **`maxLocalCacheSize`** parameter.
 
 ### Expiring idempotency records
 
 !!! note "By default, we expire idempotency records after **an hour** (3600 seconds)."
 
-In most cases, it is not desirable to store the idempotency records forever. Rather, you want to guarantee that the same payload won't be executed within a period of time.
+In most cases, it is not desirable to store the idempotency records forever. Rather, you want to guarantee that the same
+payload won't be executed within a period of time.
 
 You can change this window with the **`expiresAfterSeconds`** parameter:
 
@@ -585,10 +655,12 @@ You can change this window with the **`expiresAfterSeconds`** parameter:
     --8<-- "examples/snippets/idempotency/workingWithRecordExpiration.ts"
     ```
 
-This will mark any records older than 5 minutes as expired, and [your function will be executed as normal if it is invoked with a matching payload](#expired-idempotency-records).
+This will mark any records older than 5 minutes as expired,
+and [your function will be executed as normal if it is invoked with a matching payload](#expired-idempotency-records).
 
 ???+ important "Idempotency record expiration vs DynamoDB time-to-live (TTL)"
-    [DynamoDB TTL is a feature](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/howitworks-ttl.html){target="_blank"} to remove items after a certain period of time, it may occur within 48 hours of expiration.
+[DynamoDB TTL is a feature](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/howitworks-ttl.html)
+{target="_blank"} to remove items after a certain period of time, it may occur within 48 hours of expiration.
 
     We don't rely on DynamoDB or any persistence storage layer to determine whether a record is expired to avoid eventual inconsistency states.
 
@@ -600,12 +672,16 @@ This will mark any records older than 5 minutes as expired, and [your function w
 
 ### Payload validation
 
-???+ question "Question: What if your function is invoked with the same payload except some outer parameters have changed?"
-    Example: A payment transaction for a given productID was requested twice for the same customer, **however the amount to be paid has changed in the second transaction**.
+???+ question "Question: What if your function is invoked with the same payload except some outer parameters have
+changed?"
+Example: A payment transaction for a given productID was requested twice for the same customer, **however the amount to
+be paid has changed in the second transaction**.
 
-By default, we will return the same result as it returned before, however in this instance it may be misleading; we provide a fail fast payload validation to address this edge case.
+By default, we will return the same result as it returned before, however in this instance it may be misleading; we
+provide a fail fast payload validation to address this edge case.
 
-With **`payloadValidationJmesPath`**, you can provide an additional JMESPath expression to specify which part of the event body should be validated against previous idempotent invocations
+With **`payloadValidationJmesPath`**, you can provide an additional JMESPath expression to specify which part of the
+event body should be validated against previous idempotent invocations
 
 === "Payload validation"
 
@@ -613,23 +689,29 @@ With **`payloadValidationJmesPath`**, you can provide an additional JMESPath exp
     --8<-- "examples/snippets/idempotency/workingWithPayloadValidation.ts"
     ```
 
-In this example, the **`userId`** and **`productId`** keys are used as the payload to generate the idempotency key, as per **`eventKeyJmespath`** parameter.
+In this example, the **`userId`** and **`productId`** keys are used as the payload to generate the idempotency key, as
+per **`eventKeyJmespath`** parameter.
 
 ???+ note
-    If we try to send the same request but with a different amount, we will raise **`IdempotencyValidationError`**.
+If we try to send the same request but with a different amount, we will raise **`IdempotencyValidationError`**.
 
-Without payload validation, we would have returned the same result as we did for the initial request. Since we're also returning an amount in the response, this could be quite confusing for the client.
+Without payload validation, we would have returned the same result as we did for the initial request. Since we're also
+returning an amount in the response, this could be quite confusing for the client.
 
-By using **`payloadValidationJmesPath="amount"`**, we prevent this potentially confusing behavior and instead throw an error.
+By using **`payloadValidationJmesPath="amount"`**, we prevent this potentially confusing behavior and instead throw an
+error.
 
 ### Making idempotency key required
 
 If you want to enforce that an idempotency key is required, you can set **`throwOnNoIdempotencyKey`** to `true`.
 
-This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`eventKeyJmesPath`** results in an empty subset.
+This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`eventKeyJmesPath`** results in an empty
+subset.
 
 ???+ warning
-    To prevent errors, transactions will not be treated as idempotent if **`throwOnNoIdempotencyKey`** is set to `false` and the evaluation of **`eventKeyJmesPath`** is an empty result. Therefore, no data will be fetched, stored, or deleted in the idempotency storage layer.
+To prevent errors, transactions will not be treated as idempotent if **`throwOnNoIdempotencyKey`** is set to `false` and
+the evaluation of **`eventKeyJmesPath`** is an empty result. Therefore, no data will be fetched, stored, or deleted in
+the idempotency storage layer.
 
 === "Idempotency key required"
 
@@ -652,11 +734,14 @@ This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`
 ### Batch integration
 
 You can easily integrate with [Batch](batch.md) utility by using idempotency wrapper around your processing function.
-This ensures that you process each record in an idempotent manner, and guard against a [Lambda timeout](#lambda-timeouts) idempotent situation.
+This ensures that you process each record in an idempotent manner, and guard against
+a [Lambda timeout](#lambda-timeouts) idempotent situation.
 
 ???+ "Choosing a unique batch record attribute"
-    In this example, we choose `messageId` as our idempotency key since we know it'll be unique.
-    Depending on your use case, it might be more accurate [to choose another field](#choosing-a-payload-subset-for-idempotency) your producer intentionally set to define uniqueness.
+In this example, we choose `messageId` as our idempotency key since we know it'll be unique.
+Depending on your use case, it might be more
+accurate [to choose another field](#choosing-a-payload-subset-for-idempotency) your producer intentionally set to define
+uniqueness.
 
 === "Integration with batch processor"
 
@@ -672,7 +757,9 @@ This ensures that you process each record in an idempotent manner, and guard aga
 
 ### Customizing AWS SDK configuration
 
-The **`clientConfig`** and **`awsSdkV3Client`** parameters enable you to pass in custom configurations or your own [DynamoDBClient](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/){target="_blank"} when constructing the persistence store.
+The **`clientConfig`** and **`awsSdkV3Client`** parameters enable you to pass in custom configurations or your
+own [DynamoDBClient](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/){target="_blank"} when
+constructing the persistence store.
 
 === "Passing specific configuration"
 
@@ -688,9 +775,11 @@ The **`clientConfig`** and **`awsSdkV3Client`** parameters enable you to pass in
 
 ### Using a DynamoDB table with a composite primary key
 
-When using a composite primary key table (hash+range key), use `sortKeyAttr` parameter when initializing your persistence layer.
+When using a composite primary key table (hash+range key), use `sortKeyAttr` parameter when initializing your
+persistence layer.
 
-With this setting, we will save the idempotency key in the sort key instead of the primary key. By default, the primary key will now be set to `idempotency#{LAMBDA_FUNCTION_NAME}`.
+With this setting, we will save the idempotency key in the sort key instead of the primary key. By default, the primary
+key will now be set to `idempotency#{LAMBDA_FUNCTION_NAME}`.
 
 You can optionally set a static value for the partition key using the `staticPkValue` parameter.
 
@@ -703,7 +792,7 @@ You can optionally set a static value for the partition key using the `staticPkV
 The example function above would cause data to be stored in DynamoDB like this:
 
 | id                           | sort_key                         | expiration | status      | data                                                             |
-| ---------------------------- | -------------------------------- | ---------- | ----------- | ---------------------------------------------------------------- |
+|------------------------------|----------------------------------|------------|-------------|------------------------------------------------------------------|
 | idempotency#MyLambdaFunction | 1e956ef7da78d0cb890be999aecc0c9e | 1636549553 | COMPLETED   | {"paymentId": "12345, "message": "success", "statusCode": 200}   |
 | idempotency#MyLambdaFunction | 2b2cdb5f86361e97b4383087c1ffdf27 | 1636549571 | COMPLETED   | {"paymentId": "527212", "message": "success", "statusCode": 200} |
 | idempotency#MyLambdaFunction | f091d2527ad1c78f05d54cc3f363be80 | 1636549585 | IN_PROGRESS |                                                                  |
@@ -712,10 +801,13 @@ The example function above would cause data to be stored in DynamoDB like this:
 
 This utility provides an abstract base class (ABC), so that you can implement your choice of persistent storage layer.
 
-You can create your own persistent store from scratch by inheriting the `BasePersistenceLayer` class, and implementing `_getRecord()`, `_putRecord()`, `_updateRecord()` and `_deleteRecord()`.
+You can create your own persistent store from scratch by inheriting the `BasePersistenceLayer` class, and
+implementing `_getRecord()`, `_putRecord()`, `_updateRecord()` and `_deleteRecord()`.
 
-* `_getRecord()` – Retrieves an item from the persistence store using an idempotency key and returns it as a `IdempotencyRecord` instance.
-* `_putRecord()` – Adds a `IdempotencyRecord` to the persistence store if it doesn't already exist with that key. Throws an `IdempotencyItemAlreadyExistsError` error if a non-expired entry already exists.
+* `_getRecord()` – Retrieves an item from the persistence store using an idempotency key and returns it as
+  a `IdempotencyRecord` instance.
+* `_putRecord()` – Adds a `IdempotencyRecord` to the persistence store if it doesn't already exist with that key. Throws
+  an `IdempotencyItemAlreadyExistsError` error if a non-expired entry already exists.
 * `_updateRecord()` – Updates an item in the persistence store.
 * `_deleteRecord()` – Removes an item from the persistence store.
 
@@ -740,9 +832,33 @@ Below an example implementation of a custom persistence layer backed by a generi
     ```
 
 ???+ danger
-    Pay attention to the documentation for each - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
+Pay attention to the documentation for each - you may need to perform additional checks inside these methods to ensure
+the idempotency guarantees remain intact.
 
     For example, the `_putRecord()` method needs to throw an error if a non-expired record already exists in the data store with a matching key.
+
+## Testing your code
+
+When testing idempotency, you can verify that your function stores the correct data in the persistence layer.
+In this example, we send two different requests with the same payload.
+
+=== "index.ts"
+
+    ```typescript 
+    --8<-- "examples/snippets/idempotency/testingIdempotency.ts"
+    ```
+
+=== "index.test.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/idempotency/testingIdempotency.test.ts"
+    ```
+
+=== "Sample event"
+
+    ```json 
+    --8<-- "examples/snippets/idempotency/samples/testingIdempotency.json"
+    ```
 
 ## Extra resources
 

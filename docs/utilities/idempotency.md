@@ -744,6 +744,28 @@ Below an example implementation of a custom persistence layer backed by a generi
 
 ## Testing your code
 
+The idempotency utility provides several routes to test your code.
+
+### Disabling the idempotency utility
+
+When testing your code, you may wish to disable the idempotency logic altogether and focus on testing your business logic. To do this, you can set the environment variable POWERTOOLS_IDEMPOTENCY_DISABLED with a truthy value.
+
+### Testing with local DynamoDB
+
+When testing your Lambda function locally, you can use a local DynamoDB instance to test the idempotency feature. You can use [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html) or [LocalStack](https://localstack.cloud/){target="_blank"}.
+
+=== "handler.test.ts"
+
+    ```typescript hl_lines="7-9"
+    --8<-- "examples/snippets/idempotency/workingWithLocalDynamoDB.test.ts"
+    ```
+
+=== "handler.ts"
+
+    ```typescript hl_lines="7-9"
+    --8<-- "examples/snippets/idempotency/workingWithLocalDynamoDB.ts"
+    ```
+
 ## Extra resources
 
 If you're interested in a deep dive on how Amazon uses idempotency when building our APIs, check out

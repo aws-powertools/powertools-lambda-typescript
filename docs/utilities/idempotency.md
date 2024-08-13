@@ -860,6 +860,9 @@ In this example, we send two different requests with the same payload.
     --8<-- "examples/snippets/idempotency/samples/testingIdempotency.json"
     ```
 
+You can also check how
+we [tested idempotency in our end to end tests](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/idempotency/tests/e2e).
+
 ## Extra resources
 
 If you're interested in a deep dive on how Amazon uses idempotency when building our APIs, check out

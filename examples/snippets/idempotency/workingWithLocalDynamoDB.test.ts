@@ -1,6 +1,5 @@
 import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { Context } from 'aws-lambda';
 import { handler } from './workingWithLocalDynamoDB';
 
@@ -13,13 +12,10 @@ describe('Idempotent handler', () => {
     awsRequestId: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
     getRemainingTimeInMillis: () => 1234,
   } as Context;
-  const ddbLocalClient = new DynamoDBClient({
-    endpoint: 'http://localhost:8000', // 8000 for local DynamoDB and 4566 for LocalStack
-  });
 
   const mockPersistenceStore = new DynamoDBPersistenceLayer({
     tableName: 'IdempotencyTable',
-    awsSdkV3Client: ddbLocalClient,
+    clientConfig: { endpoint: 'http://localhost:8000' }, // 8000 for local DynamoDB and 4566 for LocalStack
   });
 
   const idempotentHandler = makeIdempotent(handler, {

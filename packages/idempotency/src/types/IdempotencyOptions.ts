@@ -110,8 +110,7 @@ type ItempotentFunctionOptions<T extends Array<any>> = T[1] extends Context
  * @internal
  * Options to configure the behavior of the idempotency logic.
  *
- * This is an internal type that is used by the Idempotency utility to
- * configure.
+ * This is an internal type that is used for configuration.
  */
 type IdempotencyHandlerOptions = {
   /**

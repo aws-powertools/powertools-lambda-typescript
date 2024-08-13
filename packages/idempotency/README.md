@@ -44,18 +44,18 @@ import type {Context, APIGatewayProxyEvent} from 'aws-lambda';
 
 ``
 const persistenceStore = new DynamoDBPersistenceLayer({
-    tableName: 'idempotencyTableName',
+  tableName: 'idempotencyTableName',
 });
 
 const myHandler = async (
-    event: APIGatewayProxyEvent,
-    _context: Context
+  event: APIGatewayProxyEvent,
+  _context: Context
 ): Promise<void> => {
-    // your code goes here here
+  // your code goes here here
 };
 
 export const handler = makeIdempotent(myHandler, {
-    persistenceStore,
+  persistenceStore,
 });  
 ```
 
@@ -67,24 +67,24 @@ import {DynamoDBPersistenceLayer} from '@aws-lambda-powertools/idempotency/dynam
 import type {Context, SQSEvent, SQSRecord} from 'aws-lambda';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
-    tableName: 'idempotencyTableName',
+  tableName: 'idempotencyTableName',
 });
 
 const processingFunction = async (payload: SQSRecord): Promise<void> => {
-    // your code goes here here
+  // your code goes here here
 };
 
 const processIdempotently = makeIdempotent(processingFunction, {
-    persistenceStore,
+  persistenceStore,
 });
 
 export const handler = async (
-    event: SQSEvent,
-    _context: Context
+  event: SQSEvent,
+  _context: Context
 ): Promise<void> => {
-    for (const record of event.Records) {
-        await processIdempotently(record);
-    }
+  for (const record of event.Records) {
+    await processIdempotently(record);
+  }
 };
 ```
 
@@ -97,26 +97,26 @@ import {DynamoDBPersistenceLayer} from '@aws-lambda-powertools/idempotency/dynam
 import type {Context, SQSEvent, SQSRecord} from 'aws-lambda';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
-    tableName: 'idempotencyTableName',
+  tableName: 'idempotencyTableName',
 });
 
 const processingFunction = async (payload: SQSRecord, customerId: string): Promise<void> => {
-    // your code goes here here
+  // your code goes here here
 };
 
 const processIdempotently = makeIdempotent(processingFunction, {
-    persistenceStore,
-    // this tells the utility to use the second argument (`customerId`) as the idempotency key
-    dataIndexArgument: 1,
+  persistenceStore,
+  // this tells the utility to use the second argument (`customerId`) as the idempotency key
+  dataIndexArgument: 1,
 });
 
 export const handler = async (
-    event: SQSEvent,
-    _context: Context
+  event: SQSEvent,
+  _context: Context
 ): Promise<void> => {
-    for (const record of event.Records) {
-        await processIdempotently(record, 'customer-123');
-    }
+  for (const record of event.Records) {
+    await processIdempotently(record, 'customer-123');
+  }
 };
 ```
 
@@ -133,17 +133,17 @@ const persistenceStore = new DynamoDBPersistenceLayer({
 });
 
 const myHandler = async (
-    event: APIGatewayProxyEvent,
-    _context: Context
+  event: APIGatewayProxyEvent,
+  _context: Context
 ): Promise<void> => {
-    // your code goes here here
+  // your code goes here here
 };
 
 export const handler = makeIdempotent(myHandler, {
-    persistenceStore,
-    config: new IdempotencyConfig({
-        eventKeyJmespath: 'requestContext.identity.user',
-    }),
+  persistenceStore,
+  config: new IdempotencyConfig({
+    eventKeyJmespath: 'requestContext.identity.user',
+  }),
 });
 ```
 
@@ -157,21 +157,21 @@ import {DynamoDBPersistenceLayer} from '@aws-lambda-powertools/idempotency/dynam
 import type {Context, APIGatewayProxyEvent} from 'aws-lambda';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
-    tableName: 'idempotencyTableName',
+  tableName: 'idempotencyTableName',
 });
 
 const myHandler = async (
-    event: APIGatewayProxyEvent,
-    _context: Context
+  event: APIGatewayProxyEvent,
+  _context: Context
 ): Promise<void> => {
-    // your code goes here here
+  // your code goes here here
 };
 
 export const handler = makeIdempotent(myHandler, {
-    persistenceStore,
-    config: new IdempotencyConfig({
-        eventKeyJmespath: 'powertools_json(body).["user", "productId"]',
-    }),
+  persistenceStore,
+  config: new IdempotencyConfig({
+    eventKeyJmespath: 'powertools_json(body).["user", "productId"]',
+  }),
 });
 ```
 
@@ -188,17 +188,17 @@ import {DynamoDBPersistenceLayer} from '@aws-lambda-powertools/idempotency/dynam
 import type {Context, APIGatewayProxyEvent} from 'aws-lambda';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
-    tableName: 'idempotencyTableName',
+  tableName: 'idempotencyTableName',
 });
 
 class MyHandler extends LambdaInterface {
-    @idempotent({persistenceStore: dynamoDBPersistenceLayer})
-    public async handler(
-        event: APIGatewayProxyEvent,
-        context: Context
-    ): Promise<void> {
-        // your code goes here here
-    }
+  @idempotent({persistenceStore: dynamoDBPersistenceLayer})
+  public async handler(
+    event: APIGatewayProxyEvent,
+    context: Context
+  ): Promise<void> {
+    // your code goes here here
+  }
 }
 
 const handlerClass = new MyHandler();
@@ -214,24 +214,24 @@ import {DynamoDBPersistenceLayer} from '@aws-lambda-powertools/idempotency/dynam
 import type {Context} from 'aws-lambda';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
-    tableName: 'idempotencyTableName',
+  tableName: 'idempotencyTableName',
 });
 
 class MyHandler extends LambdaInterface {
 
-    public async handler(
-        event: unknown,
-        context: Context
-    ): Promise<void> {
-        for (const record of event.Records) {
-            await this.processIdempotently(record);
-        }
+  public async handler(
+    event: unknown,
+    context: Context
+  ): Promise<void> {
+    for (const record of event.Records) {
+      await this.processIdempotently(record);
     }
+  }
 
-    @idempotent({persistenceStore: dynamoDBPersistenceLayer})
-    private async process(record: unknown): Promise<void> {
-        // process each code idempotently
-    }
+  @idempotent({persistenceStore: dynamoDBPersistenceLayer})
+  private async process(record: unknown): Promise<void> {
+    // process each code idempotently
+  }
 }
 
 const handlerClass = new MyHandler();
@@ -260,25 +260,25 @@ import middy from '@middy/core';
 import type {Context, APIGatewayProxyEvent} from 'aws-lambda';
 
 const persistenceStore = new DynamoDBPersistenceLayer({
-    tableName: 'idempotencyTableName',
+  tableName: 'idempotencyTableName',
 });
 const config = new IdempotencyConfig({
-    hashFunction: 'md5',
-    useLocalCache: false,
-    expiresAfterSeconds: 3600,
-    throwOnNoIdempotencyKey: false,
-    eventKeyJmesPath: 'headers.idempotency-key',
+  hashFunction: 'md5',
+  useLocalCache: false,
+  expiresAfterSeconds: 3600,
+  throwOnNoIdempotencyKey: false,
+  eventKeyJmesPath: 'headers.idempotency-key',
 });
 
 export const handler = middy(
-    async (_event: APIGatewayProxyEvent, _context: Context): Promise<void> => {
-        // your code goes here here
-    }
+  async (_event: APIGatewayProxyEvent, _context: Context): Promise<void> => {
+    // your code goes here here
+  }
 ).use(
-    makeHandlerIdempotent({
-        config,
-        persistenceStore,
-    })
+  makeHandlerIdempotent({
+    config,
+    persistenceStore,
+  })
 );
 ```
 

@@ -1,11 +1,9 @@
 {
-  "extends": [
-    "../../typedoc.base.json"
-  ],
+  "extends": ["../../typedoc.base.json"],
   "entryPoints": [
     "./src/index.ts",
     "./src/types/index.ts",
-    "./src/middleware/index.ts",
+    "./src/middleware/makeHandlerIdempotent.ts",
     "./src/persistence/index.ts",
     "./src/persistence/DynamoDBPersistenceLayer.ts"
   ],

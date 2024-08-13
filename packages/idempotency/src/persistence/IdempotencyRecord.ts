@@ -34,7 +34,7 @@ class IdempotencyRecord {
   /**
    * The idempotency record status can be COMPLETED, IN_PROGRESS or EXPIRED.
    * We check the status during idempotency processing to make sure we don't process an expired record and handle concurrent requests.
-   * @link {IdempotencyRecordStatusValue}
+   * {@link constants.IdempotencyRecordStatusValue | IdempotencyRecordStatusValue}
    * @private
    */
   private status: IdempotencyRecordStatusValue;

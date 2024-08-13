@@ -46,7 +46,6 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  *
  * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/index.html
  * @category Persistence Layer
- * @implements {BasePersistenceLayer}
  */
 class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   private client: DynamoDBClient;

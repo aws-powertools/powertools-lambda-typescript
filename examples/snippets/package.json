@@ -38,7 +38,7 @@
     "@aws-sdk/client-ssm": "^3.629.0",
     "@aws-sdk/util-dynamodb": "^3.629.0",
     "@middy/core": "^4.7.0",
-    "aws-sdk": "^2.1673.0",
+    "aws-sdk": "^2.1674.0",
     "aws-sdk-client-mock": "^4.0.1",
     "aws-sdk-client-mock-jest": "^4.0.1",
     "hashi-vault-js": "^0.4.15",

@@ -167,7 +167,7 @@ When debugging in non-production environments, you can log the incoming event us
 
 === "`logEventIfEnabled()`"
 
-    ```typescript hl_lines="1 7"
+    ```typescript hl_lines="1 8"
     --8<-- "examples/snippets/logger/logEventManual.ts"
     ```
 

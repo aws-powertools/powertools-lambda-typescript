@@ -1,0 +1,16 @@
+{
+  "cold_start": true,
+  "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:LogEventFn",
+  "function_memory_size": "128",
+  "function_name": "LogEventFn",
+  "function_request_id": "0a9df60d-e2de-447d-ba3e-45f149eae6c9",
+  "level": "INFO",
+  "message": "Lambda invocation event",
+  "sampling_rate": 0,
+  "service": "service_undefined",
+  "timestamp": "2024-08-14T10:08:06.199Z",
+  "xray_trace_id": "1-66bc8205-21f8b5190da519d22b2b0533",
+  "event": {
+    "foo": "bar"
+  }
+}

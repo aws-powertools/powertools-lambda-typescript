@@ -497,11 +497,24 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Logs a Lambda invocation event, if it *should*.
+   * Log the AWS Lambda event payload for the current invocation if the environment variable `POWERTOOLS_LOG_EVENT` is set to `true`.
    *
-   ** @param {unknown} event
-   * @param {boolean} [overwriteValue]
-   * @returns {void}
+   * @example
+   * ```ts
+   * process.env.POWERTOOLS_LOG_EVENT = 'true';
+   *
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   *
+   * const logger = new Logger();
+   *
+   * export const handler = async (event) => {
+   *   logger.logEventIfEnabled(event);
+   *   // ... your handler code
+   * }
+   * ```
+   *
+   * @param {unknown} event - The AWS Lambda event payload.
+   * @param {boolean} overwriteValue - Overwrite the environment variable value.
    */
   public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
     if (!this.shouldLogEvent(overwriteValue)) return;

@@ -29,6 +29,8 @@ const getConsoleMethod = (
   method === 'critical'
     ? 'error'
     : (method.toLowerCase() as keyof Omit<LogFunction, 'critical'>);
+const getLogLevel = (method: string): LogLevelType =>
+  method.toUpperCase() as LogLevelType;
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
   Console: jest.fn().mockImplementation(() => ({
@@ -59,7 +61,6 @@ describe('Class: Logger', () => {
   beforeEach(() => {
     dateSpy.mockClear();
     process.env = { ...ENVIRONMENT_VARIABLES };
-    process.env.POWERTOOLS_LOG_LEVEL = 'trace';
   });
 
   describe('Method: constructor', () => {
@@ -84,7 +85,7 @@ describe('Class: Logger', () => {
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
           defaultServiceName: 'service_undefined',
-          logLevel: logLevelThresholds.TRACE,
+          logLevel: logLevelThresholds.DEBUG,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -202,7 +203,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: logLevelThresholds.TRACE,
+          logLevel: logLevelThresholds.DEBUG,
           logFormatter: expect.any(LogFormatter),
         })
       );
@@ -230,7 +231,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: logLevelThresholds.TRACE,
+          logLevel: logLevelThresholds.DEBUG,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -353,7 +354,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: logLevelThresholds.TRACE,
+          logLevel: logLevelThresholds.DEBUG,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -458,7 +459,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: logLevelThresholds.TRACE,
+          logLevel: logLevelThresholds.DEBUG,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -500,7 +501,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: logLevelThresholds.TRACE,
+          logLevel: logLevelThresholds.DEBUG,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -562,7 +563,7 @@ describe('Class: Logger', () => {
           },
           envVarsService: expect.any(EnvironmentVariablesService),
           customConfigService: undefined,
-          logLevel: logLevelThresholds.TRACE,
+          logLevel: logLevelThresholds.DEBUG,
           logFormatter: expect.any(PowertoolsLogFormatter),
         })
       );
@@ -731,7 +732,7 @@ describe('Class: Logger', () => {
         test(`when the log level is ERROR, it ${errorAction} print to stdout`, () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'ERROR',
+            logLevel: LogLevel.ERROR,
           });
 
           testLoggerPrints(logger, errorPrints);
@@ -821,7 +822,9 @@ describe('Class: Logger', () => {
       describe('Feature: inject context', () => {
         test(`when the Lambda context is not captured and a string is passed as log message, it should print a valid ${method.toUpperCase()} log`, () => {
           // Prepare
-          const logger = new Logger();
+          const logger = new Logger({
+            logLevel: getLogLevel(method),
+          });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
             logger['console'],
@@ -850,7 +853,7 @@ describe('Class: Logger', () => {
         test(`when the Lambda context is captured, it returns a valid ${method.toUpperCase()} log`, () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'TRACE',
+            logLevel: getLogLevel(method),
           });
           logger.addContext(context);
           const consoleSpy = jest.spyOn(
@@ -887,7 +890,7 @@ describe('Class: Logger', () => {
 
       describe('Feature: ephemeral log attributes', () => {
         const logger = new Logger({
-          logLevel: 'TRACE',
+          logLevel: getLogLevel(method),
         });
 
         it.each([
@@ -1100,7 +1103,7 @@ describe('Class: Logger', () => {
         test('when persistent log attributes are added to the Logger instance, they should appear in all logs printed by the instance', () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'TRACE',
+            logLevel: getLogLevel(method),
             persistentLogAttributes: {
               aws_account_id: '123456789012',
               aws_region: 'eu-west-1',
@@ -1138,7 +1141,7 @@ describe('Class: Logger', () => {
         test('when the `_X_AMZN_TRACE_ID` environment variable is set it parses it correctly and adds the Trace ID to the log', () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'TRACE',
+            logLevel: getLogLevel(method),
           });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
@@ -1169,7 +1172,7 @@ describe('Class: Logger', () => {
           // Prepare
           process.env._X_AMZN_TRACE_ID = undefined;
           const logger = new Logger({
-            logLevel: 'TRACE',
+            logLevel: getLogLevel(method),
           });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
@@ -1200,7 +1203,7 @@ describe('Class: Logger', () => {
         test('when a logged item references itself, the logger ignores the keys that cause a circular reference', () => {
           // Prepare
           const logger = new Logger({
-            logLevel: 'TRACE',
+            logLevel: getLogLevel(method),
           });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
@@ -1245,7 +1248,9 @@ describe('Class: Logger', () => {
 
         test('when a logged item has BigInt value, it does not throw TypeError', () => {
           // Prepare
-          const logger = new Logger();
+          const logger = new Logger({
+            logLevel: getLogLevel(method),
+          });
           jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
             logger['console'],
@@ -1263,7 +1268,9 @@ describe('Class: Logger', () => {
 
         test('when a logged item has a BigInt value, it prints the log with value as a string', () => {
           // Prepare
-          const logger = new Logger();
+          const logger = new Logger({
+            logLevel: getLogLevel(method),
+          });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
             logger['console'],
@@ -1293,7 +1300,9 @@ describe('Class: Logger', () => {
 
         test('when a logged item has empty string, null, or undefined values, it removes it', () => {
           // Prepare
-          const logger = new Logger();
+          const logger = new Logger({
+            logLevel: getLogLevel(method),
+          });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
             logger['console'],
@@ -1333,7 +1342,10 @@ describe('Class: Logger', () => {
             value: unknown
           ) => (value instanceof Set ? [...value] : value);
 
-          const logger = new Logger({ jsonReplacerFn });
+          const logger = new Logger({
+            logLevel: getLogLevel(method),
+            jsonReplacerFn,
+          });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
             logger['console'],
@@ -1375,7 +1387,10 @@ describe('Class: Logger', () => {
             return value;
           };
 
-          const logger = new Logger({ jsonReplacerFn });
+          const logger = new Logger({
+            logLevel: getLogLevel(method),
+            jsonReplacerFn,
+          });
           const consoleSpy = jest.spyOn(
             // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
             logger['console'],
@@ -2695,7 +2710,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: logLevelThresholds.TRACE,
+        logLevel: logLevelThresholds.DEBUG,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2723,7 +2738,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: logLevelThresholds.TRACE,
+        logLevel: logLevelThresholds.DEBUG,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2751,7 +2766,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: logLevelThresholds.TRACE,
+        logLevel: logLevelThresholds.DEBUG,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2827,7 +2842,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: logLevelThresholds.TRACE,
+        logLevel: logLevelThresholds.DEBUG,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2855,7 +2870,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: logLevelThresholds.TRACE,
+        logLevel: logLevelThresholds.DEBUG,
         logLevelThresholds: {
           ...logLevelThresholds,
         },
@@ -2886,7 +2901,7 @@ describe('Class: Logger', () => {
         logEvent: false,
         logIndentation: INDENTATION,
         logFormatter: expect.any(PowertoolsLogFormatter),
-        logLevel: logLevelThresholds.TRACE,
+        logLevel: logLevelThresholds.DEBUG,
         logLevelThresholds: {
           ...logLevelThresholds,
         },

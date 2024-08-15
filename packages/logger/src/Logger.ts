@@ -983,7 +983,9 @@ class Logger extends Utility implements LoggerInterface {
       this.console = console;
     }
 
-    // patch console.trace to no print stack trace
+    /**
+     * Patch `console.trace` to avoid printing a stack trace and aligning with AWS Lambda behavior - see #2902
+     */
     this.console.trace = (message: string, ...optionalParams: unknown[]) => {
       this.console.log(message, ...optionalParams);
     };

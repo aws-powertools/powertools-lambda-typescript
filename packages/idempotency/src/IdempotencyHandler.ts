@@ -137,7 +137,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       await this.#deleteInProgressRecord();
       throw error;
     }
-    await this.#saveSuccessfullResult(result);
+    await this.#saveSuccessfulResult(result);
 
     return result;
   }
@@ -208,7 +208,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * @param response The response returned by the handler.
    */
   public async handleMiddyAfter(response: unknown): Promise<void> {
-    await this.#saveSuccessfullResult(response as ReturnType<Func>);
+    await this.#saveSuccessfulResult(response as ReturnType<Func>);
   }
 
   /**
@@ -401,7 +401,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    *
    * @param result The result returned by the handler.
    */
-  #saveSuccessfullResult = async (result: ReturnType<Func>): Promise<void> => {
+  #saveSuccessfulResult = async (result: ReturnType<Func>): Promise<void> => {
     try {
       await this.#persistenceStore.saveSuccess(
         this.#functionPayloadToBeHashed,

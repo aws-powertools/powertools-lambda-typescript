@@ -3,8 +3,8 @@
  *
  * @group unit/logger/logger/sampling
  */
-import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
-import { LogLevel, LogLevelThreshold, Logger } from '../../../src/index.js';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
+import { LogLevel, LogLevelThreshold, Logger } from '../../src/index.js';
 
 class CustomConfigService extends EnvironmentVariablesService {
   #sampleRateValue = 1;
@@ -33,7 +33,7 @@ describe('Log sampling', () => {
     const debugSpy = jest.spyOn(console, 'debug');
 
     // Act
-    new Logger({ sampleRateValue: 1 });
+    new Logger({ sampleRateValue: 1, logLevel: LogLevel.CRITICAL });
 
     // Assess
     expect(debugSpy).toHaveBeenCalledTimes(1);

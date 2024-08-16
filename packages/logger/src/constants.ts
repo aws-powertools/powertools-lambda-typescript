@@ -28,6 +28,7 @@ const LogLevel = {
  * Numeric values for each log level.
  */
 const LogLevelThreshold = {
+  TRACE: 6,
   DEBUG: 8,
   INFO: 12,
   WARN: 16,

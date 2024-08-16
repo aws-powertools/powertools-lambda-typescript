@@ -3,8 +3,8 @@
  *
  * @group unit/logger/logger/logLevels
  */
-import { Logger } from '../../../src/Logger.js';
-import { LogJsonIndent, LogLevel } from '../../../src/constants.js';
+import { Logger } from '../../src/Logger.js';
+import { LogJsonIndent, LogLevel } from '../../src/constants.js';
 
 const logSpy = jest.spyOn(console, 'info');
 

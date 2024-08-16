@@ -4,19 +4,19 @@
  * @group unit/logger/logFormatter
  */
 import { AssertionError } from 'node:assert';
-import { EnvironmentVariablesService } from '../../../src/config/EnvironmentVariablesService.js';
-import { PowertoolsLogFormatter } from '../../../src/formatter/PowertoolsLogFormatter.js';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
+import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
 import {
   LogFormatter,
   LogItem,
   LogLevelThreshold,
   Logger,
-} from '../../../src/index.js';
-import type { LogAttributes, LogLevel } from '../../../src/types/Log.js';
+} from '../../src/index.js';
+import type { LogAttributes, LogLevel } from '../../src/types/Log.js';
 import type {
   CustomJsonReplacerFn,
   UnformattedAttributes,
-} from '../../../src/types/Logger.js';
+} from '../../src/types/Logger.js';
 
 const fileNameRegexp = new RegExp(/index.js:\d+$/);
 const fileNameRegexpWithLine = new RegExp(/formatters.test.ts:\d+:\d+/);

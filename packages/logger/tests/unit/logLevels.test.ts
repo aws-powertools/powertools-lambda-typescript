@@ -3,17 +3,19 @@
  *
  * @group unit/logger/logger/logLevels
  */
-import { Logger } from '../../../src/Logger.js';
-import { LogLevel, LogLevelThreshold } from '../../../src/constants.js';
-import type { LogLevel as LogLevelType } from '../../../src/types/Log.js';
-import type { LogFunction } from '../../../src/types/Logger.js';
+import { Logger } from '../../src/Logger.js';
+import { LogLevel, LogLevelThreshold } from '../../src/constants.js';
+import type { LogLevel as LogLevelType } from '../../src/types/Log.js';
+import type { LogFunction } from '../../src/types/Logger.js';
 
 const getConsoleMethod = (
   method: string
-): keyof Omit<LogFunction, 'critical'> =>
+): keyof Omit<LogFunction, 'critical'> | 'log' =>
   method.toLowerCase() === 'critical'
     ? 'error'
-    : (method.toLowerCase() as keyof Omit<LogFunction, 'critical'>);
+    : method.toLowerCase() === 'trace'
+      ? 'log'
+      : (method.toLowerCase() as keyof Omit<LogFunction, 'critical'>);
 
 describe('Log levels', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -79,6 +81,7 @@ describe('Log levels', () => {
   });
 
   it.each([
+    { level: LogLevel.TRACE },
     { level: LogLevel.DEBUG },
     { level: LogLevel.INFO },
     { level: LogLevel.WARN },
@@ -100,6 +103,7 @@ describe('Log levels', () => {
   });
 
   it.each([
+    { level: LogLevel.DEBUG, moreVerboseLevel: LogLevel.TRACE },
     { level: LogLevel.INFO, moreVerboseLevel: LogLevel.DEBUG },
     { level: LogLevel.WARN, moreVerboseLevel: LogLevel.INFO },
     { level: LogLevel.ERROR, moreVerboseLevel: LogLevel.WARN },
@@ -120,6 +124,7 @@ describe('Log levels', () => {
   );
 
   it.each([
+    { level: LogLevel.TRACE, lessVerboseLevel: LogLevel.DEBUG },
     { level: LogLevel.DEBUG, lessVerboseLevel: LogLevel.INFO },
     { level: LogLevel.INFO, lessVerboseLevel: LogLevel.WARN },
     { level: LogLevel.WARN, lessVerboseLevel: LogLevel.ERROR },

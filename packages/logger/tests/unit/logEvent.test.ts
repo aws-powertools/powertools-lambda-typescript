@@ -6,8 +6,8 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-import { Logger } from '../../../src/Logger.js';
-import { injectLambdaContext } from '../../../src/middleware/middy.js';
+import { Logger } from '../../src/Logger.js';
+import { injectLambdaContext } from '../../src/middleware/middy.js';
 
 const event = {
   foo: 'bar',

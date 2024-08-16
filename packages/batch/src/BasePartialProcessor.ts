@@ -116,9 +116,8 @@ abstract class BasePartialProcessor {
      * If this is a sync processor, user should have called processSync instead,
      * so we call the method early to throw the error early thus failing fast.
      */
-    if (this.constructor.name === 'BatchProcessorSync') {
+    if (this.constructor.name === 'BatchProcessorSync')
       await this.processRecord(this.records[0]);
-    }
     this.prepare();
 
     const processingPromises: Promise<SuccessResponse | FailureResponse>[] =

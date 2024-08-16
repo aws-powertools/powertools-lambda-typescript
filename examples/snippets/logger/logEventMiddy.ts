@@ -5,7 +5,7 @@ import middy from '@middy/core';
 const logger = new Logger();
 
 export const handler = middy(async () => {
-  // ... your lambda handler
+  // ... your logic here
 }).use(
   injectLambdaContext(logger, { logEvent: true }) // (1)
 );

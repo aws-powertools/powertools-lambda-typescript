@@ -476,6 +476,7 @@ We support the following log levels:
 
 | Level      | Numeric value |
 | ---------- | ------------- |
+| `TRACE`    | 6             |
 | `DEBUG`    | 8             |
 | `INFO`     | 12            |
 | `WARN`     | 16            |

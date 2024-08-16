@@ -148,6 +148,7 @@ type LoggerInterface = {
   setLogLevel(logLevel: LogLevel): void;
   setPersistentLogAttributes(attributes?: LogAttributes): void;
   shouldLogEvent(overwriteValue?: boolean): boolean;
+  trace(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
   warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
 };
 

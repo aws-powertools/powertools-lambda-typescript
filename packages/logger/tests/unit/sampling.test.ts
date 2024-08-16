@@ -3,6 +3,7 @@
  *
  * @group unit/logger/logger/sampling
  */
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { LogLevel, LogLevelThreshold, Logger } from '../../src/index.js';
 

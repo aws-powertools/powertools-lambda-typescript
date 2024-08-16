@@ -1,9 +1,17 @@
+import { AssertionError } from 'node:assert';
 /**
  * Test Logger formatter
  *
  * @group unit/logger/logFormatter
  */
-import { AssertionError } from 'node:assert';
+import {
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
 import {

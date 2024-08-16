@@ -1,9 +1,10 @@
+import context from '@aws-lambda-powertools/testing-utils/context';
 /**
  * Logger injectLambdaContext tests
  *
  * @group unit/logger/logger/injectLambdaContext
  */
-import context from '@aws-lambda-powertools/testing-utils/context';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { Logger } from '../../src/Logger.js';

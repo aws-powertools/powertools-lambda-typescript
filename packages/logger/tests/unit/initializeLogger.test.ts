@@ -3,6 +3,7 @@
  *
  * @group unit/logger/logger/logLevels
  */
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Logger } from '../../src/Logger.js';
 import { LogJsonIndent, LogLevel } from '../../src/constants.js';
 

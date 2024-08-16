@@ -3,19 +3,33 @@
  *
  * @group unit/logger/logger/logLevels
  */
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Logger } from '../../src/Logger.js';
 import { LogLevel, LogLevelThreshold } from '../../src/constants.js';
 import type { LogLevel as LogLevelType } from '../../src/types/Log.js';
 import type { LogFunction } from '../../src/types/Logger.js';
 
+/**
+ * Helper function to get the console method for a given log level, we use this
+ * for properly mocking the console methods in the tests and account for the
+ * fact that `critical` is not a valid console method, which we proxy to `error`,
+ * and `trace` is internally proxied to `log`.
+ *
+ * @param method - The method to get the console method for
+ */
 const getConsoleMethod = (
   method: string
-): keyof Omit<LogFunction, 'critical'> | 'log' =>
-  method.toLowerCase() === 'critical'
-    ? 'error'
-    : method.toLowerCase() === 'trace'
-      ? 'log'
-      : (method.toLowerCase() as keyof Omit<LogFunction, 'critical'>);
+): keyof Omit<LogFunction, 'critical'> | 'log' => {
+  const lowercaseMethod = method.toLowerCase();
+  switch (lowercaseMethod) {
+    case 'trace':
+      return 'log';
+    case 'critical':
+      return 'error';
+    default:
+      return lowercaseMethod as keyof Omit<LogFunction, 'critical'>;
+  }
+};
 
 describe('Log levels', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -89,9 +103,7 @@ describe('Log levels', () => {
     { level: LogLevel.CRITICAL },
   ])('logs at the correct level when calling $level()', ({ level }) => {
     // Prepare
-    const logSpy = jest
-      .spyOn(console, getConsoleMethod(level))
-      .mockImplementation();
+    const logSpy = jest.spyOn(console, getConsoleMethod(level));
     const logger = new Logger({ logLevel: level });
 
     // Act
@@ -169,7 +181,7 @@ describe('Log levels', () => {
     process.env.AWS_LAMBDA_LOG_LEVEL = LogLevel.INFO;
     process.env.LOG_LEVEL = undefined;
     process.env.POWERTOOLS_LOG_LEVEL = undefined;
-    const warningSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const warningSpy = jest.spyOn(console, 'warn');
 
     // Act
     const logger = new Logger({ logLevel: LogLevel.DEBUG });

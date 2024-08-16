@@ -28,7 +28,6 @@ jobs:
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
         with:
           nodeVersion: ${{ matrix.version }}
-          build: false
       - name: Linting
         run: npm run lint -w ${{ matrix.workspace }}
       - name: Unit tests

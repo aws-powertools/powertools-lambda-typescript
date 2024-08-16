@@ -1,9 +1,9 @@
-import { AssertionError } from 'node:assert';
 /**
  * Test Logger formatter
  *
  * @group unit/logger/logFormatter
  */
+import { AssertionError } from 'node:assert';
 import {
   afterAll,
   beforeEach,

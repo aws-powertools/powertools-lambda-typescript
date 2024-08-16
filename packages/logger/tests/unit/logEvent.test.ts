@@ -1,9 +1,9 @@
-import context from '@aws-lambda-powertools/testing-utils/context';
 /**
  * Logger log event tests
  *
  * @group unit/logger/logger/logEvent
  */
+import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';

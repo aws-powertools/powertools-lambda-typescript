@@ -54,6 +54,7 @@
     "@types/aws-lambda": "^8.10.143",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.2.0",
+    "@vitest/coverage-v8": "^2.0.5",
     "husky": "^9.0.11",
     "jest": "^29.7.0",
     "jest-runner-groups": "^2.2.0",
@@ -67,7 +68,8 @@
     "typedoc": "^0.26.5",
     "typedoc-plugin-missing-exports": "^3.0.0",
     "typedoc-plugin-zod": "^1.2.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   },
   "lint-staged": {
     "*.{js,ts}": "biome check --write",

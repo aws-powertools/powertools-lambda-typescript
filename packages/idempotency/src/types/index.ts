@@ -10,4 +10,12 @@ export type {
   IdempotencyConfigOptions,
   IdempotencyLambdaHandlerOptions,
   IdempotencyHandlerOptions,
+  ItempotentFunctionOptions,
+  AnyFunction,
 } from './IdempotencyOptions.js';
+export type {
+  DynamoDBPersistenceOptions,
+  DynamoDBPersistenceOptionsBase,
+  DynamoDBPersistenceOptionsWithClientConfig,
+  DynamoDBPersistenceOptionsWithClientInstance,
+} from './DynamoDBPersistence.js';

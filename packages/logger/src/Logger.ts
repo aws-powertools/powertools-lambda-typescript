@@ -158,6 +158,7 @@ class Logger extends Utility implements LoggerInterface {
    * The levels are in ascending order from the most verbose to the least verbose (no logs).
    */
   private readonly logLevelThresholds: LogLevelThresholds = {
+    TRACE: 6,
     DEBUG: 8,
     INFO: 12,
     WARN: 16,
@@ -200,7 +201,7 @@ class Logger extends Utility implements LoggerInterface {
    *
    * We keep this value to be able to reset the log level to the initial value when the sample rate is refreshed.
    */
-  #initialLogLevel = 12;
+  #initialLogLevel = this.logLevelThresholds.INFO;
   /**
    * Replacer function used to serialize the log items.
    */
@@ -337,7 +338,7 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     ...extraInput: LogItemExtraInput
   ): void {
-    this.processLogItem(24, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.CRITICAL, input, extraInput);
   }
 
   /**
@@ -348,7 +349,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(8, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.DEBUG, input, extraInput);
   }
 
   /**
@@ -359,7 +360,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(20, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.ERROR, input, extraInput);
   }
 
   /**
@@ -403,7 +404,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(12, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.INFO, input, extraInput);
   }
 
   /**
@@ -497,11 +498,24 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Logs a Lambda invocation event, if it *should*.
+   * Log the AWS Lambda event payload for the current invocation if the environment variable `POWERTOOLS_LOG_EVENT` is set to `true`.
    *
-   ** @param {unknown} event
-   * @param {boolean} [overwriteValue]
-   * @returns {void}
+   * @example
+   * ```ts
+   * process.env.POWERTOOLS_LOG_EVENT = 'true';
+   *
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   *
+   * const logger = new Logger();
+   *
+   * export const handler = async (event) => {
+   *   logger.logEventIfEnabled(event);
+   *   // ... your handler code
+   * }
+   * ```
+   *
+   * @param {unknown} event - The AWS Lambda event payload.
+   * @param {boolean} overwriteValue - Overwrite the environment variable value.
    */
   public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
     if (!this.shouldLogEvent(overwriteValue)) return;
@@ -637,6 +651,17 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
+   * It prints a log item with level TRACE.
+   *
+   * @param {LogItemMessage} input
+   * @param {Error | LogAttributes | string} extraInput
+   * @returns {void}
+   */
+  public trace(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
+    this.processLogItem(this.logLevelThresholds.TRACE, input, extraInput);
+  }
+
+  /**
    * It prints a log item with level WARN.
    *
    * @param {LogItemMessage} input
@@ -644,7 +669,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(16, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.WARN, input, extraInput);
   }
 
   /**
@@ -913,7 +938,7 @@ class Logger extends Utility implements LoggerInterface {
     log.prepareForPrint();
 
     const consoleMethod =
-      logLevel === 24
+      logLevel === this.logLevelThresholds.CRITICAL
         ? 'error'
         : (this.getLogLevelNameFromNumber(logLevel).toLowerCase() as keyof Omit<
             LogFunction,
@@ -970,6 +995,13 @@ class Logger extends Utility implements LoggerInterface {
     } else {
       this.console = console;
     }
+
+    /**
+     * Patch `console.trace` to avoid printing a stack trace and aligning with AWS Lambda behavior - see #2902
+     */
+    this.console.trace = (message: string, ...optionalParams: unknown[]) => {
+      this.console.log(message, ...optionalParams);
+    };
   }
 
   /**
@@ -1050,7 +1082,12 @@ class Logger extends Utility implements LoggerInterface {
       if (this.isValidSampleRate(value)) {
         this.powertoolsLogData.sampleRateValue = value;
 
-        if (value && randomInt(0, 100) / 100 <= value) {
+        if (
+          this.logLevel > this.logLevelThresholds.DEBUG &&
+          value &&
+          randomInt(0, 100) / 100 <= value
+        ) {
+          // only change logLevel if higher than debug, i.e. don't change from e.g. tracing to debug
           this.setLogLevel('DEBUG');
           this.debug('Setting log level to DEBUG due to sampling rate');
         } else {

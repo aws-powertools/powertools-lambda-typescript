@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "The parameters package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -154,17 +154,17 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-appconfigdata": "^3.621.0",
-    "@aws-sdk/client-dynamodb": "^3.621.0",
-    "@aws-sdk/client-secrets-manager": "^3.621.0",
-    "@aws-sdk/client-ssm": "^3.621.0",
-    "@aws-sdk/util-dynamodb": "^3.621.0",
+    "@aws-sdk/client-appconfigdata": "^3.629.0",
+    "@aws-sdk/client-dynamodb": "^3.629.0",
+    "@aws-sdk/client-secrets-manager": "^3.629.0",
+    "@aws-sdk/client-ssm": "^3.629.0",
+    "@aws-sdk/util-dynamodb": "^3.629.0",
     "@smithy/util-base64": "^3.0.0",
     "aws-sdk-client-mock": "^4.0.1",
     "aws-sdk-client-mock-jest": "^4.0.1"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.6.0"
+    "@aws-lambda-powertools/commons": "^2.7.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-appconfigdata": ">=3.x",

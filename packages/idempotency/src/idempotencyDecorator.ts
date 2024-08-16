@@ -50,7 +50,9 @@ import type {
  *   }
  * }
  * ```
- * @see {@link DynamoDBPersistenceLayer}
+ *
+ * @param options - Options to configure the idempotency behavior
+ * @see {@link persistence/DynamoDBPersistenceLayer.DynamoDBPersistenceLayer | DynamoDBPersistenceLayer}
  * @see https://www.typescriptlang.org/docs/handbook/decorators.html
  */
 const idempotent = function (

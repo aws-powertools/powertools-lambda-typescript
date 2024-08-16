@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parser",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -167,6 +167,10 @@
       "require": "./lib/cjs/envelopes/vpc-latticev2.js",
       "import": "./lib/esm/envelopes/vpc-latticev2.js"
     },
+    "./helpers": {
+      "require": "./lib/cjs/helpers.js",
+      "import": "./lib/esm/helpers.js"
+    },
     "./types": {
       "require": "./lib/cjs/types/index.js",
       "import": "./lib/esm/types/index.js"
@@ -174,7 +178,10 @@
   },
   "typesVersions": {
     "*": {
-      "types": ["./lib/cjs/types/index.d.ts", "./lib/esm/types/index.d.ts"],
+      "types": [
+        "./lib/cjs/types/index.d.ts",
+        "./lib/esm/types/index.d.ts"
+      ],
       "middleware": [
         "./lib/cjs/middleware/parser.d.ts",
         "./lib/esm/middleware/parser.d.ts"
@@ -227,7 +234,10 @@
         "./lib/cjs/schemas/lambda.d.ts",
         "./lib/esm/schemas/lambda.d.ts"
       ],
-      "schemas/s3": ["./lib/cjs/schemas/s3.d.ts", "./lib/esm/schemas/s3.d.ts"],
+      "schemas/s3": [
+        "./lib/cjs/schemas/s3.d.ts",
+        "./lib/esm/schemas/s3.d.ts"
+      ],
       "schemas/ses": [
         "./lib/cjs/schemas/ses.d.ts",
         "./lib/esm/schemas/ses.d.ts"
@@ -303,12 +313,18 @@
       "envelopes/vpc-latticev2": [
         "./lib/cjs/envelopes/vpc-latticev2.d.ts",
         "./lib/esm/envelopes/vpc-latticev2.d.ts"
+      ],
+      "helpers": [
+        "./lib/cjs/helpers.d.ts",
+        "./lib/esm/helpers.d.ts"
       ]
     }
   },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

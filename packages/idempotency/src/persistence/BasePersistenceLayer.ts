@@ -1,5 +1,6 @@
 import { type Hash, createHash } from 'node:crypto';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import { search } from '@aws-lambda-powertools/jmespath';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
@@ -15,15 +16,12 @@ import type {
   BasePersistenceLayerOptions,
 } from '../types/BasePersistenceLayer.js';
 import { IdempotencyRecord } from './IdempotencyRecord.js';
-import { LRUCache } from './LRUCache.js';
 
 /**
  * Base class for all persistence layers. This class provides the basic functionality for
  * saving, retrieving, and deleting idempotency records. It also provides the ability to
  * configure the persistence layer from the idempotency config.
- * @abstract
  * @class
- * @implements {BasePersistenceLayerInterface}
  */
 abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   public idempotencyKeyPrefix: string;
@@ -143,8 +141,8 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    *
    * The record is also saved to the local cache if local caching is enabled.
    *
-   * @param record - the stored record to validate against
-   * @param data - the data payload being processed and to be validated against the stored record
+   * @param storedDataRecord - the stored record to validate against
+   * @param processedData - the data payload being processed and to be validated against the stored record
    */
   public processExistingRecord(
     storedDataRecord: IdempotencyRecord,

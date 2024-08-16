@@ -6,5 +6,5 @@ const logger = new Logger();
 
 export const handler = async (event: unknown) => {
   logger.logEventIfEnabled(event); // (1)
-  // ... your handler code
+  // ... your logic here
 };

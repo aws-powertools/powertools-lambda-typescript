@@ -32,7 +32,7 @@ jobs:
       - name: Linting
         run: npm run lint -w ${{ matrix.workspace }}
       - name: Unit tests
-        run: npm run test:coverage -w ${{ matrix.workspace }}
+        run: npm run test:unit:coverage -w ${{ matrix.workspace }}
   run-linting-check-and-unit-tests-on-utilities:
     runs-on: ubuntu-latest
     env:

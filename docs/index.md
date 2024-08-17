@@ -260,6 +260,7 @@ You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for
     | `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
     | `us-west-2`      | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
     | `ap-south-1`     | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `ap-south-2`     | [arn:aws:lambda:ap-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
     | `ap-east-1`      | [arn:aws:lambda:ap-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
     | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
     | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
@@ -281,6 +282,7 @@ You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for
     | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
     | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
     | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `me-central-1`   | [arn:aws:lambda:me-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
     | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:   |
 
 **Want to inspect the contents of the Layer?**

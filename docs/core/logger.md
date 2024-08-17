@@ -160,26 +160,48 @@ In each case, the printed log will look like this:
 
 ### Log incoming event
 
-When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent`.
+When debugging in non-production environments, you can log the incoming event using the `logEventIfEnabled()` method or by setting the `logEvent` option in the `injectLambdaContext()` Middy.js middleware or class method decorator.
 
 ???+ warning
 	This is disabled by default to prevent sensitive info being logged
 
-=== "Middy Middleware"
+=== "`logEventIfEnabled()`"
 
-    ```typescript hl_lines="15"
-    --8<-- "examples/snippets/logger/eventMiddy.ts"
+    ```typescript hl_lines="1 8"
+    --8<-- "examples/snippets/logger/logEventManual.ts"
     ```
+
+    1. You can control the event logging via the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable.
+
+=== "Middy.js Middleware"
+
+    ```typescript hl_lines="10"
+    --8<-- "examples/snippets/logger/logEventMiddy.ts"
+    ```
+
+    1. The `logEvent` option takes precedence over the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable.
 
 === "Decorator"
 
-    ```typescript hl_lines="8"
-    --8<-- "examples/snippets/logger/eventDecorator.ts"
+    ```typescript hl_lines="7"
+    --8<-- "examples/snippets/logger/logEventDecorator.ts"
     ```
 
-    1. Binding your handler method allows your handler to access `this` within the class methods.
+    1. The `logEvent` option takes precedence over the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable.
 
-Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature.
+=== "payload.json"
+
+    ```json
+    --8<-- "examples/snippets/logger/samples/logEventInput.json"
+    ```
+
+=== "CloudWatch output"
+
+    ```json hl_lines="8 13-15"
+    --8<-- "examples/snippets/logger/samples/logEventOutput.json"
+    ```
+
+Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature. When using Middy.js middleware or class method decorator, the `logEvent` option will take precedence over the environment variable.
 
 ### Appending additional keys
 

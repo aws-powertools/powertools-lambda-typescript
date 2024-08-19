@@ -65,9 +65,9 @@
     "middy5": "npm:@middy/core@^5.4.3",
     "ts-jest": "^29.2.4",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.26.5",
+    "typedoc": "^0.26.6",
     "typedoc-plugin-missing-exports": "^3.0.0",
-    "typedoc-plugin-zod": "^1.2.0",
+    "typedoc-plugin-zod": "^1.2.1",
     "typescript": "^5.5.4",
     "vitest": "^2.0.5"
   },

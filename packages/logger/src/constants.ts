@@ -24,4 +24,17 @@ const LogLevel = {
   CRITICAL: 'CRITICAL',
 } as const;
 
-export { LogJsonIndent, LogLevel };
+/**
+ * Numeric values for each log level.
+ */
+const LogLevelThreshold = {
+  TRACE: 6,
+  DEBUG: 8,
+  INFO: 12,
+  WARN: 16,
+  ERROR: 20,
+  CRITICAL: 24,
+  SILENT: 28,
+} as const;
+
+export { LogJsonIndent, LogLevel, LogLevelThreshold };

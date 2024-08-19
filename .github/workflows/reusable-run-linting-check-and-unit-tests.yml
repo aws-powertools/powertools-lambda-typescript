@@ -1,5 +1,31 @@
 name: Run unit tests
 
+# 
+# PROCESS
+#
+# 1. Checkout code
+# 2. Install dependencies & build project
+# 3. Run linting
+# 4. Run unit tests
+#
+# NOTES
+# We create different jobs for different workspaces of the monorepo, since we have slightly different requirements for each.
+# For example, the docs (`check-docs`), runs markdown linting, while the layer (`check-layer-publisher`), examples (`check-examples`),
+# and code snippets (`check-docs-snippets`) jobs run linting and unit tests but only for the current LTS version of Node.js.
+#
+# For the Powertools for AWS main features (aka `packages/*`), instead we run linting and unit tests for all the supported
+# versions of Node.js.
+#
+# Since #2938, we are in the process of improving our test suite, so we are gradually extracting the tests for each package
+# from (`run-linting-check-and-unit-tests-on-utilities`) to their own job, so we can run them in parallel using the matrix
+# strategy and reduce the time it takes to run the tests, as well as improve maintainer experience in case of failures.
+# 
+# USAGE
+#
+# NOTE: meant to be called by ./.github/workflows/pr-run-linting-check-and-unit-tests.yml when a PR is opened or updated,
+# or by ./.github/workflows/make-release.yml when a release is made.
+#
+
 on:
   workflow_call:
 
@@ -7,6 +33,31 @@ permissions:
   contents: read
 
 jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        version: [18, 20]
+        workspace: ["packages/batch"]
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - name: Setup NodeJS
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        with:
+          node-version: ${{ matrix.version }}
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
+        with:
+          nodeVersion: ${{ matrix.version }}
+      - name: Linting
+        run: npm run lint -w ${{ matrix.workspace }}
+      - name: Unit tests
+        run: npm run test:unit:coverage -w ${{ matrix.workspace }}
   run-linting-check-and-unit-tests-on-utilities:
     runs-on: ubuntu-latest
     env:

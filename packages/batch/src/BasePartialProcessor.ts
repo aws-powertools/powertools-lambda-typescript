@@ -115,9 +115,16 @@ abstract class BasePartialProcessor {
     /**
      * If this is a sync processor, user should have called processSync instead,
      * so we call the method early to throw the error early thus failing fast.
+     *
+     * The type casting is necessary to ensure that we have test coverage for the
+     * block of code that throws the error, without having to change the return type
+     * of the method. This is because this call will always throw an error.
      */
     if (this.constructor.name === 'BatchProcessorSync') {
-      await this.processRecord(this.records[0]);
+      return (await this.processRecord(this.records[0])) as (
+        | SuccessResponse
+        | FailureResponse
+      )[];
     }
     this.prepare();
 

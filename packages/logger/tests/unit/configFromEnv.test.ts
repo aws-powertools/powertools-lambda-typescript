@@ -23,6 +23,8 @@ describe('Class: EnvironmentVariablesService', () => {
     const value = service.getAwsLogLevel();
 
     // Assess
+    // The Advanced Logging Controls feature in AWS Lambda supports the `FATAL` log leve, which we don't support
+    // and instead map to `CRITICAL` as per the existing log levels. In this test, we expect the value to be `CRITICAL`.
     expect(value).toEqual('CRITICAL');
   });
 

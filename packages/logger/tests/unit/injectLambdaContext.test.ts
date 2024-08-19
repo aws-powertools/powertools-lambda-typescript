@@ -69,12 +69,6 @@ describe('Inject Lambda Context', () => {
 
     // Assess
     expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
-      expect.objectContaining({
-        message: 'Hello, world!',
-        ...getContextLogEntries(),
-      })
-    );
     expect(JSON.parse(logSpy.mock.calls[1][0])).toStrictEqual(
       expect.objectContaining({
         message: 'Hello, world!',

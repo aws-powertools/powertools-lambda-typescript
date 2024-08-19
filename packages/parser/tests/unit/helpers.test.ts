@@ -3,159 +3,156 @@
  *
  * @group unit/parser
  */
-
 import { z } from 'zod';
 import { JSONStringified } from '../../src/helpers.js';
+import { AlbSchema } from '../../src/schemas/alb.js';
 import {
-  AlbSchema,
   SnsNotificationSchema,
   SnsRecordSchema,
-  SqsRecordSchema,
-  SqsSchema,
-} from '../../src/schemas';
-import type { SnsEvent, SqsEvent } from '../../src/types';
-import { getTestEvent } from './schema/utils';
+} from '../../src/schemas/sns.js';
+import { SqsRecordSchema, SqsSchema } from '../../src/schemas/sqs.js';
+import type { SnsEvent, SqsEvent } from '../../src/types/schema.js';
+import { getTestEvent } from './schema/utils.js';
+
+const bodySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string().email(),
+});
+const envelopeSchema = z.object({
+  body: z.string(),
+});
+const basePayload = {
+  id: 1,
+  name: 'John Doe',
+  email: 'foo@bar.baz',
+};
 
 describe('JSONStringified', () => {
-  const schema = z.object({
-    id: z.number(),
-    name: z.string(),
-    email: z.string().email(),
-  });
-  const baseSchema = z.object({
-    body: z.string(),
-  });
   it('should return a valid JSON', () => {
+    // Prepare
     const data = {
-      body: JSON.stringify({
-        id: 1,
-        name: 'John Doe',
-        email: 'foo@example.com',
-      }),
+      body: JSON.stringify(structuredClone(basePayload)),
     };
 
-    const extendedSchema = baseSchema.extend({
-      body: JSONStringified(schema),
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: JSONStringified(bodySchema),
     });
 
-    const result = extendedSchema.parse(data);
-    expect(result).toEqual({
-      body: { id: 1, name: 'John Doe', email: 'foo@example.com' },
+    // Assess
+    expect(extendedSchema.parse(data)).toStrictEqual({
+      body: basePayload,
     });
   });
 
   it('should throw an error if the JSON payload is invalid', () => {
+    // Prepare
     const data = {
-      body: JSON.stringify({
-        id: 1,
-        name: 'John Doe',
-        email: 'foo',
-      }),
+      body: JSON.stringify({ ...basePayload, email: 'invalid' }),
     };
 
-    const extendedSchema = baseSchema.extend({
-      body: JSONStringified(schema),
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: JSONStringified(bodySchema),
     });
 
+    // Assess
     expect(() => extendedSchema.parse(data)).toThrow();
   });
 
   it('should throw an error if the JSON is malformed', () => {
+    // Prepare
     const data = {
       body: 'invalid',
     };
 
-    const extendedSchema = baseSchema.extend({
-      body: JSONStringified(schema),
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: JSONStringified(bodySchema),
     });
 
+    // Assess
     expect(() => extendedSchema.parse(data)).toThrow();
   });
 
-  describe('should parse common built-in schemas', () => {
-    const customSchema = z.object({
-      id: z.number(),
-      name: z.string(),
-      email: z.string().email(),
+  it('should parse extended AlbSchema', () => {
+    // Prepare
+    const testEvent = getTestEvent({
+      eventsPath: '.',
+      filename: 'albEvent',
+    });
+    testEvent.body = JSON.stringify(structuredClone(basePayload));
+
+    // Act
+    const extendedSchema = AlbSchema.extend({
+      body: JSONStringified(bodySchema),
     });
 
-    const payload = {
-      id: 1,
-      name: 'John Doe',
-      email: 'foo@bar.baz',
-    };
+    // Assess
+    expect(extendedSchema.parse(testEvent)).toStrictEqual({
+      ...testEvent,
+      body: basePayload,
+    });
+  });
 
-    it('should parse extended AlbSchema', () => {
-      const extendedSchema = AlbSchema.extend({
-        body: JSONStringified(customSchema),
-      });
+  it('should parse extended SqsSchema', () => {
+    // Prepare
+    const testEvent = getTestEvent<SqsEvent>({
+      eventsPath: '.',
+      filename: 'sqsEvent',
+    });
+    const stringifiedBody = JSON.stringify(basePayload);
+    testEvent.Records[0].body = stringifiedBody;
+    testEvent.Records[1].body = stringifiedBody;
 
-      const testEvent = getTestEvent({
-        eventsPath: '.',
-        filename: 'albEvent',
-      });
-      testEvent.body = JSON.stringify(payload);
-
-      const result = extendedSchema.parse(testEvent);
-      expect(result).toEqual({
-        ...testEvent,
-        body: payload,
-      });
+    // Act
+    const extendedSchema = SqsSchema.extend({
+      Records: z.array(
+        SqsRecordSchema.extend({
+          body: JSONStringified(bodySchema),
+        })
+      ),
     });
 
-    it('should parse extended SqsSchema', () => {
-      const extendedSchema = SqsSchema.extend({
-        Records: z.array(
-          SqsRecordSchema.extend({
-            body: JSONStringified(customSchema),
-          })
-        ),
-      });
+    // Assess
+    expect(extendedSchema.parse(testEvent)).toStrictEqual({
+      ...testEvent,
+      Records: [
+        { ...testEvent.Records[0], body: basePayload },
+        { ...testEvent.Records[1], body: basePayload },
+      ],
+    });
+  });
 
-      const testEvent = getTestEvent<SqsEvent>({
-        eventsPath: '.',
-        filename: 'sqsEvent',
-      });
-      testEvent.Records[0].body = JSON.stringify(payload);
-      testEvent.Records[1].body = JSON.stringify(payload);
+  it('should parse extended SnsSchema', () => {
+    // Prepare
+    const testEvent = getTestEvent<SnsEvent>({
+      eventsPath: '.',
+      filename: 'snsEvent',
+    });
+    testEvent.Records[0].Sns.Message = JSON.stringify(basePayload);
 
-      const result = extendedSchema.parse(testEvent);
-      expect(result).toEqual({
-        ...testEvent,
-        Records: [
-          { ...testEvent.Records[0], body: payload },
-          { ...testEvent.Records[1], body: payload },
-        ],
-      });
+    // Act
+    const extendedSchema = SqsSchema.extend({
+      Records: z.array(
+        SnsRecordSchema.extend({
+          Sns: SnsNotificationSchema.extend({
+            Message: JSONStringified(bodySchema),
+          }),
+        })
+      ),
     });
 
-    it('should parse extended SnsSchema', () => {
-      const extendedSchema = SqsSchema.extend({
-        Records: z.array(
-          SnsRecordSchema.extend({
-            Sns: SnsNotificationSchema.extend({
-              Message: JSONStringified(customSchema),
-            }),
-          })
-        ),
-      });
-
-      const testEvent = getTestEvent<SnsEvent>({
-        eventsPath: '.',
-        filename: 'snsEvent',
-      });
-      testEvent.Records[0].Sns.Message = JSON.stringify(payload);
-
-      const result = extendedSchema.parse(testEvent);
-      expect(result).toEqual({
-        ...testEvent,
-        Records: [
-          {
-            ...testEvent.Records[0],
-            Sns: { ...testEvent.Records[0].Sns, Message: payload },
-          },
-        ],
-      });
+    // Assess
+    expect(extendedSchema.parse(testEvent)).toStrictEqual({
+      ...testEvent,
+      Records: [
+        {
+          ...testEvent.Records[0],
+          Sns: { ...testEvent.Records[0].Sns, Message: basePayload },
+        },
+      ],
     });
   });
 });

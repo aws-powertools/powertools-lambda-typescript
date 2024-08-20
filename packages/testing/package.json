@@ -8,9 +8,8 @@
   },
   "private": true,
   "scripts": {
-    "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles --verbose",
-    "jest": "jest --detectOpenHandles --verbose",
+    "test": "vitest --run",
+    "test:unit": "vitest --run",
     "test:e2e": "echo 'Not implemented'",
     "watch": "jest --watch",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",

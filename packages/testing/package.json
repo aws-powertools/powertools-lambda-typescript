@@ -30,56 +30,49 @@
   "exports": {
     ".": {
       "require": {
-        "source": "./src/index.ts",
-        "default": "./lib/cjs/index.js",
-        "types": "./lib/cjs/index.d.ts"
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
       },
       "import": {
-        "source": "./src/index.ts",
-        "default": "./lib/esm/index.js",
-        "types": "./lib/esm/index.d.ts"
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
       }
     },
     "./resources/lambda": {
-      "import": {
-        "source": "./src/resources/TestNodejsFunction.ts",
-        "default": "./lib/esm/resources/TestNodejsFunction.js",
-        "types": "./lib/esm/resources/TestNodejsFunction.d.ts"
-      },
-      "require": {
-        "source": "./src/resources/TestNodejsFunction.ts",
-        "default": "./lib/cjs/resources/TestNodejsFunction.js",
-        "types": "./lib/cjs/resources/TestNodejsFunction.d.ts"
-      }
+      "import": "./lib/esm/resources/TestNodejsFunction.js",
+      "require": "./lib/cjs/resources/TestNodejsFunction.js"
     },
     "./resources/dynamodb": {
-      "import": {
-        "source": "./src/resources/TestDynamodbTable.ts",
-        "default": "./lib/esm/resources/TestDynamodbTable.js",
-        "types": "./lib/esm/resources/TestDynamodbTable.d.ts"
-      },
-      "require": {
-        "source": "./src/resources/TestDynamodbTable.ts",
-        "default": "./lib/cjs/resources/TestDynamodbTable.js",
-        "types": "./lib/cjs/resources/TestDynamodbTable.d.ts"
-      }
+      "import": "./lib/esm/resources/TestDynamodbTable.js",
+      "require": "./lib/cjs/resources/TestDynamodbTable.js"
     },
     "./context": {
-      "source": "./src/context.ts",
       "import": "./lib/esm/context.js",
       "require": "./lib/cjs/context.js"
     },
     "./types": {
-      "import": {
-        "source": "./src/types.ts",
-        "default": "./lib/esm/types.js",
-        "types": "./lib/esm/types.d.ts"
-      },
-      "require": {
-        "source": "./src/types.ts",
-        "default": "./lib/cjs/types.js",
-        "types": "./lib/esm/types.d.ts"
-      }
+      "import": "./lib/esm/types.js",
+      "require": "./lib/cjs/types.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "resources/lambda": [
+        "lib/cjs/resources/TestNodejsFunction.d.ts",
+        "lib/esm/resources/TestNodejsFunction.d.ts"
+      ],
+      "resources/dynamodb": [
+        "lib/cjs/resources/TestDynamodbTable.d.ts",
+        "lib/esm/resources/TestDynamodbTable.d.ts"
+      ],
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
+      ],
+      "context": [
+        "lib/cjs/context.d.ts",
+        "lib/esm/context.d.ts"
+      ]
     }
   },
   "types": "./lib/cjs/index.d.ts",

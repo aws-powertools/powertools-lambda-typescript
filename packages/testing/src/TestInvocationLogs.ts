@@ -110,6 +110,15 @@ class TestInvocationLogs {
   }
 
   /**
+   * Return the log that contains the report of the function `REPORT RequestId`
+   */
+  public getReportLog(): string {
+    const endLogIndex = TestInvocationLogs.getReportLogIndex(this.logs);
+
+    return this.logs[endLogIndex];
+  }
+
+  /**
    * Return the index of the log that contains `REPORT RequestId`
    * @param logs
    * @returns {number} index of the log that contains `REPORT RequestId`

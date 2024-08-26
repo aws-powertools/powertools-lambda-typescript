@@ -122,15 +122,60 @@ class Metrics extends Utility implements MetricsInterface {
    * @private
    */
   private console!: Console;
+  /**
+   * Custom configuration service for metrics
+   */
   private customConfigService?: ConfigServiceInterface;
+
+  /**
+   * Default dimensions to be added to all metrics
+   * @default {}
+   */
   private defaultDimensions: Dimensions = {};
+
+  /**
+   * Additional dimensions for the current metrics context
+   * @default {}
+   */
   private dimensions: Dimensions = {};
+
+  /**
+   * Service for accessing environment variables
+   */
   private envVarsService?: EnvironmentVariablesService;
+
+  /**
+   * Name of the Lambda function
+   */
   private functionName?: string;
+
+  /**
+   * Flag indicating if this is a single metric instance
+   * @default false
+   */
   private isSingleMetric = false;
+
+  /**
+   * Additional metadata to be included with metrics
+   * @default {}
+   */
   private metadata: Record<string, string> = {};
+
+  /**
+   * Namespace for the metrics
+   */
   private namespace?: string;
+
+  /**
+   * Flag to determine if an error should be thrown when no metrics are recorded
+   * @default false
+   */
   private shouldThrowOnEmptyMetrics = false;
+
+  /**
+   * Storage for metrics before they are published
+   * @default {}
+   */
   private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {

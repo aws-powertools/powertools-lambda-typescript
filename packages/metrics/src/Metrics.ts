@@ -64,7 +64,7 @@ import type {
  *
  * ### Object oriented way with decorator
  *
- * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the [@metrics.logMetrics()](./_aws_lambda_powertools_metrics.Metrics.html#logMetrics) decorator to automatically:
+ * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the {@link Metrics.logMetrics} decorator to automatically:
  *   * capture a `ColdStart` metric
  *   * flush buffered metrics
  *   * throw on empty metrics
@@ -323,8 +323,6 @@ class Metrics extends Utility implements MetricsInterface {
    * const handlerClass = new Lambda();
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
-   *
-   * @decorator Class
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
     const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =

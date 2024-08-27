@@ -11,7 +11,6 @@ import type { ConfigServiceInterface } from '../types/ConfigServiceInterface.js'
  *
  * @class
  * @extends {CommonEnvironmentVariablesService}
- * @implements {ConfigServiceInterface}
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  */
@@ -33,15 +32,13 @@ class EnvironmentVariablesService
   private tzVariable = 'TZ';
 
   /**
-   * It returns the value of the `AWS_LAMBDA_LOG_LEVEL` environment variable.
+   * Return the value of the `AWS_LAMBDA_LOG_LEVEL` environment variable.
    *
    * The `AWS_LAMBDA_LOG_LEVEL` environment variable is set by AWS Lambda when configuring
    * the function's log level using the Advanced Logging Controls feature. This value always
    * takes precedence over other means of configuring the log level.
    *
-   * @note we need to map the `FATAL` log level to `CRITICAL`, see {@link https://docs.aws.amazon.com/lambda/latest/dg/configuration-logging.html#configuration-logging-log-levels AWS Lambda Log Levels}.
-   *
-   * @returns {string}
+   * We need to map the `FATAL` log level to `CRITICAL`, see {@link https://docs.aws.amazon.com/lambda/latest/dg/configuration-logging.html#configuration-logging-log-levels AWS Lambda Log Levels}.
    */
   public getAwsLogLevel(): string {
     const awsLogLevelVariable = this.get(this.awsLogLevelVariable);
@@ -50,27 +47,21 @@ class EnvironmentVariablesService
   }
 
   /**
-   * It returns the value of the AWS_REGION environment variable.
-   *
-   * @returns {string}
+   * Return the value of the AWS_REGION environment variable.
    */
   public getAwsRegion(): string {
     return this.get(this.awsRegionVariable);
   }
 
   /**
-   * It returns the value of the ENVIRONMENT environment variable.
-   *
-   * @returns {string}
+   * Return the value of the ENVIRONMENT environment variable.
    */
   public getCurrentEnvironment(): string {
     return this.get(this.currentEnvironmentVariable);
   }
 
   /**
-   * It returns the value of the AWS_LAMBDA_FUNCTION_MEMORY_SIZE environment variable.
-   *
-   * @returns {string}
+   * Return the value of the AWS_LAMBDA_FUNCTION_MEMORY_SIZE environment variable.
    */
   public getFunctionMemory(): number {
     const value = this.get(this.memoryLimitInMBVariable);
@@ -79,27 +70,21 @@ class EnvironmentVariablesService
   }
 
   /**
-   * It returns the value of the AWS_LAMBDA_FUNCTION_NAME environment variable.
-   *
-   * @returns {string}
+   * Return the value of the AWS_LAMBDA_FUNCTION_NAME environment variable.
    */
   public getFunctionName(): string {
     return this.get(this.functionNameVariable);
   }
 
   /**
-   * It returns the value of the AWS_LAMBDA_FUNCTION_VERSION environment variable.
-   *
-   * @returns {string}
+   * Return the value of the AWS_LAMBDA_FUNCTION_VERSION environment variable.
    */
   public getFunctionVersion(): string {
     return this.get(this.functionVersionVariable);
   }
 
   /**
-   * It returns the value of the POWERTOOLS_LOGGER_LOG_EVENT environment variable.
-   *
-   * @returns {boolean}
+   * Return the value of the POWERTOOLS_LOGGER_LOG_EVENT environment variable.
    */
   public getLogEvent(): boolean {
     const value = this.get(this.logEventVariable);
@@ -108,13 +93,11 @@ class EnvironmentVariablesService
   }
 
   /**
-   * It returns the value of the `POWERTOOLS_LOG_LEVEL, or `LOG_LEVEL` (legacy) environment variables
+   * Return the value of the `POWERTOOLS_LOG_LEVEL` or `LOG_LEVEL` (legacy) environment variables
    * when the first one is not set.
    *
-   * @note The `LOG_LEVEL` environment variable is considered legacy and will be removed in a future release.
-   * @note The `AWS_LAMBDA_LOG_LEVEL` environment variable always takes precedence over the ones above.
-   *
-   * @returns {string}
+   * The `LOG_LEVEL` environment variable is considered legacy and will be removed in a future release.
+   * The `AWS_LAMBDA_LOG_LEVEL` environment variable always takes precedence over the ones above.
    */
   public getLogLevel(): string {
     const logLevelVariable = this.get(this.logLevelVariable);
@@ -124,9 +107,7 @@ class EnvironmentVariablesService
   }
 
   /**
-   * It returns the value of the POWERTOOLS_LOGGER_SAMPLE_RATE environment variable.
-   *
-   * @returns {number|undefined}
+   * Return the value of the POWERTOOLS_LOGGER_SAMPLE_RATE environment variable.
    */
   public getSampleRateValue(): number | undefined {
     const value = this.get(this.sampleRateValueVariable);
@@ -135,9 +116,7 @@ class EnvironmentVariablesService
   }
 
   /**
-   * It returns the value of the `TZ` environment variable or `UTC` if it is not set.
-   *
-   * @returns {string}
+   * Return the value of the `TZ` environment variable or `UTC` if it is not set.
    */
   public getTimezone(): string {
     const value = this.get(this.tzVariable);

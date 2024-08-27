@@ -102,6 +102,9 @@ type PowertoolsLog = LogAttributes & {
   lambda_request_id?: string;
 };
 
+/**
+ * @interface
+ */
 interface LogItemInterface {
   addAttributes(attributes: LogAttributes): void;
   getAttributes(): LogAttributes;
@@ -110,6 +113,12 @@ interface LogItemInterface {
   setAttributes(attributes: LogAttributes): void;
 }
 
+/**
+ * Options for the `LogFormatter`.
+ *
+ * @type {Object} LogFormatterOptions
+ * @property {EnvironmentVariablesService} [envVarsService] - EnvironmentVariablesService instance.
+ */
 type LogFormatterOptions = {
   /**
    * EnvironmentVariablesService instance.
@@ -123,11 +132,10 @@ type LogFormatterOptions = {
  */
 interface LogFormatterInterface {
   /**
-   * It formats key-value pairs of log attributes.
+   * Format key-value pairs of log attributes.
    *
-   * @param {UnformattedAttributes} attributes
-   * @param {LogAttributes} additionalLogAttributes
-   * @returns {LogItem}
+   * @param {UnformattedAttributes} attributes - Unformatted attributes
+   * @param {LogAttributes} additionalLogAttributes - Additional log attributes
    */
   formatAttributes(
     attributes: UnformattedAttributes,
@@ -135,26 +143,23 @@ interface LogFormatterInterface {
   ): LogItem;
 
   /**
-   * It formats a given Error parameter.
+   * Format a given Error parameter.
    *
-   * @param {Error} error
-   * @returns {LogAttributes}
+   * @param {Error} error - Error to format
    */
   formatError(error: Error): LogAttributes;
 
   /**
-   * It formats a date into a string in simplified extended ISO format (ISO 8601).
+   * Format a date into a string in simplified extended ISO format (ISO 8601).
    *
-   * @param {Date} now
-   * @returns {string}
+   * @param {Date} now - Date to format
    */
   formatTimestamp(now: Date): string;
 
   /**
-   * It returns a string containing the location of an error, given a particular stack trace.
+   * Get a string containing the location of an error, given a particular stack trace.
    *
-   * @param stack
-   * @returns {string}
+   * @param {string} stack - Stack trace
    */
   getCodeLocation(stack?: string): string;
 }

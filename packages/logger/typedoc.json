@@ -1,5 +1,12 @@
 {
   "extends": ["../../typedoc.base.json"],
-  "entryPoints": ["./src/index.ts", "./src/types", "./src/middleware"],
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/types/index.ts",
+    "./src/types/ConfigServiceInterface.ts",
+    "./src/middleware/middy.ts",
+    "./src/formatter/LogFormatter.ts",
+    "./src/config/EnvironmentVariablesService.ts"
+  ],
   "readme": "README.md"
 }

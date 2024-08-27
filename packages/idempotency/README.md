@@ -1,9 +1,24 @@
-# Powertools for AWS Lambda (TypeScript) - Idempotency Utility
+# Powertools for AWS Lambda (TypeScript) - Idempotency Utility <!-- omit in toc -->
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement
 Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
 You can use the package in both TypeScript and JavaScript code bases.
+
+- [Intro](#intro)
+- [Usage](#usage)
+    - [Function wrapper](#function-wrapper)
+    - [Decorator](#decorator)
+    - [Middy middleware](#middy-middleware)
+    - [DynamoDB persistence layer](#dynamodb-persistence-layer)
+- [Contribute](#contribute)
+- [Roadmap](#roadmap)
+- [Connect](#connect)
+- [How to support Powertools for AWS Lambda (TypeScript)?](#how-to-support-powertools-for-aws-lambda-typescript)
+    - [Becoming a reference customer](#becoming-a-reference-customer)
+    - [Sharing your work](#sharing-your-work)
+    - [Using Lambda Layer](#using-lambda-layer)
+- [License](#license)
 
 ## Intro
 

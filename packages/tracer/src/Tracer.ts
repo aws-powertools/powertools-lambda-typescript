@@ -40,7 +40,7 @@ const { Subsegment: XraySubsegment } = xraySdk;
  *
  * ### Functions usage with middleware
  *
- * If you use function-based Lambda handlers you can use the [captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html) middy middleware to automatically:
+ * If you use function-based Lambda handlers you can use the {@link Tracer.captureLambdaHandler} middy middleware to automatically:
  * * handle the subsegment lifecycle
  * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
@@ -63,7 +63,7 @@ const { Subsegment: XraySubsegment } = xraySdk;
  *
  * ### Object oriented usage with decorators
  *
- * If instead you use TypeScript Classes to wrap your Lambda handler you can use the [@tracer.captureLambdaHandler()](./_aws_lambda_powertools_tracer.Tracer.html#captureLambdaHandler) decorator to automatically:
+ * If instead you use TypeScript Classes to wrap your Lambda handler you can use the {@link Tracer.captureLambdaHandler} decorator to automatically:
  * * handle the subsegment lifecycle
  * * add the `ServiceName` and `ColdStart` annotations
  * * add the function response as metadata
@@ -128,22 +128,48 @@ const { Subsegment: XraySubsegment } = xraySdk;
  * ```
  */
 class Tracer extends Utility implements TracerInterface {
+  /**
+   * The provider service interface used by the Tracer.
+   * This interface defines the methods and properties that a provider service must implement.
+   */
   public provider: ProviderServiceInterface;
 
+  /**
+   * Flag indicating whether to capture errors.
+   * This is used to determine if errors should be added to the trace as metadata.
+   *
+   * @default true
+   */
   private captureError = true;
-
+  /**
+   * Flag indicating whether to capture HTTP(s) requests.
+   * @default true
+   */
   private captureHTTPsRequests = true;
-
+  /**
+   * Flag indicating whether to capture response data.
+   * @default true
+   */
   private captureResponse = true;
-
+  /**
+   * The custom configuration service used by the Tracer.
+   */
   private customConfigService?: ConfigServiceInterface;
 
-  // envVarsService is always initialized in the constructor in setOptions()
+  /**
+   * The environment variables service used by the Tracer, is always initialized in the constructor in setOptions().
+   */
   private envVarsService!: EnvironmentVariablesService;
 
   // serviceName is always initialized in the constructor in setOptions()
+  /**
+   * The name of the service, is always initialized in the constructor in setOptions().
+   */
   private serviceName!: string;
-
+  /**
+   * Flag indicating whether tracing is enabled.
+   * @default true
+   */
   private tracingEnabled = true;
 
   public constructor(options: TracerOptions = {}) {
@@ -210,7 +236,6 @@ class Tracer extends Utility implements TracerInterface {
 
   /**
    * Add service name to the current segment or subsegment as annotation.
-   *
    */
   public addServiceNameAnnotation(): void {
     if (!this.isTracingEnabled()) {
@@ -255,7 +280,6 @@ class Tracer extends Utility implements TracerInterface {
    *
    * @deprecated Use {@link captureAWSv3Client} instead.
    * @param aws - AWS SDK v2 import
-   * @returns AWS - Instrumented AWS SDK
    */
   public captureAWS<T>(aws: T): T {
     if (!this.isTracingEnabled()) return aws;
@@ -284,7 +308,6 @@ class Tracer extends Utility implements TracerInterface {
    * ```
    * @deprecated Use {@link captureAWSv3Client} instead.
    * @param service - AWS SDK v2 client
-   * @returns service - Instrumented AWS SDK v2 client
    */
   public captureAWSClient<T>(service: T): T {
     if (!this.isTracingEnabled()) return service;
@@ -327,7 +350,6 @@ class Tracer extends Utility implements TracerInterface {
    * ```
    *
    * @param service - AWS SDK v3 client
-   * @returns service - Instrumented AWS SDK v3 client
    */
   public captureAWSv3Client<T>(service: T): T {
     if (!this.isTracingEnabled()) return service;
@@ -365,7 +387,6 @@ class Tracer extends Utility implements TracerInterface {
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    *
-   * @decorator Class
    * @param options - (_optional_) Options for the decorator
    */
   public captureLambdaHandler(
@@ -454,7 +475,6 @@ class Tracer extends Utility implements TracerInterface {
    * export const handler = handlerClass.handler.bind(handlerClass);;
    * ```
    *
-   * @decorator Class
    * @param options - (_optional_) Options for the decorator
    */
   public captureMethod<T extends AnyClass>(
@@ -542,8 +562,6 @@ class Tracer extends Utility implements TracerInterface {
    *   }
    * }
    * ```
-   *
-   * @returns string - The root X-Ray trace id.
    */
   public getRootXrayTraceId(): string | undefined {
     return this.envVarsService.getXrayTraceId();
@@ -568,8 +586,6 @@ class Tracer extends Utility implements TracerInterface {
    *   ... // Do something with segment
    * }
    * ```
-   *
-   * @returns The active segment or subsegment in the current scope. Will log a warning and return `undefined` if no segment is found.
    */
   public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {
@@ -591,8 +607,6 @@ class Tracer extends Utility implements TracerInterface {
    * Utility method that returns the current AWS X-Ray Sampled flag.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-traces
-   *
-   * @returns boolean - `true` if the trace is sampled, `false` if tracing is disabled or the trace is not sampled.
    */
   public isTraceSampled(): boolean {
     if (!this.isTracingEnabled()) return false;
@@ -605,15 +619,13 @@ class Tracer extends Utility implements TracerInterface {
    *
    * You can use this method during manual instrumentation to determine
    * if tracer is currently enabled.
-   *
-   * @returns tracingEnabled - `true` if tracing is enabled, `false` otherwise.
    */
   public isTracingEnabled(): boolean {
     return this.tracingEnabled;
   }
 
   /**
-   * Adds annotation to existing segment or subsegment.
+   * Add annotation to existing segment or subsegment.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-segment.html#xray-sdk-nodejs-segment-annotations
    *
@@ -638,7 +650,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Adds metadata to existing segment or subsegment.
+   * Add metadata to existing segment or subsegment.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-segment.html#xray-sdk-nodejs-segment-metadata
    *
@@ -669,7 +681,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Sets the passed subsegment as the current active subsegment.
+   * Set the passed subsegment as the current active subsegment.
    *
    * If you are using a middleware or a decorator this is done automatically for you.
    *
@@ -705,7 +717,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Getter for `envVarsService`.
+   * Get for `envVarsService`.
    * Used internally during initialization.
    */
   private getEnvVarsService(): EnvironmentVariablesService {
@@ -740,7 +752,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Setter for `captureError` based on configuration passed and environment variables.
+   * Set `captureError` based on configuration passed and environment variables.
    * Used internally during initialization.
    */
   private setCaptureError(): void {
@@ -772,7 +784,6 @@ class Tracer extends Utility implements TracerInterface {
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-httpclients.html
    *
    * @param enabled - Whether or not to patch all HTTP clients
-   * @returns void
    */
   private setCaptureHTTPsRequests(enabled?: boolean): void {
     if (enabled !== undefined && !enabled) {
@@ -801,7 +812,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Setter for `captureResponse` based on configuration passed and environment variables.
+   * Set `captureResponse` based on configuration passed and environment variables.
    * Used internally during initialization.
    */
   private setCaptureResponse(): void {
@@ -825,7 +836,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Setter for `customConfigService` based on configuration passed.
+   * Set `customConfigService` based on configuration passed.
    * Used internally during initialization.
    *
    * @param customConfigService - Custom configuration service to use
@@ -839,7 +850,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Setter and initializer for `envVarsService`.
+   * Set and initialize `envVarsService`.
    * Used internally during initialization.
    */
   private setEnvVarsService(): void {
@@ -868,7 +879,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Setter for `customConfigService` based on configurations passed and environment variables.
+   * Set `customConfigService` based on configurations passed and environment variables.
    * Used internally during initialization.
    *
    * @param serviceName - Name of the service to use
@@ -900,7 +911,7 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Setter for `tracingEnabled` based on configurations passed and environment variables.
+   * Set `tracingEnabled` based on configurations passed and environment variables.
    * Used internally during initialization.
    *
    * @param enabled - Whether or not tracing is enabled

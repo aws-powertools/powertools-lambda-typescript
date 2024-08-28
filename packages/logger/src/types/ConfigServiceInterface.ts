@@ -15,41 +15,33 @@ interface ConfigServiceInterface extends ConfigServiceBaseInterface {
    * the function's log level using the Advanced Logging Controls feature. This value always
    * takes precedence over other means of configuring the log level.
    *
-   * @note we need to map the `FATAL` log level to `CRITICAL`, see {@link https://docs.aws.amazon.com/lambda/latest/dg/configuration-logging.html#configuration-logging-log-levels AWS Lambda Log Levels}.
+   * We need to map the `FATAL` log level to `CRITICAL`, see {@link https://docs.aws.amazon.com/lambda/latest/dg/configuration-logging.html#configuration-logging-log-levels AWS Lambda Log Levels}.
    *
    * @returns {string}
    */
   getAwsLogLevel(): string;
 
   /**
-   * It returns the value of the ENVIRONMENT environment variable.
-   *
-   * @returns {string}
+   * Return the value of the `ENVIRONMENT` environment variable.
    */
   getCurrentEnvironment(): string;
 
   /**
-   * It returns the value of the POWERTOOLS_LOGGER_LOG_EVENT environment variable.
-   *
-   * @returns {boolean}
+   * Return the value of the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable.
    */
   getLogEvent(): boolean;
 
   /**
-   * It returns the value of the `POWERTOOLS_LOG_LEVEL, or `LOG_LEVEL` (legacy) environment variables
+   * Return the value of the `POWERTOOLS_LOG_LEVEL` or `LOG_LEVEL` (legacy) environment variables
    * when the first one is not set.
    *
-   * @note The `LOG_LEVEL` environment variable is considered legacy and will be removed in a future release.
-   * @note The `AWS_LAMBDA_LOG_LEVEL` environment variable always takes precedence over the ones above.
-   *
-   * @returns {string}
+   * The `LOG_LEVEL` environment variable is considered legacy and will be removed in a future release.
+   * The `AWS_LAMBDA_LOG_LEVEL` environment variable always takes precedence over the ones above.
    */
   getLogLevel(): string;
 
   /**
-   * It returns the value of the POWERTOOLS_LOGGER_SAMPLE_RATE environment variable.
-   *
-   * @returns {string|undefined}
+   * Return the value of the `POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable.
    */
   getSampleRateValue(): number | undefined;
 }

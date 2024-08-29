@@ -51,7 +51,7 @@ type SecretsProviderOptions =
 /**
  * Options to configure the retrieval of a secret.
  *
- * @interface SecretsGetOptionsInterface
+ * @interface SecretsGetOptionsBase
  * @extends {GetOptionsInterface}
  * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
  * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.

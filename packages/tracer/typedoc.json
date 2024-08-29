@@ -3,8 +3,7 @@
   "entryPoints": [
     "./src/index.ts",
     "./src/types/index.ts",
-    "./src/middleware/middy.ts",
-    "./src/provider/ProviderService.ts"
+    "./src/middleware/middy.ts"
   ],
   "readme": "README.md"
 }

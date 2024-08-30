@@ -22,8 +22,6 @@ import type {
  * This class extends the {@link BasePartialProcessor} class and adds additional
  * functionality to handle batch processing. Specifically, it provides methods
  * to collect failed records and build the partial failure response.
- *
- * @abstract
  */
 abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   /**

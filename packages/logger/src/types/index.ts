@@ -5,9 +5,6 @@ export type {
   LogLevelThresholds,
   LogAttributes,
   LogLevel,
-  LogFormatterInterface,
-  LogItemInterface,
-  LogFormatterOptions,
 } from './Log.js';
 export type {
   LogItemMessage,
@@ -19,7 +16,4 @@ export type {
   InjectLambdaContextOptions,
   CustomJsonReplacerFn,
   LoggerInterface,
-  BaseConstructorOptions,
-  PersistentKeysOption,
-  DeprecatedOption,
 } from './Logger.js';

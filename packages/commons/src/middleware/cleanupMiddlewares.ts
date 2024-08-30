@@ -59,7 +59,6 @@ const isFunction = (obj: unknown): obj is CleanupFunction => {
  * ```
  *
  * @param request The Middy request object
- * @param options An optional object that can be used to pass options to the function
  */
 const cleanupMiddlewares = async (request: MiddyLikeRequest): Promise<void> => {
   const cleanupFunctionNames = [

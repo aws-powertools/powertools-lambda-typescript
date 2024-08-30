@@ -10,11 +10,3 @@ layers/*/CHANGELOG.md
 LICENSE
 .github/**
 **node_modules/** */
-# these will be removed from the ignore and linted in future PRs
-packages/batch/README.md
-packages/commons/README.md
-packages/jmespath/README.md
-packages/logger/README.md
-packages/metrics/README.md
-packages/parameters/README.md
-packages/tracer/README.md

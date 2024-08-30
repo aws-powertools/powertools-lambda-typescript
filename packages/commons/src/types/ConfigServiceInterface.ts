@@ -1,6 +1,4 @@
 /**
- * @abstract ConfigServiceInterface
- *
  * This class defines common methods and variables that can be set by the developer
  * in the runtime.
  */

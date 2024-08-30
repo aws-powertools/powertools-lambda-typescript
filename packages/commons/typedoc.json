@@ -5,6 +5,7 @@
   "entryPoints": [
     "./src/index.ts",
     "./src/types/index.ts",
+    "./src/middleware/cleanupMiddlewares.ts",
     "./src/typeUtils.ts",
     "./src/fromBase64.ts",
     "./src/LRUCache.ts"

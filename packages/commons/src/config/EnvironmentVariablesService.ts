@@ -17,7 +17,6 @@ import type { ConfigServiceInterface } from '../types/ConfigServiceInterface.js'
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  *
  * @class
- * @implements {ConfigServiceInterface}
  */
 class EnvironmentVariablesService implements ConfigServiceInterface {
   /**

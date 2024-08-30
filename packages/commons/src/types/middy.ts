@@ -3,7 +3,7 @@ import type { Context } from 'aws-lambda';
 /**
  * This type represents the shape of a Middy.js request object.
  *
- * @note We need to define these types and interfaces here because we can't import them from Middy.js.
+ * We need to define these types and interfaces here because we can't import them from Middy.js.
  *
  * Importing them from Middy.js would introduce a dependency on it, which we don't want
  * because we want to keep it as an optional dependency.
@@ -72,7 +72,8 @@ type MiddyLikeRequest = {
  * Each Powertools for AWS middleware that needs to perform cleanup operations will
  * store a cleanup function with this signature in the `request.internal` object.
  *
- * @see {@link cleanupMiddlewares}
+ * @see {@link middleware/cleanupMiddlewares.cleanupMiddlewares}
+ *
  */
 type CleanupFunction = (request: MiddyLikeRequest) => Promise<void>;
 

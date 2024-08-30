@@ -99,7 +99,7 @@ class ProviderService implements ProviderServiceInterface {
     /**
      * Create a segment at the start of a request made with `undici` or `fetch`.
      *
-     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     * That `message` must be `unknown` because that's the type expected by `subscribe`
      *
      * @param message The message received from the `undici` channel
      */
@@ -129,7 +129,7 @@ class ProviderService implements ProviderServiceInterface {
      * Enrich the subsegment with the response details, and close it.
      * Then, set the parent segment as the active segment.
      *
-     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     * `message` must be `unknown` because that's the type expected by `subscribe`
      *
      * @param message The message received from the `undici` channel
      */
@@ -174,7 +174,7 @@ class ProviderService implements ProviderServiceInterface {
      * This is used to handle the case when the request fails to establish a connection with the server or timeouts.
      * In all other cases, for example, when the server returns a 4xx or 5xx status code, the error is added in the `onResponse` function.
      *
-     * @note that `message` must be `unknown` because that's the type expected by `subscribe`
+     * that `message` must be `unknown` because that's the type expected by `subscribe`
      *
      * @param message The message received from the `undici` channel
      */

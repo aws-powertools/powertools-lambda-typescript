@@ -29,6 +29,7 @@ export type {
   KinesisFireHoseSqsEvent,
   LambdaFunctionUrlEvent,
   SesEvent,
+  SnsSqsNotification,
   S3ObjectLambdaEvent,
   VpcLatticeEvent,
   VpcLatticeEventV2,

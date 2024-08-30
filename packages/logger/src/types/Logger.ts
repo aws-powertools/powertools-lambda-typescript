@@ -40,7 +40,7 @@ type InjectLambdaContextOptions = {
    */
   clearState?: boolean;
   /**
-   * If `true`, the logger will reset the keys added via {@link `appendKeys()`}
+   * If `true`, the logger will reset the keys added via {@link index.Logger.appendKeys()}
    */
   resetKeys?: boolean;
 };

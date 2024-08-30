@@ -197,7 +197,4 @@ export type {
   ConstructorOptions,
   InjectLambdaContextOptions,
   CustomJsonReplacerFn,
-  BaseConstructorOptions,
-  PersistentKeysOption,
-  DeprecatedOption,
 };

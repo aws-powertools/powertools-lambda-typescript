@@ -13,8 +13,9 @@
     "layers",
     "examples/**",
     "packages/event-handler",
+    "packages/testing"
   ],
-  "plugin": ["typedoc-plugin-zod"],
+  "plugin": ["typedoc-plugin-zod", "typedoc-plugin-missing-exports"],
   "skipErrorChecking": true,
   "excludePrivate": true,
   "visibilityFilters": {

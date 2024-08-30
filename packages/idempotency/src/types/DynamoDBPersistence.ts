@@ -62,7 +62,7 @@ interface DynamoDBPersistenceOptionsWithClientInstance
 }
 
 /**
- * Options for the {@link DynamoDBPersistenceLayer} class constructor.
+ * Options for the {@link persistence/DynamoDBPersistenceLayer.DynamoDBPersistenceLayer | DynamoDBPersistenceLayer} class constructor.
  *
  * @see {@link DynamoDBPersistenceOptionsBase}, {@link DynamoDBPersistenceOptionsWithClientConfig}, and {@link DynamoDBPersistenceOptionsWithClientInstance} for full list of properties.
  *

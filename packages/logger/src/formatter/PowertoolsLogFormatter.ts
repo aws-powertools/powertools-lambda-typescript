@@ -1,4 +1,3 @@
-import merge from 'lodash.merge';
 import type { LogAttributes, PowertoolsLog } from '../types/Log.js';
 import type { UnformattedAttributes } from '../types/Logger.js';
 import { LogFormatter } from './LogFormatter.js';
@@ -40,16 +39,21 @@ class PowertoolsLogFormatter extends LogFormatter {
     const orderedAttributes = {} as PowertoolsLog;
 
     // If logRecordOrder is set, order the attributes in the log item
-    this.logRecordOrder?.forEach((key) => {
-      if (key in baseAttributes) {
+    for (const key of this.logRecordOrder || []) {
+      if (key in baseAttributes && !(key in orderedAttributes)) {
         orderedAttributes[key] = baseAttributes[key];
-        delete baseAttributes[key];
       }
-    });
+    }
+
+    for (const key in baseAttributes) {
+      if (!(key in orderedAttributes)) {
+        orderedAttributes[key] = baseAttributes[key];
+      }
+    }
 
     // Merge the ordered attributes with the rest of the attributes
     const powertoolsLogItem = new LogItem({
-      attributes: merge(orderedAttributes, baseAttributes),
+      attributes: orderedAttributes,
     });
 
     powertoolsLogItem.addAttributes(additionalLogAttributes);

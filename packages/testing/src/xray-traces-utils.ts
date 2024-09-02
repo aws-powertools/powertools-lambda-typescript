@@ -119,11 +119,9 @@ const parseAndSortTrace = (trace: Trace, expectedSegmentsCount: number) => {
 
   return {
     Id: id as string,
-    Segments: [
-      ...parsedSegments.sort(
-        (a, b) => a.Document.start_time - b.Document.start_time
-      ),
-    ],
+    Segments: [...parsedSegments].sort(
+      (a, b) => a.Document.start_time - b.Document.start_time
+    ),
   };
 };
 

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { RetentionDays, LogGroup } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import type { TestStack } from '../TestStack.js';
 import { TEST_ARCHITECTURES, TEST_RUNTIMES } from '../constants.js';
 import {
@@ -31,7 +31,7 @@ class TestNodejsFunction extends NodejsFunction {
     });
     const resourceId = randomUUID().substring(0, 5);
 
-    const logGroup = new LogGroup(this, `log-${resourceId}`, {
+    const logGroup = new LogGroup(stack.stack, `log-${resourceId}`, {
       logGroupName: `/aws/lambda/${functionName}`,
       retention: RetentionDays.ONE_DAY,
     });

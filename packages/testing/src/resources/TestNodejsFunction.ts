@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { RetentionDays, LogGroup } from 'aws-cdk-lib/aws-logs';
 import type { TestStack } from '../TestStack.js';
 import { TEST_ARCHITECTURES, TEST_RUNTIMES } from '../constants.js';
 import {
@@ -25,8 +25,17 @@ class TestNodejsFunction extends NodejsFunction {
   ) {
     const isESM = extraProps.outputFormat === 'ESM';
     const { bundling, ...restProps } = props;
+    const functionName = concatenateResourceName({
+      testName: stack.testName,
+      resourceName: extraProps.nameSuffix,
+    });
+    const resourceId = randomUUID().substring(0, 5);
 
-    super(stack.stack, `fn-${randomUUID().substring(0, 5)}`, {
+    const logGroup = new LogGroup(this, `log-${resourceId}`, {
+      logGroupName: `/aws/lambda/${functionName}`,
+      retention: RetentionDays.ONE_DAY,
+    });
+    super(stack.stack, `fn-${resourceId}`, {
       timeout: Duration.seconds(30),
       memorySize: 512,
       tracing: Tracing.ACTIVE,
@@ -41,13 +50,10 @@ class TestNodejsFunction extends NodejsFunction {
           : '',
       },
       ...restProps,
-      functionName: concatenateResourceName({
-        testName: stack.testName,
-        resourceName: extraProps.nameSuffix,
-      }),
+      functionName,
       runtime: TEST_RUNTIMES[getRuntimeKey()],
       architecture: TEST_ARCHITECTURES[getArchitectureKey()],
-      logRetention: RetentionDays.ONE_DAY,
+      logGroup,
     });
 
     new CfnOutput(this, extraProps.nameSuffix, {

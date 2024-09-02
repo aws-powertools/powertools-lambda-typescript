@@ -661,13 +661,7 @@ describe('Formatters', () => {
   it('when logRecordOrder is set, it orders the attributes in the log item', () => {
     // Prepare
     const formatter = new PowertoolsLogFormatter({
-      logRecordOrder: [
-        'arnab',
-        'message',
-        'timestamp',
-        'serviceName',
-        'environment',
-      ],
+      logRecordOrder: ['message', 'timestamp', 'serviceName', 'environment'],
     });
     const unformattedAttributes: UnformattedAttributes = {
       sampleRateValue: 0.25,
@@ -703,6 +697,68 @@ describe('Formatters', () => {
     expect(JSON.stringify(response)).toEqual(
       JSON.stringify({
         message: 'This is a WARN log',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        cold_start: true,
+        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
+        function_memory_size: '123',
+        function_name: 'my-lambda-function',
+        function_request_id: 'abcdefg123456789',
+        level: 'WARN',
+        sampling_rate: 0.25,
+        service: 'hello-world',
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      })
+    );
+  });
+
+  it('when logRecordOrder is set, it orders the attributes in the log item taking `additionalLogAttributes` into consideration', () => {
+    // Prepare
+    const formatter = new PowertoolsLogFormatter({
+      logRecordOrder: [
+        'message',
+        'additional_key',
+        'timestamp',
+        'serviceName',
+        'environment',
+      ],
+    });
+    const unformattedAttributes: UnformattedAttributes = {
+      sampleRateValue: 0.25,
+      awsRegion: 'eu-west-1',
+      environment: 'prod',
+      serviceName: 'hello-world',
+      xRayTraceId: '1-5759e988-bd862e3fe1be46a994272793',
+      logLevel: 'WARN',
+      timestamp: new Date(),
+      message: 'This is a WARN log',
+      error: new Error('Something happened!'),
+      lambdaContext: {
+        functionName: 'my-lambda-function',
+        memoryLimitInMB: '123',
+        functionVersion: '1.23.3',
+        coldStart: true,
+        invokedFunctionArn:
+          'arn:aws:lambda:eu-west-1:123456789012:function:Example',
+        awsRequestId: 'abcdefg123456789',
+      },
+    };
+    const additionalLogAttributes: LogAttributes = {
+      additional_key: 'additional_value',
+    };
+
+    // Act
+    const value = formatter.formatAttributes(
+      unformattedAttributes,
+      additionalLogAttributes
+    );
+
+    const response = value.getAttributes();
+
+    // Assess
+    expect(JSON.stringify(response)).toEqual(
+      JSON.stringify({
+        message: 'This is a WARN log',
+        additional_key: 'additional_value',
         timestamp: '2016-06-20T12:08:10.000Z',
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',

@@ -103,6 +103,43 @@ describe('Log levels', () => {
     );
   });
 
+  it('`logRecordOrder` should be passed down to child logger', () => {
+    // Prepare
+    const mockDate = new Date(1466424490000);
+    jest.useFakeTimers().setSystemTime(mockDate);
+    const logger = new Logger({ logRecordOrder: ['service', 'timestamp'] });
+    const childLogger = logger.createChild({ serviceName: 'child-service' });
+
+    // Act
+    logger.info('Hello, world!');
+    childLogger.info('Hello, world from child!');
+
+    // Assess
+    expect(logSpy).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(JSON.parse(logSpy.mock.calls[0][0]))).toStrictEqual(
+      JSON.stringify({
+        service: 'hello-world',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        level: 'INFO',
+        message: 'Hello, world!',
+        sampling_rate: 0,
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      })
+    );
+    expect(JSON.stringify(JSON.parse(logSpy.mock.calls[1][0]))).toStrictEqual(
+      JSON.stringify({
+        service: 'child-service',
+        timestamp: '2016-06-20T12:08:10.000Z',
+        level: 'INFO',
+        message: 'Hello, world from child!',
+        sampling_rate: 0,
+        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      })
+    );
+
+    jest.useRealTimers();
+  });
+
   it("doesn't use the global console object by default", () => {
     // Prepare
     process.env.POWERTOOLS_DEV = undefined;

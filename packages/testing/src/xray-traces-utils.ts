@@ -90,8 +90,7 @@ const retriableGetTraceIds = (options: GetXRayTraceIdsOptions) =>
 /**
  * Get the trace details for a given trace ID from the AWS X-Ray API.
  *
- * When the trace is returned, the segments are parsed, since the document is returned
- * stringified, and then sorted by start time.
+ * When the trace is returned, the segments are parsed, since the document is returned as a string.
  *
  * @param options - The options to get trace details, including the trace IDs and expected segments count
  */
@@ -113,7 +112,7 @@ const getTraceDetails = async (
     );
   }
 
-  const parsedAndSortedTraces: XRayTraceParsed[] = [];
+  const parsedTraces: XRayTraceParsed[] = [];
   for (const trace of traces) {
     const { Id: id, Segments: segments } = trace;
     if (segments === undefined || segments.length !== expectedSegmentsCount) {
@@ -136,20 +135,14 @@ const getTraceDetails = async (
         Document: JSON.parse(Document) as XRayTraceDocumentParsed,
       });
     }
-    const sortedSegments = parsedSegments.sort(
-      (a, b) => a.Document.start_time - b.Document.start_time
-    );
 
-    parsedAndSortedTraces.push({
+    parsedTraces.push({
       Id: id as string,
-      Segments: sortedSegments,
+      Segments: parsedSegments,
     });
   }
 
-  return parsedAndSortedTraces.sort(
-    (a, b) =>
-      a.Segments[0].Document.start_time - b.Segments[0].Document.start_time
-  );
+  return parsedTraces;
 };
 
 /**

@@ -116,13 +116,14 @@ const parseAndSortTrace = (trace: Trace, expectedSegmentsCount: number) => {
       Document: JSON.parse(Document) as XRayTraceDocumentParsed,
     });
   }
-  const sortedSegments = parsedSegments.sort(
-    (a, b) => a.Document.start_time - b.Document.start_time
-  );
 
   return {
     Id: id as string,
-    Segments: sortedSegments,
+    Segments: [
+      ...parsedSegments.sort(
+        (a, b) => a.Document.start_time - b.Document.start_time
+      ),
+    ],
   };
 };
 

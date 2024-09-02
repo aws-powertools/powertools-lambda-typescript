@@ -1,10 +1,10 @@
-import { createHash } from 'node:crypto';
-import { join } from 'node:path';
 /**
  * Test makeHandlerIdempotent middleware
  *
  * @group e2e/idempotency/makeHandlerIdempotent
  */
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 import {
   TestInvocationLogs,
   TestStack,

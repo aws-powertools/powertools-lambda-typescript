@@ -6,10 +6,7 @@
 import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
-import {
-  getTraces,
-  getTracesWithoutMainSubsegments,
-} from '@aws-lambda-powertools/testing-utils/utils/xray-traces';
+import { getTraces } from '@aws-lambda-powertools/testing-utils/utils/xray-traces';
 import { invokeAllTestCases } from '../helpers/invokeAllTests.js';
 import { TracerTestNodejsFunction } from '../helpers/resources.js';
 import {
@@ -135,7 +132,6 @@ describe('Tracer E2E tests, async handler with decorator instantiation', () => {
         expectedSegmentsCount: 4,
       });
 
-      // Assess
       // Assess
       for (let i = 0; i < invocationCount; i++) {
         const isColdStart = i === 0; // First invocation is a cold start

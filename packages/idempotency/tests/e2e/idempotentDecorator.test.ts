@@ -1,3 +1,8 @@
+/**
+ * Test idempotency decorator
+ *
+ * @group e2e/idempotency/decorator
+ */
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import {
@@ -5,11 +10,6 @@ import {
   TestStack,
   invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
-/**
- * Test idempotency decorator
- *
- * @group e2e/idempotency/decorator
- */
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { Duration } from 'aws-cdk-lib';

@@ -42,21 +42,31 @@ class PowertoolsLogFormatter extends LogFormatter {
     for (const key of this.logRecordOrder || []) {
       if (key in baseAttributes && !(key in orderedAttributes)) {
         orderedAttributes[key] = baseAttributes[key];
+      } else if (
+        key in additionalLogAttributes &&
+        !(key in orderedAttributes)
+      ) {
+        orderedAttributes[key] = additionalLogAttributes[key];
       }
     }
 
+    // Add remaining attributes from baseAttributes
     for (const key in baseAttributes) {
       if (!(key in orderedAttributes)) {
         orderedAttributes[key] = baseAttributes[key];
       }
     }
 
-    // Merge the ordered attributes with the rest of the attributes
+    // Add remaining attributes from additionalLogAttributes
+    for (const key in additionalLogAttributes) {
+      if (!(key in orderedAttributes)) {
+        orderedAttributes[key] = additionalLogAttributes[key];
+      }
+    }
+
     const powertoolsLogItem = new LogItem({
       attributes: orderedAttributes,
     });
-
-    powertoolsLogItem.addAttributes(additionalLogAttributes);
 
     return powertoolsLogItem;
   }

@@ -1,6 +1,7 @@
 import {
   BatchGetTracesCommand,
   GetTraceSummariesCommand,
+  type Trace,
   XRayClient,
 } from '@aws-sdk/client-xray';
 import promiseRetry from 'promise-retry';
@@ -88,9 +89,48 @@ const retriableGetTraceIds = (options: GetXRayTraceIdsOptions) =>
   });
 
 /**
+ * Parse and sort the trace segments by start time
+ *
+ * @param trace - The trace to parse and sort
+ * @param expectedSegmentsCount - The expected segments count for the trace
+ */
+const parseAndSortTrace = (trace: Trace, expectedSegmentsCount: number) => {
+  const { Id: id, Segments: segments } = trace;
+  if (segments === undefined || segments.length !== expectedSegmentsCount) {
+    throw new Error(
+      `Expected ${expectedSegmentsCount} segments, got ${segments ? segments.length : 0} for traceId ${trace.Id}`
+    );
+  }
+
+  const parsedSegments: XRaySegmentParsed[] = [];
+  for (const segment of segments) {
+    const { Id, Document } = segment;
+    if (Document === undefined || Id === undefined) {
+      throw new Error(
+        `Segment document or id are missing for traceId ${trace.Id}`
+      );
+    }
+
+    parsedSegments.push({
+      Id,
+      Document: JSON.parse(Document) as XRayTraceDocumentParsed,
+    });
+  }
+  const sortedSegments = parsedSegments.sort(
+    (a, b) => a.Document.start_time - b.Document.start_time
+  );
+
+  return {
+    Id: id as string,
+    Segments: sortedSegments,
+  };
+};
+
+/**
  * Get the trace details for a given trace ID from the AWS X-Ray API.
  *
- * When the trace is returned, the segments are parsed, since the document is returned as a string.
+ * When the trace is returned, the segments are parsed, since the document is returned
+ * stringified, and then sorted by start time.
  *
  * @param options - The options to get trace details, including the trace IDs and expected segments count
  */
@@ -112,37 +152,15 @@ const getTraceDetails = async (
     );
   }
 
-  const parsedTraces: XRayTraceParsed[] = [];
+  const parsedAndSortedTraces: XRayTraceParsed[] = [];
   for (const trace of traces) {
-    const { Id: id, Segments: segments } = trace;
-    if (segments === undefined || segments.length !== expectedSegmentsCount) {
-      throw new Error(
-        `Expected ${expectedSegmentsCount} segments, got ${segments ? segments.length : 0} for traceId ${trace.Id}`
-      );
-    }
-
-    const parsedSegments: XRaySegmentParsed[] = [];
-    for (const segment of segments) {
-      const { Id, Document } = segment;
-      if (Document === undefined || Id === undefined) {
-        throw new Error(
-          `Segment document or id are missing for traceId ${trace.Id}`
-        );
-      }
-
-      parsedSegments.push({
-        Id,
-        Document: JSON.parse(Document) as XRayTraceDocumentParsed,
-      });
-    }
-
-    parsedTraces.push({
-      Id: id as string,
-      Segments: parsedSegments,
-    });
+    parsedAndSortedTraces.push(parseAndSortTrace(trace, expectedSegmentsCount));
   }
 
-  return parsedTraces;
+  return parsedAndSortedTraces.sort(
+    (a, b) =>
+      a.Segments[0].Document.start_time - b.Segments[0].Document.start_time
+  );
 };
 
 /**

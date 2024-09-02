@@ -57,7 +57,7 @@ type BaseConstructorOptions = {
    * This allows you to customize the serialization while still benefiting from the default behavior.
    */
   jsonReplacerFn?: CustomJsonReplacerFn;
-  logRecordOrder?: Array<keyof UnformattedAttributes>;
+  logRecordOrder?: LogRecordOrder;
 };
 
 type PersistentKeysOption = {
@@ -124,6 +124,8 @@ type UnformattedAttributes = PowertoolsLogData & {
   message: string;
 };
 
+type LogRecordOrder = Array<keyof UnformattedAttributes | keyof LogAttributes>;
+
 type LogItemMessage = string | LogAttributesWithMessage;
 type LogItemExtraInput = [Error | string] | LogAttributes[];
 
@@ -164,4 +166,5 @@ export type {
   ConstructorOptions,
   InjectLambdaContextOptions,
   CustomJsonReplacerFn,
+  LogRecordOrder,
 };

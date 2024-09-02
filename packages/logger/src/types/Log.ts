@@ -1,7 +1,7 @@
 import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import type { LogLevel as LogLevelList } from '../constants.js';
 import type { LogItem } from '../formatter/LogItem.js';
-import type { UnformattedAttributes } from './Logger.js';
+import type { LogRecordOrder, UnformattedAttributes } from './Logger.js';
 
 type LogLevel =
   | (typeof LogLevelList)[keyof typeof LogLevelList]
@@ -117,7 +117,7 @@ type LogFormatterOptions = {
    */
   envVarsService?: EnvironmentVariablesService;
 
-  logRecordOrder?: Array<keyof UnformattedAttributes>;
+  logRecordOrder?: LogRecordOrder;
 };
 
 /**

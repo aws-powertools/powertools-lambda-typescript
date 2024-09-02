@@ -23,9 +23,9 @@ import type {
   LogFunction,
   LogItemExtraInput,
   LogItemMessage,
+  LogRecordOrder,
   LoggerInterface,
   PowertoolsLogData,
-  UnformattedAttributes,
 } from './types/Logger.js';
 
 /**
@@ -1121,12 +1121,12 @@ class Logger extends Utility implements LoggerInterface {
    *
    * @private
    * @param {LogFormatterInterface} logFormatter
-   * @param {Array<keyof UnformattedAttributes>} logRecordOrder
+   * @param {LogRecordOrder} logRecordOrder
    * @returns {void}
    */
   private setLogFormatter(
     logFormatter?: LogFormatterInterface,
-    logRecordOrder?: Array<keyof UnformattedAttributes>
+    logRecordOrder?: LogRecordOrder
   ): void {
     this.logFormatter =
       logFormatter ??

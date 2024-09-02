@@ -4,7 +4,7 @@ import type {
   LogFormatterInterface,
   LogFormatterOptions,
 } from '../types/Log.js';
-import type { UnformattedAttributes } from '../types/Logger.js';
+import type { LogRecordOrder, UnformattedAttributes } from '../types/Logger.js';
 import type { LogItem } from './LogItem.js';
 
 /**
@@ -24,7 +24,7 @@ abstract class LogFormatter implements LogFormatterInterface {
   /**
    * An array of keys that defines the order of the log record.
    */
-  protected logRecordOrder?: Array<keyof UnformattedAttributes>;
+  protected logRecordOrder?: LogRecordOrder;
 
   public constructor(options?: LogFormatterOptions) {
     this.envVarsService = options?.envVarsService;

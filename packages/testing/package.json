@@ -53,6 +53,10 @@
     "./types": {
       "import": "./lib/esm/types.js",
       "require": "./lib/cjs/types.js"
+    },
+    "./utils/xray-traces": {
+      "import": "./lib/esm/xray-traces-utils.js",
+      "require": "./lib/cjs/xray-traces-utils.js"
     }
   },
   "typesVersions": {
@@ -72,6 +76,10 @@
       "context": [
         "lib/cjs/context.d.ts",
         "lib/esm/context.d.ts"
+      ],
+      "utils/xray-traces": [
+        "lib/cjs/xray-traces-utils.d.ts",
+        "lib/esm/xray-traces-utils.d.ts"
       ]
     }
   },
@@ -94,6 +102,10 @@
     "@aws-sdk/client-lambda": "^3.637.0",
     "@smithy/util-utf8": "^3.0.0",
     "aws-cdk-lib": "^2.155.0",
-    "esbuild": "^0.23.1"
+    "esbuild": "^0.23.1",
+    "promise-retry": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/promise-retry": "^1.1.6"
   }
 }
